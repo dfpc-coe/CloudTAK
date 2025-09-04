@@ -1,23 +1,60 @@
-import fetch from './fetch.js';
-import { randomUUID } from 'node:crypto';
+import Config from './config.js';
+import Err from '@openaddresses/batch-error';
 import { Static, Type } from "@sinclair/typebox";
-import { EsriExtent, EsriSpatialReference } from './esri/types.js';
 import { Feature } from '@tak-ps/node-cot';
-import { CoTParser } from '@tak-ps/node-cot';
-import ArcGISTokenManager from './arcgis-token-manager.js';
+import AGOL from './search/agol.js';
+import { EsriSpatialReference, EsriExtent } from './esri/types.js';
+
+export const SearchConfig = Type.Object({
+    id: Type.String(),
+    name: Type.String(),
+    reverse: Type.Object({
+        supported: Type.Boolean(),
+    }),
+    forward: Type.Object({
+        supported: Type.Boolean(),
+    }),
+    route: Type.Object({
+        supported: Type.Boolean(),
+        modes: Type.Array(Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+        }))
+    })
+});
+
+export const SearchManagerConfig = Type.Object({
+    reverse: Type.Object({
+        enabled: Type.Boolean(),
+        providers: Type.Array(Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+        }))
+    }),
+    route: Type.Object({
+        enabled: Type.Boolean(),
+        providers: Type.Array(Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+            modes: Type.Array(Type.Object({
+                id: Type.String(),
+                name: Type.String(),
+            }))
+        }))
+    }),
+    forward: Type.Object({
+        enabled: Type.Boolean(),
+        providers: Type.Array(Type.Object({
+            id: Type.String(),
+            name: Type.String()
+        }))
+    })
+})
 
 export const FetchReverse = Type.Object({
     LongLabel: Type.String(),
     ShortLabel: Type.String(),
     Addr_type: Type.String(),
-});
-
-const ReverseContainer = Type.Object({
-    address: Type.Optional(FetchReverse),
-    error: Type.Optional(Type.Object({
-        code: Type.Number(),
-        message: Type.String()
-    }))
 });
 
 export const RouteContainer = Type.Object({
@@ -100,167 +137,167 @@ export const ForwardContainer = Type.Object({
     }))
 });
 
-export default class Search {
-    reverseApi: string;
-    suggestApi: string;
-    forwardApi: string;
-    routingApi: string;
+/**
+ * @class
+ *
+ * A Generic Search Interface that can be extended to support different geocoding backends
+ */
+export interface Search {
+    id: string;
+    name: string;
+    config: Config;
 
-    tokenManager?: ArcGISTokenManager;
+    init(config: Config): Promise<Search | null>;
 
-    constructor(tokenManager?: ArcGISTokenManager) {
-        this.reverseApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode';
-        this.suggestApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest';
-        this.forwardApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates';
-        this.routingApi = 'https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/solve';
-        this.tokenManager = tokenManager;
+    config(): Promise<Static<typeof SearchConfig>>;
+
+    reverse?(
+        lon: number,
+        lat: number
+    ): Promise<Static<typeof FetchReverse>>;
+
+    route?(
+        stops: Array<[number, number]>,
+        travelMode?: string
+    ): Promise<Static<typeof Feature.FeatureCollection>>;
+
+    forward?(
+        query: string,
+        magicKey: string,
+        limit?: number
+    ): Promise<Array<Static<typeof FetchForward>>>;
+
+    suggest?(
+        query: string,
+        limit?: number,
+        location?: [number, number]
+    ): Promise<Array<Static<typeof FetchSuggest>>>;
+}
+
+/**
+ * @class
+ * A Manager for different Search providers
+ */
+export class SearchManager extends Map<string, Search> {
+    defaultProvider: string | null;
+
+    constructor() {
+        super();
+        this.defaultProvider = null;
     }
 
-    async reverse(lon: number, lat: number): Promise<Static<typeof FetchReverse>> {
-        const url = new URL(this.reverseApi)
-        url.searchParams.append('location', `${lon},${lat}`);
-        url.searchParams.append('f', 'json');
+    async init(config: Config): Promise<SearchManager> {
+        const manager = new SearchManager();
 
-        if (this.tokenManager) {
-            const token = await this.tokenManager.getValidToken();
-            if (token) url.searchParams.append('token', token);
-        }
+        const agol = await AGOL.init(config);
 
-        const res = await fetch(url);
-        const body = await res.typed(ReverseContainer);
-
-        if (body.error) {
-            if (body.error.code === 498 || body.error.code === 499) {
-                throw new Error('ArcGIS authentication failed');
+        if (agol) {
+            if (!this.defaultProvider) {
+                this.defaultProvider = agol.id;
             }
-            throw new Error(`ArcGIS API Error: ${body.error.message}`);
+
+            manager.set(agol.id, agol);
         }
 
-        if (!body.address) {
-            throw new Error('No address found');
+        return manager;
+    }
+
+    async config(): Promise<Static<typeof SearchManagerConfig>> {
+        const settings: Static<typeof SearchManagerConfig> = {
+            reverse: {
+                enabled: false,
+                providers: []
+            },
+            route: {
+                enabled: false,
+                providers: []
+            },
+            forward: {
+                enabled: false,
+                providers: []
+            }
+        };
+
+        for (const search of this.values()) {
+            const config = await search.config();
+
+            if (config.reverse.supported) {
+                settings.reverse.enabled = true;
+                settings.reverse.providers.push({
+                    id: config.id,
+                    name: config.name
+                });
+            }
+
+            if (config.forward.supported) {
+                settings.forward.enabled = true;
+                settings.forward.providers.push({
+                    id: config.id,
+                    name: config.name
+                });
+            }
+
+            if (config.route.supported) {
+                settings.route.enabled = true;
+                settings.route.providers.push({
+                    id: config.id,
+                    name: config.name
+                });
+            }
         }
 
-        return body.address;
+        return settings;
+    }
+
+    async getProvider(provider: string): Promise<Search> {
+        const search = this.get(provider);
+
+        if (!search) {
+            throw new Err(400, null, `Invalid search provider: ${provider}`);
+        }
+
+        return search;
+    }
+
+    async reverse(
+        provider: string,
+        lon: number,
+        lat: number
+    ): Promise<Static<typeof FetchReverse>> {
+        const search = await this.getProvider(provider);
+
+        return await search.reverse(lon, lat);
     }
 
     async route(
+        provider: string,
         stops: Array<[number, number]>,
         travelMode?: string
     ): Promise<Static<typeof Feature.FeatureCollection>> {
-        const url = new URL(this.routingApi);
-        url.searchParams.append('stops', stops.map(stop => stop.join(',')).join(';'));
-        url.searchParams.append('f', 'json');
+        const search = await this.getProvider(provider);
 
-        if (travelMode && travelMode.trim()) url.searchParams.append('travelMode', travelMode);
-
-        if (this.tokenManager) {
-            const token = await this.tokenManager.getValidToken();
-            if (token) url.searchParams.append('token', token);
-        }
-
-        const res = await fetch(url);
-
-        const body = await res.typed(RouteContainer)
-
-        // Check for API errors first
-        if (body.error) {
-            if (body.error.code === 498 || body.error.code === 499) {
-                throw new Error('API not authorized');
-            }
-            throw new Error(`ArcGIS Routing Error: ${body.error.message}`);
-        }
-
-        // Check for routing errors
-        if (!body.routes || !body.routes.features || body.routes.features.length === 0) {
-            throw new Error('No Route Found');
-        }
-
-        const processed: Static<typeof Feature.FeatureCollection> = {
-            type: 'FeatureCollection',
-            features: []
-        }
-
-        if (body.routes?.features) {
-            for (const feat of body.routes.features) {
-                if (!feat.geometry?.paths?.[0] || !feat.attributes) continue;
-
-                const norm = await CoTParser.normalize_geojson({
-                    id: String(randomUUID()),
-                    type: 'Feature',
-                    properties: {
-                        metadata: {
-                            ...feat.attributes,
-                        }
-                    },
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: feat.geometry.paths[0]
-                    }
-                });
-
-                norm.properties.type = 'b-m-r';
-                norm.properties.how = 'm-g';
-                norm.properties.callsign = String(feat.attributes.Name);
-                norm.properties.archived = true;
-
-                // Add directions as remarks if available
-                const directions = body.directions?.[0]?.features?.map(dir => dir.attributes?.text).filter(Boolean).join('\n');
-                if (directions) norm.properties.remarks = directions;
-
-                processed.features.push(norm);
-            }
-        }
-
-        return processed;
+        return await search.route(stops, travelMode);
     }
 
-    async forward(query: string, magicKey: string, limit?: number): Promise<Array<Static<typeof FetchForward>>> {
-        const url = new URL(this.forwardApi)
-        url.searchParams.append('magicKey', magicKey);
-        url.searchParams.append('singleLine', query);
-        if (limit) url.searchParams.append('maxLocations', String(limit));
-        url.searchParams.append('f', 'json');
+    async forward(
+        provider: string,
+        query: string,
+        magicKey: string,
+        limit?: number
+    ): Promise<Array<Static<typeof FetchForward>>> {
+        const search = await this.getProvider(provider);
 
-        if (this.tokenManager) {
-            const token = await this.tokenManager.getValidToken();
-            if (token) url.searchParams.append('token', token);
-        }
-
-        const res = await fetch(url);
-        const body = await res.typed(ForwardContainer);
-
-        if (body.error) {
-            if (body.error.code === 498 || body.error.code === 499) {
-                throw new Error('ArcGIS authentication failed');
-            }
-            throw new Error(`ArcGIS API Error: ${body.error.message}`);
-        }
-
-        return body.candidates || [];
+        return await search.forward(query, magicKey, limit);
     }
 
-    async suggest(query: string, limit?: number, location?: [number, number]): Promise<Array<Static<typeof FetchSuggest>>> {
-        const url = new URL(this.suggestApi)
-        url.searchParams.append('text', query);
-        url.searchParams.append('f', 'json');
-        if (limit) url.searchParams.append('maxSuggestions', String(limit));
-        if (location) url.searchParams.append('location', `${location[0]},${location[1]}`);
+    async suggest(
+        provider: string,
+        query: string,
+        limit?: number,
+        location?: [number, number]
+    ): Promise<Array<Static<typeof FetchSuggest>>> {
+        const search = await this.getProvider(provider);
 
-        if (this.tokenManager) {
-            const token = await this.tokenManager.getValidToken();
-            if (token) url.searchParams.append('token', token);
-        }
-
-        const res = await fetch(url);
-        const body = await res.typed(SuggestContainer);
-
-        if (body.error) {
-            if (body.error.code === 498 || body.error.code === 499) {
-                throw new Error('ArcGIS authentication failed');
-            }
-            throw new Error(`ArcGIS API Error: ${body.error.message}`);
-        }
-
-        return body.suggestions || [];
+        return await search.suggest(query, limit, location);
     }
 }

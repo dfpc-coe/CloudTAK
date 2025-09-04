@@ -1,4 +1,4 @@
-import fetch from './fetch.js';
+import fetch from '../fetch.js';
 
 export interface ArcGISConfig {
     authMethod: 'oauth2' | 'legacy';
@@ -80,13 +80,13 @@ export default class ArcGISTokenManager {
             const token = await this.getValidToken();
             if (!token) return false;
 
-            const testUrl = this.config.authMethod === 'oauth2' 
+            const testUrl = this.config.authMethod === 'oauth2'
                 ? `https://www.arcgis.com/sharing/rest/portals/self?f=json&token=${token}`
                 : `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer?f=json&token=${token}`;
 
             const response = await fetch(testUrl);
             const data = await response.json();
-            
+
             return !data.error;
         } catch {
             return false;

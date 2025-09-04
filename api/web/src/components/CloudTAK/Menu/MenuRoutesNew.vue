@@ -15,9 +15,9 @@
             <template v-else>
                 <div class='mx-2 my-2'>
                     <TablerEnum
+                        v-if='config.providers.length'
                         label='Routing Provider'
                         v-model='routePlan.provider'
-                        :default='config.providers[0].name'
                         :options='config.providers.map(p => p.name)'
                     />
                 </div>
@@ -55,7 +55,7 @@
                             <label
                                 :for='`route-mode-${mode.id}`'
                                 type='button'
-                                class='btn btn-sm'
+                                class='btn'
                             >
                                 {{ mode.name }}
                             </label>

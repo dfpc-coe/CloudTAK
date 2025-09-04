@@ -4,22 +4,15 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Weather, { FetchHourly } from '../lib/weather.js';
-import Search, { FetchReverse, FetchSuggest, FetchForward } from '../lib/search.js';
-import { createGeocodeService } from '../lib/geocode-factory.js';
+import Search, { SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from '../lib/search.js';
+import { createSearchService } from '../lib/geocode-factory.js';
 import { Feature } from '@tak-ps/node-cot';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
     const weather = new Weather();
 
-    let search: Search | null = null;
-    if ((await config.models.Setting.typed('agol::enabled', false)).value) {
-        const { ArcGISConfigService } = await import('../lib/geocode-factory.js');
-        const configService = ArcGISConfigService.getInstance(config);
-        if (await configService.isConfigured()) {
-            search = await createGeocodeService(config);
-        }
-    }
+    const searchManager = await SearchManager.init();
 
     const ReverseResponse = Type.Object({
         sun: Type.Object({
@@ -57,81 +50,14 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Search Config',
         group: 'Search',
         description: 'Get information about the configured search provider(s)',
-        res: Type.Object({
-            reverse: Type.Object({
-                enabled: Type.Boolean(),
-                providers: Type.Array(Type.Object({
-                    id: Type.String(),
-                    name: Type.String(),
-                }))
-            }),
-            route: Type.Object({
-                enabled: Type.Boolean(),
-                providers: Type.Array(Type.Object({
-                    id: Type.String(),
-                    name: Type.String(),
-                    modes: Type.Array(Type.Object({
-                        id: Type.String(),
-                        name: Type.String(),
-                    }))
-                }))
-            }),
-            forward: Type.Object({
-                enabled: Type.Boolean(),
-                providers: Type.Array(Type.Object({
-                    id: Type.String(),
-                    name: Type.String()
-                }))
-            })
-        })
+        res: SearchConfig
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
 
-            const settings = {
-                reverse: {
-                    enabled: false,
-                    providers: []
-                },
-                route: {
-                    enabled: false,
-                    providers: []
-                },
-                forward: {
-                    enabled: false,
-                    providers: []
-                }
-            };
+            const config = await searchManager.config();
 
-            if (search) {
-                settings.reverse.providers.push({
-                    id: 'agol',
-                    name: 'ArcGIS Online'
-                });
-
-                settings.route.providers.push({
-                    id: 'agol',
-                    name: 'ArcGIS Online',
-                    modes: [
-                        { id: 'driving', name: 'Driving' },
-                        { id: 'trucking', name: 'Trucking' },
-                        { id: 'rural', name: 'Rural' },
-                        { id: 'walking', name: 'Walking' }
-                    ]
-                });
-
-                settings.forward.providers.push({
-                    id: 'agol',
-                    name: 'ArcGIS Online'
-                });
-            }
-
-            // Eventually allow an admin to manually turn these off and on as well
-            settings.reverse.enabled = settings.reverse.providers.length > 0;
-            settings.forward.enabled = settings.forward.providers.length > 0;
-            settings.route.enabled = settings.route.providers.length > 0;
-
-            return res.json(settings);
+            return res.json(config);
         } catch (err) {
              Err.respond(err, res);
         }
@@ -224,6 +150,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Search',
         description: 'Generate a route given stop information',
         query: Type.Object({
+            provider: Type.String(),
             start: Type.String({
                 description: 'Lat,Lng of starting position'
             }),
@@ -244,6 +171,11 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
+
+            // TODO Dynamic Checks once multiple providers are supported
+            if (req.query.provider !== 'agol') {
+                throw new Err(400, null, 'Invalid provider');
+            }
 
             const stops = [
                 req.query.start.split(',').map(Number),
