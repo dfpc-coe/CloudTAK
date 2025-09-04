@@ -11,7 +11,7 @@ import Config from '../lib/config.js';
 export default async function router(schema: Schema, config: Config) {
     const weather = new Weather();
 
-    const searchManager = await SearchManager.init();
+    const searchManager = await SearchManager.init(config);
 
     const ReverseResponse = Type.Object({
         sun: Type.Object({
@@ -188,7 +188,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (searchManager.defaultProvider) {
                 try {
-                    const route = await searchManager.reverse(
+                    const route = await searchManager.route(
                         req.query.provider || searchManager.defaultProvider,
                         stops,
                         req.query.travelMode
@@ -230,9 +230,14 @@ export default async function router(schema: Schema, config: Config) {
                 items: [],
             };
 
-            if (search && req.query.query.trim().length) {
+            if (searchManager.defaultProvider) {
                 try {
-                    response.items = await search.forward(req.query.query, req.query.magicKey, req.query.limit);
+                    response.items = await searchManager.forward(
+                        req.query.provider || searchManager.defaultProvider,
+                        req.query.query,
+                        req.query.magicKey,
+                        req.query.limit
+                    );
                 } catch (err) {
                     console.error('Forward Geocoding Error:', err);
                     response.items = [];

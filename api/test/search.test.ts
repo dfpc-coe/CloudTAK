@@ -1,6 +1,7 @@
 import test from 'tape';
 import AGOL from '../lib/search/agol.js';
 import ArcGISTokenManager from '../lib/search/arcgis-token-manager.js';
+import Config from '../lib/config.js';
 
 test('AGOL - constructor with tokenManager', async (t) => {
     const mockConfig = {
@@ -9,7 +10,16 @@ test('AGOL - constructor with tokenManager', async (t) => {
         clientSecret: 'test-client-secret'
     };
     const tokenManager = new ArcGISTokenManager(mockConfig);
-    const geocode = new AGOL(tokenManager);
+
+    const config = await Config.env({
+        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        silent: true,
+        noevents: true,
+        nosinks: true,
+        nocache: true
+    });
+
+    const geocode = new AGOL(config, tokenManager);
     
     t.ok(geocode.tokenManager, 'TokenManager set correctly');
     t.ok(geocode.reverseApi, 'Reverse API URL set');
@@ -20,7 +30,15 @@ test('AGOL - constructor with tokenManager', async (t) => {
 });
 
 test('AGOL - constructor without tokenManager', async (t) => {
-    const geocode = new AGOL();
+    const config = await Config.env({
+        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        silent: true,
+        noevents: true,
+        nosinks: true,
+        nocache: true
+    });
+
+    const geocode = new AGOL(config);
     
     t.equal(geocode.tokenManager, undefined, 'No tokenManager set');
     t.ok(geocode.reverseApi, 'Reverse API URL set');
@@ -31,7 +49,15 @@ test('AGOL - constructor without tokenManager', async (t) => {
 });
 
 test('AGOL - API URLs are correctly set', async (t) => {
-    const geocodeInstance = new AGOL();
+    const config = await Config.env({
+        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        silent: true,
+        noevents: true,
+        nosinks: true,
+        nocache: true
+    });
+
+    const geocodeInstance = new AGOL(config);
     
     t.equal(new URL(geocodeInstance.reverseApi).host, 'geocode.arcgis.com', 'Reverse API URL has correct host');
     t.equal(new URL(geocodeInstance.suggestApi).host, 'geocode.arcgis.com', 'Suggest API URL has correct host');
@@ -41,13 +67,22 @@ test('AGOL - API URLs are correctly set', async (t) => {
 });
 
 test('AGOL - route method handles empty features', async (t) => {
+    const config = await Config.env({
+        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        silent: true,
+        noevents: true,
+        nosinks: true,
+        nocache: true
+    });
+
     const mockConfig = {
         authMethod: 'oauth2' as const,
         clientId: 'test-client-id',
         clientSecret: 'test-client-secret'
     };
+
     const tokenManager = new ArcGISTokenManager(mockConfig);
-    const geocodeInstance = new AGOL(tokenManager);
+    const geocodeInstance = new AGOL(config, tokenManager);
     
     try {
         // This should throw an error for no route found
@@ -67,13 +102,21 @@ test('AGOL - route method handles empty features', async (t) => {
 });
 
 test('AGOL - route method processes valid route data', async (t) => {
+    const config = await Config.env({
+        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        silent: true,
+        noevents: true,
+        nosinks: true,
+        nocache: true
+    });
+
     const mockConfig = {
         authMethod: 'oauth2' as const,
         clientId: 'test-client-id',
         clientSecret: 'test-client-secret'
     };
     const tokenManager = new ArcGISTokenManager(mockConfig);
-    const geocodeInstance = new AGOL(tokenManager);
+    const geocodeInstance = new AGOL(config, tokenManager);
     
     // Test route processing with mock valid data structure
     const mockValidRoute = {
@@ -100,13 +143,21 @@ test('AGOL - route method processes valid route data', async (t) => {
 });
 
 test('AGOL - error handling for different error codes', async (t) => {
+    const config = await Config.env({
+        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        silent: true,
+        noevents: true,
+        nosinks: true,
+        nocache: true
+    });
+
     const mockConfig = {
         authMethod: 'oauth2' as const,
         clientId: 'test-client-id',
         clientSecret: 'test-client-secret'
     };
     const tokenManager = new ArcGISTokenManager(mockConfig);
-    const geocodeInstance = new AGOL(tokenManager);
+    const geocodeInstance = new AGOL(config, tokenManager);
     
     // Test error code handling logic
     const error498 = { code: 498, message: 'Invalid token' };
@@ -121,13 +172,21 @@ test('AGOL - error handling for different error codes', async (t) => {
 });
 
 test('AGOL - validates route input parameters', async (t) => {
+    const config = await Config.env({
+        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        silent: true,
+        noevents: true,
+        nosinks: true,
+        nocache: true
+    });
+
     const mockConfig = {
         authMethod: 'oauth2' as const,
         clientId: 'test-client-id',
         clientSecret: 'test-client-secret'
     };
     const tokenManager = new ArcGISTokenManager(mockConfig);
-    const geocodeInstance = new AGOL(tokenManager);
+    const geocodeInstance = new AGOL(config, tokenManager);
     
     // Test input validation
     const validStops = [[-105, 39.7], [-104.8, 39.9]];
@@ -144,7 +203,15 @@ test('AGOL - validates route input parameters', async (t) => {
 });
 
 test('AGOL - URL construction for different endpoints', async (t) => {
-    const geocodeInstance = new AGOL();
+    const config = await Config.env({
+        postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
+        silent: true,
+        noevents: true,
+        nosinks: true,
+        nocache: true
+    });
+
+    const geocodeInstance = new AGOL(config);
     
     // Test URL construction logic
     const baseUrl = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer';
