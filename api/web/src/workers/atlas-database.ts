@@ -455,7 +455,6 @@ export default class AtlasDatabase {
 
         if (cot.origin.mode === OriginMode.CONNECTION) {
             this.pendingDelete.add(id);
-            this.cots.delete(id);
 
             if (cot.properties.archived) {
                 this.atlas.postMessage({
