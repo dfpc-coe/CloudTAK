@@ -1,6 +1,6 @@
 import Config from './config.js';
 import Err from '@openaddresses/batch-error';
-import { Static, Type } from "@sinclair/typebox";
+import { Static } from "@sinclair/typebox";
 import { Feature } from '@tak-ps/node-cot';
 import { SearchConfig, SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from './search/types.js';
 

@@ -1,4 +1,4 @@
-import { Static, Type } from "@sinclair/typebox";
+import { Type } from "@sinclair/typebox";
 import { EsriExtent } from '../esri/types.js';
 
 export const SearchConfig = Type.Object({
