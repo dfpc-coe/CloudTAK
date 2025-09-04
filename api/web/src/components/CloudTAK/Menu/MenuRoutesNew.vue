@@ -5,7 +5,7 @@
     >
         <template #default>
             <TablerLoading
-                v-if='loading'
+                v-if='loading || !config'
                 desc='Loading'
             />
             <TablerAlert

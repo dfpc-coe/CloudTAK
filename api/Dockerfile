@@ -8,6 +8,7 @@ WORKDIR $HOME
 
 # Data source configuration
 ARG DATA_SOURCE_URL=https://github.com/dfpc-coe/CloudTAK-Data/archive/refs/tags/v1.1.0.zip
+ARG API_URL
 ARG USE_LOCAL_ZIP=false
 
 RUN apk add --no-cache git nodejs-current npm memcached python3 make bash g++ openssl postgresql-client grep wget unzip
@@ -20,6 +21,8 @@ ADD package-lock.json ./
 RUN npm install
 
 COPY ./ $HOME/api
+
+ENV API_URL=${API_URL}
 
 RUN cd web \
     && npm install \

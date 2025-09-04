@@ -1,4 +1,5 @@
 import fetch from '../fetch.js';
+import { Type }  from '@sinclair/typebox';
 
 export interface ArcGISConfig {
     authMethod: 'oauth2' | 'legacy';
@@ -61,9 +62,23 @@ export default class ArcGISTokenManager {
             }
         });
 
-        const data = await response.json();
+        const data = await response.typed(Type.Union([
+            Type.Object({
+                error: Type.Object({
+                    message: Type.String()
+                })
+            }),
+            Type.Object({
+                access_token: Type.String(),
+                expires_in: Type.Number(),
+                username: Type.String(),
+                ssl: Type.Boolean(),
+                refresh_token: Type.Optional(Type.String()),
+                refresh_token_expires_in: Type.Optional(Type.Number())
+            })
+        ]));
 
-        if (data.error) {
+        if ('error' in data) {
             throw new Error(`OAuth token refresh failed: ${data.error.message}`);
         }
 
@@ -85,7 +100,12 @@ export default class ArcGISTokenManager {
                 : `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer?f=json&token=${token}`;
 
             const response = await fetch(testUrl);
-            const data = await response.json();
+
+            const data = await response.typed(Type.Object({
+                error: Type.Optional(Type.Object({
+                    message: Type.String()
+                }))
+            }));
 
             return !data.error;
         } catch {

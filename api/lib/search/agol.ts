@@ -6,9 +6,14 @@ import { Feature } from '@tak-ps/node-cot';
 import { CoTParser } from '@tak-ps/node-cot';
 import ArcGISTokenManager from './arcgis-token-manager.js';
 import ArcGISConfigService from './arcgis-config.js'
-import type { Search } from '../search.js'
+import { FetchSuggest, SuggestContainer, FetchReverse, ReverseContainer, RouteContainer } from '../search.js'
+import { Search } from '../search.js'
 
-export default class AGOLSearch implements Search {
+export default class AGOLSearch extends Search {
+    _config: Config;
+    _id: string;
+    _name: string;
+
     reverseApi: string;
     suggestApi: string;
     forwardApi: string;
@@ -16,9 +21,15 @@ export default class AGOLSearch implements Search {
 
     tokenManager?: ArcGISTokenManager;
 
-    constructor(tokenManager?: ArcGISTokenManager) {
-        this.id = 'agol'
-        this.name = 'ArcGIS Online';
+    constructor(
+        config: Config,
+        tokenManager?: ArcGISTokenManager
+    ) {
+        super();
+
+        this._id = 'agol'
+        this._name = 'ArcGIS Online';
+        this._config = config;
 
         this.reverseApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode';
         this.suggestApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest';
@@ -28,25 +39,25 @@ export default class AGOLSearch implements Search {
         this.tokenManager = tokenManager;
     }
 
-    async init(config: Config): Promise<AGOLSearch> {
+    static async init(config: Config): Promise<AGOLSearch | null> {
         const configService = ArcGISConfigService.getInstance(config);
 
         if (!(await configService.isConfigured())) {
-            return false;
+            return null;
         }
 
         const configInstance = await configService.getConfig();
         const tokenManager = new ArcGISTokenManager(configInstance);
 
-        return new Search(tokenManager);
+        return new AGOLSearch(config, tokenManager);
     }
 
     async config() {
         // TODO Lookup Modes
 
         return {
-            id: this.id,
-            name: this.name,
+            id: this._id,
+            name: this._name,
             reverse: {
                 supported: true
             },
