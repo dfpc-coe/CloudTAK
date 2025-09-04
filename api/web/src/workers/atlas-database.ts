@@ -195,7 +195,7 @@ export default class AtlasDatabase {
 
             if (this.pendingHidden.has(String(cot.id))) {
                 this.hidden.add(cot.id);
-                diff.remove.push(String(cot.id))
+                diff.remove.push(cot.vectorId())
                 this.pendingHidden.delete(cot.id);
             } else if (
                 !['Never'].includes(display_stale)
@@ -207,7 +207,7 @@ export default class AtlasDatabase {
                     || display_stale === '1 Hour'       && now > stale + 600000 * 6
                 )
             ) {
-                diff.remove.push(String(cot.id))
+                diff.remove.push(cot.vectorId())
             } else if (!cot.properties.archived) {
                 if (now < stale && (cot.properties['icon-opacity'] !== 1 || cot.properties['marker-opacity'] !== 1)) {
                     cot.properties['icon-opacity'] = 1;
@@ -216,7 +216,7 @@ export default class AtlasDatabase {
                     if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
 
                     diff.update.push({
-                        id: String(render.id),
+                        id: render.id,
                         addOrUpdateProperties: Object.keys(render.properties).map((key) => {
                             return { key, value: render.properties ? render.properties[key] : '' }
                         }),
@@ -229,7 +229,7 @@ export default class AtlasDatabase {
                     if (!['Point', 'Polygon', 'LineString'].includes(render.geometry.type)) continue;
 
                     diff.update.push({
-                        id: String(render.id),
+                        id: render.id,
                         addOrUpdateProperties: Object.keys(render.properties).map((key) => {
                             return { key, value: cot.properties ? render.properties[key] : '' }
                         }),
@@ -260,7 +260,7 @@ export default class AtlasDatabase {
             const render = cot.as_rendered();
 
             diff.update.push({
-                id: String(render.id),
+                id: render.id,
                 addOrUpdateProperties: Object.keys(render.properties).map((key) => {
                     return { key, value: render.properties[key] }
                 }),
@@ -271,7 +271,10 @@ export default class AtlasDatabase {
         this.pendingCreate.clear();
 
         for (const id of this.pendingDelete) {
-            diff.remove.push(id);
+            const cot = this.get(id);
+            if (!cot) continue;
+
+            diff.remove.push(cot.vectorId());
             this.cots.delete(id);
         }
 

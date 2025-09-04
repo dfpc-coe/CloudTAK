@@ -428,7 +428,6 @@ export const useMapStore = defineStore('cloudtak', {
                         '-1': {
                             type: 'geojson',
                             cluster: false,
-                            promoteId: 'id',
                             data: { type: 'FeatureCollection', features: [] }
                         }
                     },
@@ -553,7 +552,7 @@ export const useMapStore = defineStore('cloudtak', {
                         return clickMap.has(feat.layer.id);
                     })
                     .forEach((feat) => {
-                        dedupe.set(String(feat.id), feat);
+                        dedupe.set(String(feat.properties.id || feat.id), feat);
                     })
 
                 const features = Array.from(dedupe.values());
