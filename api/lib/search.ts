@@ -2,7 +2,6 @@ import Config from './config.js';
 import Err from '@openaddresses/batch-error';
 import { Static, Type } from "@sinclair/typebox";
 import { Feature } from '@tak-ps/node-cot';
-import AGOL from './search/agol.js';
 import { SearchConfig, SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from './search/types.js';
 
 export class Search implements SearchInterface {
@@ -88,7 +87,9 @@ export class SearchManager extends Map<string, Search> {
     static async init(config: Config): Promise<SearchManager> {
         const manager = new SearchManager();
 
-        const agol = await AGOL.init(config);
+        const AGOLSearch = (await import('./search/agol.js')).default;
+
+        const agol = await AGOLSearch.init(config);
 
         if (agol) {
             if (!manager.defaultProvider) {
