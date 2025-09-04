@@ -1050,7 +1050,6 @@ function updatePropertyType(type: string): void {
 }
 
 function updateCoordinates(center: number[]): void {
-    console.error('PRE UPDATE COORDINATES', cot.value);
     if (!cot.value) return;
 
     cot.value.properties.center = center;
@@ -1059,7 +1058,6 @@ function updateCoordinates(center: number[]): void {
         cot.value.geometry.coordinates = center;
     }
 
-    console.error('PRE UPDATE COORDINATES', cot.value);
     cot.value.update({});
 }
 
