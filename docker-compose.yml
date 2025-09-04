@@ -11,7 +11,6 @@ services:
             - store
         ports:
             - "5000:5000"
-            - "5001:5001"
         environment:
             - CLOUDTAK_Mode=docker-compose
             - CLOUDTAK_Config_media_url=http://media

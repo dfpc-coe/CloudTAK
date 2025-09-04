@@ -137,17 +137,49 @@ export const ForwardContainer = Type.Object({
     }))
 });
 
+export class Search implements SearchInterface {
+    _id: string;
+    _name: string;
+    _config: Config;
+
+    constructor() {
+        this.id = 'generic'
+        this.name = 'generic'
+    }
+
+    static async init(config: Config): Promise<Search | null> {
+        return null;
+    }
+
+    config(): Promise<Static<typeof SearchConfig>> {
+        return Promise.resolve({
+            id: '',
+            name: '',
+            reverse: {
+                supported: false
+            },
+            forward: {
+                supported: false
+            },
+            route: {
+                supported: false,
+                modes: []
+            }
+        });
+    }
+}
+
 /**
  * @class
  *
  * A Generic Search Interface that can be extended to support different geocoding backends
  */
-export interface Search {
-    id: string;
-    name: string;
-    config: Config;
+export interface SearchInterface {
+    _id: string;
+    _name: string;
+    _config: Config;
 
-    init(config: Config): Promise<Search | null>;
+    static init(config: Config): Promise<Search | null>;
 
     config(): Promise<Static<typeof SearchConfig>>;
 
@@ -186,7 +218,7 @@ export class SearchManager extends Map<string, Search> {
         this.defaultProvider = null;
     }
 
-    async init(config: Config): Promise<SearchManager> {
+    static async init(config: Config): Promise<SearchManager> {
         const manager = new SearchManager();
 
         const agol = await AGOL.init(config);
@@ -249,7 +281,7 @@ export class SearchManager extends Map<string, Search> {
         return settings;
     }
 
-    async getProvider(provider: string): Promise<Search> {
+    async getProvider(provider: string): Promise<typeof Search> {
         const search = this.get(provider);
 
         if (!search) {

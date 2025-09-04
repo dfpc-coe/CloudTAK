@@ -1,5 +1,5 @@
 import { ArcGISConfig } from './arcgis-token-manager.js';
-import type Config from './config.js';
+import type Config from '../config.js';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
 
 export default class ArcGISConfigService {
