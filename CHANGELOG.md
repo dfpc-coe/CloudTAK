@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.6.0 - 2025-09-03
+
+- :bug: Fix a critical bug in map diff code
+
 ### v11.5.0 - 2025-09-03
 
 - :tada: Move Alarms to top level Layer Object
