@@ -6,14 +6,10 @@ import { Feature } from '@tak-ps/node-cot';
 import { CoTParser } from '@tak-ps/node-cot';
 import ArcGISTokenManager from './arcgis-token-manager.js';
 import ArcGISConfigService from './arcgis-config.js'
-import { FetchSuggest, SuggestContainer, FetchReverse, ReverseContainer, RouteContainer } from '../search.js'
+import { FetchSuggest, SuggestContainer, FetchReverse, FetchForward, ReverseContainer, RouteContainer } from '../search.js'
 import { Search } from '../search.js'
 
 export default class AGOLSearch extends Search {
-    _config: Config;
-    _id: string;
-    _name: string;
-
     reverseApi: string;
     suggestApi: string;
     forwardApi: string;
@@ -25,11 +21,10 @@ export default class AGOLSearch extends Search {
         config: Config,
         tokenManager?: ArcGISTokenManager
     ) {
-        super();
+        super(config);
 
         this._id = 'agol'
         this._name = 'ArcGIS Online';
-        this._config = config;
 
         this.reverseApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode';
         this.suggestApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest';

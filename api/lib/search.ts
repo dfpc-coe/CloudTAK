@@ -142,9 +142,10 @@ export class Search implements SearchInterface {
     _name: string;
     _config: Config;
 
-    constructor() {
-        this.id = 'generic'
-        this.name = 'generic'
+    constructor(config: Config) {
+        this._id = 'generic'
+        this._name = 'generic'
+        this._config = config;
     }
 
     static async init(config: Config): Promise<Search | null> {
@@ -178,8 +179,6 @@ export interface SearchInterface {
     _id: string;
     _name: string;
     _config: Config;
-
-    static init(config: Config): Promise<Search | null>;
 
     config(): Promise<Static<typeof SearchConfig>>;
 
@@ -224,11 +223,11 @@ export class SearchManager extends Map<string, Search> {
         const agol = await AGOL.init(config);
 
         if (agol) {
-            if (!this.defaultProvider) {
-                this.defaultProvider = agol.id;
+            if (!manager.defaultProvider) {
+                manager.defaultProvider = agol._id;
             }
 
-            manager.set(agol.id, agol);
+            manager.set(agol._id, agol);
         }
 
         return manager;
@@ -273,7 +272,8 @@ export class SearchManager extends Map<string, Search> {
                 settings.route.enabled = true;
                 settings.route.providers.push({
                     id: config.id,
-                    name: config.name
+                    name: config.name,
+                    modes: []
                 });
             }
         }
@@ -281,7 +281,7 @@ export class SearchManager extends Map<string, Search> {
         return settings;
     }
 
-    async getProvider(provider: string): Promise<typeof Search> {
+    getProvider(provider: string): SearchInterface {
         const search = this.get(provider);
 
         if (!search) {
@@ -296,7 +296,9 @@ export class SearchManager extends Map<string, Search> {
         lon: number,
         lat: number
     ): Promise<Static<typeof FetchReverse>> {
-        const search = await this.getProvider(provider);
+        const search = this.getProvider(provider);
+
+        if (!search.suggest) throw new Err(400, null, `Search provider ${provider} does not support reverse geocoding`);
 
         return await search.reverse(lon, lat);
     }
@@ -306,7 +308,9 @@ export class SearchManager extends Map<string, Search> {
         stops: Array<[number, number]>,
         travelMode?: string
     ): Promise<Static<typeof Feature.FeatureCollection>> {
-        const search = await this.getProvider(provider);
+        const search = this.getProvider(provider);
+
+        if (!search.suggest) throw new Err(400, null, `Search provider ${provider} does not support routing`);
 
         return await search.route(stops, travelMode);
     }
@@ -317,7 +321,9 @@ export class SearchManager extends Map<string, Search> {
         magicKey: string,
         limit?: number
     ): Promise<Array<Static<typeof FetchForward>>> {
-        const search = await this.getProvider(provider);
+        const search = this.getProvider(provider);
+
+        if (!search.suggest) throw new Err(400, null, `Search provider ${provider} does not support forward geocoding`);
 
         return await search.forward(query, magicKey, limit);
     }
@@ -328,7 +334,9 @@ export class SearchManager extends Map<string, Search> {
         limit?: number,
         location?: [number, number]
     ): Promise<Array<Static<typeof FetchSuggest>>> {
-        const search = await this.getProvider(provider);
+        const search = this.getProvider(provider);
+
+        if (!search.suggest) throw new Err(400, null, `Search provider ${provider} does not support suggestions`);
 
         return await search.suggest(query, limit, location);
     }
