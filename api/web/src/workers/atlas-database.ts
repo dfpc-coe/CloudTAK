@@ -275,6 +275,7 @@ export default class AtlasDatabase {
             if (!cot) continue;
 
             diff.remove.push(cot.vectorId());
+
             this.cots.delete(id);
         }
 
