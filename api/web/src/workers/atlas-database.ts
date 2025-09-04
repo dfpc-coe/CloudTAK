@@ -216,7 +216,7 @@ export default class AtlasDatabase {
                     if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
 
                     diff.update.push({
-                        id: render.id,
+                        id: Number(render.id),
                         addOrUpdateProperties: Object.keys(render.properties).map((key) => {
                             return { key, value: render.properties ? render.properties[key] : '' }
                         }),
@@ -229,7 +229,7 @@ export default class AtlasDatabase {
                     if (!['Point', 'Polygon', 'LineString'].includes(render.geometry.type)) continue;
 
                     diff.update.push({
-                        id: render.id,
+                        id: Number(render.id),
                         addOrUpdateProperties: Object.keys(render.properties).map((key) => {
                             return { key, value: cot.properties ? render.properties[key] : '' }
                         }),
@@ -260,7 +260,7 @@ export default class AtlasDatabase {
             const render = cot.as_rendered();
 
             diff.update.push({
-                id: render.id,
+                id: Number(render.id),
                 addOrUpdateProperties: Object.keys(render.properties).map((key) => {
                     return { key, value: render.properties[key] }
                 }),
