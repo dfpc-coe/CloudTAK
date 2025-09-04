@@ -1,81 +1,9 @@
 import Config from './config.js';
 import Err from '@openaddresses/batch-error';
-import { EsriExtent } from './esri/types.js';
 import { Static, Type } from "@sinclair/typebox";
 import { Feature } from '@tak-ps/node-cot';
 import AGOL from './search/agol.js';
-
-export const SearchConfig = Type.Object({
-    id: Type.String(),
-    name: Type.String(),
-    reverse: Type.Object({
-        supported: Type.Boolean(),
-    }),
-    forward: Type.Object({
-        supported: Type.Boolean(),
-    }),
-    route: Type.Object({
-        supported: Type.Boolean(),
-        modes: Type.Array(Type.Object({
-            id: Type.String(),
-            name: Type.String(),
-        }))
-    })
-});
-
-export const SearchManagerConfig = Type.Object({
-    reverse: Type.Object({
-        enabled: Type.Boolean(),
-        providers: Type.Array(Type.Object({
-            id: Type.String(),
-            name: Type.String(),
-        }))
-    }),
-    route: Type.Object({
-        enabled: Type.Boolean(),
-        providers: Type.Array(Type.Object({
-            id: Type.String(),
-            name: Type.String(),
-            modes: Type.Array(Type.Object({
-                id: Type.String(),
-                name: Type.String(),
-            }))
-        }))
-    }),
-    forward: Type.Object({
-        enabled: Type.Boolean(),
-        providers: Type.Array(Type.Object({
-            id: Type.String(),
-            name: Type.String()
-        }))
-    })
-})
-
-export const FetchReverse = Type.Object({
-    LongLabel: Type.String(),
-    ShortLabel: Type.String(),
-    Addr_type: Type.String(),
-});
-
-export const FetchSuggest = Type.Object({
-    text: Type.String(),
-    magicKey: Type.String(),
-    isCollection: Type.Boolean()
-});
-
-export const FetchForward = Type.Object({
-    address: Type.String(),
-    location: Type.Object({
-        x: Type.Number(),
-        y: Type.Number(),
-    }),
-    score: Type.Number(),
-    attributes: Type.Object({
-        LongLabel: Type.Optional(Type.String()),
-        ShortLabel: Type.Optional(Type.String()),
-    }),
-    extent: EsriExtent
-});
+import { SearchConfig, SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from './search/types.js';
 
 export class Search implements SearchInterface {
     _id: string;
