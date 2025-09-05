@@ -6,7 +6,7 @@ import vtpbf from 'vt-pbf';
 import type { BBox } from 'geojson';
 import type { Response } from 'express';
 import { fetch } from '@tak-ps/etl'
-import { Polygon } from 'geojson';
+import { Feature } from '@tak-ps/node-cot';
 import { EsriPolygon } from '../esri/types.js';
 import { GeoJSONFeatureCollection, GeoJSONFeature } from '../types.js';
 import { pointOnFeature } from '@turf/point-on-feature';
@@ -113,7 +113,7 @@ export default class TileJSON {
      */
     static async featureQuery(
         url: string,
-        polygon: Polygon
+        polygon: Static<typeof Feature.Polygon>
     ): Promise<Static<typeof GeoJSONFeatureCollection>> {
         const actions = TileJSON.actions(url)
 

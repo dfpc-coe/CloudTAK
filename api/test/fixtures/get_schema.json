@@ -69,6 +69,11 @@
         "query": true,
         "res": false
     },
+    "GET /basemap/:basemapid/feature": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /basemap/:basemapid/feature/:featureid": {
         "body": false,
         "query": false,
