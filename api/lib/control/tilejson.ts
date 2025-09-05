@@ -7,6 +7,7 @@ import type { BBox } from 'geojson';
 import type { Response } from 'express';
 import { fetch } from '@tak-ps/etl'
 import { Polygon } from 'geojson';
+import { EsriPolygon } from '../esri/types.js';
 import { GeoJSONFeatureCollection, GeoJSONFeature } from '../types.js';
 import { pointOnFeature } from '@turf/point-on-feature';
 import { bboxPolygon } from '@turf/bbox-polygon';
@@ -120,11 +121,24 @@ export default class TileJSON {
             throw new Err(400, null, 'Basemap does not support Feature.QUERY');
         }
 
-        //TODO Implement ESRI FeatureServer Query
+        if (url.match(/FeatureServer\/\d+/) || url.match(/MapServer\/\d+/)) {
+            const esriPolygon: Static<typeof EsriPolygon> = {
+                rings: [],
+                spatialReference: { wkid: 4326, latestWkid: 4326 }
+            }
 
-        return {
-            type: 'FeatureCollection',
-            features: []
+            for (const coord of polygon.coordinates) {
+                esriPolygon.rings.push(coord.map((c) => [c[0], c[1]]));
+            }
+
+            //TODO Implement ESRI FeatureServer Query
+
+            return {
+                type: 'FeatureCollection',
+                features: []
+            }
+        } else {
+            throw new Err(500, null, 'Could not determine strategy to fetch Basemap');
         }
     }
 
