@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.9.1 - 2025-09-05
+
+- :arrow_up: Update Core Deploy Dependencies
+
 ### v11.9.0 - 2025-09-05
 
 - :tada: Allow Importing GeoJSON from Overlay which support QUERY action via Lasso Tool
