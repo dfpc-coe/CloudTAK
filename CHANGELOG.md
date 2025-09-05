@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v11.8.0 - 2025-09-05
+
+- :tada: Rewrite to routing and search interface to support pluggable search providers
+- :rocket: OpenMeteo weather fallback outside of CONUS
+- :rocket: Support for Provider Selection in Routing Interface
+- :rocket: Support for Route Mode in Routing Interface
+- :rocket: Human Readable Route Callsigns
+
 ### v11.7.0 - 2025-09-04
 
 - :bug: Version Sync
