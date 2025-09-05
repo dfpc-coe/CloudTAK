@@ -22,8 +22,6 @@ RUN npm install
 
 COPY ./ $HOME/api
 
-ENV API_URL=${API_URL}
-
 RUN cd web \
     && npm install \
     && npm run lint \
