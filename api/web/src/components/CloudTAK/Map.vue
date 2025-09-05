@@ -92,22 +92,7 @@
                         style='width: 40px;'
                     >
                         <TablerIconButton
-                            v-if='
-                                (mapStore.radial.cot && mapStore.locked.length >= 2)
-                                    || (!mapStore.radial.cot && mapStore.locked.length >= 1)
-                            '
-                            title='Map is locked to marker - Click to Unlock'
-                            @click='mapStore.locked.splice(0, mapStore.locked.length)'
-                        >
-                            <IconLockAccess
-                                color='#83b7e8'
-                                :size='20'
-                                stroke='1'
-                                style='margin: 5px 8px'
-                            />
-                        </TablerIconButton>
-                        <TablerIconButton
-                            v-else-if='mapStore.location === LocationState.Live'
+                            v-if='mapStore.location === LocationState.Live'
                             :title='locationTooltip'
                             @click='setLocation'
                         >
@@ -308,6 +293,23 @@
                         :color='mapStore.isTerrainEnabled ? "#1E90FF" : "#FFFFFF"'
                         style='margin: 3px 3px'
                         @click='mapStore.isTerrainEnabled ? mapStore.removeTerrain() : mapStore.addTerrain()'
+                    />
+
+                    <IconLockAccess
+                        v-if='
+                            (mapStore.radial.cot && mapStore.locked.length >= 2)
+                                || (!mapStore.radial.cot && mapStore.locked.length >= 1)
+                        '
+                        v-tooltip='"Map is locked to marker - Click to Unlock"'
+                        title='Map is locked to marker - Click to Unlock'
+                        class='cursor-pointer hover-button'
+                        @click='mapStore.locked.splice(0, mapStore.locked.length)'
+                        role='button'
+                        tabindex='0'
+                        color='red'
+                        :size='32'
+                        stroke='2'
+                        style='margin: 3px 3px'
                     />
                 </div>
             </div>
@@ -823,11 +825,10 @@ async function handleRadial(event: string): Promise<void> {
         const cot = mapStore.radial.cot;
         closeRadial()
 
-        if (route.name === 'home-menu-cot' && route.params.uid === cot.id) {
+        if (route.name === 'home-menu-cot' && route.params.uid === (cot.properties.id || cot.id)) {
             router.push('/');
         }
 
-        console.error(cot, cot.id);
         await mapStore.worker.db.remove(String(cot.properties.id || cot.id), {
             mission: true
         })
@@ -837,7 +838,7 @@ async function handleRadial(event: string): Promise<void> {
         mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'cot:edit') {
-        const cot = await mapStore.worker.db.get(String(mapStore.radial.cot.id ? mapStore.radial.cot.id : mapStore.radial.cot.properties.id))
+        const cot = await mapStore.worker.db.get(mapStore.radial.cot.properties.id || mapStore.radial.cot.id)
         if (!cot) throw new Error('Cannot Find COT Marker');
         await mapStore.draw.edit(cot);
 
