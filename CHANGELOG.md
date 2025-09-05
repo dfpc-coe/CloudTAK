@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.9.0 - 2025-09-05
+
+- :tada: Allow Importing GeoJSON from Overlay which support QUERY action via Lasso Tool
+- :rocket: Import Basemap Features via the unified GeoJSONInput component
+
 ### v11.8.1 - 2025-09-05
 
 - :bug: Fix Sort/Order in Admin Connection UI
