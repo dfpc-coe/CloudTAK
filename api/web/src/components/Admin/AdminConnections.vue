@@ -103,7 +103,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
-import { std, stdurl, stdclick } from '../../std.ts';
+import { server, std, stdclick } from '../../std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import Status from '../ETL/Connection/StatusDot.vue';
@@ -166,13 +166,24 @@ async function listLayerSchema() {
 
 async function fetchList() {
     loading.value = true;
-  
+
     try {
-        const url = stdurl('/api/connection');
-        url.searchParams.append('filter', paging.value.filter);
-        url.searchParams.append('limit', paging.value.limit);
-        url.searchParams.append('page', paging.value.page);
-        list.value = await std(url);
+        const res = await server.GET('/api/connection', {
+            params: {
+                query: {
+                    filter: paging.value.filter,
+                    limit: paging.value.limit,
+                    page: paging.value.page,
+                    sort: paging.value.sort,
+                    order: paging.value.order
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        list.value = res.data;
+
         loading.value = false;
     } catch (err) {
         loading.value = false;
