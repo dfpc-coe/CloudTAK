@@ -5,6 +5,7 @@
     >
         <template #buttons>
             <TablerIconButton
+                v-if='routeCreation'
                 title='New Route'
                 @click='router.push("/menu/routes/new")'
             >
@@ -85,6 +86,7 @@
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import COT from '../../../base/cot.ts';
+import { server } from '../../../std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
@@ -123,6 +125,8 @@ const query = ref({
     filter: ''
 })
 
+const routeCreation = ref(false);
+
 const loading = ref(true);
 
 watch(query.value, async () => {
@@ -131,6 +135,7 @@ watch(query.value, async () => {
 
 onMounted(async () => {
     await refresh();
+    await settings();
 });
 
 onBeforeUnmount(() => {
@@ -138,6 +143,19 @@ onBeforeUnmount(() => {
         channel.close();
     }
 })
+
+async function settings() {
+    try {
+        const { data, error } = await server.GET('/api/search');
+        if (error) throw new Error(error.message);
+
+        if (data.route.enabled && data.route.providers) {
+            routeCreation.value = true;
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 async function deleteRoute(id: string): Promise<void> {
     await mapStore.worker.db.remove(id);

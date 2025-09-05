@@ -1,181 +1,212 @@
-import fetch from './fetch.js';
-import { randomUUID } from 'node:crypto';
-import { Static, Type } from "@sinclair/typebox";
-import { EsriExtent, EsriSpatialReference } from './esri/types.js';
+import Config from './config.js';
+import Err from '@openaddresses/batch-error';
+import { Static } from "@sinclair/typebox";
 import { Feature } from '@tak-ps/node-cot';
-import { CoTParser } from '@tak-ps/node-cot';
+import { SearchConfig, SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from './search/types.js';
 
-export const FetchReverse = Type.Object({
-    LongLabel: Type.String(),
-    ShortLabel: Type.String(),
-    Addr_type: Type.String(),
-});
+export class Search implements SearchInterface {
+    _id: string;
+    _name: string;
+    _config: Config;
 
-const ReverseContainer = Type.Object({
-    address: FetchReverse
-});
-
-export const RouteContainer = Type.Object({
-    checksum: Type.String(),
-    requestID: Type.String(),
-    routes: Type.Object({
-        fieldAliases: Type.Object({}),
-        geometryType: Type.String(),
-        spatialReference: EsriSpatialReference,
-        fields: Type.Array(Type.Object({
-            name: Type.String(),
-            type: Type.String(),
-            alias: Type.String(),
-            length: Type.Optional(Type.Integer())
-        })),
-        features: Type.Array(Type.Object({
-            attributes: Type.Record(Type.String(), Type.Union([Type.Number(), Type.String()])),
-            geometry: Type.Object({
-                paths: Type.Array(Type.Array(Type.Array(Type.Number()))),
-            })
-        }))
-    }),
-    directions: Type.Array(Type.Object({
-        routeId: Type.Integer(),
-        routeName: Type.String(),
-        summary: Type.Object({
-            totalLength: Type.Number(),
-            totalTime: Type.Number(),
-            totalDriveTime: Type.Number(),
-            envelope: EsriExtent
-        }),
-        features: Type.Array(Type.Object({
-            attributes: Type.Record(Type.String(), Type.Union([Type.Number(), Type.String()])),
-            compressedGeometry: Type.String(),
-            strings: Type.Array(Type.Object({
-                string: Type.String(),
-                stringType: Type.String(),
-            }))
-        }))
-    }))
-});
-
-export const FetchSuggest = Type.Object({
-    text: Type.String(),
-    magicKey: Type.String(),
-    isCollection: Type.Boolean()
-});
-
-export const SuggestContainer = Type.Object({
-    suggestions: Type.Array(FetchSuggest)
-})
-
-export const FetchForward = Type.Object({
-    address: Type.String(),
-    location: Type.Object({
-        x: Type.Number(),
-        y: Type.Number(),
-    }),
-    score: Type.Integer(),
-    attributes: Type.Object({
-        LongLabel: Type.Optional(Type.String()),
-        ShortLabel: Type.Optional(Type.String()),
-    }),
-    extent: EsriExtent
-});
-
-export const ForwardContainer = Type.Object({
-    candidates: Type.Array(FetchForward)
-})
-
-export default class Geocode {
-    reverseApi: string;
-    suggestApi: string;
-    forwardApi: string;
-    token?: string;
-
-    constructor(token?: string) {
-        this.reverseApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode';
-        this.suggestApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest';
-        this.forwardApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates'
-        this.token = token;
+    constructor(config: Config, id: string, name: string) {
+        this._id = id;
+        this._name = name;
+        this._config = config;
     }
 
-    async reverse(lon: number, lat: number): Promise<Static<typeof FetchReverse>> {
-        const url = new URL(this.reverseApi)
-        url.searchParams.append('location', `${lon},${lat}`);
-        url.searchParams.append('f', 'json');
+    static async init(config: Config): Promise<Search | null> {
+        return new Search(config, 'none', 'No Search Provider');
+    }
 
-        const res = await fetch(url);
+    config(): Promise<Static<typeof SearchConfig>> {
+        return Promise.resolve({
+            id: '',
+            name: '',
+            reverse: {
+                supported: false
+            },
+            forward: {
+                supported: false
+            },
+            route: {
+                supported: false,
+                modes: []
+            }
+        });
+    }
+}
 
-        const body = await res.typed(ReverseContainer)
+/**
+ * @class
+ *
+ * A Generic Search Interface that can be extended to support different geocoding backends
+ */
+export interface SearchInterface {
+    _id: string;
+    _name: string;
+    _config: Config;
 
-        return body.address;
+    config(): Promise<Static<typeof SearchConfig>>;
+
+    reverse?(
+        lon: number,
+        lat: number
+    ): Promise<Static<typeof FetchReverse>>;
+
+    route?(
+        stops: Array<[number, number]>,
+        travelMode?: string
+    ): Promise<Static<typeof Feature.FeatureCollection>>;
+
+    forward?(
+        query: string,
+        magicKey: string,
+        limit?: number
+    ): Promise<Array<Static<typeof FetchForward>>>;
+
+    suggest?(
+        query: string,
+        limit?: number,
+        location?: [number, number]
+    ): Promise<Array<Static<typeof FetchSuggest>>>;
+}
+
+/**
+ * @class
+ * A Manager for different Search providers
+ */
+export class SearchManager extends Map<string, Search> {
+    defaultProvider: string | null;
+
+    constructor() {
+        super();
+        this.defaultProvider = null;
+    }
+
+    static async init(config: Config): Promise<SearchManager> {
+        const manager = new SearchManager();
+
+        const AGOLSearch = (await import('./search/agol.js')).default;
+
+        const agol = await AGOLSearch.init(config);
+
+        if (agol) {
+            if (!manager.defaultProvider) {
+                manager.defaultProvider = agol._id;
+            }
+
+            manager.set(agol._id, agol);
+        }
+
+        return manager;
+    }
+
+    async config(): Promise<Static<typeof SearchManagerConfig>> {
+        const settings: Static<typeof SearchManagerConfig> = {
+            reverse: {
+                enabled: false,
+                providers: []
+            },
+            route: {
+                enabled: false,
+                providers: []
+            },
+            forward: {
+                enabled: false,
+                providers: []
+            }
+        };
+
+        for (const search of this.values()) {
+            const config = await search.config();
+
+            if (config.reverse.supported) {
+                settings.reverse.enabled = true;
+                settings.reverse.providers.push({
+                    id: config.id,
+                    name: config.name
+                });
+            }
+
+            if (config.forward.supported) {
+                settings.forward.enabled = true;
+                settings.forward.providers.push({
+                    id: config.id,
+                    name: config.name
+                });
+            }
+
+            if (config.route.supported) {
+                settings.route.enabled = true;
+                settings.route.providers.push({
+                    id: config.id,
+                    name: config.name,
+                    modes: config.route.modes
+                });
+            }
+        }
+
+        return settings;
+    }
+
+    getProvider(provider: string): SearchInterface {
+        const search = this.get(provider);
+
+        if (!search) {
+            throw new Err(400, null, `Invalid search provider: ${provider}`);
+        }
+
+        return search;
+    }
+
+    async reverse(
+        provider: string,
+        lon: number,
+        lat: number
+    ): Promise<Static<typeof FetchReverse>> {
+        const search = this.getProvider(provider);
+
+        if (!search.reverse) throw new Err(400, null, `Search provider ${provider} does not support reverse geocoding`);
+
+        return await search.reverse(lon, lat);
     }
 
     async route(
-        stops: Array<[number, number]>
+        provider: string,
+        stops: Array<[number, number]>,
+        travelMode?: string
     ): Promise<Static<typeof Feature.FeatureCollection>> {
-        const url = new URL('https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/solve');
-        url.searchParams.append('stops', stops.map(stop => stop.join(',')).join(';'));
-        if (this.token) url.searchParams.append('token', this.token);
-        url.searchParams.append('f', 'json');
+        const search = this.getProvider(provider);
 
-        const res = await fetch(url);
+        if (!search.route) throw new Err(400, null, `Search provider ${provider} does not support routing`);
 
-        const body = await res.typed(RouteContainer)
-
-        const processed: Static<typeof Feature.FeatureCollection> = {
-            type: 'FeatureCollection',
-            features: []
-        }
-
-        for (const feat of body.routes.features) {
-            const norm = await CoTParser.normalize_geojson({
-                id: String(randomUUID()),
-                type: 'Feature',
-                properties: {
-                    metadata: {
-                        ...feat.attributes,
-                    }
-                },
-                geometry: {
-                    type: 'LineString',
-                    coordinates: feat.geometry.paths[0]
-                }
-            });
-
-            norm.properties.type = 'b-m-r';
-            norm.properties.how = 'm-g';
-            norm.properties.callsign = String(feat.attributes.Name);
-            norm.properties.archived = true;
-
-            processed.features.push(norm);
-        }
-
-        return processed;
+        return await search.route(stops, travelMode);
     }
 
-    async forward(query: string, magicKey: string, limit?: number): Promise<Array<Static<typeof FetchForward>>> {
-        const url = new URL(this.forwardApi)
-        url.searchParams.append('magicKey', magicKey);
-        url.searchParams.append('singleLine', query);
-        if (limit) url.searchParams.append('maxLocations', String(limit));
-        if (this.token) url.searchParams.append('token', this.token);
-        url.searchParams.append('f', 'json');
+    async forward(
+        provider: string,
+        query: string,
+        magicKey: string,
+        limit?: number
+    ): Promise<Array<Static<typeof FetchForward>>> {
+        const search = this.getProvider(provider);
 
-        const res = await fetch(url);
+        if (!search.forward) throw new Err(400, null, `Search provider ${provider} does not support forward geocoding`);
 
-        const body = await res.typed(ForwardContainer)
-
-        return body.candidates;
+        return await search.forward(query, magicKey, limit);
     }
 
-    async suggest(query: string, limit?: number): Promise<Array<Static<typeof FetchSuggest>>> {
-        const url = new URL(this.suggestApi)
-        url.searchParams.append('text', query);
-        url.searchParams.append('f', 'json');
-        if (limit) url.searchParams.append('maxSuggestions', String(limit));
+    async suggest(
+        provider: string,
+        query: string,
+        limit?: number,
+        location?: [number, number]
+    ): Promise<Array<Static<typeof FetchSuggest>>> {
+        const search = this.getProvider(provider);
 
-        const res = await fetch(url);
+        if (!search.suggest) throw new Err(400, null, `Search provider ${provider} does not support suggestions`);
 
-        const body = await res.typed(SuggestContainer)
-
-        return body.suggestions;
+        return await search.suggest(query, limit, location);
     }
 }

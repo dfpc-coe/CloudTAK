@@ -28,7 +28,7 @@
                         tabindex='0'
                         class='my-1 px-2 user-select-none'
                         :class='{
-                            "bg-gray-500 rounded-bottom": config.mode === "dd",
+                            "bg-gray-500 rounded-bottom text-blue": config.mode === "dd",
                             "cursor-pointer": config.mode !== "dd",
                         }'
                         @click='config.mode = "dd"'
@@ -40,7 +40,7 @@
                         role='menuitem'
                         tabindex='0'
                         :class='{
-                            "bg-gray-500 rounded-bottom": config.mode === "dms",
+                            "bg-gray-500 rounded-bottom text-blue": config.mode === "dms",
                             "cursor-pointer": config.mode !== "dms",
                         }'
                         @click='config.mode = "dms"'
@@ -52,7 +52,7 @@
                         role='menuitem'
                         tabindex='0'
                         :class='{
-                            "bg-gray-500 rounded-bottom": config.mode === "mgrs",
+                            "bg-gray-500 rounded-bottom text-blue": config.mode === "mgrs",
                             "cursor-pointer": config.mode !== "mgrs",
                         }'
                         @click='config.mode = "mgrs"'
@@ -64,7 +64,7 @@
                         role='menuitem'
                         tabindex='0'
                         :class='{
-                            "bg-gray-500 rounded-bottom": config.mode === "utm",
+                            "bg-gray-500 rounded-bottom text-blue": config.mode === "utm",
                             "cursor-pointer": config.mode !== "utm",
                         }'
                         @click='config.mode = "utm"'

@@ -81,12 +81,67 @@
                                 :disabled='!edit'
                                 label='ArcGIS Online Enabled'
                             />
-                            <TablerInput
-                                v-model='config["agol::token"]'
-                                type='password'
-                                :disabled='!edit'
-                                label='ArcGIS Online API Token'
-                            />
+
+                            <template v-if='config["agol::enabled"]'>
+                                <div
+                                    class='px-2 py-2 round btn-group w-100'
+                                    role='group'
+                                >
+                                    <input
+                                        id='agol-oauth2'
+                                        type='radio'
+                                        class='btn-check'
+                                        autocomplete='off'
+                                        :checked='config["agol::auth_method"] === "oauth2"'
+                                        :disabled='config["agol::enabled"] === false || !edit'
+                                        @click='config["agol::auth_method"] = "oauth2"'
+                                    >
+                                    <label
+                                        for='agol-oauth2'
+                                        type='button'
+                                        class='btn'
+                                    >OAuth2</label>
+
+                                    <input
+                                        id='agol-legacy'
+                                        type='radio'
+                                        class='btn-check'
+                                        autocomplete='off'
+                                        :checked='config["agol::auth_method"] === "legacy"'
+                                        @click='config["agol::auth_method"] = "legacy"'
+                                    >
+                                    <label
+                                        for='agol-legacy'
+                                        type='button'
+                                        class='btn'
+                                    >Legacy</label>
+                                </div>
+
+                                <template v-if='config["agol::auth_method"] === "oauth2"'>
+                                    <TablerInput
+                                        v-model='config["agol::client_id"]'
+                                        :disabled='!edit'
+                                        label='OAuth2 Client ID'
+                                        description='Client ID from your ArcGIS Location Platform or ArcGIS Enterprise account'
+                                    />
+                                    <TablerInput
+                                        v-model='config["agol::client_secret"]'
+                                        type='password'
+                                        :disabled='!edit'
+                                        label='OAuth2 Client Secret'
+                                        description='Client Secret from your ArcGIS Location Platform or ArcGIS Enterprise account'
+                                    />
+                                </template>
+                                <template v-else>
+                                    <TablerInput
+                                        v-model='config["agol::token"]'
+                                        type='password'
+                                        :disabled='!edit'
+                                        label='Legacy Token'
+                                        description='ArcGIS Online access token'
+                                    />
+                                </template>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -330,7 +385,11 @@ const groups = ref([
 
 const config = ref({
     'agol::enabled': false,
+
+    'agol::auth_method': 'oauth2',
     'agol::token': '',
+    'agol::client_id': '',
+    'agol::client_secret': '',
 
     'media::url': '',
 
@@ -409,14 +468,14 @@ async function postConfig() {
                 'map::center': config.value['map::center'].split(',').reverse().join(','),
             }
         });
-        
+
         // Force reload display config to clear any caching
         const display = await std('/api/config/display');
         for (const [key, value] of Object.entries(display)) {
             displayUnits.value[key] = value.options;
             config.value[`display::${key}`] = value.value;
         }
-        
+
         edit.value = false;
     } catch (error) {
         console.error('Failed to save admin config:', error);

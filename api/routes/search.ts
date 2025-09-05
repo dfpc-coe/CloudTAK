@@ -4,17 +4,15 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Weather, { FetchHourly } from '../lib/weather.js';
-import Search, { FetchReverse, FetchSuggest, FetchForward } from '../lib/search.js';
+import { SearchManager } from '../lib/search.js';
+import { SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from '../lib/search/types.js';
 import { Feature } from '@tak-ps/node-cot';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
     const weather = new Weather();
 
-    const search = new Search('');
-    if (await config.models.Setting.typed('agol::enabled', false)) {
-        search.token = (await config.models.Setting.typed('agol::token', '')).value;
-    }
+    const searchManager = await SearchManager.init(config);
 
     const ReverseResponse = Type.Object({
         sun: Type.Object({
@@ -34,7 +32,8 @@ export default async function router(schema: Schema, config: Config) {
             dawn: Type.String({ description: 'dawn (morning nautical twilight ends, morning civil twilight starts)' }),
         }),
         weather: Type.Union([FetchHourly, Type.Null()]),
-        reverse: Type.Union([FetchReverse, Type.Null()])
+        reverse: Type.Union([FetchReverse, Type.Null()]),
+        elevation: Type.Union([Type.String(), Type.Null()])
     });
 
     const SuggestResponse = Type.Object({
@@ -47,6 +46,23 @@ export default async function router(schema: Schema, config: Config) {
 
     const RouteResponse = Feature.FeatureCollection;
 
+    await schema.get('/search', {
+        name: 'Search Config',
+        group: 'Search',
+        description: 'Get information about the configured search provider(s)',
+        res: SearchManagerConfig
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const searchConfig = await searchManager.config();
+
+            return res.json(searchConfig);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
     await schema.get('/search/reverse/:longitude/:latitude', {
         name: 'Reverse Geocode',
         group: 'Search',
@@ -56,14 +72,17 @@ export default async function router(schema: Schema, config: Config) {
             longitude: Type.Number()
         }),
         query: Type.Object({
+            provider: Type.Optional(Type.String()),
             altitude: Type.Number({
                 default: 0
-            })
+            }),
+            elevation: Type.Optional(Type.Number())
         }),
         res: ReverseResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
+            const user = await Auth.as_user(config, req);
+            const elevationUnit = await config.models.Profile.from(user.email).then(p => p.display_elevation).catch(() => 'feet');
 
             const sun = SunCalc.getTimes(new Date(), req.params.latitude, req.params.longitude, req.query.altitude);
 
@@ -86,6 +105,7 @@ export default async function router(schema: Schema, config: Config) {
                 },
                 weather: null,
                 reverse: null,
+                elevation: null,
             };
 
             await Promise.all([
@@ -97,17 +117,34 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 })(),
                 (async () => {
-                    if (search.token) {
+                    if (searchManager.defaultProvider) {
                         try {
-                            response.reverse = await search.reverse(req.params.longitude, req.params.latitude);
+                            response.reverse = await searchManager.reverse(
+                                req.query.provider || searchManager.defaultProvider,
+                                req.params.longitude,
+                                req.params.latitude
+                            );
                         } catch (err) {
                             console.error('ESRI Fetch Error', err)
                         }
                     }
-                })()
+                })(),
+
             ])
 
-            res.json(response);
+            // Handle elevation from query parameter (from MapLibre terrain)
+            const finalResponse = {
+                sun: response.sun,
+                weather: response.weather,
+                reverse: response.reverse,
+                elevation: req.query.elevation !== undefined
+                    ? (elevationUnit === 'feet' || elevationUnit === 'FEET'
+                        ? ((req.query.elevation / 1.5) * 3.28084).toFixed(2) + ' ft'
+                        : (req.query.elevation / 1.5).toFixed(2) + ' m')
+                    : null
+            };
+
+            res.json(finalResponse);
         } catch (err) {
              Err.respond(err, res);
         }
@@ -118,6 +155,11 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Search',
         description: 'Generate a route given stop information',
         query: Type.Object({
+            provider: Type.Optional(Type.String()),
+            callsign: Type.String({
+                description: 'Human readable name of the route',
+                default: 'New Route'
+            }),
             start: Type.String({
                 description: 'Lat,Lng of starting position'
             }),
@@ -129,6 +171,10 @@ export default async function router(schema: Schema, config: Config) {
             end: Type.String({
                 description: 'Lat,Lng of end position'
             }),
+            travelMode: Type.Optional(Type.String({
+                description: 'Travel mode for routing',
+                default: 'Driving Time'
+            })),
         }),
         res: RouteResponse
     }, async (req, res) => {
@@ -140,8 +186,22 @@ export default async function router(schema: Schema, config: Config) {
                 req.query.end.split(',').map(Number)
             ] as [number, number][];
 
-            if (search.token) {
-                res.json(await search.route(stops));
+            if (searchManager.defaultProvider) {
+                    const route = await searchManager.route(
+                        req.query.provider || searchManager.defaultProvider,
+                        stops,
+                        req.query.travelMode
+                    );
+
+                    if (route.features.length === 1) {
+                        route.features[0].properties.callsign = req.query.callsign;
+                    } else {
+                        for (let i = 0; i < route.features.length; i++) {
+                            route.features[i].properties.callsign = `${req.query.callsign} #${i + 1}`;
+                        }
+                    }
+
+                    res.json(route);
             } else {
                 res.json({
                     type: 'FeatureCollection',
@@ -158,9 +218,12 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Search',
         description: 'Get information about a given string',
         query: Type.Object({
+            provider: Type.Optional(Type.String()),
             query: Type.String(),
             limit: Type.Optional(Type.Integer()),
             magicKey: Type.String(),
+            longitude: Type.Optional(Type.Number()),
+            latitude: Type.Optional(Type.Number()),
         }),
         res: ForwardResponse
     }, async (req, res) => {
@@ -171,8 +234,18 @@ export default async function router(schema: Schema, config: Config) {
                 items: [],
             };
 
-            if (search.token && req.query.query.trim().length) {
-                response.items = await search.forward(req.query.query, req.query.magicKey, req.query.limit);
+            if (searchManager.defaultProvider) {
+                try {
+                    response.items = await searchManager.forward(
+                        req.query.provider || searchManager.defaultProvider,
+                        req.query.query,
+                        req.query.magicKey,
+                        req.query.limit
+                    );
+                } catch (err) {
+                    console.error('Forward Geocoding Error:', err);
+                    response.items = [];
+                }
             }
 
             res.json(response);
@@ -186,10 +259,13 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Search',
         description: 'Get information about a given string',
         query: Type.Object({
+            provider: Type.Optional(Type.String()),
             query: Type.String(),
             limit: Type.Integer({
                 default: 10
             }),
+            longitude: Type.Optional(Type.Number()),
+            latitude: Type.Optional(Type.Number()),
         }),
         res: SuggestResponse
     }, async (req, res) => {
@@ -200,9 +276,23 @@ export default async function router(schema: Schema, config: Config) {
                 items: [],
             };
 
-            if (search.token && req.query.query.trim().length) {
-                response.items = await search.suggest(req.query.query, req.query.limit);
+            if (searchManager.defaultProvider) {
+                try {
+                    const location = (req.query.longitude !== undefined && req.query.latitude !== undefined)
+                        ? [req.query.longitude, req.query.latitude] as [number, number]
+                        : undefined;
+
+                    response.items = await searchManager.suggest(
+                        req.query.provider || searchManager.defaultProvider,
+                        req.query.query,
+                        req.query.limit,
+                        location
+                    );
+                } catch (err) {
+                    console.error('ESRI Suggest Error', err);
+                }
             }
+
             if (req.query.limit) {
                 response.items = response.items.splice(0, req.query.limit);
             }
