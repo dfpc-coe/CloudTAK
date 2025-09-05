@@ -133,7 +133,6 @@
 
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
-import { useRouter } from 'vue-router'
 import { ref, computed } from 'vue';
 import { useMapStore } from '../../stores/map.ts';
 import { std } from '../../std.ts';
@@ -153,7 +152,6 @@ import {
     IconCode
 } from '@tabler/icons-vue';
 
-const router = useRouter();
 const mapStore = useMapStore();
 
 const props = defineProps<{
@@ -188,7 +186,7 @@ async function cutFeature() {
         throw new Error(`${rawFeature.geometry.type} geometry type is not currently supported`);
     }
 
-    await mapStore.worker.db.add({
+    mapStore.toImport.push({
         id,
         type: 'Feature',
         path: '/',
@@ -205,11 +203,7 @@ async function cutFeature() {
             callsign: 'New Feature'
         },
         geometry: rawFeature.geometry
-    }, {
-        authored: true
     });
-
-    router.push(`/cot/${id}`);
 }
 
 function zoomTo() {

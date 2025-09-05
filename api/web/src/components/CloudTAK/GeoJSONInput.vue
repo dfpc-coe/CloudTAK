@@ -121,9 +121,18 @@ import type { InputFeature } from '../../types.ts';
 
 const mapStore = useMapStore();
 
+const props = defineProps({
+    features: {
+        type: Array as () => InputFeature[],
+        required: false,
+        default: () => []
+    }
+});
+
 const error = ref<Error | undefined>();
 const file = ref<File | undefined>();
-const feats = ref<InputFeature[]>([]);
+
+const feats = ref<InputFeature[]>(props.features || []);
 
 const emit = defineEmits(['close', 'done']);
 
