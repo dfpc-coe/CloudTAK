@@ -27,6 +27,13 @@
                 v-if='mapStore.draw.mode !== DrawToolMode.STATIC'
             />
 
+            <GeoJSONInput
+                v-if='mapStore.toImport.length'
+                :features='mapStore.toImport'
+                @close='mapStore.toImport = []'
+                @done='mapStore.toImport = []'
+            />
+
             <div
                 v-if='mode === "SetLocation"'
                 class='position-absolute bottom-0 text-white bg-dark rounded-top'
@@ -463,6 +470,7 @@
 </template>
 
 <script setup lang='ts'>
+import GeoJSONInput from './GeoJSONInput.vue';
 import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import {useRoute, useRouter } from 'vue-router';
 import FloatingVideo from './util/FloatingVideo.vue';
