@@ -149,13 +149,13 @@ async function generateRoute(): Promise<void> {
         url.searchParams.set('end', routePlan.value.end.coordinates.join(','));
         url.searchParams.set('callsign', routePlan.value.start.name + ' to ' + routePlan.value.end.name);
         
-        routePlan.value.travelMode = config.value.providers[0].modes[0].name;
-
         // Convert Human Name => ID
-        for (const p of config.value.providers) {
-            if (p.name === routePlan.value.provider) {
-                url.searchParams.set('provider', p.id);
-                break;
+        if (config.value) {
+            for (const p of config.value.providers) {
+                if (p.name === routePlan.value.provider) {
+                    url.searchParams.set('provider', p.id);
+                    break;
+                }
             }
         }
 
