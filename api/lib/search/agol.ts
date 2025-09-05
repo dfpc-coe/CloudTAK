@@ -1,4 +1,5 @@
 import fetch from '../fetch.js';
+import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import { EsriSpatialReference, EsriExtent } from '../esri/types.js';
 import { randomUUID } from 'node:crypto';
@@ -8,7 +9,7 @@ import { CoTParser } from '@tak-ps/node-cot';
 import ArcGISTokenManager from './arcgis-token-manager.js';
 import ArcGISConfigService from './arcgis-config.js'
 import { Search } from '../search.js';
-import { FetchSuggest, FetchReverse, FetchForward } from './types.js'
+import { SearchConfig, FetchSuggest, FetchReverse, FetchForward } from './types.js'
 
 export const AGOLReverseContainer = Type.Object({
     address: Type.Optional(FetchReverse),
@@ -116,9 +117,10 @@ export default class AGOLSearch extends Search {
     suggestApi: string;
     forwardApi: string;
     routingApi: string;
+    routingApiModes: string;
 
     // Store ID => Travel Mode Object
-    routeModes: Map<string, object>;
+    routeModes: Map<string, Static<typeof AGOLSupportedTravelMode>>;
 
     tokenManager?: ArcGISTokenManager;
 
@@ -156,8 +158,8 @@ export default class AGOLSearch extends Search {
         return agol;
     }
 
-    async config() {
-        const cnf = {
+    async config(): Promise<Static<typeof SearchConfig>> {
+        const cnf: Static<typeof SearchConfig> = {
             id: this._id,
             name: this._name,
             reverse: {
@@ -196,6 +198,7 @@ export default class AGOLSearch extends Search {
         const body = await res.typed(Type.Union([
             Type.Object({
                 error: Type.Object({
+                    code: Type.Number(),
                     message: Type.String(),
                 }),
             }),
@@ -254,7 +257,13 @@ export default class AGOLSearch extends Search {
         url.searchParams.append('stops', stops.map(stop => stop.join(',')).join(';'));
         url.searchParams.append('f', 'json');
 
-        if (travelMode) url.searchParams.append('travelMode', travelMode);
+        if (travelMode) {
+            const mode = this.routeModes.get(travelMode);
+
+            if (!mode) throw new Err(400, null, `Travel Mode not found`);
+
+            url.searchParams.append('travelMode', JSON.stringify(mode));
+        }
 
         if (this.tokenManager) {
             const token = await this.tokenManager.getValidToken();

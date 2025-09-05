@@ -156,6 +156,10 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Generate a route given stop information',
         query: Type.Object({
             provider: Type.Optional(Type.String()),
+            callsign: Type.String({
+                description: 'Human readable name of the route',
+                default: 'New Route'
+            }),
             start: Type.String({
                 description: 'Lat,Lng of starting position'
             }),
@@ -188,17 +192,21 @@ export default async function router(schema: Schema, config: Config) {
             ] as [number, number][];
 
             if (searchManager.defaultProvider) {
-                try {
                     const route = await searchManager.route(
                         req.query.provider || searchManager.defaultProvider,
                         stops,
                         req.query.travelMode
                     );
 
+                    if (route.features.length === 1) {
+                        route.features[0].properties.callsign = req.query.callsign;
+                    } else {
+                        for (let i = 0; i < route.features.length; i++) {
+                            route.features[i].properties.callsign = `${req.query.callsign} #${i + 1}`;
+                        }
+                    }
+
                     res.json(route);
-                } catch (err) {
-                    console.error('ESRI Fetch Error', err)
-                }
             } else {
                 res.json({
                     type: 'FeatureCollection',

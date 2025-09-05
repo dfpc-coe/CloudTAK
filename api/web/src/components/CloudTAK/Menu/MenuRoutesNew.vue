@@ -26,7 +26,7 @@
                         label='Start Location'
                         placeholder='Start Location'
                         :autofocus='true'
-                        @select='routePlan.start = $event ? $event.coordinates : null'
+                        @select='routePlan.start = $event || null'
                     />
                 </div>
                 <div class='mx-2 my-2'>
@@ -34,7 +34,7 @@
                         label='End Location'
                         placeholder='End Location'
                         :autofocus='false'
-                        @select='routePlan.end = $event ? $event.coordinates : null'
+                        @select='routePlan.end = $event || null'
                     />
                 </div>
 
@@ -81,8 +81,14 @@ const loading = ref(true);
 
 const routePlan = ref<{
     provider: string;
-    start: null | [number, number];
-    end: null | [number, number];
+    start: null | {
+        name: string;
+        coordinates: [number, number]
+    };
+    end: null | {
+        name: string;
+        coordinates: [number, number]
+    }
     travelMode: string;
 }>({
     provider: '',
@@ -139,9 +145,9 @@ async function generateRoute(): Promise<void> {
 
     try {
         const url = stdurl('/api/search/route');
-        url.searchParams.set('start', routePlan.value.start.join(','));
-        url.searchParams.set('end', routePlan.value.end.join(','));
-
+        url.searchParams.set('start', routePlan.value.start.coordinates.join(','));
+        url.searchParams.set('end', routePlan.value.end.coordinates.join(','));
+        url.searchParams.set('callsign', routePlan.value.start.name + ' to ' + routePlan.value.end.name);
         
         routePlan.value.travelMode = config.value.providers[0].modes[0].name;
 
