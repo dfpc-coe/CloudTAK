@@ -142,7 +142,7 @@ export class SearchManager extends Map<string, Search> {
                 settings.route.providers.push({
                     id: config.id,
                     name: config.name,
-                    modes: []
+                    modes: config.route.modes
                 });
             }
         }

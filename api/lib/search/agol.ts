@@ -78,13 +78,47 @@ export const AGOLRouteContainer = Type.Object({
     })))
 });
 
+const AGOLAttributeParameterValue = Type.Object({
+    attributeName: Type.String(),
+    parameterName: Type.String(),
+    value: Type.Union([
+        Type.String(),
+        Type.Number()
+    ])
+});
 
+const AGOLSupportedTravelMode = Type.Object({
+    attributeParameterValues: Type.Array(AGOLAttributeParameterValue),
+    description: Type.String(),
+    distanceAttributeName: Type.String(),
+    id: Type.String(),
+    impedanceAttributeName: Type.String(),
+    name: Type.String(),
+    restrictionAttributeNames: Type.Array(Type.String()),
+    simplificationTolerance: Type.Number(),
+    simplificationToleranceUnits: Type.Literal("esriMeters"),
+    timeAttributeName: Type.String(),
+    type: Type.Enum({
+        AUTOMOBILE: "AUTOMOBILE",
+        TRUCK: "TRUCK",
+        WALK: "WALK"
+    }),
+    useHierarchy: Type.Boolean(),
+    uturnAtJunctions: Type.Enum({
+        esriNFSBAtDeadEndsAndIntersections: "esriNFSBAtDeadEndsAndIntersections",
+        esriNFSBNoBacktrack: "esriNFSBNoBacktrack",
+        esriNFSBAllowBacktrack: "esriNFSBAllowBacktrack"
+    })
+});
 
 export default class AGOLSearch extends Search {
     reverseApi: string;
     suggestApi: string;
     forwardApi: string;
     routingApi: string;
+
+    // Store ID => Travel Mode Object
+    routeModes: Map<string, object>;
 
     tokenManager?: ArcGISTokenManager;
 
@@ -94,10 +128,13 @@ export default class AGOLSearch extends Search {
     ) {
         super(config, 'agol', 'ArcGIS Online');
 
+        this.routeModes = new Map();
+
         this.reverseApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode';
         this.suggestApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest';
         this.forwardApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates';
         this.routingApi = 'https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/solve';
+        this.routingApiModes = 'https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/retrieveTravelModes'
 
         this.tokenManager = tokenManager;
     }
@@ -112,13 +149,15 @@ export default class AGOLSearch extends Search {
         const configInstance = await configService.getConfig();
         const tokenManager = new ArcGISTokenManager(configInstance);
 
-        return new AGOLSearch(config, tokenManager);
+        const agol = new AGOLSearch(config, tokenManager);
+
+        await agol.setRouteModes();
+
+        return agol;
     }
 
     async config() {
-        // TODO Lookup Modes
-
-        return {
+        const cnf = {
             id: this._id,
             name: this._name,
             reverse: {
@@ -131,6 +170,52 @@ export default class AGOLSearch extends Search {
                 supported: true,
                 modes: []
             }
+        }
+
+        for (const mode of this.routeModes.values()) {
+            cnf.route.modes.push({
+                id: mode.id,
+                name: mode.name,
+            });
+        }
+
+        return cnf;
+    }
+
+    async setRouteModes(): Promise<void> {
+        const url = new URL(this.routingApiModes);
+        url.searchParams.append('f', 'json');
+
+        if (this.tokenManager) {
+            const token = await this.tokenManager.getValidToken();
+            if (token) url.searchParams.append('token', token);
+        }
+
+        const res = await fetch(url);
+
+        const body = await res.typed(Type.Union([
+            Type.Object({
+                error: Type.Object({
+                    message: Type.String(),
+                }),
+            }),
+            Type.Object({
+                currentVersion: Type.Number(),
+                defaultTravelMode: Type.String(),
+                supportedTravelModes: Type.Array(AGOLSupportedTravelMode)
+            })
+        ]))
+
+        if ('error' in body) {
+            if (body.error.code === 498 || body.error.code === 499) {
+                throw new Error('API not authorized');
+            }
+
+            throw new Error(`ArcGIS Routing Error: ${body.error.message}`);
+        }
+
+        for (const mode of body.supportedTravelModes) {
+            this.routeModes.set(mode.id, mode);
         }
     }
 

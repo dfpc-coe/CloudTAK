@@ -37,30 +37,14 @@
                         @select='routePlan.end = $event ? $event.coordinates : null'
                     />
                 </div>
-                <div
-                    v-if='modes.length > 0'
-                    class='mx-2 my-2'
-                >
-                    <label class='mx-2'>Travel Mode</label>
-                    <div class='py-2 round btn-group w-100' role='group'>
-                        <template v-for='mode in modes' :key='mode.id'>
-                            <input
-                                :id='`route-mode-${mode.id}`'
-                                v-model='routePlan.travelMode'
-                                :value='mode.id'
-                                type='radio'
-                                class='btn-check'
-                                autocomplete='off'
-                            >
-                            <label
-                                :for='`route-mode-${mode.id}`'
-                                type='button'
-                                class='btn'
-                            >
-                                {{ mode.name }}
-                            </label>
-                        </template>
-                    </div>
+
+                <div class='mx-2 my-2'>
+                    <TablerEnum
+                        v-if='modes.length > 0'
+                        label='Travel Mode'
+                        v-model='routePlan.travelMode'
+                        :options='modes.map(m => m.name)'
+                    />
                 </div>
                 <div class='mx-2 my-3'>
                     <button
@@ -134,7 +118,10 @@ async function settings() {
         config.value = res.data.route;
 
         routePlan.value.provider = config.value.providers[0].name;
-        routePlan.value.travelMode = config.value.providers[0].modes[0].name;
+
+        if (config.value.providers[0].modes.length > 0) {
+            routePlan.value.travelMode = config.value.providers[0].modes[0].name;
+        }
 
         loading.value = false;
     } catch (err) {
@@ -152,10 +139,29 @@ async function generateRoute(): Promise<void> {
 
     try {
         const url = stdurl('/api/search/route');
-        url.searchParams.set('provider', routePlan.value.provider);
         url.searchParams.set('start', routePlan.value.start.join(','));
         url.searchParams.set('end', routePlan.value.end.join(','));
-        url.searchParams.set('travelMode', routePlan.value.travelMode);
+
+        
+        routePlan.value.travelMode = config.value.providers[0].modes[0].name;
+
+        // Convert Human Name => ID
+        for (const p of config.value.providers) {
+            if (p.name === routePlan.value.provider) {
+                url.searchParams.set('provider', p.id);
+                break;
+            }
+        }
+
+        // Convert Human Name => ID
+        if (routePlan.value.travelMode) {
+            for (const m of modes.value) {
+                if (m.name === routePlan.value.travelMode) {
+                    url.searchParams.set('travelMode', m.id);
+                    break;
+                }
+            }
+        }
 
         const route = await std(url) as FeatureCollection;
 
