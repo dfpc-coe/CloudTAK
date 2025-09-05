@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.8.1 - 2025-09-05
+
+- :bug: Fix Sort/Order in Admin Connection UI
+
 ### v11.8.0 - 2025-09-05
 
 - :tada: Rewrite to routing and search interface to support pluggable search providers
