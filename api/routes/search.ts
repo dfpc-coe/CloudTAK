@@ -181,11 +181,6 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req);
 
-            // TODO Dynamic Checks once multiple providers are supported
-            if (req.query.provider !== 'agol') {
-                throw new Err(400, null, 'Invalid provider');
-            }
-
             const stops = [
                 req.query.start.split(',').map(Number),
                 req.query.end.split(',').map(Number)
