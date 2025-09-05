@@ -16,7 +16,7 @@
                 v-tooltip='"Feet"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "feet",
+                    "bg-gray-500 rounded-bottom text-blue": mode === "feet",
                     "cursor-pointer": mode !== "feet",
                 }'
                 role='menuitem'
@@ -28,7 +28,7 @@
                 v-tooltip='"Meters"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "meter",
+                    "bg-gray-500 rounded-bottom text-blue": mode === "meter",
                     "cursor-pointer": mode !== "meter",
                 }'
                 role='menuitem'
@@ -62,7 +62,7 @@ const mode = ref(props.unit);
 
 const inMode = computed(() => {
     if (mode.value === 'feet') {
-        return Math.round(props.elevation * 3.28084 * 1000) / 1000;
+        return Math.round(props.elevation * 3.28084 * 100) / 100;
     } else if (mode.value === 'meter') {
         return Math.round(props.elevation * 100) / 100;
     } else {

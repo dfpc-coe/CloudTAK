@@ -33,7 +33,6 @@ export default class Config {
     external?: External;
     API_URL: string;
     PMTILES_URL: string;
-    DynamoDB?: string;
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
     pg: Pool<typeof pgtypes>;
@@ -57,7 +56,6 @@ export default class Config {
         wsClients: Map<string, ConnectionWebSocket[]>;
         pg: Pool<typeof pgtypes>;
         server: InferSelectModel<typeof Server>;
-        DynamoDB?: string;
         Bucket?: string;
     }) {
         this.silent = init.silent;
@@ -72,7 +70,6 @@ export default class Config {
         this.PMTILES_URL = init.PMTILES_URL;
         this.wsClients = init.wsClients;
         this.pg = init.pg;
-        this.DynamoDB = init.DynamoDB;
         this.Bucket = init.Bucket;
         this.server = init.server;
 
@@ -100,7 +97,7 @@ export default class Config {
             process.env.AWS_REGION = 'us-east-1';
         }
 
-        let SigningSecret, MediaSecret, API_URL, PMTILES_URL, DynamoDB, Bucket;
+        let SigningSecret, MediaSecret, API_URL, PMTILES_URL, Bucket;
         if (!process.env.StackName || process.env.StackName === 'test') {
             process.env.StackName = 'test';
 
@@ -125,7 +122,6 @@ export default class Config {
             }
 
             Bucket = process.env.ASSET_BUCKET;
-            DynamoDB = process.env.StackName;
             SigningSecret = process.env.SigningSecret || await Config.fetchSecret(process.env.StackName, 'secret');
             MediaSecret = process.env.MediaSecret || await Config.fetchSecret(process.env.StackName, 'media');
         }
@@ -157,7 +153,7 @@ export default class Config {
             nocache: (args.nocache || false),
             StackName: process.env.StackName,
             wsClients: new Map(),
-            server, SigningSecret, MediaSecret, API_URL, DynamoDB, Bucket, pg, models, PMTILES_URL
+            server, SigningSecret, MediaSecret, API_URL, Bucket, pg, models, PMTILES_URL
         });
 
         if (!config.silent) {

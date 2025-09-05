@@ -6,6 +6,8 @@ import vtpbf from 'vt-pbf';
 import type { BBox } from 'geojson';
 import type { Response } from 'express';
 import { fetch } from '@tak-ps/etl'
+import { Polygon } from 'geojson';
+import { EsriPolygon } from '../esri/types.js';
 import { GeoJSONFeatureCollection, GeoJSONFeature } from '../types.js';
 import { pointOnFeature } from '@turf/point-on-feature';
 import { bboxPolygon } from '@turf/bbox-polygon';
@@ -94,13 +96,58 @@ export default class TileJSON {
 
         if (url.match(/FeatureServer\/\d+/)) {
             actions.feature.push(Basemap_FeatureAction.FETCH)
+            actions.feature.push(Basemap_FeatureAction.QUERY)
         } else if (url.match(/MapServer\/\d+/)) {
             actions.feature.push(Basemap_FeatureAction.FETCH)
+            actions.feature.push(Basemap_FeatureAction.QUERY)
         }
 
         return actions;
     }
 
+    /**
+     * Query Features by Polygon
+     *
+     * @param url       - ESRI FeatureServer URL
+     * @param polygon   - GeoJSON Polygon to query within
+     */
+    static async featureQuery(
+        url: string,
+        polygon: Polygon
+    ): Promise<Static<typeof GeoJSONFeatureCollection>> {
+        const actions = TileJSON.actions(url)
+
+        if (!actions.feature.includes(Basemap_FeatureAction.QUERY)) {
+            throw new Err(400, null, 'Basemap does not support Feature.QUERY');
+        }
+
+        if (url.match(/FeatureServer\/\d+/) || url.match(/MapServer\/\d+/)) {
+            const esriPolygon: Static<typeof EsriPolygon> = {
+                rings: [],
+                spatialReference: { wkid: 4326, latestWkid: 4326 }
+            }
+
+            for (const coord of polygon.coordinates) {
+                esriPolygon.rings.push(coord.map((c) => [c[0], c[1]]));
+            }
+
+            //TODO Implement ESRI FeatureServer Query
+
+            return {
+                type: 'FeatureCollection',
+                features: []
+            }
+        } else {
+            throw new Err(500, null, 'Could not determine strategy to fetch Basemap');
+        }
+    }
+
+    /**
+     * Fetch Feature by ID
+     *
+     * @param url   - ESRI FeatureServer URL
+     * @param id    - Feature ID to fetch
+     */
     static async featureFetch(
         url: string,
         id: string
@@ -130,6 +177,11 @@ export default class TileJSON {
         }
     }
 
+    /**
+     * Validate a TileJSON URL
+     *
+     * @param str   - Tile URL to validate
+     */
     static isValidURL(str: string): void {
         let url: URL;
 
@@ -340,7 +392,7 @@ export default class TileJSON {
                 } else {
                     throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile')
                 }
-            }
+           }
         } else if (
             config.url.match(/\/FeatureServer\/\d+$/)
             || config.url.match(/\/MapServer\/\d+$/)

@@ -5,6 +5,11 @@ export const EsriSpatialReference = Type.Object({
     latestWkid: Type.Integer()
 });
 
+export const EsriPolygon = Type.Object({
+    rings: Type.Array(Type.Array(Type.Array(Type.Number()))),
+    spatialReference: EsriSpatialReference
+});
+
 // TODO Convert all extents to 4326
 export const EsriExtent = Type.Object({
     xmin: Type.Number(),
