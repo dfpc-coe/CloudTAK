@@ -46,6 +46,8 @@ test('AGOL - constructor without tokenManager', async (t) => {
     t.ok(geocode.reverseApi, 'Reverse API URL set');
     t.ok(geocode.suggestApi, 'Suggest API URL set');
     t.ok(geocode.forwardApi, 'Forward API URL set');
+
+    config.pg.end();
     
     t.end();
 });
@@ -64,6 +66,8 @@ test('AGOL - API URLs are correctly set', async (t) => {
     t.equal(new URL(geocodeInstance.reverseApi).host, 'geocode.arcgis.com', 'Reverse API URL has correct host');
     t.equal(new URL(geocodeInstance.suggestApi).host, 'geocode.arcgis.com', 'Suggest API URL has correct host');
     t.equal(new URL(geocodeInstance.forwardApi).host, 'geocode.arcgis.com', 'Forward API URL has correct host');
+
+    config.pg.end();
     
     t.end();
 });
@@ -99,6 +103,8 @@ test('AGOL - route method handles empty features', async (t) => {
     } catch {
         t.pass('Expected error for empty route');
     }
+
+    config.pg.end();
 
     t.end();
 });
@@ -140,6 +146,8 @@ test('AGOL - route method processes valid route data', async (t) => {
     t.ok(mockValidRoute.routes.features[0].geometry.paths, 'Has geometry paths');
     t.ok(mockValidRoute.routes.features[0].attributes, 'Has attributes');
     t.ok(geocodeInstance.tokenManager, 'AGOL instance has tokenManager');
+
+    config.pg.end();
     
     t.end();
 });
@@ -169,6 +177,8 @@ test('AGOL - error handling for different error codes', async (t) => {
     t.ok(error498.code === 498 || error498.code === 499, 'Auth error codes');
     t.equal(error400.code, 400, 'General error code');
     t.ok(geocodeInstance.tokenManager, 'AGOL instance has tokenManager');
+
+    config.pg.end();
     
     t.end();
 });
@@ -200,6 +210,8 @@ test('AGOL - validates route input parameters', async (t) => {
     t.ok(validStops[1].length === 2, 'End point has lat/lng');
     t.ok(typeof travelMode === 'string', 'Travel mode is string');
     t.ok(geocodeInstance.tokenManager, 'AGOL instance has tokenManager');
+
+    config.pg.end();
     
     t.end();
 });
@@ -225,6 +237,8 @@ test('AGOL - URL construction for different endpoints', async (t) => {
     t.ok(geocodeInstance.reverseApi.includes('reverseGeocode'), 'Reverse API has correct endpoint');
     t.ok(geocodeInstance.suggestApi.includes('suggest'), 'Suggest API has correct endpoint');
     t.ok(geocodeInstance.forwardApi.includes('findAddressCandidates'), 'Forward API has correct endpoint');
+
+    config.pg.end();
     
     t.end();
 });
