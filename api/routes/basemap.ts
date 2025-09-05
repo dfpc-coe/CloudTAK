@@ -588,15 +588,14 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/basemap/:basemapid/feature', {
+    await schema.post('/basemap/:basemapid/feature', {
         name: 'Lasso Basemap Features',
         group: 'BaseMap',
         description: 'Lasso Basemap Features',
         params: Type.Object({
             basemapid: Type.Integer({ minimum: 1 }),
-            featureid: Type.String()
         }),
-        query: Type.Object({
+        body: Type.Object({
             polygon: Feature.Polygon
         }),
         res: GeoJSONFeatureCollection
@@ -612,7 +611,10 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
-            const fc = await TileJSON.featureQuery(basemap.url, req.query.polygon);
+            const fc = await TileJSON.featureQuery(
+                basemap.url,
+                req.body.polygon
+            );
 
             res.json(fc);
         } catch (err) {

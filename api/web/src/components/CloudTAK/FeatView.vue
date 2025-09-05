@@ -129,9 +129,17 @@
             </template>
         </div>
     </div>
+
+    <GeoJSONInput
+        v-if='importFeatures.length'
+        :features='importFeatures'
+        @close='importFeatures = []'
+        @done='importFeatures = []'
+    />
 </template>
 
 <script setup lang='ts'>
+import GeoJSONInput from './GeoJSONInput.vue';
 import { v4 as randomUUID } from 'uuid';
 import { useRouter } from 'vue-router'
 import { ref, computed } from 'vue';
@@ -174,6 +182,8 @@ const center = computed(() => {
     return pointOnFeature(props.feat).geometry.coordinates;
 });
 
+const importFeatures = ref<Feature[]>([]);
+
 async function cutFeature() {
     if (!overlay.value) throw new Error("Could not determine Overlay");
 
@@ -188,7 +198,7 @@ async function cutFeature() {
         throw new Error(`${rawFeature.geometry.type} geometry type is not currently supported`);
     }
 
-    await mapStore.worker.db.add({
+    importFeatures.value.push({
         id,
         type: 'Feature',
         path: '/',
@@ -205,11 +215,7 @@ async function cutFeature() {
             callsign: 'New Feature'
         },
         geometry: rawFeature.geometry
-    }, {
-        authored: true
     });
-
-    router.push(`/cot/${id}`);
 }
 
 function zoomTo() {
