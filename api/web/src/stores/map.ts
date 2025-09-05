@@ -193,6 +193,13 @@ export const useMapStore = defineStore('cloudtak', {
 
             return null;
         },
+        getOverlayByName(name: string): Overlay | null {
+            for (const overlay of this.overlays) {
+                if (overlay.name === name) return overlay as Overlay
+            }
+
+            return null;
+        },
         getOverlayByMode(mode: string, mode_id: string): Overlay | null {
             for (const overlay of this.overlays) {
                 if (overlay.mode === mode && overlay.mode_id === mode_id) {
