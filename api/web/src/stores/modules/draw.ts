@@ -1,6 +1,7 @@
-import { v4 as randomUUID } from 'uuid';
 import * as terraDraw from 'terra-draw';
+import { v4 as randomUUID } from 'uuid';
 import mapgl from 'maplibre-gl'
+import pointOnFeature from '@turf/point-on-feature';
 import { coordEach } from '@turf/meta';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { distance } from '@turf/distance';
@@ -178,9 +179,33 @@ export default class DrawTool {
                                 }
                             }) as FeatureCollection;
 
+                            mapStore.toImport = fc.features.map((f) => {
+                                const id = randomUUID();
+
+                                return {
+                                    id,
+                                    type: 'Feature',
+                                    path: '/',
+                                    properties: {
+                                       id,
+                                       type: 'u-d-p',
+                                       how: 'h-g-i-g-o',
+                                       color: '#00FF00',
+                                       archived: true,
+                                       time: new Date().toISOString(),
+                                       start: new Date().toISOString(),
+                                       stale: new Date().toISOString(),
+                                       center: pointOnFeature(f).geometry.coordinates,
+                                       callsign: 'New Feature'
+                                    },
+                                    geometry: f.geometry
+                                }
+                            });
+
                             this.lasso.loading = false;
                         } catch (err) {
                             this.lasso.loading = false;
+                            console.error(err);
                             throw new Error('Error fetching lasso features');
                         }
                     }

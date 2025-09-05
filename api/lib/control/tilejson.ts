@@ -139,7 +139,7 @@ export default class TileJSON {
             const fc = await (await fetch(urlBuilder, {
                 method: 'POST',
                 body: formData
-            })).json() as GeoJSONFeatureCollection;
+            })).json() as Static<typeof GeoJSONFeatureCollection>;
 
             return fc;
         } else {

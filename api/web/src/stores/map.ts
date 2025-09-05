@@ -35,6 +35,8 @@ export const useMapStore = defineStore('cloudtak', {
         _icons?: IconManager;
         channel: BroadcastChannel;
 
+        toImport: Feature[]
+
         // Lock the map view to a given CoT - The last element is the currently locked value
         // this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
         locked: Array<string>;
@@ -91,6 +93,7 @@ export const useMapStore = defineStore('cloudtak', {
         return {
             worker,
             callsign: 'Unknown',
+            toImport: [],
             location: LocationState.Loading,
             channel: new BroadcastChannel("cloudtak"),
             zoom: 'conditional',
