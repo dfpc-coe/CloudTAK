@@ -5,8 +5,8 @@ import { tileToBBOX } from '../tilebelt.js';
 import vtpbf from 'vt-pbf';
 import type { BBox } from 'geojson';
 import type { Response } from 'express';
-import { fetch } from '@tak-ps/etl'
-import { Polygon } from 'geojson';
+import { fetch as typedFetch } from '@tak-ps/etl'
+import { Feature } from '@tak-ps/node-cot';
 import { EsriPolygon } from '../esri/types.js';
 import { GeoJSONFeatureCollection, GeoJSONFeature } from '../types.js';
 import { pointOnFeature } from '@turf/point-on-feature';
@@ -113,7 +113,7 @@ export default class TileJSON {
      */
     static async featureQuery(
         url: string,
-        polygon: Polygon
+        polygon: Static<typeof Feature.Polygon>
     ): Promise<Static<typeof GeoJSONFeatureCollection>> {
         const actions = TileJSON.actions(url)
 
@@ -123,20 +123,25 @@ export default class TileJSON {
 
         if (url.match(/FeatureServer\/\d+/) || url.match(/MapServer\/\d+/)) {
             const esriPolygon: Static<typeof EsriPolygon> = {
-                rings: [],
+                rings: polygon.coordinates,
                 spatialReference: { wkid: 4326, latestWkid: 4326 }
             }
 
-            for (const coord of polygon.coordinates) {
-                esriPolygon.rings.push(coord.map((c) => [c[0], c[1]]));
-            }
+            const urlBuilder = new URL(url + '/query');
+            const formData = new FormData();
+            formData.append('where', '1=1');
+            formData.append('outFields', '*');
+            formData.append('f', 'geojson');
+            formData.append('geometryType', 'esriGeometryPolygon');
+            formData.append('spatialRel', 'esriSpatialRelIntersects');
+            formData.append('geometry', JSON.stringify(esriPolygon));
 
-            //TODO Implement ESRI FeatureServer Query
+            const fc = await (await fetch(urlBuilder, {
+                method: 'POST',
+                body: formData
+            })).json() as Static<typeof GeoJSONFeatureCollection>;
 
-            return {
-                type: 'FeatureCollection',
-                features: []
-            }
+            return fc;
         } else {
             throw new Err(500, null, 'Could not determine strategy to fetch Basemap');
         }
@@ -159,7 +164,10 @@ export default class TileJSON {
         }
 
         if (url.match(/FeatureServer\/\d+/) || url.match(/MapServer\/\d+/)) {
-            const res = await fetch(url + `/query?objectIds=${id}&f=geojson`);
+            const urlBuilder = new URL(url + '/query');
+            urlBuilder.searchParams.set('f', 'geojson');
+            urlBuilder.searchParams.set('objectIds', String(id));
+            const res = await typedFetch(urlBuilder);
 
             const fc = await res.typed(GeoJSONFeatureCollection);
 
@@ -372,7 +380,7 @@ export default class TileJSON {
             try {
                 const url = this.esriRasterTileURL(config.url, z, x, y)
 
-                const tileRes = await fetch(url);
+                const tileRes = await typedFetch(url);
 
                 if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 
@@ -400,7 +408,7 @@ export default class TileJSON {
             try {
                 const url = this.esriVectorTileURL(config.url, z, x, y)
 
-                const tileRes = await fetch(url);
+                const tileRes = await typedFetch(url);
 
                 if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 

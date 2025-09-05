@@ -1,12 +1,14 @@
-import { v4 as randomUUID } from 'uuid';
 import * as terraDraw from 'terra-draw';
+import { v4 as randomUUID } from 'uuid';
 import mapgl from 'maplibre-gl'
+import pointOnFeature from '@turf/point-on-feature';
 import { coordEach } from '@turf/meta';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { distance } from '@turf/distance';
 import type { GeoJSONFeatureId } from 'maplibre-gl'
 import type COT from '../../base/cot.ts';
-import type { Feature } from '../../types.ts';
+import { std, stdurl } from '../../std.ts';
+import type { Feature, FeatureCollection } from '../../types.ts';
 import type { Polygon, Position } from 'geojson';
 import type { useMapStore } from '../map.ts';
 
@@ -37,6 +39,11 @@ export default class DrawTool {
     public point: {
         type: string,
     };
+
+    public lasso: {
+        loading: boolean;
+        overlay: string;
+    }
 
     constructor(mapStore: ReturnType<typeof useMapStore>) {
         this.mapStore = mapStore;
@@ -150,9 +157,57 @@ export default class DrawTool {
                     this.removeFeature(id);
                     this.stop();
 
-                    const touching = await this.mapStore.worker.db.touching(feat.geometry as Polygon);
-                    for (const cot of touching.values()) {
-                        this.mapStore.selected.set(cot.id, cot);
+                    if (!this.lasso.overlay || this.lasso.overlay === "CoT Icons") {
+                        const touching = await this.mapStore.worker.db.touching(feat.geometry as Polygon);
+
+                        for (const cot of touching.values()) {
+                            this.mapStore.selected.set(cot.id, cot);
+                        }
+                    } else {
+                        const ov = this.mapStore.getOverlayByName(this.lasso.overlay);
+                        if (!ov) throw new Error('Could not find overlay');
+
+                        this.lasso.loading = true;
+
+                        try {
+                            const url = stdurl(`/api/basemap/${ov.mode_id}/feature`);
+
+                            const fc = await std(url, {
+                                method: 'POST',
+                                body: {
+                                    polygon: feat.geometry
+                                }
+                            }) as FeatureCollection;
+
+                            mapStore.toImport = fc.features.map((f) => {
+                                const id = randomUUID();
+
+                                return {
+                                    id,
+                                    type: 'Feature',
+                                    path: '/',
+                                    properties: {
+                                       id,
+                                       type: 'u-d-p',
+                                       how: 'h-g-i-g-o',
+                                       color: '#00FF00',
+                                       archived: true,
+                                       time: new Date().toISOString(),
+                                       start: new Date().toISOString(),
+                                       stale: new Date().toISOString(),
+                                       center: pointOnFeature(f).geometry.coordinates,
+                                       callsign: 'New Feature'
+                                    },
+                                    geometry: f.geometry
+                                }
+                            });
+
+                            this.lasso.loading = false;
+                        } catch (err) {
+                            this.lasso.loading = false;
+                            console.error(err);
+                            throw new Error('Error fetching lasso features');
+                        }
                     }
                 } else {
                     const storeFeat = this.draw.getSnapshotFeature(id);
@@ -232,6 +287,11 @@ export default class DrawTool {
 
         this.point = {
             type: 'u-d-p'
+        }
+
+        this.lasso = {
+            loading: false,
+            overlay: 'CoT Icons'
         }
     }
 
