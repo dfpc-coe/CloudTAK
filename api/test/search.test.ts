@@ -25,6 +25,8 @@ test('AGOL - constructor with tokenManager', async (t) => {
     t.ok(geocode.reverseApi, 'Reverse API URL set');
     t.ok(geocode.suggestApi, 'Suggest API URL set');
     t.ok(geocode.forwardApi, 'Forward API URL set');
+
+    config.pg.end();
     
     t.end();
 });
