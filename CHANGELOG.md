@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.10.0 - 2025-09-05
+
+- :rocket: Add initial state loading to Video Wall
+
 ### v11.9.1 - 2025-09-05
 
 - :arrow_up: Update Core Deploy Dependencies
