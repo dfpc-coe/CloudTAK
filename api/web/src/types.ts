@@ -78,9 +78,6 @@ export type Login_CreateRes = paths["/api/login"]["post"]["responses"]["200"]["c
 export type Import = paths["/api/import/{:import}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ImportList = paths["/api/import"]["get"]["responses"]["200"]["content"]["application/json"]
 
-export type Profile = paths["/api/profile"]["get"]["responses"]["200"]["content"]["application/json"]
-export type Profile_Update = paths["/api/profile"]["patch"]["requestBody"]["content"]["application/json"]
-
 export type Package = paths["/api/marti/package/{:uid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type PackageList = paths["/api/marti/package"]["get"]["responses"]["200"]["content"]["application/json"]
 
@@ -100,8 +97,13 @@ export type Palette = paths["/api/palette/{:palette}"]["get"]["responses"]["200"
 export type PaletteList = paths["/api/palette"]["get"]["responses"]["200"]["content"]["application/json"]
 export type PaletteFeature = paths["/api/palette/{:palette}/feature/{:feature}"]["get"]["responses"]["200"]["content"]["application/json"]
 
-export type ProfileFileList = paths["/api/profile/asset"]["get"]["responses"]["200"]["content"]["application/json"]
+export type Profile = paths["/api/profile"]["get"]["responses"]["200"]["content"]["application/json"]
+export type Profile_Update = paths["/api/profile"]["patch"]["requestBody"]["content"]["application/json"]
 
+export type ProfileVideoList = paths["/api/profile/video"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ProfileVideo = paths["/api/profile/video/{:id}"]["get"]["responses"]["200"]["content"]["application/json"]
+
+export type ProfileFileList = paths["/api/profile/asset"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ProfileFile = ProfileFileList["items"][0];
 
 export type Feature = paths["/api/profile/feature/{:id}"]["get"]["responses"]["200"]["content"]["application/json"] & {
