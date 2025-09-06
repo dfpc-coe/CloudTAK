@@ -846,7 +846,10 @@ async function handleRadial(event: string): Promise<void> {
         mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'cot:edit') {
-        const cot = await mapStore.worker.db.get(mapStore.radial.cot.properties.id || mapStore.radial.cot.id)
+        const cot = await mapStore.worker.db.get(mapStore.radial.cot.properties.id || mapStore.radial.cot.id, {
+            mission: true
+        })
+
         if (!cot) throw new Error('Cannot Find COT Marker');
         await mapStore.draw.edit(cot);
 
