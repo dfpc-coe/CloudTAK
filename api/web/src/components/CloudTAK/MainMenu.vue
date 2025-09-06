@@ -801,7 +801,7 @@ onMounted(async () => {
 })
 
 function external(url: string) {
-    window.location.href = String(new URL(url, window.location.origin));
+    window.open(String(new URL(url, window.location.origin)));
 }
 
 function returnHome() {
