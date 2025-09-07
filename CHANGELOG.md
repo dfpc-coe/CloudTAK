@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.11.0 - 2025-09-06
+
+- :bug: Fix bug where geometry editing was broken for features in Data Syncs
+- :bug: Fix bug where edited geometries wouldn't be saved back to Data Sync
+
 ### v11.10.0 - 2025-09-05
 
 - :rocket: Add initial state loading to Video Wall
