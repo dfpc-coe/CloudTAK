@@ -562,16 +562,13 @@ export default class AtlasDatabase {
      * @param opts.skipSave - Don't save the COT to the Profile Feature Database
      * @param opts.skipBroadcast - Don't broadcast the COT on the internal message bus to the UI
      * @param opts.authored - If the COT is new, append creator information & potentially add it to a mission
-     * @param opts.mission_guid - Explicitly use Mission Store
      */
     async add(
         feature: InputFeature,
         opts?: {
             skipSave?: boolean;
             skipBroadcast?: boolean;
-
             authored?: boolean,
-            mission_guid?: string,
         }
     ): Promise<COT> {
         if (!opts) opts = {};
@@ -584,14 +581,28 @@ export default class AtlasDatabase {
             feat.properties.creator = await this.atlas.profile.creator();
         }
 
-        const mission_guid =
-            // The feature was explicitly assigned to a given GUID
-            opts.mission_guid
-            // The feature was notified by the server that it is for a given GUID
-            || this.subscriptionPending.get(feat.id);
+        // Check if CoT exists
+        let exists = this.get(feat.properties.id, {
+            mission: true
+        });
 
-        if (mission_guid)  {
+        // New CoT destined for a Mission
+        if (!exists && (
+            (this.mission && opts.authored) // New CoT and we have an active Mission
+            || (feat.origin && feat.origin.mode === "Mission" && feat.origin.mode_id)
+            || this.subscriptionPending.get(feat.id)
+       )) {
+            const mission_guid =
+                this.mission?.meta.guid // An Active Mission
+                || this.subscriptionPending.get(feat.id) // The feature was notified by the server that it is for a given GUID
+                || feat.origin?.mode_id; // The feature has a Mission Origin
+
+            if (!mission_guid) {
+                throw new Error(`Cannot add ${feat.id} to a mission as no mission GUID was found - Please report this error`);
+            }
+
             const sub = this.subscriptions.get(mission_guid);
+
             if (!sub) {
                 throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
             }
@@ -611,34 +622,19 @@ export default class AtlasDatabase {
             });
 
             return cot;
-        } else {
-            let is_mission_cot: COT | undefined;
-            for (const value of this.subscriptions.values()) {
-                const mission_cot = value.cots.get(feat.id);
-                if (mission_cot) {
-                    await mission_cot.update(feat);
-                    is_mission_cot = mission_cot;
-                }
+        } else if (exists && exists.origin.mode === OriginMode.MISSION && exists.origin.mode_id) {
+            // Existing CoT that belongs to a Mission
+            const sub = this.subscriptions.get(exists.origin.mode_id || '');
+
+            if (!sub) {
+                throw new Error(`Cannot update ${feat.properties.id} in mission ${exists.origin.mode_id} as it is not loaded`)
             }
 
-            if (is_mission_cot) return is_mission_cot;
-
-            let exists = this.cots.get(feat.id);
-
-            if (this.mission && !exists && opts.authored) {
-                const sub = this.subscriptions.get(this.mission.meta.guid);
-
-                if (!sub) {
-                    throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
-                }
-
-                exists = new COT(this.atlas, feat, {
-                    mode: OriginMode.MISSION,
-                    mode_id: this.mission.meta.guid
-                }, opts);
-
-                sub.updateFeature(exists);
-            } else if (exists) {
+            await exists.update(feat)
+            await sub.updateFeature(exists);
+            return exists;
+        } else {
+            if (exists) {
                 exists.update({
                     path: feat.path,
                     properties: feat.properties,
