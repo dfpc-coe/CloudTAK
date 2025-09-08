@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.11.4 - 2025-09-08
+
+- :rocket: Add header to Range & Bearing to allow it to be closed
+
 ### v11.11.3 - 2025-09-08
 
 - :tada: Show currently selected basemap in Basemap Menu
