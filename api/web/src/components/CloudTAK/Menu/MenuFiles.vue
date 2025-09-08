@@ -144,14 +144,25 @@
                                 class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 role='menuitem'
                                 tabindex='0'
-                                @click.stop.prevent='shareToPackage = asset'
-                                @keyup.enter='shareToPackage = asset'
+                                @click.stop.prevent='rename = { id: asset.id, name: asset.name, loading: false }'
+                                @keyup.enter='rename = { id: asset.id, name: asset.name, loading: false }'
                             >
                                 <IconCursorText
                                     :size='32'
                                     stroke='1'
                                 />
                                 <span class='mx-2'>Rename File</span>
+                            </div>
+
+                            <div v-if='rename && rename.id === asset.id'>
+                                <TablerInput
+                                    v-model='rename.name'
+                                    class='m-2'
+                                    :placeholder='asset.name'
+                                    :autofocus='true'
+                                    @blur='rename = undefined'
+                                    @keyup.enter='renameAsset'
+                                />
                             </div>
 
                             <TablerDelete
@@ -198,6 +209,7 @@ import {
     TablerDelete,
     TablerIconButton,
     TablerRefreshButton,
+    TablerInput,
     TablerPager,
     TablerAlert,
     TablerNone,
@@ -225,6 +237,11 @@ const router = useRouter();
 const upload = ref(false)
 const opened = ref<Set<string>>(new Set());
 const shareToPackage = ref<ProfileFile | undefined>();
+const rename = ref<{
+    id: string;
+    loading: boolean;
+    name: string;
+} | undefined>();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 
@@ -301,6 +318,35 @@ async function downloadAsset(asset: ProfileFile) {
     window.open(url, "_blank")
 }
 
+async function renameAsset() {
+    if (!rename.value) return;
+
+    rename.value.loading = true;
+
+    try {
+        await server.PATCH('/api/profile/asset/{:asset}', {
+            path: {
+                asset: rename.value.id
+            },
+            body: {
+                name: rename.value.name
+            }
+        });
+
+        for (const item of list.value.items) {
+            if (item.id === rename.value.id) {
+                item.name = rename.value.name;
+                break;
+            }
+        }
+
+        rename.value = undefined;
+    } catch (err) {
+        if (rename.value) rename.value.loading = false;
+        throw err;
+    }
+}
+
 async function fetchList() {
     try {
         loading.value = true;
@@ -329,9 +375,17 @@ async function fetchList() {
 
 async function deleteAsset(asset: ProfileFile) {
     loading.value = true;
-    await std(`/api/profile/asset/${asset.id}`, {
-        method: 'DELETE'
-    });
+
+    try {
+        await server.DELETE('/api/profile/asset/{:asset}', {
+            path: {
+                asset: asset.id
+            }
+        });
+    } catch (err) {
+        loading.value = false
+        throw err;
+    }
 
     await fetchList();
 }
