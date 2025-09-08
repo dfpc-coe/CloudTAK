@@ -99,8 +99,15 @@ export default class Subscription {
      * mark the subscription as dirty for a re-render
      *
      * @param cot - The COT object to upsert
+     * @param opts - Options for updating the feature
+     * @param opts.skipNetwork - If true, the feature will not be updated on the server - IE in response to a Mission Change event
      */
-    async updateFeature(cot: COT): Promise<void> {
+    async updateFeature(
+        cot: COT,
+        opts: {
+            skipNetwork?: boolean
+        } = {}
+    ): Promise<void> {
         this.cots.set(String(cot.id), cot);
 
         this._dirty = true;
@@ -113,7 +120,9 @@ export default class Subscription {
             mission: this.meta.name
         }];
 
-        await this._atlas.conn.sendCOT(feat);
+        if (!opts.skipNetwork) {
+            await this._atlas.conn.sendCOT(feat);
+        }
     }
 
     /**
