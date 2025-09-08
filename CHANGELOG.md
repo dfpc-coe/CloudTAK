@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.12.0 - 2025-09-08
+
+- :tada: Allow renaming Profile Files
+
 ### v11.11.4 - 2025-09-08
 
 - :rocket: Add header to Range & Bearing to allow it to be closed
