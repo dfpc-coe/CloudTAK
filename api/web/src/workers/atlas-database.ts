@@ -592,9 +592,12 @@ export default class AtlasDatabase {
             || (feat.origin && feat.origin.mode === "Mission" && feat.origin.mode_id)
             || this.subscriptionPending.get(feat.id)
        )) {
+            const pendingGuid = this.subscriptionPending.get(feat.id);
+            this.subscriptionPending.delete(feat.id);
+
             const mission_guid =
                 this.mission?.meta.guid // An Active Mission
-                || this.subscriptionPending.get(feat.id) // The feature was notified by the server that it is for a given GUID
+                || pendingGuid
                 || feat.origin?.mode_id; // The feature has a Mission Origin
 
             if (!mission_guid) {
@@ -612,7 +615,9 @@ export default class AtlasDatabase {
                 mode_id: mission_guid
             }, opts);
 
-            sub.updateFeature(cot);
+            await sub.updateFeature(cot, {
+                skipNetwork: !!pendingGuid
+            });
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Mission_Change_Feature,
