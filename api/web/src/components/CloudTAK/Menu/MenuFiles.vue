@@ -324,14 +324,18 @@ async function renameAsset() {
     rename.value.loading = true;
 
     try {
-        await server.PATCH('/api/profile/asset/{:asset}', {
-            path: {
-                asset: rename.value.id
+        const res = await server.PATCH('/api/profile/asset/{:asset}', {
+            params: {
+                path: {
+                    ':asset': rename.value.id
+                },
             },
             body: {
                 name: rename.value.name
             }
         });
+
+        if (res.error) throw new Error(res.error.message);
 
         for (const item of list.value.items) {
             if (item.id === rename.value.id) {
@@ -377,11 +381,15 @@ async function deleteAsset(asset: ProfileFile) {
     loading.value = true;
 
     try {
-        await server.DELETE('/api/profile/asset/{:asset}', {
-            path: {
-                asset: asset.id
+        const res = await server.DELETE('/api/profile/asset/{:asset}', {
+            params: {
+                path: {
+                    ':asset': asset.id
+                }
             }
         });
+
+        if (res.error) throw new Error(res.error.message);
     } catch (err) {
         loading.value = false
         throw err;
