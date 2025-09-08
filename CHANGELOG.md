@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.11.3 - 2025-09-08
+
+- :tada: Show currently selected basemap in Basemap Menu
+
 ### v11.11.2 - 2025-09-08
 
 - :bug: Fix course indicator on CoT style
