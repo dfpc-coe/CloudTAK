@@ -179,25 +179,26 @@ export default function styles(id: string, opts: {
             layout: {
                 'icon-size': 0.33,
                 'icon-offset': [
-                    'case',
-                    ['has', 'icon'],
-                    // Regular icons - current distances
-                    [
-                        'interpolate',
-                        ['linear'],
-                        ['zoom'],
-                        8, ['literal', [0, -28]],
-                        12, ['literal', [0, -42]],
-                        16, ['literal', [0, -58]]
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    8, [
+                        'case',
+                        ['has', 'icon'],
+                        ['literal', [0, -28]],
+                        ['literal', [0, -18]]
                     ],
-                    // Dots (no icon) - smaller distances
-                    [
-                        'interpolate',
-                        ['linear'],
-                        ['zoom'],
-                        8, ['literal', [0, -18]],
-                        12, ['literal', [0, -24]],
-                        16, ['literal', [0, -30]]
+                    12, [
+                        'case',
+                        ['has', 'icon'],
+                        ['literal', [0, -42]],
+                        ['literal', [0, -32]]
+                    ],
+                    16, [
+                        'case',
+                        ['has', 'icon'],
+                        ['literal', [0, -58]],
+                        ['literal', [0, -42]]
                     ]
                 ],
                 'icon-rotate': ['get', 'course'],
