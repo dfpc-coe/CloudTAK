@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.11.1 - 2025-09-06
+
+- :bug: Ensure Search provider failures don't prevent server startup
+- :bug: Relax Type Check on AGOL OAuth responses
+
 ### v11.11.0 - 2025-09-06
 
 - :bug: Fix bug where geometry editing was broken for features in Data Syncs
