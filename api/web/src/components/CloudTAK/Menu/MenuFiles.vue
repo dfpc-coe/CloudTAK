@@ -46,11 +46,15 @@
             <template v-else>
                 <div
                     v-for='asset in list.items'
+                    role='menu'
                     :key='asset.id'
                 >
                     <div
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'
+                        role='menuitem'
+                        tabindex='0'
                         @click='opened.has(asset.id) ? opened.delete(asset.id) : opened.add(asset.id)'
+                        @keyup.enter='opened.has(asset.id) ? opened.delete(asset.id) : opened.add(asset.id)'
                     >
                         <div class='col-auto'>
                             <IconMapPlus
@@ -83,11 +87,17 @@
                         v-if='opened.has(asset.id)'
                         class='pt-1 mx-4'
                     >
-                        <div class='rounded bg-child'>
+                        <div
+                            class='rounded bg-child'
+                            role='manu'
+                        >
                             <div
                                 v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
                                 class='cursor-pointer rounded-top col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                role='menuitem'
+                                tabindex='0'
                                 @click.stop.prevent='createOverlay(asset)'
+                                @keyup.enter='createOverlay(asset)'
                             >
                                 <IconMapPlus
                                     :size='32'
@@ -97,6 +107,7 @@
                             </div>
                             <div
                                 v-else
+                                role='menuitem'
                                 class='rounded-top col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                             >
                                 <IconMapOff
@@ -118,13 +129,29 @@
                             </div>
                             <div
                                 class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                role='menuitem'
+                                tabindex='0'
                                 @click.stop.prevent='shareToPackage = asset'
+                                @keyup.enter='shareToPackage = asset'
                             >
                                 <IconPackage
                                     :size='32'
                                     stroke='1'
                                 />
                                 <span class='mx-2'>Create Data Package</span>
+                            </div>
+                            <div
+                                class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                role='menuitem'
+                                tabindex='0'
+                                @click.stop.prevent='shareToPackage = asset'
+                                @keyup.enter='shareToPackage = asset'
+                            >
+                                <IconCursorText
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Rename File</span>
                             </div>
 
                             <TablerDelete
@@ -184,6 +211,7 @@ import {
     IconMapOff,
     IconMapPlus,
     IconDownload,
+    IconCursorText
 } from '@tabler/icons-vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
