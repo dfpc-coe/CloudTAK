@@ -71,8 +71,8 @@ export default class ArcGISTokenManager {
             Type.Object({
                 access_token: Type.String(),
                 expires_in: Type.Number(),
-                username: Type.String(),
-                ssl: Type.Boolean(),
+                username: Type.Optional(Type.String()),
+                ssl: Type.Optional(Type.Boolean()),
                 refresh_token: Type.Optional(Type.String()),
                 refresh_token_expires_in: Type.Optional(Type.Number())
             })

@@ -89,14 +89,18 @@ export class SearchManager extends Map<string, Search> {
 
         const AGOLSearch = (await import('./search/agol.js')).default;
 
-        const agol = await AGOLSearch.init(config);
+        try {
+            const agol = await AGOLSearch.init(config);
 
-        if (agol) {
-            if (!manager.defaultProvider) {
-                manager.defaultProvider = agol._id;
+            if (agol) {
+                if (!manager.defaultProvider) {
+                    manager.defaultProvider = agol._id;
+                }
+
+                manager.set(agol._id, agol);
             }
-
-            manager.set(agol._id, agol);
+        } catch (err) {
+            console.error('not ok - AGOL Search Provider failed to initialize', err);
         }
 
         return manager;
