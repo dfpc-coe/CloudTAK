@@ -78,6 +78,7 @@
                 <MenuItem
                     v-for='basemap in list.items'
                     :key='basemap.id'
+                    :class='{ "bg-blue text-white": isCurrentBasemap(basemap.id) }'
                     @click='setBasemap(basemap)'
                     @keyup.enter='setBasemap(basemap)'
                 >
@@ -95,7 +96,8 @@
                         <div class='ms-auto d-flex align-items-center'>
                             <span
                                 v-if='!basemap.username'
-                                class='mx-3 ms-auto badge border bg-blue text-white'
+                                class='mx-3 ms-auto badge border'
+                                :class='isCurrentBasemap(basemap.id) ? "bg-white text-blue" : "bg-blue text-white"'
                             >Public</span>
                             <span
                                 v-else
@@ -297,6 +299,13 @@ function download(basemap: Basemap) {
 function setCollection(name: string) {
     paging.value.collection = name;
     paging.value.filter = '';
+}
+
+function isCurrentBasemap(basemapId: number): boolean {
+    const currentBasemap = mapStore.overlays.find(overlay => 
+        overlay.mode === 'basemap' && overlay.mode_id === String(basemapId)
+    );
+    return !!currentBasemap;
 }
 
 async function fetchList() {
