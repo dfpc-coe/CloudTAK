@@ -12,7 +12,11 @@
 
 ### Pending Release
 
-### v11.11.1 - 2025-09-06
+### v11.11.2 - 2025-09-08
+
+- :bug: Fix course indicator on CoT style
+
+### v11.11.1 - 2025-09-08
 
 - :bug: Ensure Search provider failures don't prevent server startup
 - :bug: Relax Type Check on AGOL OAuth responses
