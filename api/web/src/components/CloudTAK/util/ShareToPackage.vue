@@ -67,11 +67,16 @@
                     />
                 </div>
 
-                <!-- TODO SHOW CHANNEL SELECTION -->
+                <GroupSelect
+                    v-model='body.groups'
+                    :active='true'
+                    direction='IN'
+                />
 
                 <div class='col-12 pt-3'>
                     <TablerButton
                         class='w-100'
+                        :disabled='!body.groups.length'
                         @click='share'
                     >
                         Create
@@ -92,7 +97,7 @@ import {
     TablerButton,
     TablerInput,
 } from '@tak-ps/vue-tabler';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import {
     IconFile,
@@ -101,6 +106,7 @@ import {
 import { useRouter } from 'vue-router';
 import FeatureRow from './FeatureRow.vue';
 import type { Feature, Content } from '../../../types.ts';
+import GroupSelect from './GroupSelect.vue';
 
 const mapStore = useMapStore();
 const router = useRouter();
@@ -130,7 +136,8 @@ const emit = defineEmits(['close', 'done']);
 const loading = ref(false);
 
 const body = ref({
-    name: props.name
+    name: props.name,
+    groups: []
 })
 
 async function share() {
@@ -152,12 +159,13 @@ async function share() {
     loading.value = true;
 
     try {
-        const content = await std('/api/marti/package', {
+        const res = await server('/api/marti/package', {
             method: 'PUT',
             body: {
                 type: 'FeatureCollection',
                 name: body.value.name,
                 public: true,
+                groups: body.value.groups,
                 assets: props.assets,
                 features: feats.map((f) => {
                     f = JSON.parse(JSON.stringify(f));
@@ -166,9 +174,11 @@ async function share() {
             }
         }) as Content;
 
+        if (res.error) throw new Error(res.error.message);
+
         emit('done');
 
-        router.push(`/menu/packages/${content.Hash}`);
+        router.push(`/menu/packages/${res.data.Hash}`);
     } catch (err) {
         loading.value = false;
         throw err;
