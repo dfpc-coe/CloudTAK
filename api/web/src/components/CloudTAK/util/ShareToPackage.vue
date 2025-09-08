@@ -73,6 +73,11 @@
                     direction='IN'
                 />
 
+                <TagEntry
+                    placeholder='Hashtags'
+                    @tags='body.keywords = $event'
+                />
+
                 <div class='col-12 pt-3'>
                     <TablerButton
                         class='w-100'
@@ -90,6 +95,8 @@
 <script setup lang='ts'>
 import { ref } from 'vue';
 import type { PropType } from 'vue';
+import TagEntry from './TagEntry.vue';
+
 import {
     TablerNone,
     TablerModal,
@@ -118,7 +125,7 @@ const props = defineProps({
     },
     assets: {
         type: Array as PropType<Array<{
-            type: string;
+            type: 'profile';
             id: number | string;
             name: string;
         }>>,
@@ -137,6 +144,7 @@ const loading = ref(false);
 
 const body = ref({
     name: props.name,
+    keywords: [],
     groups: []
 })
 
@@ -159,20 +167,22 @@ async function share() {
     loading.value = true;
 
     try {
-        const res = await server('/api/marti/package', {
-            method: 'PUT',
+        const res = await server.PUT('/api/marti/package', {
             body: {
                 type: 'FeatureCollection',
                 name: body.value.name,
                 public: true,
                 groups: body.value.groups,
-                assets: props.assets,
+                keywords: body.value.keywords,
+                assets: props.assets.map((a) => ({ type: a.type, id: String(a.id) })),
+                basemaps: [],
+                destinations: [],
                 features: feats.map((f) => {
                     f = JSON.parse(JSON.stringify(f));
                     return { id: f.properties.id || f.id, type: f.type, properties: f.properties, geometry: f.geometry }
                 })
             }
-        }) as Content;
+        });
 
         if (res.error) throw new Error(res.error.message);
 

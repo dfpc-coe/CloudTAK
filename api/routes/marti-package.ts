@@ -108,6 +108,13 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Should the Data Package be a public package, if so it will be published to the Data Package list'
             }),
+            groups: Type.Optional(Type.Array(Type.String(), {
+                description: 'Channels that the Data Package should be shared with, use in conjunction with public=true'
+            })),
+            keywords: Type.Array(Type.String(), {
+                default: [],
+                description: 'Hash Tags to assign to the package'
+            }),
             destinations: Type.Array(Type.Object({
                 uid: Type.Optional(Type.String({
                     description: 'A User UID to share the package with'
@@ -226,7 +233,9 @@ export default async function router(schema: Schema, config: Config) {
                 const hash = await DataPackage.hash(out);
 
                 await api.Files.uploadPackage({
-                    name: pkg.settings.name, creatorUid, hash
+                    name: pkg.settings.name, creatorUid, hash,
+                    keywords: req.body.keywords,
+                    groups: req.body.groups
                 }, fs.createReadStream(out));
 
                 // TODO Ask ARA for a Content endpoint to lookup by hash to mirror upload API
@@ -245,7 +254,7 @@ export default async function router(schema: Schema, config: Config) {
                 content = await api.Files.upload({
                     name: id,
                     contentLength: size,
-                    keywords: [],
+                    keywords: req.body.keywords,
                     creatorUid,
                 }, fs.createReadStream(out));
             }
