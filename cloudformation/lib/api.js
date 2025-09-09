@@ -5,7 +5,7 @@ export default {
         SubdomainPrefix: {
             Description: 'Prefix of domain: ie "map" of map.example.com',
             Type: 'String'
-        }
+        },
         ComputeCpu: {
             Description: 'The number of CPU units used by the task',
             Type: 'Number',
