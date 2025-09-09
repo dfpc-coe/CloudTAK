@@ -188,10 +188,10 @@
                 class='card-body'
             >
                 <TablerEnum
+                    v-model='mapStore.draw.lasso.overlay'
                     label='Layer Selection'
                     description='Features will be selected from the chosen layer.'
                     default='CoT Icons'
-                    v-model='mapStore.draw.lasso.overlay'
                     :options='
                         mapStore.overlays
                             .filter(overlay => overlay.actions.feature.includes("query") || overlay.id === -1)
