@@ -5,6 +5,16 @@ export default {
         SubdomainPrefix: {
             Description: 'Prefix of domain: ie "map" of map.example.com',
             Type: 'String'
+        },
+        ComputeCpu: {
+            Description: 'The number of CPU units used by the task',
+            Type: 'Number',
+            Default: 1024
+        },
+        ComputeMemory: {
+            Description: 'The amount of memory (in MiB) used by the task',
+            Type: 'Number',
+            Default: 4096 * 2
         }
     },
     Resources: {
@@ -391,8 +401,8 @@ export default {
             DependsOn: ['SigningSecret', 'MediaSecret'],
             Properties: {
                 Family: cf.stackName,
-                Cpu: 1024 * 1,
-                Memory: 4096 * 2,
+                Cpu: cf.ref('ComputeCpu'),
+                Memory: cf.ref('ComputeMemory'),
                 NetworkMode: 'awsvpc',
                 RequiresCompatibilities: ['FARGATE'],
                 Tags: [{
