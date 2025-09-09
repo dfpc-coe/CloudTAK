@@ -169,9 +169,9 @@ function uploadHeaders() {
     };
 }
 
-function uploadComplete(event: string) {
+function uploadComplete(event: unknown) {
     upload.value = false;
-    const imp = JSON.parse(event) as { imports: Array<{ uid: string }> };
+    const imp = event as { imports: Array<{ uid: string }> };
     router.push(`/menu/imports/${imp.imports[0].uid}`)
 }
 

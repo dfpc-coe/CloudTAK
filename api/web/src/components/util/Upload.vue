@@ -54,7 +54,7 @@
             </div>
         </div>
         <div
-            v-else-if='progress > 0 && progress < 101'
+            v-else-if='file && progress > 0 && progress < 101'
         >
             <TablerLoading :desc='`Uploading ${file.name}`' />
             <TablerProgress :percent='progress / 100' />
@@ -75,6 +75,7 @@ import {
 // Define component properties with types and default values
 interface Props {
     url: URL;
+    autoupload?: boolean;
     headers?: Record<string, string>;
     method?: string;
     cancel?: boolean;
@@ -147,7 +148,10 @@ function stage(event: Event) {
 }
 
 async function upload() {
+    if (!file.value) throw new Error('No file staged for upload');
+
   const formData = new FormData();
+
   formData.append('file', file.value.file);
 
   // Combine default and custom headers into a single object
