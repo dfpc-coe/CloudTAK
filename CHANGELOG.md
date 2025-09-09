@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v11.13.0 - 2025-09-08
+
+- :tada: Allow specifying Groups when Data Packages are created or Uploaded
+- :rocket: Unified Data Package creation modal
+- :tada: Allow specifying Hashtags when Data Packages are created or Uploaded
+
 ### v11.12.2 - 2025-09-08
 
 - :bug: Remove revoked npm packages
