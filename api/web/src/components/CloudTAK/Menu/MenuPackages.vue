@@ -21,60 +21,68 @@
             />
         </template>
         <template #default>
-            <div
+            <ShareToPackage
                 v-if='upload'
-                class='px-3 py-4'
-            >
-                <Upload
-                    :url='stdurl("/api/marti/package")'
-                    :headers='uploadHeaders()'
-                    @cancel='upload = false'
-                    @done='finishUpload($event)'
+                :upload='true'
+                @close='upload = false'
+            />
+
+            <div class='col-12 px-2 py-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Filter'
                 />
             </div>
+
+            <ChannelInfo label='Data Packages' />
+            <EmptyInfo v-if='mapStore.hasNoChannels' />
+
+            <TablerAlert
+                v-if='error'
+                title='Packages Error'
+                :err='error'
+            />
+            <TablerNone
+                v-else-if='!list.items.length'
+                label='Packages'
+                :create='false'
+            />
             <template v-else>
-                <div class='col-12 px-2 py-2'>
-                    <TablerInput
-                        v-model='paging.filter'
-                        icon='search'
-                        placeholder='Filter'
+                <MenuItem
+                    v-for='pkg in filteredList'
+                    :key='pkg.Hash'
+                    :flex='false'
+                    @click='router.push(`/menu/packages/${pkg.UID}`)'
+                    @keyup.enter='router.push(`/menu/packages/${pkg.UID}`)'
+                >
+                    <div
+                        class='col-12'
+                        v-text='pkg.Name'
                     />
-                </div>
-
-                <ChannelInfo label='Data Packages' />
-                <EmptyInfo v-if='mapStore.hasNoChannels' />
-
-                <TablerAlert
-                    v-if='error'
-                    title='Packages Error'
-                    :err='error'
-                />
-                <TablerNone
-                    v-else-if='!list.items.length'
-                    label='Packages'
-                    :create='false'
-                />
-                <template v-else>
-                    <MenuItem
-                        v-for='pkg in filteredList'
-                        :key='pkg.Hash'
-                        :flex='false'
-                        @click='router.push(`/menu/packages/${pkg.UID}`)'
-                        @keyup.enter='router.push(`/menu/packages/${pkg.UID}`)'
+                    <div
+                        v-if='pkg.Keywords.length > 1'
+                        class='col-12 d-flex py-2'
                     >
-                        <div
-                            class='col-12'
-                            v-text='pkg.Name'
-                        />
-                        <div class='col-12 subheader d-flex'>
-                            <div v-text='timeDiff(pkg.SubmissionDateTime)' />
-                            <div
-                                class='ms-auto me-2'
-                                v-text='pkg.SubmissionUser'
+                        <template
+                            v-for='keyword in pkg.Keywords'
+                            :key='keyword'
+                        >
+                            <span
+                                v-if='keyword.startsWith("#")'
+                                class='me-1 badge badge-outline bg-blue-lt'
+                                v-text='keyword'
                             />
-                        </div>
-                    </MenuItem>
-                </template>
+                        </template>
+                    </div>
+                    <div class='col-12 subheader d-flex'>
+                        <div v-text='timeDiff(pkg.SubmissionDateTime)' />
+                        <div
+                            class='ms-auto me-2'
+                            v-text='pkg.SubmissionUser'
+                        />
+                    </div>
+                </MenuItem>
             </template>
         </template>
     </MenuTemplate>
@@ -101,7 +109,7 @@ import {
 import timeDiff from '../../../timediff.ts';
 import ChannelInfo from '../util/ChannelInfo.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
-import Upload from '../../util/Upload.vue';
+import ShareToPackage from '../util/ShareToPackage.vue';
 import { useMapStore } from '../../../../src/stores/map.ts';
 
 const mapStore = useMapStore();
@@ -132,24 +140,10 @@ const filteredList = computed(() => {
     })
 });
 
-function uploadHeaders() {
-    return {
-        Authorization: `Bearer ${localStorage.token}`
-    };
-}
-
-function finishUpload(event: string) {
-    const e = JSON.parse(event) as {
-        UID: string;
-        Hash: string;
-    };
-
-    router.push(`/menu/packages/${e.Hash}`);
-}
-
 async function fetchList() {
     try {
         upload.value = false;
+        error.value = undefined;
         loading.value = true;
         const url = stdurl('/api/marti/package');
         list.value = await std(url) as PackageList;

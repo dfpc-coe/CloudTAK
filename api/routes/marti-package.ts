@@ -23,6 +23,17 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create File Package',
         group: 'MartiPackages',
         description: 'Helper API to create package',
+        query: Type.Object({
+            name: Type.Optional(Type.String({})),
+            groups: Type.Optional(Type.Union([
+                Type.Array(Type.String()),
+                Type.String()
+            ])),
+            keywords: Type.Optional(Type.Union([
+                Type.Array(Type.String()),
+                Type.String()
+            ])),
+        }),
         res: Package
     }, async (req, res) => {
         try {
@@ -32,6 +43,20 @@ export default async function router(schema: Schema, config: Config) {
             const creatorUid = profile.username;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
             const id = crypto.randomUUID();
+
+            let keywords: string[] | undefined = undefined;
+            let groups: string[] | undefined = undefined;
+            if (req.query.groups && typeof req.query.groups === 'string') {
+                groups = [ req.query.groups ];
+            } else if (req.query.groups && Array.isArray(req.query.groups)) {
+                groups = req.query.groups;
+            }
+
+            if (req.query.keywords && typeof req.query.keywords === 'string') {
+                keywords = [ req.query.keywords ];
+            } else if (req.query.groups && Array.isArray(req.query.keywords)) {
+                keywords = req.query.keywords;
+            }
 
             if (req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data')) {
                 const bb = busboy({
@@ -55,7 +80,7 @@ export default async function router(schema: Schema, config: Config) {
 
                             const pkg = new DataPackage(id, id);
 
-                            pkg.settings.name = meta.filename;
+                            pkg.settings.name = req.query.name || meta.filename;
                             await pkg.addFile(filePath, {
                                 name: meta.filename,
                             });
@@ -64,26 +89,32 @@ export default async function router(schema: Schema, config: Config) {
                         }
                     })();
                 }).on('finish', async () => {
-                    if (!singleFile) throw new Err(400, null, 'No File Provided');
+                    try {
+                        if (!singleFile) throw new Err(400, null, 'No File Provided');
 
-                    const pkg = await singleFile;
-                    const out = await pkg.finalize();
+                        const pkg = await singleFile;
+                        const out = await pkg.finalize();
 
-                    const hash = await DataPackage.hash(out);
+                        const hash = await DataPackage.hash(out);
 
-                    await api.Files.uploadPackage({
-                        name: pkg.settings.name, creatorUid, hash
-                    }, fs.createReadStream(out));
+                        await api.Files.uploadPackage({
+                            name: pkg.settings.name,
+                            creatorUid, hash,
+                            keywords, groups,
+                        }, fs.createReadStream(out));
 
-                    await pkg.destroy();
+                        await pkg.destroy();
 
-                    const pkgres = await api.Package.list({
-                        uid: hash
-                    });
+                        const pkgres = await api.Package.list({
+                            uid: hash
+                        });
 
-                    if (!pkgres.results.length) throw new Err(404, null, 'Package not found');
+                        if (!pkgres.results.length) throw new Err(404, null, 'Package not found');
 
-                    res.json(pkgres.results[0]);
+                        res.json(pkgres.results[0]);
+                    } catch (err) {
+                        Err.respond(err, res);
+                    }
                 });
 
                 req.pipe(bb);
@@ -107,6 +138,13 @@ export default async function router(schema: Schema, config: Config) {
             public: Type.Boolean({
                 default: false,
                 description: 'Should the Data Package be a public package, if so it will be published to the Data Package list'
+            }),
+            groups: Type.Optional(Type.Array(Type.String(), {
+                description: 'Channels that the Data Package should be shared with, use in conjunction with public=true'
+            })),
+            keywords: Type.Array(Type.String(), {
+                default: [],
+                description: 'Hash Tags to assign to the package'
             }),
             destinations: Type.Array(Type.Object({
                 uid: Type.Optional(Type.String({
@@ -226,7 +264,9 @@ export default async function router(schema: Schema, config: Config) {
                 const hash = await DataPackage.hash(out);
 
                 await api.Files.uploadPackage({
-                    name: pkg.settings.name, creatorUid, hash
+                    name: pkg.settings.name, creatorUid, hash,
+                    keywords: req.body.keywords,
+                    groups: req.body.groups
                 }, fs.createReadStream(out));
 
                 // TODO Ask ARA for a Content endpoint to lookup by hash to mirror upload API
@@ -245,7 +285,7 @@ export default async function router(schema: Schema, config: Config) {
                 content = await api.Files.upload({
                     name: id,
                     contentLength: size,
-                    keywords: [],
+                    keywords: req.body.keywords,
                     creatorUid,
                 }, fs.createReadStream(out));
             }

@@ -32,7 +32,20 @@
                     <label class='mx-2 user-select-none'>Contents:</label>
 
                     <div
-                        v-if='props.feats.length !== 0 || props.assets.length !== 0'
+                        v-if='props.upload'
+                        class='mb-2'
+                    >
+                        <Upload
+                            ref='upload'
+                            :cancel='false'
+                            :url='uploadUrl'
+                            :headers='uploadHeaders()'
+                            :autoupload='false'
+                            @staged='stageUpload($event)'
+                        />
+                    </div>
+                    <div
+                        v-else-if='props.feats.length !== 0 || props.assets.length !== 0'
                         class='col-12 overflow-auto'
                         style='
                             max-height: 20vh;
@@ -67,11 +80,21 @@
                     />
                 </div>
 
-                <!-- TODO SHOW CHANNEL SELECTION -->
+                <GroupSelect
+                    v-model='body.groups'
+                    :active='true'
+                    direction='IN'
+                />
+
+                <TagEntry
+                    placeholder='Hashtags'
+                    @tags='body.keywords = $event'
+                />
 
                 <div class='col-12 pt-3'>
                     <TablerButton
-                        class='w-100'
+                        class='w-100 btn-primary'
+                        :disabled='!body.groups.length && (!props.upload || uploaded)'
                         @click='share'
                     >
                         Create
@@ -83,8 +106,10 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, computed, useTemplateRef } from 'vue';
 import type { PropType } from 'vue';
+import TagEntry from './TagEntry.vue';
+import Upload from '../../util/Upload.vue';
 import {
     TablerNone,
     TablerModal,
@@ -92,7 +117,7 @@ import {
     TablerButton,
     TablerInput,
 } from '@tak-ps/vue-tabler';
-import { std } from '../../../std.ts';
+import { server, stdurl } from '../../../std.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import {
     IconFile,
@@ -101,6 +126,7 @@ import {
 import { useRouter } from 'vue-router';
 import FeatureRow from './FeatureRow.vue';
 import type { Feature, Content } from '../../../types.ts';
+import GroupSelect from './GroupSelect.vue';
 
 const mapStore = useMapStore();
 const router = useRouter();
@@ -110,9 +136,13 @@ const props = defineProps({
         type: String,
         default: ''
     },
+    upload: {
+        type: Boolean,
+        default: false
+    },
     assets: {
         type: Array as PropType<Array<{
-            type: string;
+            type: 'profile';
             id: number | string;
             name: string;
         }>>,
@@ -120,7 +150,6 @@ const props = defineProps({
     },
     feats: {
         type: Array as PropType<Array<Feature>>,
-        required: true,
         default: () => []
     },
 });
@@ -129,9 +158,40 @@ const emit = defineEmits(['close', 'done']);
 
 const loading = ref(false);
 
+const uploaded = ref<boolean>(false);
+
+const uploadRef = useTemplateRef<typeof Upload>('upload');
+
 const body = ref({
-    name: props.name
+    name: props.name,
+    keywords: [],
+    groups: []
 })
+
+const uploadUrl = computed(() => {
+    const url = stdurl('/api/marti/package');
+    url.searchParams.set('name', body.value.name);
+    for (const g of body.value.groups) {
+        url.searchParams.append('groups', g);
+    }
+
+    for (const k of body.value.keywords) {
+        url.searchParams.append('keywords', k);
+    }
+
+    return url;
+});
+
+function stageUpload(file: { name: string }) {
+    body.value.name = body.value.name || file.name;
+    uploaded.value = true;
+}
+
+function uploadHeaders() {
+    return {
+        Authorization: `Bearer ${localStorage.token}`
+    };
+}
 
 async function share() {
     const feats = [];
@@ -151,28 +211,41 @@ async function share() {
 
     loading.value = true;
 
-    try {
-        const content = await std('/api/marti/package', {
-            method: 'PUT',
-            body: {
-                type: 'FeatureCollection',
-                name: body.value.name,
-                public: true,
-                assets: props.assets,
-                features: feats.map((f) => {
-                    f = JSON.parse(JSON.stringify(f));
-                    return { id: f.properties.id || f.id, type: f.type, properties: f.properties, geometry: f.geometry }
-                })
-            }
-        }) as Content;
+    if (props.upload && uploadRef.value) {
+        const res = await uploadRef.value.upload() as Content;
+        console.error('PROCESS DONE', res);
+
+        router.push(`/menu/packages/${res.Hash}`);
 
         emit('done');
+    } else {
+        try {
+            const res = await server.PUT('/api/marti/package', {
+                body: {
+                    type: 'FeatureCollection',
+                    name: body.value.name,
+                    public: true,
+                    groups: body.value.groups,
+                    keywords: body.value.keywords,
+                    assets: props.assets.map((a) => ({ type: a.type, id: String(a.id) })),
+                    basemaps: [],
+                    destinations: [],
+                    features: feats.map((f) => {
+                        f = JSON.parse(JSON.stringify(f));
+                        return { id: f.properties.id || f.id, type: f.type, properties: f.properties, geometry: f.geometry }
+                    })
+                }
+            });
 
-        router.push(`/menu/packages/${content.Hash}`);
-    } catch (err) {
-        loading.value = false;
-        throw err;
+            if (res.error) throw new Error(res.error.message);
+
+            emit('done');
+
+            router.push(`/menu/packages/${res.data.Hash}`);
+        } catch (err) {
+            loading.value = false;
+            throw err;
+        }
     }
-
 }
 </script>

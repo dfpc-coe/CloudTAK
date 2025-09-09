@@ -63,6 +63,24 @@
                                 v-text='timeDiff(pkg.SubmissionDateTime)'
                             />
                         </div>
+                        <div class='datagrid-item'>
+                            <div class='datagrid-title'>
+                                Hashtags`
+                            </div>
+                            <div class='datagrid-content'>
+                                <div                                   
+                                    v-if='pkg.Keywords.length'    
+                                    class='col-12 pt-1'    
+                                >                               
+                                    <span                                 
+                                        v-for='keyword in pkg.Keywords'                        
+                                        :key='keyword'    
+                                        class='me-1 badge badge-outline bg-blue-lt'    
+                                        v-text='keyword'    
+                                    />                            
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class='col-md-6 py-3'>
