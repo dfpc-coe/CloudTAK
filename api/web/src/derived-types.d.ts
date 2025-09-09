@@ -20500,6 +20500,13 @@ export interface paths {
                          * @default false
                          */
                         public: boolean;
+                        /** @description Channels that the Data Package should be shared with, use in conjunction with public=true */
+                        groups?: string[];
+                        /**
+                         * @description Hash Tags to assign to the package
+                         * @default []
+                         */
+                        keywords: string[];
                         /**
                          * @description A list of destinations to automatically share the data package with
                          * @default []
@@ -20617,7 +20624,14 @@ export interface paths {
         /** Helper API to create package */
         post: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description No Description */
+                    name?: string;
+                    /** @description No Description */
+                    groups?: string[] | string;
+                    /** @description No Description */
+                    keywords?: string[] | string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;

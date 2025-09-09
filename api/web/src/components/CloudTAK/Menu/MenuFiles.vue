@@ -46,8 +46,8 @@
             <template v-else>
                 <div
                     v-for='asset in list.items'
-                    role='menu'
                     :key='asset.id'
+                    role='menu'
                 >
                     <div
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'
@@ -306,9 +306,9 @@ function uploadHeaders() {
     };
 }
 
-function uploadComplete(event: string) {
+function uploadComplete(event: unknown) {
     upload.value = false;
-    const imp = JSON.parse(event) as { imports: Array<{ uid: string }> };
+    const imp = event as { imports: Array<{ uid: string }> };
     router.push(`/menu/imports/${imp.imports[0].uid}`)
 }
 
