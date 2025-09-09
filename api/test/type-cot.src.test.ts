@@ -9,7 +9,7 @@ flight.user();
 
 test('GET: api/type/cot', async (t) => {
     try {
-        const res = await flight.fetch('/api/type/cot?identity=f', {
+        const res = await flight.fetch('/api/type/cot?identity=f&domain=a', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin
