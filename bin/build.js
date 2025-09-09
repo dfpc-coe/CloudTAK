@@ -14,8 +14,7 @@ for (const env of [
     'API_URL'
 ]) {
     if (!process.env[env]) {
-        console.error(`${env} Env Var must be set`);
-        process.exit();
+        throw new Error(`${env} Env Var must be set`);
     }
 }
 

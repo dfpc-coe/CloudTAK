@@ -68,8 +68,8 @@ export default {
             DependsOn: ['SigningSecret', 'MediaSecret'],
             Properties: {
                 Family: cf.join([cf.stackName, '-events']),
-                Cpu: 1024 * 1,
-                Memory: 4096 * 2,
+                Cpu: cf.ref('ComputeCpu'),
+                Memory: cf.ref('ComputeMemory'),
                 NetworkMode: 'awsvpc',
                 RequiresCompatibilities: ['FARGATE'],
                 Tags: [{
