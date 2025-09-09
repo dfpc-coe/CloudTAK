@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.12.2 - 2025-09-08
+
+- :bug: Remove revoked npm packages
+
 ### v11.12.1 - 2025-09-08
 
 - :bug: Fix issue where adding features to Data Sync could end up in a recursive addition loop
