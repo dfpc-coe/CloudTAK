@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.13.1 - 2025-09-08
+
+- :tada: Allow specifing Cpu/Mem in Parameters to allow rightsizing of staging infra
+
 ### v11.13.0 - 2025-09-08
 
 - :tada: Allow specifying Groups when Data Packages are created or Uploaded
