@@ -16,8 +16,8 @@
                 <div class='mx-2 my-2'>
                     <TablerEnum
                         v-if='config.providers.length'
-                        label='Routing Provider'
                         v-model='routePlan.provider'
+                        label='Routing Provider'
                         :options='config.providers.map(p => p.name)'
                     />
                 </div>
@@ -41,8 +41,8 @@
                 <div class='mx-2 my-2'>
                     <TablerEnum
                         v-if='modes.length > 0'
-                        label='Travel Mode'
                         v-model='routePlan.travelMode'
+                        label='Travel Mode'
                         :options='modes.map(m => m.name)'
                     />
                 </div>

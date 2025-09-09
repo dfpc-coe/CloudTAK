@@ -310,13 +310,13 @@
                         v-tooltip='"Map is locked to marker - Click to Unlock"'
                         title='Map is locked to marker - Click to Unlock'
                         class='cursor-pointer hover-button'
-                        @click='mapStore.locked.splice(0, mapStore.locked.length)'
                         role='button'
                         tabindex='0'
                         color='red'
                         :size='32'
                         stroke='2'
                         style='margin: 3px 3px'
+                        @click='mapStore.locked.splice(0, mapStore.locked.length)'
                     />
                 </div>
             </div>

@@ -3,7 +3,7 @@
         <div
             v-if='loading'
         >
-            <TablerLoading/>
+            <TablerLoading />
         </div>
         <div
             v-else-if='error'
@@ -21,7 +21,7 @@
             />
         </div>
         <template v-else>
-            <span v-text='list'/>
+            <span v-text='list' />
         </template>
     </div>
 </template>

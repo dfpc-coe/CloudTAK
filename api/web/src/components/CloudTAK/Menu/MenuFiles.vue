@@ -46,8 +46,8 @@
             <template v-else>
                 <div
                     v-for='asset in list.items'
-                    role='menu'
                     :key='asset.id'
+                    role='menu'
                 >
                     <div
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'
