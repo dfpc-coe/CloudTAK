@@ -130,7 +130,7 @@ export default class AtlasProfile {
                 await this.CoT([0, 0]);
             }
 
-            const me = await this.atlas.db.get(this.uid());
+            const me = await this.atlas.db.get(await this.uid());
 
             if (me) {
                 this.atlas.conn.sendCOT(me.as_feature())
@@ -342,7 +342,7 @@ export default class AtlasProfile {
 
     }
 
-    uid(): string {
+    async uid(): Promise<string> {
         if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
 
         // Need to differentiate between servers eventually
@@ -356,13 +356,15 @@ export default class AtlasProfile {
         
         // HAE = Height Above Ellipsoid (altitude), CE = Circular Error (accuracy)
         const hae = altitude !== null && altitude !== undefined ? altitude : 0;
+
+        const uid = await this.uid();
        
         const feat: Feature = {
-            id: this.uid(),
+            id: uid,
             path: '/',
             type: 'Feature',
             properties: {
-                id: this.uid(),
+                id: uid,
                 type: this.profile.tak_type,
                 how: 'm-g',
                 callsign: this.profile.tak_callsign,
