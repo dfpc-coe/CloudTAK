@@ -9,7 +9,7 @@
             class='col-12 border-light border-bottom d-flex'
             style='border-radius: 0px;'
         >
-            <div class='col-12 card-header row my-2 d-flex'>
+            <div class='col-12 card-header row my-2 d-flex' >
                 <div class='card-title d-flex'>
                     <div class='col-auto ms-2 my-1'>
                         <PropertyBattery
@@ -363,6 +363,18 @@
                 >
                     <PolygonArea
                         :cot='cot'
+                    />
+                </div>
+
+                <div
+                    v-if='cot && cot.properties.shape && cot.properties.shape.ellipse && cot.properties.shape.ellipse.major === cot.properties.shape.ellipse.minor'
+                    class='col-12 pt-2'
+                >
+                    <PropertyDistance
+                        :key='cot.properties.id'
+                        label='Radius'
+                        :unit='units.display_distance'
+                        :modelValue='cot.properties.shape.ellipse.major * 0.001'
                     />
                 </div>
 
@@ -830,6 +842,7 @@ import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import PropertyType from './util/PropertyType.vue';
 import PropertyBattery from './util/PropertyBattery.vue';
+import PropertyDistance from './util/PropertyDistance.vue';
 import PropertyBearing from './util/PropertyBearing.vue';
 import PropertyMilSym from './util/PropertyMilSym.vue';
 import PropertySensor from './util/PropertySensor.vue';

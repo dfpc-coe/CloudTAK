@@ -129,6 +129,9 @@ watch(config.value, () => {
     );
 });
 
+/**
+ * Convert any distance unit to kilometers
+ */
 function toKilometers(mode: string, distance: number): number {
     if (mode === 'mile') {
         return distance * 1.60934;
@@ -137,7 +140,7 @@ function toKilometers(mode: string, distance: number): number {
     } else if (mode === 'yard') {
         return distance * 0.0009144;
     } else if (mode === 'meter') {
-        return distance * 1000;
+        return distance * 0.001;
     } else if (mode === 'kilometer') {
         return distance;
     } else {
