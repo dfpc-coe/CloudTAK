@@ -9,11 +9,11 @@
         />
         <div class='modal-header text-white'>
             <div class='modal-title d-flex align-items-center'>
-                <IconWalk
+                <IconTarget
                     :size='32'
                     stroke='1'
                 />
-                <span class='mx-2'>Lost Person Behavior Input</span>
+                <span class='mx-2'>Range Rings</span>
             </div>
         </div>
         <div class='modal-body text-white'>
@@ -34,26 +34,47 @@
                 @submit='submitRings'
             />
 
-            <PropertyDistance
-                v-model='config.rings["25%"]'
-                label='25% Containment Radius'
-                :edit='true'
-                :hover='true'
-            />
+            <div class='mx-2 border my-2'>
+                <template v-for='ring of config.rings'>
+                    <div class='position-relative'>
+                        <div
+                            v-if='config.rings.length > 1'
+                            class='position-absolute cursor-pointer'
+                            style='
+                                top: 4px;
+                                right: 4px;
+                            '
+                            @click='config.rings.splice(config.rings.indexOf(ring), 1)'
+                        >
+                            <IconTrash
+                                :size='18'
+                                stroke='1'
+                            />
+                        </div>
 
-            <PropertyDistance
-                v-model='config.rings["50%"]'
-                label='50% Containment Radius'
-                :edit='true'
-                :hover='true'
-            />
+                        <PropertyDistance
+                            v-model='ring.distance'
+                            class='py-2'
+                            label='Ring Diameter'
+                            :edit='true'
+                            :hover='true'
+                        />
+                    </div>
+                </template>
 
-            <PropertyDistance
-                v-model='config.rings["75%"]'
-                label='75% Containment Radius'
-                :edit='true'
-                :hover='true'
-            />
+                <div class='col-12 px-2 py-2'>
+                    <button
+                        class='btn btn-secondary btn-sm w-100'
+                        @click='config.rings.push({ distance: 1 })'
+                    >
+                        <IconPlus
+                            :size='18'
+                            stroke='1'
+                        />
+                        <span class='ms-2'>Add Ring</span>
+                    </button>
+                </div>
+            </div>
 
             <button
                 class='btn btn-primary w-100 mt-3'
@@ -72,7 +93,9 @@ import Coordinate from './util/Coordinate.vue';
 import PropertyDistance from './util/PropertyDistance.vue';
 import Ellipse from '@turf/ellipse'
 import {
-    IconWalk,
+    IconPlus,
+    IconTarget,
+    IconTrash
 } from '@tabler/icons-vue';
 import {
     TablerInput,
@@ -89,11 +112,9 @@ const center = mapStore.map.getCenter();
 const config = ref({
     name: '',
     type: 'u-d-p',
-    rings: {
-        '25%': 0,
-        '50%': 0,
-        '75%': 0
-    },
+    rings: [{
+        distance: 1
+    }],
     coordinates: [
         Math.round(center.lng * 1000000) / 1000000,
         Math.round(center.lat * 1000000) / 1000000,
@@ -127,9 +148,10 @@ async function submitRings() {
         authored: true
     });
 
-    const keys = Object.keys(config.value.rings) as (keyof typeof config.value.rings)[];
-    for (const ring of keys) {
-        if (config.value.rings[ring] === 0) continue;
+    for (let i = 0; i < config.value.rings.length; i++) {
+        const ring = config.value.rings[i];
+
+        if (ring.distance === 0) continue;
 
         const ringid = randomUUID();
 
@@ -145,8 +167,8 @@ async function submitRings() {
                 archived: true,
                 shape: {
                     ellipse: {
-                        major: config.value.rings[ring] * 1000,
-                        minor: config.value.rings[ring] * 1000,
+                        major: ring.distance * 1000,
+                        minor: ring.distance * 1000,
                         angle: 360
                     }
                 },
@@ -155,12 +177,12 @@ async function submitRings() {
                 start: new Date().toISOString(),
                 stale: new Date().toISOString(),
                 center: toRaw(config.value.coordinates),
-                callsign: toRaw((config.value.name || '') + " " + ring),
+                callsign: toRaw((config.value.name || '') + " Ring #" + (i + 1)),
             },
             geometry: Ellipse(
                 config.value.coordinates,
-                config.value.rings[ring],
-                config.value.rings[ring],
+                ring.distance,
+                ring.distance,
                 {
                     angle: 360
                 }
