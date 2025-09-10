@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.14.1 - 2025-09-10
+
+- :rocket: Hide self in Contacts List
+
 ### v11.14.0 - 2025-09-10
 
 - :rocket: Expands the type query parameter to allow querying for multiple types in a single query
