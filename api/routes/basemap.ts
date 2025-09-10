@@ -167,7 +167,10 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            type: Type.Optional(Type.Enum(Basemap_Type)),
+            type: Type.Optional(Type.Union([
+                Type.Enum(Basemap_Type),
+                Type.Array(Type.Enum(Basemap_Type))
+            ])),
             sort: Type.String({
                 default: 'created',
                 enum: Object.keys(Basemap)
@@ -195,6 +198,10 @@ export default async function router(schema: Schema, config: Config) {
                 scope = sql`username IS NOT NULL`;
             }
 
+            const types: Array<Basemap_Type> = Array.isArray(req.query.type) ? req.query.type : (req.query.type ? [req.query.type] : [
+                Basemap_Type.RASTER, Basemap_Type.VECTOR, Basemap_Type.STYLE
+            ]);
+
             if (req.query.impersonate) {
                 await Auth.as_user(config, req, { admin: true });
 
@@ -208,7 +215,7 @@ export default async function router(schema: Schema, config: Config) {
                     where: sql`
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
-                        AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                        AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                         AND (
                                 (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
                                 OR ${Param(req.query.collection)}::TEXT = collection
@@ -225,7 +232,7 @@ export default async function router(schema: Schema, config: Config) {
                         where: sql`
                             collection ~* ${Param(req.query.filter)}
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
-                            AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                            AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                             AND ${scope}
                             AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
                         `
@@ -243,7 +250,7 @@ export default async function router(schema: Schema, config: Config) {
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (username IS NULL OR username = ${user.email})
-                        AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                        AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                         AND (
                                 (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
                                 OR ${Param(req.query.collection)}::TEXT = collection
@@ -260,7 +267,7 @@ export default async function router(schema: Schema, config: Config) {
                             collection ~* ${Param(req.query.filter)}
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                             AND (username IS NULL OR username = ${user.email})
-                            AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                            AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                             AND ${scope}
                         `
                     });

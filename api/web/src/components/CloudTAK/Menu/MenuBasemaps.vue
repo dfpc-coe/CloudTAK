@@ -318,6 +318,8 @@ async function fetchList() {
         if (paging.value.collection) url.searchParams.append('collection', String(paging.value.collection));
         url.searchParams.append('limit', String(paging.value.limit));
         url.searchParams.append('page', String(paging.value.page));
+        url.searchParams.append('type', 'vector');
+        url.searchParams.append('type', 'raster');
         list.value = await std(url) as BasemapList;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
