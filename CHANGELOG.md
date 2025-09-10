@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v11.15.0 - 2025-09-10
+
+- :rocket: Rename Lost Person Behavior to "Range Rings"
+- :bug: Fix distance calculation bug when distance unit was changed
+- :tada: Allow adding any number of range rings
+- :rocket: Remove Lost Person behavior hardcoded % names
+
 ### v11.14.1 - 2025-09-10
 
 - :rocket: Hide self in Contacts List
