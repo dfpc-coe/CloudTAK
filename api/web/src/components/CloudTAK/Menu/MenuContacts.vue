@@ -187,6 +187,8 @@ const config = ref<ConfigGroups>({
 
 const opened = ref<Set<string>>(new Set());
 const teams = ref<Set<string>>(new Set());
+
+const self = ref<string>('');
 const visibleActiveContacts = ref<ContactList>([]);
 const visibleOfflineContacts = ref<ContactList>([]);
 
@@ -203,6 +205,8 @@ channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
 }
 
 onMounted(async () => {
+    self.value = await mapStore.worker.profile.uid();
+
     await Promise.all([
         fetchList(loading),
         fetchConfig()
@@ -233,6 +237,7 @@ async function updateContacts() {
 
     for (const contact of contacts.value) {
         if (!contact.callsign.toLowerCase().includes(paging.value.filter.toLowerCase())) continue;
+        if (contact.uid === self.value) continue;
 
         if (await mapStore.worker.db.has(contact.uid)) {
             if (contact.team) {
