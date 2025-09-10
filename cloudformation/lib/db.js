@@ -4,7 +4,7 @@ export default {
     Parameters: {
         DatabaseType: {
             Type: 'String',
-            Default: 'db.t3.micro',
+            Default: 'db.t4g.micro',
             Description: 'Database size to create',
             AllowedValues: [
                 'db.t4g.micro',
