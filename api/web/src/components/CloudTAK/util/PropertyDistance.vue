@@ -6,7 +6,10 @@
             color='#6b7990'
             class='ms-2 me-1'
         />
-        <label class='subheader user-select-none'>Distance</label>
+        <label
+            class='subheader user-select-none'
+            v-text='props.label'
+        />
         <div class='mx-2'>
             <CopyField
                 v-model='config.distance'
@@ -126,15 +129,18 @@ watch(config.value, () => {
     );
 });
 
+/**
+ * Convert any distance unit to kilometers
+ */
 function toKilometers(mode: string, distance: number): number {
     if (mode === 'mile') {
         return distance * 1.60934;
     } else if (mode === 'feet') {
-        return distance / 0.0003048;
+        return distance * 0.0003048;
     } else if (mode === 'yard') {
-        return distance / 0.0009144;
+        return distance * 0.0009144;
     } else if (mode === 'meter') {
-        return distance / 1000;
+        return distance * 0.001;
     } else if (mode === 'kilometer') {
         return distance;
     } else {
