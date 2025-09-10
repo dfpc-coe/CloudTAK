@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.13.2 - 2025-09-10
+
+- :rocket: Migrate to RDS Graviton Instances
+
 ### v11.13.1 - 2025-09-08
 
 - :tada: Allow specifing Cpu/Mem in Parameters to allow rightsizing of staging infra
