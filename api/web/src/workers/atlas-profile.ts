@@ -71,7 +71,7 @@ export default class AtlasProfile {
 
     async creator(): Promise<FeaturePropertyCreator> {
         return {
-            uid: await this.uid(),
+            uid: this.uid(),
             type: 'a-f-G-E-V-C',
             callsign: await this.callsign(),
             time: new Date().toISOString(),
@@ -130,7 +130,7 @@ export default class AtlasProfile {
                 await this.CoT([0, 0]);
             }
 
-            const me = await this.atlas.db.get(await this.uid());
+            const me = await this.atlas.db.get(this.uid());
 
             if (me) {
                 this.atlas.conn.sendCOT(me.as_feature())
@@ -342,7 +342,7 @@ export default class AtlasProfile {
 
     }
 
-    async uid(): Promise<string> {
+    uid(): string {
         if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
 
         // Need to differentiate between servers eventually
@@ -357,7 +357,7 @@ export default class AtlasProfile {
         // HAE = Height Above Ellipsoid (altitude), CE = Circular Error (accuracy)
         const hae = altitude !== null && altitude !== undefined ? altitude : 0;
 
-        const uid = await this.uid();
+        const uid = this.uid();
        
         const feat: Feature = {
             id: uid,
