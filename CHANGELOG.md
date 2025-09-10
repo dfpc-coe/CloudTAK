@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.13.3 - 2025-09-10
+
+- :bug: Fix Snapping Coordinate Validity Check
+
 ### v11.13.2 - 2025-09-10
 
 - :rocket: Migrate to RDS Graviton Instances
