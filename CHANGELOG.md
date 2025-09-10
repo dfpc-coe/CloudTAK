@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.14.0 - 2025-09-10
+
+- :rocket: Expands the type query parameter to allow querying for multiple types in a single query
+- :rocket: Only queries for raster and vector in basemap UI
+
 ### v11.13.3 - 2025-09-10
 
 - :bug: Fix Snapping Coordinate Validity Check
