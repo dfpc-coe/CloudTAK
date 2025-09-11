@@ -110,7 +110,7 @@ const props = defineProps<{
     modelValue: number | null,
 }>()
 
-const emit = defineEmits([ 'update:modelValue' ]);
+const emit = defineEmits([ 'update:modelValue', 'disabled' ]);
 
 const noAgency = ref(props.modelValue === null);
 const loading = ref({
@@ -123,6 +123,9 @@ const isSystemAdmin = ref(false);
 
 const list =  ref<ETLAgencyList>({
     total: 0,
+    config: {
+        enabled: true
+    },
     items: []
 });
 
@@ -172,8 +175,11 @@ async function listData() {
         selected.value = data.items[0];
     }
 
-    list.value = data;
-
-    loading.value.list = false;
+    if (!data.config.enabled) {
+        emit('disabled', true);
+    } else {
+        list.value = data;
+        loading.value.list = false;
+    }
 }
 </script>

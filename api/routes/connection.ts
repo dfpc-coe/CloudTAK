@@ -360,7 +360,6 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-
             res.json({
                 status: 200,
                 message: 'Connection Deleted'
