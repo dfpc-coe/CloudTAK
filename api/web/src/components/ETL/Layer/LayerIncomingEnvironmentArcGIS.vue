@@ -165,6 +165,15 @@
                             :disabled='disabled || !environment.ARCGIS_URL'
                         />
                     </div>
+                    <div class='w-100'>
+                        <TablerEnum
+                            v-model='environment.ARCGIS_QUERY_STRATEGY'
+                            default='Query'
+                            :options='["Query", "QueryTopFeatures"]'
+                            label='ArcGIS SQL Query Strategy'
+                            :disabled='disabled || !environment.ARCGIS_URL'
+                        />
+                    </div>
                     <button
                         v-if='!disabled && environment.ARCGIS_URL'
                         class='btn'
