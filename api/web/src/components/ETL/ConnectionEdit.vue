@@ -18,7 +18,7 @@
                     <div class='col-lg-12'>
                         <template v-if='loading'>
                             <TablerLoading
-                                class='text-white' 
+                                class='text-white'
                             />
                         </template>
                         <template v-else>
@@ -58,14 +58,11 @@
                                                 v-model='connection.name'
                                                 label='Name'
                                                 :error='errors.name'
-                                                description='
-                                                    The human readable name of the Connection
-                                                '
+                                                description='The human readable name of the Connection'
                                             />
                                         </div>
 
                                         <div class='col-md-12'>
-                                            '
                                             <div
                                                 class='px-2 py-2 round btn-group w-100'
                                                 role='group'
@@ -122,7 +119,9 @@
                                         </div>
                                         <div class='col-md-12'>
                                             <AgencySelect
+                                                v-if='!agencyDisabled'
                                                 v-model='connection.agency'
+                                                @disabled='disableAgency'
                                                 label='Agency Owner'
                                             />
                                         </div>
@@ -164,20 +163,22 @@
                                                         class='btn-group w-100'
                                                         role='group'
                                                     >
-                                                        <input
-                                                            id='creation'
-                                                            type='radio'
-                                                            class='btn-check'
-                                                            name='cert-type'
-                                                            autocomplete='off'
-                                                            :checked='type === "creation"'
-                                                            @click='type = "creation"'
-                                                        >
-                                                        <label
-                                                            for='creation'
-                                                            type='button'
-                                                            class='btn'
-                                                        >Machine User Creation</label>
+                                                        <template v-if='!agencyDisabled'>
+                                                            <input
+                                                                id='creation'
+                                                                type='radio'
+                                                                class='btn-check'
+                                                                name='cert-type'
+                                                                autocomplete='off'
+                                                                :checked='type === "creation"'
+                                                                @click='type = "creation"'
+                                                            >
+                                                            <label
+                                                                for='creation'
+                                                                type='button'
+                                                                class='btn'
+                                                            >Machine User Creation</label>
+                                                        </template>
 
                                                         <input
                                                             id='login'
@@ -244,7 +245,7 @@
                                                         @err='err = $event'
                                                     />
                                                 </template>
-                                                <template v-else-if='type === "creation"'>
+                                                <template v-else-if='!agencyDisabled && type === "creation"'>
                                                     <CertificateMachineUser
                                                         :connection='connection'
                                                         @certs='p12upload($event)'
@@ -348,6 +349,8 @@ const errors = ref({
     description: '',
 });
 
+const agencyDisabled = ref(false);
+
 const connection = ref({
     name: '',
     agency: undefined,
@@ -375,6 +378,12 @@ onMounted(async () => {
         loading.value = false;
     }
 });
+
+function disableAgency() {
+    agencyDisabled.value = true;
+    type.value = 'login'
+    connection.value.agency = null;
+}
 
 async function fetch() {
     loading.value = true;

@@ -20,6 +20,9 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
+            config: Type.Object({
+                enabled: Type.Boolean()
+            }),
             items: Type.Array(AgencyResponse)
         })
 
@@ -29,13 +32,24 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await config.models.Profile.from(user.email);
 
             if (!config.external || !config.external.configured) {
-                res.json({ total: 0, items: [] })
+                res.json({
+                    total: 0,
+                    config: {
+                        enabled: false
+                    },
+                    items: []
+                });
             } else if (!profile.id) {
                 throw new Err(400, null, 'External ID must be set on profile');
             } else if (config.external)  {
                 const list = await config.external.agencies(profile.id, req.query.filter);
 
-                res.json(list);
+                res.json({
+                    ...list,
+                    config: {
+                        enabled: true
+                    }
+                });
             }
         } catch (err) {
             Err.respond(err, res);
