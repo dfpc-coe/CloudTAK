@@ -151,11 +151,13 @@ onUnmounted(() => {
     }
 });
 
-function downloadImport() {
+async function downloadImport() {
     const url = stdurl(`/api/import/${route.params.import}/raw`)
     url.searchParams.append('token', localStorage.token);
     url.searchParams.append('download', String(true));
-    window.location.href = String(url);
+    await std(url, {
+        download: true
+    })
 }
 
 async function deleteImport() {

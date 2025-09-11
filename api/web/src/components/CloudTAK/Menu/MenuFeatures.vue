@@ -370,7 +370,9 @@ async function refresh(load = false): Promise<void> {
 }
 
 async function download(format: string): Promise<void> {
-    window.location.href = String(stdurl(`/api/profile/feature?format=${format}&download=true&token=${localStorage.token}`));
+    await std(`/api/profile/feature?format=${format}&download=true&token=${localStorage.token}`, {
+        download: true
+    });
 }
 
 async function closePath(path: Path): Promise<void> {

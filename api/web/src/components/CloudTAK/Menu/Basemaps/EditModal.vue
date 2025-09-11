@@ -297,8 +297,10 @@ onMounted(async () => {
     }
 });
 
-function download() {
-    window.location.href = stdurl(`api/basemap/${props.basemap.id}?format=xml&download=true&token=${localStorage.token}`);
+async function download() {
+    await std(`api/basemap/${props.basemap.id}?format=xml&download=true&token=${localStorage.token}`, {
+        download: true
+    });
 }
 
 async function fetchTileJSON() {
