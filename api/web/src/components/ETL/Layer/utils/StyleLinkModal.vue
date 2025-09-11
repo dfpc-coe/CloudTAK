@@ -4,7 +4,7 @@
             type='button'
             class='btn-close'
             aria-label='Close'
-            @click='emit(&apos;close&apos;)'
+            @click='emit("close")'
         />
         <div class='modal-status bg-yellow' />
         <div class='modal-header'>
