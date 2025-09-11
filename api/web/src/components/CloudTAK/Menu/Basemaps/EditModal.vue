@@ -323,7 +323,7 @@ async function fetchTileJSON() {
 
 function processUpload(body) {
     mode.value.upload = false;
-    editing.value = JSON.parse(body);
+    editing.value = body;
 }
 
 function uploadHeaders() {
