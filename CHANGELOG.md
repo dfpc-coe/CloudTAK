@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.17.1 - 2025-09-11
+
+- :bug: Fix Click Feature Types
+
 ### v11.17.0 - 2025-09-11
 
 - :tada: Allow specifying Query or QueryTopFeatures in ArcGIS ETls
