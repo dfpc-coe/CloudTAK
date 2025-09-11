@@ -182,7 +182,7 @@
 import { onMounted, ref, watch } from 'vue';
 import MenuItem from '../util/MenuItem.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
-import { std, stdurl } from '../../../std.ts';
+import { server, stdurl } from '../../../std.ts';
 import Overlay from '../../../base/overlay.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -313,14 +313,25 @@ async function fetchList() {
 
     try {
         loading.value = true;
-        const url = stdurl('/api/basemap');
-        if (paging.value.filter) url.searchParams.append('filter', paging.value.filter);
-        if (paging.value.collection) url.searchParams.append('collection', String(paging.value.collection));
-        url.searchParams.append('limit', String(paging.value.limit));
-        url.searchParams.append('page', String(paging.value.page));
-        url.searchParams.append('type', 'vector');
-        url.searchParams.append('type', 'raster');
-        list.value = await std(url) as BasemapList;
+
+        const res = await server.GET('/api/basemap', {
+            params: {
+                query: {
+                    filter: paging.value.filter,
+                    collection: paging.value.collection ? paging.value.collection : undefined,
+                    limit: paging.value.limit,
+                    order: 'desc',
+                    sort: 'name',
+                    page: paging.value.page,
+                    // @ts-expect-error The OpenAPI Type gen isn't smart enough for this one
+                    type: ['vector', 'raster']
+                }
+            }
+        })
+
+        if (res.error) throw new Error(res.error.message);
+
+        list.value = res.data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
