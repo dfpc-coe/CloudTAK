@@ -68,7 +68,7 @@ export const useMapStore = defineStore('cloudtak', {
         selected: Map<string, COT>;
         select: {
             mode?: string;
-            feats: MapGeoJSONFeature[];
+            feats: Array<COT | MapGeoJSONFeature>;
             x: number;
             y: number;
         },
@@ -599,7 +599,21 @@ export const useMapStore = defineStore('cloudtak', {
                         this.select.y = e.point.y;
                     }
 
-                    this.select.feats = features;
+                    const feats = [];
+
+                    for (const feat of features) {
+                        const cot = await this.worker.db.get(feat.properties.id, {
+                            mission: true
+                        });
+
+                        if (cot) {
+                            feats.push(cot);
+                        } else {
+                            feats.push(feat);
+                        }
+                    }
+
+                    this.select.feats = feats;
                 }
             });
 
