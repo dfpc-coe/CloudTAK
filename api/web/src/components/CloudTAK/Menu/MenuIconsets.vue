@@ -237,8 +237,10 @@ function uploadHeaders() {
     };
 }
 
-function download(iconset) {
-    window.location.href = stdurl(`/api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
+async function download(iconset) {
+    await std(`/api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`, {
+        download: true
+    });
 }
 
 async function fetchList() {

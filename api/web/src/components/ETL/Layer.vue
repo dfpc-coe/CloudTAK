@@ -550,8 +550,10 @@ async function fetchStatus(load = false) {
     loading.value.stack = false;
 }
 
-function downloadConfig() {
-    window.location.href = String(stdurl(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}?download=true&token=${localStorage.token}`));
+async function downloadConfig() {
+    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}?download=true&token=${localStorage.token}`, {
+        download: true
+    });
 }
 
 async function fetchCapabilities() {
