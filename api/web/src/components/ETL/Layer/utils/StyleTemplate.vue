@@ -5,11 +5,11 @@
     >
         <TablerInput
             v-model='template'
-            :label='label'
-            :disabled='disabled'
-            :description='description'
+            :label='props.label'
+            :disabled='props.disabled'
+            :description='props.description'
             :rows='templateRows'
-            :placeholder='placeholder'
+            :placeholder='props.placeholder'
         />
 
         <template #no-result>
@@ -20,84 +20,74 @@
 
         <template #item-{='{ item }'>
             <div
-                class='subheader mx-2 my-2 text-center cursor-pointer'
+                class='subheader py-2 px-2 text-center cursor-pointer hover rounded'
                 v-text='item.label'
             />
         </template>
     </Mentionable>
 </template>
 
-<script>
-import { Mentionable } from 'vue-mention'
-import {
-    TablerInput,
-} from '@tak-ps/vue-tabler';
+<script setup>
+import { ref, computed, watch } from 'vue';
+import { Mentionable } from 'vue-mention';
+import { TablerInput } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'StyleTemplate',
-    components: {
-        TablerInput,
-        Mentionable
+// Define props for the component
+const props = defineProps({
+    modelValue: {
+        type: String,
+        required: true
     },
-    props: {
-        modelValue: {
-            type: String,
-            required: true
-        },
-        schema: {
-            type: Object,
-            required: true
-        },
-        disabled: {
-            type: Boolean,
-            default: false
-        },
-        label: {
-            type: String,
-        },
-        placeholder: {
-            type: String,
-        },
-        description: {
-            type: String,
-        },
-        rows: {
-            type: Number
-        }
+    schema: {
+        type: Object,
+        required: true
     },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        return {
-            keys: ["{"],
-            template: this.modelValue
-        }
+    disabled: {
+        type: Boolean,
+        default: false
     },
-    computed: {
-        templateRows: function() {
-            if (this.rows) return this.rows;
-
-            const rows = this.template.split('\n').length;
-            if (rows < 2) return 2
-            return rows;
-        },
-        schemalist: function() {
-            return Object.keys(this.schema.properties).map((ele) => {
-                return {
-                    value: '{' + ele + '}}',
-                    label: ele
-                };
-            });
-        }
+    label: {
+        type: String,
     },
-    watch: {
-        modelValue: function() {
-            this.template = this.modelValue;
-        },
-        template: function() {
-            this.$emit('update:modelValue', this.template);
-        }
+    placeholder: {
+        type: String,
+    },
+    description: {
+        type: String,
+    },
+    rows: {
+        type: Number
     }
-}
+});
+
+const emit = defineEmits(['update:modelValue']);
+
+const keys = ref(["{"]);
+const template = ref(props.modelValue);
+
+const templateRows = computed(() => {
+    if (props.rows) return props.rows;
+
+    const rows = template.value.split('\n').length;
+    if (rows < 2) return 2;
+    return rows;
+});
+
+const schemalist = computed(() => {
+    if (!props.schema || !props.schema.properties) return [];
+    return Object.keys(props.schema.properties).map((ele) => {
+        return {
+            value: `{${ele}}}`,
+            label: ele
+        };
+    });
+});
+
+watch(() => props.modelValue, (newValue) => {
+    template.value = newValue;
+});
+
+watch(template, (newValue) => {
+    emit('update:modelValue', newValue);
+});
 </script>
