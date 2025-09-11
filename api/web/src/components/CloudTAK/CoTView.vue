@@ -9,7 +9,7 @@
             class='col-12 border-light border-bottom d-flex'
             style='border-radius: 0px;'
         >
-            <div class='col-12 card-header row my-2 d-flex' >
+            <div class='col-12 card-header row my-2 d-flex'>
                 <div class='card-title d-flex'>
                     <div class='col-auto ms-2 my-1'>
                         <PropertyBattery
@@ -374,7 +374,7 @@
                         :key='cot.properties.id'
                         label='Radius'
                         :unit='units.display_distance'
-                        :modelValue='cot.properties.shape.ellipse.major * 0.001'
+                        :model-value='cot.properties.shape.ellipse.major * 0.001'
                     />
                 </div>
 
