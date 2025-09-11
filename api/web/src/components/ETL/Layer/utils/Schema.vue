@@ -4,58 +4,58 @@
         class='px-2 py-2'
     >
         <div
-            v-for='key in Object.keys(schema.properties)'
+            v-for='key in Object.keys(props.schema.properties)'
             :key='key'
             class='py-2 floating-input'
         >
-            <template v-if='schema.properties[key].enum'>
+            <template v-if='props.schema.properties[key].enum'>
                 <TablerEnum
                     v-model='data[key]'
                     :label='key'
-                    :disabled='disabled'
-                    :options='schema.properties[key].enum'
-                    :default='schema.properties[key].default'
-                    :required='schema.required.includes(key)'
-                    :description='schema.properties[key].description'
+                    :disabled='props.disabled'
+                    :options='props.schema.properties[key].enum'
+                    :default='props.schema.properties[key].default'
+                    :required='props.schema.required.includes(key)'
+                    :description='props.schema.properties[key].description'
                 />
             </template>
-            <template v-else-if='schema.properties[key].type === "string"'>
+            <template v-else-if='props.schema.properties[key].type === "string"'>
                 <TablerInput
                     v-model='data[key]'
                     :label='key'
-                    :disabled='disabled'
-                    :default='schema.properties[key].default'
-                    :required='schema.required.includes(key)'
-                    :description='schema.properties[key].description'
+                    :disabled='props.disabled'
+                    :default='props.schema.properties[key].default'
+                    :required='props.schema.required.includes(key)'
+                    :description='props.schema.properties[key].description'
                 />
             </template>
-            <template v-else-if='schema.properties[key].type === "number" || schema.properties[key].type === "integer"'>
+            <template v-else-if='props.schema.properties[key].type === "number" || props.schema.properties[key].type === "integer"'>
                 <TablerInput
                     v-model='data[key]'
                     type='number'
                     :label='key'
-                    :step='schema.properties[key].type === "integer" ? 1 : "any"'
-                    :disabled='disabled'
-                    :default='schema.properties[key].default'
-                    :required='schema.required.includes(key)'
-                    :description='schema.properties[key].description'
+                    :step='props.schema.properties[key].type === "integer" ? 1 : "any"'
+                    :disabled='props.disabled'
+                    :default='props.schema.properties[key].default'
+                    :required='props.schema.required.includes(key)'
+                    :description='props.schema.properties[key].description'
                 />
             </template>
-            <template v-else-if='schema.properties[key].type === "boolean"'>
+            <template v-else-if='props.schema.properties[key].type === "boolean"'>
                 <TablerToggle
                     v-model='data[key]'
                     :label='key'
-                    :disabled='disabled'
-                    :default='schema.properties[key].default'
-                    :required='schema.required.includes(key)'
-                    :description='schema.properties[key].description'
+                    :disabled='props.disabled'
+                    :default='props.schema.properties[key].default'
+                    :required='props.schema.required.includes(key)'
+                    :description='props.schema.properties[key].description'
                 />
             </template>
             <template
                 v-else-if='
-                    schema.properties[key].type === "array"
-                        && schema.properties[key].items.type === "object"
-                        && schema.properties[key].items.properties
+                    props.schema.properties[key].type === "array"
+                        && props.schema.properties[key].items.type === "object"
+                        && props.schema.properties[key].items.properties
                 '
             >
                 <div class='d-flex'>
@@ -64,11 +64,11 @@
                         v-text='key'
                     />
                     <span
-                        v-if='schema.required.includes(key)'
+                        v-if='props.schema.required.includes(key)'
                         class='text-red mx-1'
                     >*</span>
                     <div
-                        v-if='!disabled'
+                        v-if='!props.disabled'
                         class='ms-auto'
                     >
                         <IconTrash
@@ -83,24 +83,24 @@
                             :size='32'
                             stroke='1'
                             class='cursor-pointer'
-                            @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])'
+                            @click='importModal(Object.keys(props.schema.properties[key].items.properties), data[key])'
                         />
                         <IconPlus
                             v-tooltip='"Add Row"'
                             :size='32'
                             stroke='1'
                             class='cursor-pointer'
-                            @click='editModal(schema.properties[key].items, {}, key)'
+                            @click='editModal(props.schema.properties[key].items, {}, key)'
                         />
                     </div>
                 </div>
-                <template v-if='schema.properties[key].items.type === "object" && schema.properties[key].items.properties'>
+                <template v-if='props.schema.properties[key].items.type === "object" && props.schema.properties[key].items.properties'>
                     <div class='table-responsive'>
                         <table class='table table-hover card-table table-vcenter border rounded cursor-pointer'>
                             <thead>
                                 <tr>
                                     <th
-                                        v-for='prop in Object.keys(schema.properties[key].items.properties)'
+                                        v-for='prop in Object.keys(props.schema.properties[key].items.properties)'
                                         :key='prop'
                                     >
                                         <span v-text='prop' />
@@ -111,11 +111,11 @@
                                 <tr
                                     v-for='(arr, i) in data[key]'
                                     :key='i'
-                                    @click='editModal(schema.properties[key].items, arr, key, i)'
+                                    @click='editModal(props.schema.properties[key].items, arr, key, i)'
                                 >
-                                    <template v-if='disabled'>
+                                    <template v-if='props.disabled'>
                                         <td
-                                            v-for='prop in Object.keys(schema.properties[key].items.properties)'
+                                            v-for='prop in Object.keys(props.schema.properties[key].items.properties)'
                                             :key='prop'
                                         >
                                             <span v-text='arr[prop]' />
@@ -123,7 +123,7 @@
                                     </template>
                                     <template v-else>
                                         <td
-                                            v-for='prop in Object.keys(schema.properties[key].items.properties)'
+                                            v-for='prop in Object.keys(props.schema.properties[key].items.properties)'
                                             :key='prop'
                                         >
                                             <span v-text='arr[prop]' />
@@ -136,8 +136,8 @@
                     <TablerNone
                         v-if='!data[key] || !data[key].length'
                         :label='key'
-                        :create='!disabled'
-                        @create='editModal(schema.properties[key].items, {}, key)'
+                        :create='!props.disabled'
+                        @create='editModal(props.schema.properties[key].items, {}, key)'
                     />
                 </template>
                 <template v-else>
@@ -152,7 +152,7 @@
                             </div>
                             <div class='ms-auto mx-2 my-2'>
                                 <IconTrash
-                                    v-if='!disabled'
+                                    v-if='!props.disabled'
                                     :size='32'
                                     stroke='1'
                                     class='cursor-pointer'
@@ -163,8 +163,8 @@
 
                         <TablerSchema
                             v-model='data[key][i]'
-                            :schema='schema.properties[key].items'
-                            :disabled='disabled'
+                            :schema='props.schema.properties[key].items'
+                            :disabled='props.disabled'
                         />
                     </div>
                 </template>
@@ -175,7 +175,7 @@
                         v-model='data[key]'
                         :label='key'
                         :rows='3'
-                        :disabled='disabled'
+                        :disabled='props.disabled'
                     />
                 </div>
             </template>
@@ -189,9 +189,9 @@
 
         <SchemaModal
             v-if='edit.shown !== false'
-            :allow-delete='!isNaN(edit.i) && !disabled'
+            :allow-delete='!isNaN(edit.i) && !props.disabled'
             :edit='edit.row'
-            :disabled='disabled'
+            :disabled='props.disabled'
             :schema='edit.schema'
             @remove='editModalRemove'
             @done='editModalDone($event)'
@@ -200,7 +200,8 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, watch, onMounted } from 'vue';
 import {
     TablerNone,
     TablerInput,
@@ -216,138 +217,106 @@ import {
     IconDatabaseImport,
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'LayerSchema',
-    components: {
-        IconPlus,
-        IconDatabaseImport,
-        IconTrash,
-        TablerNone,
-        TablerInput,
-        TablerToggle,
-        TablerEnum,
-        TablerSchema,
-        UploadCSV,
-        SchemaModal,
+const props = defineProps({
+    modelValue: {
+        type: Object,
+        required: true
     },
-    props: {
-        modelValue: {
-            type: Object,
-            required: true
-        },
-        schema: {
-            type: Object,
-            required: true
-        },
-        disabled: {
-            type: Boolean,
-            default: false
-        }
+    schema: {
+        type: Object,
+        required: true
     },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        return {
-            data: false,
-            edit: {
-                id: false,
-                key: false,
-                shown: false,
-                data: false,
-                schema: false
-            },
-            upload: {
-                headers: [],
-                data: null,
-                shown: false
-            }
-        };
-    },
-    watch: {
-        data: {
-            deep: true,
-            handler: function() {
-                this.$emit('update:modelValue', this.data);
-            }
-        },
-    },
-    mounted: async function() {
-        this.data = JSON.parse(JSON.stringify(this.modelValue));
+    disabled: {
+        type: Boolean,
+        default: false
+    }
+});
 
-        if (this.schema.type === 'object' && this.schema.properties) {
-            for (const key in this.schema.properties) {
-                if (!this.data[key] && this.schema.properties[key].type === 'array') {
-                    this.data[key] = this.schema.properties[key].default || [];
-                } else if (!this.data[key] && this.schema.properties[key].type === 'boolean') {
-                    this.data[key] = this.schema.properties[key].default || false;
-                } else if (!this.data[key] && this.schema.properties[key].type === 'string') {
-                    this.data[key] = this.schema.properties[key].default || '';
-                } else if (!this.data[key] && this.schema.properties[key].type === 'integer') {
-                    this.data[key] = this.schema.properties[key].default;
-                } else if (!this.data[key] && this.schema.properties[key].type === 'number') {
-                    this.data[key] = this.schema.properties[key].default;
-                }
-            }
-        }
-    },
-    methods: {
-        importModal: function(headers, data) {
-            this.upload.headers = headers;
-            this.upload.data = data;
-            this.upload.shown = true;
-        },
-        importCSV: function(csv) {
-            this.upload.shown = false;
+const emit = defineEmits(['update:modelValue']);
 
-            // Auto-detect delimiter: prefer comma, fallback to tab for backward compatibility
-            const firstLine = csv.split('\n')[0];
-            const delimiter = firstLine.includes(',') ? ',' : '\t';
+const data = ref(false);
+const edit = reactive({
+    id: false,
+    key: false,
+    shown: false,
+    data: false,
+    schema: false
+});
+const upload = reactive({
+    headers: [],
+    data: null,
+    shown: false
+});
 
-            for (const line of csv.split('\n')) {
-                const row = line.split(delimiter);
-                const obj = {};
-                for (let i = 0; i < this.upload.headers.length; i++) {
-                    obj[this.upload.headers[i]] = row[i]
-                }
-                this.upload.data.push(obj);
-            }
-        },
-        editModalRemove: function() {
-            if (!isNaN(this.edit.id)) this.data[this.edit.key].splice(this.edit.id, 1)
-            this.edit.shown = false;
-        },
-        editModalDone: function(row) {
-            if (this.edit.id) {
-                this.data[this.edit.key][this.edit.id] = row;
-            } else {
-                this.data[this.edit.key].push(row);
-            }
+watch(data, () => {
+    emit('update:modelValue', data.value);
+}, {
+    deep: true
+});
 
-            this.edit.shown = false;
-        },
-        editModal: function(schema, row, key, id) {
-            this.edit = {
-                shown: true,
-                key,
-                row,
-                schema,
-                id: id ?? null
-            }
-        },
-        push: function(key) {
-            if (!this.schema.properties[key].items) this.data[key].push('');
-            if (this.schema.properties[key].items.type === 'object') {
-                const obj = {};
-                this.data[key].push(obj);
-            } else if (this.schema.properties[key].items.type === 'array') {
-                this.data[key].push([]);
-            } else if (this.schema.properties[key].items.type === 'boolean') {
-                this.data[key].push(false);
-            } else {
-                this.data[key].push('');
+onMounted(() => {
+    data.value = JSON.parse(JSON.stringify(props.modelValue));
+
+    if (props.schema.type === 'object' && props.schema.properties) {
+        for (const key in props.schema.properties) {
+            if (!data.value[key] && props.schema.properties[key].type === 'array') {
+                data.value[key] = props.schema.properties[key].default || [];
+            } else if (!data.value[key] && props.schema.properties[key].type === 'boolean') {
+                data.value[key] = props.schema.properties[key].default || false;
+            } else if (!data.value[key] && props.schema.properties[key].type === 'string') {
+                data.value[key] = props.schema.properties[key].default || '';
+            } else if (!data.value[key] && props.schema.properties[key].type === 'integer') {
+                data.value[key] = props.schema.properties[key].default;
+            } else if (!data.value[key] && props.schema.properties[key].type === 'number') {
+                data.value[key] = props.schema.properties[key].default;
             }
         }
     }
+});
+
+function importModal(headers, data) {
+    upload.headers = headers;
+    upload.data = data;
+    upload.shown = true;
+}
+
+function importCSV(csv) {
+    upload.shown = false;
+
+    const firstLine = csv.split('\n')[0];
+    const delimiter = firstLine.includes(',') ? ',' : '\t';
+
+    for (const line of csv.split('\n')) {
+        const row = line.split(delimiter);
+        const obj = {};
+        for (let i = 0; i < upload.headers.length; i++) {
+            obj[upload.headers[i]] = row[i]
+        }
+        upload.data.push(obj);
+    }
+}
+
+function editModalRemove() {
+    if (!isNaN(edit.id)) data.value[edit.key].splice(edit.id, 1)
+    edit.shown = false;
+}
+
+function editModalDone(row) {
+    if (edit.id) {
+        data.value[edit.key][edit.id] = row;
+    } else {
+        data.value[edit.key].push(row);
+    }
+
+    edit.shown = false;
+}
+
+function editModal(schema, row, key, id) {
+    edit.shown = true;
+    edit.key = key;
+    edit.row = row;
+    edit.schema = schema;
+    edit.id = id ?? null;
 }
 </script>
+
