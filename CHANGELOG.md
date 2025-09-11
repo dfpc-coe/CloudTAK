@@ -12,7 +12,11 @@
 
 ### Pending Release
 
-### v11.15.1 - 2025-09-10
+### v11.15.2 - 2025-09-11
+
+- :bug: Ensure all propertes are present for "Multi" Select modal to show contact group
+
+### v11.15.1 - 2025-09-11
 
 - :rocket: Alphabetical order of Basemaps
 
