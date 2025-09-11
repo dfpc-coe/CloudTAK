@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.17.0 - 2025-09-11
+
+- :tada: Allow specifying Query or QueryTopFeatures in ArcGIS ETls
+
 ### v11.16.0 - 2025-09-11
 
 - :tada: Allow exporting a Mission Sync as GeoJSON or KML
