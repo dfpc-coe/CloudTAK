@@ -170,7 +170,6 @@
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
 import { ref, watch, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
-import { stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Feature from '../util/FeatureRow.vue';
