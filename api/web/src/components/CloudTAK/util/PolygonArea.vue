@@ -90,13 +90,13 @@ const inMode = computed(() => {
     const cotArea = area(props.cot.geometry);
 
     if (mode.value === 'sqfeet') {
-        return cotArea * 10.7639;
+        return Math.round((cotArea * 10.7639) * 1000) / 1000;
     } else if (mode.value === 'sqmeter') {
-        return cotArea;
+        return Math.round(cotArea * 1000) / 1000;
     } else if (mode.value === 'acre') {
-        return cotArea * 0.000247105;
+        return Math.round((cotArea * 0.000247105) * 1000) / 1000;
     } else if (mode.value === 'ha') {
-        return cotArea * 0.0001;
+        return Math.round((cotArea * 0.0001) * 1000) / 1000;
     } else {
         return 'UNKNOWN';
     }
