@@ -117,10 +117,10 @@ export default async function router(schema: Schema, config: Config) {
             'oidc::discovery': Type.Optional(Type.String()),
             'oidc::client': Type.Optional(Type.String()),
 
-
             // COTAK Specific Properties
             'provider::url': Type.Optional(Type.String()),
-
+            'provider::secret': Type.Optional(Type.String()),
+            'provider::client': Type.Optional(Type.String()),
 
             'login::signup': Type.Optional(Type.String({
                 description: 'URL for Signup Page'

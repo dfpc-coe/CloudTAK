@@ -317,13 +317,13 @@ async function fetchList() {
         const res = await server.GET('/api/basemap', {
             params: {
                 query: {
+                    overlay: false,
                     filter: paging.value.filter,
                     collection: paging.value.collection ? paging.value.collection : undefined,
                     limit: paging.value.limit,
                     order: 'asc',
                     sort: 'name',
                     page: paging.value.page,
-                    // @ts-expect-error The OpenAPI Type gen isn't smart enough for this one
                     type: ['vector', 'raster']
                 }
             }
