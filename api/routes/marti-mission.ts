@@ -1,5 +1,6 @@
 import { Static, Type } from '@sinclair/typebox'
 import qr from 'qr-image';
+import tokml from 'tokml';
 import Schema from '@openaddresses/batch-schema';
 import { Feature } from '@tak-ps/node-cot'
 import Err from '@openaddresses/batch-error';
@@ -283,6 +284,11 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         query: Type.Object({
+            format: Type.String({
+                default: 'zip',
+                enum: ['zip', 'geojson', 'kml'],
+                description: 'The archive format to return'
+            }),
             download: Type.Boolean({
                 default: false,
                 description: 'If set, the response will include a Content-Disposition Header'
@@ -299,18 +305,54 @@ export default async function router(schema: Schema, config: Config) {
                 ? { token: String(req.headers['missionauthorization']) }
                 : await config.conns.subscription(user.email, req.params.name)
 
-            const archive = await api.Mission.getArchive(
-                req.params.name,
-                opts
-            );
-
-            res.setHeader('Content-Type', 'application/zip');
-
             if (req.query.download) {
-                res.setHeader('Content-Disposition', `attachment; filename="${req.params.name}.zip"`);
+                res.setHeader('Content-Disposition', `attachment; filename="${req.params.name}.${req.query.format}"`);
             }
 
-            archive.pipe(res);
+            if (req.query.format === 'zip') {
+                const archive = await api.Mission.getArchive(
+                    req.params.name,
+                    opts
+                );
+
+                res.setHeader('Content-Type', 'application/zip');
+
+                archive.pipe(res);
+            } else if (['geojson', 'kml'].includes(req.query.format)) {
+                const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                    ? { token: String(req.headers['missionauthorization']) }
+                    : await config.conns.subscription(user.email, req.params.name)
+
+                const fc = {
+                    type: 'FeatureCollection',
+                    features: await api.Mission.latestFeats(req.params.name, opts)
+                };
+
+                if (req.query.format === 'geojson') {
+                    res.set('Content-Type', 'application/geo+json');
+                    const output = Buffer.from(JSON.stringify(fc, null, 4));
+
+                    res.set('Content-Length', String(Buffer.byteLength(output)));
+                    res.write(output);
+                    res.end();
+                } else if (req.query.format === 'kml') {
+                    res.set('Content-Type', 'application/vnd.google-earth.kml+xml');
+
+                    const output = Buffer.from(tokml(fc, {
+                        documentName: req.params.name,
+                        documentDescription: 'Exported from CloudTAK',
+                        simplestyle: true,
+                        name: 'callsign',
+                        description: 'remarks'
+                    }));
+
+                    res.set('Content-Length', String(Buffer.byteLength(output)));
+                    res.write(output);
+                    res.end();
+                } else {
+                    throw new Err(400, null, `Unknown Export Format: ${req.query.format}`);
+                }
+            }
         } catch (err) {
              Err.respond(err, res);
         }

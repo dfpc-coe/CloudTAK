@@ -36,7 +36,27 @@
                         </div>
                         <div
                             class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
-                            @click='exportToPackage'
+                            @click='exportToPackage("geojson")'
+                        >
+                            <IconFile
+                                :size='32'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>Export GeoJSON</span>
+                        </div>
+                        <div
+                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                            @click='exportToPackage("kml")'
+                        >
+                            <IconFile
+                                :size='32'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>Export KML</span>
+                        </div>
+                        <div
+                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                            @click='exportToPackage("zip")'
                         >
                             <IconFileZip
                                 :size='32'
@@ -201,6 +221,7 @@ import { std } from '../../../std.ts';
 import type { Feature, Mission, MissionRole } from '../../../types.ts';
 import Subscription from '../../../base/subscription.ts';
 import {
+    IconFile,
     IconPackages,
     IconFileZip,
     IconBoxMultiple,
@@ -275,11 +296,11 @@ async function deleteMission() {
     }
 }
 
-async function exportToPackage(): Promise<void> {
+async function exportToPackage(format: string): Promise<void> {
     if (!mission.value) return;
 
     loadingInline.value = 'Generating Archive'
-    await std(`/api/marti/missions/${encodeURIComponent(mission.value.name)}/archive?download=true`, {
+    await std(`/api/marti/missions/${encodeURIComponent(mission.value.name)}/archive?download=true&format=${format}`, {
         download: true
     })
     loadingInline.value = undefined;
