@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.15.1 - 2025-09-10
+
+- :rocket: Alphabetical order of Basemaps
+
 ### v11.15.0 - 2025-09-10
 
 - :rocket: Rename Lost Person Behavior to "Range Rings"
