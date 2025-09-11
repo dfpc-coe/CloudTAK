@@ -1,10 +1,10 @@
 <template>
     <div class='col-12'>
         <div class='col-12 d-flex align-items-center'>
-            <label v-text='label' />
+            <label v-text='props.label' />
 
             <div
-                v-if='!disabled'
+                v-if='!props.disabled'
                 class='ms-auto btn-list'
             >
                 <IconPlus
@@ -30,7 +30,7 @@
             <table
                 class='table card-table table-vcenter'
                 :class='{
-                    "cursor-pointer": !disabled
+                    "cursor-pointer": !props.disabled
                 }'
             >
                 <thead>
@@ -51,7 +51,7 @@
                                 <span v-text='link.url' />
                                 <div class='ms-auto'>
                                     <IconTrash
-                                        v-if='!disabled'
+                                        v-if='!props.disabled'
                                         :size='32'
                                         stroke='1'
                                         class='cursor-pointer'
@@ -69,13 +69,14 @@
     <StyleLinkModal
         v-if='create'
         :edit='editLink'
-        :schema='schema'
+        :schema='props.schema'
         @done='push($event)'
         @close='create = false'
     />
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from 'vue';
 import {
     TablerNone
 } from '@tak-ps/vue-tabler';
@@ -85,69 +86,54 @@ import {
 } from '@tabler/icons-vue';
 import StyleLinkModal from './StyleLinkModal.vue';
 
-export default {
-    name: 'StyleLinks',
-    components: {
-        IconPlus,
-        IconTrash,
-        TablerNone,
-        StyleLinkModal,
+const props = defineProps({
+    modelValue: {
+        type: Array,
+        required: true
     },
-    props: {
-        modelValue: {
-            type: Array,
-            required: true
-        },
-        disabled: {
-            type: Boolean,
-            default: true
-        },
-        schema: {
-            type: Object,
-            required: true
-        },
-        label: {
-            type: String,
-            default: 'Link Override'
-        }
+    disabled: {
+        type: Boolean,
+        default: true
     },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        return {
-            create: false,
-            editLink: false,
-            links: this.modelValue
-        }
+    schema: {
+        type: Object,
+        required: true
     },
-    watch: {
-        modelValue: {
-            deep: true,
-            handler: function() {
-                this.links = this.modelValue;
-            }
-        }
-    },
-    methods: {
-        edit: function(link) {
-            if (this.disabled) return;
-            this.editLink = link;
-            this.create = true;
-        },
-        push: function(link) {
-            this.create = false;
-
-            if (!this.editLink) {
-                this.links.push(link);
-            } else {
-                this.editLink = Object.assign(this.editLink, link);
-            }
-
-            this.$emit('update:modelValue', this.links);
-
-            this.editLink = null;
-        },
+    label: {
+        type: String,
+        default: 'Link Override'
     }
+});
+
+const emit = defineEmits(['update:modelValue']);
+
+const create = ref(false);
+const editLink = ref(false);
+const links = ref(props.modelValue);
+
+watch(() => props.modelValue, () => {
+    links.value = props.modelValue;
+}, {
+    deep: true
+});
+
+function edit(link) {
+    if (props.disabled) return;
+    editLink.value = link;
+    create.value = true;
+}
+
+function push(link) {
+    create.value = false;
+
+    if (!editLink.value) {
+        links.value.push(link);
+    } else {
+        Object.assign(editLink.value, link);
+    }
+
+    emit('update:modelValue', links.value);
+
+    editLink.value = null;
 }
 </script>
