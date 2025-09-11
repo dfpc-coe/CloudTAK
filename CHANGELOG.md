@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.17.2 - 2025-09-11
+
+- :rocket: Migrate Vue3 Components to Composition API
+
 ### v11.17.1 - 2025-09-11
 
 - :bug: Fix Click Feature Types
