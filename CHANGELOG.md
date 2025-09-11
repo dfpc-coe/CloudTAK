@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.18.0 - 2025-09-11
+
+- :rocket: Avoid throwing errors and handle gracefully Connection Creation in a non-COTAK context
+
 ### v11.17.2 - 2025-09-11
 
 - :rocket: Migrate Vue3 Components to Composition API
