@@ -510,6 +510,7 @@ import {
     TablerModal,
 } from '@tak-ps/vue-tabler';
 import { LocationState } from '../../base/events.ts';
+import COT from '../../base/cot.ts';
 import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
@@ -712,11 +713,10 @@ onBeforeUnmount(() => {
     mapStore.destroy();
 });
 
-function selectFeat(selectedFeat: MapGeoJSONFeature) {
+function selectFeat(selectedFeat: MapGeoJSONFeature | COT) {
     mapStore.select.feats = [];
-    const source = mapStore.featureSource(selectedFeat);
 
-    if (source === 'cot') {
+    if (selectedFeat instanceof COT) {
         router.push(`/cot/${selectedFeat.properties.id}`);
     } else {
         router.push(`/`);
