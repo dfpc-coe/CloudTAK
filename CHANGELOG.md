@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.16.0 - 2025-09-11
+
+- :tada: Allow exporting a Mission Sync as GeoJSON or KML
+
 ### v11.15.3 - 2025-09-11
 
 - :rocket: Add rounding to Polygon Area Component
