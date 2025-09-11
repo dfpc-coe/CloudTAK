@@ -6,7 +6,7 @@
             :button-chat='false'
             :compact='compact'
             :contact='{
-                "uid": feature.id,
+                "uid": feature.properties.id,
                 "callsign": feature.properties.callsign,
                 "team": feature.properties.group.name,
                 "notes": ""
