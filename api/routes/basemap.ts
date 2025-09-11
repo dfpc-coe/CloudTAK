@@ -199,7 +199,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const types: Array<Basemap_Type> = Array.isArray(req.query.type) ? req.query.type : (req.query.type ? [req.query.type] : [
-                Basemap_Type.RASTER, Basemap_Type.VECTOR, Basemap_Type.STYLE
+                Basemap_Type.RASTER, Basemap_Type.VECTOR, Basemap_Type.TERRAIN
             ]);
 
             if (req.query.impersonate) {
