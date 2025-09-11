@@ -413,6 +413,10 @@ export const ProfileMission = pgTable('profile_missions', {
     name: text().notNull(),
     guid: text().notNull(),
     token: text().notNull(),
+
+    // Only 1 active layer is allowed per user for editing
+    active: boolean().notNull().default(false),
+
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
