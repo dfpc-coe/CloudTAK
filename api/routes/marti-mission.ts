@@ -305,6 +305,10 @@ export default async function router(schema: Schema, config: Config) {
                 ? { token: String(req.headers['missionauthorization']) }
                 : await config.conns.subscription(user.email, req.params.name)
 
+            if (req.query.download) {
+                res.setHeader('Content-Disposition', `attachment; filename="${req.params.name}.${req.query.format}"`);
+            }
+
             if (req.query.format === 'zip') {
                 const archive = await api.Mission.getArchive(
                     req.params.name,
@@ -312,10 +316,6 @@ export default async function router(schema: Schema, config: Config) {
                 );
 
                 res.setHeader('Content-Type', 'application/zip');
-
-                if (req.query.download) {
-                    res.setHeader('Content-Disposition', `attachment; filename="${req.params.name}.zip"`);
-                }
 
                 archive.pipe(res);
             } else if (['geojson', 'kml'].includes(req.query.format)) {
