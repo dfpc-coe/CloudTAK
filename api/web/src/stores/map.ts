@@ -719,22 +719,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             await this.updateAttribution();
         },
-        /**
-         * Determine if the feature is from the CoT store or a clicked VT feature
-         */
-        featureSource: function(feat: MapGeoJSONFeature | Feature): string | void {
-            const clickMap: Map<string, { type: string, id: string }> = new Map();
-            for (const overlay of this.overlays) {
-                for (const c of overlay._clickable) {
-                    clickMap.set(c.id, c);
-                }
-            }
-
-            if (!('layer' in feat)) return;
-            const click = clickMap.get(feat.layer.id);
-            if (!click) return;
-            return click.type;
-        },
         updateIconRotation: function(enabled: boolean): void {
             for (const overlay of this.overlays) {
                 if (overlay.type === 'geojson') {
@@ -813,6 +797,24 @@ export const useMapStore = defineStore('cloudtak', {
                 attributionContainer.innerHTML = attributions.join(' | ');
             }
         },
+
+        /**
+         * Determine if the feature is from the CoT store or a clicked VT feature
+         */
+        featureSource: function(feat: MapGeoJSONFeature | Feature): string | void {
+            const clickMap: Map<string, { type: string, id: string }> = new Map();
+            for (const overlay of this.overlays) {
+                for (const c of overlay._clickable) {
+                    clickMap.set(c.id, c);
+                }
+            }
+
+            if (!('layer' in feat)) return;
+            const click = clickMap.get(feat.layer.id);
+            if (!click) return;
+            return click.type;
+        },
+
         radialClick: async function(feat: MapGeoJSONFeature | Feature, opts: {
             lngLat: LngLat;
             point: Point;
