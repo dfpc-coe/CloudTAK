@@ -19,7 +19,7 @@
                     :description='props.schema.properties[key].description'
                 />
             </template>
-            <template v-else-if='props.schema.properties[key].type === &apos;string&apos;'>
+            <template v-else-if='props.schema.properties[key].type === "string"'>
                 <TablerInput
                     v-model='data[key]'
                     :label='key'
@@ -29,19 +29,19 @@
                     :description='props.schema.properties[key].description'
                 />
             </template>
-            <template v-else-if='props.schema.properties[key].type === &apos;number&apos; || props.schema.properties[key].type === &apos;integer&apos;'>
+            <template v-else-if='props.schema.properties[key].type === "number" || props.schema.properties[key].type === "integer"'>
                 <TablerInput
                     v-model='data[key]'
                     type='number'
                     :label='key'
-                    :step='props.schema.properties[key].type === &apos;integer&apos; ? 1 : &apos;any&apos;'
+                    :step='props.schema.properties[key].type === "integer" ? 1 : "any"'
                     :disabled='props.disabled'
                     :default='props.schema.properties[key].default'
                     :required='props.schema.required.includes(key)'
                     :description='props.schema.properties[key].description'
                 />
             </template>
-            <template v-else-if='props.schema.properties[key].type === &apos;boolean&apos;'>
+            <template v-else-if='props.schema.properties[key].type === "boolean"'>
                 <TablerToggle
                     v-model='data[key]'
                     :label='key'
@@ -53,8 +53,8 @@
             </template>
             <template
                 v-else-if='
-                    props.schema.properties[key].type === &apos;array&apos;
-                        && props.schema.properties[key].items.type === &apos;object&apos;
+                    props.schema.properties[key].type === "array"
+                        && props.schema.properties[key].items.type === "object"
                         && props.schema.properties[key].items.properties
                 '
             >
@@ -72,21 +72,21 @@
                         class='ms-auto'
                     >
                         <IconTrash
-                            v-tooltip='&apos;Clear Table&apos;'
+                            v-tooltip='"Clear Table"'
                             :size='32'
                             stroke='1'
                             class='cursor-pointer'
                             @click='data[key].splice(0, data[key].length)'
                         />
                         <IconDatabaseImport
-                            v-tooltip='&apos;Import CSV&apos;'
+                            v-tooltip='"Import CSV"'
                             :size='32'
                             stroke='1'
                             class='cursor-pointer'
                             @click='importModal(Object.keys(props.schema.properties[key].items.properties), data[key])'
                         />
                         <IconPlus
-                            v-tooltip='&apos;Add Row&apos;'
+                            v-tooltip='"Add Row"'
                             :size='32'
                             stroke='1'
                             class='cursor-pointer'
@@ -94,7 +94,7 @@
                         />
                     </div>
                 </div>
-                <template v-if='props.schema.properties[key].items.type === &apos;object&apos; && props.schema.properties[key].items.properties'>
+                <template v-if='props.schema.properties[key].items.type === "object" && props.schema.properties[key].items.properties'>
                     <div class='table-responsive'>
                         <table class='table table-hover card-table table-vcenter border rounded cursor-pointer'>
                             <thead>
