@@ -157,7 +157,16 @@
             class='col-12'
         >
             <div class='row g-2'>
-                <div class='col-12 d-flex'>
+                <div class='col-2'>
+                    <TablerEnum
+                        v-model='environment.ARCGIS_QUERY_STRATEGY'
+                        default='Query'
+                        :options='["Query", "QueryTopFeatures"]'
+                        label='Strategy'
+                        :disabled='disabled || !environment.ARCGIS_URL'
+                    />
+                </div>
+                <div class='col-10 d-flex'>
                     <div class='w-100'>
                         <TablerInput
                             v-model='environment.ARCGIS_QUERY'
@@ -269,6 +278,7 @@
 <script>
 import {
     TablerIconButton,
+    TablerEnum,
     TablerDelete,
     TablerInput,
     TablerNone,
@@ -291,6 +301,7 @@ export default {
         IconChevronDown,
         IconFilter,
         TablerIconButton,
+        TablerEnum,
         TablerInput,
         TablerNone,
         TablerDelete,
