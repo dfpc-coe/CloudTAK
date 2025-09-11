@@ -1,27 +1,27 @@
 <template>
     <Mentionable
-        :keys="keys"
-        :items="schemalist"
+        :keys='keys'
+        :items='schemalist'
     >
         <TablerInput
-            v-model="template"
-            :label="props.label"
-            :disabled="props.disabled"
-            :description="props.description"
-            :rows="templateRows"
-            :placeholder="props.placeholder"
+            v-model='template'
+            :label='props.label'
+            :disabled='props.disabled'
+            :description='props.description'
+            :rows='templateRows'
+            :placeholder='props.placeholder'
         />
 
         <template #no-result>
-            <div class="subheader mx-2 my-2 text-center">
+            <div class='subheader mx-2 my-2 text-center'>
                 No Results
             </div>
         </template>
 
         <template #item-{='{ item }'>
             <div
-                class="subheader py-2 px-2 text-center cursor-pointer hover rounded"
-                v-text="item.label"
+                class='subheader py-2 px-2 text-center cursor-pointer hover rounded'
+                v-text='item.label'
             />
         </template>
     </Mentionable>
