@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.18.3 - 2025-09-12
+
+- :arrow_up: Update NodeCoT
+
 ### v11.18.2 - 2025-09-12
 
 - :arrow_up: Update NodeCoT
