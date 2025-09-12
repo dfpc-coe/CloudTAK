@@ -123,6 +123,8 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(config.server.webtak), new APIAuthPassword(req.body.username, req.body.password));
             const certs = await api.Credentials.generate();
 
+            console.error(certs);
+
             res.json(certs);
         } catch (err) {
              Err.respond(err, res);
