@@ -195,7 +195,12 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             key: connConfig.auth.key,
             cert: connConfig.auth.cert,
         },{
-            id: connConfig.id
+            id: connConfig.id,
+            cot: {
+                milsym: {
+                    augment: true
+                }
+            }
         });
 
         const connClient = new ConnectionClient(connConfig, tak);
