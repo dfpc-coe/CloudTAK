@@ -170,7 +170,6 @@
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
 import { ref, watch, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
-import { stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Feature from '../util/FeatureRow.vue';
@@ -370,7 +369,9 @@ async function refresh(load = false): Promise<void> {
 }
 
 async function download(format: string): Promise<void> {
-    window.location.href = String(stdurl(`/api/profile/feature?format=${format}&download=true&token=${localStorage.token}`));
+    await std(`/api/profile/feature?format=${format}&download=true&token=${localStorage.token}`, {
+        download: true
+    });
 }
 
 async function closePath(path: Path): Promise<void> {

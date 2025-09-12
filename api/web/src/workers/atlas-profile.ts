@@ -71,7 +71,7 @@ export default class AtlasProfile {
 
     async creator(): Promise<FeaturePropertyCreator> {
         return {
-            uid: await this.uid(),
+            uid: this.uid(),
             type: 'a-f-G-E-V-C',
             callsign: await this.callsign(),
             time: new Date().toISOString(),
@@ -356,13 +356,15 @@ export default class AtlasProfile {
         
         // HAE = Height Above Ellipsoid (altitude), CE = Circular Error (accuracy)
         const hae = altitude !== null && altitude !== undefined ? altitude : 0;
+
+        const uid = this.uid();
        
         const feat: Feature = {
-            id: this.uid(),
+            id: uid,
             path: '/',
             type: 'Feature',
             properties: {
-                id: this.uid(),
+                id: uid,
                 type: this.profile.tak_type,
                 how: 'm-g',
                 callsign: this.profile.tak_callsign,

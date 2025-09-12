@@ -151,19 +151,18 @@ export default async function router(schema: Schema, config: Config) {
     await schema.patch('/profile/asset/:asset', {
         name: 'Update Asset',
         group: 'ProfileFile',
-        description: 'Internal API used to modify assets after S3 assets have been uploaded by the Events Task',
+        description: 'Modify Asset Metadata',
         params: Type.Object({
             asset: Type.String({
                 format: 'uuid'
             }),
         }),
         body: Type.Object({
-            path: Type.String({
-                default: '/'
-            }),
-            artifacts: Type.Array(Type.Object({
+            path: Type.Optional(Type.String()),
+            artifacts: Type.Optional(Type.Array(Type.Object({
                 ext: Type.String()
-            }))
+            }))),
+            name: Type.Optional(Type.String()),
         }),
         res: ProfileFileResponse
     }, async (req, res) => {
@@ -176,17 +175,21 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(403, null, 'You do not have permission to modify this asset');
             }
 
-            const artifacts = [];
-            for (const artifact of req.body.artifacts) {
-                artifacts.push({
-                    ext: artifact.ext,
-                    size: (await S3.head(`profile/${user.email}/${file.id}${artifact.ext}`)).ContentLength
-                });
+            if (req.body.artifacts) {
+                const artifacts = [];
+                for (const artifact of req.body.artifacts) {
+                    artifacts.push({
+                        ext: artifact.ext,
+                        size: (await S3.head(`profile/${user.email}/${file.id}${artifact.ext}`)).ContentLength
+                    });
+                }
+
+                file = await config.models.ProfileFile.commit(req.params.asset, { artifacts });
             }
 
             file = await config.models.ProfileFile.commit(req.params.asset, {
+                name: req.body.name,
                 path: req.body.path,
-                artifacts
             });
 
             res.json(file);

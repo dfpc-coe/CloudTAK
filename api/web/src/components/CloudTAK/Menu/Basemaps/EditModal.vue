@@ -297,8 +297,10 @@ onMounted(async () => {
     }
 });
 
-function download() {
-    window.location.href = stdurl(`api/basemap/${props.basemap.id}?format=xml&download=true&token=${localStorage.token}`);
+async function download() {
+    await std(`api/basemap/${props.basemap.id}?format=xml&download=true&token=${localStorage.token}`, {
+        download: true
+    });
 }
 
 async function fetchTileJSON() {
@@ -321,7 +323,7 @@ async function fetchTileJSON() {
 
 function processUpload(body) {
     mode.value.upload = false;
-    editing.value = JSON.parse(body);
+    editing.value = body;
 }
 
 function uploadHeaders() {

@@ -1,10 +1,106 @@
+<script setup>
+import { std, stdurl } from '/src/std.ts';
+import {
+    TablerMarkdown,
+    TablerLoading,
+    TablerInput,
+    TablerPager,
+    TablerModal,
+    TablerNone,
+    TablerEnum,
+} from '@tak-ps/vue-tabler';
+import { ref, reactive, watch, onMounted } from 'vue';
+
+defineProps({
+    task: {
+        type: String,
+        default: ''
+    }
+});
+
+const emit = defineEmits([
+    'task',
+    'close'
+]);
+
+const loading = reactive({
+    version: false,
+    tasks: true,
+    task: false,
+});
+
+const current = ref(null);
+const version = ref('');
+const versions = ref([]);
+
+const paging = reactive({
+    filter: '',
+    limit: 10,
+    page: 0
+});
+
+const list = reactive({
+    total: 0,
+    items: {}
+});
+
+async function fetchTask() {
+    if (!current.value) {
+        versions.value = [];
+    } else {
+        loading.task = true;
+        const task = await std(`/api/task/raw/${current.value.prefix}`);
+        versions.value = task.versions;
+
+        if (versions.value.length) {
+            version.value = versions.value[0];
+        }
+
+        if (current.value.readme) {
+            const readme = await std(`/api/task/${current.value.id}/readme`);
+            current.value.readme = readme.body;
+        }
+    }
+    loading.task = false;
+}
+
+async function fetchTasks() {
+    loading.tasks = true;
+    const url = stdurl('/api/task');
+
+    url.searchParams.append('filter', paging.filter);
+    url.searchParams.append('limit', paging.limit);
+    url.searchParams.append('page', paging.page);
+
+    const res = await std(url);
+    list.total = res.total;
+    list.items = res.items;
+
+
+    if (list.total && list.items.length) {
+        current.value = list.items[0];
+    }
+
+    loading.tasks = false;
+}
+
+watch(current, fetchTask);
+
+watch(paging, fetchTasks, { deep: true });
+
+onMounted(() => {
+    fetchTasks();
+});
+
+</script>
+
 <template>
     <TablerModal size='xl'>
         <button
             type='button'
             class='btn-close'
             aria-label='Close'
-            @click='$emit("close")'
+            @click='emit("close")'
         />
         <div class='modal-status bg-yellow' />
         <div class='modal-body py-4'>
@@ -40,8 +136,8 @@
                                     role='menuitem'
                                     class='list-group-item list-group-item-action d-flex align-items-center'
                                     :class='{
-                                        "active": current.prefix === t.prefix,
-                                        "cursor-pointer": current.prefix !== t.prefix
+                                        "active": current && current.prefix === t.prefix,
+                                        "cursor-pointer": !current || current.prefix !== t.prefix
                                     }'
                                     @click='current = t'
                                 >
@@ -101,7 +197,7 @@
                                         <button
                                             class='btn btn-primary w-100'
                                             style='margin-top: 8px;'
-                                            @click='$emit("task", `${current.prefix}-v${version}`)'
+                                            @click='emit("task", `${current.prefix}-v${version}`)'
                                         >
                                             Select
                                         </button>
@@ -119,111 +215,3 @@
     </TablerModal>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
-import {
-    TablerMarkdown,
-    TablerLoading,
-    TablerInput,
-    TablerPager,
-    TablerModal,
-    TablerNone,
-    TablerEnum,
-} from '@tak-ps/vue-tabler';
-
-export default {
-    name: 'TaskModal',
-    components: {
-        TablerLoading,
-        TablerMarkdown,
-        TablerPager,
-        TablerInput,
-        TablerModal,
-        TablerNone,
-        TablerEnum,
-    },
-    props: {
-        task: {
-            type: String,
-            default: ''
-        }
-    },
-    emits: [
-        'task',
-        'close'
-    ],
-    data: function() {
-        return {
-            loading: {
-                version: false,
-                tasks: true
-            },
-            current: false,
-            version: '',
-            versions: [],
-            paging: {
-                filter: '',
-                limit: 10,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: {}
-            }
-        }
-    },
-    watch: {
-        current: async function() {
-            await this.fetchTask();
-        },
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchTasks();
-            },
-        }
-    },
-    mounted: async function() {
-        await this.fetchTasks();
-    },
-    methods: {
-        fetchTask: async function() {
-            if (!this.current) {
-                this.versions = [];
-            } else {
-                this.loading.task = true;
-                const task = await std(`/api/task/raw/${this.current.prefix}`);
-
-                this.versions = task.versions;
-
-                if (this.versions.length) {
-                    this.version = this.versions[0];
-                }
-            }
-
-            if (this.current.readme) {
-                const readme = await std(`/api/task/${this.current.id}/readme`);
-                this.current.readme = readme.body;
-            }
-
-            this.loading.task = false;
-        },
-        fetchTasks: async function() {
-            this.loading.tasks = true;
-            const url = stdurl('/api/task');
-
-            url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-
-            this.list = await std(url);
-
-            if (this.list.total) {
-                this.current = this.list.items[0];
-            }
-
-            this.loading.tasks = false;
-        }
-    }
-}
-</script>

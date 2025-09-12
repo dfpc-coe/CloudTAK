@@ -367,6 +367,18 @@
                 </div>
 
                 <div
+                    v-if='cot && cot.properties.shape && cot.properties.shape.ellipse && cot.properties.shape.ellipse.major === cot.properties.shape.ellipse.minor'
+                    class='col-12 pt-2'
+                >
+                    <PropertyDistance
+                        :key='cot.properties.id'
+                        label='Radius'
+                        :unit='units.display_distance'
+                        :model-value='cot.properties.shape.ellipse.major * 0.001'
+                    />
+                </div>
+
+                <div
                     v-if='cot.properties.speed !== undefined && !isNaN(cot.properties.speed)'
                     class='pt-2'
                     :class='{
@@ -830,6 +842,7 @@ import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import PropertyType from './util/PropertyType.vue';
 import PropertyBattery from './util/PropertyBattery.vue';
+import PropertyDistance from './util/PropertyDistance.vue';
 import PropertyBearing from './util/PropertyBearing.vue';
 import PropertyMilSym from './util/PropertyMilSym.vue';
 import PropertySensor from './util/PropertySensor.vue';

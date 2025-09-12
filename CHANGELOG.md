@@ -12,6 +12,108 @@
 
 ### Pending Release
 
+### v11.19.0 - 2025-09-12
+
+- :arrow_up: Circle Opacity Support
+
+### v11.18.3 - 2025-09-12
+
+- :arrow_up: Update NodeCoT
+
+### v11.18.2 - 2025-09-12
+
+- :arrow_up: Update NodeCoT
+
+### v11.18.1 - 2025-09-11
+
+- :arrow_up: Update NodeCoT
+
+### v11.18.0 - 2025-09-11
+
+- :rocket: Avoid throwing errors and handle gracefully Connection Creation in a non-COTAK context
+
+### v11.17.2 - 2025-09-11
+
+- :rocket: Migrate Vue3 Components to Composition API
+
+### v11.17.1 - 2025-09-11
+
+- :bug: Fix Click Feature Types
+
+### v11.17.0 - 2025-09-11
+
+- :tada: Allow specifying Query or QueryTopFeatures in ArcGIS ETls
+
+### v11.16.0 - 2025-09-11
+
+- :tada: Allow exporting a Mission Sync as GeoJSON or KML
+
+### v11.15.3 - 2025-09-11
+
+- :rocket: Add rounding to Polygon Area Component
+
+### v11.15.2 - 2025-09-11
+
+- :bug: Ensure all propertes are present for "Multi" Select modal to show contact group
+
+### v11.15.1 - 2025-09-11
+
+- :rocket: Alphabetical order of Basemaps
+
+### v11.15.0 - 2025-09-10
+
+- :rocket: Rename Lost Person Behavior to "Range Rings"
+- :bug: Fix distance calculation bug when distance unit was changed
+- :tada: Allow adding any number of range rings
+- :rocket: Remove Lost Person behavior hardcoded % names
+
+### v11.14.1 - 2025-09-10
+
+- :rocket: Hide self in Contacts List
+
+### v11.14.0 - 2025-09-10
+
+- :rocket: Expands the type query parameter to allow querying for multiple types in a single query
+- :rocket: Only queries for raster and vector in basemap UI
+
+### v11.13.3 - 2025-09-10
+
+- :bug: Fix Snapping Coordinate Validity Check
+
+### v11.13.2 - 2025-09-10
+
+- :rocket: Migrate to RDS Graviton Instances
+
+### v11.13.1 - 2025-09-08
+
+- :tada: Allow specifing Cpu/Mem in Parameters to allow rightsizing of staging infra
+
+### v11.13.0 - 2025-09-08
+
+- :tada: Allow specifying Groups when Data Packages are created or Uploaded
+- :rocket: Unified Data Package creation modal
+- :tada: Allow specifying Hashtags when Data Packages are created or Uploaded
+
+### v11.12.2 - 2025-09-08
+
+- :bug: Remove revoked npm packages
+
+### v11.12.1 - 2025-09-08
+
+- :bug: Fix issue where adding features to Data Sync could end up in a recursive addition loop
+
+### v11.12.0 - 2025-09-08
+
+- :tada: Allow renaming Profile Files
+
+### v11.11.4 - 2025-09-08
+
+- :rocket: Add header to Range & Bearing to allow it to be closed
+
+### v11.11.3 - 2025-09-08
+
+- :tada: Show currently selected basemap in Basemap Menu
+
 ### v11.11.2 - 2025-09-08
 
 - :bug: Fix course indicator on CoT style
