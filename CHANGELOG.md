@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.18.1 - 2025-09-11
+
+- :arrow_up: Update NodeCoT
+
 ### v11.18.0 - 2025-09-11
 
 - :rocket: Avoid throwing errors and handle gracefully Connection Creation in a non-COTAK context
