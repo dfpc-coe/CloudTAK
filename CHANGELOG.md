@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.19.0 - 2025-09-12
+
+- :arrow_up: Circle Opacity Support
+
 ### v11.18.3 - 2025-09-12
 
 - :arrow_up: Update NodeCoT
