@@ -1,102 +1,81 @@
 <template>
     <div
-        v-if='type'
-        class='col-12'
+        v-if='config.type'
+        class='mx-2'
     >
-        <IconChartGridDots
-            :size='18'
-            stroke='1'
-            color='#6b7990'
-            class='ms-2 me-1'
-        />
-        <label class='subheader user-select-none'>Type</label>
-        <div class='mx-2'>
-            <div
-                v-if='!hover'
-                class='bg-gray-500 rounded-top py-2 px-2 text-truncate d-flex align-items-center'
-            >
-                <FeatureIcon
-                    :key='type'
-                    :feature='{ properties: { icon: type } }'
-                />
-
-                <div
-                    class='mx-2'
-                    v-text='meta ? meta.full : type'
-                />
-
-                <div
-                    v-if='meta'
-                    class='ms-auto'
-                    v-text='`(${type})`'
-                />
-            </div>
-            <TablerDropdown v-else>
-                <div
-                    class='bg-gray-500 rounded-top py-2 px-2 text-truncate d-flex align-items-center'
-                    :class='{
-                        "hover-button hover-border cursor-pointer": hover,
-                    }'
-                >
+        <TablerSlidedown
+            :clickAnywhereExpand='true'
+        >
+            <IconChartGridDots
+                :size='18'
+                stroke='1'
+                color='#6b7990'
+                class='ms-2 me-1'
+            />
+            <label class='subheader user-select-none'>Type</label>
+            <div class='mx-2'>
+                <div class='bg-gray-500 rounded-top py-2 px-2 text-truncate d-flex align-items-center user-select-none'>
                     <FeatureIcon
-                        :key='type'
-                        :feature='{ properties: { icon: type } }'
+                        :key='config.type'
+                        :feature='{ properties: { icon: config.type } }'
                     />
 
                     <div
-                        class='mx-2'
-                        v-text='meta ? meta.full : type'
-                    />
-
-                    <div
-                        v-if='meta'
-                        class='ms-auto'
-                        v-text='`(${type})`'
+                        class='mx-2 text-truncate'
+                        v-text='meta ? meta.full : config.type'
                     />
                 </div>
+            </div>
 
-                <template #dropdown>
-                    <div
-                        class='rounded border border-white px-2 py-2'
-                        style='width: 384px;'
-                    >
-                        <div class='row g-2'>
-                            <div class='col-8'>
-                                <TablerInput
-                                    v-model='paging.filter'
-                                    icon='search'
-                                    placeholder='Filter'
-                                    :autofocus='true'
-                                />
-                            </div>
-                            <div class='col-4'>
-                                <TablerEnum
-                                    v-model='paging.identity'
-                                    :default='StandardIdentity.FRIENDLY'
-                                    :options='Object.keys(StandardIdentity)'
-                                />
-                            </div>
-                        </div>
-
-                        <template v-for='item of list.items'>
-                            <div
-                                class='d-flex align-items-center px-2 py-2 hover cursor-pointer rounded'
-                                @click='updateType(item)'
-                            >
-                                <FeatureIcon
-                                    :feature='{ properties: { icon: item.cot.replace(/^a-\.-/, "a-u-") } }'
-                                />
-
-                                <div
-                                    class='mx-2'
-                                    v-text='item.full'
-                                />
-                            </div>
-                        </template>
+            <template #expanded>
+                <template v-if='config.type.startsWith("u-") && config.type !== "u-d-p"'>
+                    <div class='mb-2'>
+                        <TablerInlineAlert
+                            title='User Drawn Feature'
+                            description='Cannot be changed'
+                        />
                     </div>
                 </template>
-            </TablerDropdown>
-        </div>
+                <template v-else>
+                    <div class='row g-2'>
+                        <div class='col-12'>
+                            <TablerEnum
+                                v-if='config.type.startsWith("a-")'
+                                :modelValue='StandardAffiliationInverse[config.affiliation]'
+                                :default='StandardAffiliation.Friendly'
+                                :options='Object.keys(StandardAffiliation)'
+                                @update:modelValue='config.affiliation = StandardAffiliation[$event]'
+                            />
+                        </div>
+                        <div class='col-12'>
+                            <TablerInput
+                                v-model='paging.filter'
+                                icon='search'
+                                placeholder='Filter'
+                                :autofocus='true'
+                            />
+                        </div>
+                    </div>
+
+                    <template v-for='item of list.items'>
+                        <div
+                            class='d-flex align-items-center px-2 py-2 hover cursor-pointer rounded'
+                            @click='updateType(item)'
+                        >
+                            <FeatureIcon
+                                :key='item.cot'
+                                :feature='{ properties: { icon: item.cot } }'
+                            />
+
+                            <div
+                                class='mx-2'
+                                v-text='item.full'
+                            />
+                        </div>
+                    </template>
+                </template>
+            </template>
+        </TablerSlidedown>
     </div>
 </template>
 
@@ -111,7 +90,8 @@ import {
 import {
     TablerEnum,
     TablerInput,
-    TablerDropdown
+    TablerSlidedown,
+    TablerInlineAlert,
 } from '@tak-ps/vue-tabler';
 
 const props = defineProps({
@@ -128,24 +108,33 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 
 const meta = ref<COTType | undefined>();
-const type = ref(props.modelValue);
+
+const config = ref({
+    affiliation: props.modelValue.split('-')[1],
+    type: props.modelValue
+})
+
 const loading = ref(true);
-const StandardIdentity: Record<string, string> = {
-    'PENDING': 'p',
-    'UNKNOWN': 'u',
-    'ASSUMED_FRIEND': 'a',
-    'FRIEND': 'f',
-    'NEUTRAL': 'n',
-    'SUSPECT': 's',
-    'HOSTILE': 'h',
-    'JOKER': 'j',
-    'FAKER': 'k',
-    'NONE': 'o'
+
+const StandardAffiliation: Record<string, string> = {
+    'Pending': 'p',
+    'Assumed Friendly': 'a',
+    'Friendly': 'f',
+    'Neutral': 'n',
+    'Suspect': 's',
+    'Hostile': 'h',
+    'Joker': 'j',
+    'Faker': 'k',
+    'Unknown': 'u',
+    'None': 'o'
 }
+
+const StandardAffiliationInverse = Object.fromEntries(
+    Object.entries(StandardAffiliation).map(([key, value]) => [value, key])
+);
 
 const paging = ref({
     filter: '',
-    identity: 'FRIEND'
 });
 
 const list = ref<COTTypeList>({
@@ -153,8 +142,29 @@ const list = ref<COTTypeList>({
     items: []
 });
 
-watch(type, () => {
-    emit('update:modelValue', type.value);
+watch(props, async () => {
+    if (!props.modelValue) return;
+
+    if (props.modelValue !== config.value.type) {
+        config.value.affiliation = props.modelValue.split('-')[1];
+        config.value.type = props.modelValue;
+
+        await fetchType();
+        await fetchList();
+    }
+});
+
+watch(config.value, async () => {
+    if (config.value.type.split(['-'])[1] !== config.value.affiliation) {
+        config.value.type = config.value.type.replace(/^.-.-/, `a-${config.value.affiliation}-`);
+    }
+
+    emit('update:modelValue', config.value.type);
+
+    await fetchType();
+    await fetchList();
+}, {
+    deep: true
 });
 
 watch(paging.value, async () => {
@@ -168,11 +178,11 @@ onMounted(async () => {
 
 function updateType(item: COTType) {
     meta.value = item;
-    type.value = item.cot;
+    config.value.type = item.cot;
 }
 
 async function fetchType() {
-    const url = stdurl(`/api/type/cot/${type.value}`);
+    const url = stdurl(`/api/type/cot/${config.value.type}`);
     meta.value = await std(url) as COTType;
 }
 
@@ -181,7 +191,14 @@ async function fetchList() {
 
     const url = stdurl('/api/type/cot');
     url.searchParams.append('filter', paging.value.filter);
-    url.searchParams.append('identity', StandardIdentity[paging.value.identity]);
+
+    if (config.value.type.startsWith('a-')) {
+        url.searchParams.append('identity', config.value.affiliation);
+    } else {
+        url.searchParams.append('identity', 'f');
+    }
+
+    url.searchParams.append('domain', 'a');
 
     list.value = await std(url) as COTTypeList;
 }
