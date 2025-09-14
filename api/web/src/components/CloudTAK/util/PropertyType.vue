@@ -3,7 +3,24 @@
         v-if='config.type'
         class='mx-2'
     >
+        <template v-if='!props.edit'>
+            <div
+                class='rounded py-2 px-2 text-truncate d-flex align-items-center user-select-none'
+                :class='background'
+            >
+                <FeatureIcon
+                    :key='config.type'
+                    :feature='{ properties: { icon: config.type } }'
+                />
+
+                <div
+                    class='mx-2 text-truncate'
+                    v-text='meta ? meta.full : config.type'
+                />
+            </div>
+        </template>
         <TablerSlidedown
+            v-else
             :clickAnywhereExpand='true'
         >
             <IconChartGridDots
@@ -133,7 +150,7 @@ const props = defineProps({
         type: String,
         required: true
     },
-    hover: {
+    edit: {
         type: Boolean,
         default: true
     }
@@ -198,7 +215,7 @@ const background = computed(() => {
         return 'border border-green bg-green-lt text-green-fg';
     } else if (config.value.affiliation === 'h' || config.value.affiliation === 's' || config.value.affiliation === 'j' || config.value.affiliation === 'k') {
         return 'border border-red bg-red-lt text-red-fg';
-    } else if (config.value.affiliation === 'p' || config.value.affiliation === 'u') {
+    } else if (config.value.affiliation === 'p') {
         return 'border border-yellow bg-yellow-lt text-yellow-fg';
     } else {
         return 'bg-gray-500';
