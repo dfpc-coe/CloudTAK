@@ -58,7 +58,10 @@
                 </template>
                 <template v-else>
                     <div class='row g-2'>
-                        <div class='col-8'>
+                        <div :class='{
+                            "col-12": !config.type.startsWith("a-"),
+                            "col-8": config.type.startsWith("a-")
+                        }'>
                             <TablerInput
                                 v-model='paging.filter'
                                 icon='search'
@@ -66,9 +69,11 @@
                                 :autofocus='true'
                             />
                         </div>
-                        <div class='col-4'>
+                        <div
+                            v-if='config.type.startsWith("a-")'
+                            class='col-4'
+                        >
                             <TablerEnum
-                                v-if='config.type.startsWith("a-")'
                                 :modelValue='StandardAffiliationInverse[config.affiliation]'
                                 :default='StandardAffiliation.Friendly'
                                 :options='Object.keys(StandardAffiliation)'
@@ -191,6 +196,8 @@ watch(props, async () => {
         ) {
             config.value.affiliation = config.value.type.split('-')[1];
             await fetchList();
+        } else if (props.modelValue.startsWith('u-')) {
+            config.value.affiliation = 'u';
         }
 
         config.value.type = props.modelValue;
