@@ -58,21 +58,21 @@
                 </template>
                 <template v-else>
                     <div class='row g-2'>
-                        <div class='col-12'>
+                        <div class='col-8'>
+                            <TablerInput
+                                v-model='paging.filter'
+                                icon='search'
+                                placeholder='Filter'
+                                :autofocus='true'
+                            />
+                        </div>
+                        <div class='col-4'>
                             <TablerEnum
                                 v-if='config.type.startsWith("a-")'
                                 :modelValue='StandardAffiliationInverse[config.affiliation]'
                                 :default='StandardAffiliation.Friendly'
                                 :options='Object.keys(StandardAffiliation)'
                                 @update:modelValue='updateAffiliation($event)'
-                            />
-                        </div>
-                        <div class='col-12'>
-                            <TablerInput
-                                v-model='paging.filter'
-                                icon='search'
-                                placeholder='Filter'
-                                :autofocus='true'
                             />
                         </div>
                     </div>
