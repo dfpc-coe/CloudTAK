@@ -81,9 +81,10 @@
                 </div>
             </div>
             <div
-                class='position-absolute bottom-0 start-0 end-0 text-white'
+                class='position-absolute bottom-0 begin-0 text-white'
                 style='
                     z-index: 1;
+                    width: 250px;
                     height: 40px;
                     border-radius: 0px 6px 0px 0px;
                     background-color: rgba(0, 0, 0, 0.5);

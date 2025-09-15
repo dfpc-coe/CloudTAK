@@ -13,7 +13,7 @@
         <div class='mx-2'>
             <div
                 v-if='!hover'
-                class='bg-gray-500 rounded-top py-2 px-2 text-truncate d-flex align-items-center'
+                class='bg-accent rounded-top py-2 px-2 text-truncate d-flex align-items-center'
             >
                 <FeatureIcon
                     :key='type'
@@ -33,7 +33,7 @@
             </div>
             <TablerDropdown v-else>
                 <div
-                    class='bg-gray-500 rounded-top py-2 px-2 text-truncate d-flex align-items-center'
+                    class='bg-accent rounded-top py-2 px-2 text-truncate d-flex align-items-center'
                     :class='{
                         "hover-button hover-border cursor-pointer": hover,
                     }'
