@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.21.0 - 2025-09-15
+
+- :arrow_up: Update Tabler Core
+- :rocket: Reset Color Property when switching from `u-d-p` to `a-*`
+
 ### v11.20.0 - 2025-09-14
 
 - :tada: Significant Updates to CoT Selection
