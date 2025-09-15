@@ -376,11 +376,18 @@ export default class Subscription {
     ): Promise<MissionLayerList> {
         const url = stdurl(`/api/marti/missions/${encodeURIComponent(guid)}/layer`);
 
-        return await std(url, {
+        const list = await std(url, {
             method: 'GET',
             token: opts.token,
             headers: Subscription.headers(opts.missionToken)
         }) as MissionLayerList;
+
+        list.data.sort((a, b) => {
+            // Consistent sort by name
+            return a.name.localeCompare(b.name);
+        });
+
+        return list;
     }
 
     static async layerUpdate(

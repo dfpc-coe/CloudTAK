@@ -31,7 +31,7 @@ export const Filter = Type.String({
 });
 
 export const NameField = Type.String({
-    minLength: 4,
+    minLength: 1,
     maxLength: 64,
     description: 'Human readable name'
 });
