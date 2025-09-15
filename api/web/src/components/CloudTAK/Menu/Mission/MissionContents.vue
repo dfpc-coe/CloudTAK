@@ -29,10 +29,10 @@
             v-else-if='upload'
             class='mx-2'
         >
-            <UploadImport
-                mode='Mission'
-                :modeid='mission.guid'
-                :config='genConfig()'
+            <Upload
+                :url='stdurl(`/api/marti/missions/${mission.name}/upload`)'
+                :headers='uploadHeaders()'
+                method='POST'
                 @cancel='upload = false'
                 @done='upload = false'
             />
@@ -127,7 +127,7 @@ import {
     IconFileImport,
     IconDownload,
 } from '@tabler/icons-vue';
-import UploadImport from '../../util/UploadImport.vue';
+import Upload from '../../../util/Upload.vue';
 import Status from '../../../util/StatusDot.vue';
 import {
     TablerIconButton,
@@ -174,14 +174,22 @@ async function deleteFile(hash: string) {
     emit("refresh");
 }
 
+function uploadHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+        Authorization: `Bearer ${localStorage.token}`,
+    }
+
+    if (props.token) {
+        headers.MissionAuthorization = props.token;
+    };
+
+    return headers;
+}
+
 function downloadFile(hash: string): string {
     const url = stdurl(`/api/marti/api/files/${hash}`)
     url.searchParams.append('token', localStorage.token);
     return String(url);
-}
-
-function genConfig() {
-    return { id: props.mission.name }
 }
 
 async function importFile(name: string, hash: string) {
