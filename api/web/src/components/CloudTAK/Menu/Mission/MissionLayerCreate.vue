@@ -38,13 +38,8 @@
 <script setup lang='ts'>
 import { ref } from 'vue';
 import {
-    IconSquareChevronRight,
-    IconChevronDown,
-} from '@tabler/icons-vue';
-import {
     TablerAlert,
     TablerInput,
-    TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import Subscription from '../../../../base/subscription.ts';
@@ -62,7 +57,6 @@ const loading = ref({
     layer: false,
 });
 
-const advanced = ref(false);
 const layer = ref<MissionLayer_Create>({
     name: '',
     type: 'GROUP'
