@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.20.0 - 2025-09-14
+
+- :tada: Significant Updates to CoT Selection
+
 ### v11.19.0 - 2025-09-12
 
 - :arrow_up: Circle Opacity Support
