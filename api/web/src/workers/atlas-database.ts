@@ -525,6 +525,7 @@ export default class AtlasDatabase {
                     }
 
                     await sub.deleteFeature(change.contentUid, {
+                        // This is critical to ensure a recursive loop of doesn't occur
                         skipNetwork: true
                     });
 
@@ -561,7 +562,7 @@ export default class AtlasDatabase {
      * @param opts - Optional Options
      * @param opts.skipSave - Don't save the COT to the Profile Feature Database
      * @param opts.skipBroadcast - Don't broadcast the COT on the internal message bus to the UI
-     * @param opts.authored - If the COT is new, append creator information & potentially add it to a mission
+     * @param opts.authored - If the COT is authored, append creator information if the CoT is new & potentially add it to a mission
      */
     async add(
         feature: InputFeature,
@@ -577,21 +578,31 @@ export default class AtlasDatabase {
 
         const feat = feature as Feature;
 
-        if (opts.authored) {
-            feat.properties.creator = await this.atlas.profile.creator();
-        }
-
         // Check if CoT exists
         let exists = this.get(feat.properties.id, {
             mission: true
         });
 
+        if (opts.authored && !exists) {
+            feat.properties.creator = await this.atlas.profile.creator();
+        }
+
+
         // New CoT destined for a Mission
-        if (!exists && (
-            (this.mission && opts.authored) // New CoT and we have an active Mission
-            || (feat.origin && feat.origin.mode === "Mission" && feat.origin.mode_id)
-            || this.subscriptionPending.get(feat.id)
-       )) {
+        if (
+            !exists && (
+                (this.mission && opts.authored) // Authored CoT and we have an active Mission
+                || (
+                    feat.origin && feat.origin.mode === "Mission"
+                    && feat.origin.mode_id
+                )
+                || this.subscriptionPending.get(feat.id)
+            )
+            || exists && (
+                exists.origin.mode === OriginMode.MISSION
+                && exists.origin.mode_id
+            )
+        ) {
             const pendingGuid = this.subscriptionPending.get(feat.id);
             this.subscriptionPending.delete(feat.id);
 
@@ -610,13 +621,21 @@ export default class AtlasDatabase {
                 throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
             }
 
-            const cot = new COT(this.atlas, feat, {
-                mode: OriginMode.MISSION,
-                mode_id: mission_guid
-            }, opts);
+            if (!exists) {
+                exists = new COT(this.atlas, feat, {
+                    mode: OriginMode.MISSION,
+                    mode_id: mission_guid
+                }, opts);
+            } else {
+                exists.update({
+                    path: feat.path,
+                    properties: feat.properties,
+                    geometry: feat.geometry
+                }, { skipSave: opts.skipSave })
+            }
 
-            await sub.updateFeature(cot, {
-                skipNetwork: !!pendingGuid
+            await sub.updateFeature(exists, {
+                skipNetwork: !opts.authored
             });
 
             this.atlas.postMessage({
@@ -626,17 +645,6 @@ export default class AtlasDatabase {
                 }
             });
 
-            return cot;
-        } else if (exists && exists.origin.mode === OriginMode.MISSION && exists.origin.mode_id) {
-            // Existing CoT that belongs to a Mission
-            const sub = this.subscriptions.get(exists.origin.mode_id || '');
-
-            if (!sub) {
-                throw new Error(`Cannot update ${feat.properties.id} in mission ${exists.origin.mode_id} as it is not loaded`)
-            }
-
-            await exists.update(feat)
-            await sub.updateFeature(exists);
             return exists;
         } else {
             if (exists) {
