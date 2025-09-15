@@ -98,7 +98,7 @@
                                     <th>Value</th>
                                 </tr>
                             </thead>
-                            <tbody class='bg-gray-500'>
+                            <tbody class='bg-accent'>
                                 <template v-if='feat.properties'>
                                     <tr
                                         v-for='prop of Object.keys(feat.properties)'
