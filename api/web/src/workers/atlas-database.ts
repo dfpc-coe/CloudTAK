@@ -561,7 +561,7 @@ export default class AtlasDatabase {
      * @param opts - Optional Options
      * @param opts.skipSave - Don't save the COT to the Profile Feature Database
      * @param opts.skipBroadcast - Don't broadcast the COT on the internal message bus to the UI
-     * @param opts.authored - If the COT is new, append creator information & potentially add it to a mission
+     * @param opts.authored - If the COT is authored, append creator information if the CoT is new & potentially add it to a mission
      */
     async add(
         feature: InputFeature,
@@ -589,7 +589,7 @@ export default class AtlasDatabase {
         // New CoT destined for a Mission
         if (
             !exists && (
-                (this.mission && opts.authored) // New CoT and we have an active Mission
+                (this.mission && opts.authored) // Authored CoT and we have an active Mission
                 || (feat.origin && feat.origin.mode === "Mission" && feat.origin.mode_id)
                 || this.subscriptionPending.get(feat.id)
             ) || (exists && exists.origin.mode === OriginMode.MISSION && exists.origin.mode_id)
@@ -620,7 +620,7 @@ export default class AtlasDatabase {
             }
 
             await sub.updateFeature(exists, {
-                skipNetwork: !!pendingGuid
+                skipNetwork: opts.authored
             });
 
             this.atlas.postMessage({
