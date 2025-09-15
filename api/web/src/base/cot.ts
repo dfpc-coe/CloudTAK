@@ -180,7 +180,11 @@ export default class COT {
 
             // We do the parse/stringify to ensure that deep Proxies created with Vue3 ref/reactive are removed
             // As they cannot be Cloned accross the ComLink Bridge
-            await atlas.db.add(JSON.parse(JSON.stringify(this.as_feature())));
+            await atlas.db.add(JSON.parse(JSON.stringify(this.as_feature())), {
+                // Changes that are remote (from the frontend are always user-authored),
+                // this is important to trigger submission for Mission Syncs
+                authored: true
+            });
 
             return false;
         } else {
