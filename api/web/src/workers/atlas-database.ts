@@ -578,14 +578,15 @@ export default class AtlasDatabase {
 
         const feat = feature as Feature;
 
-        if (opts.authored) {
-            feat.properties.creator = await this.atlas.profile.creator();
-        }
-
         // Check if CoT exists
         let exists = this.get(feat.properties.id, {
             mission: true
         });
+
+        if (opts.authored && !exists) {
+            feat.properties.creator = await this.atlas.profile.creator();
+        }
+
 
         // New CoT destined for a Mission
         if (
@@ -625,6 +626,12 @@ export default class AtlasDatabase {
                     mode: OriginMode.MISSION,
                     mode_id: mission_guid
                 }, opts);
+            } else {
+                exists.update({
+                    path: feat.path,
+                    properties: feat.properties,
+                    geometry: feat.geometry
+                }, { skipSave: opts.skipSave })
             }
 
             await sub.updateFeature(exists, {
