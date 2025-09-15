@@ -1,58 +1,51 @@
 <template>
-    <div
-        style='`
-            height: ${props.size}px;
-            width: ${props.size}px;
-        `'
-    >
-        <canvas
-            v-if='supportedIcon'
-            ref='imgCanvas'
-            :width='props.size'
-            :height='props.size'
-        />
-        <IconPointFilled
-            v-else-if='feature.properties && feature.properties.type === "u-d-p"'
-            :size='props.size'
-            :color='feature.properties["marker-color"]'
-        />
-        <!-- Icons are in order of most preferred display => Least-->
-        <IconVideo
-            v-else-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
-            :size='props.size'
-            :color='feature.properties.stroke || "white"'
-            stroke='1'
-        />
-        <IconRoute
-            v-else-if='feature.properties && feature.properties.type === "b-m-r"'
-            :size='props.size'
-            :color='feature.properties.stroke || "white"'
-            stroke='1'
-        />
-        <IconLine
-            v-else-if='feature.geometry && feature.geometry.type === "LineString"'
-            :size='props.size'
-            :color='feature.properties.stroke || "white"'
-            stroke='1'
-        />
-        <IconCone
-            v-else-if='feature.properties && feature.properties.sensor'
-            :size='props.size'
-            :color='feature.properties.stroke || "white"'
-            stroke='1'
-        />
-        <IconPolygon
-            v-else-if='feature.geometry && feature.geometry.type === "Polygon"'
-            :size='props.size'
-            :color='feature.properties.fill || "white"'
-            stroke='1'
-        />
-        <IconMapPin
-            v-else
-            :size='props.size'
-            stroke='1'
-        />
-    </div>
+    <canvas
+        v-if='supportedIcon'
+        ref='imgCanvas'
+        :width='props.size'
+        :height='props.size'
+    />
+    <IconPointFilled
+        v-else-if='feature.properties && feature.properties.type === "u-d-p"'
+        :size='props.size'
+        :color='feature.properties["marker-color"]'
+    />
+    <!-- Icons are in order of most preferred display => Least-->
+    <IconVideo
+        v-else-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
+        :size='props.size'
+        :color='feature.properties.stroke || "white"'
+        stroke='1'
+    />
+    <IconRoute
+        v-else-if='feature.properties && feature.properties.type === "b-m-r"'
+        :size='props.size'
+        :color='feature.properties.stroke || "white"'
+        stroke='1'
+    />
+    <IconLine
+        v-else-if='feature.geometry && feature.geometry.type === "LineString"'
+        :size='props.size'
+        :color='feature.properties.stroke || "white"'
+        stroke='1'
+    />
+    <IconCone
+        v-else-if='feature.properties && feature.properties.sensor'
+        :size='props.size'
+        :color='feature.properties.stroke || "white"'
+        stroke='1'
+    />
+    <IconPolygon
+        v-else-if='feature.geometry && feature.geometry.type === "Polygon"'
+        :size='props.size'
+        :color='feature.properties.fill || "white"'
+        stroke='1'
+    />
+    <IconMapPin
+        v-else
+        :size='props.size'
+        stroke='1'
+    />
 </template>
 
 <script setup lang='ts'>

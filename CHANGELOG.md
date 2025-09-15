@@ -12,6 +12,22 @@
 
 ### Pending Release
 
+### v11.20.0 - 2025-09-14
+
+- :tada: Significant Updates to CoT Selection
+
+### v11.19.0 - 2025-09-12
+
+- :arrow_up: Circle Opacity Support
+
+### v11.18.3 - 2025-09-12
+
+- :arrow_up: Update NodeCoT
+
+### v11.18.2 - 2025-09-12
+
+- :arrow_up: Update NodeCoT
+
 ### v11.18.1 - 2025-09-11
 
 - :arrow_up: Update NodeCoT
