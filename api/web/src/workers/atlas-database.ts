@@ -525,6 +525,7 @@ export default class AtlasDatabase {
                     }
 
                     await sub.deleteFeature(change.contentUid, {
+                        // This is critical to ensure a recursive loop of doesn't occur
                         skipNetwork: true
                     });
 
@@ -590,9 +591,16 @@ export default class AtlasDatabase {
         if (
             !exists && (
                 (this.mission && opts.authored) // Authored CoT and we have an active Mission
-                || (feat.origin && feat.origin.mode === "Mission" && feat.origin.mode_id)
+                || (
+                    feat.origin && feat.origin.mode === "Mission"
+                    && feat.origin.mode_id
+                )
                 || this.subscriptionPending.get(feat.id)
-            ) || (exists && exists.origin.mode === OriginMode.MISSION && exists.origin.mode_id)
+            )
+            || exists && (
+                exists.origin.mode === OriginMode.MISSION
+                && exists.origin.mode_id
+            )
         ) {
             const pendingGuid = this.subscriptionPending.get(feat.id);
             this.subscriptionPending.delete(feat.id);
