@@ -13,7 +13,7 @@
             />
         </div>
         <div class='px-2'>
-            <div class='col-12 bg-gray-500 rounded-bottom px-1 py-1'>
+            <div class='col-12 bg-accent rounded-bottom px-1 py-1'>
                 <label class='subheader mx-2 user-select-none'>Status</label>
                 <TablerEnum
                     v-model='breakdown.status'

@@ -265,6 +265,10 @@ $cloudtak-blue: #07556D;
     background-color: $cloudtak-blue !important;
 }
 
+.bg-accent {
+    background-color: #283547 !important;
+}
+
 .bg-child {
     background-color: $cloudtak-child !important;
 }

@@ -7,7 +7,7 @@
 
     <div
         v-if='editing'
-        class='position-relative rounded-top'
+        class='position-relative rounded'
     >
         <TablerInput
             v-model='text'
@@ -36,7 +36,7 @@
     <div
         v-else
         ref='infobox'
-        class='position-relative bg-gray-500 rounded-top py-2 px-2 text-truncate'
+        class='position-relative bg-accent rounded py-2 px-2 text-truncate'
         :style='rows === 1 ? `min-height: ${minheight}px;` : ``'
         :class='{
             "hover-button hover-border cursor-pointer": hover,
