@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.22.0 - 2025-09-15
+
+- :rocket: Move Data Sync submission to explicitly use the `authored` flag instead of using Pending Queues
+- :bug: Fix another recursive Data Sync bug where an EUD editing a feature would result in a loop
+
 ### v11.21.0 - 2025-09-15
 
 - :arrow_up: Update Tabler Core
