@@ -313,10 +313,8 @@
                     }'
                 >
                     <PropertyType
-                        v-if='cot.properties.type.startsWith("a-") || cot.properties.type === "u-d-p"'
-                        :key='cot.properties.type'
+                        v-if='cot.properties.type.startsWith("a-") || cot.properties.type.startsWith("u-")'
                         :edit='is_editable'
-                        :hover='is_editable'
                         :model-value='cot.properties.type'
                         @update:model-value='updatePropertyType($event)'
                     />
