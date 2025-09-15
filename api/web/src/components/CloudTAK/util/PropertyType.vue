@@ -231,7 +231,13 @@ const background = computed(() => {
 
 function updateType(item: COTType) {
     meta.value = item;
-    config.value.type = item.cot;
+
+    const type = item.cot.split('-');
+    if (type[0] === 'a') {
+        type[1] = config.value.affiliation;
+    }
+
+    config.value.type = type.join('-');
 
     emit('update:modelValue', item.cot);
 }
