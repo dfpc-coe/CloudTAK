@@ -791,13 +791,13 @@
         <template v-else-if='mode === "raw"'>
             <div
                 style='height: calc(100vh - 225px)'
-                class='overflow-auto'
+                class='overflow-auto col-12'
             >
                 <CopyField
                     mode='pre'
                     style='
+                        width: calc(100% - 100px);
                         height: calc(100vh - 225px);
-                        width: 100%;
                     '
                     :model-value='JSON.stringify(cot.as_feature(), null, 4)'
                 />

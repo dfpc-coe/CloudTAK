@@ -36,9 +36,10 @@
     <div
         v-else
         ref='infobox'
-        class='position-relative bg-accent rounded py-2 px-2 text-truncate'
+        class='position-relative rounded text-truncate'
         :style='rows === 1 ? `min-height: ${minheight}px;` : ``'
         :class='{
+            "px-2 py-2 bg-accent": props.mode !== "pre",
             "hover-button hover-border cursor-pointer": hover,
         }'
     >
