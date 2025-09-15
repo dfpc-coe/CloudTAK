@@ -225,7 +225,7 @@ const background = computed(() => {
     } else if (config.value.affiliation === 'p') {
         return 'border border-yellow bg-yellow-lt text-yellow-fg';
     } else {
-        return 'bg-gray-500';
+        return 'bg-accent';
     }
 });
 
