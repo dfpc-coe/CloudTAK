@@ -628,7 +628,7 @@ export default class AtlasDatabase {
             }
 
             await sub.updateFeature(exists, {
-                skipNetwork: opts.authored
+                skipNetwork: !opts.authored
             });
 
             this.atlas.postMessage({
