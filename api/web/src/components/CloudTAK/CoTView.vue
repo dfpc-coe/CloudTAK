@@ -1051,6 +1051,10 @@ function updatePropertyIcon(event: string | null) {
 function updatePropertyType(type: string): void {
     if (!cot.value) return;
 
+    if (type.startsWith('a-') && cot.value.properties.type.startsWith('u-')) {
+        cot.value.properties["marker-color"] = '#FFFFFF';
+    }
+
     cot.value.properties.type = type;
 
     if (!cot.value.properties.icon || !cot.value.properties.icon.includes(':')) {
