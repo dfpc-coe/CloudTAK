@@ -1,8 +1,5 @@
 <template>
-    <div
-        v-if='config.type'
-        class='mx-2'
-    >
+    <div v-if='config.type'>
         <template v-if='!props.edit'>
             <div
                 class='rounded py-2 px-2 text-truncate d-flex align-items-center user-select-none'
