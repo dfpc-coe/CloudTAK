@@ -9,7 +9,7 @@
         <label class='subheader user-select-none'>Sensor</label>
 
         <div class='mx-2 py-3'>
-            <div class='row g-2 rounded px-2 bg-gray-500 pb-2'>
+            <div class='row g-2 rounded px-2 bg-accent pb-2'>
                 <div class='col-6'>
                     <label class='subheader user-select-none'>Type</label>
 

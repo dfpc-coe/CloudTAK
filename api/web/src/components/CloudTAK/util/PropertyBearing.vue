@@ -17,42 +17,47 @@
                 :hover='props.hover'
                 :size='24'
             />
-            <span
-                v-tooltip='"Degrees"'
-                class='my-1 px-2 user-select-none'
-                :class='{
-                    "bg-gray-500 rounded-bottom text-blue": mode === "deg",
-                    "cursor-pointer": mode !== "deg",
-                }'
-                role='menuitem'
-                tabindex='0'
-                @keyup.enter='changeMode("deg")'
-                @click='changeMode("deg")'
-            >Deg</span>
-            <span
-                v-tooltip='"Radians"'
-                class='my-1 px-2 user-select-none'
-                :class='{
-                    "bg-gray-500 rounded-bottom text-blue": mode === "rad",
-                    "cursor-pointer": mode !== "rad",
-                }'
-                role='menuitem'
-                tabindex='0'
-                @keyup.enter='changeMode("rad")'
-                @click='changeMode("rad")'
-            >Rads</span>
-            <span
-                v-tooltip='"Mil-Radians"'
-                class='my-1 px-2 user-select-none'
-                :class='{
-                    "bg-gray-500 rounded-bottom text-blue": mode === "mil",
-                    "cursor-pointer": mode !== "mil",
-                }'
-                role='menuitem'
-                tabindex='0'
-                @keyup.enter='changeMode("mil")'
-                @click='changeMode("mil")'
-            >Mils</span>
+            <div
+                class='mx-2'
+                role='menu'
+            >
+                <span
+                    v-tooltip='"Degrees"'
+                    class='my-1 px-2 user-select-none'
+                    :class='{
+                        "bg-accent rounded-bottom text-blue": mode === "deg",
+                        "cursor-pointer": mode !== "deg",
+                    }'
+                    role='menuitem'
+                    tabindex='0'
+                    @keyup.enter='changeMode("deg")'
+                    @click='changeMode("deg")'
+                >Deg</span>
+                <span
+                    v-tooltip='"Radians"'
+                    class='my-1 px-2 user-select-none'
+                    :class='{
+                        "bg-accent rounded-bottom text-blue": mode === "rad",
+                        "cursor-pointer": mode !== "rad",
+                    }'
+                    role='menuitem'
+                    tabindex='0'
+                    @keyup.enter='changeMode("rad")'
+                    @click='changeMode("rad")'
+                >Rads</span>
+                <span
+                    v-tooltip='"Mil-Radians"'
+                    class='my-1 px-2 user-select-none'
+                    :class='{
+                        "bg-accent rounded-bottom text-blue": mode === "mil",
+                        "cursor-pointer": mode !== "mil",
+                    }'
+                    role='menuitem'
+                    tabindex='0'
+                    @keyup.enter='changeMode("mil")'
+                    @click='changeMode("mil")'
+                >Mils</span>
+            </div>
         </div>
     </div>
 </template>

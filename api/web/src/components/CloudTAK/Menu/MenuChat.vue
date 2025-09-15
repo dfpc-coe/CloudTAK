@@ -22,7 +22,7 @@
                 </div>
                 <div
                     v-else
-                    class='ms-auto bg-gray-400 px-2 py-2 rounded'
+                    class='ms-auto bg-accent px-2 py-2 rounded'
                 >
                     <span v-text='chat.message' />
                 </div>

@@ -225,13 +225,19 @@ const background = computed(() => {
     } else if (config.value.affiliation === 'p') {
         return 'border border-yellow bg-yellow-lt text-yellow-fg';
     } else {
-        return 'bg-gray-500';
+        return 'bg-accent';
     }
 });
 
 function updateType(item: COTType) {
     meta.value = item;
-    config.value.type = item.cot;
+
+    const type = item.cot.split('-');
+    if (type[0] === 'a') {
+        type[1] = config.value.affiliation;
+    }
+
+    config.value.type = type.join('-');
 
     emit('update:modelValue', item.cot);
 }
