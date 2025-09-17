@@ -92,6 +92,10 @@ export default class COT {
             this._properties.archived = false
         }
 
+        if (!this._properties.id) {
+            this._properties.id = this.id;
+        }
+
         if (!this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
             this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
         }

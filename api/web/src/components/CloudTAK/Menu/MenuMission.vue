@@ -310,7 +310,9 @@ async function fetchMission(): Promise<void> {
     mission.value = undefined;
     missionSub.value = undefined;
 
-    const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission));
+    const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission), {
+        refresh: true
+    });
 
     try {
         if (subMission) {

@@ -136,8 +136,21 @@ export default class AtlasDatabase {
         return sub;
     }
 
-    async subscriptionGet(id: string): Promise<Subscription | undefined> {
-        return this.subscriptions.get(id);
+    async subscriptionGet(
+        id: string,
+        opts: {
+            refresh?: boolean
+        } = {}
+     ): Promise<Subscription | undefined> {
+        const sub = this.subscriptions.get(id);
+
+        if (!sub) return;
+
+        if (opts.refresh) {
+            await sub.refresh();
+        }
+
+        return sub;
     }
 
     async subscriptionDelete(id: string): Promise<void> {

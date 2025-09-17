@@ -4,6 +4,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import * as Default from '../lib/limits.js';
 import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 import { MissionLayer, MissionLayerType } from '@tak-ps/node-tak/lib/api/mission-layer';
 import {
@@ -82,7 +83,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String()
         }),
         body: Type.Object({
-            name: Type.String(),
+            name: Default.NameField,
             type: Type.Enum(MissionLayerType),
             uid: Type.Optional(Type.String()),
             parentUid: Type.Optional(Type.String()),
@@ -124,7 +125,7 @@ export default async function router(schema: Schema, config: Config) {
             uid: Type.String()
         }),
         body: Type.Object({
-            name: Type.Optional(Type.String()),
+            name: Type.Optional(Default.NameField),
         }),
         description: 'Helper API to update mission layers',
         res: StandardResponse

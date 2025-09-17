@@ -210,7 +210,7 @@ export default async function server(config: Config): Promise<ServerManager> {
             if (!config.conns) throw new Error('Server not configured with Connection Pool');
 
             // Connect to MachineUser Connection if it is an integer
-            if (!isNaN(parseInt(parsedParams.connection))) {
+            if (!isNaN(Number(parsedParams.connection)) && Number.isInteger(Number(parsedParams.connection))) {
                 let webClients = config.wsClients.get(parsedParams.connection)
                 if (!webClients) webClients = [];
                 webClients.push(new ConnectionWebSocket(ws, parsedParams.format));
