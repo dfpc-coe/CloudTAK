@@ -178,7 +178,7 @@ export default class Subscription {
 
         const mission = await std(url, {
             headers: this.headers(),
-            token: this._atlas.token
+            token: String(this._atlas.token)
         }) as Mission;
 
         this.logs = mission.logs || [] as Array<MissionLog>;

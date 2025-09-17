@@ -100,14 +100,13 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, useTemplateRef } from 'vue';
+import { ref, computed, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../std.ts';
 import type {
     Mission,
     MissionRole,
     Import,
-    ImportList
 } from '../../../../types.ts';
 import {
     IconPlus,
@@ -115,7 +114,6 @@ import {
     IconDownload,
 } from '@tabler/icons-vue';
 import Upload from '../../../util/Upload.vue';
-import Status from '../../../util/StatusDot.vue';
 import {
     TablerIconButton,
     TablerLoading,
@@ -163,7 +161,7 @@ const uploadHeaders = computed(() => {
     return headers;
 });
 
-async function uploadStaged(ev) {
+async function uploadStaged(ev: { name: string }) {
 
     if (uploadRef.value) {
         await uploadRef.value.upload({
