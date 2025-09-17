@@ -77,6 +77,7 @@ interface Props {
     url: URL;
     autoupload?: boolean;
     headers?: Record<string, string>;
+    format?: 'formdata' | 'raw';
     method?: string;
     cancel?: boolean;
     label?: string;
@@ -86,6 +87,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
     headers: () => ({}),
     autoupload: true,
+    format: 'formdata',
     method: 'POST',
     cancel: true,
     label: 'Select a file to upload',

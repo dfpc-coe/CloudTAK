@@ -1,5 +1,4 @@
 import { Static, Type } from '@sinclair/typebox'
-import busboy from 'busboy';
 import qr from 'qr-image';
 import tokml from 'tokml';
 import Schema from '@openaddresses/batch-schema';
@@ -497,16 +496,20 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-
-            if (!req.headers['content-type'] || !req.headers['content-type'].startsWith('multipart/form-data')) {
-                throw new Err(400, null, 'Unsupported Content-Type');
-            }
-
             const profile = await config.models.Profile.from(user.email);
             const auth = profile.auth;
             const creatorUid = profile.username;
 
+            const name = String(req.query.name);
+
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const content = await api.Files.upload({
+                name: name,
+                contentLength: Number(req.headers['content-length']),
+                keywords: [],
+                creatorUid: creatorUid,
+            }, req);
 
             // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
             req.connection = {
@@ -514,48 +517,19 @@ export default async function router(schema: Schema, config: Config) {
                 remoteAddress: req._remoteAddress
             }
 
-            const bb = busboy({
-                headers: req.headers,
-                limits: { files: 1 }
-            });
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
 
-            const uploads: Promise<unknown>[] = [];
-            bb.on('file', async (fieldname, file, blob) => {
-                uploads.push((async function() {
-                    console.error(blob);
+            const missionContent = await api.Mission.attachContents(
+                req.params.name,
+                {
+                    hashes: [content.Hash]
+                },
+                opts
+            );
 
-                    const content = await api.Files.upload({
-                        name: blob.filename,
-                        contentLength: Number(req.headers['content-length']),
-                        keywords: [],
-                        creatorUid: creatorUid,
-                    }, req);
-
-                    const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
-                        ? { token: String(req.headers['missionauthorization']) }
-                        : await config.conns.subscription(user.email, req.params.name)
-
-                    const missionContent = await api.Mission.attachContents(
-                        req.params.name,
-                        {
-                            hashes: [content.Hash]
-                        },
-                        opts
-                    );
-
-                    return missionContent;
-                })())
-            }).on('finish', async () => {
-                try {
-                    if (!uploads.length) throw new Err(400, null, 'No file uploaded');
-                    res.json(await Promise.all(uploads[0]));
-                } catch (err) {
-                    Err.respond(err, res);
-                }
-            });
-
-            req.pipe(bb);
-
+            res.json(missionContent);
         } catch (err) {
              Err.respond(err, res);
         }
