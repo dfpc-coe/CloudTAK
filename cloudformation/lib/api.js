@@ -193,6 +193,7 @@ export default {
                                 'sqs:SendMessage',
                                 'sqs:SendMessageBatch',
                                 'sqs:ChangeMessageVisibility',
+                                'sqs:UntagQueue',
                                 'sqs:GetQueueUrl',
                                 'sqs:GetQueueAttributes',
                                 'sqs:DeleteMessage'
