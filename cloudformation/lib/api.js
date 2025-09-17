@@ -269,6 +269,7 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'cloudwatch:UntagResource',
                                 'cloudwatch:Describe*'
                             ],
                             Resource: [
