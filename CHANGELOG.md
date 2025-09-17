@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v11.23.0 - 2025-09-17
+
+
+- :rocket: Simplify Data Sync Layer Creation and only allow the creation of Groups (IE Folders) from the UI
+- :bug: Fix bug where username containing integer would result in no WebSocket connection
+- :bug: Fix MultiSelect on Data Sync CoTs by ensuring `.properties.id` is always populated on new CoTs
+- :bug: Fix padding issue in Settings Menu when selecting `type` property
+
 ### v11.22.0 - 2025-09-15
 
 - :rocket: Move Data Sync submission to explicitly use the `authored` flag instead of using Pending Queues
