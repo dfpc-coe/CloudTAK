@@ -315,6 +315,7 @@ export default {
                                 'logs:CreateLogGroup',
                                 'logs:DeleteLogGroup',
                                 'logs:PutRetentionPolicy',
+                                'logs:UntagResource',
                                 'logs:List*',
                                 'logs:Describe*',
                                 'logs:Get*'
