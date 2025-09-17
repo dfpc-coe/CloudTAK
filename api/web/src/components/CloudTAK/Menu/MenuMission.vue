@@ -201,7 +201,7 @@
                     :mission='mission'
                     :token='token'
                     :role='role'
-                    @refresh='fetchMission(true)'
+                    @refresh='fetchMission'
                 />
             </template>
         </template>
@@ -306,7 +306,7 @@ async function exportToPackage(format: string): Promise<void> {
     loadingInline.value = undefined;
 }
 
-async function fetchMission(refresh: boolean): Promise<void> {
+async function fetchMission(): Promise<void> {
     mission.value = undefined;
     missionSub.value = undefined;
 

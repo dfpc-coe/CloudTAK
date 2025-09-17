@@ -151,7 +151,7 @@ function stage(event: Event) {
 }
 
 async function upload(opts: {
-    query: Record<string, string>;
+    query?: Record<string, string>;
 } = {}) {
     if (!file.value) throw new Error('No file staged for upload');
 
