@@ -193,6 +193,7 @@ export default {
                                 'sqs:SendMessage',
                                 'sqs:SendMessageBatch',
                                 'sqs:ChangeMessageVisibility',
+                                'sqs:UntagQueue',
                                 'sqs:GetQueueUrl',
                                 'sqs:GetQueueAttributes',
                                 'sqs:DeleteMessage'
@@ -268,6 +269,7 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'cloudwatch:UntagResource',
                                 'cloudwatch:Describe*'
                             ],
                             Resource: [
@@ -315,6 +317,7 @@ export default {
                                 'logs:CreateLogGroup',
                                 'logs:DeleteLogGroup',
                                 'logs:PutRetentionPolicy',
+                                'logs:UntagResource',
                                 'logs:List*',
                                 'logs:Describe*',
                                 'logs:Get*'
