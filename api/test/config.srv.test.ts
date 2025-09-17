@@ -94,7 +94,9 @@ test('GET api/config/login', async (t) => {
             },
         }, true);
 
-        t.deepEquals(res.body, {});
+        t.deepEquals(res.body, {
+            name: 'Default Server',
+        });
     } catch (err) {
         t.error(err, 'no error');
     }
@@ -136,8 +138,9 @@ test('GET api/config/login', async (t) => {
         }, true);
 
         t.deepEquals(res.body, {
-            'signup': 'https://example.com/signup',
-            'forgot': 'https://example.com/forgot'
+            name: 'Default Server',
+            signup: 'https://example.com/signup',
+            forgot: 'https://example.com/forgot'
         });
     } catch (err) {
         t.error(err, 'no error');
