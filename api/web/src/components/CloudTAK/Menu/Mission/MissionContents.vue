@@ -30,9 +30,14 @@
             class='mx-2'
         >
             <Upload
-                :url='stdurl(`/api/marti/missions/${mission.name}/upload`)'
-                :headers='uploadHeaders()'
+                ref='upload'
+                :url='stdurl(`/api/marti/missions/${props.mission.name}/upload`)'
+                :headers='uploadHeaders'
+                :autoupload='false'
+                format='raw'
                 method='POST'
+                @staged='uploadStaged($event)'
+                @error='error = $event'
                 @cancel='upload = false'
                 @done='upload = false'
             />
@@ -90,30 +95,12 @@
                     /></a>
                 </div>
             </div>
-
-            <template v-if='imports.items.length'>
-                <label class='subheader px-2'>Imports</label>
-
-                <div
-                    v-for='imp in imports.items'
-                    :key='imp.id'
-                    class='col-12 d-flex px-2 py-2 hover align-items-center cursor-pointer'
-                    @click='router.push(`/menu/imports/${imp.id}`)'
-                >
-                    <Status :status='imp.status' />
-
-                    <div
-                        class='mx-2'
-                        v-text='imp.name'
-                    />
-                </div>
-            </template>
         </template>
     </MenuTemplate>
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, watch, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../std.ts';
 import type {
@@ -150,21 +137,11 @@ const emit = defineEmits([ 'refresh' ]);
 const router = useRouter();
 
 const error = ref<Error | undefined>();
+
+const uploadRef = useTemplateRef<typeof Upload>('upload');
 const upload = ref(false);
+
 const loading = ref(false)
-
-const imports = ref<ImportList>({
-    total: 0,
-    items: []
-})
-
-onMounted(async () => {
-    await fetchImports();
-});
-
-watch(upload, async () => {
-    await fetchImports();
-});
 
 async function deleteFile(hash: string) {
     await std(`/api/marti/missions/${props.mission.name}/upload/${hash}`, {
@@ -174,7 +151,7 @@ async function deleteFile(hash: string) {
     emit("refresh");
 }
 
-function uploadHeaders(): Record<string, string> {
+const uploadHeaders = computed(() => {
     const headers: Record<string, string> = {
         Authorization: `Bearer ${localStorage.token}`,
     }
@@ -184,6 +161,21 @@ function uploadHeaders(): Record<string, string> {
     };
 
     return headers;
+});
+
+async function uploadStaged(ev) {
+
+    if (uploadRef.value) {
+        await uploadRef.value.upload({
+            query: {
+                name: ev.name
+            }
+        });
+    } else {
+        throw new Error("Upload Not Found");
+    }
+
+    emit("refresh");
 }
 
 function downloadFile(hash: string): string {
@@ -205,26 +197,5 @@ async function importFile(name: string, hash: string) {
     }) as Import;
 
     router.push(`/menu/imports/${imp.id}`)
-}
-
-async function fetchImports() {
-    loading.value = true;
-
-    try {
-        const url = await stdurl(`/api/import`);
-        url.searchParams.append('source', 'Mission');
-        url.searchParams.append('source_id', props.mission.guid);
-        const imps = await std(url) as ImportList;
-
-        imps.items = imps.items.filter((i) => {
-            return !['Success'].includes(i.status);
-        });
-
-        imports.value = imps;
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
-    }
-
-    loading.value = false;
 }
 </script>

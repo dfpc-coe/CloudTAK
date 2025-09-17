@@ -521,6 +521,8 @@ export default async function router(schema: Schema, config: Config) {
                 ? { token: String(req.headers['missionauthorization']) }
                 : await config.conns.subscription(user.email, req.params.name)
 
+            console.error('Attaching', content.Hash, 'to', req.params.name);
+
             const missionContent = await api.Mission.attachContents(
                 req.params.name,
                 {

@@ -201,7 +201,7 @@
                     :mission='mission'
                     :token='token'
                     :role='role'
-                    @refresh='fetchMission'
+                    @refresh='fetchMission(true)'
                 />
             </template>
         </template>
@@ -306,11 +306,13 @@ async function exportToPackage(format: string): Promise<void> {
     loadingInline.value = undefined;
 }
 
-async function fetchMission(): Promise<void> {
+async function fetchMission(refresh: boolean): Promise<void> {
     mission.value = undefined;
     missionSub.value = undefined;
 
-    const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission));
+    const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission), {
+        refresh: true
+    });
 
     try {
         if (subMission) {

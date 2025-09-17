@@ -172,6 +172,20 @@ export default class Subscription {
         return Subscription.headers(this.token);
     }
 
+    async refresh(): Promise<void> {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.meta.guid));
+        url.searchParams.append('logs', 'true');
+
+        const mission = await std(url, {
+            headers: this.headers(),
+            token: this._atlas.token
+        }) as Mission;
+
+        this.logs = mission.logs || [] as Array<MissionLog>;
+        delete mission.logs;
+        this.meta = mission;
+    };
+
     static async load(
         atlas: Atlas,
         guid: string,
