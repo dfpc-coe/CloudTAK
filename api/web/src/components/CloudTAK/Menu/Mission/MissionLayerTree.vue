@@ -1,27 +1,20 @@
 <template>
     <TablerLoading v-if='loading' />
     <template v-else>
-        <SingleFeature
-            v-for='feat of orphanedFeats'
-            :key='feat.id'
-            :delete-button='false'
-            :feature='feat'
-            :mission='mission'
-        />
-        <div
+        <template
             v-for='layer in layers'
             :key='layer.uid'
         >
             <div class='col-12 hover d-flex align-items-center px-3 py-2'>
                 <IconChevronRight
-                    v-if='layer.type === "UID" && !opened.has(layer.uid)'
+                    v-if='layer.type === "GROUP" && !opened.has(layer.uid)'
                     :size='20'
                     stroke='1'
                     class='cursor-pointer'
                     @click='opened.add(layer.uid)'
                 />
                 <IconChevronDown
-                    v-else-if='layer.type === "UID" && opened.has(layer.uid)'
+                    v-else-if='layer.type === "GROUP" && opened.has(layer.uid)'
                     :size='20'
                     stroke='1'
                     class='cursor-pointer'
@@ -97,6 +90,7 @@
                 @cancel='edit.delete(layer.uid)'
                 @layer='emit("refresh")'
             />
+
             <div
                 v-else-if='opened.has(layer.uid) && layer.type === "UID"'
                 class='mx-2'
@@ -124,7 +118,15 @@
                     class='py-2'
                 />
             </div>
-        </div>
+        </template>
+
+        <SingleFeature
+            v-for='feat of orphanedFeats'
+            :key='feat.id'
+            :delete-button='false'
+            :feature='feat'
+            :mission='mission'
+        />
     </template>
 </template>
 

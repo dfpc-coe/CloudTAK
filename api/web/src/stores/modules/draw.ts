@@ -256,7 +256,7 @@ export default class DrawTool {
                     await this.stop();
 
                     await this.mapStore.worker.db.add(feat, {
-                        authored: !(await this.mapStore.worker.db.has(feat.properties.id || feat.id))
+                        authored: true
                     });
 
                     await this.mapStore.refresh();

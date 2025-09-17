@@ -77,6 +77,7 @@ interface Props {
     url: URL;
     autoupload?: boolean;
     headers?: Record<string, string>;
+    format?: 'formdata' | 'raw';
     method?: string;
     cancel?: boolean;
     label?: string;
@@ -86,6 +87,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
     headers: () => ({}),
     autoupload: true,
+    format: 'formdata',
     method: 'POST',
     cancel: true,
     label: 'Select a file to upload',
@@ -95,6 +97,7 @@ const props = withDefaults(defineProps<Props>(), {
 // Define the events emitted by this component
 const emit = defineEmits<{
     (e: 'cancel'): void;
+    (e: 'error', response: Error): void;
     (e: 'staged', response: { name: string }): void;
     (e: 'done', response: unknown): void;
 }>();
@@ -147,43 +150,65 @@ function stage(event: Event) {
     upload();
 }
 
-async function upload() {
+async function upload(opts: {
+    query?: Record<string, string>;
+} = {}) {
     if (!file.value) throw new Error('No file staged for upload');
 
-  const formData = new FormData();
+    const url = new URL(props.url.toString());
 
-  formData.append('file', file.value.file);
-
-  // Combine default and custom headers into a single object
-  const headers = {
-    'X-Requested-With': 'XMLHttpRequest',
-    ...props.headers,
-  };
-
-  try {
-    const response = await fetch(props.url, {
-      method: props.method,
-      headers: headers,
-      body: formData,
-    });
-
-    // Check if the request was successful (status in the 200-299 range)
-    if (response.ok) {
-      progress.value = 101; // Signal completion
-      const responseData = await response.json(); // Assuming the server sends a JSON response
-      emit('done', responseData);
-
-      return responseData;
-    } else {
-      // Handle HTTP errors like 404 or 500
-      console.error('Upload failed:', response.status, response.statusText);
-      emit('cancel');
+    if (opts.query) {
+        Object.entries(opts.query).forEach(([key, value]) => {
+            url.searchParams.append(key, value);
+        });
     }
-  } catch (error) {
-    // Handle network errors (e.g., failed to connect)
-    console.error('Upload error:', error);
-    emit('cancel');
-  }
+
+    let response;
+
+    try {
+        if (props.format === 'formdata') {
+            const formData = new FormData();
+
+            formData.append('file', file.value.file);
+
+            const headers = {
+                'X-Requested-With': 'XMLHttpRequest',
+                ...props.headers,
+            };
+
+            response = await fetch(url, {
+                method: props.method,
+                headers: headers,
+                body: formData,
+            });
+        } else if (props.format === 'raw') {
+            const headers = {
+                'X-Requested-With': 'XMLHttpRequest',
+                ...props.headers,
+            };
+
+            response = await fetch(url, {
+                method: props.method,
+                headers: headers,
+                body: file.value.file,
+            });
+        } else {
+            throw new Error('Unsupported upload format');
+        }
+
+        if (response.ok) {
+            progress.value = 101;
+            const responseData = await response.json();
+            emit('done', responseData);
+
+            return responseData;
+        } else {
+            emit('error', new Error(`Upload Failed: ${response.statusText}`));
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        emit('cancel');
+    }
 }
 
 // Expose the refresh function so parent components can call it

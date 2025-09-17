@@ -13,7 +13,7 @@
                 :size='24'
                 @click='createLayer = true'
             >
-                <IconPlus
+                <IconFolderPlus
                     :size='32'
                     stroke='1'
                 />
@@ -24,17 +24,21 @@
             />
         </template>
 
-        <div class='col-12'>
+        <div
+            v-if='createLayer'
+            class='col-12 px-2 pb-4'
+        >
             <MissionLayerCreate
-                v-if='createLayer'
-                class='px-2'
                 :mission='props.mission'
                 :token='props.token'
                 @layer='refresh'
                 @cancel='createLayer = false'
             />
+        </div>
+
+        <div class='col-12'>
             <TablerLoading
-                v-else-if='loading'
+                v-if='loading'
                 class='mx-2'
                 desc='Loading Layers...'
             />
@@ -85,7 +89,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import {
-    IconPlus,
+    IconFolderPlus,
 } from '@tabler/icons-vue';
 import {
     TablerNone,

@@ -34,7 +34,7 @@
         </div>
         <div
             v-if='mode === "router"'
-            class='col-12'
+            class='col-12 py-2'
         >
             <PropertyType
                 v-model='profile.tak_type'

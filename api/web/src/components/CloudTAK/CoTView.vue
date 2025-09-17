@@ -309,7 +309,7 @@
                     class='pt-2'
                     :class='{
                         "col-md-8": center.length > 2,
-                        "col-12": center.length <= 2,
+                        "col-12 px-2": center.length <= 2,
                     }'
                 >
                     <PropertyType

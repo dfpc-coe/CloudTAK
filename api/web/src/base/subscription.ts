@@ -172,6 +172,20 @@ export default class Subscription {
         return Subscription.headers(this.token);
     }
 
+    async refresh(): Promise<void> {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.meta.guid));
+        url.searchParams.append('logs', 'true');
+
+        const mission = await std(url, {
+            headers: this.headers(),
+            token: String(this._atlas.token)
+        }) as Mission;
+
+        this.logs = mission.logs || [] as Array<MissionLog>;
+        delete mission.logs;
+        this.meta = mission;
+    };
+
     static async load(
         atlas: Atlas,
         guid: string,
@@ -376,11 +390,18 @@ export default class Subscription {
     ): Promise<MissionLayerList> {
         const url = stdurl(`/api/marti/missions/${encodeURIComponent(guid)}/layer`);
 
-        return await std(url, {
+        const list = await std(url, {
             method: 'GET',
             token: opts.token,
             headers: Subscription.headers(opts.missionToken)
         }) as MissionLayerList;
+
+        list.data.sort((a, b) => {
+            // Consistent sort by name
+            return a.name.localeCompare(b.name);
+        });
+
+        return list;
     }
 
     static async layerUpdate(
