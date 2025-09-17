@@ -213,7 +213,6 @@ async function share() {
 
     if (props.upload && uploadRef.value) {
         const res = await uploadRef.value.upload() as Content;
-        console.error('PROCESS DONE', res);
 
         router.push(`/menu/packages/${res.Hash}`);
 
