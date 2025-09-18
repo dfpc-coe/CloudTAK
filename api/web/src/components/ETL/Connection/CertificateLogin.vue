@@ -39,48 +39,37 @@
     </div>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang="ts">
+import { reactive } from 'vue';
+import { std } from '../../../std.ts';
 import {
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'CertificateLogin',
-    components: {
-        TablerInput,
-        TablerLoading
-    },
-    emits: [
-        'certs',
-    ],
-    data: function() {
-        return {
-            loading: {
-                generate: false
-            },
-            body: {
-                username: '',
-                password: '',
-            }
-        }
-    },
-    methods: {
-        generate: async function() {
-            this.loading.generate = true;
-            try {
-                const res = await std('/api/marti/signClient', {
-                    method: 'POST',
-                    body: this.body
-                });
+const emit = defineEmits(['certs']);
 
-                this.$emit('certs', res);
-            } catch (err) {
-                this.loading.generate = false;
-                throw err;
-            }
-        },
+const loading = reactive({
+    generate: false
+});
+
+const body = reactive({
+    username: '',
+    password: '',
+});
+
+const generate = async () => {
+    loading.generate = true;
+    try {
+        const res = await std('/api/marti/signClient', {
+            method: 'POST',
+            body: body
+        });
+
+        emit('certs', res);
+    } catch (err) {
+        loading.generate = false;
+        throw err;
     }
-}
+};
 </script>
