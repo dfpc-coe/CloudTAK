@@ -12,8 +12,11 @@
 
 ### Pending Release
 
-### v11.23.0 - 2025-09-17
+### v11.24.0 - 2025-09-18
 
+- :rocket: Store the CA chain in the database when calling SignCertificate
+
+### v11.23.0 - 2025-09-17
 
 - :rocket: Simplify Data Sync Layer Creation and only allow the creation of Groups (IE Folders) from the UI
 - :bug: Fix bug where username containing integer would result in no WebSocket connection
