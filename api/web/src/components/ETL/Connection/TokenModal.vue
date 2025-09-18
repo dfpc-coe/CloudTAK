@@ -10,7 +10,7 @@
         <div class='modal-header'>
             <div
                 class='modal-title'
-                v-text='token.id ? "Edit Token" : "New Token"'
+                v-text='token && typeof token === "object" && token.id ? "Edit Token" : "New Token"'
             />
 
             <div class='ms-auto btn-list'>
@@ -58,70 +58,79 @@
     </TablerModal>
 </template>
 
-<script>
-import { std } from '../../../std.ts';
+<script setup lang="ts">
+import { reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { server } from '../../../std.ts';
 import {
     TablerModal,
     TablerInput,
     TablerDelete
-} from '@tak-ps/vue-tabler'
+} from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'TokenModal',
-    components: {
-        TablerModal,
-        TablerInput,
-        TablerDelete
-    },
-    props: {
-        token: {
-            type: [Object, Boolean],
-            required: true
-        }
-    },
-    emits: [
-        'close',
-        'refresh'
-    ],
-    data: function() {
-        if (this.token === true) {
-            return {
-                code: false,
-                editToken: {
-                    name: ''
+type Token = { id: number; name: string; } | boolean;
+
+const props = defineProps<{
+    token: Token
+}>();
+
+const emit = defineEmits(['close', 'refresh']);
+
+const route = useRoute();
+
+const code = ref<string | boolean>(false);
+
+const editToken = reactive(
+    props.token === true
+        ? { name: '' }
+        : JSON.parse(JSON.stringify(props.token))
+);
+
+const deleteToken = async () => {
+    if (typeof props.token === 'object' && props.token.id) {
+        const res = await server.DELETE(`/api/connection/{:connectionid}/token/{:id}`, {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid),
+                    ':id': Number(props.token.id)
                 }
             }
-        } else {
-            return {
-                code: false,
-                editToken: JSON.parse(JSON.stringify(this.token))
-            }
-        }
-    },
-    methods: {
-        deleteToken: async function() {
-            await std(`/api/connection/${this.$route.params.connectionid}/token/${this.token.id}`, {
-                method: 'DELETE',
-            });
+        });
 
-            this.$emit('refresh');
-        },
-        saveToken: async function() {
-            if (this.token.id) {
-                await std(`/api/connection/${this.$route.params.connectionid}/token/${this.token.id}`, {
-                    method: 'PATCH',
-                    body: this.editToken
-                });
-                this.$emit('refresh');
-            } else {
-                const newtoken = await std(`/api/connection/${this.$route.params.connectionid}/token`, {
-                    method: 'POST',
-                    body: this.editToken
-                });
+        if (res.error) throw new Error(res.error.message);
 
-                this.code = newtoken.token;
-            }
-        },
+        emit('refresh');
     }
-}
+};
+
+const saveToken = async () => {
+    if (typeof props.token === 'object' && props.token.id) {
+        const res = await server.PATCH(`/api/connection/{:connectionid}/token/{:id}`, {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid),
+                    ':id': Number(props.token.id)
+                }
+            },
+            body: editToken
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        emit('refresh');
+    } else {
+        const res = await server.POST(`/api/connection/{:connectionid}/token`, {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid)
+                }
+            },
+            body: editToken
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        code.value = res.data.token;
+    }
+};
 </script>
