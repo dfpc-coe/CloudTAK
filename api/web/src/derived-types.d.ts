@@ -2322,6 +2322,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
+                            name?: string;
                             logo?: string;
                             signup?: string;
                             forgot?: string;
@@ -17494,6 +17495,7 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        /** @description Human readable name */
                         name: string;
                         type: "GROUP" | "UID" | "CONTENTS" | "MAPLAYER" | "ITEM";
                         uid?: string;
@@ -17858,6 +17860,7 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        /** @description Human readable name */
                         name?: string;
                     };
                 };

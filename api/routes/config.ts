@@ -177,6 +177,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Config',
         description: 'Return Login Config',
         res: Type.Object({
+            name: Type.Optional(Type.String()),
             logo: Type.Optional(Type.String()),
             signup: Type.Optional(Type.String()),
             forgot: Type.Optional(Type.String()),
@@ -196,6 +197,10 @@ export default async function router(schema: Schema, config: Config) {
                 if (k.status === 'rejected') return;
                 return final[k.value.key.replace('login::', '')] = String(k.value.value);
             });
+
+            if (config.server.name) {
+                final.name = config.server.name;
+            }
 
             for (let login of keys) {
                 login = login.replace('login::', '')
