@@ -7,7 +7,7 @@ import { X509Certificate } from 'crypto';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, ConnectionResponse } from '../lib/types.js';
 import { Connection } from '../lib/schema.js';
-import { MachineConnConfig } from '../lib/connection-config.js';
+import { MachineConnConfig, ConnectionAuth } from '../lib/connection-config.js';
 import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
 import { generateP12 } from '../lib/certificate.js';
@@ -96,10 +96,7 @@ export default async function router(schema: Schema, config: Config) {
             enabled: Type.Boolean({ default: true }),
             agency: Type.Optional(Type.Union([Type.Null(), Type.Integer({ minimum: 1 })])),
             integrationId: Type.Optional(Type.Integer()),
-            auth: Type.Object({
-                key: Type.String({ minLength: 1, maxLength: 4096 }),
-                cert: Type.String({ minLength: 1, maxLength: 4096 })
-            })
+            auth: ConnectionAuth,
         }),
         res: ConnectionResponse
     }, async (req, res) => {

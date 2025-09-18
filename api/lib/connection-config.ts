@@ -6,8 +6,16 @@ import Config from './config.js';
 
 export const ConnectionAuth = Type.Object({
     ca: Type.Optional(Type.Array(Type.String())),
-    cert: Type.String(),
-    key: Type.String()
+    cert: Type.String({
+        minLength: 1,
+        maxLength: 4096,
+        description: 'PEM formatted client certificate'
+    }),
+    key: Type.String({
+        minLength: 1,
+        maxLength: 4096,
+        description: 'PEM formatted private key'
+    })
 });
 
 export type MissionSub = {
