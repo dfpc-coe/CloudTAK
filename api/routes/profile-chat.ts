@@ -9,7 +9,7 @@ import Config from '../lib/config.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
-    await schema.get('/profile/chat', {
+    await schema.get('/profile/chatroom', {
         name: 'Get Chatrooms',
         group: 'ProfileChats',
         description: 'Get User\'s Profile Chats',
@@ -37,7 +37,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/profile/chat', {
+    await schema.delete('/profile/chatroom', {
         name: 'Delete Chatrooms',
         group: 'ProfileChats',
         description: 'Delete User\'s Chats',
@@ -69,7 +69,33 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/profile/chat/:chatroom', {
+    await schema.delete('/profile/chatroom/:chatroom', {
+        name: 'Delete Chats',
+        group: 'ProfileChats',
+        description: 'Delete User\'s Chats',
+        params: Type.Object({
+            chatroom: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            await config.models.ProfileChat.delete(sql`
+                username = ${user.email}
+                AND chatroom = ${req.params.chatroom}
+            `);
+
+            res.json({
+                status: 200,
+                message: `Deleted Chatroom`
+            });
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/profile/chatroom/:chatroom/chat', {
         name: 'Get Chats',
         group: 'ProfileChats',
         description: 'Get User\'s Chats',
@@ -108,26 +134,35 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/profile/chat/:chatroom', {
+    await schema.delete('/profile/chatroom/:chatroom/chat', {
         name: 'Delete Chats',
         group: 'ProfileChats',
         description: 'Delete User\'s Chats',
         params: Type.Object({
             chatroom: Type.String()
         }),
+        query: Type.Object({
+            chat: Type.Union([Type.String(), Type.Array(Type.String())])
+        }),
         res: StandardResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
-            await config.models.ProfileChat.delete(sql`
-                username = ${user.email}
-                AND chatroom = ${req.params.chatroom}
-            `);
+            if (typeof req.query.chat === 'string') {
+                req.query.chat = [req.query.chat];
+            }
+
+            for (const chat of req.query.chat) {
+                await config.models.ProfileChat.delete(sql`
+                    username = ${user.email}
+                    AND id = ${chat}
+                `);
+            }
 
             res.json({
                 status: 200,
-                message: `Deleted Chatroom`
+                message: `Deleted Chats`
             });
         } catch (err) {
              Err.respond(err, res);
