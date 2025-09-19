@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { ProfileChat } from '../lib/schema.js';
 import Err from '@openaddresses/batch-error';
+import { StandardResponse }from '../lib/types.js';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import * as Default from '../lib/limits.js';
@@ -60,6 +61,32 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
             res.json(chats);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/profile/chat/:chatroom', {
+        name: 'Delete Chats',
+        group: 'ProfileChats',
+        description: 'Delete User\'s Chats',
+        params: Type.Object({
+            chatroom: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            await config.models.ProfileChat.delete(sql`
+                username = ${user.email}
+                AND chatroom = ${req.params.chatroom}
+            `);
+
+            res.json({
+                status: 200,
+                message: `Deleted Chatroom`
+            });
         } catch (err) {
              Err.respond(err, res);
         }
