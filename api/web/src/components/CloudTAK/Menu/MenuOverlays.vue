@@ -65,24 +65,26 @@
                                     />
                                 </template>
                                 <template v-else-if='overlay.id !== 0'>
-                                    <IconChevronRight
+                                    <TablerIconButton
                                         v-if='!isDraggable && !opened.has(overlay.id)'
-                                        :size='20'
-                                        stroke='1'
-                                        role='button'
-                                        tabindex='0'
-                                        class='cursor-pointer'
+                                        title='Expand Options'
                                         @click='opened.add(overlay.id)'
-                                    />
-                                    <IconChevronDown
+                                    >
+                                        <IconChevronRight
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </TablerIconButton>
+                                    <TablerIconButton
                                         v-else-if='!isDraggable'
-                                        :size='20'
-                                        stroke='1'
-                                        role='button'
-                                        tabindex='0'
-                                        class='cursor-pointer'
+                                        title='Collapse Options'
                                         @click='opened.delete(overlay.id)'
-                                    />
+                                    >
+                                        <IconChevronDown
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                    </TablerIconButton>
                                 </template>
 
                                 <span class='mx-2'>
