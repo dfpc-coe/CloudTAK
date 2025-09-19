@@ -49,7 +49,7 @@
                 style='height: 70vh'
                 :basemaps='share'
                 @done='share = undefined'
-                @cancel='share = undefined'
+                @close='share = undefined'
             />
             <TablerNone
                 v-else-if='!list.items.length && !list.collections.length'

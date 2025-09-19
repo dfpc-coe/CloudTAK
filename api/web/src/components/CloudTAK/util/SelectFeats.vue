@@ -107,14 +107,14 @@
             <Share
                 :feats='Array.from(selected.values()).map((c) => c.as_feature())'
                 @done='selected.clear()'
-                @cancel='share = ShareType.NONE'
+                @close='share = ShareType.NONE'
             />
         </template>
         <template v-else-if='share === ShareType.MISSION'>
             <ShareToMission
                 :feats='Array.from(selected.values()).map((c) => c.as_feature())'
                 @done='selected.clear()'
-                @cancel='share = ShareType.NONE'
+                @close='share = ShareType.NONE'
             />
         </template>
         <template v-else-if='share === ShareType.PACKAGE'>

@@ -1,97 +1,92 @@
 <template>
-    <div class='mb-2'>
-        <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
-            <span class='subheader mx-2'>Add to Data Sync</span>
-            <div
-                v-if='compact'
-                class='ms-auto'
-            >
-                <TablerIconButton
-                    title='Cancel Share'
-                    class='mx-2 my-2'
-                    @click='emit("cancel")'
-                >
-                    <IconX
-                        :size='20'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+    <TablerModal size='lg'>
+        <div class='modal-status bg-red' />
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='emit("close")'
+        />
+        <div class='modal-header text-white'>
+            <div class='d-flex align-items-center'>
+                <IconAmbulance
+                    :size='28'
+                    stroke='1'
+                />
+                <span class='mx-2'>Add to Data Sync</span>
             </div>
         </div>
 
-
-        <TablerLoading v-if='loading' />
-        <EmptyInfo
-            v-else-if='!missions.length'
-            type='Missions'
-        />
-        <template v-else>
-            <div
-                class='overflow-auto position-absolute'
-                :style='`
-                    height: calc(100% - 36px - ${compact ? "40px" : "100px"});
-                    margin-bottom: ${compact ? "30px" : "100px"};
-                    width: 100%;
-                `'
-            >
-                <div v-for='mission in missions'>
-                    <div
-                        class='col-12 cursor-pointer hover py-2'
-                        @click='selected.has(mission) ? selected.delete(mission) : selected.add(mission)'
-                    >
-                        <div class='d-flex align-items-center'>
-                            <div class='col-auto'>
-                                <IconCheck
-                                    v-if='selected.has(mission)'
-                                    :size='compact ? 20 : 32'
-                                    stroke='1'
-                                    :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
-                                />
-                                <IconAmbulance
-                                    v-else
-                                    :size='compact ? 20 : 32'
-                                    stroke='1'
-                                    :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
+        <div class='modal-body text-white'>
+            <TablerLoading v-if='loading' />
+            <EmptyInfo
+                v-else-if='!missions.length'
+                type='Missions'
+            />
+            <template v-else>
+                <div
+                    class='col-12 overflow-auto'
+                    style='
+                        max-height: 20vh;
+                    '
+                >
+                    <div v-for='mission in missions'>
+                        <div
+                            class='col-12 cursor-pointer hover py-2'
+                            @click='selected.has(mission) ? selected.delete(mission) : selected.add(mission)'
+                        >
+                            <div class='d-flex align-items-center'>
+                                <div class='col-auto'>
+                                    <IconCheck
+                                        v-if='selected.has(mission)'
+                                        :size='compact ? 20 : 32'
+                                        stroke='1'
+                                        :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
+                                    />
+                                    <IconAmbulance
+                                        v-else
+                                        :size='compact ? 20 : 32'
+                                        stroke='1'
+                                        :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
+                                    />
+                                </div>
+                                <span
+                                    class='mx-2'
+                                    v-text='mission.name'
                                 />
                             </div>
-                            <span
-                                class='mx-2'
-                                v-text='mission.name'
-                            />
                         </div>
                     </div>
                 </div>
+            </template>
+        </div>
+        <div class='modal-footer'>
+            <TablerButton
+                v-tooltip='"Cancel Share"'
+                :style='compact ? "height: 30px" : ""'
+                @click='emit("close")'
+            >
+                Cancel
+            </TablerButton>
+
+            <div class='ms-auto'>
+                <TablerButton
+                    v-tooltip='"Share to Selected"'
+                    class='btn-primary'
+                    :disabled='selected.size === 0'
+                    :style='compact ? "height: 30px" : ""'
+                    @click='share'
+                >
+                    <IconShare2
+                        v-if='compact'
+                        :size='20'
+                        stroke='1'
+                    />
+                    <span v-else>Add to Data Sync</span>
+                </TablerButton>
             </div>
-            <div class='position-absolute row g-0 bottom-0 start-0 end-0 bg-dark'>
-                <div class='col-6 px-1 py-1'>
-                    <TablerButton
-                        v-tooltip='"Share to Selected"'
-                        class='w-100 btn-primary'
-                        :disabled='selected.size === 0'
-                        :style='compact ? "height: 30px" : ""'
-                        @click='share'
-                    >
-                        <IconShare2
-                            v-if='compact'
-                            :size='20'
-                            stroke='1'
-                        />
-                        <span v-else>Add to Data Sync</span>
-                    </TablerButton>
-                </div>
-                <div class='col-6 px-1 py-1'>
-                    <TablerButton
-                        v-tooltip='"Cancel Share"'
-                        class='w-100 btn-secondary'
-                        :style='compact ? "height: 30px" : ""'
-                        @click='emit("cancel")'
-                    >
-                        Cancel
-                    </TablerButton>
-                </div>
-            </div>
-        </template>
-    </div>
+        </div>
+    </TablerModal>
 </template>
 
 <script setup lang='ts'>
@@ -99,6 +94,7 @@ import { ref, onMounted } from 'vue';
 import type { PropType } from 'vue';
 import EmptyInfo from './EmptyInfo.vue';
 import {
+    TablerModal,
     TablerLoading,
     TablerButton,
     TablerIconButton
@@ -129,7 +125,7 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['cancel', 'done']);
+const emit = defineEmits(['close', 'done']);
 
 const loading = ref(true);
 const selected = ref<Set<Mission>>(new Set());
