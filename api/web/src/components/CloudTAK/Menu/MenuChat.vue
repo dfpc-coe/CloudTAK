@@ -25,14 +25,14 @@
                 :disabled='!multiselect'
                 :items='chats.items'
             >
-                <template #buttons="{disabled}">
+                <template #buttons='{disabled}'>
                     <TablerDelete
                         :disabled='disabled'
                         displaytype='icon'
                         @delete='deleteChats'
                     />
                 </template>
-                <template #item="{item}">
+                <template #item='{item}'>
                     <div class='w-100 d-flex my-2 px-2'>
                         <div
                             v-if='item.sender_uid !== id'

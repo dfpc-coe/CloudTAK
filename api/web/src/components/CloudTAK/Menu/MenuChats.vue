@@ -49,14 +49,14 @@
                     :disabled='!multiselect'
                     :items='filteredChats'
                 >
-                    <template #buttons="{disabled}">
+                    <template #buttons='{disabled}'>
                         <TablerDelete
                             :disabled='disabled'
                             displaytype='icon'
                             @delete='deleteChats'
                         />
                     </template>
-                    <template #item="{item}">
+                    <template #item='{item}'>
                         <div
                             role='menuitem'
                             tabindex='0'
@@ -105,7 +105,7 @@ import {
 } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
 
-const select = ref<GenericSelect | null>(null);
+const select = ref<typeof GenericSelect | null>(null);
 const router = useRouter();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
