@@ -20,12 +20,20 @@
         </template>
         <template #default>
             <GenericSelect
+                ref='select'
                 role='menu'
                 :disabled='!multiselect'
                 :items='chats.items'
             >
+                <template #buttons="{disabled}">
+                    <TablerDelete
+                        :disabled='disabled'
+                        displaytype='icon'
+                        @delete='deleteChats'
+                    />
+                </template>
                 <template #item="{item}">
-                    <div class='col-12 d-flex my-2 px-2'>
+                    <div class='w-100 d-flex my-2 px-2'>
                         <div
                             v-if='item.sender_uid !== id'
                             class='bg-blue px-2 py-2 rounded'
@@ -67,13 +75,14 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import GenericSelect from '../util/GenericSelect.vue';
 import {
     IconListCheck,
 } from '@tabler/icons-vue';
 import {
     TablerRefreshButton,
+    TablerDelete,
     TablerIconButton,
     TablerInput,
 } from '@tak-ps/vue-tabler';
@@ -86,6 +95,7 @@ const route = useRoute();
 const id = ref('')
 const callsign = ref('');
 const loading = ref(true);
+const select = ref(null);
 const multiselect = ref(false);
 const name = ref(route.params.chatroom === 'new' ? route.query.callsign : route.params.chatroom);
 const chats = ref({
@@ -140,13 +150,41 @@ async function sendMessage() {
     }, 'chat');
 }
 
+async function deleteChats() {
+    if (!select.value) return;
+    const selected = select.value.selected;
+
+    loading.value = true;
+
+    const res = await server.DELETE('/api/profile/chatroom/{:chatroom}/chat', {
+        params: {
+            query: {
+                chat: Array.from(selected.values())
+            }
+        }
+    });
+
+    if (res.error) {
+        loading.value = false;
+        throw new Error(res.error.message);
+    }
+
+    await fetchChats();
+}
+
 async function fetchChats() {
     loading.value = true;
 
-    if (route.params.chatroom === 'new') {
-        await std(`/api/profile/chat/${encodeURIComponent(route.query.uid)}`);
-    } else {
-        chats.value = await std(`/api/profile/chat/${encodeURIComponent(route.params.chatroom)}`);
+    if (route.params.chatroom !== 'new') {
+        const res = await server.GET(`/api/profile/chatroom/{:chatroom}/chat`, {
+            params: {
+                path: {
+                    ':chatroom': route.params.chatroom
+                }
+            }
+        });
+
+        chats.value = res.data;
     }
 
     loading.value = false;

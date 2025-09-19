@@ -133,12 +133,12 @@ const filteredChats = computed(() => {
 });
 
 async function deleteChats(): Promise<void> {
-    console.log('Deleting chats');
+    if (!select.value) return;
     const selected = select.value.selected;
 
     loading.value = true;
 
-    const res = await server.DELETE('/api/profile/chat', {
+    const res = await server.DELETE('/api/profile/chatroom', {
         params: {
             query: {
                 chatroom: Array.from(selected.values())
@@ -160,7 +160,7 @@ async function fetchList(): Promise<void> {
     multiselect.value = false;
     error.value = undefined;
 
-    const res = await server.GET('/api/profile/chat');
+    const res = await server.GET('/api/profile/chatroom');
     loading.value = false;
 
     loading.value = false;
