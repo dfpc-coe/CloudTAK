@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v11.26.0 - 2025-09-19
+
+- :tada: API To allow deleting one or more Chatrooms
+- :tada: API to allow deleting one or more Chats
+- :rocket: GroupSelect Vue3 Component to allow actions to be performed on an arbitrary list of components (IE chats & Chatrooms)
+
 ### v11.25.0 - 2025-09-18
 
 - :rocket: Return P12 with Full cert chain when using Connection with External Integration
