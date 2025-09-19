@@ -4,29 +4,43 @@
         :loading='loading'
     >
         <template #buttons>
+            <TablerIconButton
+                title='Select Chats'
+                @click='multiselect = !multiselect'
+            >
+                <IconListCheck
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
             <TablerRefreshButton
                 :loading='loading'
                 @click='fetchChats'
             />
         </template>
         <template #default>
-            <div
-                v-for='chat in chats.items'
-                class='col-12 d-flex my-2 px-2'
+            <GenericSelect
+                role='menu'
+                :disabled='!multiselect'
+                :items='chats.items'
             >
-                <div
-                    v-if='chat.sender_uid !== id'
-                    class='bg-blue px-2 py-2 rounded'
-                >
-                    <span v-text='chat.message' />
-                </div>
-                <div
-                    v-else
-                    class='ms-auto bg-accent px-2 py-2 rounded'
-                >
-                    <span v-text='chat.message' />
-                </div>
-            </div>
+                <template #item="{item}">
+                    <div class='col-12 d-flex my-2 px-2'>
+                        <div
+                            v-if='item.sender_uid !== id'
+                            class='bg-blue px-2 py-2 rounded'
+                        >
+                            <span v-text='item.message' />
+                        </div>
+                        <div
+                            v-else
+                            class='ms-auto bg-accent px-2 py-2 rounded'
+                        >
+                            <span v-text='item.message' />
+                        </div>
+                    </div>
+                </template>
+            </GenericSelect>
 
             <div class='border-top border-blue position-absolute start-0 bottom-0 end-0'>
                 <div class='row mx-2 mt-2'>
@@ -54,8 +68,13 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { std } from '../../../std.ts';
+import GenericSelect from '../util/GenericSelect.vue';
+import {
+    IconListCheck,
+} from '@tabler/icons-vue';
 import {
     TablerRefreshButton,
+    TablerIconButton,
     TablerInput,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -67,6 +86,7 @@ const route = useRoute();
 const id = ref('')
 const callsign = ref('');
 const loading = ref(true);
+const multiselect = ref(false);
 const name = ref(route.params.chatroom === 'new' ? route.query.callsign : route.params.chatroom);
 const chats = ref({
     total: 0,
