@@ -31,6 +31,14 @@
                 />
             </div>
 
+            <div class='col-12 pe-2 pt-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Filter'
+                />
+            </div>
+
             <TablerLoading
                 v-if='loading'
             />
@@ -49,51 +57,48 @@
                     :key='asset.id'
                     role='menu'
                 >
-                    <div
-                        class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'
-                        role='menuitem'
-                        tabindex='0'
-                        @click='opened.has(asset.id) ? opened.delete(asset.id) : opened.add(asset.id)'
-                        @keyup.enter='opened.has(asset.id) ? opened.delete(asset.id) : opened.add(asset.id)'
+                    <TablerSlidedown
+                        :click-anywhere-expand='true'
+                        :arrow='false'
+                        class='my-2 me-2'
                     >
-                        <div class='col-auto'>
-                            <IconMapPlus
-                                v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
-                                :size='32'
-                                stroke='1'
-                            />
-                            <IconMapOff
-                                v-else
-                                v-tooltip='"Not Cloud Optimized"'
-                                :size='32'
-                                stroke='1'
-                            />
-                        </div>
-                        <div class='col-auto'>
+                        <template #default>
                             <div
-                                class='col-12 text-truncate px-2 user-select-none'
-                                style='max-width: 250px;'
-                                v-text='asset.name'
-                            />
-                            <div class='col-12 subheader'>
-                                <span class='mx-2 user-select-none'>
-                                    <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
-                                </span>
+                                class='d-flex align-items-center'
+                                role='menuitem'
+                                tabindex='0'
+                            >
+                                <div class='col-auto'>
+                                    <IconMapPlus
+                                        v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    <IconMapOff
+                                        v-else
+                                        v-tooltip='"Not Cloud Optimized"'
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </div>
+                                <div class='col-auto'>
+                                    <div
+                                        class='col-12 text-truncate px-2 user-select-none'
+                                        style='max-width: 250px;'
+                                        v-text='asset.name'
+                                    />
+                                    <div class='col-12 subheader'>
+                                        <span class='mx-2 user-select-none'>
+                                            <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div
-                        v-if='opened.has(asset.id)'
-                        class='pt-1 mx-4'
-                    >
-                        <div
-                            class='rounded bg-child'
-                            role='manu'
-                        >
+                        </template>
+                        <template #expanded>
                             <div
                                 v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
-                                class='cursor-pointer rounded-top col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 role='menuitem'
                                 tabindex='0'
                                 @click.stop.prevent='createOverlay(asset)'
@@ -108,7 +113,7 @@
                             <div
                                 v-else
                                 role='menuitem'
-                                class='rounded-top col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                             >
                                 <IconMapOff
                                     :size='32'
@@ -118,7 +123,7 @@
                             </div>
 
                             <div
-                                class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 @click.stop.prevent='downloadAsset(asset)'
                             >
                                 <IconDownload
@@ -128,7 +133,7 @@
                                 <span class='mx-2'>Download Original</span>
                             </div>
                             <div
-                                class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 role='menuitem'
                                 tabindex='0'
                                 @click.stop.prevent='shareToPackage = asset'
@@ -141,7 +146,7 @@
                                 <span class='mx-2'>Create Data Package</span>
                             </div>
                             <div
-                                class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 role='menuitem'
                                 tabindex='0'
                                 @click.stop.prevent='rename = { id: asset.id, name: asset.name, loading: false }'
@@ -167,12 +172,12 @@
 
                             <TablerDelete
                                 displaytype='menu'
-                                class='hover rounded-bottom'
+                                class='hover rounded'
                                 label='Delete File'
                                 @delete='deleteAsset(asset)'
                             />
-                        </div>
-                    </div>
+                        </template>
+                    </TablerSlidedown>
                 </div>
 
                 <div class='col-12 d-flex justify-content-center pt-3'>
@@ -209,6 +214,7 @@ import {
     TablerDelete,
     TablerIconButton,
     TablerRefreshButton,
+    TablerSlidedown,
     TablerInput,
     TablerPager,
     TablerAlert,
