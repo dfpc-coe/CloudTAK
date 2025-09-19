@@ -24,7 +24,7 @@
                 type='button'
                 class='btn-close'
                 aria-label='Close'
-                @click='emit("cancel")'
+                @click='emit("close")'
             />
         </div>
         <div
@@ -208,7 +208,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits([
-    'cancel',
+    'close',
     'done'
 ]);
 

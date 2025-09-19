@@ -809,7 +809,7 @@
         v-if='share && cot'
         :feats='[cot.as_feature()]'
         @done='share = false'
-        @cancel='share = false'
+        @close='share = false'
     />
 </template>
 
