@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.25.0 - 2025-09-18
+
+- :rocket: Return P12 with Full cert chain when using Connection with External Integration
+
 ### v11.24.0 - 2025-09-18
 
 - :rocket: Store the CA chain in the database when calling SignCertificate
