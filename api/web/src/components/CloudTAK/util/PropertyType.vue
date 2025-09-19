@@ -18,7 +18,7 @@
         </template>
         <TablerSlidedown
             v-else
-            :clickAnywhereExpand='true'
+            :click-anywhere-expand='true'
         >
             <IconChartGridDots
                 :size='18'
@@ -55,10 +55,12 @@
                 </template>
                 <template v-else>
                     <div class='row g-2'>
-                        <div :class='{
-                            "col-12": !config.type.startsWith("a-"),
-                            "col-8": config.type.startsWith("a-")
-                        }'>
+                        <div
+                            :class='{
+                                "col-12": !config.type.startsWith("a-"),
+                                "col-8": config.type.startsWith("a-")
+                            }'
+                        >
                             <TablerInput
                                 v-model='paging.filter'
                                 icon='search'
@@ -71,10 +73,10 @@
                             class='col-4'
                         >
                             <TablerEnum
-                                :modelValue='StandardAffiliationInverse[config.affiliation]'
+                                :model-value='StandardAffiliationInverse[config.affiliation]'
                                 :default='StandardAffiliation.Friendly'
                                 :options='Object.keys(StandardAffiliation)'
-                                @update:modelValue='updateAffiliation($event)'
+                                @update:model-value='updateAffiliation($event)'
                             />
                         </div>
                     </div>

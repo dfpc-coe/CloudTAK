@@ -100,6 +100,8 @@ export type PaletteFeature = paths["/api/palette/{:palette}/feature/{:feature}"]
 export type Profile = paths["/api/profile"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Profile_Update = paths["/api/profile"]["patch"]["requestBody"]["content"]["application/json"]
 
+export type ProfileChatroomList = paths["/api/profile/chatroom"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type ProfileVideoList = paths["/api/profile/video"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ProfileVideo = paths["/api/profile/video/{:id}"]["get"]["responses"]["200"]["content"]["application/json"]
 
