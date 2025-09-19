@@ -103,6 +103,7 @@
                         <TablerIconButton
                             v-if='mapStore.location === LocationState.Live'
                             :title='locationTooltip'
+                            :hover='false'
                             @click='setLocation'
                         >
                             <IconLocation
@@ -115,6 +116,7 @@
                         <TablerIconButton
                             v-else-if='mapStore.location === LocationState.Preset'
                             :title='locationTooltip'
+                            :hover='false'
                             @click='setLocation'
                         >
                             <IconLocationPin
@@ -127,6 +129,7 @@
                         <TablerIconButton
                             v-else
                             title='Set Your Location Button'
+                            :hover='false'
                             @click='setLocation'
                         >
                             <IconLocationOff
