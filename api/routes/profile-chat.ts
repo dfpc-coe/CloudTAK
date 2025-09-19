@@ -56,7 +56,7 @@ export default async function router(schema: Schema, config: Config) {
             for (const chatroom of req.query.chatroom) {
                 await config.models.ProfileChat.delete(sql`
                     username = ${user.email}
-                    AND chatroom = ${req.params.chatroom}
+                    AND chatroom = ${chatroom}
                 `);
             }
 
