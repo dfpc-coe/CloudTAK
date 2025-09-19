@@ -101,6 +101,7 @@ import {
     IconShare2
 } from '@tabler/icons-vue';
 import type { Feature, Mission } from '../../../types.ts';
+import { server } from '../../../std.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
 const mapStore = useMapStore();
@@ -108,12 +109,12 @@ const mapStore = useMapStore();
 const props = defineProps({
     feats: {
         type: Array as PropType<Array<Feature>>,
-        required: true
+        default: () => []
     },
     assets: {
         type: Array as PropType<Array<{
             type: 'profile';
-            id: number | string;
+            id: string;
             name: string;
         }>>,
         default: () => []
@@ -138,6 +139,8 @@ onMounted(async () => {
 });
 
 async function share(): Promise<void> {
+    loading.value = true;
+
     const feats = [];
     for (const f of props.feats || []) {
         if (f.properties.type === 'b-f-t-r') {
@@ -161,6 +164,26 @@ async function share(): Promise<void> {
 
         await mapStore.worker.conn.sendCOT(feat);
     }
+
+    for (const mission of selected.value) {
+        const res = await server.PUT('/api/marti/missions/{:name}/upload', {
+            params: {
+                path: {
+                    ':name': mission.name
+                }
+            },
+            body: {
+                assets: props.assets
+            }
+        });
+
+        if (res.error) {
+            loading.value = false;
+            throw new Error(res.error.message);
+        }
+    }
+    
+    loading.value = false;
 
     emit('done');
 }
