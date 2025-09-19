@@ -208,7 +208,6 @@
 
     <ShareToMission
         v-if='shareToMission'
-        :name='shareToMission.name'
         :assets='[{
             type: "profile",
             id: shareToMission.id,
@@ -267,7 +266,6 @@ const mapStore = useMapStore();
 
 const router = useRouter();
 const upload = ref(false)
-const opened = ref<Set<string>>(new Set());
 const shareToPackage = ref<ProfileFile | undefined>();
 const shareToMission = ref<ProfileFile | undefined>();
 const rename = ref<{

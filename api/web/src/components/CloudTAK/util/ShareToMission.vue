@@ -39,15 +39,15 @@
                                 <div class='col-auto'>
                                     <IconCheck
                                         v-if='selected.has(mission)'
-                                        :size='compact ? 20 : 32'
+                                        :size='32'
                                         stroke='1'
-                                        :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
+                                        style='margin-left: 16px;'
                                     />
                                     <IconAmbulance
                                         v-else
-                                        :size='compact ? 20 : 32'
+                                        :size='32'
                                         stroke='1'
-                                        :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
+                                        style='margin-left: 16px;'
                                     />
                                 </div>
                                 <span
@@ -63,7 +63,6 @@
         <div class='modal-footer'>
             <TablerButton
                 v-tooltip='"Cancel Share"'
-                :style='compact ? "height: 30px" : ""'
                 @click='emit("close")'
             >
                 Cancel
@@ -74,15 +73,13 @@
                     v-tooltip='"Share to Selected"'
                     class='btn-primary'
                     :disabled='selected.size === 0'
-                    :style='compact ? "height: 30px" : ""'
                     @click='share'
                 >
                     <IconShare2
-                        v-if='compact'
                         :size='20'
                         stroke='1'
                     />
-                    <span v-else>Add to Data Sync</span>
+                    <span>Add to Data Sync</span>
                 </TablerButton>
             </div>
         </div>
@@ -97,10 +94,8 @@ import {
     TablerModal,
     TablerLoading,
     TablerButton,
-    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
-    IconX,
     IconCheck,
     IconAmbulance,
     IconShare2
@@ -115,14 +110,14 @@ const props = defineProps({
         type: Array as PropType<Array<Feature>>,
         required: true
     },
-    compact: {
-        type: Boolean,
-        default: false
+    assets: {
+        type: Array as PropType<Array<{
+            type: 'profile';
+            id: number | string;
+            name: string;
+        }>>,
+        default: () => []
     },
-    maxheight: {
-        type: String,
-        default: '100%'
-    }
 });
 
 const emit = defineEmits(['close', 'done']);
