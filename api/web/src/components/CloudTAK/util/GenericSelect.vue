@@ -96,7 +96,7 @@ export interface SelectableItem {
     id: number | string;
 }
 
-const slots = defineSlots<{
+defineSlots<{
     item: { item: T };
     buttons: { disabled: boolean };
 }>();
