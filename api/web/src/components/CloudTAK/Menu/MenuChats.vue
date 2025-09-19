@@ -44,6 +44,7 @@
             />
             <template v-else>
                 <GenericSelect
+                    ref='select'
                     role='menu'
                     :disabled='!multiselect'
                     :items='filteredChats'
@@ -52,6 +53,7 @@
                         <TablerDelete
                             :disabled='disabled'
                             displaytype='icon'
+                            @delete='deleteChats'
                         />
                     </template>
                     <template #item="{item}">
@@ -81,9 +83,10 @@
     </MenuTemplate>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue'
-import { std, stdurl } from '/src/std.ts';
+import { server } from '../../../std.ts';
+import type { ProfileChatroomList } from '../../../types.ts';
 import GenericSelect from '../util/GenericSelect.vue';
 import {
     TablerNone,
@@ -102,11 +105,13 @@ import {
 } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
 
+const select = ref<GenericSelect | null>(null);
 const router = useRouter();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 const multiselect = ref(false)
-const chats = ref({
+
+const chats = ref<ProfileChatroomList>({
     total: 0,
     items: []
 });
@@ -127,17 +132,40 @@ const filteredChats = computed(() => {
     ).sort().reverse();
 });
 
-async function fetchList() {
+async function deleteChats(): Promise<void> {
+    console.log('Deleting chats');
+    const selected = select.value.selected;
+
     loading.value = true;
 
-    try {
-        const url = stdurl('/api/profile/chat');
-        chats.value = await std(url);
+    const res = await server.DELETE('/api/profile/chat', {
+        params: {
+            query: {
+                chatroom: Array.from(selected.values())
+            }
+        }
+    });
+
+    if (res.error) {
         loading.value = false;
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(err);
+        error.value = Error(res.error.message);
+        return;
     }
 
+    await fetchList();
+}
+
+async function fetchList(): Promise<void> {
+    loading.value = true;
+    multiselect.value = false;
+    error.value = undefined;
+
+    const res = await server.GET('/api/profile/chat');
     loading.value = false;
+
+    loading.value = false;
+    if (res.error) error.value = Error(res.error.message);
+
+    chats.value = res.data;
 }
 </script>

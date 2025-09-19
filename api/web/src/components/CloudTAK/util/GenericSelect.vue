@@ -42,7 +42,7 @@
             >
                 <slot
                     name='buttons'
-                    :disabled='selected.size > 0'
+                    :disabled='selected.size === 0'
                 />
             </div>
         </div>
@@ -104,4 +104,6 @@ const props = defineProps({
 });
 
 const selected = ref<Set<number | string>>(new Set());
+
+defineExpose({ selected });
 </script>
