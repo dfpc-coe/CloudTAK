@@ -136,6 +136,19 @@
                                 class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 role='menuitem'
                                 tabindex='0'
+                                @click.stop.prevent='shareToMission = asset'
+                                @keyup.enter='shareToMission = asset'
+                            >
+                                <IconAmbulance
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Add to Data Sync</span>
+                            </div>
+                            <div
+                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                role='menuitem'
+                                tabindex='0'
                                 @click.stop.prevent='shareToPackage = asset'
                                 @keyup.enter='shareToPackage = asset'
                             >
@@ -193,6 +206,17 @@
         </template>
     </MenuTemplate>
 
+    <ShareToMission
+        v-if='shareToMission'
+        :name='shareToMission.name'
+        :assets='[{
+            type: "profile",
+            id: shareToMission.id,
+            name: shareToMission.name
+        }]'
+        @close='shareToMission = undefined'
+    />
+
     <ShareToPackage
         v-if='shareToPackage'
         :name='shareToPackage.name'
@@ -224,6 +248,7 @@ import {
     TablerEpoch
 } from '@tak-ps/vue-tabler';
 import {
+    IconAmbulance,
     IconPackage,
     IconUpload,
     IconMapOff,
@@ -232,6 +257,7 @@ import {
     IconCursorText
 } from '@tabler/icons-vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
+import ShareToMission from '../util/ShareToMission.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import Overlay from '../../../base/overlay.ts';
@@ -243,6 +269,7 @@ const router = useRouter();
 const upload = ref(false)
 const opened = ref<Set<string>>(new Set());
 const shareToPackage = ref<ProfileFile | undefined>();
+const shareToMission = ref<ProfileFile | undefined>();
 const rename = ref<{
     id: string;
     loading: boolean;
