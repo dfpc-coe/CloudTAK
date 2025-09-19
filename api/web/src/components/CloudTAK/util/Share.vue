@@ -5,6 +5,21 @@
         <div class='modal-status bg-yellow' />
         <div class='modal-header'>
             <span class='modal-title'>Share Features</span>
+            <div class='ms-auto btn-list d-flex align-items-center'>
+                <div>
+                    <IconUsers
+                        :size='20'
+                        stroke='1'
+                    /><span class='mx-2'>{{selectedUsers.size}}</span>
+                </div>
+                <div>
+                    <IconAffiliate
+                        :size='20'
+                        stroke='1'
+                    /><span class='mx-2'>{{selectedGroups.size}}</span>
+                </div>
+            </div>
+
             <button
                 type='button'
                 class='btn-close'
@@ -168,6 +183,7 @@ import {
     TablerNone,
     TablerInput,
     TablerModal,
+    TablerInlineAlert,
     TablerLoading,
     TablerButton,
 } from '@tak-ps/vue-tabler';

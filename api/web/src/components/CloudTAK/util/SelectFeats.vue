@@ -105,27 +105,21 @@
         </template>
         <template v-else-if='share === ShareType.USERS'>
             <Share
-                style='height: 400px;'
                 :feats='Array.from(selected.values()).map((c) => c.as_feature())'
-                :compact='true'
                 @done='selected.clear()'
                 @cancel='share = ShareType.NONE'
             />
         </template>
         <template v-else-if='share === ShareType.MISSION'>
             <ShareToMission
-                style='height: 400px;'
                 :feats='Array.from(selected.values()).map((c) => c.as_feature())'
-                :compact='true'
                 @done='selected.clear()'
                 @cancel='share = ShareType.NONE'
             />
         </template>
         <template v-else-if='share === ShareType.PACKAGE'>
             <ShareToPackage
-                style='height: 400px;'
                 :feats='Array.from(selected.values()).map((c) => c.as_feature())'
-                :compact='true'
                 @done='selected.clear()'
                 @close='share = ShareType.NONE'
             />
