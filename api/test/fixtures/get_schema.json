@@ -944,19 +944,29 @@
         "query": true,
         "res": false
     },
-    "GET /profile/chat": {
+    "GET /profile/chatroom": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /profile/chat/:chatroom": {
+    "DELETE /profile/chatroom": {
         "body": false,
         "query": true,
         "res": true
     },
-    "DELETE /profile/chat/:chatroom": {
+    "DELETE /profile/chatroom/:chatroom": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "GET /profile/chatroom/:chatroom/chat": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /profile/chatroom/:chatroom/chat": {
+        "body": false,
+        "query": true,
         "res": true
     },
     "GET /profile/feature": {

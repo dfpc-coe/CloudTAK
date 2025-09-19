@@ -341,6 +341,7 @@
                     z-index: 2;
                     width: 120px;
                     right: 60px;
+                    padding-left: 10px;
                     background-color: rgba(0, 0, 0, 0.5);
                     border-radius: 0px 0px 0px 6px;
                 '
@@ -349,6 +350,8 @@
                     <TablerIconButton
                         id='map-notifications'
                         title='Notifications Icon'
+                        class='hover-button'
+                        :hover='false'
                     >
                         <IconBell
                             :size='40'
@@ -380,7 +383,8 @@
                 <TablerIconButton
                     v-if='noMenuShown'
                     title='Open Menu'
-                    class='mx-2 cursor-pointer hover-button'
+                    class='mx-2 hover-button'
+                    :hover='false'
                     @click='router.push("/menu")'
                 >
                     <IconMenu2
@@ -391,7 +395,7 @@
                 <TablerIconButton
                     v-else
                     title='Close Menu'
-                    class='mx-2 cursor-pointer hover-button'
+                    class='mx-2 cursor-pointer'
                     @click='closeAllMenu'
                 >
                     <IconX

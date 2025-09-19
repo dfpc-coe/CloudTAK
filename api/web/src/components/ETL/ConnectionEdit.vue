@@ -121,8 +121,8 @@
                                             <AgencySelect
                                                 v-if='!agencyDisabled'
                                                 v-model='connection.agency'
-                                                @disabled='disableAgency'
                                                 label='Agency Owner'
+                                                @disabled='disableAgency'
                                             />
                                         </div>
                                     </div>

@@ -3,7 +3,8 @@
         <template #default>
             <TablerIconButton
                 title='Geometry Editing'
-                class='mx-2 cursor-pointer hover-button'
+                class='mx-2 hover-button'
+                :hover='false'
             >
                 <IconPencil
                     :size='40'

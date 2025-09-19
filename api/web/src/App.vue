@@ -15,10 +15,13 @@
                         height='50'
                         width='50'
                         @click='router.push("/")'
-                    />
+                    >
                 </div>
                 <div class='col mx-2'>
-                    <div class='page-pretitle' v-text='brandStore.login && brandStore.login.name ? brandStore.login.name : ""'/>
+                    <div
+                        class='page-pretitle'
+                        v-text='brandStore.login && brandStore.login.name ? brandStore.login.name : ""'
+                    />
                     <h2 class='page-title'>
                         CloudTAK
                     </h2>

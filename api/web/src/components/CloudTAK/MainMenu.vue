@@ -624,6 +624,8 @@
                             <template #default>
                                 <TablerIconButton
                                     title='Application Switcher'
+                                    class='hover-button'
+                                    :hover='false'
                                 >
                                     <IconGridDots
                                         :size='32'
