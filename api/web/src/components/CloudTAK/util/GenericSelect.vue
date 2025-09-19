@@ -101,20 +101,20 @@ const slots = defineSlots<{
     buttons: { disabled: boolean };
 }>();
 
-const props = defineProps({
-    disabled: {
-        type: Boolean,
-        default: false,
-    },
-    items: {
-        type: Array<T>,
-        default: () => [],
-    }
-});
+const props = withDefaults(defineProps<{
+    disabled?: boolean
+    items: T[]
+}>(), {
+    disabled: false
+})
 
-const selected = ref<Set<number | string>>(new Set());
+const selected = ref<Set<string | number>>(new Set());
 
-defineExpose({
-    selected
+interface GenericSelectExpose {
+  selected: Set<string | number>;
+}
+
+defineExpose<GenericSelectExpose>({
+    selected: selected.value
 });
 </script>
