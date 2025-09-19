@@ -10,13 +10,13 @@
                     <IconUsers
                         :size='20'
                         stroke='1'
-                    /><span class='mx-2'>{{selectedUsers.size}}</span>
+                    /><span class='mx-2'>{{ selectedUsers.size }}</span>
                 </div>
                 <div>
                     <IconAffiliate
                         :size='20'
                         stroke='1'
-                    /><span class='mx-2'>{{selectedGroups.size}}</span>
+                    /><span class='mx-2'>{{ selectedGroups.size }}</span>
                 </div>
             </div>
 
@@ -183,7 +183,6 @@ import {
     TablerNone,
     TablerInput,
     TablerModal,
-    TablerInlineAlert,
     TablerLoading,
     TablerButton,
 } from '@tak-ps/vue-tabler';
