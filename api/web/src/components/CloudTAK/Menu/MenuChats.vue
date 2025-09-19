@@ -48,6 +48,12 @@
                     :disabled='!multiselect'
                     :items='filteredChats'
                 >
+                    <template #buttons="{disabled}">
+                        <TablerDelete
+                            :disabled='disabled'
+                            displaytype='icon'
+                        />
+                    </template>
                     <template #item="{item}">
                         <div
                             role='menuitem'
@@ -82,6 +88,7 @@ import GenericSelect from '../util/GenericSelect.vue';
 import {
     TablerNone,
     TablerAlert,
+    TablerDelete,
     TablerInput,
     TablerLoading,
     TablerIconButton,

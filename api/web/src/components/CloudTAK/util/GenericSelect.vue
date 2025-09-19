@@ -38,10 +38,12 @@
             </TablerIconButton>
 
             <div
-                v-if='selected.size > 0'
-                class='ms-auto'
+                class='ms-auto me-2'
             >
-                <slot name='buttons' />
+                <slot
+                    name='buttons'
+                    :disabled='selected.size > 0'
+                />
             </div>
         </div>
 
