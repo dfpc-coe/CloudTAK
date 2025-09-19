@@ -84,7 +84,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, useTemplateRef } from 'vue'
+import type { ComponentExposed } from 'vue-component-type-helpers'
 import { server } from '../../../std.ts';
 import type { ProfileChatroomList } from '../../../types.ts';
 import GenericSelect from '../util/GenericSelect.vue';
@@ -105,7 +106,7 @@ import {
 } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
 
-const select = ref<typeof GenericSelect | null>(null);
+const select = useTemplateRef<ComponentExposed<typeof GenericSelect>>('select');
 const router = useRouter();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
@@ -138,11 +139,10 @@ async function deleteChats(): Promise<void> {
 
     loading.value = true;
 
+    const chatroom: Array<string> = Array.from(selected.values()).map(id => String(id));
     const res = await server.DELETE('/api/profile/chatroom', {
         params: {
-            query: {
-                chatroom: Array.from(selected.values())
-            }
+            query: { chatroom }
         }
     });
 
