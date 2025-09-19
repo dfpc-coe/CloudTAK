@@ -37,6 +37,38 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.delete('/profile/chat', {
+        name: 'Delete Chatrooms',
+        group: 'ProfileChats',
+        description: 'Delete User\'s Chats',
+        query: Type.Object({
+            chatroom: Type.Union([Type.String(), Type.Array(Type.String())])
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            if (typeof req.query.chatroom === 'string') {
+                req.query.chatroom = [req.query.chatroom];
+            }
+
+            for (const chatroom of req.query.chatroom) {
+                await config.models.ProfileChat.delete(sql`
+                    username = ${user.email}
+                    AND chatroom = ${req.params.chatroom}
+                `);
+            }
+
+            res.json({
+                status: 200,
+                message: `Deleted Chatrooms`
+            });
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
     await schema.get('/profile/chat/:chatroom', {
         name: 'Get Chats',
         group: 'ProfileChats',

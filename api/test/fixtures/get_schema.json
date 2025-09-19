@@ -949,6 +949,11 @@
         "query": false,
         "res": true
     },
+    "DELETE /profile/chat": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /profile/chat/:chatroom": {
         "body": false,
         "query": true,
