@@ -15,13 +15,23 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Get User\'s Profile Chats',
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(Type.Any())
+            items: Type.Array(Type.Object({
+                id: Type.String(),
+                chatroom: Type.String(),
+            }))
         })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
             const chats = await config.models.ProfileChat.chats(user.email);
-            res.json(chats);
+
+            res.json({
+                total: chats.total,
+                items: chats.items.map((c) => ({
+                    id: c.chatroom,
+                    chatroom: c.chatroom
+                }))
+            });
         } catch (err) {
              Err.respond(err, res);
         }
