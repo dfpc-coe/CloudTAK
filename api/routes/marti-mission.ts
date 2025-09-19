@@ -1,12 +1,14 @@
 import { Static, Type } from '@sinclair/typebox'
+import path from 'node:path';
 import qr from 'qr-image';
 import tokml from 'tokml';
 import Schema from '@openaddresses/batch-schema';
 import { Feature } from '@tak-ps/node-cot'
+import S3 from '../lib/aws/s3.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { GenericMartiResponse } from '../lib/types.js';
+import { GenericMartiResponse, StandardResponse } from '../lib/types.js';
 import {
     MissionOptions,
     MissionRole,
@@ -482,6 +484,57 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.put('/marti/missions/:name/upload', {
+        name: 'Mission Attach',
+        group: 'MartiMissions',
+        params: Type.Object({
+            name: Type.String(),
+        }),
+        description: 'Attach via upload',
+        body: Type.Object({
+            assets: Type.Array(Type.Object({
+                type: Type.Literal('profile'),
+                id: Type.String()
+            }), {
+                default: []
+            }),
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const profile = await config.models.Profile.from(user.email);
+            const auth = profile.auth;
+            const creatorUid = profile.username;
+
+            const name = String(req.query.name);
+
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            for (const asset of req.body.assets) {
+                const file = await config.models.ProfileFile.from(asset.id);
+
+                if (file.username !== user.email) {
+                    throw new Err(400, null, 'You can only attach your own files');
+                }
+
+                await api.Files.upload({
+                    name: name,
+                    contentLength: Number(req.headers['content-length']),
+                    keywords: [],
+                    creatorUid: creatorUid,
+                }, await S3.get(`profile/${user.email}/${file.id}${path.parse(file.name).ext}`));
+            }
+
+            res.json({
+                status: 200,
+                message: 'Files Attached'
+            });
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
     await schema.post('/marti/missions/:name/upload', {
         name: 'Mission Upload',
         group: 'MartiMissions',
@@ -520,8 +573,6 @@ export default async function router(schema: Schema, config: Config) {
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
                 : await config.conns.subscription(user.email, req.params.name)
-
-            console.error('Attaching', content.Hash, 'to', req.params.name);
 
             const missionContent = await api.Mission.attachContents(
                 req.params.name,
