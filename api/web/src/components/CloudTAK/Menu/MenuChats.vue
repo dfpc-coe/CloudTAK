@@ -25,20 +25,28 @@
             />
         </template>
         <template #default>
+            <div class='col-12 px-2 py-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Filter'
+                />
+            </div>
+
             <TablerAlert
                 v-if='error'
                 :err='error'
             />
             <TablerLoading v-else-if='loading' />
             <TablerNone
-                v-else-if='!chats.items.length'
+                v-else-if='!filteredChats.length'
                 :create='false'
             />
             <template v-else>
                 <GenericSelect
                     role='menu'
                     :disabled='!multiselect'
-                    :items='chats.items'
+                    :items='filteredChats'
                 >
                     <template #item="{item}">
                         <div
@@ -68,12 +76,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { std, stdurl } from '/src/std.ts';
 import GenericSelect from '../util/GenericSelect.vue';
 import {
     TablerNone,
     TablerAlert,
+    TablerInput,
     TablerLoading,
     TablerIconButton,
     TablerRefreshButton
@@ -95,8 +104,20 @@ const chats = ref({
     items: []
 });
 
+const paging = ref({
+    filter: ''
+});
+
 onMounted(async () => {
     await fetchList();
+});
+
+const filteredChats = computed(() => {
+    if (!paging.value.filter) return chats.value.items;
+
+    return chats.value.items.filter(c =>
+        c.chatroom.toLowerCase().includes(paging.value.filter.toLowerCase())
+    ).sort().reverse();
 });
 
 async function fetchList() {
