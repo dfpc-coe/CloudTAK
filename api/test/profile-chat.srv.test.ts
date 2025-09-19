@@ -7,9 +7,9 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: api/profile/chat', async (t) => {
+test('GET: api/profile/chatroom', async (t) => {
     try {
-        const res = await flight.fetch('/api/profile/chat', {
+        const res = await flight.fetch('/api/profile/chatroom', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin
