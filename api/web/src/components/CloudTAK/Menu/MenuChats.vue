@@ -166,6 +166,8 @@ async function fetchList(): Promise<void> {
     loading.value = false;
     if (res.error) error.value = Error(res.error.message);
 
-    chats.value = res.data;
+    if (res.data) {
+        chats.value = res.data;
+    }
 }
 </script>
