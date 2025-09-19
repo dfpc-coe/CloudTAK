@@ -86,9 +86,11 @@
                     z-index: 1;
                     width: 250px;
                     height: 40px;
-                    border-radius: 0px 6px 0px 0px;
                     background-color: rgba(0, 0, 0, 0.5);
                 '
+                :style='{
+                    "border-radius": mapStore.selected.size ? "0px" : "0px 6px 0px 0px"
+                }'
             >
                 <div
                     class='d-flex align-items-center'

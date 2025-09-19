@@ -11,7 +11,7 @@
                 </div>
                 <div class='ms-auto px-2'>
                     <TablerIconButton
-                        title='Clear Selection'
+                        title='Close'
                         @click='selected.clear()'
                     >
                         <IconX
@@ -24,9 +24,9 @@
             <div
                 class='overflow-auto'
                 style='
-                max-height: calc(400px - 36px);
-                margin-bottom: 36px;
-            '
+                    max-height: calc(400px - 36px);
+                    margin-bottom: 36px;
+                '
             >
                 <div
                     v-for='select in selected.values()'
@@ -46,7 +46,7 @@
                 <div class='d-flex align-items-center'>
                     <TablerButton
                         style='height: 30px; width: 200px;'
-                        class='me-1'
+                        class='me-1 btn-sm'
                         @click='share = ShareType.USERS'
                     >
                         <IconPackageExport
@@ -58,6 +58,7 @@
                     <TablerDropdown>
                         <TablerButton
                             title='More Options'
+                            class='btn-sm'
                             style='height: 30px'
                         >
                             <IconDotsVertical
