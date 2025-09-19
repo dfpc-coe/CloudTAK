@@ -1,4 +1,5 @@
 import { Static } from '@sinclair/typebox';
+import { X509Certificate } from 'node:crypto';
 import { ConnectionAuth } from './connection-config.js';
 import { spawnSync } from "child_process";
 import { tmpdir } from "node:os";
@@ -42,16 +43,27 @@ export async function generateP12(
         ];
 
         if (auth.ca && auth.ca.length) {
+            const output = [];
+
+            for (const cert of auth.ca) {
+                try {
+                    const x509 = new X509Certificate(Buffer.from(cert, 'base64'));
+                    output.push(x509.toString());
+                } catch (err) {
+                    console.error("Invalid CA certificate provided, skipping:", err);
+                }
+            }
+
             const caPath = join(tmp, `key-${rand}.crt`);
             paths.push(caPath);
-            await writeFile(caPath, auth.ca.join('\n'), { encoding: 'utf8' });
-            args.push('-CAfile', caPath);
+            await writeFile(caPath, output.join('\n'), { encoding: 'utf8' });
+            args.push('-certfile', caPath);
         }
 
         if (password) {
             args.push("-password", `pass:${password}`);
         } else {
-            args.push("-nodes", "-password", "pass:");
+            args.push("-password", "pass:");
         }
 
         const res = spawnSync("openssl", args, { stdio: "inherit" });
