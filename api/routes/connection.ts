@@ -259,8 +259,8 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const buff = await generateP12(
-                connection.auth.key,
-                connection.auth.cert
+                connection.auth,
+                config.server.name + ' - ' + connection.name
             );
 
             if (req.query.download) {
