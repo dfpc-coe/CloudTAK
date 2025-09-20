@@ -117,10 +117,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             integrationId: Type.Optional(Type.Integer()),
-            auth: Type.Object({
-                cert: Type.String(),
-                key: Type.String()
-            })
+            auth: ConnectionAuth
         })
     }, async (req, res) => {
         try {
