@@ -198,10 +198,9 @@ async function regenerate() {
     }) as ETLLdapUser
 
     loading.value.gen = true;
-    emit('integration', {
-        'certs': res.auth,
-        'integrationId': res.integrationId
-    });
+
+    emit('certs', res.auth);
+    emit('integration', res.integrationId);
 }
 
 async function generate() {
@@ -223,9 +222,7 @@ async function generate() {
     }) as ETLLdapUser
 
     loading.value.gen = true;
-    emit('integration', {
-        'certs': res.auth,
-        'integrationId': res.integrationId
-    });
+    emit('certs', res.auth);
+    emit('integration', res.integrationId);
 }
 </script>
