@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v11.27.0 - 2025-09-19
+
+- :rocket: Use slidedown for Files Menu
+- :rocket Add Search Bar for Files Menu
+- :rocket: Add Number of Selected Users and/or Channels to Share Modal
+- :tada: Add the ability to add a Profile File into a Data Sync
+
 ### v11.26.0 - 2025-09-19
 
 - :tada: API To allow deleting one or more Chatrooms
