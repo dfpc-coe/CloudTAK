@@ -10,7 +10,7 @@ import { Connection } from '../lib/schema.js';
 import { MachineConnConfig, ConnectionAuth } from '../lib/connection-config.js';
 import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
-import { generateP12 } from '../lib/certificate.js';
+import { generateClientP12, generateTrustP12 } from '../lib/certificate.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection', {
@@ -245,6 +245,11 @@ export default async function router(schema: Schema, config: Config) {
             download: Type.Boolean({
                 default: false,
                 description: 'Download auth as P12 file'
+            }),
+            type: Type.String({
+                default: 'client',
+                description: 'Client or Truststore Data',
+                enum: ['client', 'truststore']
             })
         }),
     }, async (req, res) => {
@@ -258,18 +263,35 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Connection is not ReadOnly and cannot return auth');
             }
 
-            const buff = await generateP12(
-                connection.auth,
-                config.server.name + ' - ' + connection.name
-            );
+            if (req.query.type === 'client') {
+                const buff = await generateClientP12(
+                    connection.auth,
+                    config.server.name + ' - ' + connection.name
+                );
 
-            if (req.query.download) {
-                res.setHeader('Content-Disposition', `attachment; filename="connection-auth-${connection.id}.p12"`);
+                if (req.query.download) {
+                    res.setHeader('Content-Disposition', `attachment; filename="connection-auth-${connection.id}.p12"`);
+                }
+
+                res.setHeader('Content-Type', 'application/x-pkcs12');
+                res.write(buff);
+                res.end();
+            } else if (req.query.type === 'truststore') {
+                const buff = await generateTrustP12(
+                    connection.auth,
+                    config.server.name + ' - ' + connection.name
+                );
+
+                if (req.query.download) {
+                    res.setHeader('Content-Disposition', `attachment; filename="truststore-${connection.id}.p12"`);
+                }
+
+                res.setHeader('Content-Type', 'application/x-pkcs12');
+                res.write(buff);
+                res.end();
+            } else {
+                throw new Err(400, null, 'Invalid type parameter');
             }
-
-            res.setHeader('Content-Type', 'application/x-pkcs12');
-            res.write(buff);
-            res.end();
         } catch (err) {
             Err.respond(err, res);
         }

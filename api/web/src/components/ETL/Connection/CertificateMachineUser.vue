@@ -113,7 +113,7 @@ const props = defineProps<{
     connection: ETLConnection
 }>();
 
-const emit = defineEmits([ 'integration' ]);
+const emit = defineEmits([ 'certs', 'integration' ]);
 
 const loading = ref({
     gen: false,
