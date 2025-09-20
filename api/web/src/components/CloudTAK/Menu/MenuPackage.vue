@@ -27,7 +27,7 @@
                     <Share
                         :feats='[shareFeat]'
                         @done='mode = "default"'
-                        @cancel='mode = "default"'
+                        @close='mode = "default"'
                     />
                 </div>
             </template>

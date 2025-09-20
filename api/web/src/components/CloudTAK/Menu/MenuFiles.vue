@@ -31,6 +31,14 @@
                 />
             </div>
 
+            <div class='col-12 pe-2 pt-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Filter'
+                />
+            </div>
+
             <TablerLoading
                 v-if='loading'
             />
@@ -49,51 +57,48 @@
                     :key='asset.id'
                     role='menu'
                 >
-                    <div
-                        class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'
-                        role='menuitem'
-                        tabindex='0'
-                        @click='opened.has(asset.id) ? opened.delete(asset.id) : opened.add(asset.id)'
-                        @keyup.enter='opened.has(asset.id) ? opened.delete(asset.id) : opened.add(asset.id)'
+                    <TablerSlidedown
+                        :click-anywhere-expand='true'
+                        :arrow='false'
+                        class='my-2 me-2'
                     >
-                        <div class='col-auto'>
-                            <IconMapPlus
-                                v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
-                                :size='32'
-                                stroke='1'
-                            />
-                            <IconMapOff
-                                v-else
-                                v-tooltip='"Not Cloud Optimized"'
-                                :size='32'
-                                stroke='1'
-                            />
-                        </div>
-                        <div class='col-auto'>
+                        <template #default>
                             <div
-                                class='col-12 text-truncate px-2 user-select-none'
-                                style='max-width: 250px;'
-                                v-text='asset.name'
-                            />
-                            <div class='col-12 subheader'>
-                                <span class='mx-2 user-select-none'>
-                                    <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
-                                </span>
+                                class='d-flex align-items-center'
+                                role='menuitem'
+                                tabindex='0'
+                            >
+                                <div class='col-auto'>
+                                    <IconMapPlus
+                                        v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    <IconMapOff
+                                        v-else
+                                        v-tooltip='"Not Cloud Optimized"'
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </div>
+                                <div class='col-auto'>
+                                    <div
+                                        class='col-12 text-truncate px-2 user-select-none'
+                                        style='max-width: 250px;'
+                                        v-text='asset.name'
+                                    />
+                                    <div class='col-12 subheader'>
+                                        <span class='mx-2 user-select-none'>
+                                            <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div
-                        v-if='opened.has(asset.id)'
-                        class='pt-1 mx-4'
-                    >
-                        <div
-                            class='rounded bg-child'
-                            role='manu'
-                        >
+                        </template>
+                        <template #expanded>
                             <div
                                 v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
-                                class='cursor-pointer rounded-top col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 role='menuitem'
                                 tabindex='0'
                                 @click.stop.prevent='createOverlay(asset)'
@@ -108,7 +113,7 @@
                             <div
                                 v-else
                                 role='menuitem'
-                                class='rounded-top col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                             >
                                 <IconMapOff
                                     :size='32'
@@ -118,7 +123,7 @@
                             </div>
 
                             <div
-                                class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 @click.stop.prevent='downloadAsset(asset)'
                             >
                                 <IconDownload
@@ -128,7 +133,20 @@
                                 <span class='mx-2'>Download Original</span>
                             </div>
                             <div
-                                class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                role='menuitem'
+                                tabindex='0'
+                                @click.stop.prevent='shareToMission = asset'
+                                @keyup.enter='shareToMission = asset'
+                            >
+                                <IconAmbulance
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Add to Data Sync</span>
+                            </div>
+                            <div
+                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 role='menuitem'
                                 tabindex='0'
                                 @click.stop.prevent='shareToPackage = asset'
@@ -141,7 +159,7 @@
                                 <span class='mx-2'>Create Data Package</span>
                             </div>
                             <div
-                                class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 role='menuitem'
                                 tabindex='0'
                                 @click.stop.prevent='rename = { id: asset.id, name: asset.name, loading: false }'
@@ -167,12 +185,12 @@
 
                             <TablerDelete
                                 displaytype='menu'
-                                class='hover rounded-bottom'
+                                class='hover rounded'
                                 label='Delete File'
                                 @delete='deleteAsset(asset)'
                             />
-                        </div>
-                    </div>
+                        </template>
+                    </TablerSlidedown>
                 </div>
 
                 <div class='col-12 d-flex justify-content-center pt-3'>
@@ -187,6 +205,16 @@
             </template>
         </template>
     </MenuTemplate>
+
+    <ShareToMission
+        v-if='shareToMission'
+        :assets='[{
+            type: "profile",
+            id: shareToMission.id,
+            name: shareToMission.name
+        }]'
+        @close='shareToMission = undefined'
+    />
 
     <ShareToPackage
         v-if='shareToPackage'
@@ -209,6 +237,7 @@ import {
     TablerDelete,
     TablerIconButton,
     TablerRefreshButton,
+    TablerSlidedown,
     TablerInput,
     TablerPager,
     TablerAlert,
@@ -218,6 +247,7 @@ import {
     TablerEpoch
 } from '@tak-ps/vue-tabler';
 import {
+    IconAmbulance,
     IconPackage,
     IconUpload,
     IconMapOff,
@@ -226,6 +256,7 @@ import {
     IconCursorText
 } from '@tabler/icons-vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
+import ShareToMission from '../util/ShareToMission.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import Overlay from '../../../base/overlay.ts';
@@ -235,8 +266,8 @@ const mapStore = useMapStore();
 
 const router = useRouter();
 const upload = ref(false)
-const opened = ref<Set<string>>(new Set());
 const shareToPackage = ref<ProfileFile | undefined>();
+const shareToMission = ref<ProfileFile | undefined>();
 const rename = ref<{
     id: string;
     loading: boolean;

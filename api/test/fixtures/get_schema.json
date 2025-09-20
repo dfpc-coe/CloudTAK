@@ -774,6 +774,11 @@
         "query": false,
         "res": true
     },
+    "PUT /marti/missions/:name/upload": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "POST /marti/missions/:name/upload": {
         "body": false,
         "query": true,
