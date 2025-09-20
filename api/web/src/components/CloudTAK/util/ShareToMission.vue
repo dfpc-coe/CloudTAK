@@ -186,5 +186,6 @@ async function share(): Promise<void> {
     loading.value = false;
 
     emit('done');
+    emit('close');
 }
 </script>

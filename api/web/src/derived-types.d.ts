@@ -20188,10 +20188,7 @@ export interface paths {
         /** Attach via upload */
         put: {
             parameters: {
-                query: {
-                    /** @description No Description */
-                    name: string;
-                };
+                query?: never;
                 header?: never;
                 path: {
                     /** @description No Description */

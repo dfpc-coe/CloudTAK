@@ -507,9 +507,9 @@ export default async function router(schema: Schema, config: Config) {
             const auth = profile.auth;
             const creatorUid = profile.username;
 
-            const name = String(req.query.name);
-
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const contents: string[] = [];
 
             for (const asset of req.body.assets) {
                 const file = await config.models.ProfileFile.from(asset.id);
@@ -518,13 +518,28 @@ export default async function router(schema: Schema, config: Config) {
                     throw new Err(400, null, 'You can only attach your own files');
                 }
 
-                await api.Files.upload({
-                    name: name,
-                    contentLength: Number(req.headers['content-length']),
+                const content = await api.Files.upload({
+                    name: file.name,
+                    contentLength: file.size,
                     keywords: [],
                     creatorUid: creatorUid,
                 }, await S3.get(`profile/${user.email}/${file.id}${path.parse(file.name).ext}`));
+
+                contents.push(content.Hash);
             }
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
+
+            await api.Mission.attachContents(
+                req.params.name,
+                {
+                    hashes: contents
+                },
+                opts
+            );
 
             res.json({
                 status: 200,
