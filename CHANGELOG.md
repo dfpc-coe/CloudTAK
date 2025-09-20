@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.27.1 - 2025-09-19
+
+- :bug: PUT Requests to Machine User API wouldn't return CA Chain
+
 ### v11.27.0 - 2025-09-19
 
 - :rocket: Use slidedown for Files Menu
