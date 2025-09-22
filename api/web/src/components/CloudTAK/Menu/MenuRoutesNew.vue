@@ -172,7 +172,9 @@ async function generateRoute(): Promise<void> {
         const route = await std(url) as FeatureCollection;
 
         if (route.features.length > 0) {
-            const cot = await mapStore.worker.db.add(route.features[0]);
+            const cot = await mapStore.worker.db.add(route.features[0], {
+                authored: true
+            });
 
             cot.flyTo();
 
