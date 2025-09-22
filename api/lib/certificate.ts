@@ -11,11 +11,12 @@ import { join } from "node:path";
  * Generates a PKCS#12 (PFX) file as a Buffer from PEM-encoded private key and certificate.
  * Relies on OpenSSL being available on the system.
  *
- * @param key   - The PEM-encoded private key string.
- * @param cert  - The PEM-encoded certificate string.
+ * @param auth     - The connection authentication details containing key, cert, and optional CA certificates.
+ * @param name     - The friendly name for the PKCS#12 entry.
+ * @param password - Optional password to protect the PKCS#12 file. Defaults to an
  * @returns Buffer containing the PKCS#12 data.
  */
-export async function generateP12(
+export async function generateClientP12(
     auth: Static<typeof ConnectionAuth>,
     name: string,
     password: string = ''
@@ -59,6 +60,79 @@ export async function generateP12(
             await writeFile(caPath, output.join('\n'), { encoding: 'utf8' });
             args.push('-certfile', caPath);
         }
+
+        if (password) {
+            args.push("-password", `pass:${password}`);
+        } else {
+            args.push("-password", "pass:");
+        }
+
+        const res = spawnSync("openssl", args, { stdio: "inherit" });
+
+        if (res.error) {
+            throw new Error("OpenSSL command failed");
+        }
+
+        return Buffer.from(await readFile(p12Path));
+    } finally {
+        for (const path of paths) {
+            try {
+                await unlink(path);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    }
+}
+
+/**
+ * Generates a PKCS#12 (PFX) for only the truststore information
+ * Relies on OpenSSL being available on the system.
+ *
+ * @param auth     - The connection authentication details containing key, cert, and optional CA certificates.
+ * @param name     - The friendly name for the PKCS#12 entry.
+ * @param password - Optional password to protect the PKCS#12 file. Defaults to an
+ * @returns Buffer containing the PKCS#12 data.
+ */
+export async function generateTrustP12(
+    auth: Static<typeof ConnectionAuth>,
+    name: string,
+    password: string = ''
+): Promise<Buffer> {
+    const tmp = tmpdir();
+    const rand = randomBytes(8).toString("hex");
+    const p12Path = join(tmp, `out-${rand}.p12`);
+
+    const paths = [ p12Path ];
+
+    if (!auth.ca || !auth.ca.length) {
+        throw new Error("No CA certificates provided for trust store generation");
+    }
+
+    const output = [];
+
+    for (const cert of auth.ca) {
+        try {
+            const x509 = new X509Certificate(Buffer.from(cert, 'base64'));
+            output.push(x509.toString());
+        } catch (err) {
+            console.error("Invalid CA certificate provided, skipping:", err);
+        }
+    }
+
+    const caPath = join(tmp, `key-${rand}.crt`);
+    paths.push(caPath);
+    await writeFile(caPath, output.join('\n'), { encoding: 'utf8' });
+
+    try {
+        const args = [
+            'pkcs12',
+            '-legacy',
+            '-export',
+            '-certfile', caPath,
+            '-out', p12Path,
+            '-name', name,
+        ];
 
         if (password) {
             args.push("-password", `pass:${password}`);

@@ -249,7 +249,7 @@
                                                     <CertificateMachineUser
                                                         :connection='connection'
                                                         @certs='certificateAttachment($event)'
-                                                        @integration='creation($event)'
+                                                        @integration='integrationAttachment($event)'
                                                         @err='err = $event'
                                                     />
                                                 </template>
@@ -400,15 +400,12 @@ async function fetch() {
     loading.value = false;
 }
 
-function creation(integration) {
-    connection.value.integrationId = integration.integrationId;
-    connection.value.auth.cert = integration.certs.cert;
-    connection.value.auth.key = integration.certs.key;
+function integrationAttachment(integration) {
+    connection.value.integrationId = integration;
 }
 
 function certificateAttachment(certs) {
     modal.value.upload = false;
-    connection.value.integrationId = null;
     connection.value.auth.ca = certs.ca;
     connection.value.auth.cert = certs.cert;
     connection.value.auth.key = certs.key;
