@@ -176,7 +176,9 @@ async function refresh(load = false): Promise<void> {
             properties.archived
             and properties.type = "b-m-r"
             and $contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")
-        `)))
+        `, {
+            mission: true
+        })))
 
     loading.value = false
 }
