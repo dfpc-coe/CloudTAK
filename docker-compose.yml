@@ -61,10 +61,9 @@ services:
             - AWS_S3_SecretAccessKey=cloudtakminioadmin
 
     media:
-        image: ghcr.io/dfpc-coe/media-infra:v4.2.0
+        image: ghcr.io/dfpc-coe/media-infra:v5.2.0
         restart: 'always'
         environment:
-            - FORCE_NEW_CONFIG=false
             - CLOUDTAK_URL=http://api:5000/api
             - SigningSecret=coe-wildland-fire
             - MediaSecret=coe-wildland-fire-video
