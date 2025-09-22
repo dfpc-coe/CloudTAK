@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.27.2 - 2025-09-22
+
+- :bug: Ensure cert & integrationId are set in Create Machine User UI
+
 ### v11.27.1 - 2025-09-19
 
 - :bug: PUT Requests to Machine User API wouldn't return CA Chain
