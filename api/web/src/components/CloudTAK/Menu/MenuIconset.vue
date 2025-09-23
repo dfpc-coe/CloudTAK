@@ -131,6 +131,6 @@ async function deleteIconset() {
         method: 'DELETE'
     });
 
-    router.push('/menu/iconset');
+    router.push('/menu/iconsets');
 }
 </script>
