@@ -7,6 +7,10 @@ if (!process.env.SigningSecret) throw new Error('SigningSecret env var must be p
 if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env var must be provided');
 if (!process.env.APIROOT) process.env.APIROOT = 'http://localhost:5002';
 
+if (!process.env.AWS_REGION) {
+    process.env.AWS_REGION = 'us-east-1';
+}
+
 const app = express();
 const config = {};
 
