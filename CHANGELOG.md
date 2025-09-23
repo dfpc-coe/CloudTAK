@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.27.3 - 2025-09-23
+
+- :bug: When deleting an Iconset, navigate back to Iconsets list instead of 404ing @AdventureSeeker423
+- :bug: When uploading an Iconset, don't double parse the resultant JSON @AdventureSeeker423
+
 ### v11.27.2 - 2025-09-22
 
 - :bug: Ensure cert & integrationId are set in Create Machine User UI
