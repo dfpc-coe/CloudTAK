@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.27.4 - 2025-09-24
+
+- :bug: Ensure the UI doesn't throw errors when looking at a CoT if no iconsets are loaded
+
 ### v11.27.3 - 2025-09-23
 
 - :bug: When deleting an Iconset, navigate back to Iconsets list instead of 404ing @AdventureSeeker423
