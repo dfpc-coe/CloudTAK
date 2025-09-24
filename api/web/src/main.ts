@@ -2,6 +2,19 @@ import { createApp } from 'vue'
 import * as VueRouter from 'vue-router'
 import { createPinia } from 'pinia'
 
+// @ts-expect-error Virtual Module
+import { registerSW } from 'virtual:pwa-register'
+
+registerSW({
+    immediate: true,
+    onNeedRefresh() {
+        console.error('App needs refresh');
+    },
+    onOfflineReady() {
+        console.log('App ready to work offline!')
+    }
+})
+
 import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'
 
