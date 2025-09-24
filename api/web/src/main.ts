@@ -2,9 +2,10 @@ import { createApp } from 'vue'
 import * as VueRouter from 'vue-router'
 import { createPinia } from 'pinia'
 
+// @ts-expect-error Virtual Module
 import { registerSW } from 'virtual:pwa-register'
 
-const updateSW = registerSW({
+registerSW({
     immediate: true,
     onNeedRefresh() {
         console.error('App needs refresh');
