@@ -35,6 +35,12 @@
             v-if='loading.iconset'
             desc='Loading Iconsets'
         />
+        <TablerNone
+            v-else-if='sets.length === 0'
+            label='Iconsets Loaded'
+            :compact='true'
+            :create='false'
+        />
         <template v-else>
             <div class='d-flex align-items-center'>
                 <template v-if='selected.name'>
@@ -152,6 +158,7 @@ import {
 import {
     TablerHelp,
     TablerEnum,
+    TablerNone,
     TablerInput,
     TablerDropdown,
     TablerLoading
@@ -271,7 +278,9 @@ async function Iconlistsets() {
     const url = stdurl('/api/iconset');
     url.searchParams.append('limit', 50);
     sets.value = (await std(url)).items;
-    params.value.iconset = sets.value[0].name;
+    if (sets.value.length) {
+        params.value.iconset = sets.value[0].name;
+    }
     loading.value.iconsets = false;
 }
 
