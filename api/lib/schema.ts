@@ -175,7 +175,7 @@ export const Basemap = pgTable('basemaps', {
     collection: text(),
     format: text().$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
     scheme: text().$type<Basemap_Scheme>().notNull().default(Basemap_Scheme.XYZ),
-    styles: json().$type<Array<unknown>>().notNull().default([]),
+    stylejson: json().$type<object>>().notNull().default({ layers: [] }),
     type: text().$type<Basemap_Type>().notNull().default(Basemap_Type.RASTER)
 }, (table) => {
     return {
