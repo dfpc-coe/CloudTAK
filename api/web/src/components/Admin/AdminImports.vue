@@ -69,14 +69,23 @@
                                             </template>
                                             <template v-else-if='h.name == "name"'>
                                                 <div class='row'>
-                                                    <div class='col-12'>
-                                                        <span v-text='imp[h.name]' />
-                                                    </div>
-                                                    <div class='col-12'>
-                                                        <span
+                                                    <div class='col-10 row'>
+                                                        <div v-text='imp[h.name]' />
+                                                        <div
                                                             class='subheader'
                                                             v-text='imp.id'
                                                         />
+                                                    </div>
+                                                    <div class='col-auto ms-auto'>
+                                                        <TablerIconButton
+                                                            title='Download File'
+                                                            @click='downloadImport(imp.id)'
+                                                        >
+                                                            <IconDownload
+                                                                :size='32'
+                                                                stroke='1'
+                                                            />
+                                                        </TablerIconButton>
                                                     </div>
                                                 </div>
                                             </template>
@@ -107,7 +116,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, server } from '../../std.ts';
+import { std, stdurl, server } from '../../std.ts';
 import type { Import, ImportList } from '../../types.ts';
 import StatusDot from '../util/StatusDot.vue';
 import TableHeader from '../util/TableHeader.vue'
@@ -116,9 +125,13 @@ import {
     TablerNone,
     TablerInput,
     TablerAlert,
+    TablerIconButton,
     TablerRefreshButton,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import {
+    IconDownload
+} from '@tabler/icons-vue';
 
 type Header = { name: keyof Import, display: boolean };
 
@@ -168,6 +181,15 @@ async function listImportSchema() {
         }
         return true;
     }));
+}
+
+async function downloadImport(id: string) {
+    const url = stdurl(`/api/import/${id}/raw`)
+    url.searchParams.append('token', localStorage.token);
+    url.searchParams.append('download', String(true));
+    await std(url, {
+        download: true
+    })
 }
 
 async function fetchList() {
