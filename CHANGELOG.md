@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.28.0 - 2025-09-26
+
+- :rocket: Add additional administrative management support for user Imports
+
 ### v11.27.4 - 2025-09-24
 
 - :bug: Ensure the UI doesn't throw errors when looking at a CoT if no iconsets are loaded
