@@ -387,7 +387,7 @@ export default async function router(schema: Schema, config: Config) {
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number())),
-            glyphs: Type.Union([Type.Null(), Type.String()]),
+            glyphs: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             styles: Type.Optional(Type.Array(Type.Unknown())),
         }),
         res: AugmentedBasemapResponse

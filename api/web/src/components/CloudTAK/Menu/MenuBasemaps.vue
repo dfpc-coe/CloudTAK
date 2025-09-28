@@ -261,7 +261,9 @@ async function setBasemap(basemap: Basemap) {
                         url: `/api/basemap/${basemap.id}/tiles`,
                         mode: 'basemap',
                         mode_id: String(basemap.id),
-                        glyphs: basemap.glyphs,
+                        glyphs: basemap.glyphs
+                            ? String(stdurl(`/basemap/${basemap.id}/fonts`)) + '/{fontstack}/{range}.pbf'
+                            : null,
                         styles: basemap.styles as Array<LayerSpecification>
                     }, {
                         before: mapStore.overlays[i + 1].styles[0].id
@@ -273,7 +275,9 @@ async function setBasemap(basemap: Basemap) {
                         url: `/api/basemap/${basemap.id}/tiles`,
                         mode: 'basemap',
                         mode_id: String(basemap.id),
-                        glyphs: basemap.glyphs,
+                        glyphs: basemap.glyphs
+                            ? String(stdurl(`/basemap/${basemap.id}/fonts`)) + '/{fontstack}/{range}.pbf'
+                            : null,
                         styles: basemap.styles as Array<LayerSpecification>
                     });
                 }
@@ -290,7 +294,9 @@ async function setBasemap(basemap: Basemap) {
             url: `/api/basemap/${basemap.id}/tiles`,
             mode: 'basemap',
             mode_id: String(basemap.id),
-            glyphs: basemap.glyphs,
+            glyphs: basemap.glyphs
+                ? String(stdurl(`/basemap/${basemap.id}/fonts`)) + '/{fontstack}/{range}.pbf'
+                : undefined,
             styles: basemap.styles
         }, { before }));
     }
@@ -306,7 +312,7 @@ function setCollection(name: string) {
 }
 
 function isCurrentBasemap(basemapId: number): boolean {
-    const currentBasemap = mapStore.overlays.find(overlay => 
+    const currentBasemap = mapStore.overlays.find(overlay =>
         overlay.mode === 'basemap' && overlay.mode_id === String(basemapId)
     );
     return !!currentBasemap;

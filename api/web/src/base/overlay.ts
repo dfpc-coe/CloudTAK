@@ -160,6 +160,7 @@ export default class Overlay {
         this.mode_id = overlay.mode_id || null;
         this.url = overlay.url;
         this.styles = overlay.styles as Array<LayerSpecification>;
+        this.glyphs = overlay.glyphs || String(stdurl('/fonts')) + '/{fontstack}/{range}.pbf';
         this.token = overlay.token;
     }
 
@@ -383,6 +384,7 @@ export default class Overlay {
             url?: string;
             token?: string;
             styles?: Array<LayerSpecification>;
+            glyphs?: string | null;
         },
         opts: {
             before?: string;
@@ -400,6 +402,13 @@ export default class Overlay {
         if (overlay.mode_id) this.mode_id = overlay.mode_id || null;
         if (overlay.url) this.url = overlay.url;
         if (overlay.token) this.token = overlay.token;
+
+        if (overlay.glyphs) {
+            this.glyphs = overlay.glyphs;
+        } else {
+            this.glyphs = String(stdurl('/fonts')) + '/{fontstack}/{range}.pbf';
+        }
+
         if (overlay.styles) {
             if (overlay.styles && overlay.styles.length) {
                 for (const layer of overlay.styles) {

@@ -51,12 +51,15 @@
                                         v-for='user of list.items'
                                         :key='user.username'
                                         tabindex='0'
-                                        class='cursor-pointer my-1 hover px-2 py-1'
+                                        class='cursor-pointer my-1 hover px-2 py-1 rounded'
                                         @keyup.enter='selected = user'
                                         @click='selected = user'
                                     >
-                                        <div class='d-flex'>
-                                            <span style='width: 24px;'>
+                                        <div class='d-flex align-items-center'>
+                                            <span
+                                                style='width: 24px;'
+                                                class='me-1'
+                                            >
                                                 <IconUser
                                                     :size='24'
                                                     stroke='1'

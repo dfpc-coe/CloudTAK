@@ -107,6 +107,15 @@
                     </TablerInput>
                 </div>
 
+                <div class='col-12'>
+                    <TablerInput
+                        v-if='overlay.type === "vector"'
+                        v-model='overlay.glyphs'
+                        :disabled='mode !== "manual"'
+                        label='Glyphs URL'
+                    />
+                </div>
+
                 <div class='col-12 col-md-6'>
                     <TablerInput
                         v-model='overlay.minzoom'
@@ -203,10 +212,12 @@ const router = useRouter();
 
 const loading = ref(true);
 const mode = ref('manual');
+
 const overlay = ref({
     name: '',
     url: '',
     type: 'vector',
+    glyphs: '',
     overlay: true,
     styles: [],
     minzoom: 0,

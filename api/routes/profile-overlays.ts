@@ -180,6 +180,7 @@ export default async function router(schema: Schema, config: Config) {
             url: Type.Optional(Type.String()),
             mode_id: Type.Optional(Type.String()),
             styles: Type.Optional(Type.Array(Type.Unknown())),
+            glyphs: Type.Optional(Type.Union([Type.Null(), Type.String()])),
         }),
         res: AugmentedProfileOverlayResponse
     }, async (req, res) => {
@@ -232,6 +233,7 @@ export default async function router(schema: Schema, config: Config) {
             mode: Type.String(),
             mode_id: Type.Optional(Type.String()),
             styles: Type.Optional(Type.Array(Type.Unknown())),
+            glyphs: Type.Optional(Type.String()),
             token: Type.Optional(Type.String()),
             url: Type.String(),
             name: Type.String()
