@@ -38,6 +38,7 @@ export default class Overlay {
     actions: ProfileOverlay["actions"];
 
     url?: string;
+    glyphs: string;
     styles: Array<LayerSpecification>;
     token: string | null;
 
@@ -207,7 +208,7 @@ export default class Overlay {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
 
-            const tileJSON = await std(url.toString()) as TileJSON 
+            const tileJSON = await std(url.toString()) as TileJSON
 
             mapStore.map.addSource(String(this.id), {
                 ...tileJSON,
@@ -418,7 +419,7 @@ export default class Overlay {
 
         await this.save();
 
-        
+
         // Update attribution if this is a basemap
         if (this.mode === 'basemap') {
             const mapStore = useMapStore();

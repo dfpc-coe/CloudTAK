@@ -24,6 +24,7 @@
                 <TablerIconButton
                     v-if='paging.collection'
                     title='Back'
+                    class='me-2'
                     @click='paging.collection = ""'
                 >
                     <IconCircleArrowLeft
@@ -260,6 +261,7 @@ async function setBasemap(basemap: Basemap) {
                         url: `/api/basemap/${basemap.id}/tiles`,
                         mode: 'basemap',
                         mode_id: String(basemap.id),
+                        glyphs: basemap.glyphs,
                         styles: basemap.styles as Array<LayerSpecification>
                     }, {
                         before: mapStore.overlays[i + 1].styles[0].id
@@ -271,6 +273,7 @@ async function setBasemap(basemap: Basemap) {
                         url: `/api/basemap/${basemap.id}/tiles`,
                         mode: 'basemap',
                         mode_id: String(basemap.id),
+                        glyphs: basemap.glyphs,
                         styles: basemap.styles as Array<LayerSpecification>
                     });
                 }
@@ -287,6 +290,7 @@ async function setBasemap(basemap: Basemap) {
             url: `/api/basemap/${basemap.id}/tiles`,
             mode: 'basemap',
             mode_id: String(basemap.id),
+            glyphs: basemap.glyphs,
             styles: basemap.styles
         }, { before }));
     }
