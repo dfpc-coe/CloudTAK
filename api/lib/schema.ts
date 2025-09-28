@@ -14,6 +14,7 @@ import {
     Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType
 } from  './enums.js';
+import type  { StyleJSON } from './types.ts';
 import { json, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
@@ -175,7 +176,10 @@ export const Basemap = pgTable('basemaps', {
     collection: text(),
     format: text().$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
     scheme: text().$type<Basemap_Scheme>().notNull().default(Basemap_Scheme.XYZ),
-    styles: json().$type<Array<unknown>>().notNull().default([]),
+    stylejson: json().$type<Static<typeof StyleJSON>>().notNull().default({
+        version: 8,
+        layers: []
+    }),
     type: text().$type<Basemap_Type>().notNull().default(Basemap_Type.RASTER)
 }, (table) => {
     return {

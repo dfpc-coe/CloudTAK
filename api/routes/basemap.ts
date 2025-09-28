@@ -14,7 +14,7 @@ import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { Geometry, BBox } from 'geojson';
 import { Static, Type } from '@sinclair/typebox'
-import { StandardResponse, BasemapResponse, OptionalTileJSON, GeoJSONFeature, GeoJSONFeatureCollection } from '../lib/types.js';
+import { StandardResponse, BasemapResponse, OptionalTileJSON, GeoJSONFeature, GeoJSONFeatureCollection, StyleJSON } from '../lib/types.js';
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
@@ -313,7 +313,7 @@ export default async function router(schema: Schema, config: Config) {
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number())),
-            styles: Type.Optional(Type.Array(Type.Unknown()))
+            stylejson: StyleJSON
         }),
         res: AugmentedBasemapResponse
     }, async (req, res) => {
@@ -386,7 +386,7 @@ export default async function router(schema: Schema, config: Config) {
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number())),
-            styles: Type.Optional(Type.Array(Type.Unknown())),
+            stylejson: Type.Optional(StyleJSON)
         }),
         res: AugmentedBasemapResponse
     }, async (req, res) => {

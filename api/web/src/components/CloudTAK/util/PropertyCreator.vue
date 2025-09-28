@@ -10,7 +10,10 @@
                 />
                 <label class='subheader user-select-none'>Author</label>
             </div>
-            <div class='ms-auto'>
+            <div
+                v-if='props.creator.time'
+                class='ms-auto'
+            >
                 <span
                     class='cursor-pointer'
                     @click='relative = !relative'

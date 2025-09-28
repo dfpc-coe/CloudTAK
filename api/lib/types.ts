@@ -13,6 +13,13 @@ export const LayerIncomingResponse = AugmentedLayerIncoming;
 export const LayerOutgoingResponse = AugmentedLayerOutgoing;
 export const DataResponse = AugmentedData;
 
+export const StyleJSON = Type.Object({
+    version: Type.Integer({ default: 8 }),
+    glyphs: Type.Optional(Type.String()),
+    sources: Type.Optional(Type.Record(Type.String(), Type.Any())),
+    layers: Type.Array(Type.Any())
+});
+
 export const GeoJSONFeature = Type.Object({
     id: Type.Optional(Type.String()),
     type: Type.Literal('Feature'),
@@ -302,6 +309,6 @@ export const BasemapResponse = createSelectSchema(schemas.Basemap, {
     id: Type.Integer(),
     minzoom: Type.Integer(),
     maxzoom: Type.Integer(),
-    styles: Type.Array(Type.Unknown()),
+    stylejson: StyleJSON,
     collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
 });

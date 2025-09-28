@@ -731,7 +731,7 @@ export interface paths {
                     /** @description No Description */
                     type?: ("raster" | "raster-dem" | "vector") | ("raster" | "raster-dem" | "vector")[];
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "name" | "title" | "url" | "overlay" | "username" | "bounds" | "tilesize" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "name" | "title" | "url" | "overlay" | "username" | "bounds" | "tilesize" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "stylejson" | "type" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only show Basemaps belonging to a given collection */
@@ -772,7 +772,13 @@ export interface paths {
                                 collection?: null | string;
                                 format: string;
                                 scheme: string;
-                                styles: unknown[];
+                                stylejson: {
+                                    /** @default 8 */
+                                    version: number;
+                                    glyphs?: string;
+                                    sources?: Record<string, never>;
+                                    layers: unknown[];
+                                };
                                 type: string;
                                 bounds?: number[];
                                 center?: number[];
@@ -975,7 +981,13 @@ export interface paths {
                         type?: "raster" | "raster-dem" | "vector";
                         bounds?: number[];
                         center?: number[];
-                        styles?: unknown[];
+                        stylejson: {
+                            /** @default 8 */
+                            version: number;
+                            glyphs?: string;
+                            sources?: Record<string, never>;
+                            layers: unknown[];
+                        };
                     };
                 };
             };
@@ -1002,7 +1014,13 @@ export interface paths {
                             collection?: null | string;
                             format: string;
                             scheme: string;
-                            styles: unknown[];
+                            stylejson: {
+                                /** @default 8 */
+                                version: number;
+                                glyphs?: string;
+                                sources?: Record<string, never>;
+                                layers: unknown[];
+                            };
                             type: string;
                             bounds?: number[];
                             center?: number[];
@@ -1129,7 +1147,13 @@ export interface paths {
                             collection?: null | string;
                             format: string;
                             scheme: string;
-                            styles: unknown[];
+                            stylejson: {
+                                /** @default 8 */
+                                version: number;
+                                glyphs?: string;
+                                sources?: Record<string, never>;
+                                layers: unknown[];
+                            };
                             type: string;
                             bounds?: number[];
                             center?: number[];
@@ -1327,7 +1351,13 @@ export interface paths {
                         type?: "raster" | "raster-dem" | "vector";
                         bounds?: number[];
                         center?: number[];
-                        styles?: unknown[];
+                        stylejson?: {
+                            /** @default 8 */
+                            version: number;
+                            glyphs?: string;
+                            sources?: Record<string, never>;
+                            layers: unknown[];
+                        };
                     };
                 };
             };
@@ -1354,7 +1384,13 @@ export interface paths {
                             collection?: null | string;
                             format: string;
                             scheme: string;
-                            styles: unknown[];
+                            stylejson: {
+                                /** @default 8 */
+                                version: number;
+                                glyphs?: string;
+                                sources?: Record<string, never>;
+                                layers: unknown[];
+                            };
                             type: string;
                             bounds?: number[];
                             center?: number[];
@@ -4739,9 +4775,13 @@ export interface paths {
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
+                                    /** @description The Unique ID of the creator of the CoT */
                                     uid: string;
+                                    /** @description The Callsign of the creator of the CoT */
                                     callsign: string;
-                                    time: string;
+                                    /** @description Time at which the CoT was created by the creator */
+                                    time?: string;
+                                    /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                     type: string;
                                 };
                                 course?: number;
@@ -4984,9 +5024,13 @@ export interface paths {
                                         range?: number;
                                         bearing?: number;
                                         creator?: {
+                                            /** @description The Unique ID of the creator of the CoT */
                                             uid: string;
+                                            /** @description The Callsign of the creator of the CoT */
                                             callsign: string;
-                                            time: string;
+                                            /** @description Time at which the CoT was created by the creator */
+                                            time?: string;
+                                            /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                             type: string;
                                         };
                                         course?: number;
@@ -5316,9 +5360,13 @@ export interface paths {
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
+                                    /** @description The Unique ID of the creator of the CoT */
                                     uid: string;
+                                    /** @description The Callsign of the creator of the CoT */
                                     callsign: string;
-                                    time: string;
+                                    /** @description Time at which the CoT was created by the creator */
+                                    time?: string;
+                                    /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                     type: string;
                                 };
                                 course?: number;
@@ -5657,9 +5705,13 @@ export interface paths {
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
+                                        /** @description The Unique ID of the creator of the CoT */
                                         uid: string;
+                                        /** @description The Callsign of the creator of the CoT */
                                         callsign: string;
-                                        time: string;
+                                        /** @description Time at which the CoT was created by the creator */
+                                        time?: string;
+                                        /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                         type: string;
                                     };
                                     course?: number;
@@ -10981,6 +11033,8 @@ export interface paths {
                     token?: string;
                     /** @description Download auth as P12 file */
                     download: boolean;
+                    /** @description Client or Truststore Data */
+                    type: "client" | "truststore";
                 };
                 header?: never;
                 path: {
@@ -16129,7 +16183,10 @@ export interface paths {
                         "application/json": {
                             integrationId?: number;
                             auth: {
+                                ca?: string[];
+                                /** @description PEM formatted client certificate */
                                 cert: string;
+                                /** @description PEM formatted private key */
                                 key: string;
                             };
                         };
@@ -16549,9 +16606,13 @@ export interface paths {
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
+                                    /** @description The Unique ID of the creator of the CoT */
                                     uid: string;
+                                    /** @description The Callsign of the creator of the CoT */
                                     callsign: string;
-                                    time: string;
+                                    /** @description Time at which the CoT was created by the creator */
+                                    time?: string;
+                                    /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                     type: string;
                                 };
                                 course?: number;
@@ -16888,9 +16949,13 @@ export interface paths {
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
+                                        /** @description The Unique ID of the creator of the CoT */
                                         uid: string;
+                                        /** @description The Callsign of the creator of the CoT */
                                         callsign: string;
-                                        time: string;
+                                        /** @description Time at which the CoT was created by the creator */
+                                        time?: string;
+                                        /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                         type: string;
                                     };
                                     course?: number;
@@ -18849,9 +18914,13 @@ export interface paths {
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
+                                        /** @description The Unique ID of the creator of the CoT */
                                         uid: string;
+                                        /** @description The Callsign of the creator of the CoT */
                                         callsign: string;
-                                        time: string;
+                                        /** @description Time at which the CoT was created by the creator */
+                                        time?: string;
+                                        /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                         type: string;
                                     };
                                     course?: number;
@@ -24620,9 +24689,13 @@ export interface paths {
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
+                                        /** @description The Unique ID of the creator of the CoT */
                                         uid: string;
+                                        /** @description The Callsign of the creator of the CoT */
                                         callsign: string;
-                                        time: string;
+                                        /** @description Time at which the CoT was created by the creator */
+                                        time?: string;
+                                        /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                         type: string;
                                     };
                                     course?: number;
@@ -24933,9 +25006,13 @@ export interface paths {
                             range?: number;
                             bearing?: number;
                             creator?: {
+                                /** @description The Unique ID of the creator of the CoT */
                                 uid: string;
+                                /** @description The Callsign of the creator of the CoT */
                                 callsign: string;
-                                time: string;
+                                /** @description Time at which the CoT was created by the creator */
+                                time?: string;
+                                /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                 type: string;
                             };
                             course?: number;
@@ -25172,9 +25249,13 @@ export interface paths {
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
+                                    /** @description The Unique ID of the creator of the CoT */
                                     uid: string;
+                                    /** @description The Callsign of the creator of the CoT */
                                     callsign: string;
-                                    time: string;
+                                    /** @description Time at which the CoT was created by the creator */
+                                    time?: string;
+                                    /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                     type: string;
                                 };
                                 course?: number;
@@ -25587,9 +25668,13 @@ export interface paths {
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
+                                    /** @description The Unique ID of the creator of the CoT */
                                     uid: string;
+                                    /** @description The Callsign of the creator of the CoT */
                                     callsign: string;
-                                    time: string;
+                                    /** @description Time at which the CoT was created by the creator */
+                                    time?: string;
+                                    /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                     type: string;
                                 };
                                 course?: number;
@@ -31923,9 +32008,13 @@ export interface paths {
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
+                                        /** @description The Unique ID of the creator of the CoT */
                                         uid: string;
+                                        /** @description The Callsign of the creator of the CoT */
                                         callsign: string;
-                                        time: string;
+                                        /** @description Time at which the CoT was created by the creator */
+                                        time?: string;
+                                        /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                         type: string;
                                     };
                                     course?: number;
