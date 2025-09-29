@@ -83,7 +83,7 @@ export class FileTiles {
             description: "Hosted by CloudTAK",
             version: "1.0.0",
             scheme: "xyz",
-            tiles: [ process.env.APIROOT + `/tiles/${this.path}/tiles/{z}/{x}/{y}.${format}?token=${token}`],
+            tiles: [ process.env.PMTILES_URL + `/tiles/${this.path}/tiles/{z}/{x}/{y}.${format}?token=${token}`],
             minzoom: header.minZoom,
             maxzoom: header.maxZoom,
             bounds: [ header.minLon, header.minLat, header.maxLon, header.maxLat ],
