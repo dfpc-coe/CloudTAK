@@ -4739,9 +4739,13 @@ export interface paths {
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
+                                    /** @description The Unique ID of the creator of the CoT */
                                     uid: string;
+                                    /** @description The Callsign of the creator of the CoT */
                                     callsign: string;
-                                    time: string;
+                                    /** @description Time at which the CoT was created by the creator */
+                                    time?: string;
+                                    /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                     type: string;
                                 };
                                 course?: number;
@@ -4984,9 +4988,13 @@ export interface paths {
                                         range?: number;
                                         bearing?: number;
                                         creator?: {
+                                            /** @description The Unique ID of the creator of the CoT */
                                             uid: string;
+                                            /** @description The Callsign of the creator of the CoT */
                                             callsign: string;
-                                            time: string;
+                                            /** @description Time at which the CoT was created by the creator */
+                                            time?: string;
+                                            /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                             type: string;
                                         };
                                         course?: number;
@@ -5316,9 +5324,13 @@ export interface paths {
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
+                                    /** @description The Unique ID of the creator of the CoT */
                                     uid: string;
+                                    /** @description The Callsign of the creator of the CoT */
                                     callsign: string;
-                                    time: string;
+                                    /** @description Time at which the CoT was created by the creator */
+                                    time?: string;
+                                    /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                     type: string;
                                 };
                                 course?: number;
@@ -5657,9 +5669,13 @@ export interface paths {
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
+                                        /** @description The Unique ID of the creator of the CoT */
                                         uid: string;
+                                        /** @description The Callsign of the creator of the CoT */
                                         callsign: string;
-                                        time: string;
+                                        /** @description Time at which the CoT was created by the creator */
+                                        time?: string;
+                                        /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                         type: string;
                                     };
                                     course?: number;
@@ -10981,6 +10997,8 @@ export interface paths {
                     token?: string;
                     /** @description Download auth as P12 file */
                     download: boolean;
+                    /** @description Client or Truststore Data */
+                    type: "client" | "truststore";
                 };
                 header?: never;
                 path: {
@@ -16129,7 +16147,10 @@ export interface paths {
                         "application/json": {
                             integrationId?: number;
                             auth: {
+                                ca?: string[];
+                                /** @description PEM formatted client certificate */
                                 cert: string;
+                                /** @description PEM formatted private key */
                                 key: string;
                             };
                         };
@@ -16549,9 +16570,13 @@ export interface paths {
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
+                                    /** @description The Unique ID of the creator of the CoT */
                                     uid: string;
+                                    /** @description The Callsign of the creator of the CoT */
                                     callsign: string;
-                                    time: string;
+                                    /** @description Time at which the CoT was created by the creator */
+                                    time?: string;
+                                    /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                     type: string;
                                 };
                                 course?: number;
@@ -16888,9 +16913,13 @@ export interface paths {
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
+                                        /** @description The Unique ID of the creator of the CoT */
                                         uid: string;
+                                        /** @description The Callsign of the creator of the CoT */
                                         callsign: string;
-                                        time: string;
+                                        /** @description Time at which the CoT was created by the creator */
+                                        time?: string;
+                                        /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                         type: string;
                                     };
                                     course?: number;
@@ -18543,167 +18572,7 @@ export interface paths {
             };
         };
         put?: never;
-        /** Helper API to create a mission */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":name": string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        group?: string[] | string;
-                        /** @default  */
-                        description?: string;
-                        chatRoom?: string;
-                        baseLayer?: string;
-                        bbox?: string;
-                        boundingPolygon?: string[];
-                        path?: string;
-                        classification?: string;
-                        /** @default public */
-                        tool?: string;
-                        password?: string;
-                        defaultRole?: string;
-                        expiration?: number;
-                        /** @default false */
-                        inviteOnly?: boolean;
-                        /** @default false */
-                        allowDupe?: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            name: string;
-                            description?: string;
-                            chatRoom?: string;
-                            baseLayer?: string;
-                            bbox?: string;
-                            path?: string;
-                            classification?: string;
-                            tool: string;
-                            keywords: unknown[];
-                            creatorUid?: string;
-                            createTime: string;
-                            externalData: unknown[];
-                            feeds: unknown[];
-                            mapLayers: unknown[];
-                            ownerRole?: {
-                                permissions: string[];
-                                type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
-                            };
-                            inviteOnly: boolean;
-                            expiration: number;
-                            guid: string;
-                            uids: unknown[];
-                            logs?: {
-                                id: string;
-                                content: string;
-                                creatorUid: string;
-                                missionNames: string[];
-                                servertime: string;
-                                dtg?: string;
-                                created: string;
-                                contentHashes: unknown[];
-                                keywords: string[];
-                            }[];
-                            contents: {
-                                timestamp: string;
-                                creatorUid?: string;
-                                data: {
-                                    keywords: string[];
-                                    mimeType: string;
-                                    name: string;
-                                    hash: string;
-                                    submissionTime: string;
-                                    submitter: string;
-                                    uid: string;
-                                    creatorUid?: string;
-                                    size: number;
-                                    expiration: number;
-                                };
-                            }[];
-                            passwordProtected: boolean;
-                            token?: string;
-                            groups?: string | string[];
-                            missionChanges?: unknown[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
+        post?: never;
         /** Helper API to delete a single mission */
         delete: {
             parameters: {
@@ -18849,9 +18718,13 @@ export interface paths {
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
+                                        /** @description The Unique ID of the creator of the CoT */
                                         uid: string;
+                                        /** @description The Callsign of the creator of the CoT */
                                         callsign: string;
-                                        time: string;
+                                        /** @description Time at which the CoT was created by the creator */
+                                        time?: string;
+                                        /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                         type: string;
                                     };
                                     course?: number;
@@ -19476,6 +19349,180 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marti/missions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Helper API to create a mission */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        group?: string[] | string;
+                        /** @default  */
+                        description?: string;
+                        chatRoom?: string;
+                        baseLayer?: string;
+                        bbox?: string;
+                        boundingPolygon?: string[];
+                        path?: string;
+                        classification?: string;
+                        /** @default public */
+                        tool?: string;
+                        password?: string;
+                        defaultRole?: string;
+                        expiration?: number;
+                        /** @default false */
+                        inviteOnly?: boolean;
+                        /** @default false */
+                        allowDupe?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            description?: string;
+                            chatRoom?: string;
+                            baseLayer?: string;
+                            bbox?: string;
+                            path?: string;
+                            classification?: string;
+                            tool: string;
+                            keywords: unknown[];
+                            creatorUid?: string;
+                            createTime: string;
+                            externalData: unknown[];
+                            feeds: unknown[];
+                            mapLayers: unknown[];
+                            ownerRole?: {
+                                permissions: string[];
+                                type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
+                            };
+                            inviteOnly: boolean;
+                            expiration: number;
+                            guid: string;
+                            uids: unknown[];
+                            logs?: {
+                                id: string;
+                                content: string;
+                                creatorUid: string;
+                                missionNames: string[];
+                                servertime: string;
+                                dtg?: string;
+                                created: string;
+                                contentHashes: unknown[];
+                                keywords: string[];
+                            }[];
+                            contents: {
+                                timestamp: string;
+                                creatorUid?: string;
+                                data: {
+                                    keywords: string[];
+                                    mimeType: string;
+                                    name: string;
+                                    hash: string;
+                                    submissionTime: string;
+                                    submitter: string;
+                                    uid: string;
+                                    creatorUid?: string;
+                                    size: number;
+                                    expiration: number;
+                                };
+                            }[];
+                            passwordProtected: boolean;
+                            token?: string;
+                            groups?: string | string[];
+                            missionChanges?: unknown[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -20848,10 +20895,20 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Helper API to get a single package */
+        /**
+         *                 Helper API to get metadata for a single package
+         *
+         *                 DataPackages uploaded once will have a single entry by UID, however DataPackages uploaded multiple times
+         *                 will have the same UID but multiple hash values with the latest having the most recent submission date
+         *
+         *                 By default this api will return the latest package, however if you provide a hash query parameter it will return that specific package
+         *              */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description No Description */
+                    hash?: string;
+                };
                 header?: never;
                 path: {
                     /** @description No Description */
@@ -20947,10 +21004,13 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        /** Helper API to delete a single package */
+        /** Helper API to delete a package */
         delete: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description No Description */
+                    hash?: string;
+                };
                 header?: never;
                 path: {
                     /** @description No Description */
@@ -24620,9 +24680,13 @@ export interface paths {
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
+                                        /** @description The Unique ID of the creator of the CoT */
                                         uid: string;
+                                        /** @description The Callsign of the creator of the CoT */
                                         callsign: string;
-                                        time: string;
+                                        /** @description Time at which the CoT was created by the creator */
+                                        time?: string;
+                                        /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                         type: string;
                                     };
                                     course?: number;
@@ -24933,9 +24997,13 @@ export interface paths {
                             range?: number;
                             bearing?: number;
                             creator?: {
+                                /** @description The Unique ID of the creator of the CoT */
                                 uid: string;
+                                /** @description The Callsign of the creator of the CoT */
                                 callsign: string;
-                                time: string;
+                                /** @description Time at which the CoT was created by the creator */
+                                time?: string;
+                                /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                 type: string;
                             };
                             course?: number;
@@ -25172,9 +25240,13 @@ export interface paths {
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
+                                    /** @description The Unique ID of the creator of the CoT */
                                     uid: string;
+                                    /** @description The Callsign of the creator of the CoT */
                                     callsign: string;
-                                    time: string;
+                                    /** @description Time at which the CoT was created by the creator */
+                                    time?: string;
+                                    /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                     type: string;
                                 };
                                 course?: number;
@@ -25587,9 +25659,13 @@ export interface paths {
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
+                                    /** @description The Unique ID of the creator of the CoT */
                                     uid: string;
+                                    /** @description The Callsign of the creator of the CoT */
                                     callsign: string;
-                                    time: string;
+                                    /** @description Time at which the CoT was created by the creator */
+                                    time?: string;
+                                    /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                     type: string;
                                 };
                                 course?: number;
@@ -31923,9 +31999,13 @@ export interface paths {
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
+                                        /** @description The Unique ID of the creator of the CoT */
                                         uid: string;
+                                        /** @description The Callsign of the creator of the CoT */
                                         callsign: string;
-                                        time: string;
+                                        /** @description Time at which the CoT was created by the creator */
+                                        time?: string;
+                                        /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
                                         type: string;
                                     };
                                     course?: number;

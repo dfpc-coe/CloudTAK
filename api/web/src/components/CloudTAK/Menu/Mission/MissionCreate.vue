@@ -115,8 +115,8 @@
 
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
-import { std, stdurl } from '../../../../std.ts';
-import type { Mission, Mission_Create } from '../../../../types.ts';
+import { server } from '../../../../std.ts';
+import type { Mission_Create } from '../../../../types.ts';
 import { useMapStore } from '../../../../stores/map.ts'
 import {
     IconLock,
@@ -172,9 +172,8 @@ async function createMission() {
     try {
         loading.value = true;
 
-        const url = stdurl(`/api/marti/missions/${mission.value.name}`);
-
         const body: Mission_Create = {
+            name: mission.value.name,
             group: mission.value.groups,
             description: mission.value.description || ''
         };
@@ -185,25 +184,24 @@ async function createMission() {
 
         if (mission.value.passwordProtected) body.password = mission.value.password;
 
-        const res = await std(url, {
-            method: 'POST',
-            body
-        }) as Mission;
+        const res = await server.POST('/api/marti/missions', { body });
+
+        if (res.error) throw new Error(res.error.message);
 
         const missionOverlay = await Overlay.create(mapStore.map, {
-            name: res.name,
-            url: `/mission/${encodeURIComponent(res.name)}`,
+            name: res.data.name,
+            url: `/mission/${encodeURIComponent(res.data.name)}`,
             type: 'geojson',
             mode: 'mission',
-            token: res.token,
-            mode_id: res.guid,
+            token: res.data.token,
+            mode_id: res.data.guid,
         })
 
         mapStore.overlays.push(missionOverlay);
 
-        await mapStore.loadMission(res.guid);
+        await mapStore.loadMission(res.data.guid);
 
-        emit('mission', res);
+        emit('mission', res.data);
 
         loading.value = false;
     } catch (err) {
