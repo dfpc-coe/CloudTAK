@@ -45,24 +45,37 @@
                 :create='false'
             />
             <template v-else>
-                <div class='row'>
+                <div class='w-100 d-flex flex-wrap align-items-center justify-content-center'>
                     <template v-for='file of files'>
-                        <div class='col-4 px-2 py-2'>
-                            <img
-                                v-if='[".png", ".jpg", ".jpeg", ".webp"].includes(file.ext)'
-                                class='cursor-pointer'
-                                :src='downloadAssetUrl(file)'
-                                :size='24'
-                                stroke='1'
-                                @click='attachmentPane(file)'
+                        <div
+                            class='px-2 py-2 hover rounded'
+                        >
+                            <div
+                                class='d-flex align-items-center justify-content-center'
+                                style='
+                                    height: 200px;
+                                    width: 200px;
+                                '
                             >
-                            <IconFile
-                                v-else
-                                :size='24'
-                                stroke='1'
-                            />
+                                <img
+                                    v-if='[".png", ".jpg", ".jpeg", ".webp"].includes(file.ext)'
+                                    class='cursor-pointer'
+                                    :src='downloadAssetUrl(file)'
+                                    stroke='1'
+                                    @click='attachmentPane(file)'
+                                >
+                                <IconFile
+                                    :size='60'
+                                    stroke='1'
+                                />
+                            </div>
 
-                            <div class='d-flex align-items-center mt-2'>
+                            <div
+                                class='d-flex align-items-center pt-2'
+                                style='
+                                    height: 30px;
+                                '
+                            >
                                 <span
                                     class='mx-2 text-truncate'
                                     style='max-width: 300px;'
