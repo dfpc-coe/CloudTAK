@@ -52,7 +52,8 @@ export default class DataMission {
                 data.mission_groups = groups.data.map((group) => { return group.name });
             }
 
-            let mission = await api.Mission.create(data.name, {
+            let mission = await api.Mission.create({
+                name: data.name,
                 creatorUid: `connection-${data.connection}-data-${data.id}`,
                 description: data.description,
                 defaultRole: data.mission_role,

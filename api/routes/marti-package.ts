@@ -355,9 +355,19 @@ export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/package/:uid', {
         name: 'Get Package',
         group: 'MartiPackages',
-        description: 'Helper API to get a single package',
+        description: `
+            Helper API to get metadata for a single package
+
+            DataPackages uploaded once will have a single entry by UID, however DataPackages uploaded multiple times
+            will have the same UID but multiple hash values with the latest having the most recent submission date
+
+            By default this api will return the latest package, however if you provide a hash query parameter it will return that specific package
+        `,
         params: Type.Object({
             uid: Type.String()
+        }),
+        query: Type.Object({
+            hash: Type.Optional(Type.String())
         }),
         res: Package
     }, async (req, res) => {
@@ -372,7 +382,17 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!pkg.results.length) throw new Err(404, null, 'Package not found');
 
-            res.json(pkg.results[0]);
+            pkg.results.sort((a, b) => {
+                return new Date(a.SubmissionDateTime).getTime() - new Date(b.SubmissionDateTime).getTime();
+            });
+
+            if (req.query.hash) {
+                const match = pkg.results.find((p) => p.Hash === req.query.hash);
+                if (!match) throw new Err(404, null, 'Package found but no matching hash');
+                return res.json(match);
+            } else {
+                res.json(pkg.results[pkg.results.length - 1]);
+            }
         } catch (err) {
              Err.respond(err, res);
         }
@@ -381,9 +401,12 @@ export default async function router(schema: Schema, config: Config) {
     await schema.delete('/marti/package/:uid', {
         name: 'Delete Package',
         group: 'MartiPackages',
-        description: 'Helper API to delete a single package',
+        description: 'Helper API to delete a package',
         params: Type.Object({
             uid: Type.String()
+        }),
+        query: Type.Object({
+            hash: Type.Optional(Type.String())
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -405,7 +428,11 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(404, null, 'Package not found');
             }
 
-            const pkg = pkgs.results[0];
+            pkgs.results.sort((a, b) => {
+                return new Date(a.SubmissionDateTime).getTime() - new Date(b.SubmissionDateTime).getTime();
+            });
+
+            const pkg = pkgs.results[pkgs.results.length - 1];
 
             if (
                 user.access !== AuthUserAccess.ADMIN

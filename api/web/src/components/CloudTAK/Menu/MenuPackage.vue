@@ -4,10 +4,10 @@
             <TablerDelete
                 v-if='pkg && (profile && profile.username === pkg.SubmissionUser)'
                 displaytype='icon'
-                @delete='deleteFile(pkg.Hash)'
+                @delete='deleteFile(pkg)'
             />
             <a
-                v-if='!loading && !error'
+                v-if='pkg && !loading && !error'
                 v-tooltip='"Download Asset"'
                 :href='downloadFile()'
             ><IconDownload
@@ -17,11 +17,11 @@
             /></a>
         </template>
         <template #default>
-            <TablerLoading v-if='loading || !pkg || !profile' />
             <TablerAlert
-                v-else-if='error'
+                v-if='error'
                 :err='error'
             />
+            <TablerLoading v-else-if='loading || !pkg || !profile' />
             <template v-else-if='mode === "share" && shareFeat'>
                 <div class='overflow-auto'>
                     <Share
@@ -59,25 +59,26 @@
                                 Created
                             </div>
                             <div
-                                class='datagrid-content'
-                                v-text='timeDiff(pkg.SubmissionDateTime)'
+                                class='datagrid-content cursor-pointer'
+                                @click='relative = !relative'
+                                v-text='relative ? timeDiff(pkg.SubmissionDateTime) : pkg.SubmissionDateTime'
                             />
                         </div>
                         <div class='datagrid-item'>
                             <div class='datagrid-title'>
-                                Hashtags`
+                                Hashtags
                             </div>
                             <div class='datagrid-content'>
-                                <div                                   
-                                    v-if='pkg.Keywords.length'    
-                                    class='col-12 pt-1'    
-                                >                               
-                                    <span                                 
-                                        v-for='keyword in pkg.Keywords'                        
-                                        :key='keyword'    
-                                        class='me-1 badge badge-outline bg-blue-lt'    
-                                        v-text='keyword'    
-                                    />                            
+                                <div
+                                    v-if='pkg.Keywords.length'
+                                    class='col-12 pt-1'
+                                >
+                                    <span
+                                        v-for='keyword in pkg.Keywords'
+                                        :key='keyword'
+                                        class='me-1 badge badge-outline bg-blue-lt'
+                                        v-text='keyword'
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -117,8 +118,8 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import type { Profile, Server, Package, Import, Feature } from '../../../../src/types.ts';
-import { std, stdurl } from '../../../../src/std.ts';
+import type { Profile, Server, Package, Feature } from '../../../../src/types.ts';
+import { server, stdurl } from '../../../std.ts';
 import Share from '../util/Share.vue';
 import timeDiff from '../../../timediff.ts';
 import {
@@ -138,10 +139,11 @@ const route = useRoute();
 const router = useRouter();
 const mapStore = useMapStore();
 
+const relative = ref(true);
 const loading = ref(true);
 const error = ref<Error | undefined>()
 const mode = ref('default');
-const server = ref<Server | undefined>();
+const serverConfig = ref<Server | undefined>();
 const pkg = ref<Package | undefined>();
 
 watch(route, async () => {
@@ -151,7 +153,7 @@ watch(route, async () => {
 const profile = ref<Profile | undefined>(undefined);
 
 const shareFeat = computed<Feature | undefined>(() => {
-    if (!profile.value || !pkg.value || !server.value) return;
+    if (!profile.value || !pkg.value || !serverConfig.value) return;
 
     return {
         type: 'Feature',
@@ -160,7 +162,7 @@ const shareFeat = computed<Feature | undefined>(() => {
             how: 'h-e',
             fileshare: {
                 filename: pkg.value.Name + '.zip',
-                senderUrl: `${server.value.api}/Marti/sync/content?hash=${pkg.value.Hash}`,
+                senderUrl: `${serverConfig.value.api}/Marti/sync/content?hash=${pkg.value.Hash}`,
                 sizeInBytes: parseInt(pkg.value.Size),
                 sha256: pkg.value.Hash,
                 senderUid: `ANDROID-CloudTAK-${profile.value.username}`,
@@ -179,7 +181,7 @@ const shareFeat = computed<Feature | undefined>(() => {
 
 onMounted(async () => {
     profile.value = await mapStore.worker.profile.load();
-    server.value = await mapStore.worker.profile.loadServer();
+    serverConfig.value = await mapStore.worker.profile.loadServer();
     await fetch();
 });
 
@@ -193,10 +195,26 @@ function downloadFile(): string {
 }
 
 async function fetch() {
+    error.value = undefined;
+
     try {
         loading.value = true;
-        const url = stdurl(`/api/marti/package/${route.params.package}`);
-        pkg.value = await std(url) as Package;
+
+        const res = await server.GET('/api/marti/package/{:uid}', {
+            params: {
+                path: {
+                    ':uid': String(route.params.package)
+                },
+                query: {
+                    hash: route.query.hash ? String(route.query.hash) : undefined
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        pkg.value = res.data;
+
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -206,12 +224,19 @@ async function fetch() {
     loading.value = false;
 }
 
-async function deleteFile(uid: string) {
+async function deleteFile(pkg: Package) {
     loading.value = true;
 
     try {
-        await std(`/api/marti/package/${uid}`, {
-            method: 'DELETE',
+        await server.DELETE('/api/marti/package/{:uid}', {
+            params: {
+                path: {
+                    ':uid': pkg.UID
+                },
+                query: {
+                    hash: pkg.Hash
+                }
+            }
         });
 
         router.push(`/menu/packages`)
@@ -226,15 +251,22 @@ async function createImport() {
     if (!pkg.value) return;
 
     loading.value = true;
-    const imp = await std('/api/import', {
-        method: 'POST',
-        body: {
-            name: pkg.value.Name,
-            source: 'Package',
-            source_id: pkg.value.Hash
-        }
-    }) as Import;
 
-    router.push(`/menu/imports/${imp.id}`)
+    try {
+        const res = await server.POST('/api/import', {
+            body: {
+                name: pkg.value.Name,
+                source: 'Package',
+                source_id: pkg.value.Hash
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        router.push(`/menu/imports/${res.data.id}`)
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+        loading.value = false;
+    }
 }
 </script>

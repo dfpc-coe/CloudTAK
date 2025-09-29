@@ -53,8 +53,8 @@
                     v-for='pkg in filteredList'
                     :key='pkg.Hash'
                     :flex='false'
-                    @click='router.push(`/menu/packages/${pkg.UID}`)'
-                    @keyup.enter='router.push(`/menu/packages/${pkg.UID}`)'
+                    @click='router.push(`/menu/packages/${pkg.UID}?hash=${pkg.Hash}`)'
+                    @keyup.enter='router.push(`/menu/packages/${pkg.UID}?hash=${pkg.Hash}`)'
                 >
                     <div
                         class='col-12'
