@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.28.4 - 2025-09-29
+
+- :bug: Ensure Attachment images don't overflow their div
+
 ### v11.28.3 - 2025-09-29
 
 - :bug: Filter by Data Package `uid` and `hash` to ensure updated data packages are retried correctly
