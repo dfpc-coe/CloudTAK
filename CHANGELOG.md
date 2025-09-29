@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v11.28.3 - 2025-09-29
+
+- :bug: Filter by Data Package `uid` and `hash` to ensure updated data packages are retried correctly
+- :bug: Migrate to Mission Creation POST to ensure  mission  names don't cause issues and follow REST principals more closely
+- :bug: Fix JPEG import as attachment UI
+- :bug: Don't attempt to PUT mission content if there is no mission content to PUT
+
 ### v11.28.2 - 2025-09-29
 
 - :bug: Fix Display of `.jpeg` file extensions in CoT Viewer
