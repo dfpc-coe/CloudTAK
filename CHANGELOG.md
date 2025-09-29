@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.28.2 - 2025-09-29
+
+- :bug: Fix Display of `.jpeg` file extensions in CoT Viewer
+
 ### v11.28.1 - 2025-09-29
 
 - :bug: Fix Data Package import by Hash instead of UID
