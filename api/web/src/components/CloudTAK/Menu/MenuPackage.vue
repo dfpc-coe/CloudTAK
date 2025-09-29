@@ -231,7 +231,7 @@ async function createImport() {
         body: {
             name: pkg.value.Name,
             source: 'Package',
-            source_id: pkg.value.UID
+            source_id: pkg.value.Hash
         }
     }) as Import;
 
