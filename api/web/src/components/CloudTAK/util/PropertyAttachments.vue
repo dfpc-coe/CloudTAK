@@ -60,11 +60,15 @@
                                 <img
                                     v-if='[".png", ".jpg", ".jpeg", ".webp"].includes(file.ext)'
                                     class='cursor-pointer'
+                                    :style='{
+                                        "max-height": "180px",
+                                        "object-fit": "contain"
+                                    }'
                                     :src='downloadAssetUrl(file)'
-                                    stroke='1'
                                     @click='attachmentPane(file)'
                                 >
                                 <IconFile
+                                    v-else
                                     :size='60'
                                     stroke='1'
                                 />
@@ -78,7 +82,7 @@
                             >
                                 <span
                                     class='mx-2 text-truncate'
-                                    style='max-width: 300px;'
+                                    style='max-width: 160px;'
                                     v-text='file.name'
                                 />
 
