@@ -6,6 +6,7 @@
     />
     <template v-else>
         <div
+            :key='route.params.uid'
             class='col-12 border-light border-bottom d-flex'
             style='border-radius: 0px;'
         >
@@ -314,6 +315,7 @@
                 >
                     <PropertyType
                         v-if='cot.properties.type.startsWith("a-") || cot.properties.type.startsWith("u-")'
+                        :key='cot.properties.type'
                         :edit='is_editable'
                         :model-value='cot.properties.type'
                         @update:model-value='updatePropertyType($event)'
@@ -328,6 +330,7 @@
                     }'
                 >
                     <Coordinate
+                        :key='route.params.uid'
                         :label='cot.geometry.type === "Point" ? "Location" : "Center"'
                         :edit='is_editable'
                         :hover='is_editable'
@@ -340,6 +343,7 @@
                     class='col-md-4 pt-2'
                 >
                     <PropertyElevation
+                        :key='route.params.uid'
                         :unit='units.display_elevation'
                         :elevation='cot.properties.center[2]'
                     />
@@ -350,6 +354,7 @@
                     class='col-12 pt-2'
                 >
                     <LineLength
+                        :key='route.params.uid'
                         :cot='cot'
                         :unit='units.display_distance'
                     />
@@ -360,6 +365,7 @@
                     class='col-12 pt-2'
                 >
                     <PolygonArea
+                        :key='route.params.uid'
                         :cot='cot'
                     />
                 </div>
@@ -385,6 +391,7 @@
                     }'
                 >
                     <PropertySpeed
+                        :key='cot.properties.id'
                         :unit='units.display_speed'
                         :speed='cot.properties.speed'
                         class='py-2'
@@ -400,6 +407,7 @@
                     }'
                 >
                     <PropertyBearing
+                        :key='cot.properties.id'
                         label='Course'
                         :model-value='cot.properties.course'
                         class='py-2'
@@ -411,6 +419,7 @@
                     class='pt-2'
                 >
                     <PropertyPhone
+                        :key='cot.properties.id'
                         :phone='cot.properties.contact.phone'
                     />
                 </div>
@@ -421,6 +430,7 @@
                 class='col-12 pt-2'
             >
                 <PropertyEmail
+                    :key='cot.properties.id'
                     :email='username'
                 />
             </div>
@@ -430,6 +440,7 @@
                 class='col-12 py-2'
             >
                 <PropertyAttachments
+                    :key='cot.properties.id'
                     :model-value='cot.properties.attachments'
                     @update:model-value='updatePropertyAttachment($event)'
                 />
@@ -580,6 +591,7 @@
 
             <PropertySensor
                 v-if='cot.properties.sensor !== undefined'
+                :key='cot.properties.id'
                 :model-value='cot.properties.sensor'
                 class='my-2 mx-2'
                 @update:model-value='updateProperty("sensor", $event)'
@@ -587,6 +599,7 @@
 
             <PropertyMilSym
                 v-if='cot.properties.milsym'
+                :key='cot.properties.id'
                 label='Unit Information'
                 :model-value='cot.properties.milsym.id'
             />
@@ -718,6 +731,7 @@
                 class='pt-2'
             >
                 <PropertyCreator
+                    :key='cot.properties.id'
                     :creator='cot.properties.creator'
                 />
             </div>
