@@ -59,13 +59,14 @@
                                 Created
                             </div>
                             <div
-                                class='datagrid-content'
-                                v-text='timeDiff(pkg.SubmissionDateTime)'
+                                class='datagrid-content cursor-pointer'
+                                @click='relative = !relative'
+                                v-text='relative ? timeDiff(pkg.SubmissionDateTime) : pkg.SubmissionDateTime'
                             />
                         </div>
                         <div class='datagrid-item'>
                             <div class='datagrid-title'>
-                                Hashtags`
+                                Hashtags
                             </div>
                             <div class='datagrid-content'>
                                 <div
@@ -138,6 +139,7 @@ const route = useRoute();
 const router = useRouter();
 const mapStore = useMapStore();
 
+const relative = ref(true);
 const loading = ref(true);
 const error = ref<Error | undefined>()
 const mode = ref('default');
@@ -202,6 +204,9 @@ async function fetch() {
             params: {
                 path: {
                     ':uid': String(route.params.package)
+                },
+                query: {
+                    hash: route.query.hash ? String(route.query.hash) : undefined
                 }
             }
         });
