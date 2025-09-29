@@ -165,21 +165,23 @@ async function share(): Promise<void> {
         await mapStore.worker.conn.sendCOT(feat);
     }
 
-    for (const mission of selected.value) {
-        const res = await server.PUT('/api/marti/missions/{:name}/upload', {
-            params: {
-                path: {
-                    ':name': mission.name
+    if (props.assets.length) {
+        for (const mission of selected.value) {
+            const res = await server.PUT('/api/marti/missions/{:name}/upload', {
+                params: {
+                    path: {
+                        ':name': mission.name
+                    }
+                },
+                body: {
+                    assets: props.assets
                 }
-            },
-            body: {
-                assets: props.assets
-            }
-        });
+            });
 
-        if (res.error) {
-            loading.value = false;
-            throw new Error(res.error.message);
+            if (res.error) {
+                loading.value = false;
+                throw new Error(res.error.message);
+            }
         }
     }
     
