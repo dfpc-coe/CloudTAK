@@ -1,7 +1,7 @@
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
 import { bbox } from '@turf/bbox';
-import TileJSON, { TileJSONType, TileJSONActions } from '../lib/control/tilejson.js';
+import TileJSON from '../lib/control/tilejson.js';
 import Auth, { AuthUserAccess, ResourceCreationScope } from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
@@ -14,29 +14,13 @@ import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { Geometry, BBox } from 'geojson';
 import { Static, Type } from '@sinclair/typebox'
-import { StandardResponse, BasemapResponse, OptionalTileJSON, GeoJSONFeature, GeoJSONFeatureCollection } from '../lib/types.js';
+import { StandardResponse, AugmentedTileJSONType, AugmentedBasemapResponse, OptionalTileJSON, GeoJSONFeature, GeoJSONFeatureCollection } from '../lib/types.js';
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
 import { toEnum, Basemap_Format, Basemap_Scheme, Basemap_Type } from '../lib/enums.js';
 import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
 import * as Default from '../lib/limits.js';
-
-const AugmentedBasemapResponse = Type.Composite([
-    Type.Omit(BasemapResponse, ['bounds', 'center']),
-    Type.Object({
-        bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
-        center: Type.Optional(Type.Array(Type.Number())),
-        actions: TileJSONActions
-    })
-])
-
-const AugmentedTileJSONType = Type.Composite([
-    TileJSONType,
-    Type.Object({
-        actions: TileJSONActions
-    })
-])
 
 export default async function router(schema: Schema, config: Config) {
     await schema.put('/basemap', {

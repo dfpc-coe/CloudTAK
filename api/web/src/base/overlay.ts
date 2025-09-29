@@ -205,7 +205,7 @@ export default class Overlay {
     } = {}) {
         const mapStore = useMapStore();
 
-        if (this.type ==='raster' && this.url) {
+        if (this.type === 'raster' && this.url) {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
 

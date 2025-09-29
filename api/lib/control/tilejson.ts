@@ -14,6 +14,7 @@ import { bboxPolygon } from '@turf/bbox-polygon';
 import { Static, Type } from '@sinclair/typebox'
 import Err from '@openaddresses/batch-error';
 import { Basemap_FeatureAction } from '../enums.js';
+import { BasemapResponse } from '../types.js';
 import { validateStyleMin } from '@maplibre/maplibre-gl-style-spec';
 
 export const TileJSONActions = Type.Object({
@@ -30,7 +31,7 @@ export const VectorLayer = Type.Object({
 });
 
 export const TileJSONType = Type.Object({
-    tilejson: Type.Literal('3.0.0'),
+    tilejson: Type.String(),
     version: Type.String(),
     scheme: Type.Literal('xyz'),
 
@@ -49,7 +50,7 @@ export const TileJSONType = Type.Object({
     type: Type.String(),
     format: Type.Optional(Type.String()),
 
-    vector_layers: Type.Array(VectorLayer)
+    vector_layers: Type.Optional(Type.Array(VectorLayer))
 })
 
 export interface TileJSONInterface {
@@ -221,19 +222,8 @@ export default class TileJSON {
         const bounds = config.bounds as [number, number, number, number ] || [-180, -90, 180, 90];
         const center = config.center || pointOnFeature(bboxPolygon(bounds as BBox)).geometry.coordinates;
 
-        const vector_layers: Array<Static<typeof VectorLayer>> = [];
-
-        if (!config.vector_layers) {
-            vector_layers.push({
-                id: 'out',
-                fields: {}
-            });
-        } else {
-            vector_layers.push(...config.vector_layers);
-        }
-
-        return {
-            tilejson: "3.0.0",
+        const tilejson: Static<typeof TileJSONType> = {
+            tilejson: '2.2.0',
             version: config.version || '1.0.0',
             name: config.name,
             description: '',
@@ -246,8 +236,9 @@ export default class TileJSON {
             minzoom: config.minzoom || 0,
             maxzoom: config.maxzoom || 16,
             tiles: [ String(config.url) ],
-            vector_layers
         }
+
+        return tilejson;
     }
 
     static extent(z: number, x: number, y: number): Array<number> {
@@ -340,6 +331,51 @@ export default class TileJSON {
             quadKey.push(digit);
         }
         return quadKey.join('');
+    }
+
+    static async fonts(
+        basemap: Static<typeof BasemapResponse>,
+        fontstack: string,
+        range: string,
+        res: Response,
+        opts?: {
+            headers?: Record<string, string | undefined>
+        }
+    ): Promise<void> {
+        if (!opts) opts = {};
+        if (!opts.headers) opts.headers = {};
+
+        try {
+
+            if (!basemap.glyphs) {
+                // TODO Fallback to filesystem?
+                throw new Err(404, null, 'Basemap does not support Font Glyphs');
+            }
+
+            const glyphsURL = basemap.glyphs
+                .replace('{fontstack}', fontstack)
+                .replace('{range}', range)
+
+            const fontRes = await typedFetch(glyphsURL);
+
+            if (!fontRes.ok) throw new Err(400, null, `Upstream Error: ${await fontRes.text()}`);
+
+            const font = Buffer.from(await fontRes.arrayBuffer());
+
+            res.writeHead(200, {
+                ...opts.headers,
+                'Content-Length': Buffer.byteLength(font)
+            });
+
+            res.write(font);
+            res.end();
+        } catch (err) {
+            if (err instanceof Err) {
+                throw err;
+            } else {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch Font Glyphs')
+            }
+       }
     }
 
     static async tile(

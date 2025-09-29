@@ -1,4 +1,5 @@
 import { createSelectSchema } from 'drizzle-typebox';
+import { TileJSONType, TileJSONActions } from '../lib/control/tilejson.js';
 import { Type } from '@sinclair/typebox'
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
@@ -12,7 +13,6 @@ export const LayerResponse = AugmentedLayer;
 export const LayerIncomingResponse = AugmentedLayerIncoming;
 export const LayerOutgoingResponse = AugmentedLayerOutgoing;
 export const DataResponse = AugmentedData;
-
 export const GeoJSONFeature = Type.Object({
     id: Type.Optional(Type.String()),
     type: Type.Literal('Feature'),
@@ -305,3 +305,20 @@ export const BasemapResponse = createSelectSchema(schemas.Basemap, {
     styles: Type.Array(Type.Unknown()),
     collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
 });
+
+export const AugmentedBasemapResponse = Type.Composite([
+    Type.Omit(BasemapResponse, ['bounds', 'center']),
+    Type.Object({
+        bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
+        center: Type.Optional(Type.Array(Type.Number())),
+        actions: TileJSONActions
+    })
+])
+
+export const AugmentedTileJSONType = Type.Composite([
+    TileJSONType,
+    Type.Object({
+        actions: TileJSONActions
+    })
+])
+
