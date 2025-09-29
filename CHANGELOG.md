@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.28.1 - 2025-09-29
+
+- :bug: Fix Data Package import by Hash instead of UID
+
 ### v11.28.0 - 2025-09-26
 
 - :rocket: Add additional administrative management support for user Imports
