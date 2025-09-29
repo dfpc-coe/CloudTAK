@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v11.29.0 - 2025-09-29
+
+> [!WARNING]
+> Alternate deploy tools will need to update to use the now consistent `PMTILES_URL`  env var instead of `APIROOT`
+
+- :rocket: Use consistent Env Var names between services
+
 ### v11.28.4 - 2025-09-29
 
 - :bug: Ensure Attachment images don't overflow their div
