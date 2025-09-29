@@ -33,6 +33,7 @@ services:
         ports:
             - "5002:5002"
         environment:
+            - PMTILES_URL=http://tiles:5002
             - SigningSecret=coe-wildland-fire
             - MediaSecret=coe-wildland-fire-video
             - ASSET_BUCKET=cloudtak
