@@ -164,7 +164,7 @@ async function uploadComplete(event) {
     upload.value = false;
 
     const url = stdurl(`/api/attachment`);
-    url.searchParams.append('hash', JSON.parse(event).hash);
+    url.searchParams.append('hash', event.hash);
     files.value.push(...(await std(url)).items);
 
     loading.value = false;

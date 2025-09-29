@@ -233,12 +233,9 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/marti/missions/:name', {
+    await schema.post('/marti/missions', {
         name: 'Create Mission',
         group: 'MartiMissions',
-        params: Type.Object({
-            name: Type.String(),
-        }),
         description: 'Helper API to create a mission',
         body: Type.Omit(MissionCreateInput, ['creatorUid']),
         res: Mission
@@ -248,7 +245,7 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const mission = await api.Mission.create(req.params.name, {
+            const mission = await api.Mission.create({
                 ...req.body,
                 creatorUid: `ANDROID-CloudTAK-${user.email}`
             });
