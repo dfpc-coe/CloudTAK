@@ -6,7 +6,7 @@
     />
     <template v-else>
         <div
-            :key='route.params.uid'
+            :key='String(route.params.uid)'
             class='col-12 border-light border-bottom d-flex'
             style='border-radius: 0px;'
         >
@@ -330,7 +330,7 @@
                     }'
                 >
                     <Coordinate
-                        :key='route.params.uid'
+                        :key='String(route.params.uid)'
                         :label='cot.geometry.type === "Point" ? "Location" : "Center"'
                         :edit='is_editable'
                         :hover='is_editable'
@@ -343,7 +343,7 @@
                     class='col-md-4 pt-2'
                 >
                     <PropertyElevation
-                        :key='route.params.uid'
+                        :key='String(route.params.uid)'
                         :unit='units.display_elevation'
                         :elevation='cot.properties.center[2]'
                     />
@@ -354,7 +354,7 @@
                     class='col-12 pt-2'
                 >
                     <LineLength
-                        :key='route.params.uid'
+                        :key='String(route.params.uid)'
                         :cot='cot'
                         :unit='units.display_distance'
                     />
@@ -365,7 +365,7 @@
                     class='col-12 pt-2'
                 >
                     <PolygonArea
-                        :key='route.params.uid'
+                        :key='String(route.params.uid)'
                         :cot='cot'
                     />
                 </div>
