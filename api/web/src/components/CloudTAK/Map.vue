@@ -411,7 +411,7 @@
             </div>
 
 
-            <SideMenu
+            <MainMenu
                 v-if='
                     mapStore.isLoaded
                         && (
@@ -512,7 +512,7 @@ import {
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
-import SideMenu from './MainMenu.vue';
+import MainMenu from './MainMenu.vue';
 import {
     TablerIconButton,
     TablerDropdown,

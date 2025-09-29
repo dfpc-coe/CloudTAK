@@ -519,6 +519,21 @@
         "query": false,
         "res": true
     },
+    "GET /layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -583,21 +598,6 @@
         "body": false,
         "query": true,
         "res": false
-    },
-    "GET /layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /layer/:layerid": {
-        "body": false,
-        "query": true,
-        "res": true
     },
     "GET /template": {
         "body": false,
@@ -739,7 +739,7 @@
         "query": true,
         "res": true
     },
-    "POST /marti/missions/:name": {
+    "POST /marti/missions": {
         "body": true,
         "query": false,
         "res": true
@@ -806,12 +806,12 @@
     },
     "GET /marti/package/:uid": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "DELETE /marti/package/:uid": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "GET /marti/subscription": {
@@ -1119,31 +1119,6 @@
         "query": false,
         "res": true
     },
-    "GET /search": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /search/reverse/:longitude/:latitude": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /search/route": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /search/forward": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /search/suggest": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /server": {
         "body": false,
         "query": false,
@@ -1267,6 +1242,31 @@
     "GET /video/service/path/:path": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "GET /search": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/route": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/forward": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/suggest": {
+        "body": false,
+        "query": true,
         "res": true
     }
 }
