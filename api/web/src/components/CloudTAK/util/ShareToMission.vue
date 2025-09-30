@@ -92,6 +92,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
+import { OriginMode } from '../../../base/cot.ts';
 import type { PropType } from 'vue';
 import EmptyInfo from './EmptyInfo.vue';
 import { v4 as randomUUID } from 'uuid';
@@ -167,19 +168,18 @@ async function share(): Promise<void> {
         for (const mission of selected.value) {
             await mapStore.worker.db.remove(feat.properties.id);
 
-            // Each Mission Sync should have unique IDs to it's Mission
-            if (selected.value.size > 1 && props.action === 'move') {
-                const id = randomUUID();
-                feat.id = id;
-                feat.properties.uid = id;
+            // Missions should never share IDs
+            const id = randomUUID();
+            feat.id = id;
+            feat.properties.uid = id;
+
+            feat.origin = {
+                mode: OriginMode.MISSION,
+                mode_id: mission.guid
             }
 
-            feat.properties.dest = [{
-                mission: mission.name
-            }];
+            await mapStore.worker.db.add(feat);
         }
-
-        await mapStore.worker.conn.sendCOT(feat);
     }
 
     if (props.assets.length) {
