@@ -55,7 +55,9 @@
                         />
                         <span class='mx-2'>Share</span>
                     </TablerButton>
-                    <TablerDropdown>
+                    <TablerDropdown
+                        position='top'
+                    >
                         <TablerButton
                             title='More Options'
                             class='btn-sm'
@@ -68,35 +70,42 @@
                         </TablerButton>
 
                         <template #dropdown>
-                            <div
-                                class='cursor-pointer col-12 hover d-flex align-items-center px-2'
-                                @click='share = ShareType.PACKAGE'
-                            >
-                                <IconPackages
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                New Data Package
-                            </div>
-                            <div
-                                class='cursor-pointer col-12 hover d-flex align-items-center px-2'
-                                @click='share = ShareType.MISSION'
-                            >
-                                <IconAmbulance
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                Add to Data Sync
-                            </div>
-                            <div
-                                class='cursor-pointer col-12 hover d-flex align-items-center px-2'
-                                @click='deleteFeatures'
-                            >
-                                <IconTrash
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                Delete Features
+                            <div class='card'>
+                                <div class='card-body'>
+                                    <div
+                                        class='cursor-pointer col-12 hover rounded d-flex align-items-center px-2'
+                                        @click='share = ShareType.PACKAGE'
+                                    >
+                                        <IconPackages
+                                            :size='32'
+                                            stroke='1'
+                                            class='me-2'
+                                        />
+                                        New Data Package
+                                    </div>
+                                    <div
+                                        class='cursor-pointer col-12 hover rounded d-flex align-items-center px-2'
+                                        @click='share = ShareType.MISSION'
+                                    >
+                                        <IconAmbulance
+                                            :size='32'
+                                            stroke='1'
+                                            class='me-2'
+                                        />
+                                        Move to Data Sync
+                                    </div>
+                                    <div
+                                        class='cursor-pointer col-12 hover rounded d-flex align-items-center px-2'
+                                        @click='deleteFeatures'
+                                    >
+                                        <IconTrash
+                                            :size='32'
+                                            stroke='1'
+                                            class='me-2'
+                                        />
+                                        Delete Features
+                                    </div>
+                                </div>
                             </div>
                         </template>
                     </TablerDropdown>
@@ -112,6 +121,7 @@
         </template>
         <template v-else-if='share === ShareType.MISSION'>
             <ShareToMission
+                action='move'
                 :feats='Array.from(selected.values()).map((c) => c.as_feature())'
                 @done='selected.clear()'
                 @close='share = ShareType.NONE'

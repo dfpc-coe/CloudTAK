@@ -13,7 +13,8 @@
                     :size='28'
                     stroke='1'
                 />
-                <span class='mx-2'>Add to Data Sync</span>
+                <span v-if='props.action === "add"' class='mx-2'>Add to Data Sync</span>
+                <span v-if='props.action === "move"' class='mx-2'>Move to Data Sync</span>
             </div>
         </div>
 
@@ -32,7 +33,7 @@
                 >
                     <div v-for='mission in missions'>
                         <div
-                            class='col-12 cursor-pointer hover py-2'
+                            class='col-12 cursor-pointer hover py-2 rounded'
                             @click='selected.has(mission) ? selected.delete(mission) : selected.add(mission)'
                         >
                             <div class='d-flex align-items-center'>
@@ -78,8 +79,11 @@
                     <IconShare2
                         :size='20'
                         stroke='1'
+                        class='me-2'
                     />
-                    <span>Add to Data Sync</span>
+
+                    <span v-if='props.action === "add"'>Add to Data Sync</span>
+                    <span v-else-if='props.action === "move"'>Move to Data Sync</span>
                 </TablerButton>
             </div>
         </div>
@@ -88,8 +92,10 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
+import { OriginMode } from '../../../base/cot.ts';
 import type { PropType } from 'vue';
 import EmptyInfo from './EmptyInfo.vue';
+import { v4 as randomUUID } from 'uuid';
 import {
     TablerModal,
     TablerLoading,
@@ -107,6 +113,10 @@ import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
 const props = defineProps({
+    action: {
+        type: String,
+        default: 'add' // or "move"
+    },
     feats: {
         type: Array as PropType<Array<Feature>>,
         default: () => []
@@ -155,14 +165,21 @@ async function share(): Promise<void> {
     for (let feat of feats) {
         feat = JSON.parse(JSON.stringify(feat));
 
-        feat.properties.dest = [];
         for (const mission of selected.value) {
-            feat.properties.dest.push({
-                mission: mission.name
-            });
-        }
+            await mapStore.worker.db.remove(feat.properties.id);
 
-        await mapStore.worker.conn.sendCOT(feat);
+            // Missions should never share IDs
+            const id = randomUUID();
+            feat.id = id;
+            feat.properties.uid = id;
+
+            feat.origin = {
+                mode: OriginMode.MISSION,
+                mode_id: mission.guid
+            }
+
+            await mapStore.worker.db.add(feat);
+        }
     }
 
     if (props.assets.length) {
@@ -184,7 +201,7 @@ async function share(): Promise<void> {
             }
         }
     }
-    
+
     loading.value = false;
 
     emit('done');

@@ -600,7 +600,6 @@ export default class AtlasDatabase {
             feat.properties.creator = await this.atlas.profile.creator();
         }
 
-
         // New CoT destined for a Mission
         if (
             !exists && (
