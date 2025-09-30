@@ -146,13 +146,15 @@ export const ProfileVideo = pgTable('profile_videos', {
 })
 
 export const ProfileFeature = pgTable('profile_features', {
-    id: text().primaryKey().notNull(),
+    id: text().notNull(),
     path: text().notNull().default('/'),
+    deleted: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
     properties: json().notNull().default({}),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
 }, (table) => {
     return {
+        unq: unique().on(table.username, table.id),
         username_idx: index("profile_features_username_idx").on(table.username),
     }
 })
