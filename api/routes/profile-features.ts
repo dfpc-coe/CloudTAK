@@ -7,7 +7,8 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { StandardResponse, ProfileFeature, GeoJSONFeatureCollection, GeoJSONFeature } from '../lib/types.js'
+import { ProfileFeature } from '../lib/schema.js';
+import { StandardResponse, ProfileFeatureResponse, GeoJSONFeatureCollection, GeoJSONFeature } from '../lib/types.js'
 import { ProfileFeatureFormat } from '../lib/enums.js'
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
@@ -29,12 +30,16 @@ export default async function router(schema: Schema, config: Config) {
             }),
             token: Type.Optional(Type.String()),
             limit: Type.Integer({ default: 1000 }),
+            sort: Type.String({
+                default: 'id',
+                enum: Object.keys(ProfileFeature)
+            }),
             page: Default.Page,
             order: Default.Order
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ProfileFeature)
+            items: Type.Array(ProfileFeatureResponse)
         })
 
     }, async (req, res) => {
@@ -45,6 +50,7 @@ export default async function router(schema: Schema, config: Config) {
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     username = ${user.email}
                 `
@@ -63,7 +69,7 @@ export default async function router(schema: Schema, config: Config) {
                             type: 'Feature',
                             properties: feat.properties,
                             geometry: feat.geometry
-                        } as Static<typeof ProfileFeature>
+                        } as Static<typeof ProfileFeatureResponse>
                     })
                 })
             } else {
@@ -161,8 +167,8 @@ export default async function router(schema: Schema, config: Config) {
                 `
             })
         }),
-        body: ProfileFeature,
-        res: ProfileFeature,
+        body: ProfileFeatureResponse,
+        res: ProfileFeatureResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -175,7 +181,7 @@ export default async function router(schema: Schema, config: Config) {
             // Saving to database implies archived
             req.body.properties.archived = true;
 
-            const feat: Static<typeof ProfileFeature> = {
+            const feat: Static<typeof ProfileFeatureResponse> = {
                 type: 'Feature',
                 ...(await config.models.ProfileFeature.generate({
                     id: req.body.id,
@@ -186,7 +192,7 @@ export default async function router(schema: Schema, config: Config) {
                 }, {
                     upsert: GenerateUpsert.UPDATE
                 }))
-            } as Static<typeof ProfileFeature>;
+            } as Static<typeof ProfileFeatureResponse>;
 
             if (req.query.broadcast) {
                 const sockets = config.wsClients.get(user.email) || []
@@ -238,7 +244,7 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             id: Type.String()
         }),
-        res: ProfileFeature
+        res: ProfileFeatureResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -253,7 +259,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 type: 'Feature',
                 ...feat
-            } as Static<typeof ProfileFeature>)
+            } as Static<typeof ProfileFeatureResponse>)
         } catch (err) {
              Err.respond(err, res);
         }
