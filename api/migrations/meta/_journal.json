@@ -883,13 +883,6 @@
       "when": 1756926005502,
       "tag": "0125_huge_cardiac",
       "breakpoints": true
-    },
-    {
-      "idx": 126,
-      "version": "7",
-      "when": 1759273373223,
-      "tag": "0126_icy_zarek",
-      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm';
+import { primaryKey } from "drizzle-orm/pg-core";
 import { Static } from '@sinclair/typebox'
 import type { StyleContainer } from './style.js';
 import type { FilterContainer } from './filter.js';
@@ -154,7 +155,9 @@ export const ProfileFeature = pgTable('profile_features', {
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
 }, (table) => {
     return {
-        unq: unique().on(table.username, table.id),
+        pk: primaryKey({
+            columns: [table.username, table.id]
+        }),
         username_idx: index("profile_features_username_idx").on(table.username),
     }
 })
