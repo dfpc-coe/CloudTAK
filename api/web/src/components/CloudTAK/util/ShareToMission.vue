@@ -79,8 +79,11 @@
                     <IconShare2
                         :size='20'
                         stroke='1'
+                        class='me-2'
                     />
-                    <span>Add to Data Sync</span>
+
+                    <span v-if='props.action === "add"'>Add to Data Sync</span>
+                    <span v-else-if='props.action === "move"'>Move to Data Sync</span>
                 </TablerButton>
             </div>
         </div>
@@ -164,7 +167,8 @@ async function share(): Promise<void> {
         for (const mission of selected.value) {
             await mapStore.worker.db.remove(feat.properties.id);
 
-            if (props.action === 'move') {
+            // Each Mission Sync should have unique IDs to it's Mission
+            if (selected.value.size > 1 && props.action === 'move') {
                 const id = randomUUID();
                 feat.id = id;
                 feat.properties.uid = id;
