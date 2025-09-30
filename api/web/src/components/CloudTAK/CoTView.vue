@@ -35,7 +35,7 @@
                             :edit='is_editable'
                             :minheight='44'
                             :hover='is_editable'
-                            @update:model-value='updateProperty("callsign", $event)'
+                            @submit='updateProperty("callsign", $event)'
                         />
                     </div>
                 </div>
@@ -467,7 +467,7 @@
                         :rows='10'
                         :edit='is_editable'
                         :hover='is_editable'
-                        @update:model-value='updateProperty("remarks", $event)'
+                        @submit='updateProperty("remarks", $event)'
                     />
                 </div>
             </div>
