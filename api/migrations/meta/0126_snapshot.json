@@ -1,6 +1,6 @@
 {
-  "id": "c6da59eb-0508-4082-b544-165071129c0b",
-  "prevId": "6f4a224b-3347-4c6f-9bda-ddcf1314aac2",
+  "id": "140340da-d215-4bc8-bc54-21aff66ef9ac",
+  "prevId": "c6da59eb-0508-4082-b544-165071129c0b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1765,17 +1765,16 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "profile_features_username_id_unique": {
-          "name": "profile_features_username_id_unique",
-          "nullsNotDistinct": false,
+      "compositePrimaryKeys": {
+        "profile_features_username_id_pk": {
+          "name": "profile_features_username_id_pk",
           "columns": [
             "username",
             "id"
           ]
         }
       },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
