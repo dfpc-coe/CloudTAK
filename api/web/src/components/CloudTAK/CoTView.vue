@@ -149,57 +149,59 @@
                             </TablerIconButton>
 
                             <template #dropdown>
-                                <div class='px-1 py-1'>
-                                    <div
-                                        v-if='
-                                            cot.properties.attachments !== undefined
-                                                && cot.properties.video !== undefined
-                                                && cot.properties.sensor !== undefined
-                                        '
-                                    >
-                                        No Properties to add
+                                <div class='card'>
+                                    <div class='card-body'>
+                                        <div
+                                            v-if='
+                                                cot.properties.attachments !== undefined
+                                                    && cot.properties.video !== undefined
+                                                    && cot.properties.sensor !== undefined
+                                            '
+                                        >
+                                            No Properties to add
+                                        </div>
+                                        <template v-else>
+                                            <div
+                                                v-if='cot.properties.attachments === undefined'
+                                                role='button'
+                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                @click='updatePropertyAttachment([])'
+                                            >
+                                                <IconPaperclip
+                                                    stroke='1'
+                                                    :size='32'
+                                                /><div class='mx-2'>
+                                                    Add Attachment
+                                                </div>
+                                            </div>
+                                            <div
+                                                v-if='cot.properties.video === undefined'
+                                                role='button'
+                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                @click='updateProperty("video", { url: "" })'
+                                            >
+                                                <IconMovie
+                                                    stroke='1'
+                                                    :size='32'
+                                                /><div class='mx-2'>
+                                                    Add Video
+                                                </div>
+                                            </div>
+                                            <div
+                                                v-if='cot.properties.sensor === undefined'
+                                                role='button'
+                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                @click='updateProperty("sensor", {})'
+                                            >
+                                                <IconCone
+                                                    stroke='1'
+                                                    :size='32'
+                                                /><div class='mx-2'>
+                                                    Add Sensor
+                                                </div>
+                                            </div>
+                                        </template>
                                     </div>
-                                    <template v-else>
-                                        <div
-                                            v-if='cot.properties.attachments === undefined'
-                                            role='button'
-                                            class='hover px-2 py-2 d-flex align-items-center'
-                                            @click='updatePropertyAttachment([])'
-                                        >
-                                            <IconPaperclip
-                                                stroke='1'
-                                                :size='32'
-                                            /><div class='mx-2'>
-                                                Add Attachment
-                                            </div>
-                                        </div>
-                                        <div
-                                            v-if='cot.properties.video === undefined'
-                                            role='button'
-                                            class='hover px-2 py-2 d-flex align-items-center'
-                                            @click='updateProperty("video", { url: "" })'
-                                        >
-                                            <IconMovie
-                                                stroke='1'
-                                                :size='32'
-                                            /><div class='mx-2'>
-                                                Add Video
-                                            </div>
-                                        </div>
-                                        <div
-                                            v-if='cot.properties.sensor === undefined'
-                                            role='button'
-                                            class='hover px-2 py-2 d-flex align-items-center'
-                                            @click='updateProperty("sensor", {})'
-                                        >
-                                            <IconCone
-                                                stroke='1'
-                                                :size='32'
-                                            /><div class='mx-2'>
-                                                Add Sensor
-                                            </div>
-                                        </div>
-                                    </template>
                                 </div>
                             </template>
                         </TablerDropdown>
