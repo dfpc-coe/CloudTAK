@@ -51,7 +51,7 @@
                     </div>
                 </div>
                 <div
-                    class='col-12 overflow-auto'
+                    class='col-12 overflow-auto noscroll'
                     style='height: calc(100% - 106px)'
                 >
                     <div
@@ -832,6 +832,14 @@ function logout() {
 
 .status-red {
     background-color: #d63939;
+}
+
+.noscroll {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox, Safari 18.2+, Chromium 121+ */
+}
+.noscroll::-webkit-scrollbar { 
+    display: none;  /* Older Safari and Chromium */
 }
 
 .resize {
