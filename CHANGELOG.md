@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v11.30.0 - 2025-09-29
+
+- :rocket: Adds debounce to CoT Remarks & name updates to avoid Mission/API updates on each character change
+- :tada: Moves CoTs to mission instead of Copy in ShareToMission component
+- :bug: Hides the scrollbar to prevent mini icons in side menu in Chromium based browsers
+
 ### v11.29.0 - 2025-09-29
 
 > [!WARNING]
