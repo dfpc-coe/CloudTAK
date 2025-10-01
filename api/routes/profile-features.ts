@@ -24,6 +24,10 @@ export default async function router(schema: Schema, config: Config) {
             format: Type.Enum(ProfileFeatureFormat, {
                 default: ProfileFeatureFormat.GEOJSON
             }),
+            deleted: Type.Boolean({
+                default: false,
+                description: 'Return Deleted Features'
+            }),
             download: Type.Boolean({
                 default: false,
                 description: 'Set Content-Disposition to download the file'
@@ -53,6 +57,7 @@ export default async function router(schema: Schema, config: Config) {
                 sort: req.query.sort,
                 where: sql`
                     username = ${user.email}
+                    AND deleted = ${req.query.deleted}
                 `
             });
 
@@ -125,22 +130,56 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileFeature',
         description: 'Delete multiple features',
         query: Type.Object({
-            path: Type.Optional(Type.String())
+            path: Type.Optional(Type.String()),
+            permanent: Type.Boolean({
+                default: false,
+                description: 'Permanently delete features instead of archiving them'
+            })
         }),
         res: StandardResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
-            if (req.query.path) {
-                await config.models.ProfileFeature.delete(sql`
-                    starts_with(path, ${req.query.path})
-                    AND username = ${user.email}
-                `);
+            if (req.query.permanent) {
+                if (req.query.path) {
+                    await config.models.ProfileFeature.delete(sql`
+                        starts_with(path, ${req.query.path})
+                        AND username = ${user.email}
+                    `);
+                } else {
+                    await config.models.ProfileFeature.delete(sql`
+                        username = ${user.email}
+                    `);
+                }
             } else {
-                await config.models.ProfileFeature.delete(sql`
-                    username = ${user.email}
-                `);
+                if (req.query.path) {
+                    try {
+                        await config.models.ProfileFeature.commit(sql`
+                            starts_with(path, ${req.query.path})
+                            AND username = ${user.email}
+                        `, {
+                            deleted: true
+                        });
+                    } catch (err) {
+                        // Ignore features not found
+                        if (!(err instanceof Error) || !('status' in err) || ('status' in err && err.status !== 404)) {
+                            throw err
+                        }
+                    }
+                } else {
+                    try {
+                        await config.models.ProfileFeature.commit(sql`
+                            username = ${user.email}
+                        `, {
+                            deleted: true
+                        });
+                    } catch (err) {
+                        if (!(err instanceof Error) || !('status' in err) || ('status' in err && err.status !== 404)) {
+                            throw err
+                        }
+                    }
+                }
             }
 
             res.json({
@@ -215,6 +254,12 @@ export default async function router(schema: Schema, config: Config) {
         description: `
             Delete a feature
         `,
+        query: Type.Object({
+            permanent: Type.Boolean({
+                default: false,
+                description: 'Permanently delete features instead of archiving them'
+            })
+        }),
         params: Type.Object({
             id: Type.String()
         }),
@@ -223,9 +268,17 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            await config.models.ProfileFeature.delete(sql`
-                id = ${req.params.id} AND username = ${user.email}
-            `);
+            if (req.query.permanent) {
+                await config.models.ProfileFeature.delete(sql`
+                    id = ${req.params.id} AND username = ${user.email}
+                `);
+            } else {
+                await config.models.ProfileFeature.commit(sql`
+                    id = ${req.params.id} AND username = ${user.email}
+                `, {
+                    deleted: true
+                });
+            }
 
             res.json({
                 status: 200,
