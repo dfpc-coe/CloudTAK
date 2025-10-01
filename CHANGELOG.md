@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.32.0 - 2025-09-29
+
+- :rocket: `UI` Use Network icon to show External Connections vs Paused Cloud Connections
+- :tada: Allow downloading the generated TrustStore
+
 ### v11.31.0 - 2025-09-29
 
 - :rocket: Fix serious issue with management of user features - Closes: #664
