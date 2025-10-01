@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.31.0 - 2025-09-29
+
+- :rocket: Fix serious issue with management of user features - Closes: #664
+- :tada: Add the ability to recover deleted Archived Features
+
 ### v11.30.0 - 2025-09-29
 
 - :rocket: Adds debounce to CoT Remarks & name updates to avoid Mission/API updates on each character change
