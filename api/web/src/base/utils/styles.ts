@@ -74,6 +74,10 @@ export default function styles(id: string, opts: {
         },
         'paint': {
             'line-color': ["string", ["get", "stroke"], "#00FF00"],
+            'line-dasharray': [
+                "case", 
+                    ['==', ['get', "my_prop"], 'my_value'], ['literal', [0,0]], ['literal', [2,3]] 
+            ]
             'line-width': ["number", ["get", "stroke-width"], 3],
             'line-opacity': ["number", ["get", "stroke-opacity"], 1],
         }
