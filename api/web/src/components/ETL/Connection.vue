@@ -108,8 +108,18 @@
                                             class='col-12 d-flex align-items-center justify-content-center pt-3'
                                         >
                                             <button
-                                                class='btn btn-primary'
-                                                @click='downloadCertificate'
+                                                class='btn mx-2'
+                                                @click='downloadCertificate("truststore")'
+                                            >
+                                                <IconDownload
+                                                    :size='24'
+                                                    stroke='1'
+                                                />
+                                                <span class='mx-2'>Download Truststore</span>
+                                            </button>
+                                            <button
+                                                class='btn btn-primary mx-2'
+                                                @click='downloadCertificate("certificate")'
                                             >
                                                 <IconDownload
                                                     :size='24'
@@ -298,8 +308,9 @@ async function fetch() {
     connection.value = await std(`/api/connection/${route.params.connectionid}`) as ETLConnection;
 } 
 
-function downloadCertificate() {
+function downloadCertificate(type: 'truststore' | 'certificate') {
     const url = stdurl(`/api/connection/${route.params.connectionid}/auth`);
+    url.searchParams.set('type', type);
     url.searchParams.set('download', 'true');
     url.searchParams.set('token', localStorage.token);
     window.open(url, '_blank'); 
