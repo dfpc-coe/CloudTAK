@@ -58,7 +58,7 @@ export async function generateClientP12(
             const caPath = join(tmp, `key-${rand}.crt`);
             paths.push(caPath);
             await writeFile(caPath, output.join('\n'), { encoding: 'utf8' });
-            args.push('-certfile', caPath);
+            args.push('-CAfile', caPath);
         }
 
         if (password) {

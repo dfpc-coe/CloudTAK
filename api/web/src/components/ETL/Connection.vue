@@ -107,26 +107,81 @@
                                             v-if='connection.readonly'
                                             class='col-12 d-flex align-items-center justify-content-center pt-3'
                                         >
-                                            <button
-                                                class='btn mx-2'
-                                                @click='downloadCertificate("truststore")'
-                                            >
-                                                <IconDownload
-                                                    :size='24'
-                                                    stroke='1'
-                                                />
-                                                <span class='mx-2'>Download Truststore</span>
-                                            </button>
-                                            <button
-                                                class='btn btn-primary mx-2'
-                                                @click='downloadCertificate("client")'
-                                            >
-                                                <IconDownload
-                                                    :size='24'
-                                                    stroke='1'
-                                                />
-                                                <span class='mx-2'>Download Certificate</span>
-                                            </button>
+                                            <TablerDropdown>
+                                                <template #default>
+                                                    <button class='btn mx-2'>
+                                                        <IconDownload
+                                                            :size='24'
+                                                            stroke='1'
+                                                        />
+                                                        <span class='mx-2'>Download Truststore</span>
+                                                    </button>
+                                                </template>
+                                                <template #dropdown>
+                                                    <div class='card'>
+                                                        <div class='card-body row g-2'>
+                                                            <div class='col-12'>
+                                                                <TablerInput
+                                                                    label='Choose Certificate Password'
+                                                                    type='password'
+                                                                    autocomplete='off'
+                                                                    v-model='certificate.clientPassword'
+                                                                />
+                                                            </div>
+                                                            <div class='col-12'>
+                                                                <button
+                                                                    class='btn btn-primary w-100'
+                                                                    @click='downloadCertificate("truststore")'
+                                                                >
+                                                                    <IconDownload
+                                                                        :size='24'
+                                                                        stroke='1'
+                                                                    />
+                                                                    <span class='mx-2'>Download Truststore</span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </TablerDropdown>
+                                            <TablerDropdown>
+                                                <template #default>
+                                                    <button class='btn mx-2'>
+                                                        <IconDownload
+                                                            :size='24'
+                                                            stroke='1'
+                                                        />
+                                                        <span class='mx-2'>Download Certificate</span>
+                                                    </button>
+                                                </template>
+                                                <template #dropdown>
+                                                    <div class='card'>
+                                                        <div class='card-body row g-2'>
+                                                            <div class='col-12'>
+                                                                <TablerInput
+                                                                    label='Choose Certificate Password'
+                                                                    type='password'
+                                                                    autocomplete='off'
+                                                                    v-model='certificate.clientPassword'
+                                                                />
+                                                            </div>
+                                                            <div class='col-12'>
+                                                                <button
+                                                                    class='btn btn-primary w-100'
+                                                                    :disabled='!certificate.clientPassword'
+                                                                    @click='downloadCertificate("client")'
+                                                                >
+                                                                    <IconDownload
+                                                                        :size='24'
+                                                                        stroke='1'
+                                                                    />
+                                                                    <span class='mx-2'>Download Certificate</span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </TablerDropdown>
                                         </div>
                                     </div>
                                 </div>
@@ -285,13 +340,20 @@ import {
     TablerRefreshButton,
     TablerIconButton,
     TablerBreadCrumb,
+    TablerDropdown,
     TablerMarkdown,
-    TablerLoading
+    TablerLoading,
+    TablerInput,
 } from '@tak-ps/vue-tabler';
 import AgencyBadge from './Connection/AgencyBadge.vue';
 
 const route = useRoute();
 const router = useRouter();
+
+const certificate = ref({
+    truststorePassword: '',
+    clientPassword: ''
+});
 
 const connection = ref<ETLConnection | undefined>();
 
@@ -306,14 +368,15 @@ onMounted(async () => {
 async function fetch() {
     connection.value = undefined;
     connection.value = await std(`/api/connection/${route.params.connectionid}`) as ETLConnection;
-} 
+}
 
 function downloadCertificate(type: 'truststore' | 'client') {
     const url = stdurl(`/api/connection/${route.params.connectionid}/auth`);
     url.searchParams.set('type', type);
     url.searchParams.set('download', 'true');
+    url.searchParams.set('password', type === 'truststore' ? certificate.value.truststorePassword : certificate.value.clientPassword);
     url.searchParams.set('token', localStorage.token);
-    window.open(url, '_blank'); 
+    window.open(url, '_blank');
 }
 
 async function refresh() {
