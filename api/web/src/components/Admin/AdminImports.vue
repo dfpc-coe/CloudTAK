@@ -62,21 +62,24 @@
                                                     :status='imp.status'
                                                 />
 
-                                                <span
-                                                    class='ms-2'
-                                                    v-text='imp[h.name]'
-                                                />
+                                                <div>
+                                                    <div v-text='imp[h.name]'/>
+                                                    <div
+                                                        class='subheader'
+                                                        v-text='imp.updated'
+                                                    />
+                                                </div>
                                             </template>
                                             <template v-else-if='h.name == "name"'>
-                                                <div class='row'>
-                                                    <div class='col-10 row'>
-                                                        <div v-text='imp[h.name]' />
-                                                        <div
-                                                            class='subheader'
-                                                            v-text='imp.id'
-                                                        />
-                                                    </div>
-                                                    <div class='col-auto ms-auto'>
+                                                <div class='col-10'>
+                                                    <div v-text='imp[h.name]' />
+                                                    <div
+                                                        class='subheader'
+                                                        v-text='imp.id'
+                                                    />
+                                                </div>
+                                                <div class='col-2 d-flex'>
+                                                    <div class='ms-auto btn-list'>
                                                         <TablerIconButton
                                                             title='Download File'
                                                             @click='downloadImport(imp.id)'
@@ -164,7 +167,7 @@ onMounted(async () => {
 async function listImportSchema() {
     const schema = await std('/api/schema?method=GET&url=/import');
 
-    const defaults: Array<keyof Import> = ['username', 'updated', 'name'];
+    const defaults: Array<keyof Import> = ['username', 'name'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
