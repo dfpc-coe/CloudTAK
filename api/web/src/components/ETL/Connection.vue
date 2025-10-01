@@ -119,7 +119,7 @@
                                             </button>
                                             <button
                                                 class='btn btn-primary mx-2'
-                                                @click='downloadCertificate("certificate")'
+                                                @click='downloadCertificate("client")'
                                             >
                                                 <IconDownload
                                                     :size='24'
@@ -308,7 +308,7 @@ async function fetch() {
     connection.value = await std(`/api/connection/${route.params.connectionid}`) as ETLConnection;
 } 
 
-function downloadCertificate(type: 'truststore' | 'certificate') {
+function downloadCertificate(type: 'truststore' | 'client') {
     const url = stdurl(`/api/connection/${route.params.connectionid}/auth`);
     url.searchParams.set('type', type);
     url.searchParams.set('download', 'true');
