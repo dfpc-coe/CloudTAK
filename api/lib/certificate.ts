@@ -129,7 +129,7 @@ export async function generateTrustP12(
             'pkcs12',
             '-legacy',
             '-export',
-            'nokeys'
+            'nokeys',
             '-in', caPath,
             '-out', p12Path,
             '-name', name,
