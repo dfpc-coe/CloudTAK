@@ -12,12 +12,18 @@
 
 ### Pending Release
 
-### v11.32.0 - 2025-09-29
+### v11.33.0 - 2025-10-01
+
+- :tada: Support Cursor-On-Target Line Styles
+- :rocket: Allow downloading truststore on External Connections
+- :bug: Allow including CA chain when PATCHing a connection
+
+### v11.32.0 - 2025-10-01
 
 - :rocket: `UI` Use Network icon to show External Connections vs Paused Cloud Connections
 - :tada: Allow downloading the generated TrustStore
 
-### v11.31.0 - 2025-09-29
+### v11.31.0 - 2025-09-30
 
 - :rocket: Fix serious issue with management of user features - Closes: #664
 - :tada: Add the ability to recover deleted Archived Features
