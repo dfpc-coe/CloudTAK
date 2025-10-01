@@ -13,8 +13,14 @@
                     :size='28'
                     stroke='1'
                 />
-                <span v-if='props.action === "add"' class='mx-2'>Add to Data Sync</span>
-                <span v-if='props.action === "move"' class='mx-2'>Move to Data Sync</span>
+                <span
+                    v-if='props.action === "add"'
+                    class='mx-2'
+                >Add to Data Sync</span>
+                <span
+                    v-if='props.action === "move"'
+                    class='mx-2'
+                >Move to Data Sync</span>
             </div>
         </div>
 

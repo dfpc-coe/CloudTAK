@@ -225,6 +225,7 @@ export default async function router(schema: Schema, config: Config) {
                 ...(await config.models.ProfileFeature.generate({
                     id: req.body.id,
                     path: req.body.path,
+                    deleted: false, // Putting a feature implies not deleted
                     username: user.email,
                     properties: req.body.properties,
                     geometry: req.body.geometry
