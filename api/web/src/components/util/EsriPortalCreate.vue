@@ -32,49 +32,41 @@
     </TablerModal>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
 import {
     TablerModal,
     TablerInput,
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'EsriPortalCreate',
-    components: {
-        TablerModal,
-        TablerInput
+defineProps({
+    token: {
+        type: String,
+        required: true
     },
-    props: {
-        token: {
-            type: String,
-            required: true
-        },
-        portal: {
-            type: String,
-            required: true
-        }
-    },
-    emits: [
-        'create',
-        'close'
-    ],
-    data: function() {
-        return {
-            data: {
-                name: ''
-            }
-        }
-    },
-    methods: {
-        create: async function() {
-            this.$emit('create', {
-                ...this.data
-            });
-            this.$emit('close');
-        },
-        close: function() {
-            this.$emit('close');
-        },
+    portal: {
+        type: String,
+        required: true
     }
+});
+
+const emit = defineEmits([
+    'create',
+    'close'
+]);
+
+const data = ref({
+    name: ''
+});
+
+function create() {
+    emit('create', {
+        ...data.value
+    });
+    emit('close');
+}
+
+function close() {
+    emit('close');
 }
 </script>
