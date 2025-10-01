@@ -36,44 +36,37 @@
     </TablerModal>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { std } from '/src/std.ts';
 import {
     TablerModal,
-    TablerLoading
+    TablerLoading,
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'TransformModal',
-    components: {
-        TablerModal,
-        TablerLoading,
-    },
-    props: {
-        asset: {
-            type: Object,
-            required: true
-        }
-    },
-    emits: [
-        'close',
-        'done'
-    ],
-    data: function() {
-        return {
-            loading: false,
-        }
-    },
-    methods: {
-        submit: async function() {
-            this.loading = true;
-            await std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${this.asset.name}`, {
-                method: 'POST',
-            });
-            this.loading = false;
-            this.$emit('done');
-            this.$emit('close');
-        },
+const props = defineProps({
+    asset: {
+        type: Object,
+        required: true
     }
+});
+
+const emit = defineEmits([
+    'close',
+    'done'
+]);
+
+const route = useRoute();
+const loading = ref(false);
+
+async function submit() {
+    loading.value = true;
+    await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}/asset/${props.asset.name}`, {
+        method: 'POST',
+    });
+    loading.value = false;
+    emit('done');
+    emit('close');
 }
 </script>
