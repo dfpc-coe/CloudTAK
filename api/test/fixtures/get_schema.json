@@ -519,21 +519,6 @@
         "query": false,
         "res": true
     },
-    "GET /layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /layer/:layerid": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -598,6 +583,21 @@
         "body": false,
         "query": true,
         "res": false
+    },
+    "GET /layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid": {
+        "body": false,
+        "query": true,
+        "res": true
     },
     "GET /template": {
         "body": false,
@@ -991,7 +991,7 @@
     },
     "DELETE /profile/feature/:id": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "GET /profile/feature/:id": {
@@ -1119,6 +1119,31 @@
         "query": false,
         "res": true
     },
+    "GET /search": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/route": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/forward": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/suggest": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /server": {
         "body": false,
         "query": false,
@@ -1242,31 +1267,6 @@
     "GET /video/service/path/:path": {
         "body": false,
         "query": false,
-        "res": true
-    },
-    "GET /search": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /search/reverse/:longitude/:latitude": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /search/route": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /search/forward": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /search/suggest": {
-        "body": false,
-        "query": true,
         "res": true
     }
 }
