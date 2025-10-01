@@ -177,7 +177,7 @@ test('PUT: api/profile/feature - To Be Deleted to ensure deleted features aren\'
 
 test('DELETE: api/profile/feature?id=321', async (t) => {
     try {
-        const res = await flight.fetch('/api/profile/feature/321', {
+        await flight.fetch('/api/profile/feature/321', {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.admin
