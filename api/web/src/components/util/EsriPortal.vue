@@ -200,23 +200,6 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
-import {
-    TablerAlert,
-    TablerLoading,
-    TablerInput,
-    TablerNone,
-} from '@tak-ps/vue-tabler';
-import {
-    IconMap,
-    IconRefresh,
-    IconX,
-    IconPlus,
-} from '@tabler/icons-vue';
-import EsriServer from './EsriServer.vue';
-import EsriPortalCreate from './EsriPortalCreate.vue';
-
 <script setup>
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '/src/std.ts';
