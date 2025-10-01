@@ -81,7 +81,8 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     IconTrash,
@@ -93,90 +94,77 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'LayerTemplateSelect',
-    components: {
-        IconTrash,
-        TablerInput,
-        TablerPager,
-        TablerNone,
-        TablerLoading
-    },
-    props: {
-        modelValue: Object,
-        disabled: {
-            type: Boolean,
-            default: false
-        }
-    },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        return {
-            loading: {
-                main: true,
-                list: true,
-            },
-            selected: {
-                id: '',
-            },
-            paging: {
-                filter: '',
-                limit: 10,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    watch: {
-        selected: {
-            deep: true,
-            handler: function() {
-                if (this.selected.id) {
-                    this.$emit('update:modelValue', this.selected);
-                } else {
-                    this.$emit('update:modelValue', {});
-                }
-            }
-        },
-        modelValue: async function() {
-            if (this.modelValue && this.modelValue.id !== this.selected.id) {
-                await this.fetch();
-            }
-        },
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.listData();
-            },
-        }
-    },
-    mounted: async function() {
-        if (this.modelValue) {
-            await this.fetch();
-        }
-
-        await this.listData();
-        this.loading.main = false;
-    },
-    methods: {
-        fetch: async function() {
-            this.selected = await std(`/api/template/${this.modelValue.id}`);
-        },
-        listData: async function() {
-            this.loading.list = true;
-            const url = stdurl('/api/template');
-            url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-            this.list = await std(url);
-
-            this.loading.list = false;
-        },
+const props = defineProps({
+    modelValue: Object,
+    disabled: {
+        type: Boolean,
+        default: false
     }
-};
+});
+
+const emit = defineEmits([
+    'update:modelValue'
+]);
+
+const loading = ref({
+    main: true,
+    list: true,
+});
+
+const selected = ref({
+    id: '',
+});
+
+const paging = ref({
+    filter: '',
+    limit: 10,
+    page: 0
+});
+
+const list = ref({
+    total: 0,
+    items: []
+});
+
+watch(selected, () => {
+    if (selected.value.id) {
+        emit('update:modelValue', selected.value);
+    } else {
+        emit('update:modelValue', {});
+    }
+}, { deep: true });
+
+watch(() => props.modelValue, async () => {
+    if (props.modelValue && props.modelValue.id !== selected.value.id) {
+        await fetch();
+    }
+});
+
+watch(paging, async () => {
+    await listData();
+}, { deep: true });
+
+onMounted(async () => {
+    if (props.modelValue) {
+        await fetch();
+    }
+
+    await listData();
+    loading.value.main = false;
+});
+
+async function fetch() {
+    selected.value = await std(`/api/template/${props.modelValue.id}`);
+}
+
+async function listData() {
+    loading.value.list = true;
+    const url = stdurl('/api/template');
+    url.searchParams.append('filter', paging.value.filter);
+    url.searchParams.append('limit', paging.value.limit);
+    url.searchParams.append('page', paging.value.page);
+    list.value = await std(url);
+
+    loading.value.list = false;
+}
 </script>

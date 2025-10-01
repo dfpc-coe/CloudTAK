@@ -71,7 +71,8 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted } from 'vue';
 import { std } from '/src/std.ts';
 import {
     IconTrash,
@@ -82,69 +83,60 @@ import {
     TablerDropdown
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'DataSelect',
-    components: {
-        IconTrash,
-        IconSettings,
-        TablerLoading,
-        TablerDropdown
-    },
-    props: {
-        connection: Number,
-        modelValue: Number,
-        disabled: {
-            type: Boolean,
-            default: false
-        }
-    },
-    emits: ['update:modelValue'],
-    data: function() {
-        return {
-            loading: true,
-            selected: {
-                id: '',
-                name: ''
-            },
-            data: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    watch: {
-        'selected.id': function() {
-            if (this.selected.id) {
-                this.$emit('update:modelValue', this.selected.id);
-            } else {
-                this.$emit('update:modelValue', null);
-            }
-        },
-        modelValue: function() {
-            if (this.modelValue) this.fetch();
-        }
-    },
-    mounted: async function() {
-        if (this.modelValue) await this.fetch();
-        await this.listData();
-        this.loading = false;
-    },
-    methods: {
-        update: function(data) {
-            if (data) {
-                this.selected.id = data.id;
-                this.selected.name = data.name;
-            } else {
-                this.selected.id = '';
-                this.selected.name = '';
-            }
-        },
-        fetch: async function() {
-            this.selected = await std(`/api/connection/${this.connection}/data/${this.modelValue}`);
-        },
-        listData: async function() {
-            this.data = await std(`/api/connection/${this.connection}/data`);
-        },
-    },
-};
+const props = defineProps({
+    connection: Number,
+    modelValue: Number,
+    disabled: {
+        type: Boolean,
+        default: false
+    }
+});
+
+const emit = defineEmits(['update:modelValue']);
+
+const loading = ref(true);
+const selected = ref({
+    id: '',
+    name: ''
+});
+const data = ref({
+    total: 0,
+    items: []
+});
+
+watch(() => selected.value.id, () => {
+    if (selected.value.id) {
+        emit('update:modelValue', selected.value.id);
+    } else {
+        emit('update:modelValue', null);
+    }
+});
+
+watch(() => props.modelValue, () => {
+    if (props.modelValue) fetch();
+});
+
+onMounted(async () => {
+    if (props.modelValue) await fetch();
+    await listData();
+    loading.value = false;
+});
+
+function update(d) {
+    if (d) {
+        selected.value.id = d.id;
+        selected.value.name = d.name;
+    } else {
+        selected.value.id = '';
+        selected.value.name = '';
+    }
+}
+
+async function fetch() {
+    selected.value = await std(`/api/connection/${props.connection}/data/${props.modelValue}`);
+}
+
+async function listData() {
+    data.value = await std(`/api/connection/${props.connection}/data`);
+}
 </script>
