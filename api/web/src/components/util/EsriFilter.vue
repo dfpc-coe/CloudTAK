@@ -60,7 +60,8 @@
     </TablerModal>
 </template>
 
-<script>
+<script setup>
+import { ref, computed } from 'vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerAlert,
@@ -69,81 +70,69 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'EsriFilter',
-    components: {
-        TablerModal,
-        TablerAlert,
-        TablerInput,
-        TablerLoading
+const props = defineProps({
+    disabled: {
+        type: Boolean,
+        default: false
     },
-    props: {
-        disabled: {
-            type: Boolean,
-            default: false
-        },
-        modelValue: {
-            type: String,
-            default: ''
-        },
-        layer: {
-            type: String
-        },
-        token: {
-            type: String
-        }
+    modelValue: {
+        type: String,
+        default: ''
     },
-    emits: [
-        'close',
-        'update:modelValue'
-    ],
-    data: function() {
-        return {
-            err: null,
-            loading: {
-                count: false
-            },
-            filter: {
-                query: this.modelValue || ''
-            },
-            list: {
-                count: 0,
-                features: {}
-            }
-        }
+    layer: {
+        type: String
     },
-    computed: {
-        features: function() {
-            return this.list.features.features.map((feat) => {
-                return JSON.stringify(feat);
-            }).join('\n');
-        }
-    },
-    methods: {
-        save: function() {
-            this.$emit('update:modelValue', this.filter.query);
-            this.$emit('close');
-        },
-        fetch: async function() {
-            this.err = false;
-            this.loading.count = true;
-
-            try {
-                const url = stdurl('/api/esri/server/layer');
-                url.searchParams.append('query', this.filter.query);
-                url.searchParams.append('layer', this.layer);
-                if (this.token) url.searchParams.append('token', this.token);
-
-                this.list = await std(url, {
-                    method: 'GET',
-                    body: this.body
-                });
-            } catch (err) {
-                this.err = err;
-            }
-
-            this.loading.count = false;
-        },
+    token: {
+        type: String
     }
+});
+
+const emit = defineEmits([
+    'close',
+    'update:modelValue'
+]);
+
+const err = ref(null);
+const loading = ref({
+    count: false
+});
+const filter = ref({
+    query: props.modelValue || ''
+});
+const list = ref({
+    count: 0,
+    features: {}
+});
+
+const features = computed(() => {
+    return list.value.features.features.map((feat) => {
+        return JSON.stringify(feat);
+    }).join('\n');
+});
+
+function save() {
+    emit('update:modelValue', filter.value.query);
+    emit('close');
+}
+
+async function fetch() {
+    err.value = false;
+    loading.value.count = true;
+
+    try {
+        const url = stdurl('/api/esri/server/layer');
+        url.searchParams.append('query', filter.value.query);
+        url.searchParams.append('layer', props.layer);
+        if (props.token) url.searchParams.append('token', props.token);
+
+        list.value = await std(url, {
+            method: 'GET',
+            body: props.body
+        });
+    } catch (error) {
+        err.value = error;
+    }
+
+    loading.value.count = false;
 }
 </script>
