@@ -276,7 +276,7 @@ export default async function router(schema: Schema, config: Config) {
             } else if (req.query.type === 'truststore') {
                 const buff = await generateTrustP12(
                     connection.auth,
-                    config.server.name + ' - ' + connection.name
+                    config.server.name + ' Truststore'
                 );
 
                 if (req.query.download) {
