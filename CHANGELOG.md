@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.33.1 - 2025-10-01
+
+- :rocket: Cleaner Admin Imports Menu
+
 ### v11.33.0 - 2025-10-01
 
 - :tada: Support Cursor-On-Target Line Styles
