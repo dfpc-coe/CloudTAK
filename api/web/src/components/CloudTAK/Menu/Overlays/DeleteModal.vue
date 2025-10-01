@@ -31,7 +31,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
 import {
     TablerModal
 } from '@tak-ps/vue-tabler'
@@ -54,12 +53,5 @@ defineProps({
     }
 });
 
-const emit = defineEmits(['delete']);
-
-const loading = ref(false);
-
-function deleting() {
-    loading.value = true;
-    emit('delete')
-}
+defineEmits(['delete']);
 </script>

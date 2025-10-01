@@ -58,45 +58,6 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
-import {
-    TablerLoading,
-    TablerProgress
-} from '@tak-ps/vue-tabler';
-
-export default {
-    name: 'UploadFile',
-    components: {
-        TablerLoading,
-        TablerProgress
-    },
-    props: {
-        mode: {
-            type: String,
-            default: 'Unknown'
-        },
-        modeid: {
-            type: String
-        },
-        dragging: {
-            type: Boolean,
-            default: false
-        },
-        cancelButton: {
-            type: Boolean,
-            default: true
-        },
-        config: {
-            type: Object,
-            default: function() {
-                return {};
-            }
-        }
-    },
-    emits: [
-        'cancel',
-        'done'
 <script setup>
 import { ref } from 'vue';
 import { std, stdurl } from '/src/std.ts';

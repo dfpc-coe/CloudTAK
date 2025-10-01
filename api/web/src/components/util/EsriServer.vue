@@ -222,7 +222,6 @@ const emit = defineEmits([
 ]);
 
 const base = ref(props.server);
-const filterModal = ref(false);
 const loading = ref(true);
 const err = ref(null);
 const listpath = ref([]);

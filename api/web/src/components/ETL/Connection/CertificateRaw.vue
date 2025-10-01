@@ -29,36 +29,22 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
 import {
     TablerInput,
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'CertificateRaw',
-    components: {
-        TablerInput,
-    },
-    emits: [
-        'certs',
-    ],
-    data: function() {
-        return {
-            auth: {
-                cert: '',
-                key: '',
-            }
-        }
-    },
-    methods: {
-        generate: async function() {
-            try {
-                this.$emit('certs', this.auth);
-            } catch (err) {
-                this.loading.generate = false;
-                throw err;
-            }
-        },
-    }
+const emit = defineEmits([
+    'certs',
+]);
+
+const auth = ref({
+    cert: '',
+    key: '',
+});
+
+function generate() {
+    emit('certs', auth.value);
 }
 </script>
