@@ -190,7 +190,8 @@ export default async function router(schema: Schema, config: Config) {
                     properties: req.body.properties,
                     geometry: req.body.geometry
                 }, {
-                    upsert: GenerateUpsert.UPDATE
+                    upsert: GenerateUpsert.UPDATE,
+                    upsertTarget: [ ProfileFeature.username, ProfileFeature.id ]
                 }))
             } as Static<typeof ProfileFeatureResponse>;
 
