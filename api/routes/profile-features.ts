@@ -7,7 +7,8 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { StandardResponse, ProfileFeature, GeoJSONFeatureCollection, GeoJSONFeature } from '../lib/types.js'
+import { ProfileFeature } from '../lib/schema.js';
+import { StandardResponse, ProfileFeatureResponse, GeoJSONFeatureCollection, GeoJSONFeature } from '../lib/types.js'
 import { ProfileFeatureFormat } from '../lib/enums.js'
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
@@ -23,18 +24,26 @@ export default async function router(schema: Schema, config: Config) {
             format: Type.Enum(ProfileFeatureFormat, {
                 default: ProfileFeatureFormat.GEOJSON
             }),
+            deleted: Type.Boolean({
+                default: false,
+                description: 'Return Deleted Features'
+            }),
             download: Type.Boolean({
                 default: false,
                 description: 'Set Content-Disposition to download the file'
             }),
             token: Type.Optional(Type.String()),
             limit: Type.Integer({ default: 1000 }),
+            sort: Type.String({
+                default: 'id',
+                enum: Object.keys(ProfileFeature)
+            }),
             page: Default.Page,
             order: Default.Order
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ProfileFeature)
+            items: Type.Array(ProfileFeatureResponse)
         })
 
     }, async (req, res) => {
@@ -45,8 +54,10 @@ export default async function router(schema: Schema, config: Config) {
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     username = ${user.email}
+                    AND deleted = ${req.query.deleted}
                 `
             });
 
@@ -63,7 +74,7 @@ export default async function router(schema: Schema, config: Config) {
                             type: 'Feature',
                             properties: feat.properties,
                             geometry: feat.geometry
-                        } as Static<typeof ProfileFeature>
+                        } as Static<typeof ProfileFeatureResponse>
                     })
                 })
             } else {
@@ -119,22 +130,56 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileFeature',
         description: 'Delete multiple features',
         query: Type.Object({
-            path: Type.Optional(Type.String())
+            path: Type.Optional(Type.String()),
+            permanent: Type.Boolean({
+                default: false,
+                description: 'Permanently delete features instead of archiving them'
+            })
         }),
         res: StandardResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
-            if (req.query.path) {
-                await config.models.ProfileFeature.delete(sql`
-                    starts_with(path, ${req.query.path})
-                    AND username = ${user.email}
-                `);
+            if (req.query.permanent) {
+                if (req.query.path) {
+                    await config.models.ProfileFeature.delete(sql`
+                        starts_with(path, ${req.query.path})
+                        AND username = ${user.email}
+                    `);
+                } else {
+                    await config.models.ProfileFeature.delete(sql`
+                        username = ${user.email}
+                    `);
+                }
             } else {
-                await config.models.ProfileFeature.delete(sql`
-                    username = ${user.email}
-                `);
+                if (req.query.path) {
+                    try {
+                        await config.models.ProfileFeature.commit(sql`
+                            starts_with(path, ${req.query.path})
+                            AND username = ${user.email}
+                        `, {
+                            deleted: true
+                        });
+                    } catch (err) {
+                        // Ignore features not found
+                        if (!(err instanceof Error) || !('status' in err) || ('status' in err && err.status !== 404)) {
+                            throw err
+                        }
+                    }
+                } else {
+                    try {
+                        await config.models.ProfileFeature.commit(sql`
+                            username = ${user.email}
+                        `, {
+                            deleted: true
+                        });
+                    } catch (err) {
+                        if (!(err instanceof Error) || !('status' in err) || ('status' in err && err.status !== 404)) {
+                            throw err
+                        }
+                    }
+                }
             }
 
             res.json({
@@ -161,8 +206,8 @@ export default async function router(schema: Schema, config: Config) {
                 `
             })
         }),
-        body: ProfileFeature,
-        res: ProfileFeature,
+        body: ProfileFeatureResponse,
+        res: ProfileFeatureResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -175,18 +220,20 @@ export default async function router(schema: Schema, config: Config) {
             // Saving to database implies archived
             req.body.properties.archived = true;
 
-            const feat: Static<typeof ProfileFeature> = {
+            const feat: Static<typeof ProfileFeatureResponse> = {
                 type: 'Feature',
                 ...(await config.models.ProfileFeature.generate({
                     id: req.body.id,
                     path: req.body.path,
+                    deleted: false, // Putting a feature implies not deleted
                     username: user.email,
                     properties: req.body.properties,
                     geometry: req.body.geometry
                 }, {
-                    upsert: GenerateUpsert.UPDATE
+                    upsert: GenerateUpsert.UPDATE,
+                    upsertTarget: [ ProfileFeature.username, ProfileFeature.id ]
                 }))
-            } as Static<typeof ProfileFeature>;
+            } as Static<typeof ProfileFeatureResponse>;
 
             if (req.query.broadcast) {
                 const sockets = config.wsClients.get(user.email) || []
@@ -208,6 +255,12 @@ export default async function router(schema: Schema, config: Config) {
         description: `
             Delete a feature
         `,
+        query: Type.Object({
+            permanent: Type.Boolean({
+                default: false,
+                description: 'Permanently delete features instead of archiving them'
+            })
+        }),
         params: Type.Object({
             id: Type.String()
         }),
@@ -216,9 +269,17 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            await config.models.ProfileFeature.delete(sql`
-                id = ${req.params.id} AND username = ${user.email}
-            `);
+            if (req.query.permanent) {
+                await config.models.ProfileFeature.delete(sql`
+                    id = ${req.params.id} AND username = ${user.email}
+                `);
+            } else {
+                await config.models.ProfileFeature.commit(sql`
+                    id = ${req.params.id} AND username = ${user.email}
+                `, {
+                    deleted: true
+                });
+            }
 
             res.json({
                 status: 200,
@@ -238,7 +299,7 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             id: Type.String()
         }),
-        res: ProfileFeature
+        res: ProfileFeatureResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -253,7 +314,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 type: 'Feature',
                 ...feat
-            } as Static<typeof ProfileFeature>)
+            } as Static<typeof ProfileFeatureResponse>)
         } catch (err) {
              Err.respond(err, res);
         }
