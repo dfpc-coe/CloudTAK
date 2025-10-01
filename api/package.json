@@ -42,7 +42,7 @@
         "@mapbox/tilebelt": "^2.0.0",
         "@maplibre/maplibre-gl-style-spec": "^24.0.0",
         "@openaddresses/batch-error": "^2.1.4",
-        "@openaddresses/batch-generic": "^24.9.0",
+        "@openaddresses/batch-generic": "^24.12.0",
         "@openaddresses/batch-schema": "^10.18.0",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@sinclair/typebox": "^0.34.0",

@@ -117,6 +117,79 @@ test('PUT: api/profile/feature', async (t) => {
     t.end();
 });
 
+test('PUT: api/profile/feature - To Be Deleted to ensure deleted features aren\'t included by default', async (t) => {
+    try {
+        const res = await flight.fetch('/api/profile/feature', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                id: '321',
+                type: 'Feature',
+                path: '/Test Features/',
+                properties: {
+                    type: 'a-f-g',
+                    how: 'm-g',
+                    time: time,
+                    start: time,
+                    stale: time,
+                    callsign: 'Test Callsign',
+                    archived: true,
+                    center: [123.3223, 123.0002],
+                    testprop: 1,
+                    testnested: {
+                        deep: 1
+                    }
+                },
+                geometry: {
+                    type: 'Point',
+                    coordinates: [123.3223, 123.0002, 123]
+                }
+            }
+        }, true);
+
+        t.deepEquals(res.body, {
+            id: '321',
+            type: 'Feature',
+            path: '/Test Features/',
+            properties: {
+                type: 'a-f-g',
+                how: 'm-g',
+                archived: true,
+                callsign: 'Test Callsign',
+                time: time,
+                start: time,
+                stale: time,
+                center: [123.3223, 123.0002],
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [123.3223, 123.0002, 123]
+            }
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('DELETE: api/profile/feature?id=321', async (t) => {
+    try {
+        await flight.fetch('/api/profile/feature/321', {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+    t.end();
+});
+
 test('GET: api/profile/feature?format=geojson&download=true', async (t) => {
     try {
         const res = await flight.fetch('/api/profile/feature?format=geojson&download=true', {
