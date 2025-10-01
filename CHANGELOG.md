@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.33.3 - 2025-10-01
+
+- :bug: Fix call to generate TrustStore p12 file
+
 ### v11.33.2 - 2025-10-01
 
 - :bug: Fix call to generate TrustStore p12 file
