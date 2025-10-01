@@ -37,8 +37,9 @@
         <pre v-text='eventStr' />
     </div>
 </template>
-
-<script>
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { stdurl } from '/src/std.ts';
 import {
     IconTrash,
@@ -46,49 +47,42 @@ import {
     IconPlayerPause
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'ConnectionEvents',
-    components: {
-        IconTrash,
-        IconPlayerPause,
-        IconPlayerPlay
-    },
-    data: function() {
-        return {
-            ws: null,
-            paused: false,
-            events: []
-        };
-    },
-    computed: {
-        eventStr: function() {
-            return this.events.join('\n');
-        }
-    },
-    unmounted: function() {
-        this.ws.close();
-    },
-    mounted: function() {
-        const url = stdurl('/api');
-        url.searchParams.append('connection', this.$route.params.connectionid);
-        url.searchParams.append('token', localStorage.token);
-        if (window.location.hostname === 'localhost') {
-            url.protocol = 'ws:';
-        } else {
-            url.protocol = 'wss:';
-        }
+const emit = defineEmits(['err']);
 
-        this.ws = new WebSocket(url);
-        this.ws.addEventListener('error', (err) => { this.$emit('err', err) });
+const route = useRoute();
 
-        this.ws.addEventListener('message', (msg) => {
-            msg = JSON.parse(msg.data);
-            if (this.paused) return;
-            if (msg.type !== 'cot' || msg.connection !== parseInt(this.$route.params.connectionid)) return;
+const ws = ref(null);
+const paused = ref(false);
+const events = ref([]);
 
-            if (this.events.length > 200) this.events.pop();
-            this.events.unshift(JSON.stringify(msg.data));
-        });
+const eventStr = computed(() => {
+    return events.value.join('\n');
+});
+
+onUnmounted(() => {
+    if (ws.value) ws.value.close();
+});
+
+onMounted(() => {
+    const url = stdurl('/api');
+    url.searchParams.append('connection', route.params.connectionid);
+    url.searchParams.append('token', localStorage.token);
+    if (window.location.hostname === 'localhost') {
+        url.protocol = 'ws:';
+    } else {
+        url.protocol = 'wss:';
     }
-}
+
+    ws.value = new WebSocket(url);
+    ws.value.addEventListener('error', (err) => { emit('err', err) });
+
+    ws.value.addEventListener('message', (msg) => {
+        msg = JSON.parse(msg.data);
+        if (paused.value) return;
+        if (msg.type !== 'cot' || msg.connection !== parseInt(route.params.connectionid)) return;
+
+        if (events.value.length > 200) events.value.pop();
+        events.value.unshift(JSON.stringify(msg.data));
+    });
+});
 </script>

@@ -173,6 +173,7 @@
                     </table>
                 </div>
             </template>
+        </template>
     </div>
 </template>
 

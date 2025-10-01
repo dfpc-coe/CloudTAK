@@ -205,14 +205,16 @@ import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerAlert,
-    IconX,
-    IconPlus,
     TablerNone,
-    IconMap,
-    IconRefresh,
     TablerLoading,
     TablerInput,
 } from '@tak-ps/vue-tabler';
+import {
+    IconX,
+    IconPlus,
+    IconMap,
+    IconRefresh,
+} from '@tabler/icons-vue';
 import EsriServer from './EsriServer.vue';
 import EsriPortalCreate from './EsriPortalCreate.vue';
 
