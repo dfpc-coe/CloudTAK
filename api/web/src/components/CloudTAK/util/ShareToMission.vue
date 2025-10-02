@@ -184,7 +184,9 @@ async function share(): Promise<void> {
                 mode_id: mission.guid
             }
 
-            await mapStore.worker.db.add(feat);
+            await mapStore.worker.db.add(feat, {
+                authored: true
+            });
         }
     }
 
