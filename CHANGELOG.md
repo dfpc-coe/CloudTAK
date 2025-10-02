@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v11.34.0 - 2025-10-02
+
+- :bug: When Sharing to a mission the `skip_network` flag would prevent the CoT from actually being added to the mission over the network, resulting in the CoT being lost when the user refreshed their page. This version fixes this issue by setting the authored flag to true when adding to a mission.
+- :rocket: `UI` Show a `clear` button when text is entered into a search box
+- :rocket: `UI` Allow the user to show their password in plaintext with an `eye` button on password fields.
+
 ### v11.33.5 - 2025-10-02
 
 - :rocket: Require a password on exported TrustStores & Certs
