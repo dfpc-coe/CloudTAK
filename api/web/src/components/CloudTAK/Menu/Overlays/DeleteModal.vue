@@ -30,7 +30,7 @@
     </TablerModal>
 </template>
 
-<script>
+<script setup>
 import {
     TablerModal
 } from '@tak-ps/vue-tabler'
@@ -38,37 +38,20 @@ import {
     IconTrash
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'OverlayDelete',
-    components: {
-        IconTrash,
-        TablerModal
+defineProps({
+    label: {
+        type: String,
+        default: 'Delete'
     },
-    props: {
-        label: {
-            type: String,
-            default: 'Delete'
-        },
-        size: {
-            type: Number,
-            default: 32
-        },
-        displaytype: {
-            type: String,
-            default: 'button' // Or icon
-        }
+    size: {
+        type: Number,
+        default: 32
     },
-    emits: ['delete'],
-    data: function() {
-        return {
-            loading: false,
-        }
-    },
-    methods: {
-        deleting: function() {
-            this.loading = true;
-            this.$emit('delete')
-        }
+    displaytype: {
+        type: String,
+        default: 'button'
     }
-}
+});
+
+defineEmits(['delete']);
 </script>
