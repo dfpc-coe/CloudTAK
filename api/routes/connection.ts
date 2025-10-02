@@ -239,6 +239,9 @@ export default async function router(schema: Schema, config: Config) {
         }),
         query: Type.Object({
             token: Type.Optional(Type.String()),
+            password: Type.String({
+                description: 'Password to encrypt the P12 file',
+            }),
             download: Type.Boolean({
                 default: false,
                 description: 'Download auth as P12 file'
@@ -263,7 +266,8 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.type === 'client') {
                 const buff = await generateClientP12(
                     connection.auth,
-                    config.server.name + ' - ' + connection.name
+                    config.server.name + ' - ' + connection.name,
+                    req.query.password
                 );
 
                 if (req.query.download) {
@@ -276,7 +280,8 @@ export default async function router(schema: Schema, config: Config) {
             } else if (req.query.type === 'truststore') {
                 const buff = await generateTrustP12(
                     connection.auth,
-                    config.server.name + ' Truststore'
+                    config.server.name + ' Truststore',
+                    req.query.password
                 );
 
                 if (req.query.download) {
