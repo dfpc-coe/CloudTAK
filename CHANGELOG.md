@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.33.5 - 2025-10-02
+
+- :rocket: Require a password on exported TrustStores & Certs
+
 ### v11.33.4 - 2025-10-01
 
 - :bug: Modify OpenSSL Commands for Truststore
