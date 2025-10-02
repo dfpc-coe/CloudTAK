@@ -35,38 +35,30 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from 'vue';
 import {
     TablerPager
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'TableFooter',
-    components: {
-        TablerPager
+defineProps({
+    limit: {
+        type: Number,
+        required: true
     },
-    props: {
-        limit: {
-            type: Number,
-            required: true
-        },
-        total: {
-            type: Number,
-            required: true
-        }
-    },
-    emits: [
-        'page'
-    ],
-    data: function() {
-        return {
-            page: 0
-        }
-    },
-    watch: {
-        page: function() {
-            this.$emit("page", this.page);
-        }
+    total: {
+        type: Number,
+        required: true
     }
-}
+});
+
+const emit = defineEmits([
+    'page'
+]);
+
+const page = ref(0);
+
+watch(page, () => {
+    emit("page", page.value);
+});
 </script>
