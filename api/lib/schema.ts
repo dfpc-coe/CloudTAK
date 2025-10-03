@@ -273,6 +273,22 @@ export const Connection = pgTable('connections', {
     auth: json().$type<Static<typeof ConnectionAuth>>().notNull()
 });
 
+export const ConnectionFeature = pgTable('connection_features', {
+    id: text().notNull(),
+    path: text().notNull().default('/'),
+    deleted: boolean().notNull().default(false),
+    connection: integer().notNull().references(() => Connection.id),
+    properties: json().notNull().default({}),
+    geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
+}, (table) => {
+    return {
+        pk: primaryKey({
+            columns: [table.connection, table.id]
+        }),
+        connection_idx: index("connection_features_connection_idx").on(table.connection),
+    }
+})
+
 export const Data = pgTable('data', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
