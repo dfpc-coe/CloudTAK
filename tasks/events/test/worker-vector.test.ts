@@ -50,7 +50,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
                 artifacts: string[]
             };
 
-            t.deepEquals(body.artifacts, [{ "ext": ".geojsonld" }]);
+            t.deepEquals(body.artifacts, [{ "ext": ".geojsonld" }], 'Has Correct Extension');
 
             return {
                 statusCode: 200,
@@ -82,39 +82,39 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
 
         const ExternalOperations = [
                 (command) => {
-                    t.ok(command instanceof GetObjectCommand);
+                    t.ok(command instanceof GetObjectCommand, 'S3.GetObjectCommand Call');
                     t.deepEquals(command.input, {
                         Bucket: 'test-bucket',
                         Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139${ext}`
-                    });
+                    }, 'S3.GetObjectCommand Call Parameters');
 
                     return Promise.resolve({
                         Body: fs.createReadStream(new URL(`./fixtures/transform-vector/${fixturename}`, import.meta.url))
                     })
                 },
                 (command) => {
-                    t.ok(command instanceof PutObjectCommand);
+                    t.ok(command instanceof PutObjectCommand, 'S3.PutObjectCommand Call');
 
-                    t.equals(command.input.Bucket, 'test-bucket')
-                    t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                    t.equals(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
+                    t.ok(command.input.Key.startsWith(`profile/admin@example.com/`, 'S3.PutObjectCommand Key Prefix'));
 
-                    t.ok(command.input.Key.endsWith(ext))
-
-                    return Promise.resolve({});
-                },
-                (command) => {
-                    t.ok(command instanceof PutObjectCommand);
-
-                    t.equals(command.input.Bucket, 'test-bucket')
-                    t.equals(command.input.Key, `profile/admin@example.com/${id}.geojsonld`);
+                    t.ok(command.input.Key.endsWith(ext), 'S3.PutObjectCommand Key Suffix');
 
                     return Promise.resolve({});
                 },
                 (command) => {
-                    t.ok(command instanceof PutObjectCommand);
+                    t.ok(command instanceof PutObjectCommand, 'S3.PutObjectCommand Call');
 
-                    t.equals(command.input.Bucket, 'test-bucket')
-                    t.equals(command.input.Key, `profile/admin@example.com/${id}.pmtiles`);
+                    t.equals(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
+                    t.equals(command.input.Key, `profile/admin@example.com/${id}.geojsonld`, 'S3.PutObjectCommand Key');
+
+                    return Promise.resolve({});
+                },
+                (command) => {
+                    t.ok(command instanceof PutObjectCommand, 'S3.PutObjectCommand Call');
+
+                    t.equals(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
+                    t.equals(command.input.Key, `profile/admin@example.com/${id}.pmtiles`, 'S3.PutObjectCommand Key');
 
                     return Promise.resolve({});
                 },
@@ -144,7 +144,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
         });
 
         worker.on('error', (err) => {
-            t.error(err);
+            t.error(err, 'No Error');
         });
 
         worker.on('success', () => {
