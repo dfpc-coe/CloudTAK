@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.35.0 - 2025-10-02
+
+- :bug: Handle Zipped Zips as a KMZ can be inside a DataPackage or the DataPackage can BE the KMZ
+
 ### v11.34.0 - 2025-10-02
 
 - :bug: When Sharing to a mission the `skip_network` flag would prevent the CoT from actually being added to the mission over the network, resulting in the CoT being lost when the user refreshed their page. This version fixes this issue by setting the authored flag to true when adding to a mission.
