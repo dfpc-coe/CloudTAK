@@ -154,6 +154,8 @@ onMounted(async () => {
 
 async function fetch() {
     loading.value = true;
+    error.value = undefined;
+
     try {
         rawChannels.value = (await std(`/api/connection/${route.params.connectionid}/channel`)).data;
         loading.value = false;
