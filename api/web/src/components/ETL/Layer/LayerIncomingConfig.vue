@@ -220,6 +220,7 @@
                                 <GroupSelect
                                     v-model='layer.groups'
                                     :disabled='disabled'
+                                    :defaultSelected='true'
                                     :connection='route.params.connectionid'
                                 />
                             </div>

@@ -81,6 +81,7 @@ import {
 
 const props = defineProps<{
     disabled: boolean,
+    defaultSelected?: boolean
     connection?: number,
     limit?: number,
     active?: boolean,
@@ -104,6 +105,17 @@ const filtered = computed(() => {
 
 onMounted(async () => {
     await fetch();
+
+    if (props.defaultSelected && !selected.value.size) {
+        // Select all active groups by default
+        Object.values(groups.value).forEach((group) => {
+            if (group.active) {
+                selected.value.add(group.name);
+            }
+        });
+
+        emit('update:modelValue', Array.from(selected.value));
+    }
 });
 
 function updateGroup(group: string) {
