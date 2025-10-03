@@ -4,7 +4,7 @@ CREATE TABLE "connection_features" (
 	"deleted" boolean DEFAULT false NOT NULL,
 	"connection" integer NOT NULL,
 	"properties" json DEFAULT '{}'::json NOT NULL,
-	"geometry" "GEOMETRY(GEOMETRYZ, 4326)" NOT NULL,
+	"geometry" GEOMETRY(GEOMETRYZ, 4326) NOT NULL,
 	CONSTRAINT "connection_features_connection_id_pk" PRIMARY KEY("connection","id")
 );
 --> statement-breakpoint
