@@ -9,7 +9,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { ProfileFeature } from '../lib/schema.js';
 import { StandardResponse, ProfileFeatureResponse, GeoJSONFeatureCollection, GeoJSONFeature } from '../lib/types.js'
-import { ProfileFeatureFormat } from '../lib/enums.js'
+import { ExportFeatureFormat } from '../lib/enums.js'
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
 
@@ -21,8 +21,8 @@ export default async function router(schema: Schema, config: Config) {
             Return a list of Profile Features
         `,
         query: Type.Object({
-            format: Type.Enum(ProfileFeatureFormat, {
-                default: ProfileFeatureFormat.GEOJSON
+            format: Type.Enum(ExportFeatureFormat, {
+                default: ExportFeatureFormat.GEOJSON
             }),
             deleted: Type.Boolean({
                 default: false,
@@ -95,14 +95,14 @@ export default async function router(schema: Schema, config: Config) {
                     })
                 }
 
-                if (req.query.format === ProfileFeatureFormat.GEOJSON) {
+                if (req.query.format === ExportFeatureFormat.GEOJSON) {
                     res.set('Content-Type', 'application/geo+json');
                     const output = Buffer.from(JSON.stringify(feats, null, 4));
 
                     res.set('Content-Length', String(Buffer.byteLength(output)));
                     res.write(output);
                     res.end();
-                } else if (req.query.format === ProfileFeatureFormat.KML) {
+                } else if (req.query.format === ExportFeatureFormat.KML) {
                     res.set('Content-Type', 'application/vnd.google-earth.kml+xml');
 
                     const output = Buffer.from(tokml(feats, {

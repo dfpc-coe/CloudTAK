@@ -1,7 +1,6 @@
 CREATE TABLE "connection_features" (
 	"id" text NOT NULL,
 	"path" text DEFAULT '/' NOT NULL,
-	"deleted" boolean DEFAULT false NOT NULL,
 	"connection" integer NOT NULL,
 	"properties" json DEFAULT '{}'::json NOT NULL,
 	"geometry" GEOMETRY(GEOMETRYZ, 4326) NOT NULL,
