@@ -276,7 +276,6 @@ export const Connection = pgTable('connections', {
 export const ConnectionFeature = pgTable('connection_features', {
     id: text().notNull(),
     path: text().notNull().default('/'),
-    deleted: boolean().notNull().default(false),
     connection: integer().notNull().references(() => Connection.id),
     properties: json().notNull().default({}),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
