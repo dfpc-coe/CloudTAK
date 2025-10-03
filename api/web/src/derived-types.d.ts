@@ -6462,6 +6462,7 @@ export interface paths {
                                     environment: unknown;
                                     ephemeral: Record<string, never>;
                                     data: number | null;
+                                    groups: string[];
                                 };
                                 outgoing?: {
                                     layer: number;
@@ -6739,6 +6740,7 @@ export interface paths {
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
                                 data: number | null;
+                                groups: string[];
                             };
                             outgoing?: {
                                 layer: number;
@@ -6852,6 +6854,7 @@ export interface paths {
                         cron?: string;
                         stale?: number;
                         data?: number;
+                        groups?: string[];
                         enabled_styles?: boolean;
                         styles?: {
                             line?: {
@@ -7092,6 +7095,7 @@ export interface paths {
                             environment: unknown;
                             ephemeral: Record<string, never>;
                             data: number | null;
+                            groups: string[];
                         };
                     };
                 };
@@ -7373,6 +7377,7 @@ export interface paths {
                         };
                         stale?: number;
                         data?: null | number;
+                        groups?: string[];
                         environment?: unknown;
                         config?: {
                             timezone?: {
@@ -7509,6 +7514,7 @@ export interface paths {
                             environment: unknown;
                             ephemeral: Record<string, never>;
                             data: number | null;
+                            groups: string[];
                         };
                     };
                 };
@@ -8073,6 +8079,7 @@ export interface paths {
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
                                 data: number | null;
+                                groups: string[];
                             };
                             outgoing?: {
                                 layer: number;
@@ -8433,6 +8440,7 @@ export interface paths {
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
                                 data: number | null;
+                                groups: string[];
                             };
                             outgoing?: {
                                 layer: number;
@@ -10886,8 +10894,11 @@ export interface paths {
                         enabled?: boolean;
                         agency: null | number;
                         auth?: {
-                            key: string;
+                            ca?: string[];
+                            /** @description PEM formatted client certificate */
                             cert: string;
+                            /** @description PEM formatted private key */
+                            key: string;
                         };
                     };
                 };
@@ -10995,6 +11006,8 @@ export interface paths {
                 query: {
                     /** @description No Description */
                     token?: string;
+                    /** @description Password to encrypt the P12 file */
+                    password: string;
                     /** @description Download auth as P12 file */
                     download: boolean;
                     /** @description Client or Truststore Data */
@@ -13356,6 +13369,7 @@ export interface paths {
                                     environment: unknown;
                                     ephemeral: Record<string, never>;
                                     data: number | null;
+                                    groups: string[];
                                 };
                                 outgoing?: {
                                     layer: number;
@@ -13621,6 +13635,7 @@ export interface paths {
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
                                 data: number | null;
+                                groups: string[];
                             };
                             outgoing?: {
                                 layer: number;
@@ -15297,6 +15312,7 @@ export interface paths {
                                     environment: unknown;
                                     ephemeral: Record<string, never>;
                                     data: number | null;
+                                    groups: string[];
                                 };
                                 outgoing?: {
                                     layer: number;
@@ -15550,6 +15566,7 @@ export interface paths {
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
                                 data: number | null;
+                                groups: string[];
                             };
                             outgoing?: {
                                 layer: number;
@@ -15805,6 +15822,7 @@ export interface paths {
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
                                 data: number | null;
+                                groups: string[];
                             };
                             outgoing?: {
                                 layer: number;
