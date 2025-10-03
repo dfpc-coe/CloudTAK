@@ -354,7 +354,11 @@ export const LayerIncoming = pgTable('layers_incoming', {
     environment: json().notNull().default({}),
     ephemeral: json().$type<Record<string, any>>().notNull().default({}),
     config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
-    data: integer().references(() => Data.id)
+
+    // Data Destinations
+    data: integer().references(() => Data.id),
+    // Empty Array = All Groups
+    groups: text().array().notNull().default([]),
 });
 
 export const LayerAlert = pgTable('layer_alerts', {
