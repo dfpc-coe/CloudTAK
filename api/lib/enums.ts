@@ -38,7 +38,7 @@ export function AllBooleanCast(allBoolean: AllBoolean): boolean | null {
         : allBoolean === AllBoolean.FALSE ? false : null;
 }
 
-export enum ProfileFeatureFormat {
+export enum ExportFeatureFormat {
     GEOJSON = 'geojson',
     KML = 'kml'
 }
