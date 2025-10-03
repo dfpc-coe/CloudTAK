@@ -217,6 +217,11 @@
 
                         <template v-if='dest === "groups"'>
                             <div class='col-md-12'>
+                                <TablerInlineAlert
+                                    type='info'
+                                    description='If no channels are selected, then all channels assigned to the connection will be used'
+                                />
+
                                 <GroupSelect
                                     v-model='incoming.groups'
                                     :disabled='disabled'
@@ -276,6 +281,7 @@ import DataSelect from '../../util/DataSelect.vue';
 import CopyField from '../../CloudTAK/util/CopyField.vue';
 import {
     TablerIconButton,
+    TablerInlineAlert,
     TablerDropdown,
     TablerInput,
     TablerToggle,
