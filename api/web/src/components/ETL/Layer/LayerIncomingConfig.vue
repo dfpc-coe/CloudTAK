@@ -207,7 +207,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { std, humanSeconds } from '../../../std.ts';
+import { server, humanSeconds } from '../../../std.ts';
 import type { ETLLayerIncoming } from '../../../types.ts';
 import cronstrue from 'cronstrue';
 import DataSelect from '../../util/DataSelect.vue';
@@ -278,8 +278,13 @@ function reload() {
 async function invoke() {
     loading.value.init = true;
     try {
-        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/invoke`, {
-            method: 'POST'
+        await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/task/invoke', {
+            params: {
+                path: {
+                    ':connectionid': Number(String(route.params.connectionid)),
+                    ':layerid': Number(String(route.params.layerid))
+                }
+            }
         });
 
         loading.value.init = false;
@@ -309,8 +314,13 @@ async function saveIncoming() {
             incoming.value.cron = null;
         }
 
-        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
-            method: 'PATCH',
+        await server.PATCH(`/api/connection/{:connectionid}/layer/{:layerid}/incoming`, {
+            params: {
+                path: {
+                    ':connectionid': Number(String(route.params.connectionid)),
+                    ':layerid': Number(String(route.params.layerid))
+                }
+            },
             body: incoming.value
         });
 
