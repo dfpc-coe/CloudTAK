@@ -378,6 +378,12 @@ async function saveIncoming() {
             incoming.value.cron = null;
         }
 
+        if (dest.value === 'groups') {
+            incoming.value.data = null;
+        } else {
+            incoming.value.groups = [];
+        }
+
         await server.PATCH(`/api/connection/{:connectionid}/layer/{:layerid}/incoming`, {
             params: {
                 path: {
