@@ -218,7 +218,7 @@
                         <template v-if='dest === "groups"'>
                             <div class='col-md-12'>
                                 <GroupSelect
-                                    v-model='layer.groups'
+                                    v-model='incoming.groups'
                                     :disabled='disabled'
                                     :defaultSelected='true'
                                     :connection='route.params.connectionid'
