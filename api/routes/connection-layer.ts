@@ -252,7 +252,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
 
-            if (req.body.data && req.body.groups.length) {
+            if (req.body.data && req.body.groups && req.body.groups.length) {
                 throw new Err(400, null, 'Layer cannot have both Data and Groups set');
             } else if (req.body.groups) {
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
@@ -371,7 +371,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not have incoming config');
             }
 
-            if (req.body.data && req.body.groups.length) {
+            if (req.body.data && req.body.groups && req.body.groups.length) {
                 throw new Err(400, null, 'Layer cannot have both Data and Groups set');
             } else if (req.body.groups) {
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
