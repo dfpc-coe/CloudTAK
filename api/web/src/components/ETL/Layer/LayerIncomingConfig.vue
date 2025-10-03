@@ -225,8 +225,7 @@
                                 <GroupSelect
                                     v-model='incoming.groups'
                                     :disabled='disabled'
-                                    :defaultSelected='true'
-                                    :connection='route.params.connectionid'
+                                    :connection='layer.connection'
                                 />
                             </div>
                         </template>
