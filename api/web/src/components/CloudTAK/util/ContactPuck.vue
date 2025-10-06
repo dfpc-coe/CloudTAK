@@ -22,8 +22,7 @@
     />
     <IconUserQuestion
         v-else
-        :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
-        :size='compact ? 20 : 32'
+        :size='size ? 20 : 32'
         stroke='1'
     />
 </template>
