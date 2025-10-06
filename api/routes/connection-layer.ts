@@ -3,6 +3,7 @@ import sleep from '../lib/sleep.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Cacher from '../lib/cacher.js';
+import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
 import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
@@ -228,6 +229,7 @@ export default async function router(schema: Schema, config: Config) {
             cron: Type.Optional(Type.String()),
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Integer()),
+            groups: Type.Optional(Type.Array(Type.String())),
             enabled_styles: Type.Optional(Type.Boolean()),
             styles: Type.Optional(StyleContainer),
             config: Type.Optional(Layer_Config),
@@ -248,6 +250,21 @@ export default async function router(schema: Schema, config: Config) {
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
+            }
+
+            if (req.body.data && req.body.groups && req.body.groups.length) {
+                throw new Err(400, null, 'Layer cannot have both Data and Groups set');
+            } else if (req.body.groups) {
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
+                const list = await api.Group.list({ useCache: true });
+
+                for (const group of req.body.groups) {
+                    if (!list.data.find((g) => {
+                        return g.name === group && g.direction === 'IN';
+                    })) {
+                        throw new Err(400, null, `Group "${group}" does not exist on TAK Server`);
+                    }
+                }
             }
 
             if (req.body.styles) {
@@ -330,6 +347,7 @@ export default async function router(schema: Schema, config: Config) {
             styles: Type.Optional(StyleContainer),
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
+            groups: Type.Optional(Type.Array(Type.String())),
             environment: Type.Optional(Type.Any()),
             config: Type.Optional(Layer_Config),
         }),
@@ -351,6 +369,21 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             } else if (!layer.incoming) {
                 throw new Err(400, null, 'Layer does not have incoming config');
+            }
+
+            if (req.body.data && req.body.groups && req.body.groups.length) {
+                throw new Err(400, null, 'Layer cannot have both Data and Groups set');
+            } else if (req.body.groups) {
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
+                const list = await api.Group.list({ useCache: true });
+
+                for (const group of req.body.groups) {
+                    if (!list.data.find((g) => {
+                        return g.name === group && g.direction === 'IN';
+                    })) {
+                        throw new Err(400, null, `Group "${group}" does not exist on TAK Server`);
+                    }
+                }
             }
 
             if (req.body.data) {

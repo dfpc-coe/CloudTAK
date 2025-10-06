@@ -72,7 +72,7 @@
                             </div>
                             <ContactPuck
                                 class='mx-2'
-                                :compact='true'
+                                :size='20'
                                 :team='team'
                             /> <span v-text='config.groups[team] ? config.groups[team] : team' />
                         </div>
