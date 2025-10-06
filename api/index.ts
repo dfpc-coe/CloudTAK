@@ -82,7 +82,11 @@ export default async function server(config: Config): Promise<ServerManager> {
 
     const schema = new Schema(express.Router(), {
         prefix: '/api',
-        logging: true,
+        logging: {
+            skip: function (req, res) {
+                return res.statusCode <= 299 && res.statusCode >= 200;
+            }
+        },
         limit: 50,
         error: {
             400: StandardResponse,
