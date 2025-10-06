@@ -249,10 +249,15 @@ export default async function router(schema: Schema, config: Config) {
                     })
                 }
 
-                config.models.ConnectionFeature.generate(insertValues, {
-                    upsert: GenerateUpsert.UPDATE,
-                    upsertTarget: [ ConnectionFeature.connection, ConnectionFeature.id ]
-                })
+                try {
+                    await config.models.ConnectionFeature.generate(insertValues, {
+                        upsert: GenerateUpsert.UPDATE,
+                        upsertTarget: [ ConnectionFeature.connection, ConnectionFeature.id ]
+                    })
+                } catch (err) {
+                    // We don't throw as priority is TAK Server Delivery
+                    console.error(err);
+                }
             }
 
             if (cots.length === 0 && !errors.length) {
