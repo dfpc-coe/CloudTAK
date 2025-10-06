@@ -20,7 +20,7 @@
                 <ContactPuck
                     v-else
                     :team='contact.team'
-                    :compact='compact'
+                    :size='compact ? 20 : 32'
                 />
             </div>
             <div
