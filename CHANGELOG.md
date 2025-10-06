@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.36.0 - 2025-10-06
+
+- :rocket: Internally buffer Connection Features
+
 ### v11.35.0 - 2025-10-02
 
 - :bug: Handle Zipped Zips as a KMZ can be inside a DataPackage or the DataPackage can BE the KMZ
