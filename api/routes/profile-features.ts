@@ -8,8 +8,8 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { ProfileFeature } from '../lib/schema.js';
-import { StandardResponse, ProfileFeatureResponse, GeoJSONFeatureCollection, GeoJSONFeature } from '../lib/types.js'
-import { ProfileFeatureFormat } from '../lib/enums.js'
+import { StandardResponse, FeatureResponse, GeoJSONFeatureCollection, GeoJSONFeature } from '../lib/types.js'
+import { ExportFeatureFormat } from '../lib/enums.js'
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
 
@@ -21,8 +21,8 @@ export default async function router(schema: Schema, config: Config) {
             Return a list of Profile Features
         `,
         query: Type.Object({
-            format: Type.Enum(ProfileFeatureFormat, {
-                default: ProfileFeatureFormat.GEOJSON
+            format: Type.Enum(ExportFeatureFormat, {
+                default: ExportFeatureFormat.GEOJSON
             }),
             deleted: Type.Boolean({
                 default: false,
@@ -43,7 +43,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ProfileFeatureResponse)
+            items: Type.Array(FeatureResponse)
         })
 
     }, async (req, res) => {
@@ -74,7 +74,7 @@ export default async function router(schema: Schema, config: Config) {
                             type: 'Feature',
                             properties: feat.properties,
                             geometry: feat.geometry
-                        } as Static<typeof ProfileFeatureResponse>
+                        } as Static<typeof FeatureResponse>
                     })
                 })
             } else {
@@ -95,14 +95,14 @@ export default async function router(schema: Schema, config: Config) {
                     })
                 }
 
-                if (req.query.format === ProfileFeatureFormat.GEOJSON) {
+                if (req.query.format === ExportFeatureFormat.GEOJSON) {
                     res.set('Content-Type', 'application/geo+json');
                     const output = Buffer.from(JSON.stringify(feats, null, 4));
 
                     res.set('Content-Length', String(Buffer.byteLength(output)));
                     res.write(output);
                     res.end();
-                } else if (req.query.format === ProfileFeatureFormat.KML) {
+                } else if (req.query.format === ExportFeatureFormat.KML) {
                     res.set('Content-Type', 'application/vnd.google-earth.kml+xml');
 
                     const output = Buffer.from(tokml(feats, {
@@ -206,8 +206,8 @@ export default async function router(schema: Schema, config: Config) {
                 `
             })
         }),
-        body: ProfileFeatureResponse,
-        res: ProfileFeatureResponse,
+        body: FeatureResponse,
+        res: FeatureResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -220,7 +220,7 @@ export default async function router(schema: Schema, config: Config) {
             // Saving to database implies archived
             req.body.properties.archived = true;
 
-            const feat: Static<typeof ProfileFeatureResponse> = {
+            const feat: Static<typeof FeatureResponse> = {
                 type: 'Feature',
                 ...(await config.models.ProfileFeature.generate({
                     id: req.body.id,
@@ -233,7 +233,7 @@ export default async function router(schema: Schema, config: Config) {
                     upsert: GenerateUpsert.UPDATE,
                     upsertTarget: [ ProfileFeature.username, ProfileFeature.id ]
                 }))
-            } as Static<typeof ProfileFeatureResponse>;
+            } as Static<typeof FeatureResponse>;
 
             if (req.query.broadcast) {
                 const sockets = config.wsClients.get(user.email) || []
@@ -299,7 +299,7 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             id: Type.String()
         }),
-        res: ProfileFeatureResponse
+        res: FeatureResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -314,7 +314,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 type: 'Feature',
                 ...feat
-            } as Static<typeof ProfileFeatureResponse>)
+            } as Static<typeof FeatureResponse>)
         } catch (err) {
              Err.respond(err, res);
         }

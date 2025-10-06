@@ -34,20 +34,25 @@
                 <div
                     v-for='group in filtered'
                     :key='group'
-                    class='col-12 cursor-pointer'
-                    @click='updateGroup(group)'
+                    class='col-12'
+                    :style='{
+                        "color": props.disabled ? "var(--tblr-gray-500)" : "var(--tblr-body-color)",
+                    }'
+                    :class='{
+                        "cursor-pointer": !props.disabled,
+
+                    }'
+                    @click='props.disabled ? null : updateGroup(group)'
                 >
                     <IconCircleFilled
                         v-if='selected.has(group)'
                         :size='32'
                         stroke='1'
-                        class='cursor-pointer'
                     />
                     <IconCircle
                         v-else
                         :size='32'
                         troke='1'
-                        class='cursor-pointer'
                     />
                     <span
                         class='mx-2 user-select-none'
@@ -75,6 +80,7 @@ import {
 } from '@tabler/icons-vue';
 
 const props = defineProps<{
+    disabled?: boolean,
     connection?: number,
     limit?: number,
     active?: boolean,

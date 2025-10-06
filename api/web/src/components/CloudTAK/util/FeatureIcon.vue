@@ -41,6 +41,11 @@
         :color='feature.properties.fill || "white"'
         stroke='1'
     />
+    <ContactPuck
+        v-else-if='feature.properties && feature.properties.group'
+        :size='props.size'
+        :team='feature.properties.group.name'
+    />
     <IconMapPin
         v-else
         :size='props.size'
@@ -50,6 +55,7 @@
 
 <script setup lang='ts'>
 import { useTemplateRef, watch, computed } from 'vue';
+import ContactPuck from './ContactPuck.vue'
 import {
     IconVideo,
     IconRoute,

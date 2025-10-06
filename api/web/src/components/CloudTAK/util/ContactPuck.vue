@@ -1,8 +1,7 @@
 <template>
     <IconCircleFilled
-        v-if='team'
-        :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
-        :size='compact ? 20 : 32'
+        v-if='props.team'
+        :size='props.size ? props.size : 32'
         stroke='1'
         :class='{
             "text-yellow": props.team === "Yellow",
@@ -23,8 +22,7 @@
     />
     <IconUserQuestion
         v-else
-        :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
-        :size='compact ? 20 : 32'
+        :size='size ? 20 : 32'
         stroke='1'
     />
 </template>
@@ -37,6 +35,6 @@ import {
 
 const props = defineProps<{
     team?: string,
-    compact?: boolean
+    size?: number
 }>();
 </script>

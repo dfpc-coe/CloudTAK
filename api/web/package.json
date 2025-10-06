@@ -74,7 +74,7 @@
         "eslint": "^9.0.0",
         "eslint-plugin-vue": "^10.0.0",
         "happy-dom": "^19.0.0",
-        "jsdom": "^26.1.0",
+        "jsdom": "^27.0.0",
         "openapi-typescript": "^7.0.0",
         "sass-embedded": "^1.86.0",
         "typescript": "^5.7.0",

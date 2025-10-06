@@ -36,7 +36,8 @@ export const AugmentedLayerIncoming = Type.Object({
     stale: Type.Integer(),
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.Any()),
-    data: Type.Union([Type.Integer(), Type.Null()])
+    data: Type.Union([Type.Integer(), Type.Null()]),
+    groups: Type.Array(Type.String())
 })
 
 export const AugmentedLayer = Type.Object({
@@ -179,6 +180,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     ephemeral: LayerIncoming.ephemeral,
                     config: LayerIncoming.config,
                     data: LayerIncoming.data,
+                    groups: LayerIncoming.groups,
                     enabled_styles: LayerIncoming.enabled_styles,
                     styles: LayerIncoming.styles,
                 }),
@@ -261,6 +263,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     ephemeral: LayerIncoming.ephemeral,
                     config: LayerIncoming.config,
                     data: LayerIncoming.data,
+                    groups: LayerIncoming.groups,
                     enabled_styles: LayerIncoming.enabled_styles,
                     styles: LayerIncoming.styles,
                 }),

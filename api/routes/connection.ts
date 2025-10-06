@@ -364,6 +364,10 @@ export default async function router(schema: Schema, config: Config) {
                 connection = ${req.params.connectionid}
             `);
 
+            await config.models.ConnectionFeature.delete(sql`
+                connection = ${req.params.connectionid}
+            `);
+
             await config.models.Connection.delete(req.params.connectionid);
 
             config.conns.delete(req.params.connectionid);

@@ -16,6 +16,7 @@ export default class Models {
 
     Connection: Modeler<typeof pgtypes.Connection>;
     ConnectionToken: Modeler<typeof pgtypes.ConnectionToken>;
+    ConnectionFeature: Modeler<typeof pgtypes.ConnectionFeature>;
 
     Setting: Setting;
 
@@ -71,6 +72,7 @@ export default class Models {
         this.VideoLease = new Modeler(pg, pgtypes.VideoLease);
         this.Connection = new Modeler(pg, pgtypes.Connection);
         this.ConnectionToken = new Modeler(pg, pgtypes.ConnectionToken);
+        this.ConnectionFeature = new Modeler(pg, pgtypes.ConnectionFeature);
         this.Task = new Modeler(pg, pgtypes.Task);
         this.Data = new Data(pg);
         this.Iconset = new Modeler(pg, pgtypes.Iconset);
