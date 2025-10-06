@@ -11,7 +11,7 @@ import Config from '../lib/config.js';
 import { HistoryOptions } from '@tak-ps/node-tak/lib/api/query';
 import { CoTParser, Feature } from '@tak-ps/node-cot';
 import { MissionLayerType } from '@tak-ps/node-tak/lib/api/mission-layer';
-import { StandardLayerResponse, LayerError, FeatureResponse } from '../lib/types.js';
+import { StandardLayerResponse, LayerError } from '../lib/types.js';
 import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
