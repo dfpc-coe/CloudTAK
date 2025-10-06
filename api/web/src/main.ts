@@ -272,14 +272,9 @@ const router = VueRouter.createRouter({
                 path: 'layer',
                 name: 'data-layer',
                 component: () => import('./components/ETL/Data/DataLayer.vue')
-            },{
-                path: 'jobs',
-                name: 'data-jobs',
-                component: () => import('./components/ETL/Data/DataJobs.vue')
             }]
         },
         { path: '/connection/:connectionid/data/:dataid/edit', name: 'data-edit', component: () => import('./components/ETL/DataEdit.vue') },
-        { path: '/connection/:connectionid/data/:dataid/job/:jobid', name: 'data-job', component: () => import('./components/ETL/DataJob.vue') },
 
         { path: '/connection', name: 'connections', component: () => import('./components/ETL/Connections.vue') },
         { path: '/connection/new', name: 'connection-new', component: () => import('./components/ETL/ConnectionEdit.vue') },
