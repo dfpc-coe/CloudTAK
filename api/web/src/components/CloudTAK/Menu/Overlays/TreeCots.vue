@@ -30,7 +30,7 @@
                 />
                 <ContactPuck
                     class='mx-2'
-                    :compact='true'
+                    :size='20'
                     :team='"White"'
                 /> Teams
             </div>
@@ -58,7 +58,7 @@
 
                         <ContactPuck
                             class='mx-2'
-                            :compact='true'
+                            :size='20'
                             :team='group'
                         /><span v-text='`${group} Team`' />
                     </div>
