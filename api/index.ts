@@ -84,7 +84,7 @@ export default async function server(config: Config): Promise<ServerManager> {
         prefix: '/api',
         logging: {
             skip: function (req, res) {
-                return res.statusCode <= 299 && res.statusCode >= 200;
+                return res.statusCode <= 399 && res.statusCode >= 200;
             }
         },
         limit: 50,
