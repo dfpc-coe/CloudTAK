@@ -199,6 +199,26 @@
         "query": false,
         "res": true
     },
+    "GET /connection/:connectionid/feature": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/feature": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/feature/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/feature/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/layer/:layerid/alert": {
         "body": false,
         "query": true,
