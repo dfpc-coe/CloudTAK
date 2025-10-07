@@ -30,7 +30,7 @@
             >
                 <TablerLoading
                     v-if='loading.ids.has(logidx)'
-                    desc='Deleting Log'
+                    desc='Updating Log'
                 />
                 <template v-else>
                     <div class='d-flex'>
@@ -51,9 +51,17 @@
                             class='position-absolute cursor-pointer end-0 mx-2 my-2'
                             @delete='deleteLog(logidx)'
                         />
-                        <pre
-                            class='rounded mb-1'
-                            v-text='log.content || "None"'
+
+                        <CopyField
+                            mode='text'
+                            :edit='role.permissions.includes("MISSION_WRITE")'
+                            :deletable='role.permissions.includes("MISSION_WRITE")'
+                            :hover='role.permissions.includes("MISSION_WRITE")'
+                            :rows='Math.max(4, log.content.split("\n").length)'
+                            :model-value='log.content || ""'
+                            style='background-color: var(--tblr-body-bg)'
+                            @submit='updateLog(logidx, $event)'
+                            @delete='deleteLog(logidx)'
                         />
                     </div>
 
@@ -131,6 +139,7 @@ import { ref, computed, onMounted } from 'vue'
 import type { ComputedRef } from 'vue';
 import TagEntry from '../../util/TagEntry.vue';
 import type { MissionLog } from '../../../../types.ts';
+import CopyField from '../../util/CopyField.vue';
 import {
     TablerNone,
     TablerInput,
@@ -208,6 +217,37 @@ async function fetchLogs() {
     loading.value.logs = false;
 }
 
+async function updateLog(logidx: number, content: string) {
+    if (sub.value) {
+        loading.value.ids.add(logidx);
+        const log = await Subscription.logUpdate(
+            props.mission.guid,
+            logs.value[logidx].id,
+            {
+                content,
+                keywords: logs.value[logidx].keywords
+            },{
+                missionToken: props.token
+            }
+        );
+        sub.value.logs[logidx] = log;
+        loading.value.ids.delete(logidx);
+    } else {
+        loading.value.logs = true;
+        await Subscription.logUpdate(
+            props.mission.guid,
+            logs.value[logidx].id,
+            {
+                content,
+                keywords: logs.value[logidx].keywords
+            },{
+                missionToken: props.token
+            }
+        );
+        await fetchLogs();
+    }
+}
+
 async function deleteLog(logidx: number): Promise<void> {
     if (sub.value) {
         loading.value.ids.add(logidx);
@@ -244,7 +284,6 @@ async function submitLog() {
             await fetchLogs();
         }
 
-        createLog.value.keywords = [];
         createLog.value.content = '';
     } catch (err) {
         loading.value.create = false;

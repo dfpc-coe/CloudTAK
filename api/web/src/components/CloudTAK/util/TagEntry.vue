@@ -1,6 +1,7 @@
 <template>
     <div>
         <div
+            ref='tagEntryEl'
             :class='{
                 "tag-entry--focus": isInputActive,
                 "is-invalid": error
@@ -53,192 +54,204 @@
     </div>
 </template>
 
-<script>
-    import {
-        TablerIconButton
-    } from '@tak-ps/vue-tabler';
-    import {
-        IconX
-    } from '@tabler/icons-vue';
+<script setup>
+import { ref, watch, computed } from 'vue';
+import {
+    TablerIconButton
+} from '@tak-ps/vue-tabler';
+import {
+    IconX
+} from '@tabler/icons-vue';
 
-    export default {
-        components: {
-            TablerIconButton,
-            IconX
-        },
-        props: {
-            disabled: {
-                type: Boolean,
-                default: false
-            },
-            modelValue: {
-                type: String,
-                default: '',
-            },
-            validate: {
-                type: [String, Function, Object],
-                default: ""
-            },
-            addTagOnKeys: {
-                type: Array,
-                default: function () {
-                    return [
-                        13, // Enter
-                        188, // Comma ','
-                        32, // Space
-                    ];
-                }
-            },
-            placeholder: {
-                type: String,
-                default: ''
-            },
-            tags: {
-                type: Array,
-                default: () => []
-            },
-            limit: {
-                type: Number,
-                default: -1
-            },
-            tagLength: {
-                type: Number,
-                default: -1
-            },
-            allowDuplicates: {
-                type: Boolean,
-                default: false
-            },
-            addTagOnBlur: {
-                type: Boolean,
-                default: false
-            },
-        },
-        emits: ['update:modelValue', 'on-limit', 'tags', 'on-error', 'on-focus', 'on-blur'],
-        data() {
-            return {
-                isInputActive: false,
-                error: false,
-                newTag: '',
-                innerTags: []
-            }
-        },
-        computed: {
-            isLimit() {
-                let isLimit = this.limit > 0 && Number(this.limit) === this.innerTags.length;
-                if (isLimit) {
-                    this.$emit('on-limit');
-                }
-                return isLimit;
-            }
-        },
-        watch: {
-            modelValue: {
-                immediate: true,
-                handler(value) {
-                    this.newTag = value;
-                }
-            },
-            tags: {
-                deep: true,
-                immediate: true,
-                handler(tags) {
-                    this.innerTags = [...tags];
-                    this.$emit('tags', this.innerTags);
-                }
-            },
-        },
-        methods: {
-            focusNewTag() {
-                if (!this.$el.querySelector(".tag-entry-new-tag")) {
-                    return;
-                }
+// Props
+const props = defineProps({
+    disabled: {
+        type: Boolean,
+        default: false
+    },
+    modelValue: {
+        type: String,
+        default: '',
+    },
+    validate: {
+        type: [String, Function, Object],
+        default: ""
+    },
+    addTagOnKeys: {
+        type: Array,
+        default: () => [
+            13, // Enter
+            188, // Comma ','
+            32, // Space
+        ]
+    },
+    placeholder: {
+        type: String,
+        default: ''
+    },
+    tags: {
+        type: Array,
+        default: () => []
+    },
+    limit: {
+        type: Number,
+        default: -1
+    },
+    tagLength: {
+        type: Number,
+        default: -1
+    },
+    allowDuplicates: {
+        type: Boolean,
+        default: false
+    },
+    addTagOnBlur: {
+        type: Boolean,
+        default: false
+    },
+});
 
-                this.$el.querySelector(".tag-entry-new-tag").focus();
-            },
-            handleInputFocus(event) {
-                this.isInputActive = true;
-                this.$emit('on-focus', event);
-            },
-            handleInputBlur(e) {
-                this.isInputActive = false;
-                this.addNew(e);
-                this.$emit('on-blur', e);
-            },
-            addNew(e) {
-                const keyShouldAddTag = e
-                    ? this.addTagOnKeys.indexOf(e.keyCode) !== -1
-                    : true;
+// Emits
+const emit = defineEmits(['update:modelValue', 'on-limit', 'tags', 'on-error', 'on-focus', 'on-blur']);
 
-                const typeIsNotBlur = e && e.type !== "blur";
+// State
+const isInputActive = ref(false);
+const error = ref(false);
+const newTag = ref('');
+const innerTags = ref([]);
+const tagEntryEl = ref(null); // Template ref
 
-                if (this.isLimit) {
-                    this.makeItError('Exceeds max number of tags');
-                    return;
-                } else if (
-                    !keyShouldAddTag && (typeIsNotBlur || !this.addTagOnBlur)
-                ) {
-                    this.makeItError(false)
-                    return;
-                }
+// Computed
+const isLimit = computed(() => {
+    const limitReached = props.limit > 0 && Number(props.limit) === innerTags.value.length;
+    if (limitReached) {
+        emit('on-limit');
+    }
+    return limitReached;
+});
 
-                this.makeItError(this.validateIfNeeded(this.newTag));
+// Watchers
+watch(() => props.modelValue, (value) => {
+    newTag.value = value;
+}, { immediate: true });
 
-                if (this.newTag && (this.tagLength !== -1 && this.newTag.length <= this.tagLength)) {
-                    this.makeItError(`Exceeds ${this.tagLength} characters`);
-                }
+watch(() => props.tags, (tags) => {
+    innerTags.value = [...tags];
+    emit('tags', innerTags.value);
+}, { deep: true, immediate: true });
 
-                if (!this.allowDuplicates && this.innerTags.includes(this.newTag)) {
-                    this.makeItError(`Duplicate Tag`);
-                }
 
-                if (!this.error) {
-                    this.innerTags.push(this.newTag);
-                    this.newTag = '';
-                    this.$emit('update:modelValue', '');
-                }
-
-                if (e) {
-                    e.preventDefault();
-                }
-            },
-            handleInput(event) {
-                this.$emit("update:modelValue", event.target.value)
-            },
-            makeItError(errorMessage) {
-                if (errorMessage) {
-                    this.error = errorMessage
-                    this.$emit('on-error', new Error(errorMessage));
-                } else {
-                    this.error = false;
-                }
-            },
-            validateIfNeeded(tagValue) {
-                if (this.validate === "" || this.validate === undefined) {
-                    return false;
-                }
-
-                if (typeof this.validate === "function") {
-                    return this.validate(tagValue);
-                }
-
-                if (
-                    typeof this.validate === "object" &&
-                    this.validate.test !== undefined
-                ) {
-                    return this.validate.test(tagValue);
-                }
-
-                return false;
-            },
-            removeLastTag() {
-                if (this.newTag) {
-                    return;
-                }
-                this.innerTags.pop();
-            },
+// Methods
+function focusNewTag() {
+    if (tagEntryEl.value) {
+        const input = tagEntryEl.value.querySelector(".tag-entry-new-tag");
+        if (input) {
+            input.focus();
         }
-    };
+    }
+}
+
+function handleInputFocus(event) {
+    isInputActive.value = true;
+    emit('on-focus', event);
+}
+
+function handleInputBlur(e) {
+    isInputActive.value = false;
+    if (props.addTagOnBlur) {
+        addNew(e);
+    }
+    emit('on-blur', e);
+}
+
+function addNew(e) {
+    const keyShouldAddTag = e ? props.addTagOnKeys.indexOf(e.keyCode) !== -1 : true;
+    const typeIsNotBlur = e && e.type !== "blur";
+
+    if (isLimit.value) {
+        makeItError('Exceeds max number of tags');
+        return;
+    } else if (!keyShouldAddTag && (typeIsNotBlur || !props.addTagOnBlur)) {
+        makeItError(false);
+        return;
+    }
+
+    // Clear previous error before validation
+    makeItError(false);
+
+    const validationError = validateIfNeeded(newTag.value);
+    if (validationError) {
+        makeItError(validationError);
+        if (e) e.preventDefault();
+        return;
+    }
+
+    if (newTag.value && (props.tagLength !== -1 && newTag.value.length > props.tagLength)) {
+        makeItError(`Exceeds ${props.tagLength} characters`);
+        if (e) e.preventDefault();
+        return;
+    }
+
+    if (!props.allowDuplicates && innerTags.value.includes(newTag.value)) {
+        makeItError(`Duplicate Tag: "${newTag.value}"`);
+        if (e) e.preventDefault();
+        return;
+    }
+
+    if (newTag.value.trim() !== '') {
+        innerTags.value.push(newTag.value.trim());
+        newTag.value = '';
+        emit('update:modelValue', '');
+    }
+
+    if (e) {
+        e.preventDefault();
+    }
+}
+
+function handleInput(event) {
+    emit("update:modelValue", event.target.value);
+}
+
+function makeItError(errorMessage) {
+    if (errorMessage) {
+        error.value = errorMessage;
+        emit('on-error', new Error(errorMessage));
+    } else {
+        error.value = false;
+    }
+}
+
+function validateIfNeeded(tagValue) {
+    if (!props.validate) {
+        return false;
+    }
+
+    if (typeof props.validate === "function") {
+        return props.validate(tagValue);
+    }
+
+    if (typeof props.validate === "object" && props.validate.test !== undefined) {
+        // Assuming it's a RegExp object. If test fails, return an error message.
+        return !props.validate.test(tagValue) ? `Validation failed for "${tagValue}"` : false;
+    }
+
+    // For string validation (assuming it's a regex pattern)
+    if (typeof props.validate === 'string') {
+        const regex = new RegExp(props.validate);
+         return !regex.test(tagValue) ? `Validation failed for "${tagValue}"` : false;
+    }
+
+    return false;
+}
+
+function removeLastTag() {
+    if (newTag.value) {
+        return;
+    }
+
+    innerTags.value.pop();
+}
 </script>
 
 <style lang="scss">
@@ -253,6 +266,10 @@
     display: flex;
     flex-wrap: wrap;
 
+    &.is-invalid {
+        border-color: var(--tblr-danger);
+    }
+
     &--focus {
         color: var(--tblr-body-color);
         background-color: var(--tblr-bg-forms);
@@ -261,13 +278,10 @@
         box-shadow: var(--tblr-box-shadow-input),0 0 0 .25rem rgba(var(--tblr-primary-rgb),.25);
     }
 
-    &--error{
-        border-color: #F56C6C;
-    }
-
     .tag-entry-content {
         width: 100%;
         display: flex;
+        align-items: center;
         flex-wrap: wrap;
     }
 
@@ -279,12 +293,8 @@
         outline: none;
         padding:0 4px;
         flex: 1;
-        min-width: 60px;
+        min-width: 80px;
         height: 27px;
-
-        &--error {
-            color: #F56C6C;
-        }
     }
 }
 </style>
