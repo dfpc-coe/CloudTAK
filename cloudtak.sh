@@ -41,9 +41,39 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
 
     docker run hello-world
 
+    git clone https://github.com/dfpc-coe/CloudTAK.git
+
+    cd CloudTAK
+
     docker compose build
+
+    if [[ ! -f .env ]]; then
+        echo "Generating a new .env file with default settings..."
+        cp .env.example .env
+        echo ".env file created. Please review and modify it as needed."
+    else
+        echo ".env file already exists. Skipping creation."
+    fi
+elif [[ "$SUBCOMMAND" == "backup" ]]; then
+    if [ ! -f .env ]; then
+        echo ".env file not found. Please run 'install' first."
+        exit 1
+    fi
+
+    # Check if postgres container is running
+    if ! docker ps | grep "cloudtak-postgis" &> /dev/null; then
+        echo "PostgreSQL container is not running. Please start the services first."
+        exit 1
+    fi
+
+    mkdir -p ~/cloudtak-backups
+    BACKUP_FILE="~/cloudtak_backups/$(date +%Y%m%d_%H%M%S).sql"
+    echo "Backing up PostgreSQL database to ${BACKUP_FILE}..."
+    PGDATABASE=$(grep "^POSTGRES=" .env | sed 's/^POSTGRES=//') pg_dump -f $BACKUP_FILE
 elif [[ "$SUBCOMMAND" == "start" ]]; then
     docker compose up -d
+elif [[ "$SUBCOMMAND" == "stop" ]]; then
+    docker compose down
 elif [[ "$SUBCOMMAND" == "update" ]]; then
     if ! command -v git &> /dev/null; then
         echo "git could not be found, please install git first."
@@ -63,10 +93,19 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
         exit 1
     fi
 
+    if [ ! -d .git ]; then
+        echo "This directory is not a git repository. Please run 'install' first."
+        exit 1
+    fi
+
+    git pull
+
     docker compose build api --no-cache
     docker compose build events
     docker compose build tiles
+
+    docker compose up -d
 else
-    echo "Usage: $0 install|update"
+    echo "Usage: $0 install|start|update|stop|backup"
     exit 0
 fi
