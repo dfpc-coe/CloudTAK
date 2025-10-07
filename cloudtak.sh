@@ -2,23 +2,23 @@ SUBCOMMAND=${1:-}
 
 set -euo pipefail
 
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-
-    if [ "$ID" = "ubuntu" ]; then
-        echo "This is an Ubuntu system. ✅"
-        echo "Details: $PRETTY_NAME"
-    else
-        echo "This is not an Ubuntu system. ❌"
-        echo "OS Identified: $PRETTY_NAME"
-    fi
-else
-    echo "Cannot determine the OS, the /etc/os-release file is missing."
-    exit 1
-fi
-
-
 if [[ "$SUBCOMMAND" == "install" ]]; then
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+
+        if [ "$ID" = "ubuntu" ]; then
+            echo "This is an Ubuntu system. ✅"
+            echo "Details: $PRETTY_NAME"
+        else
+            echo "This is not an Ubuntu system. ❌"
+            echo "OS Identified: $PRETTY_NAME"
+            exit 1
+        fi
+    else
+        echo "Cannot determine the OS, the /etc/os-release file is missing."
+        exit 1
+    fi
+
     sudo apt update
     sudo apt install -y git jq yq ca-certificates curl
 
@@ -42,6 +42,8 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
     docker run hello-world
 
     docker compose build
+elif [[ "$SUBCOMMAND" == "start" ]]; then
+    docker compose up -d
 elif [[ "$SUBCOMMAND" == "update" ]]; then
     if ! command -v git &> /dev/null; then
         echo "git could not be found, please install git first."
@@ -60,6 +62,10 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
         echo "On Ubuntu: sudo apt-get install yq"
         exit 1
     fi
+
+    docker compose build api --no-cache
+    docker compose build events
+    docker compose build tiles
 else
     echo "Usage: $0 install|update"
     exit 0
