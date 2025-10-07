@@ -317,6 +317,29 @@ export default class Subscription {
         }) as MissionChanges;
     }
 
+    static async logUpdate(
+        guid: string,
+        logid: string,
+        body: object,
+        opts: {
+            token?: string;
+            missionToken?: string
+        } = {}
+    ): Promise<MissionLog> {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log/' + encodeURIComponent(logid));
+
+        const log = await std(url, {
+            method: 'PATCH',
+            body: body,
+            token: opts.token,
+            headers: Subscription.headers(opts.missionToken)
+        }) as {
+            data: MissionLog
+        };
+
+        return log.data;
+    }
+
     static async logCreate(
         guid: string,
         body: object,

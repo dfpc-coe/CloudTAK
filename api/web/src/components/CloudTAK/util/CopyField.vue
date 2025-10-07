@@ -65,10 +65,25 @@
                 v-text='text'
             />
 
+            <TablerDelete
+                v-if='props.deletable'
+                displaytype='icon'
+                style='top: 8px;'
+                :size='24'
+                :class='{
+                    "hover-button-hidden": hover,
+                }'
+                :style='{
+                    "right": props.edit ? "64px" : "32px",
+                }'
+                class='position-absolute bg-accent'
+                @delete='$emit("delete")'
+            />
+
             <TablerIconButton
                 v-if='edit'
                 title='Edit Field'
-                class='position-absolute'
+                class='position-absolute bg-accent'
                 :class='{
                     "hover-button-hidden": hover,
                 }'
@@ -83,7 +98,7 @@
 
             <CopyButton
                 :text='text'
-                class='position-absolute'
+                class='position-absolute bg-accent'
                 :size='24'
                 style='right: 8px; top: 8px;'
             />
@@ -91,14 +106,29 @@
         <template v-else>
             <span v-text='text' />
 
-            <TablerIconButton
-                v-if='edit'
-                title='Edit'
-                class='position-absolute'
+            <TablerDelete
+                v-if='props.deletable'
+                displaytype='icon'
+                style='top: 6px;'
+                :size='24'
                 :class='{
                     "hover-button-hidden": hover,
                 }'
-                style='right: 36px; top: 6px;'
+                :style='{
+                    "right": props.edit ? "64px" : "32px",
+                }'
+                class='position-absolute bg-accent'
+                @delete='$emit("delete")'
+            />
+
+            <TablerIconButton
+                v-if='edit'
+                title='Edit'
+                class='position-absolute bg-accent'
+                :class='{
+                    "hover-button-hidden": hover,
+                }'
+                style='right: 32px; top: 6px;'
                 @click='editing = true'
             >
                 <IconPencil
@@ -122,6 +152,7 @@ import { ref, watch, computed, useTemplateRef } from 'vue';
 import CopyButton from './CopyButton.vue';
 import {
     TablerInput,
+    TablerDelete,
     TablerMarkdown,
     TablerIconButton
 } from '@tak-ps/vue-tabler'
@@ -132,6 +163,7 @@ import {
 
 const emit = defineEmits([
     'submit',
+    'delete',
     'update:modelValue'
 ]);
 
@@ -165,6 +197,10 @@ const props = defineProps({
         default: false
     },
     edit: {
+        type: Boolean,
+        default: false
+    },
+    deletable: {
         type: Boolean,
         default: false
     },
