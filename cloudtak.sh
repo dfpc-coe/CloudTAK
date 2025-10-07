@@ -20,7 +20,7 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
     fi
 
     sudo apt update
-    sudo apt install -y git jq yq ca-certificates curl
+    sudo apt install -y git jq ca-certificates curl
 
     for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
@@ -67,9 +67,9 @@ elif [[ "$SUBCOMMAND" == "backup" ]]; then
     fi
 
     mkdir -p ~/cloudtak-backups
-    BACKUP_FILE="~/cloudtak_backups/$(date +%Y%m%d_%H%M%S).sql"
-    echo "Backing up PostgreSQL database to ${BACKUP_FILE}..."
-    PGDATABASE=$(grep "^POSTGRES=" .env | sed 's/^POSTGRES=//') pg_dump -f $BACKUP_FILE
+    BACKUP_FILE=~/cloudtak-backups/cloudtak-$(date +%Y%m%d_%H%M%S).sql
+    echo "Backing up PostgreSQL database to ${BACKUP_FILE}"
+    pg_dump -d $(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis/@localhost/') > $BACKUP_FILE
 elif [[ "$SUBCOMMAND" == "start" ]]; then
     docker compose up -d
 elif [[ "$SUBCOMMAND" == "stop" ]]; then
@@ -81,21 +81,15 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
         exit 1
     fi
 
-    if ! command -v jq &> /dev/null; then
-        echo "git could not be found, please install git first."
-        echo "On Ubuntu: sudo apt-get install jq"
-        exit 1
-    fi
-
-    if ! command -v yq &> /dev/null; then
-        echo "git could not be found, please install yq first."
-        echo "On Ubuntu: sudo apt-get install yq"
-        exit 1
-    fi
-
     if [ ! -d .git ]; then
-        echo "This directory is not a git repository. Please run 'install' first."
+        echo "This directory is not a git repository. Please run './cloudtak.sh install' first."
         exit 1
+    fi
+
+    # Promp if they want a backup
+    read -p "Backup Database? (y/n): " BACKUP_CHOICE
+    if [[ "$BACKUP_CHOICE" == "y" || "$BACKUP_CHOICE" == "Y" ]]; then
+        $0 backup
     fi
 
     git pull
