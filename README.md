@@ -27,6 +27,7 @@ many of the services it provides will initiate AWS API calls with no graceful fa
 ```
 git clone git@github.com:dfpc-coe/CloudTAK.git
 cd CloudTAK
+cp .env.example .env
 docker compose up --build
 ```
 
