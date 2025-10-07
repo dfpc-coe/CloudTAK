@@ -56,7 +56,7 @@ test('GET: api/marti/package - empty', async (t) => {
 });
 
 test('POST api/marti/package - create', async (t) => {
-    let outputPath = path.resolve(os.tmpdir(), randomUUID() + '.zip');
+    const outputPath = path.resolve(os.tmpdir(), randomUUID() + '.zip');
 
     try {
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
@@ -71,7 +71,7 @@ test('POST api/marti/package - create', async (t) => {
                          }
                      });
 
-                    bb.on('file', (fieldname, file, filename, encoding, mimetype) => {
+                    bb.on('file', (fieldname, file) => {
                         const writeStream = fs.createWriteStream(outputPath);
 
                         file.pipe(writeStream);
