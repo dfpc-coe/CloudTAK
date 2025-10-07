@@ -1,7 +1,13 @@
 import test from 'tape';
+import busboy from 'busboy';
 import { FormData } from 'undici';
+import os from 'node:os';
+import fs from 'node:fs';
 import fsp from 'node:fs/promises';
+import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import Flight from './flight.js';
+import { DataPackage } from '@tak-ps/node-cot';
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 const flight = new Flight();
@@ -50,11 +56,49 @@ test('GET: api/marti/package - empty', async (t) => {
 });
 
 test('POST api/marti/package - create', async (t) => {
+    let outputPath = path.resolve(os.tmpdir(), randomUUID() + '.zip');
+
     try {
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
             } else if (request.method === 'POST' && request.url.includes('/Marti/sync/missionupload')) {
+                await new Promise((resolve, reject) => {
+                     const bb = busboy({
+                         headers: request.headers,
+                         limits: {
+                             files: 1
+                         }
+                     });
+
+                    bb.on('file', (fieldname, file, filename, encoding, mimetype) => {
+                        const writeStream = fs.createWriteStream(outputPath);
+
+                        file.pipe(writeStream);
+
+                        writeStream.on('finish', () => {
+                            resolve(true);
+                        });
+
+                        writeStream.on('error', (err) => {
+                            reject(err);
+                        });
+                    })
+
+                    bb.on('error', (err) => {
+                        reject(err);
+                    });
+
+                    request.pipe(bb);
+                });
+
+                const dp = await DataPackage.parse(outputPath);
+
+                t.equals(dp.settings.name, 'SingleFeaturePackage');
+                t.equals(dp.contents.length, 1);
+                t.ok(dp.contents[0]._attributes.zipEntry.endsWith('.cot'));
+
+                await dp.destroy();
 
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
@@ -101,11 +145,9 @@ test('POST api/marti/package - create', async (t) => {
         const body = new FormData();
         const file = await fsp.readFile(new URL('./data/SingleFeaturePackage.zip', import.meta.url));
 
-        body.append('file', new Blob([file], {
+        body.append('file', new Blob([new Uint8Array(file)], {
             type: 'application/zip'
         }), 'SingleFeaturePackage.zip');
-
-        // TODO Ensure that this Data Package isn't double wrapped
 
         await flight.fetch('/api/marti/package', {
             method: 'POST',
