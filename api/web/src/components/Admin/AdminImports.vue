@@ -63,7 +63,7 @@
                                                 />
 
                                                 <div>
-                                                    <div v-text='imp[h.name]'/>
+                                                    <div v-text='imp[h.name]' />
                                                     <div
                                                         class='subheader'
                                                         v-text='imp.updated'

@@ -1,7 +1,7 @@
 <template>
     <div>
         <div
-            ref="tagEntryEl"
+            ref='tagEntryEl'
             :class='{
                 "tag-entry--focus": isInputActive,
                 "is-invalid": error
