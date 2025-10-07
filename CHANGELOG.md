@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.38.0 - 2025-10-07
+
+- :tada: Introduce a Bash Script for managing Docker Compose based deployments
+
 ### v11.37.0 - 2025-10-07
 
 - :bug: Fix an issue & add unit tests for a case when an uploaded DataPackage would be treated as a file within a data package instead of an existing one
