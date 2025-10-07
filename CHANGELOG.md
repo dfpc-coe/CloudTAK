@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v11.39.0 - 2025-10-07
+
+- :rocket: Wrap Mission Logs to ensure they are fully visible - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1022
+- :tada: Allow editing Mission Logs
+- :rocket: Add `deletable` prop in CopyField.vue
+- :bug: Fix PATCH Mission Log API, the underlying API Call in node-tak didn't include the log ID
+
 ### v11.38.0 - 2025-10-07
 
 - :tada: Introduce a Bash Script for managing Docker Compose based deployments
