@@ -122,10 +122,10 @@
                                                         <div class='card-body row g-2'>
                                                             <div class='col-12'>
                                                                 <TablerInput
+                                                                    v-model='certificate.truststorePassword'
                                                                     label='Choose Certificate Password'
                                                                     type='password'
                                                                     autocomplete='off'
-                                                                    v-model='certificate.truststorePassword'
                                                                 />
                                                             </div>
                                                             <div class='col-12'>
@@ -159,10 +159,10 @@
                                                         <div class='card-body row g-2'>
                                                             <div class='col-12'>
                                                                 <TablerInput
+                                                                    v-model='certificate.clientPassword'
                                                                     label='Choose Certificate Password'
                                                                     type='password'
                                                                     autocomplete='off'
-                                                                    v-model='certificate.clientPassword'
                                                                 />
                                                             </div>
                                                             <div class='col-12'>

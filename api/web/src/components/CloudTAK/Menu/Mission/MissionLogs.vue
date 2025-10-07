@@ -58,10 +58,10 @@
                             :deletable='role.permissions.includes("MISSION_WRITE")'
                             :hover='role.permissions.includes("MISSION_WRITE")'
                             :rows='Math.max(4, log.content.split("\n").length)'
-                            :modelValue='log.content || ""'
+                            :model-value='log.content || ""'
+                            style='background-color: var(--tblr-body-bg)'
                             @submit='updateLog(logidx, $event)'
                             @delete='deleteLog(logidx)'
-                            style='background-color: var(--tblr-body-bg)'
                         />
                     </div>
 
