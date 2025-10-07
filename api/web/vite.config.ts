@@ -20,7 +20,9 @@ export default defineConfig(({ mode }) => {
                     short_name: 'CloudTAK',
                     description: 'Cloud powered in-browser TAK Client',
                     theme_color: '#000000',
-                    icons
+                    icons,
+                    orientation: 'landscape',
+                    categories: ['utilities', 'productivity', 'navigation', 'government']
                 },
                 devOptions: {
                     enabled: true
