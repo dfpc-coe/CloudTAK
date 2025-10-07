@@ -29,7 +29,7 @@ export default {
                     Variables: {
                         StackName: cf.stackName,
                         ASSET_BUCKET: cf.ref('AssetBucket'),
-                        APIROOT: cf.join(['https://tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                        PMTILES_URL: cf.join(['https://tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                         SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
                     }
                 },

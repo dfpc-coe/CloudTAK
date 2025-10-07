@@ -3,7 +3,13 @@
         class='d-flex justify-content-center align-items-center'
         style='width: 36px;'
     >
-        <template v-if='!connection.enabled'>
+        <template v-if='props.connection.readonly'>
+            <IconNetwork
+                :size='32'
+                stroke='1'
+            />
+        </template>
+        <template v-else-if='!props.connection.enabled'>
             <IconPlayerPause
                 :size='32'
                 stroke='1'
@@ -13,9 +19,9 @@
             <span
                 class='status-indicator status-indicator-animated'
                 :class='{
-                    "status-green": connection.status === "live",
-                    "status-red": connection.status === "dead",
-                    "status-dark": connection.status === "unknown",
+                    "status-green": props.connection.status === "live",
+                    "status-red": props.connection.status === "dead",
+                    "status-dark": props.connection.status === "unknown",
                 }'
             >
                 <span class='status-indicator-circle' />
@@ -27,18 +33,16 @@
 </template>
 
 
-<script>
+<script setup lang='ts'>
 import {
+    IconNetwork,
     IconPlayerPause
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'ConnectionStatus',
-    components: {
-        IconPlayerPause
-    },
-    props: {
-        connection: Object
+const props = defineProps({
+    connection: {
+        type: Object,
+        required: true
     }
-}
+});
 </script>

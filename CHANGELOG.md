@@ -12,6 +12,106 @@
 
 ### Pending Release
 
+### v11.37.0 - 2025-10-07
+
+- :bug: Fix an issue & add unit tests for a case when an uploaded DataPackage would be treated as a file within a data package instead of an existing one
+- :bug: Short circuit on ConnectionFeature insertion if there are no features to insert
+
+### v11.36.0 - 2025-10-06
+
+- :rocket: Internally buffer Connection Features
+
+### v11.35.0 - 2025-10-02
+
+- :bug: Handle Zipped Zips as a KMZ can be inside a DataPackage or the DataPackage can BE the KMZ
+
+### v11.34.0 - 2025-10-02
+
+- :bug: When Sharing to a mission the `skip_network` flag would prevent the CoT from actually being added to the mission over the network, resulting in the CoT being lost when the user refreshed their page. This version fixes this issue by setting the authored flag to true when adding to a mission.
+- :rocket: `UI` Show a `clear` button when text is entered into a search box
+- :rocket: `UI` Allow the user to show their password in plaintext with an `eye` button on password fields.
+
+### v11.33.5 - 2025-10-02
+
+- :rocket: Require a password on exported TrustStores & Certs
+
+### v11.33.4 - 2025-10-01
+
+- :bug: Modify OpenSSL Commands for Truststore
+
+### v11.33.3 - 2025-10-01
+
+- :bug: Fix call to generate TrustStore p12 file
+
+### v11.33.2 - 2025-10-01
+
+- :bug: Fix call to generate TrustStore p12 file
+
+### v11.33.1 - 2025-10-01
+
+- :rocket: Cleaner Admin Imports Menu
+
+### v11.33.0 - 2025-10-01
+
+- :tada: Support Cursor-On-Target Line Styles
+- :rocket: Allow downloading truststore on External Connections
+- :bug: Allow including CA chain when PATCHing a connection
+
+### v11.32.0 - 2025-10-01
+
+- :rocket: `UI` Use Network icon to show External Connections vs Paused Cloud Connections
+- :tada: Allow downloading the generated TrustStore
+
+### v11.31.0 - 2025-09-30
+
+- :rocket: Fix serious issue with management of user features - Closes: #664
+- :tada: Add the ability to recover deleted Archived Features
+
+### v11.30.0 - 2025-09-29
+
+- :rocket: Adds debounce to CoT Remarks & name updates to avoid Mission/API updates on each character change
+- :tada: Moves CoTs to mission instead of Copy in ShareToMission component
+- :bug: Hides the scrollbar to prevent mini icons in side menu in Chromium based browsers
+
+### v11.29.0 - 2025-09-29
+
+> [!WARNING]
+> Alternate deploy tools will need to update to use the now consistent `PMTILES_URL`  env var instead of `APIROOT`
+
+- :rocket: Use consistent Env Var names between services
+
+### v11.28.4 - 2025-09-29
+
+- :bug: Ensure Attachment images don't overflow their div
+
+### v11.28.3 - 2025-09-29
+
+- :bug: Filter by Data Package `uid` and `hash` to ensure updated data packages are retried correctly
+- :bug: Migrate to Mission Creation POST to ensure  mission  names don't cause issues and follow REST principals more closely
+- :bug: Fix JPEG import as attachment UI
+- :bug: Don't attempt to PUT mission content if there is no mission content to PUT
+
+### v11.28.2 - 2025-09-29
+
+- :bug: Fix Display of `.jpeg` file extensions in CoT Viewer
+
+### v11.28.1 - 2025-09-29
+
+- :bug: Fix Data Package import by Hash instead of UID
+
+### v11.28.0 - 2025-09-26
+
+- :rocket: Add additional administrative management support for user Imports
+
+### v11.27.4 - 2025-09-24
+
+- :bug: Ensure the UI doesn't throw errors when looking at a CoT if no iconsets are loaded
+
+### v11.27.3 - 2025-09-23
+
+- :bug: When deleting an Iconset, navigate back to Iconsets list instead of 404ing @AdventureSeeker423
+- :bug: When uploading an Iconset, don't double parse the resultant JSON @AdventureSeeker423
+
 ### v11.27.2 - 2025-09-22
 
 - :bug: Ensure cert & integrationId are set in Create Machine User UI

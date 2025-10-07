@@ -59,7 +59,8 @@
     </TablerModal>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
 import { std } from '/src/std.ts';
 import {
     TablerModal,
@@ -67,63 +68,43 @@ import {
     TablerDelete
 } from '@tak-ps/vue-tabler'
 
-export default {
-    name: 'TokenModal',
-    components: {
-        TablerModal,
-        TablerInput,
-        TablerDelete
-    },
-    props: {
-        token: {
-            type: Object,
-            required: true
-        }
-    },
-    emits: [
-        'close',
-        'refresh'
-    ],
-    data: function() {
-        if (this.token.id) {
-            return {
-                code: false,
-                editToken: JSON.parse(JSON.stringify(this.token))
-            }
-        } else {
-            return {
-                code: false,
-                editToken: {
-                    name: ''
-                }
-            }
+const props = defineProps({
+    token: {
+        type: Object,
+        required: true
+    }
+});
 
-        }
-    },
-    methods: {
-        deleteToken: async function() {
-            await std(`/api/profile/token/${this.token.id}`, {
-                method: 'DELETE',
-            });
+const emit = defineEmits([
+    'close',
+    'refresh'
+]);
 
-            this.$emit('refresh');
-        },
-        saveToken: async function() {
-            if (this.token.id) {
-                await std(`/api/profile/token/${this.token.id}`, {
-                    method: 'PATCH',
-                    body: this.editToken
-                });
-                this.$emit('refresh');
-            } else {
-                const newtoken = await std('/api/profile/token', {
-                    method: 'POST',
-                    body: this.editToken
-                });
+const code = ref(false);
+const editToken = ref(props.token.id ? JSON.parse(JSON.stringify(props.token)) : { name: '' });
 
-                this.code = newtoken.token;
-            }
-        },
+async function deleteToken() {
+    await std(`/api/profile/token/${props.token.id}`, {
+        method: 'DELETE',
+    });
+
+    emit('refresh');
+}
+
+async function saveToken() {
+    if (props.token.id) {
+        await std(`/api/profile/token/${props.token.id}`, {
+            method: 'PATCH',
+            body: editToken.value
+        });
+        emit('refresh');
+    } else {
+        const newtoken = await std('/api/profile/token', {
+            method: 'POST',
+            body: editToken.value
+        });
+
+        code.value = newtoken.token;
     }
 }
 </script>

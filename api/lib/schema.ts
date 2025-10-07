@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm';
+import { primaryKey } from "drizzle-orm/pg-core";
 import { Static } from '@sinclair/typebox'
 import type { StyleContainer } from './style.js';
 import type { FilterContainer } from './filter.js';
@@ -146,13 +147,17 @@ export const ProfileVideo = pgTable('profile_videos', {
 })
 
 export const ProfileFeature = pgTable('profile_features', {
-    id: text().primaryKey().notNull(),
+    id: text().notNull(),
     path: text().notNull().default('/'),
+    deleted: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
     properties: json().notNull().default({}),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
 }, (table) => {
     return {
+        pk: primaryKey({
+            columns: [table.username, table.id]
+        }),
         username_idx: index("profile_features_username_idx").on(table.username),
     }
 })
@@ -268,6 +273,21 @@ export const Connection = pgTable('connections', {
     auth: json().$type<Static<typeof ConnectionAuth>>().notNull()
 });
 
+export const ConnectionFeature = pgTable('connection_features', {
+    id: text().notNull(),
+    path: text().notNull().default('/'),
+    connection: integer().notNull().references(() => Connection.id),
+    properties: json().notNull().default({}),
+    geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
+}, (table) => {
+    return {
+        pk: primaryKey({
+            columns: [table.connection, table.id]
+        }),
+        connection_idx: index("connection_features_connection_idx").on(table.connection),
+    }
+})
+
 export const Data = pgTable('data', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -333,7 +353,11 @@ export const LayerIncoming = pgTable('layers_incoming', {
     environment: json().notNull().default({}),
     ephemeral: json().$type<Record<string, any>>().notNull().default({}),
     config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
-    data: integer().references(() => Data.id)
+
+    // Data Destinations
+    data: integer().references(() => Data.id),
+    // Empty Array = All Groups
+    groups: text().array().notNull().default([]),
 });
 
 export const LayerAlert = pgTable('layer_alerts', {

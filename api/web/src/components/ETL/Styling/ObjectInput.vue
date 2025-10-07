@@ -8,49 +8,39 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from 'vue';
 import {
     TablerInput
 } from '@tak-ps/vue-tabler'
 import deepEqual from 'deep-equal';
 
-export default {
-    name: 'ObjectInput',
-    components: {
-        TablerInput
-    },
-    props: {
-        modelValue: {
-            type: Object,
-            required: true
-        }
-    },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        return {
-            error: '',
-            current: this.modelValue ? JSON.stringify(this.modelValue, null, 4) : ''
-        }
-    },
-    watch: {
-        modelValue: {
-            deep: true,
-            handler: function() {
-                if (!deepEqual(this.modelValue, JSON.parse(this.current))) {
-                    this.current = JSON.stringify(this.modelValue, null, 4)
-                }
-            }
-        },
-        current: function() {
-            try {
-                this.$emit('update:modelValue', JSON.parse(this.current));
-                this.error = '';
-            } catch (err) {
-                this.error = `Invalid JSON: ${err.message}`;
-            }
-        }
+const props = defineProps({
+    modelValue: {
+        type: Object,
+        required: true
     }
-}
+});
+
+const emit = defineEmits([
+    'update:modelValue'
+]);
+
+const error = ref('');
+const current = ref(props.modelValue ? JSON.stringify(props.modelValue, null, 4) : '');
+
+watch(() => props.modelValue, () => {
+    if (!deepEqual(props.modelValue, JSON.parse(current.value))) {
+        current.value = JSON.stringify(props.modelValue, null, 4)
+    }
+}, { deep: true });
+
+watch(current, () => {
+    try {
+        emit('update:modelValue', JSON.parse(current.value));
+        error.value = '';
+    } catch (err) {
+        error.value = `Invalid JSON: ${err.message}`;
+    }
+});
 </script>

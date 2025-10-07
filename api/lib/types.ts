@@ -174,7 +174,7 @@ export const ProfileVideoResponse = createSelectSchema(schemas.ProfileVideo, {
     lease: Type.Integer()
 });
 
-export const ProfileFeature = Type.Composite([ Feature.Feature, Type.Object({
+export const FeatureResponse = Type.Composite([ Feature.Feature, Type.Object({
     path: Type.String({ default: '/' }),
 })]);
 

@@ -19,8 +19,9 @@
                 />
                 <ContactPuck
                     v-else
+                    style='margin-left: 8px;'
                     :team='contact.team'
-                    :compact='compact'
+                    :size='compact ? 20 : 32'
                 />
             </div>
             <div

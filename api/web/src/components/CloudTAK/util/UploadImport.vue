@@ -31,7 +31,7 @@
                     </button>
                     <button
                         class='btn btn-primary'
-                        @click='$refs.fileInput.click()'
+                        @click='fileInput.click()'
                     >
                         Manually Select Files
                     </button>
@@ -58,127 +58,126 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerLoading,
     TablerProgress
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'UploadFile',
-    components: {
-        TablerLoading,
-        TablerProgress
+const props = defineProps({
+    mode: {
+        type: String,
+        default: 'Unknown'
     },
-    props: {
-        mode: {
-            type: String,
-            default: 'Unknown'
-        },
-        modeid: {
-            type: String
-        },
-        dragging: {
-            type: Boolean,
-            default: false
-        },
-        cancelButton: {
-            type: Boolean,
-            default: true
-        },
-        config: {
-            type: Object,
-            default: function() {
-                return {};
-            }
-        }
+    modeid: {
+        type: String
     },
-    emits: [
-        'cancel',
-        'done'
-    ],
-    data: function() {
-        return {
-            name: '',
-            progress: 0,
-        }
+    dragging: {
+        type: Boolean,
+        default: false
     },
-    methods: {
-        refresh: function() {
-            this.name = '';
-            this.progress = 0;
-            const input = this.$refs.fileInput;
-            input.type = 'text';
-            input.type = 'file';
-        },
-        dragEnter: function(event) {
-            event.preventDefault()
-            this.$refs.dragger.classList.add('custom-drop-drag')
-        },
-        dragLeave: function(event) {
-            event.preventDefault()
-            this.$refs.dragger.classList.remove('custom-drop-drag')
-        },
-        dragDrop: async function(event) {
-            event.preventDefault();
-            const dt = event.dataTransfer
-            const file = dt.files[0];
-
-            await this.upload(file);
-        },
-        manualUpload: async function(event) {
-            const file = event.target.files[0];
-            await this.upload(file);
-        },
-        upload: async function(file) {
-            this.name = file.name;
-
-            const imported = await std('/api/import', {
-                method: 'POST',
-                body: {
-                    name: this.name,
-                    mode: this.mode,
-                    mode_id: this.modeid,
-                    config: this.config
-                }
-            });
-
-            return new Promise((resolve, reject) => {
-                const xhr = new XMLHttpRequest()
-                const formData = new FormData()
-
-                xhr.open('PUT', stdurl(`/api/import/${imported.id}`), true)
-                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-
-                xhr.setRequestHeader('Authorization', `Bearer ${localStorage.token}`);
-
-                xhr.upload.addEventListener('progress', (e) => {
-                    this.progress = (e.loaded * 100.0 / e.total) || 100
-                });
-
-                xhr.addEventListener('readystatechange', () => {
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                        this.progress = 100;
-                    } else if (xhr.readyState == 4 && xhr.status != 200) {
-                        const err = new Error('Failed to upload file');
-                        this.$emit('cancel')
-                        return reject(err);
-                    }
-
-                    if (xhr.readyState === 4) {
-                        this.progress = 101;
-                        this.$emit('done', xhr.response);
-                    }
-                });
-
-                formData.append('file', file)
-                xhr.send(formData)
-            });
+    cancelButton: {
+        type: Boolean,
+        default: true
+    },
+    config: {
+        type: Object,
+        default: function() {
+            return {};
         }
     }
+});
+
+const emit = defineEmits([
+    'cancel',
+    'done'
+]);
+
+const dragger = ref(null);
+const fileInput = ref(null);
+const name = ref('');
+const progress = ref(0);
+
+function refresh() {
+    name.value = '';
+    progress.value = 0;
+    const input = fileInput.value;
+    input.type = 'text';
+    input.type = 'file';
 }
 
+function dragEnter(event) {
+    event.preventDefault()
+    dragger.value.classList.add('custom-drop-drag')
+}
+
+function dragLeave(event) {
+    event.preventDefault()
+    dragger.value.classList.remove('custom-drop-drag')
+}
+
+async function dragDrop(event) {
+    event.preventDefault();
+    const dt = event.dataTransfer
+    const file = dt.files[0];
+
+    await upload(file);
+}
+
+async function manualUpload(event) {
+    const file = event.target.files[0];
+    await upload(file);
+}
+
+async function upload(file) {
+    name.value = file.name;
+
+    const imported = await std('/api/import', {
+        method: 'POST',
+        body: {
+            name: name.value,
+            mode: props.mode,
+            mode_id: props.modeid,
+            config: props.config
+        }
+    });
+
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        const formData = new FormData()
+
+        xhr.open('PUT', stdurl(`/api/import/${imported.id}`), true)
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+        xhr.setRequestHeader('Authorization', `Bearer ${localStorage.token}`);
+
+        xhr.upload.addEventListener('progress', (e) => {
+            progress.value = (e.loaded * 100.0 / e.total) || 100
+        });
+
+        xhr.addEventListener('readystatechange', () => {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                progress.value = 100;
+            } else if (xhr.readyState == 4 && xhr.status != 200) {
+                const err = new Error('Failed to upload file');
+                emit('cancel')
+                return reject(err);
+            }
+
+            if (xhr.readyState === 4) {
+                progress.value = 101;
+                emit('done', xhr.response);
+            }
+        });
+
+        formData.append('file', file)
+        xhr.send(formData)
+    });
+}
+
+defineExpose({ refresh });
 </script>
 
 <style>

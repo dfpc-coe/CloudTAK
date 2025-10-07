@@ -209,6 +209,7 @@
                     <template v-else>
                         <div
                             v-for='(param, pit) of environment.ARCGIS_PARAMS'
+                            :key='pit'
                             class='row mt-2'
                         >
                             <div class='col-md-6'>
@@ -246,7 +247,7 @@
                     <div class='ms-auto'>
                         <a
                             class='cursor-pointer btn btn-secondary'
-                            @click='connect'
+                            @click='esriView = true;'
                         >Connect</a>
                     </div>
                 </div>
@@ -275,7 +276,8 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from 'vue';
 import {
     TablerIconButton,
     TablerEnum,
@@ -292,74 +294,61 @@ import {
     IconFilter,
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'LayerEnvironmentArcGIS',
-    components: {
-        EsriPortal,
-        IconPlus,
-        IconSquareChevronRight,
-        IconChevronDown,
-        IconFilter,
-        TablerIconButton,
-        TablerEnum,
-        TablerInput,
-        TablerNone,
-        TablerDelete,
-        EsriFilter
+const props = defineProps({
+    modelValue: {
+        type: Object,
+        required: true
     },
-    props: {
-        modelValue: {
-            type: Object,
-            required: true
-        },
-        disabled: {
-            type: Boolean,
-            default: true
-        }
-    },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        let type = 'agol';
-        if (!this.modelValue.ARCGIS_PORTAL && !this.modelValue.ARCGIS_USERNAME) {
-            type = 'server';
-        } else if (this.modelValue.ARCGIS_PORTAL && this.modelValue.ARCGIS_PORTAL.includes('arcgis.com') && this.modelValue.ARCGIS_USERNAME) {
-            type = 'agol';
-        } else if (this.modelValue.ARCGIS_PORTAL && this.modelValue.ARCGIS_USERNAME) {
-            type = 'portal';
-        }
-
-        return {
-            type,
-            advanced: false,
-            esriView: false,
-            environment: this.modelValue,
-            filterModal: false,
-        };
-    },
-    watch: {
-        type: function() {
-            delete this.environment.ARCGIS_URL;
-            delete this.environment.ARCGIS_PORTAL;
-            delete this.environment.ARCGIS_USERNAME;
-            delete this.environment.ARCGIS_PASSWORD;
-            this.environment.ARCGIS_QUERY = '';
-            this.environment.ARCGIS_PARAMS = [];
-            delete this.environment.ARCGIS_TOKEN;
-            delete this.environment.ARCGIS_EXPIRES;
-        },
-        modelValue: function() {
-            this.environment = this.modelValue;
-        },
-        environment: function() {
-            this.$emit('update:modelValue', this.environment);
-        }
-    },
-    methods: {
-        connect: function() {
-            this.esriView = true;
-        }
+    disabled: {
+        type: Boolean,
+        default: true
     }
+});
+
+const emit = defineEmits(['update:modelValue']);
+
+let initialType = 'agol';
+if (!props.modelValue.ARCGIS_PORTAL && !props.modelValue.ARCGIS_USERNAME) {
+    initialType = 'server';
+} else if (props.modelValue.ARCGIS_PORTAL && props.modelValue.ARCGIS_PORTAL.includes('arcgis.com') && props.modelValue.ARCGIS_USERNAME) {
+    initialType = 'agol';
+} else if (props.modelValue.ARCGIS_PORTAL && props.modelValue.ARCGIS_USERNAME) {
+    initialType = 'portal';
 }
+
+const type = ref(initialType);
+const advanced = ref(false);
+const esriView = ref(false);
+const environment = ref(JSON.parse(JSON.stringify(props.modelValue)));
+const filterModal = ref(false);
+
+if (!Array.isArray(environment.value.ARCGIS_PARAMS)) {
+    environment.value.ARCGIS_PARAMS = [];
+}
+
+if (!environment.value.ARCGIS_QUERY_STRATEGY) {
+    environment.value.ARCGIS_QUERY_STRATEGY = 'Query';
+}
+
+watch(type, () => {
+    delete environment.value.ARCGIS_URL;
+    delete environment.value.ARCGIS_PORTAL;
+    delete environment.value.ARCGIS_USERNAME;
+    delete environment.value.ARCGIS_PASSWORD;
+    environment.value.ARCGIS_QUERY = '';
+    environment.value.ARCGIS_QUERY_STRATEGY = 'Query';
+    environment.value.ARCGIS_PARAMS = [];
+    delete environment.value.ARCGIS_TOKEN;
+    delete environment.value.ARCGIS_EXPIRES;
+});
+
+watch(() => props.modelValue, (newValue) => {
+    if (JSON.stringify(newValue) === JSON.stringify(environment.value)) return;
+    environment.value = JSON.parse(JSON.stringify(newValue));
+}, { deep: true });
+
+watch(environment, (newValue) => {
+    emit('update:modelValue', newValue);
+}, { deep: true });
 </script>
+

@@ -41,7 +41,8 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, nextTick } from 'vue';
 import {
     TablerInput
 } from '@tak-ps/vue-tabler';
@@ -50,62 +51,54 @@ import 'dropzone/dist/dropzone.css';
 import '@tabler/core/dist/css/tabler-vendors.min.css';
 import { convertToPem } from 'p12-pem/lib/lib/p12.js';
 
-export default {
-    name: 'CertificateP12',
-    components: {
-        TablerInput
-    },
-    emits: [
-        'certs'
-    ],
-    data: function() {
-        return {
-            dropzone: null,
-            password: '',
-            file: null
-        }
-    },
-    mounted: function() {
-        this.createDropzone();
-    },
-    methods: {
-        createDropzone: function() {
-            this.$nextTick(() => {
-                this.dropzone = new Dropzone("#dropzone-default", {
-                    autoProcessQueue: false,
-                });
+const emit = defineEmits([
+    'certs'
+]);
 
-                this.dropzone.on('addedfile', (file) => {
-                    const read = new FileReader();
-                    read.onload = (event) => {
-                        this.file = event.target.result;
-                    };
-                    read.readAsDataURL(file);
-                });
-            });
-        },
-        extract: function() {
-            try {
-                const certs = convertToPem(atob(this.file.split('base64,')[1]), this.password);
-                const cert = certs.pemCertificate
-                    .split('-----BEGIN CERTIFICATE-----')
-                    .join('-----BEGIN CERTIFICATE-----\n')
-                    .split('-----END CERTIFICATE-----')
-                    .join('\n-----END CERTIFICATE-----');
-                const key = certs.pemKey
-                    .split('-----BEGIN RSA PRIVATE KEY-----')
-                    .join('-----BEGIN RSA PRIVATE KEY-----\n')
-                    .split('-----END RSA PRIVATE KEY-----')
-                    .join('\n-----END RSA PRIVATE KEY-----');
+const dropzone = ref(null);
+const password = ref('');
+const file = ref(null);
 
-                this.$emit('certs', { key, cert });
-            } catch (err) {
-                this.file = null;
-                this.password = '';
-                this.createDropzone();
-                throw err;
-            }
-        }
+onMounted(() => {
+    createDropzone();
+});
+
+function createDropzone() {
+    nextTick(() => {
+        dropzone.value = new Dropzone("#dropzone-default", {
+            autoProcessQueue: false,
+        });
+
+        dropzone.value.on('addedfile', (f) => {
+            const read = new FileReader();
+            read.onload = (event) => {
+                file.value = event.target.result;
+            };
+            read.readAsDataURL(f);
+        });
+    });
+}
+
+function extract() {
+    try {
+        const certs = convertToPem(atob(file.value.split('base64,')[1]), password.value);
+        const cert = certs.pemCertificate
+            .split('-----BEGIN CERTIFICATE-----')
+            .join('-----BEGIN CERTIFICATE-----\n')
+            .split('-----END CERTIFICATE-----')
+            .join('\n-----END CERTIFICATE-----');
+        const key = certs.pemKey
+            .split('-----BEGIN RSA PRIVATE KEY-----')
+            .join('-----BEGIN RSA PRIVATE KEY-----\n')
+            .split('-----END RSA PRIVATE KEY-----')
+            .join('\n-----END RSA PRIVATE KEY-----');
+
+        emit('certs', { key, cert });
+    } catch (err) {
+        file.value = null;
+        password.value = '';
+        createDropzone();
+        throw err;
     }
 }
 </script>

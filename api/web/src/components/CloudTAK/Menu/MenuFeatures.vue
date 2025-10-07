@@ -86,6 +86,17 @@
                 label='Archived Features'
             />
             <template v-else>
+                <div
+                    class='d-flex align-items-center px-3 py-2 me-2 hover-button cursor-pointer user-select-none'
+                    @click='router.push("/menu/features/deleted")'
+                >
+                    <IconTrash
+                        :size='20'
+                        stroke='1'
+                        class='me-2'
+                    /> Recently Deleted
+                </div>
+
                 <template
                     v-for='path of paths'
                     :key='path'
@@ -171,6 +182,7 @@
 import { v4 as randomUUID } from 'uuid';
 import { ref, watch, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import COT from '../../../base/cot.ts';
+import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Feature from '../util/FeatureRow.vue';
 import {
@@ -188,6 +200,7 @@ import { WorkerMessageType } from '../../../base/events.ts';
 import {
     IconFile,
     IconFolder,
+    IconTrash,
     IconDownload,
     IconDotsVertical,
     IconChevronRight,
@@ -197,6 +210,7 @@ import Sortable from 'sortablejs';
 import type { SortableEvent } from 'sortablejs'
 import { useMapStore } from '../../../stores/map.ts';
 
+const router = useRouter();
 const mapStore = useMapStore();
 
 type Path = {

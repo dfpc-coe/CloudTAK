@@ -177,207 +177,190 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerAlert,
+    TablerNone,
     TablerLoading,
     TablerDelete,
-    TablerNone,
 } from '@tak-ps/vue-tabler';
 import {
-    IconMap,
-    IconRefresh,
     IconX,
+    IconMap,
     IconFolder,
+    IconRefresh,
+    IconCheck,
     IconArrowBack,
-    IconCheck
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'EsriServer',
-    components: {
-        TablerAlert,
-        IconX,
-        TablerNone,
-        IconMap,
-        IconFolder,
-        IconRefresh,
-        IconCheck,
-        IconArrowBack,
-        TablerLoading,
-        TablerDelete,
+const props = defineProps({
+    disabled: {
+        type: Boolean,
+        required: false,
+        default: false
     },
-    props: {
-        disabled: {
-            type: Boolean,
-            required: false,
-            default: false
-        },
-        readonly: {
-            type: Boolean,
-            default: false
-        },
-        portal: {
-            type: String,
-        },
-        token: {
-            type: Object,
-        },
-        server: {
-            type: String,
-            required: true
-        },
+    readonly: {
+        type: Boolean,
+        default: false
     },
-    emits: [
-        'close',
-        'layer'
-    ],
-    data: function() {
-        return {
-            base: this.server,
-            filterModal: false,
-            loading: true,
-            err: null,
-            listpath: [],
-            container: null,
-            list: [],
-            layer: null,
-        }
+    portal: {
+        type: String,
     },
-    watch: {
-        layer: function() {
-            if (!this.layer) return this.$emit('layer', '');
-            this.$emit('layer', this.stdurl(true));
-        },
-        listpath: {
-            deep: true,
-            handler: async function() {
-                await this.getList();
-            }
-        }
+    token: {
+        type: Object,
     },
-    mounted: async function() {
-        this.base = this.base.replace(/\/rest\/services.*/, '');
+    server: {
+        type: String,
+        required: true
+    },
+});
 
-        let postfix = this.server.replace(/^.*\/services\//, '');
+const emit = defineEmits([
+    'close',
+    'layer'
+]);
 
-        if (postfix.length && !postfix.startsWith('http')) {
-            // TODO Support Directories / Layer Parsing
-            postfix = postfix.split('/');
+const base = ref(props.server);
+const loading = ref(true);
+const err = ref(null);
+const listpath = ref([]);
+const container = ref(null);
+const list = ref([]);
+const layer = ref(null);
 
-            const last = postfix.pop();
+watch(layer, () => {
+    if (!layer.value) return emit('layer', '');
+    emit('layer', stdurl_local(true));
+});
 
-            if (!isNaN(parseInt(last))) {
-                const type = postfix.pop()
-                this.listpath = [{ name: postfix.join('/'), type }]
-                this.layer = { id: last };
-            } else {
-                this.listpath = [{ name: postfix.join('/'), type: last }]
-            }
+watch(listpath, async () => {
+    await getList();
+}, { deep: true });
+
+onMounted(async () => {
+    base.value = base.value.replace(/\/rest\/services.*/, '');
+
+    let postfix = props.server.replace(/^.*\/services\//, '');
+
+    if (postfix.length && !postfix.startsWith('http')) {
+        postfix = postfix.split('/');
+
+        const last = postfix.pop();
+
+        if (!isNaN(parseInt(last))) {
+            const type = postfix.pop()
+            listpath.value = [{ name: postfix.join('/'), type }]
+            layer.value = { id: last };
         } else {
-            await this.getList();
+            listpath.value = [{ name: postfix.join('/'), type: last }]
         }
-    },
-    methods: {
-        back: function() {
-            if (this.container) {
-                this.layer = null;
-                this.container = null;
-                this.listpath.pop();
-            } else if (this.listpath.length) {
-                this.listpath.pop();
-            } else {
-                this.$emit('close');
-            }
-        },
-        stdurl: function(layer=true) {
-            if (this.listpath.length) {
-                const listpath = this.listpath.map((pth) => {
-                    if (pth.type === 'folder') return pth.name;
-                    return pth.name + '/' + pth.type;
-                }).join('/');
-
-                if (!layer || !this.layer) {
-                    return this.base + '/rest/services/' + listpath;
-                } else if (layer && this.layer) {
-                    return this.base + '/rest/services/' + listpath + '/' + this.layer.id;
-                }
-            } else {
-                return this.base + '/rest/services';
-            }
-
-        },
-        createLayer: async function() {
-            if (!this.token) throw new Error('Auth Token is required to create a service');
-
-            this.loading = true;
-            try {
-                const url = stdurl('/api/esri/server/layer');
-                url.searchParams.append('token', this.token.token);
-                url.searchParams.append('expires', this.token.expires);
-                if (this.portal) url.searchParams.append('portal', this.portal);
-                url.searchParams.append('server', this.stdurl(false));
-
-                await std(url, { method: 'POST' });
-
-                await this.getList();
-            } catch (err) {
-                this.err = err;
-            }
-        },
-        deleteLayer: async function(layer) {
-            if (!this.token) throw new Error('Auth Token is required to create a service');
-
-            this.loading = true;
-            try {
-                const url = stdurl('/api/esri/server/layer');
-                if (this.token) url.searchParams.append('token', this.token.token);
-                if (this.token) url.searchParams.append('expires', this.token.expires);
-                if (this.portal) url.searchParams.append('portal', this.portal);
-                url.searchParams.append('server', this.stdurl(false) + '/' + layer.id);
-
-                await std(url, { method: 'DELETE' });
-
-                this.layer = null;
-
-                await this.getList();
-            } catch (err) {
-                this.loading = false;
-                throw err;
-            }
-        },
-        getList: async function() {
-            this.loading = true;
-            try {
-                const url = stdurl('/api/esri/server');
-
-                if (this.token) {
-                    url.searchParams.append('token', this.token.token);
-                    url.searchParams.append('expires', this.token.expires);
-                }
-
-                url.searchParams.append('server', this.stdurl(false));
-
-                const res = await std(url);
-
-                if (Array.isArray(res.layers)) {
-                    this.container = res;
-                } else {
-                    this.list = [].concat(res.folders.map((folder) => {
-                        return { name: folder, type: 'folder' };
-                    }), res.services.map((service) => {
-                        return { name: service.name.split('/')[service.name.split('/').length -1], type: service.type };
-                    })).map((e) => {
-                        e.id = `${e.type}-${e.name}`;
-                        return e;
-                    });
-                }
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading = false;
-        },
+    } else {
+        await getList();
     }
+});
+
+function back() {
+    if (container.value) {
+        layer.value = null;
+        container.value = null;
+        listpath.value.pop();
+    } else if (listpath.value.length) {
+        listpath.value.pop();
+    } else {
+        emit('close');
+    }
+}
+
+function stdurl_local(use_layer=true) {
+    if (listpath.value.length) {
+        const path = listpath.value.map((pth) => {
+            if (pth.type === 'folder') return pth.name;
+            return pth.name + '/' + pth.type;
+        }).join('/');
+
+        if (!use_layer || !layer.value) {
+            return base.value + '/rest/services/' + path;
+        } else if (use_layer && layer.value) {
+            return base.value + '/rest/services/' + path + '/' + layer.value.id;
+        }
+    } else {
+        return base.value + '/rest/services';
+    }
+
+}
+
+async function createLayer() {
+    if (!props.token) throw new Error('Auth Token is required to create a service');
+
+    loading.value = true;
+    try {
+        const url = stdurl('/api/esri/server/layer');
+        url.searchParams.append('token', props.token.token);
+        url.searchParams.append('expires', props.token.expires);
+        if (props.portal) url.searchParams.append('portal', props.portal);
+        url.searchParams.append('server', stdurl_local(false));
+
+        await std(url, { method: 'POST' });
+
+        await getList();
+    } catch (error) {
+        err.value = error;
+    }
+}
+
+async function deleteLayer(l) {
+    if (!props.token) throw new Error('Auth Token is required to create a service');
+
+    loading.value = true;
+    try {
+        const url = stdurl('/api/esri/server/layer');
+        if (props.token) url.searchParams.append('token', props.token.token);
+        if (props.token) url.searchParams.append('expires', props.token.expires);
+        if (props.portal) url.searchParams.append('portal', props.portal);
+        url.searchParams.append('server', stdurl_local(false) + '/' + l.id);
+
+        await std(url, { method: 'DELETE' });
+
+        layer.value = null;
+
+        await getList();
+    } catch (error) {
+        loading.value = false;
+        throw error;
+    }
+}
+
+async function getList() {
+    loading.value = true;
+    try {
+        const url = stdurl('/api/esri/server');
+
+        if (props.token) {
+            url.searchParams.append('token', props.token.token);
+            url.searchParams.append('expires', props.token.expires);
+        }
+
+        url.searchParams.append('server', stdurl_local(false));
+
+        const res = await std(url);
+
+        if (Array.isArray(res.layers)) {
+            container.value = res;
+        } else {
+            list.value = [].concat(res.folders.map((folder) => {
+                return { name: folder, type: 'folder' };
+            }), res.services.map((service) => {
+                return { name: service.name.split('/')[service.name.split('/').length -1], type: service.type };
+            })).map((e) => {
+                e.id = `${e.type}-${e.name}`;
+                return e;
+            });
+        }
+    } catch (error) {
+        err.value = error;
+    }
+    loading.value = false;
 }
 </script>
