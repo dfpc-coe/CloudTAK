@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.37.0 - 2025-10-07
+
+- :bug: Fix an issue & add unit tests for a case when an uploaded DataPackage would be treated as a file within a data package instead of an existing one
+- :bug: Short circuit on ConnectionFeature insertion if there are no features to insert
+
 ### v11.36.0 - 2025-10-06
 
 - :rocket: Internally buffer Connection Features
