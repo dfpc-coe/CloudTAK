@@ -24,11 +24,25 @@ many of the services it provides will initiate AWS API calls with no graceful fa
 
 ### Docker Compose
 
+> [!WARNING]
+> For detailed install instructions please visit https://cloudtak.io/deploy/
+
+If running on Ubuntu this will install the necessary dependencies
+
 ```
-git clone git@github.com:dfpc-coe/CloudTAK.git
-cd CloudTAK
+./cloudtak.sh install
+```
+
+Create a new Env Var file
+
+```
 cp .env.example .env
-docker compose up --build
+```
+
+Start CloudTAK Locally
+
+```
+./cloudtak.sh start
 ```
 
 Once the database and API service have built, the server will start on port 5000.
