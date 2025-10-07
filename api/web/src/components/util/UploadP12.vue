@@ -46,7 +46,8 @@
     </TablerModal>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, nextTick } from 'vue';
 import { 
     TablerModal,
     TablerInput
@@ -56,46 +57,37 @@ import 'dropzone/dist/dropzone.css';
 import '@tabler/core/dist/css/tabler-vendors.min.css';
 import { convertToPem } from 'p12-pem/lib/lib/p12.js';
 
-export default {
-    name: 'UploadP12Modal',
-    components: {
-        TablerModal,
-        TablerInput
-    },
-    emits: [
-        'close',
-        'certs'
-    ],
-    data: function() {
-        return {
-            dropzone: null,
-            password: '',
-            file: null
-        }
-    },
-    mounted: function() {
-        this.$nextTick(() => {
-            this.dropzone = new Dropzone("#dropzone-default", {
-                autoProcessQueue: false
-            });
+const emit = defineEmits([
+    'close',
+    'certs'
+]);
 
-            this.dropzone.on('addedfile', (file) => {
-                const read = new FileReader();
-                read.onload = (event) => {
-                    this.file = event.target.result;
-                };
-                read.readAsDataURL(file);
-            });
+const dropzone = ref(null);
+const password = ref('');
+const file = ref(null);
+
+onMounted(() => {
+    nextTick(() => {
+        dropzone.value = new Dropzone("#dropzone-default", {
+            autoProcessQueue: false
         });
-    },
-    methods: {
-        close: function() {
-            this.$emit('close');
-        },
-        extract: function() {
-            const certs = convertToPem(atob(this.file.split('base64,')[1]), this.password);
-            this.$emit('certs', certs);
-        }
-    }
+
+        dropzone.value.on('addedfile', (f) => {
+            const read = new FileReader();
+            read.onload = (event) => {
+                file.value = event.target.result;
+            };
+            read.readAsDataURL(f);
+        });
+    });
+});
+
+function close() {
+    emit('close');
+}
+
+function extract() {
+    const certs = convertToPem(atob(file.value.split('base64,')[1]), password.value);
+    emit('certs', certs);
 }
 </script>

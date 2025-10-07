@@ -45,27 +45,44 @@
                 :create='false'
             />
             <template v-else>
-                <div class='row'>
+                <div class='w-100 d-flex flex-wrap align-items-center justify-content-center'>
                     <template v-for='file of files'>
-                        <div class='col-4 px-2 py-2'>
-                            <img
-                                v-if='[".png", ".jpg", "jpeg", "webp"].includes(file.ext)'
-                                class='cursor-pointer'
-                                :src='downloadAssetUrl(file)'
-                                :size='24'
-                                stroke='1'
-                                @click='attachmentPane(file)'
+                        <div
+                            class='px-2 py-2 hover rounded'
+                        >
+                            <div
+                                class='d-flex align-items-center justify-content-center'
+                                style='
+                                    height: 200px;
+                                    width: 200px;
+                                '
                             >
-                            <IconFile
-                                v-else
-                                :size='24'
-                                stroke='1'
-                            />
+                                <img
+                                    v-if='[".png", ".jpg", ".jpeg", ".webp"].includes(file.ext)'
+                                    class='cursor-pointer'
+                                    :style='{
+                                        "max-height": "180px",
+                                        "object-fit": "contain"
+                                    }'
+                                    :src='downloadAssetUrl(file)'
+                                    @click='attachmentPane(file)'
+                                >
+                                <IconFile
+                                    v-else
+                                    :size='60'
+                                    stroke='1'
+                                />
+                            </div>
 
-                            <div class='d-flex align-items-center mt-2'>
+                            <div
+                                class='d-flex align-items-center pt-2'
+                                style='
+                                    height: 30px;
+                                '
+                            >
                                 <span
                                     class='mx-2 text-truncate'
-                                    style='max-width: 300px;'
+                                    style='max-width: 160px;'
                                     v-text='file.name'
                                 />
 
@@ -164,7 +181,7 @@ async function uploadComplete(event) {
     upload.value = false;
 
     const url = stdurl(`/api/attachment`);
-    url.searchParams.append('hash', JSON.parse(event).hash);
+    url.searchParams.append('hash', event.hash);
     files.value.push(...(await std(url)).items);
 
     loading.value = false;

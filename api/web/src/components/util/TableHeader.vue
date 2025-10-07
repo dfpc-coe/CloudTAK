@@ -68,7 +68,8 @@
     </thead>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import {
     IconChevronUp,
     IconChevronDown,
@@ -78,61 +79,48 @@ import {
     TablerDropdown
 } from '@tak-ps/vue-tabler'
 
-export default {
-    name: 'TableHeader',
-    components: {
-        TablerDropdown,
-        IconSettings,
-        IconChevronUp,
-        IconChevronDown
+const props = defineProps({
+    header: {
+        type: Array,
+        required: true,
+        description: 'Array of object headers - [{ name: "example", "displayed: true }]'
     },
-    props: {
-        header: {
-            type: Array,
-            required: true,
-            description: 'Array of object headers - [{ name: "example", "displayed: true }]'
-        },
-        order: {
-            type: String,
-            required: false,
-            default: 'desc',
-            description: 'Order to sort by asc or desc'
-        },
-        sort: {
-            type: String,
-            required: false,
-            description: 'Field to sort by'
-        },
+    order: {
+        type: String,
+        required: false,
+        default: 'desc',
+        description: 'Order to sort by asc or desc'
     },
-    emits: [
-        'update:order',
-        'update:sort',
-        'update:header'
-    ],
-    computed: {
-        shown: function() {
-           return this.header.filter((h) => {
-                return h.display;
-           });
-        }
+    sort: {
+        type: String,
+        required: false,
+        description: 'Field to sort by'
     },
-    watch: {
-        order: function() {
-            this.$emit('update:order', this.order);
-        }
-    },
-    methods: {
-        updateSort(sort) {
-            this.$emit('update:sort', sort);
-        },
-        updateOrder: function(order) {
-            this.$emit('update:order', order);
-        },
-        displayHeader: function(h_it, $event) {
-            const header = JSON.parse(JSON.stringify(this.header));
-            header[h_it].display = $event.target.checked;
-            this.$emit('update:header', header);
-        }
-    }
+});
+
+const emit = defineEmits([
+    'update:order',
+    'update:sort',
+    'update:header'
+]);
+
+const shown = computed(() => {
+   return props.header.filter((h) => {
+        return h.display;
+   });
+});
+
+function updateSort(sort) {
+    emit('update:sort', sort);
+}
+
+function updateOrder(order) {
+    emit('update:order', order);
+}
+
+function displayHeader(h_it, $event) {
+    const header = JSON.parse(JSON.stringify(props.header));
+    header[h_it].display = $event.target.checked;
+    emit('update:header', header);
 }
 </script>

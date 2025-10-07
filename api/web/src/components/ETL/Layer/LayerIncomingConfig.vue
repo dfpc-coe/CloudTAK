@@ -164,19 +164,84 @@
                 <div class='col-md-12'>
                     <div class='row'>
                         <div class='col-12'>
-                            <label>Optional Data Sync</label>
+                            <label>Data Destination</label>
                         </div>
-                        <div class='col-12 d-flex align-items-center my-1'>
-                            <IconDatabase
-                                :size='32'
-                                stroke='1'
-                            />
-                            <DataSelect
-                                v-model='incoming.data'
+                        <div
+                            class='px-2 py-2 round btn-group w-100'
+                            role='group'
+                        >
+                            <input
+                                id='dest-groups'
+                                type='radio'
+                                class='btn-check'
+                                autocomplete='off'
                                 :disabled='disabled'
-                                :connection='layer.connection'
-                            />
+                                :checked='dest === "groups"'
+                                @click='dest = "groups"'
+                            >
+                            <label
+                                for='dest-groups'
+                                type='button'
+                                class='btn btn-sm'
+                            >
+                                <IconAffiliate
+                                    v-tooltip='"Channel Selection"'
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Channel Selection</span>
+                            </label>
+
+                            <input
+                                id='dest-mission'
+                                type='radio'
+                                class='btn-check'
+                                autocomplete='off'
+                                :disabled='disabled'
+                                :checked='dest === "mission"'
+                                @click='dest = "mission"'
+                            >
+                            <label
+                                for='dest-mission'
+                                type='button'
+                                class='btn btn-sm'
+                            >
+                                <IconAmbulance
+                                    v-tooltip='"Data Sync"'
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Data Sync</span>
+                            </label>
                         </div>
+
+                        <template v-if='dest === "groups"'>
+                            <div class='col-md-12'>
+                                <TablerInlineAlert
+                                    type='info'
+                                    description='If no channels are selected, then all channels assigned to the connection will be used'
+                                />
+
+                                <GroupSelect
+                                    v-model='incoming.groups'
+                                    :disabled='disabled'
+                                    :connection='layer.connection'
+                                />
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class='col-12 d-flex align-items-center my-1'>
+                                <IconDatabase
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <DataSelect
+                                    v-model='incoming.data'
+                                    :disabled='disabled'
+                                    :connection='layer.connection'
+                                />
+                            </div>
+                        </template>
                     </div>
                 </div>
 
@@ -207,13 +272,15 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { std, humanSeconds } from '../../../std.ts';
+import { server, humanSeconds } from '../../../std.ts';
 import type { ETLLayerIncoming } from '../../../types.ts';
+import GroupSelect from '../../util/GroupSelect.vue';
 import cronstrue from 'cronstrue';
 import DataSelect from '../../util/DataSelect.vue';
 import CopyField from '../../CloudTAK/util/CopyField.vue';
 import {
     TablerIconButton,
+    TablerInlineAlert,
     TablerDropdown,
     TablerInput,
     TablerToggle,
@@ -221,6 +288,8 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconCalendarClock,
+    IconAffiliate,
+    IconAmbulance,
     IconPlayerPlay,
     IconWebhook,
     IconPencil,
@@ -245,6 +314,7 @@ const emit = defineEmits([
     'stack'
 ]);
 
+const dest = ref('groups');
 const disabled = ref(true);
 const cronEnabled = ref(true);
 
@@ -278,8 +348,13 @@ function reload() {
 async function invoke() {
     loading.value.init = true;
     try {
-        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/invoke`, {
-            method: 'POST'
+        await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/task/invoke', {
+            params: {
+                path: {
+                    ':connectionid': Number(String(route.params.connectionid)),
+                    ':layerid': Number(String(route.params.layerid))
+                }
+            }
         });
 
         loading.value.init = false;
@@ -309,8 +384,19 @@ async function saveIncoming() {
             incoming.value.cron = null;
         }
 
-        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
-            method: 'PATCH',
+        if (dest.value === 'groups') {
+            incoming.value.data = null;
+        } else {
+            incoming.value.groups = [];
+        }
+
+        await server.PATCH(`/api/connection/{:connectionid}/layer/{:layerid}/incoming`, {
+            params: {
+                path: {
+                    ':connectionid': Number(String(route.params.connectionid)),
+                    ':layerid': Number(String(route.params.layerid))
+                }
+            },
             body: incoming.value
         });
 

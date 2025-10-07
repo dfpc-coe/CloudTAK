@@ -2,6 +2,19 @@ import { createApp } from 'vue'
 import * as VueRouter from 'vue-router'
 import { createPinia } from 'pinia'
 
+// @ts-expect-error Virtual Module
+import { registerSW } from 'virtual:pwa-register'
+
+registerSW({
+    immediate: true,
+    onNeedRefresh() {
+        console.error('App needs refresh');
+    },
+    onOfflineReady() {
+        console.log('App ready to work offline!')
+    }
+})
+
 import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'
 
@@ -145,6 +158,10 @@ const router = VueRouter.createRouter({
                     name: 'home-menu-features',
                     component: () => import('./components/CloudTAK/Menu/MenuFeatures.vue')
                 },{
+                    path: 'features/deleted',
+                    name: 'home-menu-features-deleted',
+                    component: () => import('./components/CloudTAK/Menu/MenuFeaturesDeleted.vue')
+                },{
                     path: 'overlays',
                     name: 'home-menu-overlays',
                     component: () => import('./components/CloudTAK/Menu/MenuOverlays.vue')
@@ -255,14 +272,9 @@ const router = VueRouter.createRouter({
                 path: 'layer',
                 name: 'data-layer',
                 component: () => import('./components/ETL/Data/DataLayer.vue')
-            },{
-                path: 'jobs',
-                name: 'data-jobs',
-                component: () => import('./components/ETL/Data/DataJobs.vue')
             }]
         },
         { path: '/connection/:connectionid/data/:dataid/edit', name: 'data-edit', component: () => import('./components/ETL/DataEdit.vue') },
-        { path: '/connection/:connectionid/data/:dataid/job/:jobid', name: 'data-job', component: () => import('./components/ETL/DataJob.vue') },
 
         { path: '/connection', name: 'connections', component: () => import('./components/ETL/Connections.vue') },
         { path: '/connection/new', name: 'connection-new', component: () => import('./components/ETL/ConnectionEdit.vue') },

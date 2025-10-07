@@ -228,7 +228,6 @@ function throws(err) {
 }
 
 function processUpload(body) {
-    body = JSON.parse(body);
     router.push(`/menu/imports/${body.imports[0].uid}`);
 }
 

@@ -160,10 +160,7 @@ export default async function router(schema: Schema, config: Config) {
             description: Type.Optional(Default.DescriptionField),
             enabled: Type.Optional(Type.Boolean()),
             agency: Type.Union([Type.Null(), Type.Optional(Type.Integer({ minimum: 1 }))]),
-            auth: Type.Optional(Type.Object({
-                key: Type.String({ minLength: 1, maxLength: 4096 }),
-                cert: Type.String({ minLength: 1, maxLength: 4096 })
-            }))
+            auth: Type.Optional(ConnectionAuth)
         }),
         res: ConnectionResponse
     }, async (req, res) => {
@@ -242,6 +239,9 @@ export default async function router(schema: Schema, config: Config) {
         }),
         query: Type.Object({
             token: Type.Optional(Type.String()),
+            password: Type.String({
+                description: 'Password to encrypt the P12 file',
+            }),
             download: Type.Boolean({
                 default: false,
                 description: 'Download auth as P12 file'
@@ -266,7 +266,8 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.type === 'client') {
                 const buff = await generateClientP12(
                     connection.auth,
-                    config.server.name + ' - ' + connection.name
+                    config.server.name + ' - ' + connection.name,
+                    req.query.password
                 );
 
                 if (req.query.download) {
@@ -279,7 +280,8 @@ export default async function router(schema: Schema, config: Config) {
             } else if (req.query.type === 'truststore') {
                 const buff = await generateTrustP12(
                     connection.auth,
-                    config.server.name + ' - ' + connection.name
+                    config.server.name + ' Truststore',
+                    req.query.password
                 );
 
                 if (req.query.download) {
@@ -359,6 +361,10 @@ export default async function router(schema: Schema, config: Config) {
             await S3.del(`connection/${String(req.params.connectionid)}/`, { recurse: true });
 
             await config.models.ConnectionToken.delete(sql`
+                connection = ${req.params.connectionid}
+            `);
+
+            await config.models.ConnectionFeature.delete(sql`
                 connection = ${req.params.connectionid}
             `);
 

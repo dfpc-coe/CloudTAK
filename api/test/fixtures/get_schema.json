@@ -199,6 +199,26 @@
         "query": false,
         "res": true
     },
+    "GET /connection/:connectionid/feature": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/feature": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/feature/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/feature/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/layer/:layerid/alert": {
         "body": false,
         "query": true,
@@ -739,7 +759,7 @@
         "query": true,
         "res": true
     },
-    "POST /marti/missions/:name": {
+    "POST /marti/missions": {
         "body": true,
         "query": false,
         "res": true
@@ -806,12 +826,12 @@
     },
     "GET /marti/package/:uid": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "DELETE /marti/package/:uid": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "GET /marti/subscription": {
@@ -991,7 +1011,7 @@
     },
     "DELETE /profile/feature/:id": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "GET /profile/feature/:id": {

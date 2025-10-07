@@ -16,8 +16,14 @@
             label=''
             :error='error'
             @update:model-value='validUpdate(text)'
-            @blur='validUpdate(text, { editing: true })'
-            @submit='validUpdate(text, { editing: rows > 1 ? true : false })'
+            @blur='validUpdate(text, {
+                submit: false,
+                editing: true
+            })'
+            @submit='validUpdate(text, {
+                submit: rows > 1 ? false : true,
+                editing: rows > 1 ? true : false
+            })'
         />
 
         <TablerIconButton
@@ -25,7 +31,10 @@
             title='Done Editing'
             class='position-absolute'
             style='right: 8px; top: 8px;'
-            @click.stop.prevent='editing = false'
+            @click.stop.prevent='validUpdate(text, {
+                submit: true,
+                editing: false
+            })'
         >
             <IconCheck
                 :size='24'
@@ -122,6 +131,7 @@ import {
 } from '@tabler/icons-vue';
 
 const emit = defineEmits([
+    'submit',
     'update:modelValue'
 ]);
 
@@ -200,12 +210,17 @@ watch(props, () => {
     }
 })
 
-function validUpdate(text: string | number, opts = {
-    editing: true
-}) {
-    editing.value = opts.editing;
-
+function validUpdate(
+    text: string | number,
+    opts = {
+        submit: false,
+        editing: true
+    }
+) {
     if (typeof props.validate !== 'function') {
+        editing.value = opts.editing;
+
+        if (opts.submit) emit("submit", text);
         emit("update:modelValue", text);
     } else {
         const res = props.validate(text);
@@ -213,7 +228,9 @@ function validUpdate(text: string | number, opts = {
         if (res.length) {
             error.value = res;
         } else {
+            editing.value = opts.editing;
             error.value = undefined;
+            if (opts.submit) emit("submit", text);
             emit("update:modelValue", text);
         }
     }

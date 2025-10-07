@@ -200,227 +200,213 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerAlert,
+    TablerNone,
     TablerLoading,
     TablerInput,
-    TablerNone,
 } from '@tak-ps/vue-tabler';
 import {
-    IconMap,
-    IconRefresh,
     IconX,
     IconPlus,
+    IconMap,
+    IconRefresh,
 } from '@tabler/icons-vue';
 import EsriServer from './EsriServer.vue';
 import EsriPortalCreate from './EsriPortalCreate.vue';
 
-export default {
-    name: 'EsriProxy',
-    components: {
-        TablerAlert,
-        IconX,
-        IconPlus,
-        TablerNone,
-        IconMap,
-        IconRefresh,
-        TablerLoading,
-        TablerInput,
-        EsriServer,
-        EsriPortalCreate
+const props = defineProps({
+    disabled: {
+        type: Boolean,
+        required: false,
+        default: false
     },
-    props: {
-        disabled: {
-            type: Boolean,
-            required: false,
-            default: false
-        },
-        readonly: {
-            type: Boolean,
-            default: false,
-            description: 'Hide buttons for CRUD Operations'
-        },
-        url: {
-            type: [URL, String],
-            description: 'ArcGIS Portal URL to authenticate against'
-        },
-        layer: {
-            type: [URL, String],
-            description: 'ArcGIS Server/Layer URL'
-        },
-        username: {
-            type: String,
-        },
-        password: {
-            type: String,
-        },
-        pane: {
-            type: Boolean,
-            default: true
-        }
+    readonly: {
+        type: Boolean,
+        default: false,
+        description: 'Hide buttons for CRUD Operations'
     },
-    emits: [
-        'close',
-        'token',
-        'layer'
-    ],
-    data: function() {
-        return {
-            loading: {
-                main: true,
-                content: true
-            },
-            createModal: false,
-            type: null,
-            err: null,
-            portal: null,
-            token: null,
-            server: this.layer ? { url: this.layer } : null,
-            servers: [],
-            content: [],
-            contentFilter: {
-                title: ''
-            }
-        }
+    url: {
+        type: [URL, String],
+        description: 'ArcGIS Portal URL to authenticate against'
     },
-    watch: {
-        server: async function() {
-            if (this.type === 'AGOL') {
-                await this.fetchContent();
-            } else {
-                await this.fetchServers();
-            }
-        },
-        token: function() {
-            this.$emit('token', this.token);
-        },
-        contentFilter: {
-            deep: true,
-            handler: async function() {
-                await this.fetchContent();
-            }
-        }
+    layer: {
+        type: [URL, String],
+        description: 'ArcGIS Server/Layer URL'
     },
-    mounted: async function() {
-        if (this.username && this.password) {
-            await this.generateToken();
-        }
+    username: {
+        type: String,
     },
-    methods: {
-        fmtserver: function(content) {
-            this.server = content;
-        },
-        generateToken: async function() {
-            this.loading.main = true;
-            try {
-                const body = {
-                    username: this.username,
-                    password: this.password,
-                    url: this.url || this.server.url
-                }
-
-                const res = await std('/api/esri', {
-                    method: 'POST',
-                    body
-                });
-
-                this.token = res.auth;
-                this.type = res.type;
-
-                if (this.type === 'AGOL') {
-                    await this.fetchPortal();
-                    await this.fetchContent();
-                } else if (this.type === 'PORTAL') {
-                    await this.fetchPortal();
-                    await this.fetchServers();
-                }
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.main = false;
-        },
-        fetchPortal: async function() {
-            this.loading.main = true;
-            try {
-                const url = stdurl('/api/esri/portal');
-                if (this.token) {
-                    url.searchParams.append('token', this.token.token);
-                    url.searchParams.append('expires', this.token.expires);
-                }
-
-                url.searchParams.append('portal', this.url);
-
-                const res = await std(url);
-
-                this.portal = res;
-
-                if (this.portal.isReadOnly) throw new Error('Portal is Read Only');
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.main = false;
-        },
-        fetchContent: async function() {
-            this.loading.content = true;
-            try {
-                const url = stdurl('/api/esri/portal/content');
-                if (this.token) {
-                    url.searchParams.append('token', this.token.token);
-                    url.searchParams.append('expires', this.token.expires);
-                }
-                url.searchParams.append('portal', this.url);
-                url.searchParams.append('title', this.contentFilter.title);
-
-                const res = await std(url);
-
-                this.content = res;
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.content = false;
-        },
-        fetchServers: async function() {
-            this.loading.main = true;
-            try {
-                const url = stdurl('/api/esri/portal/server');
-                if (this.token) {
-                    url.searchParams.append('token', this.token.token);
-                    url.searchParams.append('expires', this.token.expires);
-                }
-                url.searchParams.append('portal', this.url);
-
-                const res = await std(url);
-
-                if (!res.servers) throw new Error('No Servers Present');
-                this.servers = res.servers;
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.main = false;
-        },
-        createService: async function(body) {
-            if (!this.token) throw new Error('Auth Token is required to create a service');
-
-            this.loading.main = true;
-            try {
-                const url = stdurl('/api/esri/portal/service');
-                url.searchParams.append('token', this.token.token);
-                url.searchParams.append('expires', this.token.expires);
-                url.searchParams.append('portal', this.url);
-
-                const res = await std(url, { method: 'POST', body });
-
-                this.server = {
-                    url: res.encodedServiceURL
-                };
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.main = false;
-        },
-
+    password: {
+        type: String,
+    },
+    pane: {
+        type: Boolean,
+        default: true
     }
+});
+
+const emit = defineEmits([
+    'close',
+    'token',
+    'layer'
+]);
+
+const loading = ref({
+    main: true,
+    content: true
+});
+const createModal = ref(false);
+const type = ref(null);
+const err = ref(null);
+const portal = ref(null);
+const token = ref(null);
+const server = ref(props.layer ? { url: props.layer } : null);
+const servers = ref([]);
+const content = ref([]);
+const contentFilter = ref({
+    title: ''
+});
+
+watch(server, async () => {
+    if (type.value === 'AGOL') {
+        await fetchContent();
+    } else {
+        await fetchServers();
+    }
+});
+
+watch(token, () => {
+    emit('token', token.value);
+});
+
+watch(contentFilter, async () => {
+    await fetchContent();
+}, { deep: true });
+
+onMounted(async () => {
+    if (props.username && props.password) {
+        await generateToken();
+    }
+});
+
+function fmtserver(c) {
+    server.value = c;
+}
+
+async function generateToken() {
+    loading.value.main = true;
+    try {
+        const body = {
+            username: props.username,
+            password: props.password,
+            url: props.url || server.value.url
+        }
+
+        const res = await std('/api/esri', {
+            method: 'POST',
+            body
+        });
+
+        token.value = res.auth;
+        type.value = res.type;
+
+        if (type.value === 'AGOL') {
+            await fetchPortal();
+            await fetchContent();
+        } else if (type.value === 'PORTAL') {
+            await fetchPortal();
+            await fetchServers();
+        }
+    } catch (error) {
+        err.value = error;
+    }
+    loading.value.main = false;
+}
+
+async function fetchPortal() {
+    loading.value.main = true;
+    try {
+        const url = stdurl('/api/esri/portal');
+        if (token.value) {
+            url.searchParams.append('token', token.value.token);
+            url.searchParams.append('expires', token.value.expires);
+        }
+
+        url.searchParams.append('portal', props.url);
+
+        const res = await std(url);
+
+        portal.value = res;
+
+        if (portal.value.isReadOnly) throw new Error('Portal is Read Only');
+    } catch (error) {
+        err.value = error;
+    }
+    loading.value.main = false;
+}
+
+async function fetchContent() {
+    loading.value.content = true;
+    try {
+        const url = stdurl('/api/esri/portal/content');
+        if (token.value) {
+            url.searchParams.append('token', token.value.token);
+            url.searchParams.append('expires', token.value.expires);
+        }
+        url.searchParams.append('portal', props.url);
+        url.searchParams.append('title', contentFilter.value.title);
+
+        const res = await std(url);
+
+        content.value = res;
+    } catch (error) {
+        err.value = error;
+    }
+    loading.value.content = false;
+}
+
+async function fetchServers() {
+    loading.value.main = true;
+    try {
+        const url = stdurl('/api/esri/portal/server');
+        if (token.value) {
+            url.searchParams.append('token', token.value.token);
+            url.searchParams.append('expires', token.value.expires);
+        }
+        url.searchParams.append('portal', props.url);
+
+        const res = await std(url);
+
+        if (!res.servers) throw new Error('No Servers Present');
+        servers.value = res.servers;
+    } catch (error) {
+        err.value = error;
+    }
+    loading.value.main = false;
+}
+
+async function createService(body) {
+    if (!token.value) throw new Error('Auth Token is required to create a service');
+
+    loading.value.main = true;
+    try {
+        const url = stdurl('/api/esri/portal/service');
+        url.searchParams.append('token', token.value.token);
+        url.searchParams.append('expires', token.value.expires);
+        url.searchParams.append('portal', props.url);
+
+        const res = await std(url, { method: 'POST', body });
+
+        server.value = {
+            url: res.encodedServiceURL
+        };
+    } catch (error) {
+        err.value = error;
+    }
+    loading.value.main = false;
 }
 </script>

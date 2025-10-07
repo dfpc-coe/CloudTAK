@@ -26,31 +26,21 @@
     </TablerModal>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
 import {
     TablerModal,
     TablerInput
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'UploadCSV',
-    components: {
-        TablerModal,
-        TablerInput
-    },
-    emits: [
-        'import',
-        'close'
-    ],
-    data: function() {
-        return {
-            csv: ''
-        }
-    },
-    methods: {
-        close: function() {
-            this.$emit('close');
-        },
-    }
+const emit = defineEmits([
+    'import',
+    'close'
+]);
+
+const csv = ref('');
+
+function close() {
+    emit('close');
 }
 </script>

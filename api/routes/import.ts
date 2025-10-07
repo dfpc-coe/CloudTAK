@@ -264,7 +264,9 @@ export default async function router(schema: Schema, config: Config) {
 
             if (auth instanceof AuthUser) {
                 const user = auth as AuthUser;
-                if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
+                if (imported.username !== user.email && !user.is_admin()) {
+                    throw new Err(400, null, 'You did not create this import');
+                }
             }
 
             res.json(imported);
@@ -293,7 +295,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const imp = await config.models.Import.from(req.params.import);
 
-            if (imp.username !== user.email) {
+            if (imp.username !== user.email && !user.is_admin()) {
                 throw new Err(403, null, 'You do not have permission to download this import');
             }
 
@@ -371,7 +373,9 @@ export default async function router(schema: Schema, config: Config) {
 
             if (auth instanceof AuthUser) {
                 const user = auth as AuthUser;
-                if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
+                if (imported.username !== user.email && !user.is_admin()) {
+                    throw new Err(400, null, 'You did not create this import');
+                }
             }
 
             const ext = path.parse(imported.name).ext

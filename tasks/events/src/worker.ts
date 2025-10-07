@@ -49,7 +49,7 @@ export default class Worker extends EventEmitter {
                 fs.createWriteStream(local.raw)
             );
 
-            if (await isZipFile(local.raw) && !local.raw.endsWith('.kmz')) {
+            if (await isZipFile(local.raw)) {
                 await this.processArchive(local);
             } else {
                 await this.processFile(local)
@@ -76,8 +76,21 @@ export default class Worker extends EventEmitter {
      */
     async processArchive(local: LocalMessage): Promise<void> {
         const pkg = await DataPackage.parse(local.raw, {
+            cleanup: false,
             strict: false
         });
+
+        // If a .kml is present at the root level, assume an actual KMZ and process as a single file upload
+        if (pkg.contents.some((content) => {
+            const p = path.parse(content._attributes.zipEntry);
+            return !p.dir && p.ext.toLowerCase() === '.kml'
+        })) {
+            return await this.processFile(local)
+        }
+
+        // We disable cleanup in the parser just in case we choose to
+        // treat it as a single file upload above
+        fs.unlinkSync(local.raw);
 
         const s3 = s3client();
 

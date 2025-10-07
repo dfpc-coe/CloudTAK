@@ -12,6 +12,7 @@
             </div>
             <div class='ms-auto'>
                 <span
+                    v-if='props.creator.time'
                     class='cursor-pointer'
                     @click='relative = !relative'
                     v-text='relative ? timediff(props.creator.time) : props.creator.time'

@@ -1,7 +1,7 @@
 process.env.StackName = 'test';
 
 import assert from 'assert';
-import { fetch } from 'undici';
+import { fetch, FormData } from 'undici';
 import type { Response, Headers } from 'undici';
 import CP from 'node:child_process';
 import MockTAKServer from './tak-server.js'
@@ -158,7 +158,7 @@ export default class Flight {
         const parsedurl = new URL(url, this.base);
 
         if (!req.headers) req.headers = {};
-        if (req.body && req.body.constructor === Object) {
+        if (req.body && req.body.constructor === Object && !(req.body instanceof FormData)) {
             req.headers['Content-Type'] = 'application/json';
             req.body = JSON.stringify(req.body);
         }
