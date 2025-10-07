@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 import busboy from 'busboy';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
+import { pipeline } from 'node:stream/promises';
 import { Type } from '@sinclair/typebox'
 import S3 from '../lib/aws/s3.js';
 import { CoTParser, FileShare, DataPackage } from '@tak-ps/node-cot';
@@ -71,12 +72,16 @@ export default async function router(schema: Schema, config: Config) {
                     singleFile = (async () => {
                         const { ext } = path.parse(meta.filename);
                         const filePath = path.resolve(os.tmpdir(), `${crypto.randomUUID()}${ext}`);
-                        await fsp.writeFile(filePath, file);
+
+                        await pipeline(
+                            file,
+                            await fs.createWriteStream(filePath)
+                        )
 
                         try {
                             return await DataPackage.parse(filePath)
                         } catch (err) {
-                            console.error('ok - treaing as unique file (not a DataPackage)', err);
+                            console.error('ok - treating as unique file (not a DataPackage)', err);
 
                             const pkg = new DataPackage(id, id);
 
