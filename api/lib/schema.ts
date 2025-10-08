@@ -90,6 +90,7 @@ export const ProfileFile = pgTable('profile_files', {
 
 export const ProfileChat = pgTable('profile_chats', {
     id: serial().primaryKey(),
+    read: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
     chatroom: text().notNull(),
     sender_callsign: text().notNull(),
