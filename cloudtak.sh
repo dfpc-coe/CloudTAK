@@ -95,8 +95,7 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
     git pull
 
     docker compose build api --no-cache
-    docker compose build events
-    docker compose build tiles
+    docker compose build events tiles media
 
     docker compose up -d
 else
