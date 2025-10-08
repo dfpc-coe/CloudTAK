@@ -61,7 +61,7 @@ elif [[ "$SUBCOMMAND" == "backup" ]]; then
     fi
 
     # Check if postgres container is running
-    if ! docker ps | grep "cloudtak-postgis" &> /dev/null; then
+    if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
         echo "PostgreSQL container is not running. Please start the services first."
         exit 1
     fi
@@ -71,21 +71,15 @@ elif [[ "$SUBCOMMAND" == "backup" ]]; then
     echo "Backing up PostgreSQL database to ${BACKUP_FILE}"
     docker exec cloudtak-postgis-1 pg_dump -d $(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/') > $BACKUP_FILE
 elif [[ "$SUBCOMMAND" == "start" ]]; then
-    if ! docker ps | grep "cloudtak-postgis" &> /dev/null; then
+    if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
         docker compose up -d postgis
     fi
 
-    if ! docker ps | grep "cloudtak-store" &> /dev/null; then
+    if ! docker compose ps | grep "cloudtak-store" &> /dev/null; then
         docker compose up -d store
     fi
 
-    docker compose up -d api events tiles
-
-    # Promp if they want to start the media service
-    read -p "Start Media Service? (y/n): " MEDIA_CHOICE
-    if [[ "$MEDIA_CHOICE" == "y" || "$MEDIA_CHOICE" == "Y" ]]; then
-        docker compose up -d media
-    fi
+    docker compose up -d api events tiles media
 elif [[ "$SUBCOMMAND" == "stop" ]]; then
     docker compose down
 elif [[ "$SUBCOMMAND" == "update" ]]; then
