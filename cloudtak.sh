@@ -97,7 +97,13 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
     docker compose build api --no-cache
     docker compose build events tiles media
 
-    docker compose up -d
+    docker compose up -d api events tiles
+
+    # Promp if they want to start the media service
+    read -p "Start Media Service? (y/n): " MEDIA_CHOICE
+    if [[ "$MEDIA_CHOICE" == "y" || "$MEDIA_CHOICE" == "Y" ]]; then
+        docker compose up -d media
+    fi
 else
     echo "Usage: $0 install|start|update|stop|backup"
     exit 0
