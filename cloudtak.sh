@@ -69,7 +69,7 @@ elif [[ "$SUBCOMMAND" == "backup" ]]; then
     mkdir -p ~/cloudtak-backups
     BACKUP_FILE=~/cloudtak-backups/cloudtak-$(date +%Y%m%d_%H%M%S).sql
     echo "Backing up PostgreSQL database to ${BACKUP_FILE}"
-    pg_dump -d $(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5433/@localhost:5432/') > $BACKUP_FILE
+    pg_dump -d $(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5433/') > $BACKUP_FILE
 elif [[ "$SUBCOMMAND" == "start" ]]; then
     docker compose up -d
 elif [[ "$SUBCOMMAND" == "stop" ]]; then
