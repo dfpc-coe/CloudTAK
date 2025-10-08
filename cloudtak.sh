@@ -71,7 +71,21 @@ elif [[ "$SUBCOMMAND" == "backup" ]]; then
     echo "Backing up PostgreSQL database to ${BACKUP_FILE}"
     docker exec cloudtak-postgis-1 pg_dump -d $(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/') > $BACKUP_FILE
 elif [[ "$SUBCOMMAND" == "start" ]]; then
-    docker compose up -d
+    if ! docker ps | grep "cloudtak-postgis" &> /dev/null; then
+        docker compose up -d postgis
+    fi
+
+    if ! docker ps | grep "cloudtak-store" &> /dev/null; then
+        docker compose up -d store
+    fi
+
+    docker compose up -d api events tiles
+
+    # Promp if they want to start the media service
+    read -p "Start Media Service? (y/n): " MEDIA_CHOICE
+    if [[ "$MEDIA_CHOICE" == "y" || "$MEDIA_CHOICE" == "Y" ]]; then
+        docker compose up -d media
+    fi
 elif [[ "$SUBCOMMAND" == "stop" ]]; then
     docker compose down
 elif [[ "$SUBCOMMAND" == "update" ]]; then
@@ -97,13 +111,7 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
     docker compose build api --no-cache
     docker compose build events tiles media
 
-    docker compose up -d api events tiles
-
-    # Promp if they want to start the media service
-    read -p "Start Media Service? (y/n): " MEDIA_CHOICE
-    if [[ "$MEDIA_CHOICE" == "y" || "$MEDIA_CHOICE" == "Y" ]]; then
-        docker compose up -d media
-    fi
+    $0 start
 else
     echo "Usage: $0 install|start|update|stop|backup"
     exit 0
