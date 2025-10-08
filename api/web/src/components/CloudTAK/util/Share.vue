@@ -233,6 +233,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { OriginMode } from '../../../base/cot.ts';
 import { v4 as randomUUID } from 'uuid';
 import { std, stdurl } from '../../../std.ts';
 import {
@@ -353,7 +354,7 @@ async function share() {
         && !props.basemaps
         && (!feats[0].properties.attachments || feats[0].properties.attachments.length === 0)
     ) {
-        if (selectedUsers.size > 0 || selectedGroups.size > 0) {
+        if (selectedUsers.value.size > 0 || selectedGroups.value.size > 0) {
             const feat = JSON.parse(JSON.stringify(feats[0]));
             feat.properties.dest = [];
 
@@ -370,7 +371,7 @@ async function share() {
             }
         }
 
-        if (selectedMissions.size > 0) {
+        if (selectedMissions.value.size > 0) {
             for (const mission of selectedMissions.value) {
                 const feat = JSON.parse(JSON.stringify(feats[0]));
 

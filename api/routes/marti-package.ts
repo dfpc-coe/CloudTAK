@@ -157,6 +157,9 @@ export default async function router(schema: Schema, config: Config) {
                 })),
                 group: Type.Optional(Type.String({
                     description: 'A Channel/Group to share the package with'
+                })),
+                mission: Type.Optional(Type.String({
+                    description: 'A Mission GUID to share the package with, note the user must be actively subscribed to the Mission'
                 }))
             }), {
                 default: [],
@@ -301,7 +304,6 @@ export default async function router(schema: Schema, config: Config) {
 
             if (client && req.body.destinations.length) {
                 const url = new URL(config.server.api);
-
 
                 const cot = new FileShare({
                     filename: id,
