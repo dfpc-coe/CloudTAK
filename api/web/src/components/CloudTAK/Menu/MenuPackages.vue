@@ -57,7 +57,7 @@
                     @keyup.enter='router.push(`/menu/packages/${pkg.UID}?hash=${pkg.Hash}`)'
                 >
                     <div
-                        class='col-12'
+                        class='col-12 pe-2 text-truncate'
                         v-text='pkg.Name'
                     />
                     <div
