@@ -8,6 +8,7 @@
 .env-*
 .docker-*
 api/assets/*
+Caddyfile
 
 # Logs
 logs

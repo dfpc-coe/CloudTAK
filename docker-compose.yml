@@ -69,11 +69,11 @@ services:
             - SigningSecret=${SigningSecret}
             - MediaSecret=${MediaSecret}
         ports:
-            - 9997:9997
-            - 8554:8554
-            - 1935:1935
-            - 8888:8888
-            - 8890:8890
+            - "${MEDIA_PORT_API:-9997}:9997"
+            - "${MEDIA_PORT_RTSP:-8554}:8554"
+            - "${MEDIA_PORT_RTMP:-1935}:1935"
+            - "${MEDIA_PORT_HLS:-8888}:8888"
+            - "${MEDIA_PORT_SRT:-8890}:8890"
         volumes:
             - .docker-media:/opt/mediamtx
 
@@ -92,13 +92,13 @@ services:
         platform: linux/amd64
         image: minio/minio:RELEASE.2024-08-17T01-24-54Z
         entrypoint: sh
-        command: -c 'mkdir -p /data/cloudtak && /usr/bin/minio server /data --console-address ":9001"'
+        command: -c 'mkdir -p /data/cloudtak && /usr/bin/minio server /data --console-address ":9002"'
         restart: 'always'
         volumes:
             - .docker-store:/data
         ports:
             - 9000:9000
-            - 9001:9001
+            - 9002:9002
         environment:
             - MINIO_ROOT_USER=${MINIO_ROOT_USER}
             - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
