@@ -70,7 +70,7 @@
                             </div>
                             <div class='datagrid-content'>
                                 <div
-                                    v-if='pkg.Keywords.length'
+                                    v-if='(pkg.Keywords || []).length'
                                     class='col-12 pt-1'
                                 >
                                     <span
