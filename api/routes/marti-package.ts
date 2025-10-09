@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import { pipeline } from 'node:stream/promises';
 import { Type } from '@sinclair/typebox'
+import { sql } from 'drizzle-orm';
 import S3 from '../lib/aws/s3.js';
 import { CoTParser, FileShare, DataPackage } from '@tak-ps/node-cot';
 import { StandardResponse } from '../lib/types.js';
@@ -302,7 +303,11 @@ export default async function router(schema: Schema, config: Config) {
 
             const client = config.conns.get(profile.username);
 
-            if (client && req.body.destinations.length) {
+            if (
+                client
+                    && req.body.destinations.length
+                    && req.body.destinations.filter((d) => !d.mission).length
+            ) {
                 const url = new URL(config.server.api);
 
                 const cot = new FileShare({
@@ -318,12 +323,46 @@ export default async function router(schema: Schema, config: Config) {
 
                 if (!cot.raw.event.detail) cot.raw.event.detail = {};
                 cot.raw.event.detail.marti = {
-                    dest: req.body.destinations.map((dest) => {
-                        return { _attributes: dest };
-                    })
+                    dest: req.body.destinations
+                        .filter((d) => !d.mission)
+                        .map((dest) => {
+                            return { _attributes: dest };
+                        })
                 }
 
                 client.tak.write([cot]);
+            }
+
+            if (req.body.destinations.length && req.body.destinations.filter((d) => d.mission).length) {
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+                const guids = req.body.destinations.filter((d) => d.mission).map((d) => d.mission) as string[];
+
+                const ovs = new Map();
+                (await config.models.ProfileOverlay.list({
+                    where: sql`
+                        username = ${user.email}
+                        AND mode = 'mission'
+                    `
+                }).items.map(o => ovs.set(o.mode_id, o)));
+
+                for (const guid of guids) {
+                    if (!ov.get(guid)) {
+                        throw new Err(400, null, `You are not subscribed to mission ${guid}`);
+                    }
+
+                    const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                        ? { token: String(req.headers['missionauthorization']) }
+                        : await config.conns.subscription(user.email, req.params.guid)
+
+                    await api.Mission.upload(
+                        guid,
+
+                        {
+                            
+                        }
+                    );
+                }
             }
 
             res.json(content)
