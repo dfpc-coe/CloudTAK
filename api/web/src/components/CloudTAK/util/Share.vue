@@ -393,7 +393,7 @@ async function share() {
             }
         }
     } else {
-        const destinations: Array<{ uid?: string, group?: string }> = [
+        const destinations: Array<{ uid?: string, group?: string, mission?: string }> = [
             ...Array.from(selectedUsers.value).map((contact): { uid: string } => ({ uid: contact.uid })),
             ...Array.from(selectedGroups.value).map((group): { group: string } => ({ group: group.name })),
             ...Array.from(selectedMissions.value).map((mission): { mission: string } => ({ mission: mission.guid })),
