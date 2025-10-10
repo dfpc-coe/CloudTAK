@@ -15,7 +15,9 @@
                     v-if='selected'
                     :size='compact ? 20 : 32'
                     stroke='1'
-                    :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
+                    style='
+                        margin-left: 8px
+                    '
                 />
                 <ContactPuck
                     v-else

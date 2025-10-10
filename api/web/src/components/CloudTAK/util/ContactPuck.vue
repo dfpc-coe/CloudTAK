@@ -22,7 +22,7 @@
     />
     <IconUserQuestion
         v-else
-        :size='size ? 20 : 32'
+        :size='props.size ? props.size : 32'
         stroke='1'
     />
 </template>

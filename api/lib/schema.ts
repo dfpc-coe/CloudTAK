@@ -90,6 +90,7 @@ export const ProfileFile = pgTable('profile_files', {
 
 export const ProfileChat = pgTable('profile_chats', {
     id: serial().primaryKey(),
+    read: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
     chatroom: text().notNull(),
     sender_callsign: text().notNull(),
@@ -432,18 +433,10 @@ export const ProfileInterest = pgTable('profile_interests', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
-export const ProfileMission = pgTable('profile_missions', {
-    id: serial().primaryKey(),
-    name: text().notNull(),
-    guid: text().notNull(),
-    token: text().notNull(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-});
-
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial().primaryKey(),
     name: text().notNull(),
+    active: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),

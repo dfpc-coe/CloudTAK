@@ -5,12 +5,18 @@
         :width='props.size'
         :height='props.size'
     />
+    <!-- Icons are in order of most preferred display => Least-->
     <IconPointFilled
         v-else-if='feature.properties && feature.properties.type === "u-d-p"'
         :size='props.size'
         :color='feature.properties["marker-color"]'
     />
-    <!-- Icons are in order of most preferred display => Least-->
+    <IconCircle
+        v-else-if='feature.properties && feature.properties.type === "u-d-c-c"'
+        :size='props.size'
+        :color='feature.properties.stroke || "white"'
+        stroke='1'
+    />
     <IconVideo
         v-else-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
         :size='props.size'
@@ -58,6 +64,7 @@ import { useTemplateRef, watch, computed } from 'vue';
 import ContactPuck from './ContactPuck.vue'
 import {
     IconVideo,
+    IconCircle,
     IconRoute,
     IconPointFilled,
     IconMapPin,

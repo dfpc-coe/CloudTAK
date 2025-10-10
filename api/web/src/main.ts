@@ -444,6 +444,10 @@ const router = VueRouter.createRouter({
                     path: 'repeater',
                     name: 'admin-server-repeater',
                     component: () => import('./components/Admin/Server/ServerRepeaters.vue')
+                },{
+                    path: 'packages',
+                    name: 'admin-server-packages',
+                    component: () => import('./components/Admin/Server/ServerPackages.vue')
                 }]
             },{
                 path: 'config',

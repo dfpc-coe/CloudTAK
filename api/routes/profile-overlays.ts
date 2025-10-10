@@ -174,6 +174,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             pos: Type.Optional(Type.Integer()),
             name: Type.Optional(Type.String()),
+            active: Type.Optional(Type.Boolean()),
             type: Type.Optional(Type.String()),
             opacity: Type.Optional(Type.Number()),
             visible: Type.Optional(Type.Boolean()),
@@ -196,6 +197,16 @@ export default async function router(schema: Schema, config: Config) {
             if (overlay.mode === 'profile' && req.body.url && req.body.url.startsWith('http')) {
                 const url = new URL(req.body.url);
                 req.body.url = url.pathname;
+            }
+
+            if (req.body.active && overlay.mode !== 'mission') {
+                throw new Err(400, null, 'Only mission overlays can be made active');
+            } else if (req.body.active) {
+                await config.models.ProfileOverlay.commit(sql`
+                    username = ${user.email}
+                `, {
+                    active: false
+                });
             }
 
             overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
@@ -225,6 +236,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileOverlay',
         description: 'Create Profile Overlay',
         body: Type.Object({
+            name: Type.String(),
+            active: Type.Optional(Type.Boolean()),
             pos: Type.Optional(Type.Integer()),
             type: Type.Optional(Type.String()),
             opacity: Type.Optional(Type.Number()),
@@ -234,7 +247,6 @@ export default async function router(schema: Schema, config: Config) {
             styles: Type.Optional(Type.Array(Type.Unknown())),
             token: Type.Optional(Type.String()),
             url: Type.String(),
-            name: Type.String()
         }),
         res: AugmentedProfileOverlayResponse
     }, async (req, res) => {
@@ -243,6 +255,16 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.body.styles && req.body.styles.length) {
                 TileJSON.isValidStyle(req.body.type || 'raster', req.body.styles);
+            }
+
+            if (req.body.active && req.body.mode !== 'mission') {
+                throw new Err(400, null, 'Only mission overlays can be made active');
+            } else if (req.body.active) {
+                await config.models.ProfileOverlay.commit(sql`
+                    username = ${user.email}
+                `, {
+                    active: false
+                });
             }
 
             let overlay;

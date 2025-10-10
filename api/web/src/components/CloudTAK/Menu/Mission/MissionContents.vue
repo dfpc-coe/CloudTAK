@@ -54,19 +54,23 @@
                 :key='content.data.uid'
                 class='col-12 d-flex px-2 py-2 hover'
             >
-                <div>
-                    <span
-                        class='txt-truncate'
-                        v-text='content.data.name'
-                    />
+                <div
+                    style='width: calc(100% - 120px)'
+                >
                     <div class='col-12'>
-                        <span
-                            class='subheader'
-                            v-text='content.data.submitter'
-                        /> - <span
-                            class='subheader'
-                            v-text='content.data.submissionTime'
+                        <div
+                            class='text-truncate'
+                            v-text='content.data.name'
                         />
+                        <div>
+                            <span
+                                class='subheader'
+                                v-text='content.data.submitter'
+                            /> - <span
+                                class='subheader'
+                                v-text='content.data.submissionTime'
+                            />
+                        </div>
                     </div>
                 </div>
                 <div class='col-auto ms-auto btn-list'>
