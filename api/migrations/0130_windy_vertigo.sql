@@ -1,0 +1,1 @@
+ALTER TABLE "profile_overlays" ADD COLUMN "active" boolean DEFAULT false NOT NULL;
