@@ -54,6 +54,7 @@
                     class='btn-check'
                     autocomplete='off'
                     :checked='mode === "users"'
+                    :disabled='loading'
                     @click='mode = "users"'
                 >
                 <label
@@ -72,6 +73,7 @@
                     class='btn-check'
                     autocomplete='off'
                     :checked='mode === "groups"'
+                    :disabled='loading'
                     @click='mode = "groups"'
                 >
                 <label
@@ -89,6 +91,7 @@
                     class='btn-check'
                     autocomplete='off'
                     :checked='mode === "missions"'
+                    :disabled='loading'
                     @click='mode = "missions"'
                 >
                 <label
@@ -200,7 +203,7 @@
                 >
                     <TablerButton
                         v-tooltip='"Share to Selected"'
-                        :disabled='selectedUsers.size === 0 && selectedGroups.size === 0 && selectedMissions.size === 0'
+                        :disabled='(selectedUsers.size === 0 && selectedGroups.size === 0 && selectedMissions.size === 0) || loading'
                         class='w-100 btn-primary'
                         @click='share'
                     >
@@ -215,6 +218,7 @@
                 <div class='col-6'>
                     <TablerButton
                         v-tooltip='"Broadcast to All Users"'
+                        :disabled='loading'
                         class='w-100 btn-secondary'
                         @click='broadcast'
                     >
@@ -348,6 +352,8 @@ async function currentFeats(): Promise<Feature[]> {
 async function share() {
     const feats = await currentFeats();
 
+    loading.value = true;
+
     // CoTs with Attachments must always be send via a DataPackage
     if (
         feats.length === 1
@@ -412,6 +418,8 @@ async function share() {
             }
         });
     }
+
+    loading.value = false;
 
     emit('done');
 }

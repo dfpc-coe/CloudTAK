@@ -302,8 +302,6 @@ export default async function router(schema: Schema, config: Config) {
                 }, fs.createReadStream(out));
             }
 
-            await pkg.destroy();
-
             const client = config.conns.get(profile.username);
 
             if (
@@ -369,7 +367,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json(content)
 
-            await fsp.unlink(out);
+            await pkg.destroy();
         } catch (err) {
             Err.respond(err, res);
         }
