@@ -23,7 +23,7 @@ export default async function router(schema: Schema, config: Config) {
             const auth = config.serverCert();
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const list = await api.Package.list()
+            const list = await api.Package.list({})
 
             res.json({
                 total: list.resultCount,
