@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v11.40.0 - 2025-10-10
+
+- :rocket: Remove unused ProfileMission Table
+- :tada: Add ability to share to Data Sync Mission
+- :rocket: `UI` Truncate Mission Content values
+- :tada: Implement Server Package List
+- :arrow_up: Update node-cot to add additional optional fields
+
 ### v11.39.0 - 2025-10-07
 
 - :rocket: Wrap Mission Logs to ensure they are fully visible - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1022
