@@ -35,6 +35,8 @@ export default class Subscription {
 
     _dirty: boolean;
 
+    _subscribed?: boolean;
+
     _remote: BroadcastChannel | null;
     _atlas: Atlas | Remote<Atlas>;
 
@@ -53,6 +55,7 @@ export default class Subscription {
     ) {
         this._atlas = atlas;
         this._remote = (opts && opts.remote === true) ? new BroadcastChannel('sync') : null
+        this._subscribed = true;
 
         this.meta = mission;
         this.role = role;

@@ -436,6 +436,7 @@ export const ProfileInterest = pgTable('profile_interests', {
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial().primaryKey(),
     name: text().notNull(),
+    active: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
