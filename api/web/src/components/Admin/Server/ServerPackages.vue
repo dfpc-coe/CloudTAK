@@ -55,7 +55,6 @@
 import { ref, onMounted } from 'vue';
 import { server } from '../../../std.ts';
 import type { PackageList, Package } from '../../../types.ts';
-import timeDiff from '../../../timediff.ts';
 import {
     TablerRefreshButton,
     TablerLoading,
@@ -65,7 +64,6 @@ import {
 } from '@tak-ps/vue-tabler';
 
 const loading = ref(true);
-const relative = ref(true);
 const error = ref<Error | undefined>();
 const list = ref<PackageList>({
     total: 0,
