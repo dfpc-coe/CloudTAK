@@ -110,6 +110,13 @@ export default class DrawTool {
                 new terraDraw.TerraDrawSectorMode(),
                 new terraDraw.TerraDrawCircleMode(),
                 new terraDraw.TerraDrawSelectMode({
+                    styles: {
+                        selectedPointColor: '#e03f97',
+                        selectedPointWidth: 8,
+                        selectionPointColor: '#e03f97',
+                        selectionPointWidth: 8,
+                        midPointColor: '#3f97e0'
+                    },
                     flags: {
                         polygon: {
                             feature: {
