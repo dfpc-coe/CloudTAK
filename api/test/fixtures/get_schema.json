@@ -1129,12 +1129,12 @@
         "query": true,
         "res": true
     },
-    "GET /server/repeater": {
+    "GET /server/package": {
         "body": false,
         "query": false,
         "res": true
     },
-    "DELETE /server/repeater/:uid": {
+    "DELETE /server/package/:hash": {
         "body": false,
         "query": false,
         "res": true
@@ -1162,6 +1162,16 @@
     "GET /search/suggest": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "GET /server/repeater": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /server/repeater/:uid": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "GET /server": {
