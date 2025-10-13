@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v11.41.0 - 2025-10-13
+
+- :rocket: Add KMS export & Geofence Secrets
+- :bug: `UI` Fix display of agency information in Connection UI
+- :tada: `API` Move Font serving to an API operation to facillitate graceful fallback when requested font glyphs are unavailable.
+
 ### v11.40.0 - 2025-10-10
 
 - :rocket: Remove unused ProfileMission Table
