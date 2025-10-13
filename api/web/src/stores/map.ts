@@ -432,7 +432,7 @@ export const useMapStore = defineStore('cloudtak', {
                 maxPitch: 85,
                 style: {
                     version: 8,
-                    glyphs: String(stdurl('/fonts')) + '/{fontstack}/{range}.pbf',
+                    glyphs: String(stdurl('/api/fonts')) + '/{fontstack}/{range}.pbf?token=' + localStorage.token,
                     sprite: sprites,
                     sources: {
                         '-1': {

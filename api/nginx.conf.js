@@ -123,11 +123,6 @@ http {
              try_files $uri $uri.html $uri/ /index.html;
          }
 
-        location /fonts/ {
-            alias /home/etl/api/fonts/;
-            autoindex on;
-        }
-
         location /icons/ {
             alias /home/etl/api/icons/;
             autoindex on;
