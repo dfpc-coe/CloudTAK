@@ -5,7 +5,6 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import * as Default from '../lib/limits.js';
 
 export const AgencyResponse = Type.Object({
     id: Type.Integer(),
@@ -37,20 +36,20 @@ export default async function router(schema: Schema, config: Config) {
             try {
                 await fsp.access(new URL(`../fonts/${req.params.fontstack}/${req.params.start}-${req.params.end}.pbf`, import.meta.url))
             } catch (err) {
-                if (err.code === 'ENOENT') {
+                if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
                     req.params.fontstack = 'Open Sans Regular';
                 } else {
-                    throw new Err(500, null, err instanceof Error ? err.message : new Error(String(err)));
+                    throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Internal Server Error');
                 }
             }
 
             try {
                 await fsp.access(new URL(`../fonts/${req.params.fontstack}/${req.params.start}-${req.params.end}.pbf`, import.meta.url))
             } catch (err) {
-                if (err.code === 'ENOENT') {
-                    throw new Err(404, 'Not Found', 'Font stack or glyph range not found');
+                if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+                    throw new Err(404, err, 'Font stack or glyph range not found');
                 } else {
-                    throw new Err(500, null, err instanceof Error ? err.message : new Error(String(err)));
+                    throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Internal Server Error');
                 }
             }
 
