@@ -7,6 +7,7 @@ import { Pool, GenerateUpsert } from '@openaddresses/batch-generic';
 import ConnectionPool from './connection-pool.js';
 import { ConnectionWebSocket } from './connection-web.js';
 import Cacher from './cacher.js';
+import { Tile38 } from '@iwpnd/tile38-ts';
 import type { Server } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
 import Models from './models.js';
@@ -39,6 +40,7 @@ export default class Config {
     cacher: Cacher;
     conns: ConnectionPool;
     server: InferSelectModel<typeof Server>;
+    tile38?: Tile38;
     events: EventsPool;
     arnPrefix?: string;
 
@@ -97,7 +99,7 @@ export default class Config {
             process.env.AWS_REGION = 'us-east-1';
         }
 
-        let SigningSecret, MediaSecret, API_URL, PMTILES_URL, Bucket;
+        let SigningSecret, MediaSecret, GeofenceSecret, API_URL, PMTILES_URL, GEOFENCE_URL, Bucket;
         if (!process.env.StackName || process.env.StackName === 'test') {
             process.env.StackName = 'test';
 
@@ -106,6 +108,8 @@ export default class Config {
             Bucket = process.env.ASSET_BUCKET;
             API_URL = process.env.API_URL || 'http://localhost:5001';
             PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
+            GEOFENCE_URL = process.env.GEOFENCE_URL;
+            GeofenceSecret = process.env.GEOFENCE_SECRET;
         } else {
             if (!process.env.StackName) throw new Error('StackName env must be set');
             if (!process.env.API_URL) throw new Error('API_URL env must be set');
@@ -121,8 +125,10 @@ export default class Config {
                 PMTILES_URL = process.env.PMTILES_URL || `https://tiles.${url.host}`;
             }
 
+            GEOFENCE_URL = process.env.GEOFENCE_URL;
             Bucket = process.env.ASSET_BUCKET;
             SigningSecret = process.env.SigningSecret || await Config.fetchSecret(process.env.StackName, 'secret');
+            GeofenceSecret = process.env.SigningSecret || await Config.fetchSecret(process.env.StackName, 'geofence');
             MediaSecret = process.env.MediaSecret || await Config.fetchSecret(process.env.StackName, 'media');
         }
 
@@ -155,6 +161,24 @@ export default class Config {
             wsClients: new Map(),
             server, SigningSecret, MediaSecret, API_URL, Bucket, pg, models, PMTILES_URL
         });
+
+        if (GEOFENCE_URL) {
+            console.log(`ok - Geofence URL configured: ${GEOFENCE_URL}`);
+            config.tile38 = new Tile38({
+                host: new URL(GEOFENCE_URL).hostname,
+                port: new URL(GEOFENCE_URL).port,
+                password: GeofenceSecret,
+                tls: GEOFENCE_URL.startsWith('ssl://')
+            })
+
+            config.tile38.on('error', (e) => {
+                console.error('Geofence Tile38 Connection Error:', e);
+            }).on('connect', () => {
+                console.error('ok - Geofence Tile38 Connection Open');
+            }).on('close', () => {
+                console.error('warn - Geofence Tile38 Connection Closed');
+            });
+        }
 
         if (!config.silent) {
             console.error('ok - set env AWS_REGION: us-east-1');
