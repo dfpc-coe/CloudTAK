@@ -28,5 +28,13 @@ export default {
                 }
             }
         }
-    }
+    },
+    Outputs: {
+        KMS: {
+            Description: 'CloudTAK Customer Data Key',
+            Export: {
+                Name: cf.join([cf.stackName, '-kms'])
+            },
+            Value: cf.ref('KMS')
+        },
 };
