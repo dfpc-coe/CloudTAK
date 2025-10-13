@@ -36,5 +36,6 @@ export default {
                 Name: cf.join([cf.stackName, '-kms'])
             },
             Value: cf.ref('KMS')
-        },
+        }
+    }
 };
