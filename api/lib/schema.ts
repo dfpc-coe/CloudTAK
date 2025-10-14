@@ -168,6 +168,8 @@ export const Basemap = pgTable('basemaps', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    sharing_enabled: boolean().notNull().default(false),
+    sharing_token: text(),
     name: text().notNull(),
     title: text().notNull().default('callsign'), // Title of features within the layer
     url: text().notNull(),
