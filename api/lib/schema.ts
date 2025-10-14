@@ -190,6 +190,15 @@ export const Basemap = pgTable('basemaps', {
     }
 })
 
+export const BasemapToken = pgTable('basemap_tokens', {
+    uuid: uuid().notNull().default(sql`gen_random_uuid()`),
+    basemap: integer().notNull().references(() => Basemap.id),
+    name: text().notNull(),
+    token: text().primaryKey(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+});
+
 export const Errors = pgTable('errors', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
