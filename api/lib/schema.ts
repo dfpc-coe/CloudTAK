@@ -5,6 +5,7 @@ import type { StyleContainer } from './style.js';
 import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from './palette.js';
 import { Polygon, Point } from 'geojson';
+import { ImportResult } from './control/import.js'
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { TAKGroup, TAKRole } from  '@tak-ps/node-tak/lib/api/types';
@@ -205,7 +206,7 @@ export const Import = pgTable('imports', {
     name: text().notNull(),
     status: text().notNull().default(Import_Status.PENDING),
     error: text(),
-    result: json().notNull().default({}),
+    result: json().$type<Static<typeof ImportResult>>().notNull().default({}),
     username: text().notNull().references(() => Profile.username),
     source: text().notNull().default('Upload'),
     source_id: text(),
