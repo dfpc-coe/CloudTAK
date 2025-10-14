@@ -1,4 +1,5 @@
 import Err from '@openaddresses/batch-error';
+import GeofenceServer from './geofence.js';
 import STS from '@aws-sdk/client-sts';
 import External from './external.js';
 import SecretsManager from '@aws-sdk/client-secrets-manager';
@@ -7,7 +8,6 @@ import { Pool, GenerateUpsert } from '@openaddresses/batch-generic';
 import ConnectionPool from './connection-pool.js';
 import { ConnectionWebSocket } from './connection-web.js';
 import Cacher from './cacher.js';
-import { Tile38 } from '@iwpnd/tile38-ts';
 import type { Server } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
 import Models from './models.js';
@@ -40,7 +40,7 @@ export default class Config {
     cacher: Cacher;
     conns: ConnectionPool;
     server: InferSelectModel<typeof Server>;
-    tile38?: Tile38;
+    geofence?: GeofenceServer;
     events: EventsPool;
     arnPrefix?: string;
 
@@ -171,12 +171,8 @@ export default class Config {
                 tls: GEOFENCE_URL.startsWith('ssl://')
             })
 
-            config.tile38.on('error', (e) => {
-                console.error('Geofence Tile38 Connection Error:', e);
-            }).on('connect', () => {
-                console.error('ok - Geofence Tile38 Connection Open');
-            }).on('close', () => {
-                console.error('warn - Geofence Tile38 Connection Closed');
+            config.tile38.on('error', (err) => {
+                console.error('not ok - Geofence Tile38 Connection Error:', err);
             });
         }
 

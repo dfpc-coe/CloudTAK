@@ -18,6 +18,7 @@ export class ConnectionClient {
     retry: number;
     initial: boolean;
 
+    geofence: boolean;
     retrying: boolean;
 
     constructor(
@@ -27,6 +28,7 @@ export class ConnectionClient {
         this.tak = tak;
         this.config = config;
         this.retry = 0;
+        this.geofence = false;
         this.initial = true;
         this.retrying = false;
     }
