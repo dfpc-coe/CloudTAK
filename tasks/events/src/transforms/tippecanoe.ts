@@ -32,6 +32,7 @@ export default class Tippecanoe {
      * @param {Object} options.zoom Zoom Options
      * @param {Number} options.zoom.max Max zoom of tiles
      * @param {Number} options.zoom.min Min zoom of tiles
+     * @param {Number} options.zoom.base Base zoom level after which points are dropped
      * @param {Boolean} options.force Delete the mbtiles file if it already exists instead of giving an error
      * @param {Object} options.limit Limit Options
      * @param {Boolean} [options.limit.features=true] Limit tiles to 200,000 features
@@ -50,6 +51,7 @@ export default class Tippecanoe {
             description?: string,
             layer?: string,
             zoom?: {
+                base?: number,
                 max?: number,
                 min?: number
             },
@@ -75,15 +77,15 @@ export default class Tippecanoe {
             base.push(...['-l', options.layer || 'out']);
 
             if (options.force) base.push('-f');
+            if (options.limit.features === false) base.push('--no-feature-limit');
+            if (options.limit.size === false) base.push('--no-tile-size-limit');
+            if (options.zoom.max !== undefined) base.push(...['--maximum-zoom', String(options.zoom.max)]);
+            if (options.zoom.min !== undefined) base.push(...['--minimum-zoom', String(options.zoom.min)]);
+            if (options.zoom.base !== undefined) base.push(...['--base-zoom', String(options.zoom.min)]);
             if (options.name) base.push(...['-n', options.name]);
             if (options.attribution) base.push(...['-A', options.attribution]);
             if (options.description) base.concat(...['-N', options.description]);
-            if (options.zoom.max) base.push(...['--maximum-zoom', String(options.zoom.max)]);
-            if (options.zoom.min) base.push(...['--minimum-zoom', String(options.zoom.min)]);
-            if (options.limit.features === false) base.push('--no-feature-limit');
-            if (options.limit.size === false) base.push('--no-tile-size-limit');
             if (options.quiet) base.push('--quiet');
-
 
             console.log(`tippecanoe ${base.join(' ')}`);
             const tippecanoe = CP.spawn('tippecanoe', base, {
