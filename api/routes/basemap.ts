@@ -1,4 +1,5 @@
 import path from 'node:path';
+import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import { bbox } from '@turf/bbox';
 import TileJSON, { TileJSONType, TileJSONActions } from '../lib/control/tilejson.js';
@@ -300,8 +301,8 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Default.NameField,
-            sharing: Type.Boolean({
-                default: false
+            sharing_enabled: Type.Boolean({
+                default: false,
                 description: 'Allow CloudTAK users to share this layer with other users'
             }),
             collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
@@ -347,12 +348,18 @@ export default async function router(schema: Schema, config: Config) {
                 username = user.email;
             }
 
-            const basemap = await config.models.Basemap.generate({
+            let basemap = await config.models.Basemap.generate({
                 ...req.body,
                 bounds,
                 center,
                 username
             });
+
+            if (req.body.sharing_enabled) {
+                basemap = await config.models.Basemap.commit(basemap.id, {
+                    sharing_token: jwt.sign({ id: basemap.id, access: 'basemap' }, config.SigningSecret)
+                })
+            }
 
             res.json({
                 ...basemap,
@@ -377,7 +384,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Default.NameField),
-            sharing: Type.Optional(Type.Boolean()),
+            sharing_enabled: Type.Optional(Type.Boolean()),
             collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             overlay: Type.Optional(Type.Boolean()),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
@@ -429,13 +436,25 @@ export default async function router(schema: Schema, config: Config) {
                 username = user.email;
             }
 
-            const basemap = await config.models.Basemap.commit(Number(req.params.basemapid), {
+            let basemap = await config.models.Basemap.commit(Number(req.params.basemapid), {
                 username,
                 updated: sql`Now()`,
                 ...req.body,
-                sharing_token: req
                 bounds, center,
             });
+
+            if (req.body.sharing_enabled !== undefined) {
+                if (req.body.sharing_enabled) {
+                    basemap = await config.models.Basemap.commit(basemap.id, {
+                        sharing_token: existing.sharing_token || jwt.sign({ id: existing.id, access: 'basemap' }, config.SigningSecret)
+                    });
+                } else {
+                    basemap = await config.models.Basemap.commit(basemap.id, {
+                        sharing_token: null
+                    });
+                }
+            }
+
 
             await config.cacher.del(`basemap-${req.params.basemapid}`);
 
