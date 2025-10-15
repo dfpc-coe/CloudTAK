@@ -300,6 +300,10 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Default.NameField,
+            sharing: Type.Boolean({
+                default: false
+                description: 'Allow CloudTAK users to share this layer with other users'
+            }),
             collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
@@ -373,6 +377,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Default.NameField),
+            sharing: Type.Optional(Type.Boolean()),
             collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             overlay: Type.Optional(Type.Boolean()),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
@@ -428,6 +433,7 @@ export default async function router(schema: Schema, config: Config) {
                 username,
                 updated: sql`Now()`,
                 ...req.body,
+                sharing_token: req
                 bounds, center,
             });
 
