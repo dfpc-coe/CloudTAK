@@ -91,7 +91,9 @@ watch(info, async () => {
 });
 
 onMounted(async () => {
-    await fetch()
+    if (props.connection.agency) {
+        await fetch()
+    }
 });
 
 async function fetch() {

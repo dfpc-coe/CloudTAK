@@ -99,6 +99,10 @@ export default class COT {
 
         if (!this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
             this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
+
+            if (this._geometry.type === 'Point' && this._geometry.coordinates.length > 2) {
+                this._properties.center[2] = this._geometry.coordinates[2];
+            }
         }
 
         if (this.origin.mode === OriginMode.CONNECTION && !this._remote) {
