@@ -302,7 +302,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Default.NameField,
             sharing_enabled: Type.Boolean({
-                default: false,
+                default: true,
                 description: 'Allow CloudTAK users to share this layer with other users'
             }),
             collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
