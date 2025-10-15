@@ -27,7 +27,7 @@
                     <div
                         class='col-auto mx-2'
                         :style='`
-                            width: calc(100% - 40px);
+                            width: calc(100% - 50px);
                         `'
                     >
                         <CopyField
