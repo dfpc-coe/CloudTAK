@@ -20,7 +20,7 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
     fi
 
     sudo apt update
-    sudo apt install -y git jq ca-certificates curl
+    sudo apt install -y git jq ca-certificates curl caddy
 
     for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
