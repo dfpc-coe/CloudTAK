@@ -27,7 +27,7 @@
                     <div
                         class='col-auto mx-2'
                         :style='`
-                            width: calc(100% - 40px);
+                            width: calc(100% - 50px);
                         `'
                     >
                         <CopyField
@@ -308,13 +308,7 @@
                     </div>
                 </div>
 
-                <div
-                    class='pt-2'
-                    :class='{
-                        "col-md-8": center.length > 2,
-                        "col-12 px-2": center.length <= 2,
-                    }'
-                >
+                <div class='pt-2 col-12 px-2'>
                     <PropertyType
                         v-if='cot.properties.type.startsWith("a-") || cot.properties.type.startsWith("u-")'
                         :key='cot.properties.type'
@@ -346,8 +340,9 @@
                 >
                     <PropertyElevation
                         :key='String(route.params.uid)'
+                        label='Elevation'
                         :unit='units.display_elevation'
-                        :elevation='cot.properties.center[2]'
+                        :elevation='center[2]'
                     />
                 </div>
 
@@ -396,7 +391,6 @@
                         :key='cot.properties.id'
                         :unit='units.display_speed'
                         :speed='cot.properties.speed'
-                        class='py-2'
                     />
                 </div>
 
@@ -412,7 +406,6 @@
                         :key='cot.properties.id'
                         label='Course'
                         :model-value='cot.properties.course'
-                        class='py-2'
                     />
                 </div>
 
@@ -971,10 +964,16 @@ const is_editable = computed(() => {
 const center = computed(() => {
     if (!cot.value) return [0,0];
 
-    return [
+    const arr = [
         Math.round(cot.value.properties.center[0] * 1000000) / 1000000,
         Math.round(cot.value.properties.center[1] * 1000000) / 1000000,
     ]
+
+    if (cot.value.properties.center.length > 2) {
+        arr.push(Math.round(cot.value.properties.center[2] * 100) / 100)
+    }
+
+    return arr;
 })
 
 async function load_cot() {

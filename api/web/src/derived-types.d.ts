@@ -12,12 +12,12 @@ export interface paths {
             cookie?: never;
         };
         /**
-         *                 List all JSON Schemas in use
+         * List all JSON Schemas in use
          *                 With no parameters this API will return a list of all the endpoints that have a form of schema validation
          *                 If the url/method params are used, the schemas themselves are returned
          *
          *                 Note: If url or method params are used, they must be used together
-         *              */
+         */
         get: {
             parameters: {
                 query?: {
@@ -731,7 +731,7 @@ export interface paths {
                     /** @description No Description */
                     type?: ("raster" | "raster-dem" | "vector") | ("raster" | "raster-dem" | "vector")[];
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "name" | "title" | "url" | "overlay" | "username" | "bounds" | "tilesize" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "sharing_enabled" | "sharing_token" | "name" | "title" | "url" | "overlay" | "username" | "bounds" | "tilesize" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only show Basemaps belonging to a given collection */
@@ -760,6 +760,8 @@ export interface paths {
                                 id: number;
                                 created: string;
                                 updated: string;
+                                sharing_enabled: boolean;
+                                sharing_token: string | null;
                                 name: string;
                                 title: string;
                                 url: string;
@@ -846,11 +848,11 @@ export interface paths {
             };
         };
         /**
-         *                 If the Content-Type if text/plain, then assume the body contains a TileJSON URL
+         * If the Content-Type if text/plain, then assume the body contains a TileJSON URL
          *                 Alternatively, if the Content-Type is a MultiPart upload, assume the input is a TAK XML document
          *
          *                 Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
-         *              */
+         */
         put: {
             parameters: {
                 query?: never;
@@ -958,6 +960,11 @@ export interface paths {
                     "application/json": {
                         /** @description Human readable name */
                         name: string;
+                        /**
+                         * @description Allow CloudTAK users to share this layer with other users
+                         * @default true
+                         */
+                        sharing_enabled: boolean;
                         collection?: null | string;
                         /** @default user */
                         scope: "server" | "user";
@@ -990,6 +997,8 @@ export interface paths {
                             id: number;
                             created: string;
                             updated: string;
+                            sharing_enabled: boolean;
+                            sharing_token: string | null;
                             name: string;
                             title: string;
                             url: string;
@@ -1117,6 +1126,8 @@ export interface paths {
                             id: number;
                             created: string;
                             updated: string;
+                            sharing_enabled: boolean;
+                            sharing_token: string | null;
                             name: string;
                             title: string;
                             url: string;
@@ -1311,6 +1322,7 @@ export interface paths {
                     "application/json": {
                         /** @description Human readable name */
                         name?: string;
+                        sharing_enabled?: boolean;
                         collection?: null | string;
                         overlay?: boolean;
                         /** @default user */
@@ -1342,6 +1354,8 @@ export interface paths {
                             id: number;
                             created: string;
                             updated: string;
+                            sharing_enabled: boolean;
+                            sharing_token: string | null;
                             name: string;
                             title: string;
                             url: string;
@@ -1481,7 +1495,9 @@ export interface paths {
                             format?: string;
                             vector_layers: {
                                 id: string;
-                                fields: Record<string, never>;
+                                fields: {
+                                    [key: string]: string;
+                                };
                                 minzoom?: number;
                                 maxzoom?: number;
                                 description?: string;
@@ -1713,7 +1729,9 @@ export interface paths {
                                 id?: string;
                                 /** @constant */
                                 type: "Feature";
-                                properties: Record<string, never>;
+                                properties: {
+                                    [key: string]: unknown;
+                                };
                                 geometry: {
                                     /** @constant */
                                     type: "Point";
@@ -1831,7 +1849,9 @@ export interface paths {
                             id?: string;
                             /** @constant */
                             type: "Feature";
-                            properties: Record<string, never>;
+                            properties: {
+                                [key: string]: unknown;
+                            };
                             geometry: {
                                 /** @constant */
                                 type: "Point";
@@ -1944,7 +1964,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": Record<string, never>;
+                        "application/json": {
+                            [key: string]: unknown;
+                        };
                     };
                 };
                 /** @description Error Response */
@@ -2522,7 +2544,9 @@ export interface paths {
                     content: {
                         "application/json": {
                             roles: string[];
-                            groups: Record<string, never>;
+                            groups: {
+                                [key: string]: string;
+                            };
                         };
                     };
                 };
@@ -3609,7 +3633,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get TileJSON  */
+        /** Get TileJSON */
         get: {
             parameters: {
                 query?: never;
@@ -4275,9 +4299,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         *                 Return a list of Connecton Features
-         *              */
+        /** Return a list of Connecton Features */
         get: {
             parameters: {
                 query: {
@@ -4349,7 +4371,9 @@ export interface paths {
                                     "stroke-style"?: string;
                                     fill?: string;
                                     "fill-opacity"?: number;
-                                    metadata?: Record<string, never>;
+                                    metadata?: {
+                                        [key: string]: unknown;
+                                    };
                                     archived?: boolean;
                                     geofence?: {
                                         elevationMonitored?: string;
@@ -4528,7 +4552,9 @@ export interface paths {
                                         geopointsrc?: string;
                                         altsrc?: string;
                                     };
-                                    flow?: Record<string, never>;
+                                    flow?: {
+                                        [key: string]: string;
+                                    };
                                 };
                                 path: string;
                                 geometry: {
@@ -4714,9 +4740,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         *                 Get a feature
-         *              */
+        /** Get a feature */
         get: {
             parameters: {
                 query?: never;
@@ -4775,7 +4799,9 @@ export interface paths {
                                 "stroke-style"?: string;
                                 fill?: string;
                                 "fill-opacity"?: number;
-                                metadata?: Record<string, never>;
+                                metadata?: {
+                                    [key: string]: unknown;
+                                };
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: string;
@@ -4954,7 +4980,9 @@ export interface paths {
                                     geopointsrc?: string;
                                     altsrc?: string;
                                 };
-                                flow?: Record<string, never>;
+                                flow?: {
+                                    [key: string]: string;
+                                };
                             };
                             path: string;
                             geometry: {
@@ -5037,9 +5065,7 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        /**
-         *                 Delete a feature
-         *              */
+        /** Delete a feature */
         delete: {
             parameters: {
                 query?: never;
@@ -5625,7 +5651,9 @@ export interface paths {
                                 "stroke-style"?: string;
                                 fill?: string;
                                 "fill-opacity"?: number;
-                                metadata?: Record<string, never>;
+                                metadata?: {
+                                    [key: string]: unknown;
+                                };
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: string;
@@ -5804,7 +5832,9 @@ export interface paths {
                                     geopointsrc?: string;
                                     altsrc?: string;
                                 };
-                                flow?: Record<string, never>;
+                                flow?: {
+                                    [key: string]: string;
+                                };
                                 stale?: number | string;
                             };
                             geometry: {
@@ -5874,7 +5904,9 @@ export interface paths {
                                         "stroke-style"?: string;
                                         fill?: string;
                                         "fill-opacity"?: number;
-                                        metadata?: Record<string, never>;
+                                        metadata?: {
+                                            [key: string]: unknown;
+                                        };
                                         archived?: boolean;
                                         geofence?: {
                                             elevationMonitored?: string;
@@ -6053,7 +6085,9 @@ export interface paths {
                                             geopointsrc?: string;
                                             altsrc?: string;
                                         };
-                                        flow?: Record<string, never>;
+                                        flow?: {
+                                            [key: string]: string;
+                                        };
                                         stale?: number | string;
                                     };
                                     geometry: {
@@ -6210,7 +6244,9 @@ export interface paths {
                                 "stroke-style"?: string;
                                 fill?: string;
                                 "fill-opacity"?: number;
-                                metadata?: Record<string, never>;
+                                metadata?: {
+                                    [key: string]: unknown;
+                                };
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: string;
@@ -6389,7 +6425,9 @@ export interface paths {
                                     geopointsrc?: string;
                                     altsrc?: string;
                                 };
-                                flow?: Record<string, never>;
+                                flow?: {
+                                    [key: string]: string;
+                                };
                             };
                             path?: string;
                             geometry: {
@@ -6555,7 +6593,9 @@ export interface paths {
                                     "stroke-style"?: string;
                                     fill?: string;
                                     "fill-opacity"?: number;
-                                    metadata?: Record<string, never>;
+                                    metadata?: {
+                                        [key: string]: unknown;
+                                    };
                                     archived?: boolean;
                                     geofence?: {
                                         elevationMonitored?: string;
@@ -6734,7 +6774,9 @@ export interface paths {
                                         geopointsrc?: string;
                                         altsrc?: string;
                                     };
-                                    flow?: Record<string, never>;
+                                    flow?: {
+                                        [key: string]: string;
+                                    };
                                 };
                                 path?: string;
                                 geometry: {
@@ -6847,7 +6889,9 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             responses: {
@@ -6857,7 +6901,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": Record<string, never>;
+                        "application/json": {
+                            [key: string]: unknown;
+                        };
                     };
                 };
                 /** @description Error Response */
@@ -6952,7 +6998,9 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             responses: {
@@ -6962,7 +7010,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": Record<string, never>;
+                        "application/json": {
+                            [key: string]: string;
+                        };
                     };
                 };
                 /** @description Error Response */
@@ -7325,7 +7375,9 @@ export interface paths {
                                     };
                                     stale: number;
                                     environment: unknown;
-                                    ephemeral: Record<string, never>;
+                                    ephemeral: {
+                                        [key: string]: unknown;
+                                    };
                                     data: number | null;
                                     groups: string[];
                                 };
@@ -7334,7 +7386,9 @@ export interface paths {
                                     created: string;
                                     updated: string;
                                     environment: unknown;
-                                    ephemeral: Record<string, never>;
+                                    ephemeral: {
+                                        [key: string]: unknown;
+                                    };
                                     filters: {
                                         queries?: {
                                             query: string;
@@ -7603,7 +7657,9 @@ export interface paths {
                                 };
                                 stale: number;
                                 environment: unknown;
-                                ephemeral: Record<string, never>;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
                                 data: number | null;
                                 groups: string[];
                             };
@@ -7612,7 +7668,9 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 environment: unknown;
-                                ephemeral: Record<string, never>;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
                                 filters: {
                                     queries?: {
                                         query: string;
@@ -7958,7 +8016,9 @@ export interface paths {
                             };
                             stale: number;
                             environment: unknown;
-                            ephemeral: Record<string, never>;
+                            ephemeral: {
+                                [key: string]: unknown;
+                            };
                             data: number | null;
                             groups: string[];
                         };
@@ -8377,7 +8437,9 @@ export interface paths {
                             };
                             stale: number;
                             environment: unknown;
-                            ephemeral: Record<string, never>;
+                            ephemeral: {
+                                [key: string]: unknown;
+                            };
                             data: number | null;
                             groups: string[];
                         };
@@ -8492,7 +8554,9 @@ export interface paths {
                             created: string;
                             updated: string;
                             environment: unknown;
-                            ephemeral: Record<string, never>;
+                            ephemeral: {
+                                [key: string]: unknown;
+                            };
                             filters: {
                                 queries?: {
                                     query: string;
@@ -8691,7 +8755,9 @@ export interface paths {
                             created: string;
                             updated: string;
                             environment: unknown;
-                            ephemeral: Record<string, never>;
+                            ephemeral: {
+                                [key: string]: unknown;
+                            };
                             filters: {
                                 queries?: {
                                     query: string;
@@ -8942,7 +9008,9 @@ export interface paths {
                                 };
                                 stale: number;
                                 environment: unknown;
-                                ephemeral: Record<string, never>;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
                                 data: number | null;
                                 groups: string[];
                             };
@@ -8951,7 +9019,9 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 environment: unknown;
-                                ephemeral: Record<string, never>;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
                                 filters: {
                                     queries?: {
                                         query: string;
@@ -9303,7 +9373,9 @@ export interface paths {
                                 };
                                 stale: number;
                                 environment: unknown;
-                                ephemeral: Record<string, never>;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
                                 data: number | null;
                                 groups: string[];
                             };
@@ -9312,7 +9384,9 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 environment: unknown;
-                                ephemeral: Record<string, never>;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
                                 filters: {
                                     queries?: {
                                         query: string;
@@ -12298,11 +12372,11 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         *                 Helper API to configure ESRI MapServer Layers
+         * Helper API to configure ESRI MapServer Layers
          *
          *                 The URL can either be an ESRI Portal URL or a Server URL that doesn't require auth
          *                 or supports token generation
-         *              */
+         */
         post: {
             parameters: {
                 query?: never;
@@ -12413,9 +12487,9 @@ export interface paths {
             cookie?: never;
         };
         /**
-         *                 Helper API to configure ESRI MapServers
+         * Helper API to configure ESRI MapServers
          *                 Return Portal Data
-         *              */
+         */
         get: {
             parameters: {
                 query: {
@@ -12519,9 +12593,9 @@ export interface paths {
             cookie?: never;
         };
         /**
-         *                 Helper API to configure ESRI MapServers
+         * Helper API to configure ESRI MapServers
          *                 Return Portal Content
-         *              */
+         */
         get: {
             parameters: {
                 query: {
@@ -12736,9 +12810,9 @@ export interface paths {
             cookie?: never;
         };
         /**
-         *                 Helper API to configure ESRI MapServers
+         * Helper API to configure ESRI MapServers
          *                 List Servers associates with a given portal
-         *              */
+         */
         get: {
             parameters: {
                 query: {
@@ -13217,6 +13291,107 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fonts/{:fontstack}/{:start-{:end}.pbf}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return MapLibre Font Glyphs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Font Stack */
+                    ":fontstack": string;
+                    /** @description Starting Glyph */
+                    ":start": number;
+                    /** @description Ending Glyph */
+                    ":end": number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -14232,7 +14407,9 @@ export interface paths {
                                     };
                                     stale: number;
                                     environment: unknown;
-                                    ephemeral: Record<string, never>;
+                                    ephemeral: {
+                                        [key: string]: unknown;
+                                    };
                                     data: number | null;
                                     groups: string[];
                                 };
@@ -14241,7 +14418,9 @@ export interface paths {
                                     created: string;
                                     updated: string;
                                     environment: unknown;
-                                    ephemeral: Record<string, never>;
+                                    ephemeral: {
+                                        [key: string]: unknown;
+                                    };
                                     filters: {
                                         queries?: {
                                             query: string;
@@ -14330,10 +14509,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         *                 Events don't have the Connection ID but they have a valid data token
+         * Events don't have the Connection ID but they have a valid data token
          *                 This API allows a layer token to request the layer object and obtain the
          *                 connection ID for subsequent calls
-         *              */
+         */
         get: {
             parameters: {
                 query: {
@@ -14498,7 +14677,9 @@ export interface paths {
                                 };
                                 stale: number;
                                 environment: unknown;
-                                ephemeral: Record<string, never>;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
                                 data: number | null;
                                 groups: string[];
                             };
@@ -14507,7 +14688,9 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 environment: unknown;
-                                ephemeral: Record<string, never>;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
                                 filters: {
                                     queries?: {
                                         query: string;
@@ -14768,7 +14951,9 @@ export interface paths {
                                     };
                                     stale: number;
                                     environment: unknown;
-                                    ephemeral: Record<string, never>;
+                                    ephemeral: {
+                                        [key: string]: unknown;
+                                    };
                                     data: number | null;
                                     groups: string[];
                                 };
@@ -14777,7 +14962,9 @@ export interface paths {
                                     created: string;
                                     updated: string;
                                     environment: unknown;
-                                    ephemeral: Record<string, never>;
+                                    ephemeral: {
+                                        [key: string]: unknown;
+                                    };
                                     filters: {
                                         queries?: {
                                             query: string;
@@ -15022,7 +15209,9 @@ export interface paths {
                                 };
                                 stale: number;
                                 environment: unknown;
-                                ephemeral: Record<string, never>;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
                                 data: number | null;
                                 groups: string[];
                             };
@@ -15031,7 +15220,9 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 environment: unknown;
-                                ephemeral: Record<string, never>;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
                                 filters: {
                                     queries?: {
                                         query: string;
@@ -15278,7 +15469,9 @@ export interface paths {
                                 };
                                 stale: number;
                                 environment: unknown;
-                                ephemeral: Record<string, never>;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
                                 data: number | null;
                                 groups: string[];
                             };
@@ -15287,7 +15480,9 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 environment: unknown;
-                                ephemeral: Record<string, never>;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
                                 filters: {
                                     queries?: {
                                         query: string;
@@ -17474,7 +17669,9 @@ export interface paths {
                                 "stroke-style"?: string;
                                 fill?: string;
                                 "fill-opacity"?: number;
-                                metadata?: Record<string, never>;
+                                metadata?: {
+                                    [key: string]: unknown;
+                                };
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: string;
@@ -17653,7 +17850,9 @@ export interface paths {
                                     geopointsrc?: string;
                                     altsrc?: string;
                                 };
-                                flow?: Record<string, never>;
+                                flow?: {
+                                    [key: string]: string;
+                                };
                             };
                             path?: string;
                             geometry: {
@@ -17817,7 +18016,9 @@ export interface paths {
                                     "stroke-style"?: string;
                                     fill?: string;
                                     "fill-opacity"?: number;
-                                    metadata?: Record<string, never>;
+                                    metadata?: {
+                                        [key: string]: unknown;
+                                    };
                                     archived?: boolean;
                                     geofence?: {
                                         elevationMonitored?: string;
@@ -17996,7 +18197,9 @@ export interface paths {
                                         geopointsrc?: string;
                                         altsrc?: string;
                                     };
-                                    flow?: Record<string, never>;
+                                    flow?: {
+                                        [key: string]: string;
+                                    };
                                 };
                                 path?: string;
                                 geometry: {
@@ -19374,14 +19577,14 @@ export interface paths {
                                 creatorUid?: string;
                                 data: {
                                     keywords: string[];
-                                    mimeType: string;
                                     name: string;
                                     hash: string;
                                     submissionTime: string;
-                                    submitter: string;
                                     uid: string;
-                                    creatorUid?: string;
                                     size: number;
+                                    creatorUid?: string;
+                                    mimeType?: string;
+                                    submitter?: string;
                                     expiration: number;
                                 };
                             }[];
@@ -19622,7 +19825,9 @@ export interface paths {
                                     "stroke-style"?: string;
                                     fill?: string;
                                     "fill-opacity"?: number;
-                                    metadata?: Record<string, never>;
+                                    metadata?: {
+                                        [key: string]: unknown;
+                                    };
                                     archived?: boolean;
                                     geofence?: {
                                         elevationMonitored?: string;
@@ -19801,7 +20006,9 @@ export interface paths {
                                         geopointsrc?: string;
                                         altsrc?: string;
                                     };
-                                    flow?: Record<string, never>;
+                                    flow?: {
+                                        [key: string]: string;
+                                    };
                                 };
                                 path?: string;
                                 geometry: {
@@ -20152,14 +20359,14 @@ export interface paths {
                                 };
                                 contentResource?: {
                                     keywords: string[];
-                                    mimeType: string;
                                     name: string;
                                     hash: string;
                                     submissionTime: string;
-                                    submitter: string;
                                     uid: string;
-                                    creatorUid?: string;
                                     size: number;
+                                    creatorUid?: string;
+                                    mimeType?: string;
+                                    submitter?: string;
                                     expiration: number;
                                 };
                             }[];
@@ -20326,14 +20533,14 @@ export interface paths {
                                 creatorUid?: string;
                                 data: {
                                     keywords: string[];
-                                    mimeType: string;
                                     name: string;
                                     hash: string;
                                     submissionTime: string;
-                                    submitter: string;
                                     uid: string;
-                                    creatorUid?: string;
                                     size: number;
+                                    creatorUid?: string;
+                                    mimeType?: string;
+                                    submitter?: string;
                                     expiration: number;
                                 };
                             }[];
@@ -20484,14 +20691,14 @@ export interface paths {
                                     creatorUid?: string;
                                     data: {
                                         keywords: string[];
-                                        mimeType: string;
                                         name: string;
                                         hash: string;
                                         submissionTime: string;
-                                        submitter: string;
                                         uid: string;
-                                        creatorUid?: string;
                                         size: number;
+                                        creatorUid?: string;
+                                        mimeType?: string;
+                                        submitter?: string;
                                         expiration: number;
                                     };
                                 }[];
@@ -21448,12 +21655,12 @@ export interface paths {
                                 EXPIRATION: string;
                                 UID: string;
                                 SubmissionDateTime: string;
-                                MIMEType: string;
                                 Size: string;
                                 PrimaryKey: string;
                                 Hash: string;
                                 CreatorUid?: null | string;
                                 Name: string;
+                                MIMEType?: string;
                                 SubmissionUser?: string;
                                 Keywords?: string[];
                                 Tool?: string;
@@ -21693,12 +21900,12 @@ export interface paths {
                             EXPIRATION: string;
                             UID: string;
                             SubmissionDateTime: string;
-                            MIMEType: string;
                             Size: string;
                             PrimaryKey: string;
                             Hash: string;
                             CreatorUid?: null | string;
                             Name: string;
+                            MIMEType?: string;
                             SubmissionUser?: string;
                             Keywords?: string[];
                             Tool?: string;
@@ -21781,13 +21988,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         *                 Helper API to get metadata for a single package
+         * Helper API to get metadata for a single package
          *
          *                 DataPackages uploaded once will have a single entry by UID, however DataPackages uploaded multiple times
          *                 will have the same UID but multiple hash values with the latest having the most recent submission date
          *
          *                 By default this api will return the latest package, however if you provide a hash query parameter it will return that specific package
-         *              */
+         */
         get: {
             parameters: {
                 query?: {
@@ -21813,12 +22020,12 @@ export interface paths {
                             EXPIRATION: string;
                             UID: string;
                             SubmissionDateTime: string;
-                            MIMEType: string;
                             Size: string;
                             PrimaryKey: string;
                             Hash: string;
                             CreatorUid?: null | string;
                             Name: string;
+                            MIMEType?: string;
                             SubmissionUser?: string;
                             Keywords?: string[];
                             Tool?: string;
@@ -23358,7 +23565,9 @@ export interface paths {
                                     /** Format: uuid */
                                     palette: string;
                                     type: string;
-                                    style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                    style: (string | number | boolean | null) | unknown[] | {
+                                        [key: string]: unknown;
+                                    };
                                 }[];
                             }[];
                         };
@@ -23462,7 +23671,9 @@ export interface paths {
                                 /** Format: uuid */
                                 palette: string;
                                 type: string;
-                                style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                style: (string | number | boolean | null) | unknown[] | {
+                                    [key: string]: unknown;
+                                };
                             }[];
                         };
                     };
@@ -23574,7 +23785,9 @@ export interface paths {
                                 /** Format: uuid */
                                 palette: string;
                                 type: string;
-                                style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                style: (string | number | boolean | null) | unknown[] | {
+                                    [key: string]: unknown;
+                                };
                             }[];
                         };
                     };
@@ -23770,7 +23983,9 @@ export interface paths {
                                 /** Format: uuid */
                                 palette: string;
                                 type: string;
-                                style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                style: (string | number | boolean | null) | unknown[] | {
+                                    [key: string]: unknown;
+                                };
                             }[];
                         };
                     };
@@ -23883,7 +24098,9 @@ export interface paths {
                                 /** Format: uuid */
                                 palette: string;
                                 type: string;
-                                style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                style: (string | number | boolean | null) | unknown[] | {
+                                    [key: string]: unknown;
+                                };
                             }[];
                         };
                     };
@@ -23996,7 +24213,9 @@ export interface paths {
                             /** Format: uuid */
                             palette: string;
                             type: string;
-                            style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            style: (string | number | boolean | null) | unknown[] | {
+                                [key: string]: unknown;
+                            };
                         };
                     };
                 };
@@ -24104,7 +24323,9 @@ export interface paths {
                             /** Format: uuid */
                             palette: string;
                             type: string;
-                            style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            style: (string | number | boolean | null) | unknown[] | {
+                                [key: string]: unknown;
+                            };
                         };
                     };
                 };
@@ -24310,7 +24531,9 @@ export interface paths {
                             /** Format: uuid */
                             palette: string;
                             type: string;
-                            style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            style: (string | number | boolean | null) | unknown[] | {
+                                [key: string]: unknown;
+                            };
                         };
                     };
                 };
@@ -24925,7 +25148,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get TileJSON  */
+        /** Get TileJSON */
         get: {
             parameters: {
                 query?: {
@@ -25515,9 +25738,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         *                 Return a list of Profile Features
-         *              */
+        /** Return a list of Profile Features */
         get: {
             parameters: {
                 query: {
@@ -25590,7 +25811,9 @@ export interface paths {
                                     "stroke-style"?: string;
                                     fill?: string;
                                     "fill-opacity"?: number;
-                                    metadata?: Record<string, never>;
+                                    metadata?: {
+                                        [key: string]: unknown;
+                                    };
                                     archived?: boolean;
                                     geofence?: {
                                         elevationMonitored?: string;
@@ -25769,7 +25992,9 @@ export interface paths {
                                         geopointsrc?: string;
                                         altsrc?: string;
                                     };
-                                    flow?: Record<string, never>;
+                                    flow?: {
+                                        [key: string]: string;
+                                    };
                                 };
                                 path: string;
                                 geometry: {
@@ -25851,16 +26076,14 @@ export interface paths {
                 };
             };
         };
-        /**
-         *                 Create or modify a feature
-         *              */
+        /** Create or modify a feature */
         put: {
             parameters: {
                 query: {
-                    /** @description
-                     *                         Broadcast featues as CoTs to connected WebSocket clients
+                    /**
+                     * @description Broadcast featues as CoTs to connected WebSocket clients
                      *                         Used primarily by the Events Task for importing DataPackage CoTs
-                     *                      */
+                     */
                     broadcast: boolean;
                 };
                 header?: never;
@@ -25907,7 +26130,9 @@ export interface paths {
                             "stroke-style"?: string;
                             fill?: string;
                             "fill-opacity"?: number;
-                            metadata?: Record<string, never>;
+                            metadata?: {
+                                [key: string]: unknown;
+                            };
                             archived?: boolean;
                             geofence?: {
                                 elevationMonitored?: string;
@@ -26086,7 +26311,9 @@ export interface paths {
                                 geopointsrc?: string;
                                 altsrc?: string;
                             };
-                            flow?: Record<string, never>;
+                            flow?: {
+                                [key: string]: string;
+                            };
                         };
                         path: string;
                         geometry: {
@@ -26150,7 +26377,9 @@ export interface paths {
                                 "stroke-style"?: string;
                                 fill?: string;
                                 "fill-opacity"?: number;
-                                metadata?: Record<string, never>;
+                                metadata?: {
+                                    [key: string]: unknown;
+                                };
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: string;
@@ -26329,7 +26558,9 @@ export interface paths {
                                     geopointsrc?: string;
                                     altsrc?: string;
                                 };
-                                flow?: Record<string, never>;
+                                flow?: {
+                                    [key: string]: string;
+                                };
                             };
                             path: string;
                             geometry: {
@@ -26512,9 +26743,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         *                 Get a feature
-         *              */
+        /** Get a feature */
         get: {
             parameters: {
                 query?: never;
@@ -26571,7 +26800,9 @@ export interface paths {
                                 "stroke-style"?: string;
                                 fill?: string;
                                 "fill-opacity"?: number;
-                                metadata?: Record<string, never>;
+                                metadata?: {
+                                    [key: string]: unknown;
+                                };
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: string;
@@ -26750,7 +26981,9 @@ export interface paths {
                                     geopointsrc?: string;
                                     altsrc?: string;
                                 };
-                                flow?: Record<string, never>;
+                                flow?: {
+                                    [key: string]: string;
+                                };
                             };
                             path: string;
                             geometry: {
@@ -26833,9 +27066,7 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        /**
-         *                 Delete a feature
-         *              */
+        /** Delete a feature */
         delete: {
             parameters: {
                 query: {
@@ -26937,9 +27168,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         *                 Return a list of Profile AOIs
-         *              */
+        /** Return a list of Profile AOIs */
         get: {
             parameters: {
                 query: {
@@ -27052,9 +27281,7 @@ export interface paths {
             };
         };
         put?: never;
-        /**
-         *                 Create a new Profile AOI
-         *              */
+        /** Create a new Profile AOI */
         post: {
             parameters: {
                 query?: never;
@@ -27177,9 +27404,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /**
-         *                 Delete a Profile AOI
-         *              */
+        /** Delete a Profile AOI */
         delete: {
             parameters: {
                 query?: never;
@@ -27268,9 +27493,7 @@ export interface paths {
         };
         options?: never;
         head?: never;
-        /**
-         *                 Create a new Profile AOI
-         *              */
+        /** Create a new Profile AOI */
         patch: {
             parameters: {
                 query?: never;
@@ -27390,11 +27613,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         *                 Return a list of Profile Overlay's that are curently active.
+         * Return a list of Profile Overlay's that are curently active.
          *
          *                 Each item is checked to ensure it is still present and if not the overlay is removed from the list
          *                 before being returned.
-         *              */
+         */
         get: {
             parameters: {
                 query: {
@@ -27405,7 +27628,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "name" | "username" | "created" | "updated" | "pos" | "type" | "opacity" | "visible" | "token" | "styles" | "mode" | "mode_id" | "url" | "enableRLS";
+                    sort: "id" | "name" | "active" | "username" | "created" | "updated" | "pos" | "type" | "opacity" | "visible" | "token" | "styles" | "mode" | "mode_id" | "url" | "enableRLS";
                 };
                 header?: never;
                 path?: never;
@@ -27424,6 +27647,7 @@ export interface paths {
                             removed: {
                                 id: number;
                                 name: string;
+                                active: boolean;
                                 username: string;
                                 created: string;
                                 updated: string;
@@ -27443,6 +27667,7 @@ export interface paths {
                             items: {
                                 id: number;
                                 name: string;
+                                active: boolean;
                                 username: string;
                                 created: string;
                                 updated: string;
@@ -27536,6 +27761,8 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        name: string;
+                        active?: boolean;
                         pos?: number;
                         type?: string;
                         opacity?: number;
@@ -27545,7 +27772,6 @@ export interface paths {
                         styles?: unknown[];
                         token?: string;
                         url: string;
-                        name: string;
                     };
                 };
             };
@@ -27559,6 +27785,7 @@ export interface paths {
                         "application/json": {
                             id: number;
                             name: string;
+                            active: boolean;
                             username: string;
                             created: string;
                             updated: string;
@@ -27760,6 +27987,7 @@ export interface paths {
                         "application/json": {
                             id: number;
                             name: string;
+                            active: boolean;
                             username: string;
                             created: string;
                             updated: string;
@@ -27861,6 +28089,7 @@ export interface paths {
                     "application/json": {
                         pos?: number;
                         name?: string;
+                        active?: boolean;
                         type?: string;
                         opacity?: number;
                         visible?: boolean;
@@ -27880,6 +28109,7 @@ export interface paths {
                         "application/json": {
                             id: number;
                             name: string;
+                            active: boolean;
                             username: string;
                             created: string;
                             updated: string;
@@ -28372,9 +28602,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         *                 Return a list of Profile Videos
-         *              */
+        /** Return a list of Profile Videos */
         get: {
             parameters: {
                 query: {
@@ -28473,9 +28701,7 @@ export interface paths {
             };
         };
         put?: never;
-        /**
-         *                 Push a new Profile Video to the database
-         *              */
+        /** Push a new Profile Video to the database */
         post: {
             parameters: {
                 query?: never;
@@ -28582,9 +28808,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         *                 Get a video
-         *              */
+        /** Get a video */
         get: {
             parameters: {
                 query?: never;
@@ -28677,9 +28901,7 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        /**
-         *                 Delete a Video
-         *              */
+        /** Delete a Video */
         delete: {
             parameters: {
                 query?: never;
@@ -29340,12 +29562,12 @@ export interface paths {
                                 EXPIRATION: string;
                                 UID: string;
                                 SubmissionDateTime: string;
-                                MIMEType: string;
                                 Size: string;
                                 PrimaryKey: string;
                                 Hash: string;
                                 CreatorUid?: null | string;
                                 Name: string;
+                                MIMEType?: string;
                                 SubmissionUser?: string;
                                 Keywords?: string[];
                                 Tool?: string;
@@ -30406,7 +30628,9 @@ export interface paths {
                     content: {
                         "application/json": {
                             total: number;
-                            items: Record<string, never>;
+                            items: {
+                                [key: string]: string[];
+                            };
                         };
                     };
                 };
@@ -31632,11 +31856,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         *                 Return information about an active lease given read credentials
+         * Return information about an active lease given read credentials
          *
          *                 If a user has a valid read URL, the API endpoint will allow an authenticated user
          *                 to get metadata to agument the video stream itself
-         *              */
+         */
         get: {
             parameters: {
                 query: {
@@ -33128,7 +33352,9 @@ export interface paths {
                                     "stroke-style"?: string;
                                     fill?: string;
                                     "fill-opacity"?: number;
-                                    metadata?: Record<string, never>;
+                                    metadata?: {
+                                        [key: string]: unknown;
+                                    };
                                     archived?: boolean;
                                     geofence?: {
                                         elevationMonitored?: string;
@@ -33307,7 +33533,9 @@ export interface paths {
                                         geopointsrc?: string;
                                         altsrc?: string;
                                     };
-                                    flow?: Record<string, never>;
+                                    flow?: {
+                                        [key: string]: string;
+                                    };
                                 };
                                 path?: string;
                                 geometry: {

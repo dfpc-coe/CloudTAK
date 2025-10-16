@@ -139,8 +139,9 @@
                                             <span class='mx-2'>Download XML</span>
                                         </div>
                                         <div
+                                            v-if='basemap.sharing_enabled'
                                             class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
-                                            @click.stop.prevent='share = [basemap.id]'
+                                            @click.stop.prevent='basemap.sharing_enabled ? share = [basemap.id] : null'
                                         >
                                             <IconShare2
                                                 :size='32'
@@ -302,7 +303,7 @@ function setCollection(name: string) {
 }
 
 function isCurrentBasemap(basemapId: number): boolean {
-    const currentBasemap = mapStore.overlays.find(overlay => 
+    const currentBasemap = mapStore.overlays.find(overlay =>
         overlay.mode === 'basemap' && overlay.mode_id === String(basemapId)
     );
     return !!currentBasemap;
