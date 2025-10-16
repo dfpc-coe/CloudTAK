@@ -388,7 +388,13 @@ export default class TileJSON {
         }
     ): Promise<void> {
         if (!opts) opts = {};
-        if (!opts.headers) opts.headers = {};
+        if (!opts.headers) {
+            opts.headers = {};
+        } else {
+            for (const [k, v] of Object.entries(opts.headers)) {
+                if (!v) delete opts.headers[k];
+            }
+        }
 
         // Check if tile is within bounds (handle antimeridian crossing)
         if (config.bounds && config.bounds.length === 4) {
