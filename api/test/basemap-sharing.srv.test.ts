@@ -110,4 +110,132 @@ test('GET: api/basemap/1/tiles - Ensure Token Works', async (t) => {
     t.end();
 });
 
+test('PATCH: api/basemap/1 - Turn off Sharing', async (t) => {
+    try {
+        const res = await flight.fetch('/api/basemap/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                sharing_enabled: false,
+            }
+        }, true);
+
+        delete res.body.created;
+        delete res.body.updated
+
+        t.deepEqual(res.body, {
+            id: 1,
+            name: 'Test Basemap',
+            actions: { feature: [] },
+            url: 'https://test.com/test/{z}/{x}/{y}',
+            overlay: false,
+            attribution: "",
+            title: 'callsign',
+            username: 'admin@example.com',
+            sharing_enabled: false,
+            sharing_token: null,
+            collection: null,
+            tilesize: 256,
+            minzoom: 0,
+            maxzoom: 16,
+            format: 'png',
+            scheme: 'xyz',
+            styles: [],
+            type: 'raster'
+        })
+    } catch (err) {
+        t.error(err)
+    }
+
+    t.end();
+});
+
+test('GET: api/basemap/1/tiles - Ensure Token Is Now Disabled', async (t) => {
+    try {
+        const res = await flight.fetch('/api/basemap/1/tiles', {
+            method: 'GET',
+            auth: {
+                bearer: token
+            },
+        }, false);
+
+        t.deepEqual(res.body, {
+            status: 400,
+            message: 'Sharing for Test Basemap is disabled',
+            messages: []
+        })
+    } catch (err) {
+        t.error(err)
+    }
+
+    t.end();
+});
+
+test('PATCH: api/basemap/1 - Turn on Sharing', async (t) => {
+    try {
+        const res = await flight.fetch('/api/basemap/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                sharing_enabled: true,
+            }
+        }, true);
+
+        delete res.body.created;
+        delete res.body.updated
+
+        t.ok(res.body.sharing_token)
+        delete res.body.sharing_token;
+
+        t.deepEqual(res.body, {
+            id: 1,
+            name: 'Test Basemap',
+            actions: { feature: [] },
+            url: 'https://test.com/test/{z}/{x}/{y}',
+            overlay: false,
+            attribution: "",
+            title: 'callsign',
+            username: 'admin@example.com',
+            sharing_enabled: true,
+            collection: null,
+            tilesize: 256,
+            minzoom: 0,
+            maxzoom: 16,
+            format: 'png',
+            scheme: 'xyz',
+            styles: [],
+            type: 'raster'
+        })
+    } catch (err) {
+        t.error(err)
+    }
+
+    t.end();
+});
+
+test('GET: api/basemap/1/tiles - Ensure Old Token is unusable', async (t) => {
+    try {
+        const res = await flight.fetch('/api/basemap/1/tiles', {
+            method: 'GET',
+            auth: {
+                bearer: token
+            },
+        }, false);
+
+        t.deepEqual(res.body, {
+            status: 400,
+            message: 'You don\'t have permission to access this resource',
+            messages: []
+        })
+    } catch (err) {
+        t.error(err)
+    }
+
+    t.end();
+});
+
 flight.landing();
