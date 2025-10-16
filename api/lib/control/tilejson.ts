@@ -125,12 +125,18 @@ export default class TileJSON {
      * @param url   - TileJSON URL
      */
     static proxyShare(config: Config, basemap: InferSelectModel<typeof Basemap>): string {
+        if (!basemap.sharing_enabled) {
+            throw new Err(400, null, `Basemap Sharing has been disabled for ${basemap.name}`);
+        } else if (!basemap.sharing_token) {
+            throw new Err(500, null, `Basemap with sharing has no token for ${basemap.id}`);
+        }
+
         if (
             basemap.url.match(/FeatureServer\/\d+$/)
             || basemap.url.match(/MapServer\/\d+$/)
             || basemap.url.endsWith('/ImageServer')
         ) {
-            return config.API_URL + `/api/basemap/${basemap.id}/tiles/{$z}/{$x}/{$y}`;
+            return config.API_URL + `/api/basemap/${basemap.id}/tiles/{$z}/{$x}/{$y}?token=${basemap.sharing_token}`;
         } else {
             return basemap.url;
         }

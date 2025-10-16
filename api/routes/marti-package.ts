@@ -226,8 +226,6 @@ export default async function router(schema: Schema, config: Config) {
 
                 if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
-                } else if (!basemap.sharing_enabled) {
-                    throw new Err(400, null, `Basemap Sharing has been disabled for ${basemap.name}`);
                 }
 
                 const xml: string = (new BasemapParser({
