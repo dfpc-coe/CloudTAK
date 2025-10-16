@@ -10,6 +10,7 @@ import { Type, Static } from '@sinclair/typebox'
 import { sql } from 'drizzle-orm';
 import S3 from '../lib/aws/s3.js';
 import { CoTParser, FileShare, DataPackage } from '@tak-ps/node-cot';
+import TileJSON from '../lib/control/tilejson.js';
 import { StandardResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -222,9 +223,11 @@ export default async function router(schema: Schema, config: Config) {
 
             for (const basemapid of req.body.basemaps) {
                 const basemap = await config.models.Basemap.from(basemapid);
+
                 if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
                 }
+
                 const xml: string = (new BasemapParser({
                     customMapSource: {
                         name: { _text: basemap.name },
@@ -232,7 +235,7 @@ export default async function router(schema: Schema, config: Config) {
                         maxZoom: { _text: basemap.maxzoom },
                         tileType: { _text: basemap.format },
                         tileUpdate: { _text: 'None' },
-                        url: { _text: basemap.url },
+                        url: { _text: TileJSON.proxyShare(config, basemap) },
                         backgroundColor: { _text: '#000000' },
                     }
                 })).to_xml();

@@ -31,6 +31,7 @@ export enum AuthResourceAccess {
     LAYER = 'layer',
     IMPORT = 'import',
     LEASE = 'lease',
+    BASEMAP = 'basemap',
     CONNECTION = 'connection',
 
     // Becomes AuthUser

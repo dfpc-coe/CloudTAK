@@ -6,7 +6,10 @@
             color='#6b7990'
             class='ms-2 me-1'
         />
-        <label class='subheader user-select-none'>Distance</label>
+        <label
+            class='subheader user-select-none'
+            v-text='props.label'
+        />
         <div class='mx-2'>
             <CopyField
                 v-model='inMode'
@@ -53,6 +56,10 @@ import {
 } from '@tabler/icons-vue';
 
 const props = defineProps({
+    label: {
+        type: String,
+        default: 'Elevation'
+    },
     elevation: {
         type: Number,
         required: true
