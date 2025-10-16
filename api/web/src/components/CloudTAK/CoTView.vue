@@ -339,8 +339,8 @@
                     class='col-md-4 pt-2'
                 >
                     <PropertyElevation
-                        label='Elevation'
                         :key='String(route.params.uid)'
+                        label='Elevation'
                         :unit='units.display_elevation'
                         :elevation='center[2]'
                     />

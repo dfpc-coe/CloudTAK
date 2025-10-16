@@ -121,8 +121,8 @@
                         >
                             <TablerToggle
                                 v-model='editing.sharing_enabled'
-                                @change='editing.sharing_enabled ? warnSharing = false : warnSharing = true'
                                 label='Enable Sharing'
+                                @change='editing.sharing_enabled ? warnSharing = false : warnSharing = true'
                             />
                         </TablerInput>
                     </div>
