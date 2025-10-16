@@ -3,11 +3,14 @@ import { geoJSONToTile } from '@tak-ps/geojson-vt';
 import { tileToBBOX } from '../tilebelt.js';
 // @ts-expect-error No Type Defs
 import vtpbf from 'vt-pbf';
+import { InferSelectModel } from 'drizzle-orm';
 import type { BBox } from 'geojson';
 import type { Response } from 'express';
 import { fetch as typedFetch } from '@tak-ps/etl'
 import { Feature } from '@tak-ps/node-cot';
+import Config from '../config.js';
 import { EsriPolygon } from '../esri/types.js';
+import { Basemap } from '../schema.js';
 import { GeoJSONFeatureCollection, GeoJSONFeature } from '../types.js';
 import { pointOnFeature } from '@turf/point-on-feature';
 import { bboxPolygon } from '@turf/bbox-polygon';
@@ -68,6 +71,12 @@ export interface TileJSONInterface {
 }
 
 export default class TileJSON {
+    /**
+     * Validate a Maplibre Style JSON
+     *
+     * @param type      - Type of style (raster or vector)
+     * @param layers    - Array of style layers
+     */
     static isValidStyle(type: string, layers: Array<any>): void {
         const sources: Record<string, unknown> = {};
 
@@ -87,6 +96,11 @@ export default class TileJSON {
         if (errors.length) throw new Err(400, null, JSON.stringify(errors));
     }
 
+    /**
+     * Determine supported actions for a given TileJSON URL
+     *
+     * @param url   - TileJSON URL
+     */
     static actions(url?: string): Static<typeof TileJSONActions> {
         const actions: Static<typeof TileJSONActions> = {
             feature: []
@@ -94,15 +108,32 @@ export default class TileJSON {
 
         if (!url) return actions;
 
-        if (url.match(/FeatureServer\/\d+/)) {
+        if (url.match(/FeatureServer\/\d+$/)) {
             actions.feature.push(Basemap_FeatureAction.FETCH)
             actions.feature.push(Basemap_FeatureAction.QUERY)
-        } else if (url.match(/MapServer\/\d+/)) {
+        } else if (url.match(/MapServer\/\d+$/)) {
             actions.feature.push(Basemap_FeatureAction.FETCH)
             actions.feature.push(Basemap_FeatureAction.QUERY)
         }
 
         return actions;
+    }
+
+    /**
+     * Determine if a TileJSON URL should be proxied through CloudTAK or provided directly
+     *
+     * @param url   - TileJSON URL
+     */
+    static proxyShare(config: Config, basemap: InferSelectModel<typeof Basemap>): string {
+        if (
+            basemap.url.match(/FeatureServer\/\d+$/)
+            || basemap.url.match(/MapServer\/\d+$/)
+            || basemap.url.endsWith('/ImageServer')
+        ) {
+            return config.API_URL + `/api/basemap/${basemap.id}/tiles/{$z}/{$x}/{$y}`;
+        } else {
+            return basemap.url;
+        }
     }
 
     /**
@@ -121,7 +152,7 @@ export default class TileJSON {
             throw new Err(400, null, 'Basemap does not support Feature.QUERY');
         }
 
-        if (url.match(/FeatureServer\/\d+/) || url.match(/MapServer\/\d+/)) {
+        if (url.match(/FeatureServer\/\d+$/) || url.match(/MapServer\/\d+$/)) {
             const esriPolygon: Static<typeof EsriPolygon> = {
                 rings: polygon.coordinates,
                 spatialReference: { wkid: 4326, latestWkid: 4326 }
@@ -163,7 +194,7 @@ export default class TileJSON {
             throw new Err(400, null, 'Basemap does not support Feature.FETCH');
         }
 
-        if (url.match(/FeatureServer\/\d+/) || url.match(/MapServer\/\d+/)) {
+        if (url.match(/FeatureServer\/\d+$/) || url.match(/MapServer\/\d+$/)) {
             const urlBuilder = new URL(url + '/query');
             urlBuilder.searchParams.set('f', 'geojson');
             urlBuilder.searchParams.set('objectIds', String(id));
