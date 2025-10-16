@@ -41,10 +41,6 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
 
     docker run hello-world
 
-    git clone https://github.com/dfpc-coe/CloudTAK.git
-
-    cd CloudTAK
-
     docker compose build
 
     if [[ ! -f .env ]]; then
