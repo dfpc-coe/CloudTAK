@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v11.42.0 - 2025-10-16
+
+- :rocket: `UI` Add generic image in Imports list as a fallback
+- :rocket: `UI` Show Share toggle for Basemaps
+- :rocket: `UI` Hide sharing button if sharing has been disaabled for a Basemap
+- :tada: `UI` Automatically proxy shared basemap URLs if they are not supported by the majority of clients - IE ESRI Image/Map/Feature Servers
+- :white_check_mark Add Basemap Sharing Integration Tests
+
 ### v11.41.0 - 2025-10-13
 
 - :rocket: Add KMS export & Geofence Secrets
