@@ -19,7 +19,7 @@
 Testing locally can be done either running the server directly (recommended for development) or
 by running the provided Docker Compose services
 
-> [!INFO]
+> [!NOTE]
 > While all map functionality is available when running locally or via Docker Compose,
 > an AWS install is required to fully utilize the optional Extract Transform Load (ETL) functionality.
 
