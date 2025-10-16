@@ -2,7 +2,7 @@
 
 <h1 align=center>CloudTAK</h1>
 
-<p align=center>Full Featured in-browser TAK Client powered by AWS</p>
+<p align=center>Full Featured in-browser TAK Client</p>
 <p align=center>&</p>
 <p align=center>Facilitate ETL operations to bring non-TAK data sources into a TAK Server</p>
 
@@ -17,10 +17,11 @@
 ## Installation
 
 Testing locally can be done either running the server directly (recommended for development) or
-by running the provided Docker Compose services (recommended for limited testing)
+by running the provided Docker Compose services
 
-Note that for full functionality, CloudTAK needs to be deployed into an AWS environment and that
-many of the services it provides will initiate AWS API calls with no graceful fallback.
+> [!INFO]
+> While all map functionality is available when running locally or via Docker Compose,
+> an AWS install is required to fully utilize the optional Extract Transform Load (ETL) functionality.
 
 ### Docker Compose
 
