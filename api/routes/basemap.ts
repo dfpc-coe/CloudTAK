@@ -508,7 +508,7 @@ export default async function router(schema: Schema, config: Config) {
                         maxZoom: { _text: basemap.maxzoom },
                         tileType: { _text: basemap.format },
                         tileUpdate: { _text: 'None' },
-                        url: { _text: basemap.url },
+                        url: { _text: TileJSON.proxyShare(config, basemap) },
                         backgroundColor: { _text: '#000000' },
                     }
                 })).to_xml();
