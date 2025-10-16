@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.42.1 - 2025-10-16
+
+- :bug: `API` Filter out undefined header values
+
 ### v11.42.0 - 2025-10-16
 
 - :rocket: `UI` Add generic image in Imports list as a fallback
