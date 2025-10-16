@@ -71,13 +71,13 @@
                                 :size='32'
                                 stroke='0.5'
                             />
-                            <IconFile
-                                v-else-if='imported.source === "Upload"'
+                            <IconPackages
+                                v-else-if='imported.source === "Package"'
                                 :size='32'
                                 stroke='0.5'
                             />
-                            <IconPackages
-                                v-else-if='imported.source === "Package"'
+                            <IconFile
+                                v-else
                                 :size='32'
                                 stroke='0.5'
                             />
