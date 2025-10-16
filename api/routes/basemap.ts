@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import { bbox } from '@turf/bbox';
 import TileJSON, { TileJSONType, TileJSONActions } from '../lib/control/tilejson.js';
-import Auth, { AuthUserAccess, AuthResource, AuthUser, ResourceCreationScope, AuthResourceAccess } from '../lib/auth.js';
+import Auth, { AuthUserAccess, AuthUser, ResourceCreationScope, AuthResourceAccess } from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
 import Config from '../lib/config.js';
