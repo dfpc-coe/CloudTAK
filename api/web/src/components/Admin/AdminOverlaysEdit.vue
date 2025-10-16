@@ -34,7 +34,12 @@
                     <TablerInput
                         v-model='overlay.name'
                         label='Name'
-                    />
+                    >
+                        <TablerToggle
+                            label='Enable Sharing'
+                            v-model='overlay.sharing_enabled'
+                        />
+                    </TablerInput>
                 </div>
                 <div class='col-12'>
                     <label class='mx-2 my-1'>Ownership</label>
@@ -211,6 +216,8 @@ const overlay = ref({
     styles: [],
     minzoom: 0,
     maxzoom: 16,
+    sharing_enabled: true,
+    sharing_token: null,
     bounds: '-180, -90, 180, 90',
     center: '0, 0',
 });
