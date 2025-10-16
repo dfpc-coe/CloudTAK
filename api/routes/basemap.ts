@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import { bbox } from '@turf/bbox';
 import TileJSON, { TileJSONType, TileJSONActions } from '../lib/control/tilejson.js';
-import Auth, { AuthUserAccess, ResourceCreationScope } from '../lib/auth.js';
+import Auth, { AuthUserAccess, AuthResource, AuthUser, ResourceCreationScope, AuthResourceAccess } from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
 import Config from '../lib/config.js';
@@ -357,7 +357,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.body.sharing_enabled) {
                 basemap = await config.models.Basemap.commit(basemap.id, {
-                    sharing_token: jwt.sign({ id: basemap.id, access: 'basemap' }, config.SigningSecret)
+                    sharing_token: `etl.${jwt.sign({ id: basemap.id, access: 'basemap', internal: true }, config.SigningSecret)}`
                 })
             }
 
@@ -446,7 +446,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.sharing_enabled !== undefined) {
                 if (req.body.sharing_enabled) {
                     basemap = await config.models.Basemap.commit(basemap.id, {
-                        sharing_token: existing.sharing_token || jwt.sign({ id: existing.id, access: 'basemap' }, config.SigningSecret)
+                        sharing_token: existing.sharing_token || `etl.${jwt.sign({ id: existing.id, access: 'basemap', internal: true }, config.SigningSecret)}`
                     });
                 } else {
                     basemap = await config.models.Basemap.commit(basemap.id, {
@@ -540,14 +540,21 @@ export default async function router(schema: Schema, config: Config) {
         res: AugmentedTileJSONType
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const auth = await Auth.is_auth(config, req, {
+                token: true,
+                resources: [
+                    { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid }
+                ]
+            });
 
             const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
                 return await config.models.Basemap.from(Number(req.params.basemapid));
             });
 
-            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
-                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            if (auth instanceof AuthUser) {
+                if (basemap.username && basemap.username !== auth.email && auth.access === AuthUserAccess.USER) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
             }
 
             let url: string;
@@ -590,14 +597,21 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const auth = await Auth.is_auth(config, req, {
+                token: true,
+                resources: [
+                    { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid }
+                ]
+            });
 
             const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
                 return await config.models.Basemap.from(Number(req.params.basemapid));
             });
 
-            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
-                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            if (auth instanceof AuthUser) {
+                if (basemap.username && basemap.username !== auth.email && auth.access === AuthUserAccess.USER) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
             }
 
             return await TileJSON.tile(
