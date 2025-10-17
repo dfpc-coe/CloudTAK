@@ -542,7 +542,12 @@ export const useMapStore = defineStore('cloudtak', {
             map.on('click', async (e: MapMouseEvent) => {
                 if (this.draw.mode !== DrawToolMode.STATIC) return;
 
-                if (this.radial.mode) this.radial.mode = undefined;
+                if (this.radial.mode) {
+                    // Clicking away closes the radial menu
+                    this.radial.mode = undefined;
+                    return;
+                }
+
                 if (this.select.feats) this.select.feats = [];
 
                 // Ignore Non-Clickable Layer
