@@ -1,12 +1,6 @@
 <template>
     <TablerModal size='lg'>
         <div class='modal-status bg-red' />
-        <button
-            type='button'
-            class='btn-close'
-            aria-label='Close'
-            @click='emit("close")'
-        />
         <div class='modal-header text-white'>
             <div class='d-flex align-items-center'>
                 <IconInfoSquare

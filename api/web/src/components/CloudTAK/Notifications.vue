@@ -1,7 +1,10 @@
 <template>
     <div
         class='card'
-        style='min-width: 400px;'
+        style='
+            min-width: 400px;
+            max-height: 90vh;
+        '
     >
         <div class='card-header d-flex align-items-center'>
             <h3 class='card-title'>
@@ -47,7 +50,7 @@
         />
         <div
             v-else
-            class='list-group list-group-flush list-group-hoverable'
+            class='overflow-auto list-group list-group-flush list-group-hoverable'
         >
             <div
                 v-for='n in list'
