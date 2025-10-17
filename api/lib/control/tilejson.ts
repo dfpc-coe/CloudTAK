@@ -441,7 +441,6 @@ export default class TileJSON {
                 if (err instanceof Err) {
                     throw err;
                 } else {
-                    console.error(err);
                     throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile')
                 }
            }
@@ -499,7 +498,6 @@ export default class TileJSON {
                 if (err instanceof Err) {
                     throw err;
                 } else {
-                    console.error(err);
                     throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile')
                 }
             }
@@ -558,7 +556,6 @@ export default class TileJSON {
                         .end()
                 });
             } catch (err) {
-                console.error(err);
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile')
             }
         }
