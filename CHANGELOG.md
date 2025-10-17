@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.42.2 - 2025-10-16
+
+- :rocket: `UI` Support Line Style on Polygon Edges
+
 ### v11.42.1 - 2025-10-16
 
 - :bug: `API` Filter out undefined header values
