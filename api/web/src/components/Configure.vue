@@ -27,104 +27,117 @@
                                 </h2>
                                 <TablerLoading v-if='loading' />
                                 <template v-else>
-                                    <div class='mb-2'>
-                                        <TablerInput
-                                            v-model='body.name'
-                                            :error='errors.name'
-                                            label='Server Name'
-                                            placeholder='TAK Server Name'
-                                            description='Human Readable name for the server'
-                                            @keyup.enter='updateServer'
-                                        />
-                                    </div>
-                                    <div class='mb-2'>
-                                        <TablerInput
-                                            v-model='body.url'
-                                            label='Server CoT API'
-                                            placeholder='ssl://ops.example.com:8089'
-                                            description='Streaming COT API - Usually on port 8089'
-                                            :error='errors.url'
-                                            @keyup.enter='updateServer'
-                                        />
-                                    </div>
-                                    <div class='mb-2'>
-                                        <TablerInput
-                                            v-model='body.api'
-                                            label='Server Marti API'
-                                            description='Marti API - Usually on port 8443'
-                                            placeholder='https://ops.example.com:8443'
-                                            :error='errors.api'
-                                            @keyup.enter='updateServer'
-                                        />
-                                    </div>
-                                    <div class='mb-2'>
-                                        <TablerInput
-                                            v-model='body.webtak'
-                                            label='Server Cert Issuance API'
-                                            description='Marti WebAPI - Usually on port 8446 - Must use a publically trusted SSL cert and not a self-signed cert'
-                                            placeholder='https://ops.example.com:8446'
-                                            :error='errors.webtak'
-                                            @keyup.enter='updateServer'
-                                        />
-                                    </div>
+                                    <div class='row g-2'>
+                                        <div class='col-12'>
+                                            <TablerInput
+                                                v-model='body.name'
+                                                :error='errors.name'
+                                                label='Server Name'
+                                                placeholder='TAK Server Name'
+                                                description='Human Readable name for the server'
+                                                @keyup.enter='updateServer'
+                                            />
+                                        </div>
+                                        <div class='col-12'>
+                                            <TablerInput
+                                                v-model='helper.hostname'
+                                                label='Server Hostname'
+                                                placeholder='ops.example.com'
+                                                description='Hostname or IP address of the TAK Server'
+                                                :error='errors.hostname'
+                                                @keyup.enter='updateServer'
+                                            />
+                                        </div>
+                                        <div class='col-md-4 col-12'>
+                                            <TablerInput
+                                                v-model='helper.stream'
+                                                type='number'
+                                                label='CoT Port'
+                                                placeholder='8089'
+                                                description='Streaming COT API - Usually on port 8089'
+                                                @keyup.enter='updateServer'
+                                            />
+                                        </div>
+                                        <div class='col-md-4 col-12'>
+                                            <TablerInput
+                                                v-model='helper.api'
+                                                type='number'
+                                                label='Marti Port'
+                                                placeholder='8443'
+                                                description='Marti API - Usually on port 8443'
+                                                @keyup.enter='updateServer'
+                                            />
+                                        </div>
+                                        <div class='col-md-4 col-12'>
+                                            <TablerInput
+                                                v-model='helper.webtak'
+                                                type='number'
+                                                label='WebTAK'
+                                                placeholder='8446'
+                                                description='WebTAK API - Usually on port 8446'
+                                                :error='errors.url'
+                                                @keyup.enter='updateServer'
+                                            />
+                                        </div>
 
-                                    <div class='mb-2'>
-                                        <label class='mx-2'>Admin Certificate</label>
-                                        <CertificateP12
-                                            v-if='!body.auth || !body.auth.cert || !body.auth.key'
-                                            @certs='body.auth = $event'
-                                        />
+                                        <div class='mb-2'>
+                                            <label class='mx-2'>Admin Certificate</label>
+                                            <CertificateP12
+                                                v-if='!body.auth || !body.auth.cert || !body.auth.key'
+                                                @certs='body.auth = $event'
+                                            />
 
-                                        <template v-else>
-                                            <div class='col-12 d-flex align-items-center'>
-                                                <IconCheck
-                                                    :size='40'
-                                                    class='text-green'
-                                                />
-                                                <span class='mx-3'>Certificate Uploaded</span>
-
-                                                <div class='ms-auto'>
-                                                    <IconTrash
-                                                        v-tooltip='"Remove Certificate"'
-                                                        :size='32'
-                                                        stroke='1'
-                                                        class='cursor-pointer'
-                                                        @click='body.auth = { cert: "", key: "" };'
+                                            <template v-else>
+                                                <div class='col-12 d-flex align-items-center'>
+                                                    <IconCheck
+                                                        :size='40'
+                                                        class='text-green'
                                                     />
+                                                    <span class='mx-3'>Certificate Uploaded</span>
+
+                                                    <div class='ms-auto'>
+                                                        <IconTrash
+                                                            v-tooltip='"Remove Certificate"'
+                                                            :size='32'
+                                                            stroke='1'
+                                                            class='cursor-pointer'
+                                                            @click='body.auth = { cert: "", key: "" };'
+                                                        />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </template>
-                                    </div>
-                                    <div class='mb-2'>
-                                        <TablerInput
-                                            v-model='body.username'
-                                            label='Administrator Username'
-                                            description='An existing TAK user to use as an initial CloudTAK System Administrator - The TAK Server must respond with a cert for this username/password combo'
-                                            autocomplete='username'
-                                            :error='errors.username'
-                                            @keyup.enter='updateServer'
-                                        />
-                                    </div>
-                                    <div class='mb-2'>
-                                        <TablerInput
-                                            v-model='body.password'
-                                            type='password'
-                                            label='Administrator Password'
-                                            description='An existing TAK user to use as an initial CloudTAK System Administrator - The TAK Server must respond with a cert for this username/password combo'
-                                            autocomplete='password'
-                                            :error='errors.password'
-                                            @keyup.enter='updateServer'
-                                        />
-                                    </div>
-                                    <div class='form-footer'>
-                                        <button
-                                            type='submit'
-                                            class='btn btn-primary w-100'
-                                            :disabled='!body.auth || !body.auth.key'
-                                            @click='updateServer'
-                                        >
-                                            Configure Server
-                                        </button>
+                                            </template>
+                                        </div>
+                                        <div class='mb-2'>
+                                            <TablerInput
+                                                v-model='body.username'
+                                                label='Initial Administrator Username'
+                                                description='An existing TAK user to use as an initial CloudTAK System Administrator - The TAK Server must respond with a cert for this username/password combo'
+                                                autocomplete='username'
+                                                :error='errors.username'
+                                                @keyup.enter='updateServer'
+                                            />
+                                        </div>
+                                        <div class='mb-2'>
+                                            <TablerInput
+                                                v-model='body.password'
+                                                type='password'
+                                                label='Initial Administrator Password'
+                                                description='An existing TAK user to use as an initial CloudTAK System Administrator - The TAK Server must respond with a cert for this username/password combo'
+                                                autocomplete='password'
+                                                :error='errors.password'
+                                                @keyup.enter='updateServer'
+                                            />
+                                        </div>
+                                        <div class='form-footer'>
+                                            <button
+                                                type='submit'
+                                                class='btn btn-primary w-100'
+                                                :disabled='!body.auth || !body.auth.key'
+                                                @click='updateServer'
+                                            >
+                                                Configure Server
+                                            </button>
+                                        </div>
                                     </div>
                                 </template>
                             </div>
@@ -159,10 +172,15 @@ const errors = ref<Record<string, string>>({
     name: '',
     username: '',
     password: '',
-    url: '',
-    api: '',
-    webtak: ''
+    hostname: ''
 })
+
+const helper = ref({
+    hostname: '',
+    stream: 8089,
+    webtak: 8446,
+    api: 8443,
+});
 
 const body = ref<Server_Update>({
     name: '',
@@ -210,31 +228,19 @@ async function updateServer() {
         errors.value.password = '';
     }
 
-    try {
-        const url = new URL(body.value.url)
-        if (url.protocol !== 'ssl:') {
-            errors.value.url = 'Protocol should be ssl://'
-        } else {
-            errors.value.url = '';
-        }
-    } catch (err) {
-        errors.value.url = err instanceof Error ? err.message : String(err);
-    }
-
-    try {
-        const url = new URL(body.value.api)
-        if (url.protocol !== 'https:') {
-            errors.value.api = 'Protocol should be https://'
-        } else {
-            errors.value.api = '';
-        }
-    } catch (err) {
-        errors.value.url = err instanceof Error ? err.message : String(err);
+    if (!helper.value.hostname || helper.value.hostname.trim().length === 0) {
+        errors.value.hostname = 'Hostname cannot be empty';
+    } else {
+        errors.value.hostname = '';
     }
 
     for (const e in errors.value) {
         if (errors.value[e]) return;
     }
+
+    body.value.url = `ssl://${helper.value.hostname}:${helper.value.stream}`;
+    body.value.api = `https://${helper.value.hostname}:${helper.value.api}`;
+    body.value.webtak = `https://${helper.value.hostname}:${helper.value.webtak}`;
 
     loading.value = true;
 
