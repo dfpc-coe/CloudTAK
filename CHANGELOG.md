@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.42.3 - 2025-10-16
+
+- :bug: `UI` Enforce a truststore password
+
 ### v11.42.2 - 2025-10-16
 
 - :rocket: `UI` Support Line Style on Polygon Edges
