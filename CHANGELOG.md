@@ -12,11 +12,16 @@
 
 ### Pending Release
 
-### v11.42.3 - 2025-10-16
+### v11.43.0 - 2025-10-17
+
+- :rocket: Limit height of notification pane and allow scroll if notificatons overflow
+- :rocket: Simplify entry of configure options in the UI (Underlying API is unchanged)
+
+### v11.42.3 - 2025-10-17
 
 - :bug: `UI` Enforce a truststore password
 
-### v11.42.2 - 2025-10-16
+### v11.42.2 - 2025-10-17
 
 - :rocket: `UI` Support Line Style on Polygon Edges
 
