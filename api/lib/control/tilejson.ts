@@ -556,7 +556,6 @@ export default class TileJSON {
                         .end()
                 });
             } catch (err) {
-                console.error(err);
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile')
             }
         }
