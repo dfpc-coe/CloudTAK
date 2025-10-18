@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.44.0 - 2025-10-17
+
+- :rocket: Update all filter expressions to the modern syntax
+- :rocket: Add the ability for features to control their display via a min/max zoom property
+
 ### v11.43.0 - 2025-10-17
 
 - :rocket: Limit height of notification pane and allow scroll if notificatons overflow
