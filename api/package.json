@@ -42,7 +42,7 @@
         "@iwpnd/tile38-ts": "^2.4.5",
         "@mapbox/tilebelt": "^2.0.0",
         "@maplibre/maplibre-gl-style-spec": "^24.0.0",
-        "@openaddresses/batch-error": "^2.1.4",
+        "@openaddresses/batch-error": "^2.13.1",
         "@openaddresses/batch-generic": "^24.14.0",
         "@openaddresses/batch-schema": "^10.18.0",
         "@openaddresses/cloudfriend": "^7.0.0",
