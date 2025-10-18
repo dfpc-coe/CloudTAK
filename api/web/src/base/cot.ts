@@ -26,6 +26,8 @@ export enum OriginMode {
 
 export const RENDERED_PROPERTIES = [
     'callsign',
+    'minzoom',
+    'maxzoom',
     'fill',
     'fill-opacity',
     'stroke',

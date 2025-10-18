@@ -7,6 +7,17 @@ import type {
     FillLayerSpecification,
 }  from 'maplibre-gl';
 
+const MinMaxFilter: Array<mapgl.ExpressionSpecification> = [
+    [ 'any',
+        ["!", ['has', 'maxzoom']],
+        ['>=', ["zoom"], ['get', 'maxzoom']]
+    ],
+    ['any',
+        ["!", ['has', 'minzoom']],
+        ['<=', ['get', 'minzoom'], ['zoom']]
+    ],
+]
+
 export default function styles(id: string, opts: {
     sourceLayer?: string;
     group?: boolean;
@@ -25,8 +36,9 @@ export default function styles(id: string, opts: {
         source: id,
         filter: [
             'all',
-            ['==', '$type', 'Polygon'],
-            ['!=', 'fill-opacity', 0],
+                ['==', ["geometry-type"], 'Polygon'],
+                ['!=', ['get', 'fill-opacity'], 0],
+                ...MinMaxFilter
         ],
         layout: {},
         paint: {
@@ -45,7 +57,11 @@ export default function styles(id: string, opts: {
         id: `${id}-polyline`,
         type: 'line',
         source: id,
-        filter: ["==", "$type", "Polygon"],
+        filter:
+            ['all',
+                ["==", ["geometry-type"], "Polygon"],
+                ...MinMaxFilter
+            ],
         layout: {
             'line-join': 'round',
             'line-cap': 'round'
@@ -73,7 +89,11 @@ export default function styles(id: string, opts: {
         id: `${id}-line`,
         type: 'line',
         source: id,
-        filter: ["==", "$type", "LineString"],
+        filter:
+            ['all',
+                ["==", ["geometry-type"], "LineString"],
+                ...MinMaxFilter
+            ],
         layout: {
             'line-join': 'round',
             'line-cap': 'round'
@@ -110,9 +130,15 @@ export default function styles(id: string, opts: {
     }
 
     if (opts.icons) {
-        circle.filter = ['all', ["==", "$type", "Point"], ['!has', 'icon']];
+        circle.filter = ['all',
+            ["==", ["geometry-type"], "Point"], ["!", ['has', 'icon']],
+            ...MinMaxFilter
+        ];
     } else {
-        circle.filter = ["==", "$type", "Point"];
+        circle.filter = ['all',
+            ["==", ["geometry-type"], "Point"],
+            ...MinMaxFilter
+        ];
     }
 
 
@@ -121,8 +147,7 @@ export default function styles(id: string, opts: {
     }
 
     if (opts.group) {
-        // @ts-expect-error Type defs don't allow this
-        circle.filter.push(['!has', 'group']);
+        circle.filter.push(["!", ['has', 'group']]);
     }
 
     styles.push(circle);
@@ -134,8 +159,9 @@ export default function styles(id: string, opts: {
             source: id,
             filter: [
                 'all',
-                ['==', '$type', 'Point'],
-                ['has', 'icon']
+                ['==', ["geometry-type"], 'Point'],
+                ['has', 'icon'],
+                ...MinMaxFilter
             ],
             paint: {
                 'icon-opacity': ["number", ["get", "marker-opacity"], 1],
@@ -177,13 +203,15 @@ export default function styles(id: string, opts: {
             source: id,
             filter: (opts.rotateIcons ?? true) ? [
                 'all',
-                ['==', '$type', 'Point'],
+                ['==', ["geometry-type"], 'Point'],
                 ['has', 'course'],
-                ['has', 'group']
+                ['has', 'group'],
+                ...MinMaxFilter
             ] : [
                 'all',
-                ['==', '$type', 'Point'],
-                ['has', 'course']
+                ['==', ["geometry-type"], 'Point'],
+                ['has', 'course'],
+                ...MinMaxFilter
             ],
             paint: {
                 'icon-opacity': ["number", ["get", "marker-opacity"], 1]
@@ -230,8 +258,9 @@ export default function styles(id: string, opts: {
     if (opts.group) {
         const groupFilter: mapgl.FilterSpecification = [
             'all',
-            ['==', '$type', 'Point'],
-            ['has', 'group']
+            ['==', ["geometry-type"], 'Point'],
+            ['has', 'group'],
+            ...MinMaxFilter
         ]
 
         const group: CircleLayerSpecification = {
@@ -274,7 +303,11 @@ export default function styles(id: string, opts: {
             id: `${id}-text-point`,
             type: 'symbol',
             source: id,
-            filter: [ 'all', ['==', '$type', 'Point'], ],
+            filter:
+                [ 'all',
+                    ['==', ["geometry-type"], 'Point'],
+                    ...MinMaxFilter
+                ],
             minzoom: MIN_LABEL_ZOOM,
             paint: {
                 'text-color': '#ffffff',
@@ -311,10 +344,14 @@ export default function styles(id: string, opts: {
             type: 'symbol',
             source: id,
             filter: [ 'any',
-                ['==', '$type', 'LineString'],
                 ['all',
-                    ['==', '$type', 'Polygon'],
-                    ['==', 'fill-opacity', 0]
+                    ['==', ["geometry-type"], 'LineString'],
+                    ...MinMaxFilter
+                ],
+                ['all',
+                    ['==', ["geometry-type"], 'Polygon'],
+                    ['==', ['get', 'fill-opacity'], 0],
+                    ...MinMaxFilter
                 ]
             ],
             minzoom: MIN_LABEL_ZOOM,
@@ -354,8 +391,9 @@ export default function styles(id: string, opts: {
             source: id,
             filter: [
                 'all',
-                ['==', '$type', 'Polygon'],
-                ['!=', 'fill-opacity', 0],
+                    ['==', ["geometry-type"], 'Polygon'],
+                    ['!=', ['get', 'fill-opacity'], 0],
+                    ...MinMaxFilter
             ],
             minzoom: MIN_LABEL_ZOOM,
             paint: {
