@@ -113,6 +113,8 @@ export const StyleLine = Type.Object({
     remarks: Type.Optional(Type.String()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     callsign: Type.Optional(Type.String()),
+    minzoom: Type.Optional(Type.Number()),
+    maxzoom: Type.Optional(Type.Number()),
     links: Type.Optional(Type.Array(StyleLink)),
 });
 
@@ -124,10 +126,11 @@ export const StylePolygon = Type.Object({
     fill: Type.Optional(Type.String()),
     'fill-opacity': Type.Optional(Type.String()),
     id: Type.Optional(Type.String()),
-    minzoom: Type.Optional(Type.Number()),
-    maxzoom: Type.Optional(Type.Number()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
+    minzoom: Type.Optional(Type.Number()),
+    maxzoom: Type.Optional(Type.Number()),
+    stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     links: Type.Optional(Type.Array(StyleLink)),
 });
 
@@ -159,6 +162,7 @@ export const StyleContainer = Type.Object({
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
+    stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     minzoom: Type.Optional(Type.Number()),
     maxzoom: Type.Optional(Type.Number()),
     links: Type.Optional(Type.Array(StyleLink)),
