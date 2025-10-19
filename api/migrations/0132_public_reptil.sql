@@ -1,0 +1,1 @@
+ALTER TABLE "layers_incoming" DROP COLUMN "stale";
