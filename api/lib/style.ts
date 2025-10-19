@@ -65,23 +65,14 @@ handlebars.registerHelper('round', (number: number, decimals: number = 2) => {
     return Number(number).toFixed(decimals);
 });
 
-interface ValidateStyle {
-    id?: string;
-    callsign?: string;
-    remarks?: string;
-    stale?: number | string;
-    links?: Array<Static<typeof StyleLink>>;
-    point?:     { callsign?: string; stale?: number | string; id?: string; type?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
-    line?:      { callsign?: string; stale?: number | string; id?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
-    polygon?:   { callsign?: string; stale?: number | string; id?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
-}
-
 interface validateStyleGeometry {
     'marker-color'?: string;
     'marker-opacity'?: string;
     id?: string;
     type?: string;
     remarks?: string;
+    minzoom?: number;
+    maxzoom?: number;
     callsign?: string;
     stale?: number | string;
     links?: Static<typeof StyleLink>[],
@@ -107,6 +98,8 @@ export const StylePoint = Type.Object({
     remarks: Type.Optional(Type.String()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     callsign: Type.Optional(Type.String()),
+    minzoom: Type.Optional(Type.Number()),
+    maxzoom: Type.Optional(Type.Number()),
     links: Type.Optional(Type.Array(StyleLink)),
     icon: Type.Optional(Type.String())
 });
@@ -131,6 +124,8 @@ export const StylePolygon = Type.Object({
     fill: Type.Optional(Type.String()),
     'fill-opacity': Type.Optional(Type.String()),
     id: Type.Optional(Type.String()),
+    minzoom: Type.Optional(Type.Number()),
+    maxzoom: Type.Optional(Type.Number()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
     links: Type.Optional(Type.Array(StyleLink)),
@@ -140,6 +135,8 @@ export const StyleSingle = Type.Object({
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
+    minzoom: Type.Optional(Type.Number()),
+    maxzoom: Type.Optional(Type.Number()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     links: Type.Optional(Type.Array(StyleLink)),
     line: Type.Optional(StyleLine),
@@ -162,6 +159,8 @@ export const StyleContainer = Type.Object({
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
+    minzoom: Type.Optional(Type.Number()),
+    maxzoom: Type.Optional(Type.Number()),
     links: Type.Optional(Type.Array(StyleLink)),
     queries: Type.Optional(Type.Array(StyleSingleContainer))
 })
@@ -213,7 +212,7 @@ export default class Style {
         }
     }
 
-    static #validateTemplate(style: ValidateStyle) {
+    static #validateTemplate(style: Static<typeof StyleSingle>) {
         if (style.id) {
             try {
                 handlebars.compile(style.id)({});
@@ -229,8 +228,6 @@ export default class Style {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Callsign Template: ${style.callsign}`)
             }
         }
-
-
         if (style.remarks) {
             try {
                 handlebars.compile(style.remarks)({});
@@ -238,6 +235,8 @@ export default class Style {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Remarks Template: ${style.remarks}`)
             }
         }
+
+        this.#validateZoom(style.minzoom, style.maxzoom);
 
         if (style.links) {
             this.#validateLinks(style.links);
@@ -250,6 +249,8 @@ export default class Style {
 
     static #validateTemplateGeometry(style: validateStyleGeometry, type: string) {
         if (style.links) this.#validateLinks(style.links);
+
+        this.#validateZoom(style.minzoom, style.maxzoom);
 
         if (style.id) {
             try {
@@ -283,6 +284,35 @@ export default class Style {
             }
         }
     }
+
+    static #validateZoom(minzoom?: number, maxzoom?: number) {
+        if (minzoom !== undefined) {
+            if (isNaN(minzoom)) {
+                throw new Err(400, null, `Invalid minzoom: ${minzoom} - Not a Number`);
+            } else if (minzoom < 0) {
+                throw new Err(400, null, `Invalid minzoom: ${minzoom} - Less than 0`);
+            } else if (minzoom > 24) {
+                throw new Err(400, null, `Invalid minzoom: ${minzoom} - Greater than 24`);
+            }
+        }
+
+        if (maxzoom !== undefined) {
+            if (isNaN(maxzoom)) {
+                throw new Err(400, null, `Invalid maxzoom: ${maxzoom} - Not a Number`);
+            } else if (maxzoom < 0) {
+                throw new Err(400, null, `Invalid maxzoom: ${maxzoom} - Less than 0`);
+            } else if (maxzoom > 24) {
+                throw new Err(400, null, `Invalid maxzoom: ${maxzoom} - Greater than 24`);
+            }
+        }
+
+        if (minzoom !== undefined && maxzoom !== undefined) {
+            if (minzoom > maxzoom) {
+                throw new Err(400, null, `Invalid zoom levels: minzoom ${minzoom} greater than maxzoom ${maxzoom}`);
+            }
+        }
+
+    };
 
     static #validateLinks(links: Array<Static<typeof StyleLink>>): void {
         for (const link of links) {
@@ -334,6 +364,14 @@ export default class Style {
             if (this.style.styles.callsign) feature.properties.callsign = this.compile(this.style.styles.callsign, feature.properties.metadata);
             if (this.style.styles.remarks) feature.properties.remarks = this.compile(this.style.styles.remarks, feature.properties.metadata);
 
+            if (this.style.styles.minzoom !== undefined) {
+                feature.properties.minzoom = this.style.styles.minzoom;
+            }
+
+            if (this.style.styles.maxzoom !== undefined) {
+                feature.properties.maxzoom = this.style.styles.maxzoom;
+            }
+
             if (typeof this.style.styles.stale === 'string') {
                 feature.properties.stale = this.compile(this.style.styles.stale, feature.properties.metadata);
             } else if (typeof this.style.styles.stale === 'number') {
@@ -362,6 +400,9 @@ export default class Style {
                             if (q.styles.callsign) feature.properties.callsign = this.compile(q.styles.callsign, feature.properties.metadata);
                             if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
                             if (q.styles.links) this.#links(q.styles.links, feature);
+
+                            if (this.style.styles.minzoom !== undefined) feature.properties.minzoom = this.style.styles.minzoom;
+                            if (this.style.styles.maxzoom !== undefined) feature.properties.maxzoom = this.style.styles.maxzoom;
 
                             if (typeof this.style.styles.stale === 'string') {
                                 feature.properties.stale = this.compile(this.style.styles.stale, feature.properties.metadata);
@@ -413,6 +454,8 @@ export default class Style {
             if (style.point.remarks) feature.properties.remarks = this.compile(style.point.remarks, feature.properties.metadata);
             if (style.point.callsign) feature.properties.callsign = this.compile(style.point.callsign, feature.properties.metadata);
             if (style.point.links) this.#links(style.point.links, feature);
+            if (style.point.minzoom !== undefined) feature.properties.minzoom = style.point.minzoom;
+            if (style.point.maxzoom !== undefined) feature.properties.maxzoom = style.point.maxzoom;
 
             if (typeof style.point.stale === 'string') {
                 feature.properties.stale = this.compile(style.point.stale, feature.properties.metadata);
@@ -428,6 +471,8 @@ export default class Style {
             if (style.line.remarks) feature.properties.remarks = this.compile(style.line.remarks, feature.properties.metadata);
             if (style.line.callsign) feature.properties.callsign = this.compile(style.line.callsign, feature.properties.metadata);
             if (style.line.links) this.#links(style.line.links, feature);
+            if (style.line.minzoom !== undefined) feature.properties.minzoom = style.line.minzoom;
+            if (style.line.maxzoom !== undefined) feature.properties.maxzoom = style.line.maxzoom;
 
             if (typeof style.line.stale === 'string') {
                 feature.properties.stale = this.compile(style.line.stale, feature.properties.metadata);
@@ -444,6 +489,8 @@ export default class Style {
             if (style.polygon.remarks) feature.properties.remarks = this.compile(style.polygon.remarks, feature.properties.metadata);
             if (style.polygon.callsign) feature.properties.callsign = this.compile(style.polygon.callsign, feature.properties.metadata);
             if (style.polygon.links) this.#links(style.polygon.links, feature);
+            if (style.polygon.minzoom !== undefined) feature.properties.minzoom = style.polygon.minzoom;
+            if (style.polygon.maxzoom !== undefined) feature.properties.maxzoom = style.polygon.maxzoom;
 
             if (typeof style.polygon.stale === 'string') {
                 feature.properties.stale = this.compile(style.polygon.stale, feature.properties.metadata);
