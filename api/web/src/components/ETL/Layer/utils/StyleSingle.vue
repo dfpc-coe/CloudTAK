@@ -47,6 +47,34 @@
                 :schema='props.schema'
             />
         </div>
+        
+        <div class='col-md-12 hover rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label class='user-select-none subheader'><IconClock
+                    :size='20'
+                    stroke='1'
+                /> Global Stale Value</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='enabled.stale'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='enabled.stale'
+                v-model='filters.stale'
+                placeholder='Stale Value (seconds or ISO Date)'
+                :disabled='disabled'
+                :schema='props.schema'
+            />
+            <label
+                v-if='enabled.stale'
+                v-text='humanSeconds(filter.stale)'
+            />
+        </div>
 
         <div class='col-md-12 hover rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
