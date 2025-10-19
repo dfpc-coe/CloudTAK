@@ -99,7 +99,6 @@ export default async function router(schema: Schema, config: Config) {
                     webhooks: baseLayer.incoming.webhooks,
                     enabled_styles: baseLayer.incoming.enabled_styles,
                     styles: baseLayer.incoming.styles,
-                    stale: baseLayer.incoming.stale,
                     environment: {},
                     ephemeral: {}
                 } : undefined,
