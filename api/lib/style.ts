@@ -69,10 +69,11 @@ interface ValidateStyle {
     id?: string;
     callsign?: string;
     remarks?: string;
+    stale?: number | string;
     links?: Array<Static<typeof StyleLink>>;
-    point?:     { callsign?: string; id?: string; type?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
-    line?:      { callsign?: string; id?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
-    polygon?:   { callsign?: string; id?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
+    point?:     { callsign?: string; stale?: number | string; id?: string; type?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
+    line?:      { callsign?: string; stale?: number | string; id?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
+    polygon?:   { callsign?: string; stale?: number | string; id?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
 }
 
 interface validateStyleGeometry {
@@ -82,6 +83,7 @@ interface validateStyleGeometry {
     type?: string;
     remarks?: string;
     callsign?: string;
+    stale?: number | string;
     links?: Static<typeof StyleLink>[],
     icon?: string;
     stroke?: string;
@@ -103,6 +105,7 @@ export const StylePoint = Type.Object({
     id: Type.Optional(Type.String()),
     type: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
+    stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     callsign: Type.Optional(Type.String()),
     links: Type.Optional(Type.Array(StyleLink)),
     icon: Type.Optional(Type.String())
@@ -115,6 +118,7 @@ export const StyleLine = Type.Object({
     'stroke-width': Type.Optional(Type.String()),
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
+    stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     callsign: Type.Optional(Type.String()),
     links: Type.Optional(Type.Array(StyleLink)),
 });
@@ -136,6 +140,7 @@ export const StyleSingle = Type.Object({
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
+    stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     links: Type.Optional(Type.Array(StyleLink)),
     line: Type.Optional(StyleLine),
     point: Type.Optional(StylePoint),
@@ -162,7 +167,6 @@ export const StyleContainer = Type.Object({
 })
 
 export interface StyleInterface {
-    stale: number;
     enabled_styles: boolean;
     styles: Static<typeof StyleContainer>;
 }
@@ -322,10 +326,6 @@ export default class Style {
         try {
             if (!feature.properties) feature.properties = {};
 
-            if (this.style.stale && !feature.properties.stale) {
-                feature.properties.stale = this.style.stale * 1000;
-            }
-
             if (!this.style.enabled_styles) return feature;
             if (!feature.properties.metadata) feature.properties.metadata = {};
 
@@ -333,6 +333,12 @@ export default class Style {
             if (this.style.styles.id) feature.id = this.compile(this.style.styles.id, feature.properties.metadata);
             if (this.style.styles.callsign) feature.properties.callsign = this.compile(this.style.styles.callsign, feature.properties.metadata);
             if (this.style.styles.remarks) feature.properties.remarks = this.compile(this.style.styles.remarks, feature.properties.metadata);
+
+            if (typeof this.style.styles.stale === 'string') {
+                feature.properties.stale = this.compile(this.style.styles.stale, feature.properties.metadata);
+            } else if (typeof this.style.styles.stale === 'number') {
+                feature.properties.stale = this.style.styles.stale * 1000;
+            }
 
             if (this.style.styles.links) {
                 this.#links(this.style.styles.links, feature);
@@ -356,6 +362,12 @@ export default class Style {
                             if (q.styles.callsign) feature.properties.callsign = this.compile(q.styles.callsign, feature.properties.metadata);
                             if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
                             if (q.styles.links) this.#links(q.styles.links, feature);
+
+                            if (typeof this.style.styles.stale === 'string') {
+                                feature.properties.stale = this.compile(this.style.styles.stale, feature.properties.metadata);
+                            } else if (typeof this.style.styles.stale === 'number') {
+                                feature.properties.stale = this.style.styles.stale * 1000;
+                            }
 
                             this.#by_geom(q.styles, feature);
                         }
@@ -402,6 +414,12 @@ export default class Style {
             if (style.point.callsign) feature.properties.callsign = this.compile(style.point.callsign, feature.properties.metadata);
             if (style.point.links) this.#links(style.point.links, feature);
 
+            if (typeof style.point.stale === 'string') {
+                feature.properties.stale = this.compile(style.point.stale, feature.properties.metadata);
+            } else if (typeof style.point.stale === 'number') {
+                feature.properties.stale = style.point.stale * 1000;
+            }
+
             if (style.point['marker-color']) feature.properties['marker-color'] = style.point['marker-color'];
             if (style.point['marker-opacity']) feature.properties['marker-opacity'] = Number(style.point['marker-opacity']);
             if (style.point.icon) feature.properties.icon = style.point.icon;
@@ -410,6 +428,12 @@ export default class Style {
             if (style.line.remarks) feature.properties.remarks = this.compile(style.line.remarks, feature.properties.metadata);
             if (style.line.callsign) feature.properties.callsign = this.compile(style.line.callsign, feature.properties.metadata);
             if (style.line.links) this.#links(style.line.links, feature);
+
+            if (typeof style.line.stale === 'string') {
+                feature.properties.stale = this.compile(style.line.stale, feature.properties.metadata);
+            } else if (typeof style.line.stale === 'number') {
+                feature.properties.stale = style.line.stale * 1000;
+            }
 
             if (style.line.stroke) feature.properties.stroke = style.line.stroke;
             if (style.line['stroke-style']) feature.properties['stroke-style'] = style.line['stroke-style'];
@@ -420,6 +444,12 @@ export default class Style {
             if (style.polygon.remarks) feature.properties.remarks = this.compile(style.polygon.remarks, feature.properties.metadata);
             if (style.polygon.callsign) feature.properties.callsign = this.compile(style.polygon.callsign, feature.properties.metadata);
             if (style.polygon.links) this.#links(style.polygon.links, feature);
+
+            if (typeof style.polygon.stale === 'string') {
+                feature.properties.stale = this.compile(style.polygon.stale, feature.properties.metadata);
+            } else if (typeof style.polygon.stale === 'number') {
+                feature.properties.stale = style.polygon.stale * 1000;
+            }
 
             if (style.polygon.stroke) feature.properties.stroke = style.polygon.stroke;
             if (style.polygon['stroke-style']) feature.properties['stroke-style'] = style.polygon['stroke-style'];

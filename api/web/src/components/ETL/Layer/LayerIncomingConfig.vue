@@ -148,20 +148,6 @@
                     </div>
                 </div>
                 <div class='col-md-12'>
-                    <TablerInput
-                        v-model='incoming.stale'
-                        label='Stale Value (seconds)'
-                        :disabled='disabled'
-                        type='number'
-                        min='1'
-                        step='1'
-                    />
-                    <label
-                        v-if='incoming.stale'
-                        v-text='humanSeconds(incoming.stale)'
-                    />
-                </div>
-                <div class='col-md-12'>
                     <div class='row'>
                         <div class='col-12'>
                             <label>Data Destination</label>
