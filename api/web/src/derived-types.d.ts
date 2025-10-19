@@ -7409,7 +7409,6 @@ export interface paths {
                                             };
                                         }[];
                                     };
-                                    stale: number;
                                     environment: unknown;
                                     ephemeral: {
                                         [key: string]: unknown;
@@ -7715,7 +7714,6 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                stale: number;
                                 environment: unknown;
                                 ephemeral: {
                                     [key: string]: unknown;
@@ -8122,7 +8120,6 @@ export interface paths {
                                     };
                                 }[];
                             };
-                            stale: number;
                             environment: unknown;
                             ephemeral: {
                                 [key: string]: unknown;
@@ -8591,7 +8588,6 @@ export interface paths {
                                     };
                                 }[];
                             };
-                            stale: number;
                             environment: unknown;
                             ephemeral: {
                                 [key: string]: unknown;
@@ -9186,7 +9182,6 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                stale: number;
                                 environment: unknown;
                                 ephemeral: {
                                     [key: string]: unknown;
@@ -9575,7 +9570,6 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                stale: number;
                                 environment: unknown;
                                 ephemeral: {
                                     [key: string]: unknown;
@@ -14633,7 +14627,6 @@ export interface paths {
                                             };
                                         }[];
                                     };
-                                    stale: number;
                                     environment: unknown;
                                     ephemeral: {
                                         [key: string]: unknown;
@@ -14927,7 +14920,6 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                stale: number;
                                 environment: unknown;
                                 ephemeral: {
                                     [key: string]: unknown;
@@ -15225,7 +15217,6 @@ export interface paths {
                                             };
                                         }[];
                                     };
-                                    stale: number;
                                     environment: unknown;
                                     ephemeral: {
                                         [key: string]: unknown;
@@ -15507,7 +15498,6 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                stale: number;
                                 environment: unknown;
                                 ephemeral: {
                                     [key: string]: unknown;
@@ -15791,7 +15781,6 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                stale: number;
                                 environment: unknown;
                                 ephemeral: {
                                     [key: string]: unknown;
