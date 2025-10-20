@@ -58,7 +58,7 @@
                                 '
                             >
                                 <img
-                                    v-if='[".png", ".jpg", ".jpeg", ".webp"].includes(file.ext)'
+                                    v-if='[".png", ".jpg", ".jpeg", ".webp"].includes(file.ext.toLowerCase())'
                                     class='cursor-pointer'
                                     :style='{
                                         "max-height": "180px",

@@ -305,7 +305,7 @@
                 :schema='props.schema'
             />
             <label
-                v-if='filters[mode].enabled.stale && typeof filters.stale === "number"'
+                v-if='filters[mode].enabled.stale && typeof filters[mode].properties.stale === "number"'
                 v-text='humanSeconds(filters[mode].enabled.stale)'
             />
         </div>
@@ -666,6 +666,7 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue';
+import { humanSeconds } from '../../../../std.js';
 import StyleTemplate from './StyleTemplate.vue';
 import {
     IconLink,
@@ -824,8 +825,8 @@ watch(enabled.value, format);
 watch(filters.value, format);
 
 onMounted(() => {
-    for (const prop of ['id', 'remarks', 'callsign', 'links']) {
-        if (!props.modelValue[prop] || (Array.isArray(props.modelValue[prop]) && props.modelValue[prop].length === 0)) {
+    for (const prop of ['id', 'remarks', 'callsign', 'links', 'minzoom', 'maxzoom', 'stale']) {
+        if (props.modelValue[prop] === undefined || (Array.isArray(props.modelValue[prop]) && props.modelValue[prop].length === 0)) {
             continue;
         }
 
@@ -853,9 +854,14 @@ function format() {
 
     const res = {};
 
-    for (const prop of ['id', 'remarks', 'callsign', 'links']) {
+    for (const prop of ['id', 'remarks', 'callsign', 'links', 'minzoom', 'maxzoom', 'stale']) {
         if (!enabled.value[prop]) continue;
-        res[prop] = styles[prop];
+
+        if (['minzoom', 'maxzoom', 'stale'].includes(prop) && !isNaN(Number(styles[prop]))) {
+            res[prop] = Number(styles[prop]);
+        } else {
+            res[prop] = styles[prop];
+        }
     }
 
     for (const geom of ['point', 'line', 'polygon']) {
@@ -863,7 +869,9 @@ function format() {
         for (const key in styles[geom].enabled) {
             if (!styles[geom].enabled[key]) continue;
 
-            if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
+            if (['minzoom', 'maxzoom', 'stale'].includes(key) && !isNaN(Number(styles[geom][key]))) {
+                styles[geom][key] = Number(styles[geom][key]);
+            } else if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
                 if (styles[geom].properties[key] !== undefined) res[geom][key] = Number(styles[geom].properties[key])
             } else if (['remarks', 'callsign'].includes(key)) {
                 if (styles[geom].properties[key]) res[geom][key] = styles[geom].properties[key];
