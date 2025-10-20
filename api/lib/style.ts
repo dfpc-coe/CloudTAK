@@ -71,10 +71,10 @@ interface validateStyleGeometry {
     id?: string;
     type?: string;
     remarks?: string;
-    minzoom?: number;
-    maxzoom?: number;
-    callsign?: string;
+    minzoom?: number | string;
+    maxzoom?: number | string;
     stale?: number | string;
+    callsign?: string;
     links?: Static<typeof StyleLink>[],
     icon?: string;
     stroke?: string;
@@ -97,9 +97,9 @@ export const StylePoint = Type.Object({
     type: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     callsign: Type.Optional(Type.String()),
-    minzoom: Type.Optional(Type.Number()),
-    maxzoom: Type.Optional(Type.Number()),
     links: Type.Optional(Type.Array(StyleLink)),
     icon: Type.Optional(Type.String())
 });
@@ -112,9 +112,9 @@ export const StyleLine = Type.Object({
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     callsign: Type.Optional(Type.String()),
-    minzoom: Type.Optional(Type.Number()),
-    maxzoom: Type.Optional(Type.Number()),
     links: Type.Optional(Type.Array(StyleLink)),
 });
 
@@ -128,9 +128,9 @@ export const StylePolygon = Type.Object({
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
-    minzoom: Type.Optional(Type.Number()),
-    maxzoom: Type.Optional(Type.Number()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     links: Type.Optional(Type.Array(StyleLink)),
 });
 
@@ -138,9 +138,9 @@ export const StyleSingle = Type.Object({
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
-    minzoom: Type.Optional(Type.Number()),
-    maxzoom: Type.Optional(Type.Number()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     links: Type.Optional(Type.Array(StyleLink)),
     line: Type.Optional(StyleLine),
     point: Type.Optional(StylePoint),
@@ -163,8 +163,8 @@ export const StyleContainer = Type.Object({
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
-    minzoom: Type.Optional(Type.Number()),
-    maxzoom: Type.Optional(Type.Number()),
+    minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     links: Type.Optional(Type.Array(StyleLink)),
     queries: Type.Optional(Type.Array(StyleSingleContainer))
 })
@@ -379,16 +379,15 @@ export default class Style {
             if (this.style.styles.callsign) feature.properties.callsign = this.compile(this.style.styles.callsign, feature.properties.metadata);
             if (this.style.styles.remarks) feature.properties.remarks = this.compile(this.style.styles.remarks, feature.properties.metadata);
 
-            if (this.style.styles.minzoom !== undefined) {
-                feature.properties.minzoom = this.style.styles.minzoom;
-            }
-
-            if (this.style.styles.maxzoom !== undefined) {
-                feature.properties.maxzoom = this.style.styles.maxzoom;
-            }
+            if (this.style.styles.maxzoom !== undefined) this.#numberTemplateString(feature, 'maxzoom', this.style.styles.maxzoom);
+            if (this.style.styles.minzoom !== undefined) this.#numberTemplateString(feature, 'minzoom', this.style.styles.minzoom);
 
             if (typeof this.style.styles.stale === 'string') {
-                feature.properties.stale = this.compile(this.style.styles.stale, feature.properties.metadata);
+                if (!isNaN(Number(this.style.styles.stale))) {
+                    feature.properties.stale = Number(this.style.styles.stale) * 1000;
+                } else {
+                    feature.properties.stale = this.compile(this.style.styles.stale, feature.properties.metadata);
+                }
             } else if (typeof this.style.styles.stale === 'number') {
                 feature.properties.stale = this.style.styles.stale * 1000;
             }
@@ -416,13 +415,17 @@ export default class Style {
                             if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
                             if (q.styles.links) this.#links(q.styles.links, feature);
 
-                            if (this.style.styles.minzoom !== undefined) feature.properties.minzoom = this.style.styles.minzoom;
-                            if (this.style.styles.maxzoom !== undefined) feature.properties.maxzoom = this.style.styles.maxzoom;
+                            if (q.styles.maxzoom !== undefined) this.#numberTemplateString(feature, 'maxzoom', q.styles.maxzoom);
+                            if (q.styles.minzoom !== undefined) this.#numberTemplateString(feature, 'minzoom', q.styles.minzoom);
 
-                            if (typeof this.style.styles.stale === 'string') {
-                                feature.properties.stale = this.compile(this.style.styles.stale, feature.properties.metadata);
-                            } else if (typeof this.style.styles.stale === 'number') {
-                                feature.properties.stale = this.style.styles.stale * 1000;
+                            if (typeof q.styles.stale === 'string') {
+                                if (!isNaN(Number(q.styles.stale))) {
+                                    feature.properties.stale = Number(q.styles.stale) * 1000;
+                                } else {
+                                    feature.properties.stale = this.compile(q.styles.stale, feature.properties.metadata);
+                                }
+                            } else if (typeof q.styles.stale === 'number') {
+                                feature.properties.stale = q.styles.stale * 1000;
                             }
 
                             this.#by_geom(q.styles, feature);
@@ -441,6 +444,28 @@ export default class Style {
             } else {
                 throw new Err(400, new Error(String(err)), String(err));
             }
+        }
+    }
+
+    #numberTemplateString(
+        feature: Static<typeof Feature.InputFeature>,
+        key: keyof Static<typeof Feature.InputFeature['properties']>,
+        value: string | number
+    ): void {
+        if (typeof value === 'string') {
+            if (!isNaN(Number(value))) {
+                feature.properties[key] = Number(value);
+            } else {
+                const comp = this.compile(value, feature.properties.metadata || {});
+
+                if (!isNaN(Number(comp))) {
+                    feature.properties[key] = Number(comp);
+                } else {
+                    return;
+                }
+            }
+        } else if (typeof value === 'number') {
+            feature.properties[key] = value;
         }
     }
 
@@ -469,11 +494,16 @@ export default class Style {
             if (style.point.remarks) feature.properties.remarks = this.compile(style.point.remarks, feature.properties.metadata);
             if (style.point.callsign) feature.properties.callsign = this.compile(style.point.callsign, feature.properties.metadata);
             if (style.point.links) this.#links(style.point.links, feature);
-            if (style.point.minzoom !== undefined) feature.properties.minzoom = style.point.minzoom;
-            if (style.point.maxzoom !== undefined) feature.properties.maxzoom = style.point.maxzoom;
+
+            if (style.point.maxzoom !== undefined) this.#numberTemplateString(feature, 'maxzoom', style.point.maxzoom);
+            if (style.point.minzoom !== undefined) this.#numberTemplateString(feature, 'minzoom', style.point.minzoom);
 
             if (typeof style.point.stale === 'string') {
-                feature.properties.stale = this.compile(style.point.stale, feature.properties.metadata);
+                if (!isNaN(Number(style.point.stale))) {
+                    feature.properties.stale = Number(style.point.stale) * 1000;
+                } else {
+                    feature.properties.stale = this.compile(style.point.stale, feature.properties.metadata);
+                }
             } else if (typeof style.point.stale === 'number') {
                 feature.properties.stale = style.point.stale * 1000;
             }
@@ -486,11 +516,16 @@ export default class Style {
             if (style.line.remarks) feature.properties.remarks = this.compile(style.line.remarks, feature.properties.metadata);
             if (style.line.callsign) feature.properties.callsign = this.compile(style.line.callsign, feature.properties.metadata);
             if (style.line.links) this.#links(style.line.links, feature);
-            if (style.line.minzoom !== undefined) feature.properties.minzoom = style.line.minzoom;
-            if (style.line.maxzoom !== undefined) feature.properties.maxzoom = style.line.maxzoom;
+
+            if (style.line.maxzoom !== undefined) this.#numberTemplateString(feature, 'maxzoom', style.line.maxzoom);
+            if (style.line.minzoom !== undefined) this.#numberTemplateString(feature, 'minzoom', style.line.minzoom);
 
             if (typeof style.line.stale === 'string') {
-                feature.properties.stale = this.compile(style.line.stale, feature.properties.metadata);
+                if (!isNaN(Number(style.line.stale))) {
+                    feature.properties.stale = Number(style.line.stale) * 1000;
+                } else {
+                    feature.properties.stale = this.compile(style.line.stale, feature.properties.metadata);
+                }
             } else if (typeof style.line.stale === 'number') {
                 feature.properties.stale = style.line.stale * 1000;
             }
@@ -504,11 +539,16 @@ export default class Style {
             if (style.polygon.remarks) feature.properties.remarks = this.compile(style.polygon.remarks, feature.properties.metadata);
             if (style.polygon.callsign) feature.properties.callsign = this.compile(style.polygon.callsign, feature.properties.metadata);
             if (style.polygon.links) this.#links(style.polygon.links, feature);
-            if (style.polygon.minzoom !== undefined) feature.properties.minzoom = style.polygon.minzoom;
-            if (style.polygon.maxzoom !== undefined) feature.properties.maxzoom = style.polygon.maxzoom;
+
+            if (style.polygon.maxzoom !== undefined) this.#numberTemplateString(feature, 'maxzoom', style.polygon.maxzoom);
+            if (style.polygon.minzoom !== undefined) this.#numberTemplateString(feature, 'minzoom', style.polygon.minzoom);
 
             if (typeof style.polygon.stale === 'string') {
-                feature.properties.stale = this.compile(style.polygon.stale, feature.properties.metadata);
+                if (!isNaN(Number(style.polygon.stale))) {
+                    feature.properties.stale = Number(style.polygon.stale) * 1000;
+                } else {
+                    feature.properties.stale = this.compile(style.polygon.stale, feature.properties.metadata);
+                }
             } else if (typeof style.polygon.stale === 'number') {
                 feature.properties.stale = style.polygon.stale * 1000;
             }
