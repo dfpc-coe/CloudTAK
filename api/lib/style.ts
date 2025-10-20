@@ -379,8 +379,8 @@ export default class Style {
             if (this.style.styles.callsign) feature.properties.callsign = this.compile(this.style.styles.callsign, feature.properties.metadata);
             if (this.style.styles.remarks) feature.properties.remarks = this.compile(this.style.styles.remarks, feature.properties.metadata);
 
-            if (this.style.styles.maxzoom !== undefined) this.#numberTemplateString(feature, this.style.styles.maxzoom, feature.properties.maxzoom);
-            if (this.style.styles.minzoom !== undefined) this.#numberTemplateString(feature, this.style.styles.minzoom, feature.properties.minzoom);
+            if (this.style.styles.maxzoom !== undefined) feature.properties.maxzoom = this.#numberTemplateString(feature, this.style.styles.maxzoom, feature.properties.maxzoom);
+            if (this.style.styles.minzoom !== undefined) feature.properties.minzoom = this.#numberTemplateString(feature, this.style.styles.minzoom, feature.properties.minzoom);
 
             if (typeof this.style.styles.stale === 'string') {
                 if (!isNaN(Number(this.style.styles.stale))) {
@@ -415,8 +415,8 @@ export default class Style {
                             if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
                             if (q.styles.links) this.#links(q.styles.links, feature);
 
-                            if (q.styles.maxzoom !== undefined) this.#numberTemplateString(feature, q.styles.maxzoom, feature.properties.maxzoom);
-                            if (q.styles.minzoom !== undefined) this.#numberTemplateString(feature, q.styles.minzoom, feature.properties.minzoom);
+                            if (q.styles.maxzoom !== undefined) feature.properties.maxzoom = this.#numberTemplateString(feature, q.styles.maxzoom, feature.properties.maxzoom);
+                            if (q.styles.minzoom !== undefined) feature.properties.minzoom = this.#numberTemplateString(feature, q.styles.minzoom, feature.properties.minzoom);
 
                             if (typeof q.styles.stale === 'string') {
                                 if (!isNaN(Number(q.styles.stale))) {
@@ -517,8 +517,8 @@ export default class Style {
             if (style.line.callsign) feature.properties.callsign = this.compile(style.line.callsign, feature.properties.metadata);
             if (style.line.links) this.#links(style.line.links, feature);
 
-            if (style.line.maxzoom !== undefined) this.#numberTemplateString(feature, style.line.maxzoom, feature.properties.maxzoom);
-            if (style.line.minzoom !== undefined) this.#numberTemplateString(feature, style.line.minzoom, feature.properties.minzoom);
+            if (style.line.maxzoom !== undefined) feature.properties.maxzoom = this.#numberTemplateString(feature, style.line.maxzoom, feature.properties.maxzoom);
+            if (style.line.minzoom !== undefined) feature.properties.minzoom = this.#numberTemplateString(feature, style.line.minzoom, feature.properties.minzoom);
 
             if (typeof style.line.stale === 'string') {
                 if (!isNaN(Number(style.line.stale))) {
@@ -540,8 +540,8 @@ export default class Style {
             if (style.polygon.callsign) feature.properties.callsign = this.compile(style.polygon.callsign, feature.properties.metadata);
             if (style.polygon.links) this.#links(style.polygon.links, feature);
 
-            if (style.polygon.maxzoom !== undefined) this.#numberTemplateString(feature, style.polygon.maxzoom, feature.properties.maxzoom);
-            if (style.polygon.minzoom !== undefined) this.#numberTemplateString(feature, style.polygon.minzoom, feature.properties.minzoom);
+            if (style.polygon.maxzoom !== undefined) feat.properties.maxzoom = this.#numberTemplateString(feature, style.polygon.maxzoom, feature.properties.maxzoom);
+            if (style.polygon.minzoom !== undefined) feat.properties.minzoom = this.#numberTemplateString(feature, style.polygon.minzoom, feature.properties.minzoom);
 
             if (typeof style.polygon.stale === 'string') {
                 if (!isNaN(Number(style.polygon.stale))) {
