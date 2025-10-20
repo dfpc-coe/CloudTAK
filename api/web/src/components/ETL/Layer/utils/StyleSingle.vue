@@ -84,7 +84,7 @@
                 <label class='user-select-none subheader'><IconEye
                     :size='20'
                     stroke='1'
-                /> Global Minzoom</label>
+                /> Global Min Zoom</label>
                 <div class='ms-auto'>
                     <TablerToggle
                         v-model='enabled.minzoom'
@@ -98,7 +98,7 @@
                 v-if='enabled.minzoom'
                 v-model='filters.minzoom'
                 :rows='1'
-                placeholder='Minzoom (0-24)'
+                placeholder='Min Zoom (0-24)'
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -109,7 +109,7 @@
                 <label class='user-select-none subheader'><IconEye
                     :size='20'
                     stroke='1'
-                /> Global Maxzoom</label>
+                /> Global Max Zoom</label>
                 <div class='ms-auto'>
                     <TablerToggle
                         v-model='enabled.maxzoom'
@@ -123,7 +123,7 @@
                 v-if='enabled.maxzoom'
                 v-model='filters.maxzoom'
                 :rows='1'
-                placeholder='Maxzoom (0-24)'
+                placeholder='Max Zoom (0-24)'
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -280,6 +280,86 @@
                 :schema='props.schema'
             />
         </div>
+
+        <div class='col-md-12 hover rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label class='user-select-none subheader'><IconClock
+                    :size='20'
+                    stroke='1'
+                /> Stale Value</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='filters[mode].enabled.stale'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='filters[mode].enabled.stale'
+                v-model='filters[mode].properties.stale'
+                placeholder='Stale Value (Seconds or ISO Date)'
+                :rows='1'
+                :disabled='disabled'
+                :schema='props.schema'
+            />
+            <label
+                v-if='filters[mode].enabled.stale && typeof filters.stale === "number"'
+                v-text='humanSeconds(filters[mode].enabled.stale)'
+            />
+        </div>
+
+        <div class='col-md-12 hover rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label class='user-select-none subheader'><IconEye
+                    :size='20'
+                    stroke='1'
+                /> Min Zoom</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='filters[mode].enabled.minzoom'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='filters[mode].enabled.minzoom'
+                v-model='filters[mode].properties.minzoom'
+                :rows='1'
+                placeholder='Min Zoom (0-24)'
+                :disabled='disabled'
+                :schema='props.schema'
+            />
+        </div>
+
+        <div class='col-md-12 hover rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label class='user-select-none subheader'><IconEye
+                    :size='20'
+                    stroke='1'
+                /> Max Zoom</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model=' filters[mode].enabled.minzoom'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='filters[mode].enabled.minzoom'
+                v-model='filters[mode].properties.minzoom'
+                :rows='1'
+                placeholder='Max Zoom (0-24)'
+                :disabled='disabled'
+                :schema='props.schema'
+            />
+        </div>
+
 
         <div class='col-md-12 hover rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
