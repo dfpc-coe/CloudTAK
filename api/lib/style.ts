@@ -190,6 +190,9 @@ export default class Style {
         if (!this.style.styles.queries) this.style.styles.queries = [];
     }
 
+    /**
+     * Validate a Style Object to ensure it conforms to expected templates
+     */
     static validate(styles: Static<typeof StyleContainer>) {
         try {
             this.#validateTemplate(styles);
@@ -289,28 +292,36 @@ export default class Style {
         }
     }
 
-    static #validateZoom(minzoom?: number, maxzoom?: number) {
-        if (minzoom !== undefined) {
-            if (isNaN(minzoom)) {
-                throw new Err(400, null, `Invalid minzoom: ${minzoom} - Not a Number`);
-            } else if (minzoom < 0) {
+    static #validateZoom(minzoom?: number | string, maxzoom?: number | string) {
+        if (minzoom !== undefined && typeof minzoom === 'number') {
+            if (minzoom < 0) {
                 throw new Err(400, null, `Invalid minzoom: ${minzoom} - Less than 0`);
             } else if (minzoom > 24) {
                 throw new Err(400, null, `Invalid minzoom: ${minzoom} - Greater than 24`);
             }
+        } else if (typeof minzoom === 'string') {
+            try {
+                handlebars.compile(minzoom)({});
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid MinZoom: ${minzoom}`)
+            }
         }
 
-        if (maxzoom !== undefined) {
-            if (isNaN(maxzoom)) {
-                throw new Err(400, null, `Invalid maxzoom: ${maxzoom} - Not a Number`);
-            } else if (maxzoom < 0) {
+        if (maxzoom !== undefined && typeof maxzoom === 'number') {
+            if (maxzoom < 0) {
                 throw new Err(400, null, `Invalid maxzoom: ${maxzoom} - Less than 0`);
             } else if (maxzoom > 24) {
                 throw new Err(400, null, `Invalid maxzoom: ${maxzoom} - Greater than 24`);
             }
+        } else if (typeof maxzoom === 'string') {
+            try {
+                handlebars.compile(maxzoom)({});
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid MaxZoom: ${minzoom}`)
+            }
         }
 
-        if (minzoom !== undefined && maxzoom !== undefined) {
+        if (minzoom !== undefined && maxzoom !== undefined && typeof minzoom === 'number' && typeof maxzoom === 'number') {
             if (minzoom > maxzoom) {
                 throw new Err(400, null, `Invalid zoom levels: minzoom ${minzoom} greater than maxzoom ${maxzoom}`);
             }
