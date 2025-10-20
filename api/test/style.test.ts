@@ -58,7 +58,6 @@ test('Style: Basic Point: Disabled', async () => {
     }), {
         type: 'Feature',
         properties: {
-            stale: 123000
         },
         geometry: {
             type: 'Point',
