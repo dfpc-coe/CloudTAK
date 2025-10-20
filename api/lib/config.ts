@@ -6,7 +6,6 @@ import EventsPool from './events-pool.js';
 import { Pool, GenerateUpsert } from '@openaddresses/batch-generic';
 import ConnectionPool from './connection-pool.js';
 import { ConnectionWebSocket } from './connection-web.js';
-import Cacher from './cacher.js';
 import type { Server } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
 import Models from './models.js';
@@ -36,7 +35,6 @@ export default class Config {
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
     pg: Pool<typeof pgtypes>;
-    cacher: Cacher;
     conns: ConnectionPool;
     server: InferSelectModel<typeof Server>;
     events: EventsPool;
@@ -74,7 +72,6 @@ export default class Config {
         this.server = init.server;
 
         this.conns = new ConnectionPool(this);
-        this.cacher = new Cacher(this.nocache, this.silent);
 
         this.events = new EventsPool(this.StackName);
     }

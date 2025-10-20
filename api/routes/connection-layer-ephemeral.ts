@@ -40,8 +40,6 @@ export default async function router(schema: Schema, config: Config) {
                 ephemeral: req.body
             });
 
-            await config.cacher.del(`layer-${req.params.layerid}`);
-
             res.json(incoming.ephemeral)
         } catch (err) {
             Err.respond(err, res);
@@ -81,8 +79,6 @@ export default async function router(schema: Schema, config: Config) {
                 updated: sql`Now()`,
                 ephemeral: req.body
             });
-
-            await config.cacher.del(`layer-${req.params.layerid}`);
 
             res.json(outgoing.ephemeral)
         } catch (err) {
