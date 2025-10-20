@@ -1,4 +1,7 @@
+import Err from '@openaddresses/batch-error';
 import { Static } from '@sinclair/typebox'
+import {InferSelectModel} from 'drizzle-orm';
+import { Connection } from '../schema.js';
 import Alarm from '../aws/alarm.js';
 import type { InferInsertModel } from 'drizzle-orm';
 import Lambda from '../aws/lambda.js';
@@ -14,6 +17,25 @@ export default class LayerControl {
     constructor(config: Config) {
         this.config = config;
         this.alarm = new Alarm(config.StackName);
+    }
+
+    async from(
+        connection: InferSelectModel<typeof Connection> | number,
+        layerid: number
+    ): Promise<Static<typeof LayerResponse>> {
+        if (typeof connection === 'number') {
+            connection = await this.config.models.Connection.from(connection);
+        }
+
+        if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
+        const layer = await this.config.models.Layer.augmented_from(layerid);
+
+        if (layer.connection !== connection.id) {
+            throw new Err(400, null, 'Layer does not belong to this connection');
+        }
+
+        return layer;
     }
 
     async generate(

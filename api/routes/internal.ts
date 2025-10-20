@@ -2,7 +2,6 @@ import { Type } from '@sinclair/typebox'
 import { sql } from 'drizzle-orm';
 import { Param } from '@openaddresses/batch-generic';
 import Alarm from '../lib/aws/alarm.js';
-import Cacher from '../lib/cacher.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess, AuthUser, AuthUserAccess } from '../lib/auth.js';
@@ -171,9 +170,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             });
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(req.params.layerid);
-            });
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             let status = 'unknown';
             if (config.StackName !== 'test' && req.query.alarms) {

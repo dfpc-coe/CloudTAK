@@ -6,7 +6,6 @@ import CF from '../lib/aws/cloudformation.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import Logs from '../lib/aws/lambda-logs.js';
-import Cacher from '../lib/cacher.js';
 import Config from '../lib/config.js';
 import { Capabilities } from '@tak-ps/etl'
 import { StandardResponse, JobLogResponse } from '../lib/types.js';
@@ -31,9 +30,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
-            });
+            const layer = await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -62,9 +59,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
-            });
+            const layer = await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -98,9 +93,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
-            });
+            const layer = await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -136,9 +129,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
-            });
+            const layer = await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -167,9 +158,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
-            });
+            const layer = await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -202,9 +191,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
-            });
+            const layer = await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
