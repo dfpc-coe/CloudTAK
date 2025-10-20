@@ -258,7 +258,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { server, humanSeconds } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { ETLLayerIncoming } from '../../../types.ts';
 import GroupSelect from '../../util/GroupSelect.vue';
 import cronstrue from 'cronstrue';
