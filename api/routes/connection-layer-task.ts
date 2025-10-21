@@ -4,6 +4,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import CF from '../lib/aws/cloudformation.js';
 import Lambda from '../lib/aws/lambda.js';
+import LayerControl from '../lib/control/layer.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import Logs from '../lib/aws/lambda-logs.js';
 import Config from '../lib/config.js';
@@ -11,6 +12,8 @@ import { Capabilities } from '@tak-ps/etl'
 import { StandardResponse, JobLogResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const layerControl = new LayerControl(config);
+
     await schema.get('/connection/:connectionid/layer/:layerid/task', {
         name: 'Task Status',
         group: 'Task',
@@ -28,13 +31,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: []
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            const layer = await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
+            const layer = await layerControl.from(connection, req.params.layerid);
 
             res.json(await CF.status(config, layer.id));
         } catch (err) {
@@ -57,13 +54,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: []
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            const layer = await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
+            const layer = await layerControl.from(connection, req.params.layerid);
 
             await CF.cancel(config, layer.id);
 
@@ -91,13 +82,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: []
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            const layer = await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
+            const layer = await layerControl.from(connection, req.params.layerid);
 
             await Lambda.invoke(config, layer.id)
 
@@ -127,13 +112,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: []
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            const layer = await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
+            const layer = await layerControl.from(connection, req.params.layerid);
 
             res.json(await Logs.list(config, layer));
         } catch (err) {
@@ -156,13 +135,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: []
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            const layer = await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
+            const layer = await layerControl.from(connection, req.params.layerid);
 
             const capabilities = await Lambda.capabilities(config, layer.id);
 
@@ -189,13 +162,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: []
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            const layer = await config.models.Layer.augmented_from(parseInt(String(req.params.layerid)));
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
+            const layer = await layerControl.from(connection, req.params.layerid);
 
             try {
                 await Logs.delete(config, layer);
