@@ -40,7 +40,7 @@ export default class ECR {
             if (!res || !res.images) return false;
             return res.images.length > 0;
         } catch (err) {
-            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to delete ECR Tasks');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to Get ECR Task');
         }
     }
 
