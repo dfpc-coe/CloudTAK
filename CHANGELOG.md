@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.46.0 - 2025-10-21
+
+- :rocket: Perform a Regex pattern match on Layer Tasks on creation
+- :rocket: Ensure the Task image exists in the ECR before deploying
+
 ### v11.45.0 - 2025-10-20
 
 > [!CAUTION]  
