@@ -232,18 +232,3 @@ npx deploy info --help
 | `coe-media-<name>`   | Task Definitions for Media Server Support - [repo](ttps://github.com/dfoc-coe/media-infra) |
 
 
-### S3 Bucket Contents
-
-An S3 bucket will be created as part of the CloudFormatiom stack that contains geospatial assets
-related to user files, missions, CoTs, etc. The following table is an overview of the prefixes
-in the bucket and their purpose
-
-| Prefix | Description |
-| ------ | ----------- |
-| `attachment/{sha256}/{file.ext}`  | CoT Attachments by Data Package reported SHA |
-| `data/{data sync id}/{file.ext}`  | CloudTAK managed Data Sync file contents |
-| `import/{UUID}/{file.ext}`        | User Imports |
-| `profile/{email}/{file.ext}`      | User Files |
-| `public/{name}.pmtiles`           | Public Tile Pyramids |
-
-
