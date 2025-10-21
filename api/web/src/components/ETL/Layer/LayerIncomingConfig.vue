@@ -148,20 +148,6 @@
                     </div>
                 </div>
                 <div class='col-md-12'>
-                    <TablerInput
-                        v-model='incoming.stale'
-                        label='Stale Value (seconds)'
-                        :disabled='disabled'
-                        type='number'
-                        min='1'
-                        step='1'
-                    />
-                    <label
-                        v-if='incoming.stale'
-                        v-text='humanSeconds(incoming.stale)'
-                    />
-                </div>
-                <div class='col-md-12'>
                     <div class='row'>
                         <div class='col-12'>
                             <label>Data Destination</label>
@@ -272,7 +258,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { server, humanSeconds } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { ETLLayerIncoming } from '../../../types.ts';
 import GroupSelect from '../../util/GroupSelect.vue';
 import cronstrue from 'cronstrue';

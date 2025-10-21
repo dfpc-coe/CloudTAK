@@ -4,9 +4,9 @@ import Style from '../lib/style.js';
 
 test('Style: Basic Point', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             point: {
                 'marker-color': '#ffffff',
                 remarks: 'Test Remarks'
@@ -38,9 +38,9 @@ test('Style: Basic Point', async () => {
 
 test('Style: Basic Point: Disabled', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: false,
         styles: {
+            stale: 123,
             point: {
                 'marker-color': '#ffffff',
                 remarks: 'Test Remarks'
@@ -58,7 +58,6 @@ test('Style: Basic Point: Disabled', async () => {
     }), {
         type: 'Feature',
         properties: {
-            stale: 123000
         },
         geometry: {
             type: 'Point',
@@ -69,9 +68,9 @@ test('Style: Basic Point: Disabled', async () => {
 
 test('Style: Basic Callsign', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             point: {
                 'marker-color': '#ffffff',
                 remarks: 'Test Remarks'
@@ -106,9 +105,9 @@ test('Style: Basic Callsign', async () => {
 
 test('Style: Basic Point: Stale only applied if stale is undefined on root feature', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: false,
         styles: {
+            stale: 123,
             point: {
                 'marker-color': '#ffffff',
                 remarks: 'Test Remarks'
@@ -139,9 +138,9 @@ test('Style: Basic Point: Stale only applied if stale is undefined on root featu
 
 test('Style: Global Remarks & Callsign', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             remarks: '{{override}}',
             callsign: '{{override_callsign}}'
         }
@@ -176,9 +175,9 @@ test('Style: Global Remarks & Callsign', async () => {
 
 test('Style: Global Remarks & Callsign - Override by Point', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             remarks: '{{override}}',
             callsign: '{{override_callsign}}',
             point: {
@@ -221,9 +220,9 @@ test('Style: Global Remarks & Callsign - Override by Point', async () => {
 
 test('Style: Global Remarks & Callsign - Override by Global Query', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             remarks: '{{override}}',
             callsign: '{{override_callsign}}',
             point: {
@@ -277,9 +276,9 @@ test('Style: Global Remarks & Callsign - Override by Global Query', async () => 
 
 test('Style: Global Remarks & Callsign - Override by Query Point', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             remarks: '{{override}}',
             callsign: '{{override_callsign}}',
             point: {
@@ -341,9 +340,9 @@ test('Style: Global Remarks & Callsign - Override by Query Point', async () => {
 
 test('Style: Lowest Level Remarks', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             queries: [{
                 query: 'true',
                 styles: {
@@ -757,9 +756,9 @@ test('Style: Invalid Templates', async () => {
 
 test('Style: {{fallback p1 p2 ...}}', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             callsign: '{{fallback none1 none2 yes1 none3 yes2}}'
         }
     });
@@ -798,9 +797,9 @@ test('Style: {{fallback p1 p2 ...}}', async () => {
 
 test('Style: {{htmlstrip remarks}}', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             callsign: '{{htmlstrip remarks}}'
         }
     });
@@ -837,9 +836,9 @@ test('Style: {{htmlstrip remarks}}', async () => {
 
 test('Style: {{htmlstrip remarks}} (NewLine Creation)', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             remarks: '{{htmlstrip popupinfo}}'
         }
     });
@@ -891,9 +890,9 @@ test('Style: {{htmlstrip remarks}} (NewLine Creation)', async () => {
 
 test('Style: Delete Feature by Style', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             queries: [{
                 query: 'properties.metadata.delete = true',
                 delete: true
@@ -919,9 +918,9 @@ test('Style: Delete Feature by Style', async () => {
 
 test('Style: {{slice remarks}}', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             remarks: '{{slice remarks 5}}'
         }
     });
@@ -959,9 +958,9 @@ test('Style: {{slice remarks}}', async () => {
 // Test replace helper - basic single replacement functionality
 test('Style: {{replace}} - Single Replacement', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             // Replace [nl] markers with spaces in VMS message
             remarks: '{{replace currentMessage "[nl]" " "}}'
         }
@@ -997,9 +996,9 @@ test('Style: {{replace}} - Single Replacement', async () => {
 // Test replace helper - chained multiple replacements
 test('Style: {{replace}} - Chained Replacements', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             // Chain replacements to handle both [nl] and [np] markers
             remarks: '{{replace (replace currentMessage "[nl]" " ") "[np]" " "}}'
         }
@@ -1035,9 +1034,9 @@ test('Style: {{replace}} - Chained Replacements', async () => {
 // Test replace helper - empty/null input handling
 test('Style: {{replace}} - Empty Input', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             // Test replace helper with empty/null input
             remarks: '{{replace emptyField "[nl]" " "}}'
         }
@@ -1073,9 +1072,9 @@ test('Style: {{replace}} - Empty Input', async () => {
 // Test round helper - default 2 decimal places
 test('Style: {{round}} - Default Decimals', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             // Round earthquake depth to explicit 2 decimal places
             remarks: 'Depth: {{round depth 2}}km'
         }
@@ -1111,9 +1110,9 @@ test('Style: {{round}} - Default Decimals', async () => {
 // Test round helper - custom decimal places
 test('Style: {{round}} - Custom Decimals', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             // Round earthquake magnitude to 1 decimal place
             callsign: 'M{{round magnitude 1}}'
         }
@@ -1149,9 +1148,9 @@ test('Style: {{round}} - Custom Decimals', async () => {
 // Test round helper - null/undefined/NaN handling
 test('Style: {{round}} - Invalid Input', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             // Test round helper with null/undefined input
             remarks: 'Value: {{round invalidNumber}}'
         }
@@ -1187,9 +1186,9 @@ test('Style: {{round}} - Invalid Input', async () => {
 // Test combined usage - real-world earthquake data formatting
 test('Style: Combined {{replace}} and {{round}} - Earthquake Data', async () => {
     const style = new Style({
-        stale: 123,
         enabled_styles: true,
         styles: {
+            stale: 123,
             // Combine both helpers for comprehensive earthquake data formatting
             callsign: 'M{{round magnitude 1}} - {{replace locality "km" "km"}}',
             remarks: 'Depth: {{round depth 2}}km, Quality: {{replace quality "best" "verified"}}'
