@@ -48,6 +48,11 @@ export default class LayerControl {
     ): Promise<Static<typeof LayerResponse>> {
         const base = await this.config.models.Layer.generate(input);
 
+        // name-v<major>.<minor>.<patch>
+        if (!input.task || !input.task.match(/^(.+)-v(\d+)\.(\d+)\.(\d+)$/)) {
+            throw new Err(400, null, 'Layer Task must be in the format name-v<major>.<minor>.<patch>');
+        }
+
         if (opts && opts.incoming) {
             await this.config.models.LayerIncoming.generate({
                 ...opts.incoming,
