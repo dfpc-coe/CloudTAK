@@ -5,6 +5,7 @@ import { Connection } from '../schema.js';
 import Alarm from '../aws/alarm.js';
 import type { InferInsertModel } from 'drizzle-orm';
 import Lambda from '../aws/lambda.js';
+import ECR from '../aws/ecr.js';
 import CloudFormation from '../aws/cloudformation.js';
 import Config from '../config.js';
 import { LayerResponse } from '../types.js';
@@ -51,6 +52,8 @@ export default class LayerControl {
         // name-v<major>.<minor>.<patch>
         if (!input.task || !input.task.match(/^(.+)-v(\d+)\.(\d+)\.(\d+)$/)) {
             throw new Err(400, null, 'Layer Task must be in the format name-v<major>.<minor>.<patch>');
+        } else if (!await ECR.exists(input.task)) {
+            throw new Err(400, null, `Layer Task ${input.task} does not exist in AWS Container Registry`);
         }
 
         if (opts && opts.incoming) {
