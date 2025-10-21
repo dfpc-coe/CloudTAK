@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### v11.45.0 - 2025-10-20
+
+> [!CAUTION]  
+> ETLs should be updated to use `@tak-ps/etl@9.22.0` or above. Failure to update this dependency will cause the ETL Layer Get operations to fail with a schema error.
+
+- :rocket: Remove `stale` value from LayersIncoming and place it where it belongs in the `styles` layer
+- :bug: Allow previewing attached images with capital letters as the extension - IE `.JPG`
+- :tada: Implement `minzoom` & `maxzoom` properties in the Style Editor
+
 ### v11.44.0 - 2025-10-17
 
 - :rocket: Update all filter expressions to the modern syntax
