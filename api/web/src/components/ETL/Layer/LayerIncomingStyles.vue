@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class='card-header sticky-top'>
+        <div class='card-header sticky-top bg-dark'>
             <h3 class='card-title'>
                 Style Overrides
             </h3>
@@ -67,7 +67,7 @@
             <div class='card-body'>
                 <StyleSingle
                     v-model='style'
-                    :schema='capabilities.incoming.schema.output'
+                    :schema='capabilities.incoming.schema.output || { properties: {} }'
                     :disabled='disabled'
                 />
             </div>

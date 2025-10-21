@@ -12,7 +12,7 @@
             :err='new Error("Layer failed to return an incoming input schema on the Capabilities object")'
         />
         <TablerAlert
-            v-if='!props.capabilities.incoming.schema.output || props.capabilities.incoming.schema.outputError'
+            v-else-if='!props.capabilities.incoming.schema.output || props.capabilities.incoming.schema.outputError'
             title='Missing Output Schema'
             :err='new Error(props.capabilities.incoming.schema.outputError.message) || new Error("Layer failed to return an output schema on the Capabilities object")'
         />
@@ -125,6 +125,7 @@ function processCapabilities() {
     if (!props.capabilities) return;
 
     if (props.capabilities.incoming.schema.output) {
+    console.error(props.capabilities.incoming.schema.output);
         for (const name in props.capabilities.incoming.schema.output.properties) {
             schema.value.push({
                 name,
