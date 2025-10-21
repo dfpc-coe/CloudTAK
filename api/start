@@ -7,8 +7,6 @@ echo "API_URL: ${API_URL}"
 
 node nginx.conf.js > /etc/nginx/nginx.conf
 
-memcached -d -u root
-
 nginx
 
 while :

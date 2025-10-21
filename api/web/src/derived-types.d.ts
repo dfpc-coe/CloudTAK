@@ -761,7 +761,7 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 sharing_enabled: boolean;
-                                sharing_token: string | null;
+                                sharing_token?: null | string;
                                 name: string;
                                 title: string;
                                 url: string;
@@ -998,7 +998,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             sharing_enabled: boolean;
-                            sharing_token: string | null;
+                            sharing_token?: null | string;
                             name: string;
                             title: string;
                             url: string;
@@ -1127,7 +1127,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             sharing_enabled: boolean;
-                            sharing_token: string | null;
+                            sharing_token?: null | string;
                             name: string;
                             title: string;
                             url: string;
@@ -1355,7 +1355,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             sharing_enabled: boolean;
-                            sharing_token: string | null;
+                            sharing_token?: null | string;
                             name: string;
                             title: string;
                             url: string;
@@ -4347,6 +4347,8 @@ export interface paths {
                                     start: string;
                                     stale: string;
                                     center: number[];
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
@@ -4775,6 +4777,8 @@ export interface paths {
                                 start: string;
                                 stale: string;
                                 center: number[];
+                                minzoom?: number;
+                                maxzoom?: number;
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
@@ -5627,6 +5631,8 @@ export interface paths {
                                 time?: string;
                                 start?: string;
                                 center?: number[];
+                                minzoom?: number;
+                                maxzoom?: number;
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
@@ -5880,6 +5886,8 @@ export interface paths {
                                         time?: string;
                                         start?: string;
                                         center?: number[];
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         range?: number;
                                         bearing?: number;
                                         creator?: {
@@ -6220,6 +6228,8 @@ export interface paths {
                                 start: string;
                                 stale: string;
                                 center: number[];
+                                minzoom?: number;
+                                maxzoom?: number;
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
@@ -6569,6 +6579,8 @@ export interface paths {
                                     start: string;
                                     stale: string;
                                     center: number[];
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
@@ -7277,7 +7289,10 @@ export interface paths {
                                             "stroke-width"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            stale?: number | string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -7289,7 +7304,10 @@ export interface paths {
                                             id?: string;
                                             type?: string;
                                             remarks?: string;
+                                            stale?: number | string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -7306,6 +7324,9 @@ export interface paths {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
+                                            stale?: number | string;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -7314,6 +7335,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        stale?: number | string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -7325,6 +7349,9 @@ export interface paths {
                                                 id?: string;
                                                 remarks?: string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
+                                                stale?: number | string;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -7336,7 +7363,10 @@ export interface paths {
                                                     "stroke-width"?: string;
                                                     id?: string;
                                                     remarks?: string;
+                                                    stale?: number | string;
                                                     callsign?: string;
+                                                    minzoom?: number;
+                                                    maxzoom?: number;
                                                     links?: {
                                                         remarks: string;
                                                         url: string;
@@ -7348,7 +7378,10 @@ export interface paths {
                                                     id?: string;
                                                     type?: string;
                                                     remarks?: string;
+                                                    stale?: number | string;
                                                     callsign?: string;
+                                                    minzoom?: number;
+                                                    maxzoom?: number;
                                                     links?: {
                                                         remarks: string;
                                                         url: string;
@@ -7365,6 +7398,9 @@ export interface paths {
                                                     id?: string;
                                                     remarks?: string;
                                                     callsign?: string;
+                                                    minzoom?: number;
+                                                    maxzoom?: number;
+                                                    stale?: number | string;
                                                     links?: {
                                                         remarks: string;
                                                         url: string;
@@ -7373,7 +7409,6 @@ export interface paths {
                                             };
                                         }[];
                                     };
-                                    stale: number;
                                     environment: unknown;
                                     ephemeral: {
                                         [key: string]: unknown;
@@ -7559,7 +7594,10 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -7571,7 +7609,10 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -7588,6 +7629,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
+                                        stale?: number | string;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -7596,6 +7640,9 @@ export interface paths {
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
+                                    stale?: number | string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -7607,6 +7654,9 @@ export interface paths {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
+                                            stale?: number | string;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -7618,7 +7668,10 @@ export interface paths {
                                                 "stroke-width"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                stale?: number | string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -7630,7 +7683,10 @@ export interface paths {
                                                 id?: string;
                                                 type?: string;
                                                 remarks?: string;
+                                                stale?: number | string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -7647,6 +7703,9 @@ export interface paths {
                                                 id?: string;
                                                 remarks?: string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
+                                                stale?: number | string;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -7655,7 +7714,6 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                stale: number;
                                 environment: unknown;
                                 ephemeral: {
                                     [key: string]: unknown;
@@ -7787,7 +7845,10 @@ export interface paths {
                                 "stroke-width"?: string;
                                 id?: string;
                                 remarks?: string;
+                                stale?: number | string;
                                 callsign?: string;
+                                minzoom?: number;
+                                maxzoom?: number;
                                 links?: {
                                     remarks: string;
                                     url: string;
@@ -7799,7 +7860,10 @@ export interface paths {
                                 id?: string;
                                 type?: string;
                                 remarks?: string;
+                                stale?: number | string;
                                 callsign?: string;
+                                minzoom?: number;
+                                maxzoom?: number;
                                 links?: {
                                     remarks: string;
                                     url: string;
@@ -7816,6 +7880,9 @@ export interface paths {
                                 id?: string;
                                 remarks?: string;
                                 callsign?: string;
+                                minzoom?: number;
+                                maxzoom?: number;
+                                stale?: number | string;
                                 links?: {
                                     remarks: string;
                                     url: string;
@@ -7824,6 +7891,9 @@ export interface paths {
                             id?: string;
                             remarks?: string;
                             callsign?: string;
+                            stale?: number | string;
+                            minzoom?: number;
+                            maxzoom?: number;
                             links?: {
                                 remarks: string;
                                 url: string;
@@ -7835,6 +7905,9 @@ export interface paths {
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
+                                    stale?: number | string;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -7846,7 +7919,10 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -7858,7 +7934,10 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -7875,6 +7954,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
+                                        stale?: number | string;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -7918,7 +8000,10 @@ export interface paths {
                                     "stroke-width"?: string;
                                     id?: string;
                                     remarks?: string;
+                                    stale?: number | string;
                                     callsign?: string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -7930,7 +8015,10 @@ export interface paths {
                                     id?: string;
                                     type?: string;
                                     remarks?: string;
+                                    stale?: number | string;
                                     callsign?: string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -7947,6 +8035,9 @@ export interface paths {
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
+                                    stale?: number | string;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -7955,6 +8046,9 @@ export interface paths {
                                 id?: string;
                                 remarks?: string;
                                 callsign?: string;
+                                stale?: number | string;
+                                minzoom?: number;
+                                maxzoom?: number;
                                 links?: {
                                     remarks: string;
                                     url: string;
@@ -7966,6 +8060,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
+                                        stale?: number | string;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -7977,7 +8074,10 @@ export interface paths {
                                             "stroke-width"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            stale?: number | string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -7989,7 +8089,10 @@ export interface paths {
                                             id?: string;
                                             type?: string;
                                             remarks?: string;
+                                            stale?: number | string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -8006,6 +8109,9 @@ export interface paths {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
+                                            stale?: number | string;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -8014,7 +8120,6 @@ export interface paths {
                                     };
                                 }[];
                             };
-                            stale: number;
                             environment: unknown;
                             ephemeral: {
                                 [key: string]: unknown;
@@ -8204,7 +8309,10 @@ export interface paths {
                                 "stroke-width"?: string;
                                 id?: string;
                                 remarks?: string;
+                                stale?: number | string;
                                 callsign?: string;
+                                minzoom?: number;
+                                maxzoom?: number;
                                 links?: {
                                     remarks: string;
                                     url: string;
@@ -8216,7 +8324,10 @@ export interface paths {
                                 id?: string;
                                 type?: string;
                                 remarks?: string;
+                                stale?: number | string;
                                 callsign?: string;
+                                minzoom?: number;
+                                maxzoom?: number;
                                 links?: {
                                     remarks: string;
                                     url: string;
@@ -8233,6 +8344,9 @@ export interface paths {
                                 id?: string;
                                 remarks?: string;
                                 callsign?: string;
+                                minzoom?: number;
+                                maxzoom?: number;
+                                stale?: number | string;
                                 links?: {
                                     remarks: string;
                                     url: string;
@@ -8241,6 +8355,9 @@ export interface paths {
                             id?: string;
                             remarks?: string;
                             callsign?: string;
+                            stale?: number | string;
+                            minzoom?: number;
+                            maxzoom?: number;
                             links?: {
                                 remarks: string;
                                 url: string;
@@ -8252,6 +8369,9 @@ export interface paths {
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
+                                    stale?: number | string;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -8263,7 +8383,10 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -8275,7 +8398,10 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -8292,6 +8418,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
+                                        stale?: number | string;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -8339,7 +8468,10 @@ export interface paths {
                                     "stroke-width"?: string;
                                     id?: string;
                                     remarks?: string;
+                                    stale?: number | string;
                                     callsign?: string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -8351,7 +8483,10 @@ export interface paths {
                                     id?: string;
                                     type?: string;
                                     remarks?: string;
+                                    stale?: number | string;
                                     callsign?: string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -8368,6 +8503,9 @@ export interface paths {
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
+                                    stale?: number | string;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -8376,6 +8514,9 @@ export interface paths {
                                 id?: string;
                                 remarks?: string;
                                 callsign?: string;
+                                stale?: number | string;
+                                minzoom?: number;
+                                maxzoom?: number;
                                 links?: {
                                     remarks: string;
                                     url: string;
@@ -8387,6 +8528,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
+                                        stale?: number | string;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -8398,7 +8542,10 @@ export interface paths {
                                             "stroke-width"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            stale?: number | string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -8410,7 +8557,10 @@ export interface paths {
                                             id?: string;
                                             type?: string;
                                             remarks?: string;
+                                            stale?: number | string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -8427,6 +8577,9 @@ export interface paths {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
+                                            stale?: number | string;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -8435,7 +8588,6 @@ export interface paths {
                                     };
                                 }[];
                             };
-                            stale: number;
                             environment: unknown;
                             ephemeral: {
                                 [key: string]: unknown;
@@ -8910,7 +9062,10 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -8922,7 +9077,10 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -8939,6 +9097,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
+                                        stale?: number | string;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -8947,6 +9108,9 @@ export interface paths {
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
+                                    stale?: number | string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -8958,6 +9122,9 @@ export interface paths {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
+                                            stale?: number | string;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -8969,7 +9136,10 @@ export interface paths {
                                                 "stroke-width"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                stale?: number | string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -8981,7 +9151,10 @@ export interface paths {
                                                 id?: string;
                                                 type?: string;
                                                 remarks?: string;
+                                                stale?: number | string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -8998,6 +9171,9 @@ export interface paths {
                                                 id?: string;
                                                 remarks?: string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
+                                                stale?: number | string;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -9006,7 +9182,6 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                stale: number;
                                 environment: unknown;
                                 ephemeral: {
                                     [key: string]: unknown;
@@ -9275,7 +9450,10 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -9287,7 +9465,10 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -9304,6 +9485,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
+                                        stale?: number | string;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -9312,6 +9496,9 @@ export interface paths {
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
+                                    stale?: number | string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -9323,6 +9510,9 @@ export interface paths {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
+                                            stale?: number | string;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -9334,7 +9524,10 @@ export interface paths {
                                                 "stroke-width"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                stale?: number | string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -9346,7 +9539,10 @@ export interface paths {
                                                 id?: string;
                                                 type?: string;
                                                 remarks?: string;
+                                                stale?: number | string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -9363,6 +9559,9 @@ export interface paths {
                                                 id?: string;
                                                 remarks?: string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
+                                                stale?: number | string;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -9371,7 +9570,6 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                stale: number;
                                 environment: unknown;
                                 ephemeral: {
                                     [key: string]: unknown;
@@ -14309,7 +14507,10 @@ export interface paths {
                                             "stroke-width"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            stale?: number | string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -14321,7 +14522,10 @@ export interface paths {
                                             id?: string;
                                             type?: string;
                                             remarks?: string;
+                                            stale?: number | string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -14338,6 +14542,9 @@ export interface paths {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
+                                            stale?: number | string;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -14346,6 +14553,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        stale?: number | string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -14357,6 +14567,9 @@ export interface paths {
                                                 id?: string;
                                                 remarks?: string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
+                                                stale?: number | string;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -14368,7 +14581,10 @@ export interface paths {
                                                     "stroke-width"?: string;
                                                     id?: string;
                                                     remarks?: string;
+                                                    stale?: number | string;
                                                     callsign?: string;
+                                                    minzoom?: number;
+                                                    maxzoom?: number;
                                                     links?: {
                                                         remarks: string;
                                                         url: string;
@@ -14380,7 +14596,10 @@ export interface paths {
                                                     id?: string;
                                                     type?: string;
                                                     remarks?: string;
+                                                    stale?: number | string;
                                                     callsign?: string;
+                                                    minzoom?: number;
+                                                    maxzoom?: number;
                                                     links?: {
                                                         remarks: string;
                                                         url: string;
@@ -14397,6 +14616,9 @@ export interface paths {
                                                     id?: string;
                                                     remarks?: string;
                                                     callsign?: string;
+                                                    minzoom?: number;
+                                                    maxzoom?: number;
+                                                    stale?: number | string;
                                                     links?: {
                                                         remarks: string;
                                                         url: string;
@@ -14405,7 +14627,6 @@ export interface paths {
                                             };
                                         }[];
                                     };
-                                    stale: number;
                                     environment: unknown;
                                     ephemeral: {
                                         [key: string]: unknown;
@@ -14579,7 +14800,10 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -14591,7 +14815,10 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -14608,6 +14835,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
+                                        stale?: number | string;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -14616,6 +14846,9 @@ export interface paths {
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
+                                    stale?: number | string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -14627,6 +14860,9 @@ export interface paths {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
+                                            stale?: number | string;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -14638,7 +14874,10 @@ export interface paths {
                                                 "stroke-width"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                stale?: number | string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -14650,7 +14889,10 @@ export interface paths {
                                                 id?: string;
                                                 type?: string;
                                                 remarks?: string;
+                                                stale?: number | string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -14667,6 +14909,9 @@ export interface paths {
                                                 id?: string;
                                                 remarks?: string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
+                                                stale?: number | string;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -14675,7 +14920,6 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                stale: number;
                                 environment: unknown;
                                 ephemeral: {
                                     [key: string]: unknown;
@@ -14853,7 +15097,10 @@ export interface paths {
                                             "stroke-width"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            stale?: number | string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -14865,7 +15112,10 @@ export interface paths {
                                             id?: string;
                                             type?: string;
                                             remarks?: string;
+                                            stale?: number | string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -14882,6 +15132,9 @@ export interface paths {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
+                                            stale?: number | string;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -14890,6 +15143,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        stale?: number | string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -14901,6 +15157,9 @@ export interface paths {
                                                 id?: string;
                                                 remarks?: string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
+                                                stale?: number | string;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -14912,7 +15171,10 @@ export interface paths {
                                                     "stroke-width"?: string;
                                                     id?: string;
                                                     remarks?: string;
+                                                    stale?: number | string;
                                                     callsign?: string;
+                                                    minzoom?: number;
+                                                    maxzoom?: number;
                                                     links?: {
                                                         remarks: string;
                                                         url: string;
@@ -14924,7 +15186,10 @@ export interface paths {
                                                     id?: string;
                                                     type?: string;
                                                     remarks?: string;
+                                                    stale?: number | string;
                                                     callsign?: string;
+                                                    minzoom?: number;
+                                                    maxzoom?: number;
                                                     links?: {
                                                         remarks: string;
                                                         url: string;
@@ -14941,6 +15206,9 @@ export interface paths {
                                                     id?: string;
                                                     remarks?: string;
                                                     callsign?: string;
+                                                    minzoom?: number;
+                                                    maxzoom?: number;
+                                                    stale?: number | string;
                                                     links?: {
                                                         remarks: string;
                                                         url: string;
@@ -14949,7 +15217,6 @@ export interface paths {
                                             };
                                         }[];
                                     };
-                                    stale: number;
                                     environment: unknown;
                                     ephemeral: {
                                         [key: string]: unknown;
@@ -15111,7 +15378,10 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -15123,7 +15393,10 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -15140,6 +15413,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
+                                        stale?: number | string;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -15148,6 +15424,9 @@ export interface paths {
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
+                                    stale?: number | string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -15159,6 +15438,9 @@ export interface paths {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
+                                            stale?: number | string;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -15170,7 +15452,10 @@ export interface paths {
                                                 "stroke-width"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                stale?: number | string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -15182,7 +15467,10 @@ export interface paths {
                                                 id?: string;
                                                 type?: string;
                                                 remarks?: string;
+                                                stale?: number | string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -15199,6 +15487,9 @@ export interface paths {
                                                 id?: string;
                                                 remarks?: string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
+                                                stale?: number | string;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -15207,7 +15498,6 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                stale: number;
                                 environment: unknown;
                                 ephemeral: {
                                     [key: string]: unknown;
@@ -15371,7 +15661,10 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -15383,7 +15676,10 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        stale?: number | string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -15400,6 +15696,9 @@ export interface paths {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
+                                        minzoom?: number;
+                                        maxzoom?: number;
+                                        stale?: number | string;
                                         links?: {
                                             remarks: string;
                                             url: string;
@@ -15408,6 +15707,9 @@ export interface paths {
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
+                                    stale?: number | string;
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     links?: {
                                         remarks: string;
                                         url: string;
@@ -15419,6 +15721,9 @@ export interface paths {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
+                                            minzoom?: number;
+                                            maxzoom?: number;
+                                            stale?: number | string;
                                             links?: {
                                                 remarks: string;
                                                 url: string;
@@ -15430,7 +15735,10 @@ export interface paths {
                                                 "stroke-width"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                stale?: number | string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -15442,7 +15750,10 @@ export interface paths {
                                                 id?: string;
                                                 type?: string;
                                                 remarks?: string;
+                                                stale?: number | string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -15459,6 +15770,9 @@ export interface paths {
                                                 id?: string;
                                                 remarks?: string;
                                                 callsign?: string;
+                                                minzoom?: number;
+                                                maxzoom?: number;
+                                                stale?: number | string;
                                                 links?: {
                                                     remarks: string;
                                                     url: string;
@@ -15467,7 +15781,6 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                stale: number;
                                 environment: unknown;
                                 ephemeral: {
                                     [key: string]: unknown;
@@ -17645,6 +17958,8 @@ export interface paths {
                                 start: string;
                                 stale: string;
                                 center: number[];
+                                minzoom?: number;
+                                maxzoom?: number;
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
@@ -17992,6 +18307,8 @@ export interface paths {
                                     start: string;
                                     stale: string;
                                     center: number[];
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
@@ -19801,6 +20118,8 @@ export interface paths {
                                     start: string;
                                     stale: string;
                                     center: number[];
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
@@ -25787,6 +26106,8 @@ export interface paths {
                                     start: string;
                                     stale: string;
                                     center: number[];
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
@@ -26106,6 +26427,8 @@ export interface paths {
                             start: string;
                             stale: string;
                             center: number[];
+                            minzoom?: number;
+                            maxzoom?: number;
                             range?: number;
                             bearing?: number;
                             creator?: {
@@ -26353,6 +26676,8 @@ export interface paths {
                                 start: string;
                                 stale: string;
                                 center: number[];
+                                minzoom?: number;
+                                maxzoom?: number;
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
@@ -26776,6 +27101,8 @@ export interface paths {
                                 start: string;
                                 stale: string;
                                 center: number[];
+                                minzoom?: number;
+                                maxzoom?: number;
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
@@ -33328,6 +33655,8 @@ export interface paths {
                                     start: string;
                                     stale: string;
                                     center: number[];
+                                    minzoom?: number;
+                                    maxzoom?: number;
                                     range?: number;
                                     bearing?: number;
                                     creator?: {

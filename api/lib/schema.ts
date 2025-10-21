@@ -353,7 +353,6 @@ export const LayerIncoming = pgTable('layers_incoming', {
 
     enabled_styles: boolean().notNull().default(false),
     styles: json().$type<Static<typeof StyleContainer>>().notNull().default({}),
-    stale: integer().notNull().default(20),
     environment: json().notNull().default({}),
     ephemeral: json().$type<Record<string, any>>().notNull().default({}),
     config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),

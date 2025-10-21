@@ -1,7 +1,6 @@
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Cacher from '../lib/cacher.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { LayerAlert } from '../lib/schema.js';
 import Config from '../lib/config.js';
@@ -49,9 +48,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(req.params.layerid);
-            });
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -100,9 +97,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(req.params.layerid);
-            });
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -147,9 +142,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(req.params.layerid);
-            });
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -187,9 +180,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(req.params.layerid);
-            });
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');

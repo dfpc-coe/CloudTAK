@@ -11,7 +11,7 @@ ARG DATA_SOURCE_URL=https://github.com/dfpc-coe/CloudTAK-Data/archive/refs/tags/
 ARG API_URL
 ARG USE_LOCAL_ZIP=false
 
-RUN apk add --no-cache git nodejs-current npm memcached python3 make bash g++ openssl postgresql-client grep wget unzip
+RUN apk add --no-cache git nodejs-current npm python3 make bash g++ openssl postgresql-client grep wget unzip
 
 WORKDIR $HOME/api
 
