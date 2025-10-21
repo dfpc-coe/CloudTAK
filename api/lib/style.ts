@@ -540,8 +540,8 @@ export default class Style {
             if (style.polygon.callsign) feature.properties.callsign = this.compile(style.polygon.callsign, feature.properties.metadata);
             if (style.polygon.links) this.#links(style.polygon.links, feature);
 
-            if (style.polygon.maxzoom !== undefined) feat.properties.maxzoom = this.#numberTemplateString(feature, style.polygon.maxzoom, feature.properties.maxzoom);
-            if (style.polygon.minzoom !== undefined) feat.properties.minzoom = this.#numberTemplateString(feature, style.polygon.minzoom, feature.properties.minzoom);
+            if (style.polygon.maxzoom !== undefined) feature.properties.maxzoom = this.#numberTemplateString(feature, style.polygon.maxzoom, feature.properties.maxzoom);
+            if (style.polygon.minzoom !== undefined) feature.properties.minzoom = this.#numberTemplateString(feature, style.polygon.minzoom, feature.properties.minzoom);
 
             if (typeof style.polygon.stale === 'string') {
                 if (!isNaN(Number(style.polygon.stale))) {
