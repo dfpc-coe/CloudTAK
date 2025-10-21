@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class='card-header sticky-top'>
+        <div class='card-header sticky-top bg-dark'>
             <h3 class='card-title'>
                 Style Overrides
             </h3>
@@ -37,13 +37,21 @@
             </div>
         </div>
 
-        <TablerAlert
-            v-if='!props.capabilities'
-            title='Missing Capabilities'
+        <TablerInlineAlert
+            v-if='!props.capabilities || !props.capabilities.incoming.schema.output'
+            severity='danger'
+            class='px-2 my-2'
+            title='Data Schema Error'
+            :description='`
+                    This Layer did not return a Data Schema for incoming data,
+                    it is either not properly configured or there is an issue with the data source.
+                    Styles can be edited, but available fields will not be shown in the style editor.
+            `'
             :err='new Error("Layer failed to return an incoming input schema on the Capabilities object")'
         />
+
         <TablerLoading
-            v-else-if='loading.save'
+            v-if='loading.save'
             desc='Saving Styles'
         />
         <TablerLoading
@@ -59,7 +67,7 @@
             <div class='card-body'>
                 <StyleSingle
                     v-model='style'
-                    :schema='capabilities.incoming.schema.output'
+                    :schema='capabilities.incoming.schema.output || { properties: {} }'
                     :disabled='disabled'
                 />
             </div>
@@ -244,7 +252,7 @@ import {
 } from '@tabler/icons-vue'
 import jsonata from 'jsonata';
 import {
-    TablerAlert,
+    TablerInlineAlert,
     TablerInput,
     TablerToggle,
     TablerNone,

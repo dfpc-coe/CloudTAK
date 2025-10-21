@@ -11,6 +11,11 @@
             title='Missing Capabilities'
             :err='new Error("Layer failed to return an incoming input schema on the Capabilities object")'
         />
+        <TablerAlert
+            v-else-if='!props.capabilities.incoming.schema.output || props.capabilities.incoming.schema.outputError'
+            title='Missing Output Schema'
+            :err='new Error(props.capabilities.incoming.schema.outputError.message) || new Error("Layer failed to return an output schema on the Capabilities object")'
+        />
         <TablerNone
             v-else-if='!schema.length'
             label='Schema'
@@ -119,13 +124,15 @@ function processCapabilities() {
     schema.value.splice(0, schema.value.length);
     if (!props.capabilities) return;
 
-    for (const name in props.capabilities.incoming.schema.output.properties) {
-        schema.value.push({
-            name,
-            required: props.capabilities.incoming.schema.output.required.includes(name),
-            ...props.capabilities.incoming.schema.output.properties[name]
-        });
+    if (props.capabilities.incoming.schema.output) {
+    console.error(props.capabilities.incoming.schema.output);
+        for (const name in props.capabilities.incoming.schema.output.properties) {
+            schema.value.push({
+                name,
+                required: props.capabilities.incoming.schema.output.required.includes(name),
+                ...props.capabilities.incoming.schema.output.properties[name]
+            });
+        }
     }
-
 }
 </script>
