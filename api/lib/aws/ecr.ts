@@ -28,6 +28,22 @@ export default class ECR {
         }
     }
 
+    static async exists(imageTag: string): Promise<boolean> {
+        const ecr = new AWSECR.ECRClient({ region: process.env.AWS_REGION });
+
+        try {
+            const res = await ecr.send(new AWSECR.BatchGetImageCommand({
+                repositoryName: ECR_TASKS_REPOSITORY,
+                imageIds: [{ imageTag }]
+            }));
+
+            if (!res || !res.images) return false;
+            return res.images.length > 0;
+        } catch (err) {
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to Get ECR Task');
+        }
+    }
+
     static async delete(task: string, version: string): Promise<void> {
         const ecr = new AWSECR.ECRClient({ region: process.env.AWS_REGION });
 
