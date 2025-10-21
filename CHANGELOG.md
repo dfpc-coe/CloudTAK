@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.47.0 - 2025-10-21
+
+- :rocket: Internally update all GET Layer operations to Layer Control class for consistency in checks
+- :rocket: Make Environment/Schema/Style UI Panes on Outgoing ETLs resilient to partial Capability Failures
+
 ### v11.46.0 - 2025-10-21
 
 - :rocket: Perform a Regex pattern match on Layer Tasks on creation
