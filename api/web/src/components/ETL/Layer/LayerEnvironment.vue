@@ -75,6 +75,11 @@
             <TablerAlert
                 v-else-if='!props.capabilities'
                 title='Missing Capabilities'
+                :err='new Error("Layer failed to return a Capabilities object")'
+            />
+            <TablerAlert
+                v-else-if='!props.capabilities.incoming.schema.input'
+                title='Missing Input Schema'
                 :err='new Error("Layer failed to return an input schema on the Capabilities object")'
             />
             <template v-else-if='direction === "incoming" && props.capabilities.name === "etl-arcgis"'>
@@ -203,11 +208,14 @@ onMounted(async () => {
 function hasDateTime() {
     if (!props.capabilities) return false;
 
-    for (const prop of Object.keys(props.capabilities[direction.value].schema.output.properties)) {
-        if (props.capabilities[direction.value].schema.output.properties[prop].format && props.capabilities[direction.value].schema.output.properties[prop].format === 'date-time') {
-            return true;
+    if (props.capabilities[direction.value].schema.output) {
+        for (const prop of Object.keys(props.capabilities[direction.value].schema.output.properties)) {
+            if (props.capabilities[direction.value].schema.output.properties[prop].format && props.capabilities[direction.value].schema.output.properties[prop].format === 'date-time') {
+                return true;
+            }
         }
     }
+
     return false;
 }
 
