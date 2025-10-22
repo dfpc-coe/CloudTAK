@@ -84,6 +84,7 @@
             />
             <template v-else>
                 <div
+                    v-if='missionSub'
                     class='px-2 py-2 round btn-group w-100'
                     role='group'
                 >

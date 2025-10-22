@@ -3,6 +3,7 @@
 */
 
 import { std } from '../std.ts';
+import { db } from '../base/database.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
@@ -23,6 +24,8 @@ type NestedArray = {
 
 export default class AtlasDatabase {
     atlas: Atlas;
+
+    db: typeof db;
 
     cots: Map<string, COT>;
 
@@ -48,6 +51,8 @@ export default class AtlasDatabase {
 
         this.cots = new Map();
 
+        this.db = db;
+
         this.hidden = new Set();
 
         this.images = new Set();
@@ -60,7 +65,6 @@ export default class AtlasDatabase {
 
         this.subscriptions = new Map();
         this.subscriptionPending = new Map(); // UID, Mission Guid
-
     }
 
     async makeActiveMission(guid? : string): Promise<void> {
