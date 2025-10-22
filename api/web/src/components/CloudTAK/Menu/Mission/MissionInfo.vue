@@ -76,34 +76,39 @@
                         v-text='mission.description || "No Feed Description"'
                     />
                 </div>
-                <div class='col-12 pt-3'>
+                <div class='col-12 row g-2'>
                     <div class='datagrid-title user-select-none'>
                         Subscription
                     </div>
-                    <button
+                    <div
                         v-if='subscribed === false'
-                        class='btn btn-green'
-                        style='height: 32px;'
-                        @click='subscribe(true)'
+                        class='col-12'
                     >
-                        Subscribe
-                    </button>
+                        <button
+                            class='btn btn-green w-100'
+                            style='height: 32px;'
+                            @click='subscribe(true)'
+                        >
+                            Subscribe
+                        </button>
+                    </div>
                     <template
                         v-else-if='subscribed === true'
                     >
-                        <div class='btn-list'>
+                        <div class='col-6'>
                             <button
-                                class='btn btn-danger'
+                                class='btn btn-danger w-100'
                                 style='height: 32px;'
                                 @click='subscribe(false)'
                             >
                                 Unsubscribe
                             </button>
-
+                        </div>
+                        <div class='col-6'>
                             <button
                                 v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.mission.guid && sub'
                                 :disabled='!props.role.permissions.includes("MISSION_WRITE")'
-                                class='btn btn-green'
+                                class='btn btn-green w-100'
                                 style='height: 32px;'
                                 @click='mapStore.makeActiveMission(sub)'
                             >
@@ -111,7 +116,7 @@
                             </button>
                             <button
                                 v-else
-                                class='btn btn-muted'
+                                class='btn btn-muted w-100'
                                 :disabled='!props.role.permissions.includes("MISSION_WRITE")'
                                 style='height: 32px;'
                                 @click='mapStore.makeActiveMission()'

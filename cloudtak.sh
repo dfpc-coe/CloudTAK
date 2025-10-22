@@ -39,7 +39,30 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
 
     sudo systemctl start docker
 
-    docker run hello-world
+    # if the following command fails, check if the user is part of the docker group
+    if ! docker run hello-world > /dev/null 2>&1; then
+        echo "Docker run failed - Checking for 'docker' group"
+
+        if getent group docker > /dev/null 2>&1; then
+            echo "ok - 'docker' group exists."
+        else
+            echo "ok - 'docker' group does not exist. Creating 'docker' group..."
+            sudo groupadd docker
+        fi
+
+        # check if user is a member of docker group
+        if id -nG "$USER" | grep -qw docker; then
+            echo "User '$USER' is already a member of 'docker' group."
+        else
+            echo "User '$USER' is not a member of 'docker' group. Adding user to 'docker' group..."
+            sudo usermod -aG docker $USER
+        fi
+    fi
+
+    if ! docker run hello-world > /dev/null 2>&1; then
+        echo "Docker run still failed - Please log out and log back in, then re-run './cloudtak.sh install'"
+        exit 1
+    fi
 
     docker compose build
 

@@ -30,7 +30,6 @@ export default class Subscription {
     meta: Mission;
     role: MissionRole;
     token?: string;
-    logs: Array<MissionLog>;
     cots: Map<string, COT>;
 
     _dirty: boolean;
@@ -47,7 +46,6 @@ export default class Subscription {
         atlas: Atlas | Remote<Atlas>,
         mission: Mission,
         role: MissionRole,
-        logs: Array<MissionLog>,
         opts?: {
             token?: string,
             remote?: boolean
@@ -59,7 +57,6 @@ export default class Subscription {
 
         this.meta = mission;
         this.role = role;
-        this.logs = logs;
 
         if (opts && opts.token) {
             this.token = opts.token;
@@ -71,6 +68,74 @@ export default class Subscription {
 
         this.auto = false;
     }
+
+    static async load(
+        atlas: Atlas,
+        guid: string,
+        token?: string
+    ): Promise<Subscription> {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
+        url.searchParams.append('logs', 'true');
+
+        const mission = await std(url, {
+            headers: Subscription.headers(token),
+            token: atlas.token
+        }) as Mission;
+
+        const logs = mission.logs || [] as Array<MissionLog>;
+        delete mission.logs;
+
+        const role = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/role', {
+            headers: Subscription.headers(token),
+            token: atlas.token
+        }) as MissionRole;
+
+        const sub = new Subscription(
+            atlas,
+            mission,
+            role,
+            { token }
+        );
+
+        const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
+            headers: Subscription.headers(token),
+            token: atlas.token
+        }) as FeatureCollection;
+
+        for (const feat of fc.features) {
+            const cot = new COT(atlas, feat as Feature, {
+                mode: OriginMode.MISSION,
+                mode_id: guid
+            });
+
+            sub.cots.set(String(cot.id), cot);
+        }
+
+        await atlas.db.db.transaction('rw',
+            atlas.db.db.subscription,
+            atlas.db.db.subscription_log,
+            async () => {
+                await atlas.db.db.subscription.put({
+                    guid: sub.meta.guid,
+                    name: sub.meta.name,
+                    subscribed: true,
+                    meta: sub.meta,
+                    role: sub.role,
+                    token: token || ''
+                });
+
+                for (const log of logs) {
+                    await atlas.db.db.subscription_log.put({
+                        ...log,
+                        mission: sub.meta.guid
+                    });
+                }
+            }
+        );
+
+        return sub;
+    }
+
 
     async collection(raw = false): Promise<FeatureCollection> {
         return {
@@ -188,53 +253,6 @@ export default class Subscription {
         delete mission.logs;
         this.meta = mission;
     };
-
-    static async load(
-        atlas: Atlas,
-        guid: string,
-        token?: string
-    ): Promise<Subscription> {
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
-        url.searchParams.append('logs', 'true');
-
-        const mission = await std(url, {
-            headers: Subscription.headers(token),
-            token: atlas.token
-        }) as Mission;
-
-        const logs = mission.logs || [] as Array<MissionLog>;
-        delete mission.logs;
-
-        const role = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/role', {
-            headers: Subscription.headers(token),
-            token: atlas.token
-        }) as MissionRole;
-
-        const sub = new Subscription(
-            atlas,
-            mission,
-            role,
-            logs,
-            { token }
-        );
-
-        const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
-            headers: Subscription.headers(token),
-            token: atlas.token
-        }) as FeatureCollection;
-
-        for (const feat of fc.features) {
-            const cot = new COT(atlas, feat as Feature, {
-                mode: OriginMode.MISSION,
-                mode_id: guid
-            });
-
-            sub.cots.set(String(cot.id), cot);
-        }
-
-        return sub;
-    }
-
     static async fetch(guid: string, token?: string, opts: {
         logs?: boolean
     } = {}): Promise<Mission> {
