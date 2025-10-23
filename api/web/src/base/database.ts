@@ -15,7 +15,7 @@ export interface DBSubscription {
 
 export interface DBSubscriptionLog {
     id: string;
-    dtf: string;
+    dtg?: string;
     created: string;
     mission: string;
     content: string;

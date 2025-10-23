@@ -197,12 +197,18 @@
                     /></label>
                 </div>
 
-                <router-view
-                    v-if='subscription'
-                    :menu='true'
-                    :subscription='subscription'
-                    @refresh='fetchMission'
-                />
+                <Suspense>
+                    <router-view
+                        v-if='subscription'
+                        :menu='true'
+                        :subscription='subscription'
+                        @refresh='fetchMission'
+                    />
+
+                    <template #fallback>
+                        <TablerLoading />
+                    </template>
+                </Suspense>
             </template>
         </template>
     </MenuTemplate>
@@ -218,7 +224,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { std } from '../../../std.ts';
-import type { Feature, Mission, MissionRole } from '../../../types.ts';
+import type { Feature } from '../../../types.ts';
 import Subscription from '../../../base/subscription.ts';
 import {
     IconFile,

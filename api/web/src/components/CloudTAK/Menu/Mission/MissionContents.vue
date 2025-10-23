@@ -108,11 +108,7 @@ import { ref, computed, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../std.ts';
 import Subscription from '../../../../base/subscription.ts';
-import type {
-    Mission,
-    MissionRole,
-    Import,
-} from '../../../../types.ts';
+import type { Import } from '../../../../types.ts';
 import {
     IconPlus,
     IconFileImport,

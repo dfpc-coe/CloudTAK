@@ -93,8 +93,6 @@ import {
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import type {
-    Mission,
-    MissionRole,
     MissionLayer
 } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';

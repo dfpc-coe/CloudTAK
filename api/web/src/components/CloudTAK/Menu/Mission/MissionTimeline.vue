@@ -104,7 +104,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import Subscription from '../../../../base/subscription.ts';
-import type { Mission, MissionChanges } from '../../../../types.ts';
+import type { MissionChanges } from '../../../../types.ts';
 import {
     IconSquarePlus,
     IconSquareX,
