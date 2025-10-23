@@ -72,7 +72,7 @@ export default class SubscriptionLog {
             await this.refresh();
         }
 
-        const logs = await this._db.subscription_log
+        let logs = await this._db.subscription_log
             .where("mission")
             .equals(this.guid)
             .toArray();
@@ -81,11 +81,7 @@ export default class SubscriptionLog {
             return new Date(b.created).getTime() - new Date(a.created).getTime();
         }).reverse();
 
-        if (opts?.filter) {
-            return logs.filter(log => log.content.toLowerCase().includes(opts.filter.toLowerCase()));
-        } else {
-            return logs
-        }
+        return logs;
     }
 
     async create(

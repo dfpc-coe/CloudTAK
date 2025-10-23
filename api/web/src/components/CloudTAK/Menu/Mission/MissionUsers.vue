@@ -46,7 +46,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import type { Mission, MissionRole, MissionSubscriptions } from '../../../../../src/types.ts';
+import type { MissionSubscriptions } from '../../../../../src/types.ts';
 import Subscription from '../../../../base/subscription.ts';
 import {
     IconUserBolt,

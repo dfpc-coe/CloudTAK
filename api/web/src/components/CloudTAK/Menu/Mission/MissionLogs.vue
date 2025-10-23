@@ -15,7 +15,7 @@
         </div>
 
         <TablerNone
-            v-if='!logs.length'
+            v-if='!filteredLogs.length'
             :create='false'
             label='Logs'
         />
@@ -24,7 +24,7 @@
             class='rows px-2'
         >
             <div
-                v-for='log in logs'
+                v-for='log in filteredLogs'
                 :key='log.id'
                 class='col-12 pb-2'
             >
@@ -127,13 +127,14 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import type { ComputedRef } from 'vue';
+import type { MissionLog } from '../../../../types.ts';
 import TagEntry from '../../util/TagEntry.vue';
 import CopyField from '../../util/CopyField.vue';
 import {
     TablerNone,
     TablerInput,
-    TablerDelete,
     TablerToggle,
     TablerLoading,
     TablerDropdown,
@@ -175,7 +176,6 @@ const loading = ref<{
     ids: new Set()
 });
 
-/**
 const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
     if (paging.value.filter.trim() === '') {
         return logs.value;
@@ -186,12 +186,11 @@ const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
         })
     }
 });
-*/
 
 async function updateLog(logid: number, content: string) {
     loading.value.ids.add(logid);
 
-    const log = await props.subscription.log.update(
+    await props.subscription.log.update(
         logid,
         {
             content,
