@@ -4,24 +4,27 @@
 
 import COT from '../base/cot.ts';
 import Subscription from '../base/subscription.ts';
+import type { DatabaseType } from '../base/database.ts';
 import type Atlas from '../workers/atlas.ts';
 import type { Remote, TransferHandler } from 'comlink'
 import type { Feature } from '../types.ts';
 import type {
     Mission,
-    MissionLog,
     MissionRole,
 } from '../types.ts';
 
 export class CloudTAKTransferHandler {
+    db: DatabaseType;
     atlas: Atlas | Remote<Atlas>;
     remote: boolean;
 
     constructor(
         atlas: Atlas | Remote<Atlas>,
+        db: DatabaseType,
         transferHandlers: Map<string, TransferHandler<unknown, unknown>>,
         remote: boolean
     ) {
+        this.db = db;
         this.atlas = atlas;
         this.remote = remote;
 
@@ -35,7 +38,6 @@ export class CloudTAKTransferHandler {
         role: MissionRole,
         token?: string,
         feats: Array<Feature>,
-        logs: Array<MissionLog>
     }> = {
         canHandle: (obj): obj is Subscription => {
             return obj instanceof Subscription;
@@ -50,7 +52,6 @@ export class CloudTAKTransferHandler {
                 token: subscription.token,
                 mission: subscription.meta,
                 role: subscription.role,
-                logs: subscription.logs,
                 feats: feats
             }, []]
         },
@@ -59,13 +60,12 @@ export class CloudTAKTransferHandler {
             role: MissionRole,
             token?: string,
             feats: Array<Feature>,
-            logs: Array<MissionLog>
         }) => {
             const sub = new Subscription(
                 this.atlas,
+                this.db,
                 ser.mission,
                 ser.role,
-                ser.logs,
                 {
                     token: ser.token,
                     remote: this.remote

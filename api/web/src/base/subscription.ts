@@ -2,6 +2,7 @@ import COT, { OriginMode } from './cot.ts'
 import { std, stdurl } from '../std.ts';
 import { useMapStore } from '../stores/map.ts';
 import { bbox } from '@turf/bbox';
+import type { DatabaseType } from '../base/database.ts';
 import type { Remote } from 'comlink';
 import type Atlas from '../workers/atlas.ts';
 import type { Feature } from '../types.ts';
@@ -27,6 +28,11 @@ import type {
  * High Level Wrapper around the Data/Mission Sync API
  */
 export default class Subscription {
+    _db: DatabaseType;
+
+    guid: string;
+    name: string;
+
     meta: Mission;
     role: MissionRole;
     token?: string;
@@ -34,7 +40,7 @@ export default class Subscription {
 
     _dirty: boolean;
 
-    _subscribed?: boolean;
+    subscribed?: boolean;
 
     _remote: BroadcastChannel | null;
     _atlas: Atlas | Remote<Atlas>;
@@ -44,6 +50,7 @@ export default class Subscription {
 
     constructor(
         atlas: Atlas | Remote<Atlas>,
+        db: DatabaseType,
         mission: Mission,
         role: MissionRole,
         opts?: {
@@ -51,10 +58,13 @@ export default class Subscription {
             remote?: boolean
         }
     ) {
+        this._db = db;
         this._atlas = atlas;
         this._remote = (opts && opts.remote === true) ? new BroadcastChannel('sync') : null
-        this._subscribed = true;
 
+        this.subscribed = true;
+        this.guid = mission.guid;
+        this.name = mission.name;
         this.meta = mission;
         this.role = role;
 
@@ -71,6 +81,7 @@ export default class Subscription {
 
     static async load(
         atlas: Atlas,
+        db: DatabaseType,
         guid: string,
         token?: string
     ): Promise<Subscription> {
@@ -92,6 +103,7 @@ export default class Subscription {
 
         const sub = new Subscription(
             atlas,
+            db,
             mission,
             role,
             { token }
@@ -111,11 +123,13 @@ export default class Subscription {
             sub.cots.set(String(cot.id), cot);
         }
 
-        await atlas.db.db.transaction('rw',
-            atlas.db.db.subscription,
-            atlas.db.db.subscription_log,
+        await db.transaction('rw',
+            db.subscription,
+            db.subscription_log,
             async () => {
-                await atlas.db.db.subscription.put({
+                await db.subscription.delete(guid);
+
+                await db.subscription.put({
                     guid: sub.meta.guid,
                     name: sub.meta.name,
                     subscribed: true,
@@ -124,16 +138,27 @@ export default class Subscription {
                     token: token || ''
                 });
 
+                await db.subscription_log.where('mission').equals(guid).delete();
+
                 for (const log of logs) {
-                    await atlas.db.db.subscription_log.put({
-                        ...log,
-                        mission: sub.meta.guid
+                    await db.subscription_log.put({
+                        id: log.id,
+                        dtf: log.dtf,
+                        created: log.created,
+                        mission: sub.meta.guid,
+                        content: log.content,
+                        creatorUid: log.creatorUid,
+                        contentHashes: log.contentHashes,
+                        keywords: log.keywords
                     });
                 }
             }
         );
 
         return sub;
+    }
+
+    async logs() {
     }
 
 

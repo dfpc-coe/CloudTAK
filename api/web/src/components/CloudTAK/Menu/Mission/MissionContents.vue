@@ -7,7 +7,7 @@
     >
         <template #buttons>
             <TablerIconButton
-                v-if='!upload && role && role.permissions.includes("MISSION_WRITE")'
+                v-if='!upload && props.subscription.role && props.subscription.role.permissions.includes("MISSION_WRITE")'
                 title='Upload File'
                 @click='upload = true'
             >
@@ -31,7 +31,7 @@
         >
             <Upload
                 ref='upload'
-                :url='stdurl(`/api/marti/missions/${props.mission.name}/upload`)'
+                :url='stdurl(`/api/marti/missions/${props.subscription.guid}/upload`)'
                 :headers='uploadHeaders'
                 :autoupload='false'
                 format='raw'
@@ -44,13 +44,13 @@
         </div>
 
         <TablerNone
-            v-else-if='!mission.contents.length'
+            v-else-if='!props.subscription.meta.contents.length'
             label='Files'
             :create='false'
         />
         <template v-else>
             <div
-                v-for='content in mission.contents'
+                v-for='content in props.subscription.meta.contents'
                 :key='content.data.uid'
                 class='col-12 d-flex px-2 py-2 hover'
             >
@@ -75,7 +75,7 @@
                 </div>
                 <div class='col-auto ms-auto btn-list'>
                     <TablerDelete
-                        v-if='role && role.permissions.includes("MISSION_WRITE")'
+                        v-if='props.subscription.role && props.subscription.role.permissions.includes("MISSION_WRITE")'
                         displaytype='icon'
                         @delete='deleteFile(content.data.hash)'
                     />
@@ -107,6 +107,7 @@
 import { ref, computed, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../std.ts';
+import Subscription from '../../../../base/subscription.ts';
 import type {
     Mission,
     MissionRole,
@@ -129,10 +130,8 @@ import {
 import MenuTemplate from '../../util/MenuTemplate.vue';
 
 const props = defineProps<{
-    mission: Mission,
-    token?: string,
-    role?: MissionRole
-}>()
+    subscription: Subscription
+}>();
 
 const emit = defineEmits([ 'refresh' ]);
 
@@ -146,7 +145,7 @@ const upload = ref(false);
 const loading = ref(false)
 
 async function deleteFile(hash: string) {
-    await std(`/api/marti/missions/${props.mission.name}/upload/${hash}`, {
+    await std(`/api/marti/missions/${props.subscription.guid}/upload/${hash}`, {
         method: 'DELETE'
     });
 
@@ -158,8 +157,8 @@ const uploadHeaders = computed(() => {
         Authorization: `Bearer ${localStorage.token}`,
     }
 
-    if (props.token) {
-        headers.MissionAuthorization = props.token;
+    if (props.subscription.token) {
+        headers.MissionAuthorization = props.subscription.token;
     };
 
     return headers;

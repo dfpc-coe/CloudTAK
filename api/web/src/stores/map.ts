@@ -14,6 +14,8 @@ import IconManager from './modules/icons.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
+import type { DatabaseType } from '../base/database.ts';
+import { DatabaseInit } from '../base/database.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay.ts';
@@ -33,6 +35,8 @@ export const useMapStore = defineStore('cloudtak', {
         _map?: mapgl.Map;
         _draw?: DrawTool;
         _icons?: IconManager;
+
+        db: DatabaseType;
         channel: BroadcastChannel;
 
         toImport: Feature[]
@@ -84,8 +88,11 @@ export const useMapStore = defineStore('cloudtak', {
             type: 'module'
         }));
 
+        const db = DatabaseInit();
+
         new CloudTAKTransferHandler(
             worker,
+            db,
             Comlink.transferHandlers,
             true
         );
@@ -95,6 +102,7 @@ export const useMapStore = defineStore('cloudtak', {
             callsign: 'Unknown',
             toImport: [],
             location: LocationState.Loading,
+            db,
             channel: new BroadcastChannel("cloudtak"),
             zoom: 'conditional',
             distanceUnit: 'meter',

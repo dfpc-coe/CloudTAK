@@ -1,17 +1,17 @@
 <template>
     <MenuTemplate
-        :name='mission ? mission.name : "Mission"'
-        :loading='!mission || loading'
+        :name='subscription ? subscription.meta.name : "Mission"'
+        :loading='!subscription || loading'
     >
         <template #buttons>
             <TablerDelete
-                v-if='role.permissions.includes("MISSION_WRITE")'
+                v-if='!loading && subscription && subscription.role.permissions.includes("MISSION_WRITE")'
                 v-tooltip='"Delete"'
                 displaytype='icon'
                 @delete='deleteMission'
             />
             <TablerDropdown
-                v-if='missionSub'
+                v-if='subscription && subscription.subscribed'
             >
                 <TablerIconButton
                     title='More Options'
@@ -68,7 +68,7 @@
                 </template>
             </TablerDropdown>
             <TablerRefreshButton
-                :loading='!mission || loading'
+                :loading='!subscription || loading'
                 @click='fetchMission'
             />
         </template>
@@ -84,7 +84,7 @@
             />
             <template v-else>
                 <div
-                    v-if='missionSub'
+                    v-if='subscription && subscription.subscribed'
                     class='px-2 py-2 round btn-group w-100'
                     role='group'
                 >
@@ -198,10 +198,9 @@
                 </div>
 
                 <router-view
+                    v-if='subscription'
                     :menu='true'
-                    :mission='mission'
-                    :token='token'
-                    :role='role'
+                    :subscription='subscription'
                     @refresh='fetchMission'
                 />
             </template>
@@ -209,8 +208,8 @@
     </MenuTemplate>
 
     <ShareToPackage
-        v-if='shareToPackage.shown && missionSub'
-        :name='`${new Date().toISOString().replace(/T.*/, "")} ${mission ? mission.name : "Mission"}`'
+        v-if='shareToPackage.shown && subscription'
+        :name='`${new Date().toISOString().replace(/T.*/, "")} ${subscription ? subscription.meta.name : "Mission"}`'
         :feats='shareToPackage.features'
         @close='shareToPackage.shown = false'
     />
@@ -261,24 +260,23 @@ const shareToPackage = ref<{
     features: []
 });
 
-const role = ref<MissionRole>({ type: 'MISSION_READONLY_SUBSCRIBER', permissions: [] });
 const loadingInline = ref<string | undefined>(undefined);
-const mission = ref<Mission | undefined>(undefined)
-const missionSub = ref<Subscription | undefined>(undefined)
+const subscription = ref<Subscription | undefined>(undefined)
 
 onMounted(async () => {
     await fetchMission();
 })
 
 async function shareToPackageSetup(): Promise<void> {
-    if (!missionSub.value) return;
-    shareToPackage.value.features = (await missionSub.value.collection(true)).features as Feature[];
+    if (!subscription.value) return;
+    shareToPackage.value.features = (await subscription.value.collection(true)).features as Feature[];
     shareToPackage.value.shown = true;
 }
 
 async function deleteMission() {
-    const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission));
     loading.value = true;
+
+    const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission));
 
     try {
         if (subMission) {
@@ -298,18 +296,17 @@ async function deleteMission() {
 }
 
 async function exportToPackage(format: string): Promise<void> {
-    if (!mission.value) return;
+    if (!subscription.value) return;
 
     loadingInline.value = 'Generating Archive'
-    await std(`/api/marti/missions/${encodeURIComponent(mission.value.name)}/archive?download=true&format=${format}`, {
+    await std(`/api/marti/missions/${encodeURIComponent(subscription.value.meta.name)}/archive?download=true&format=${format}`, {
         download: true
     })
     loadingInline.value = undefined;
 }
 
 async function fetchMission(): Promise<void> {
-    mission.value = undefined;
-    missionSub.value = undefined;
+    subscription.value = undefined;
 
     const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission), {
         refresh: true
@@ -317,17 +314,11 @@ async function fetchMission(): Promise<void> {
 
     try {
         if (subMission) {
-            missionSub.value = subMission;
+            subscription.value = subMission;
 
-            role.value = subMission.role;
-
-            if (subMission.token) {
-                token.value = subMission.token;
+            if (subscription.token) {
+                token.value = subscription.token;
             }
-
-            mission.value = subMission.meta;
-        } else {
-            mission.value = await Subscription.fetch(String(route.params.mission), token.value);
         }
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

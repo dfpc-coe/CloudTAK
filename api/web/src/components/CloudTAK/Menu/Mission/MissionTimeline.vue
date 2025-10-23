@@ -119,8 +119,7 @@ import {
 import MenuTemplate from '../../util/MenuTemplate.vue';
 
 const props = defineProps<{
-    mission: Mission,
-    token?: string
+    subscription: Subscription
 }>();
 
 const error = ref<Error | undefined>();
@@ -134,8 +133,8 @@ onMounted(async () => {
 async function fetchChanges() {
     loading.value = true;
     try {
-        changes.value = (await Subscription.changes(props.mission.guid, {
-            missionToken: props.token
+        changes.value = (await Subscription.changes(props.subscription.guid, {
+            missionToken: props.subscription.token
         })).data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
