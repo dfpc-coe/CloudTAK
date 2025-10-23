@@ -45,7 +45,7 @@
                     </div>
                     <div class='col-12 position-relative'>
                         <TablerDelete
-                            v-if='role.permissions.includes("MISSION_WRITE")'
+                            v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'
                             displaytype='icon'
                             :size='24'
                             class='position-absolute cursor-pointer end-0 mx-2 my-2'
@@ -54,9 +54,9 @@
 
                         <CopyField
                             mode='text'
-                            :edit='role.permissions.includes("MISSION_WRITE")'
-                            :deletable='role.permissions.includes("MISSION_WRITE")'
-                            :hover='role.permissions.includes("MISSION_WRITE")'
+                            :edit='props.subscription.role.permissions.includes("MISSION_WRITE")'
+                            :deletable='props.subscription.role.permissions.includes("MISSION_WRITE")'
+                            :hover='props.subscription.role.permissions.includes("MISSION_WRITE")'
                             :rows='Math.max(4, log.content.split("\n").length)'
                             :model-value='log.content || ""'
                             style='background-color: var(--tblr-body-bg)'
@@ -86,7 +86,7 @@
             :compact='true'
         />
 
-        <template v-if='role.permissions.includes("MISSION_WRITE")'>
+        <template v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'>
             <div class='mx-2'>
                 <TablerInput
                     v-model='createLog.content'
@@ -157,17 +157,9 @@ import Subscription from '../../../../base/subscription.ts';
 import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
 
-const props = defineProps({
-    mission: {
-        type: Object,
-        required: true
-    },
-    token: String,
-    role: {
-        type: Object,
-        required: true
-    }
-})
+const props = defineProps<{
+    subscription: Subscription
+}>();
 
 const submitOnEnter = ref(true);
 const sub = ref<Subscription | undefined>();
@@ -189,7 +181,7 @@ const loading = ref<{
 });
 
 onMounted(async () => {
-    sub.value = await mapStore.worker.db.subscriptionGet(props.mission.guid);
+    sub.value = await mapStore.worker.db.subscriptionGet(props.subscription.guid);
 
     if (!sub.value) {
         await fetchLogs()
@@ -211,8 +203,8 @@ const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
 
 async function fetchLogs() {
     loading.value.logs = true;
-    logs.value = (await Subscription.logList(props.mission.guid, {
-        missionToken: props.token
+    logs.value = (await Subscription.logList(props.subscription.guid, {
+        missionToken: props.subscription.token
     })).items;
     loading.value.logs = false;
 }
@@ -221,13 +213,13 @@ async function updateLog(logidx: number, content: string) {
     if (sub.value) {
         loading.value.ids.add(logidx);
         const log = await Subscription.logUpdate(
-            props.mission.guid,
+            props.subscription.guid,
             logs.value[logidx].id,
             {
                 content,
                 keywords: logs.value[logidx].keywords
             },{
-                missionToken: props.token
+                missionToken: props.subscription.token
             }
         );
         sub.value.logs[logidx] = log;
@@ -235,13 +227,13 @@ async function updateLog(logidx: number, content: string) {
     } else {
         loading.value.logs = true;
         await Subscription.logUpdate(
-            props.mission.guid,
+            props.subscription.guid,
             logs.value[logidx].id,
             {
                 content,
                 keywords: logs.value[logidx].keywords
             },{
-                missionToken: props.token
+                missionToken: props.subscription.token
             }
         );
         await fetchLogs();
@@ -251,15 +243,15 @@ async function updateLog(logidx: number, content: string) {
 async function deleteLog(logidx: number): Promise<void> {
     if (sub.value) {
         loading.value.ids.add(logidx);
-        await Subscription.logDelete(props.mission.guid, logs.value[logidx].id, {
-            missionToken: props.token
+        await Subscription.logDelete(props.subscription.guid, logs.value[logidx].id, {
+            missionToken: props.subscription.token
         });
         sub.value.logs.splice(logidx, 1);
         loading.value.ids.delete(logidx);
     } else {
         loading.value.logs = true;
-        await Subscription.logDelete(props.mission.guid, logs.value[logidx].id, {
-            missionToken: props.token
+        await Subscription.logDelete(props.subscription.guid, logs.value[logidx].id, {
+            missionToken: props.subscription.token
         });
         await fetchLogs();
     }
@@ -269,8 +261,8 @@ async function submitLog() {
     try {
         if (sub.value) {
             loading.value.create = true;
-            const log = await Subscription.logCreate(props.mission.guid, createLog.value, {
-                missionToken: props.token
+            const log = await Subscription.logCreate(props.subscription.guid, createLog.value, {
+                missionToken: props.subscription.token
             })
 
             sub.value.logs.push(log);
@@ -278,8 +270,8 @@ async function submitLog() {
             loading.value.create = false;
         } else {
             loading.value.logs = true;
-            await Subscription.logCreate(props.mission.guid, createLog.value, {
-                missionToken: props.token
+            await Subscription.logCreate(props.subscription.guid, createLog.value, {
+                missionToken: props.subscription.token
             })
             await fetchLogs();
         }

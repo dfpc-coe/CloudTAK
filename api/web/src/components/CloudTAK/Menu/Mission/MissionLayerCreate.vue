@@ -48,8 +48,7 @@ import type { Mission, MissionLayer_Create } from '../../../../types.ts';
 const emit = defineEmits(['layer', 'cancel']);
 
 const props = defineProps<{
-    mission: Mission,
-    token?: string,
+    subscription: Subscription
 }>();
 
 const error = ref<Error | undefined>();
@@ -66,8 +65,8 @@ async function createLayer() {
     try {
         loading.value.layer = true;
 
-        const res = await Subscription.layerCreate(props.mission.guid, layer.value, {
-            missionToken: props.token
+        const res = await Subscription.layerCreate(props.subscription.guid, layer.value, {
+            missionToken: props.subscription.token
         });
 
         emit('layer', res);
