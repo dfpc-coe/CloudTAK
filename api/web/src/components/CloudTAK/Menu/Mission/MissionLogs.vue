@@ -4,7 +4,7 @@
         :zindex='0'
         :back='false'
         :border='false'
-        :loading='loading.logs'
+        :loading='!logs'
     >
         <div class='col-12 pb-2 px-2'>
             <TablerInput
@@ -15,7 +15,7 @@
         </div>
 
         <TablerNone
-            v-if='!filteredLogs.length'
+            v-if='!logs.length'
             :create='false'
             label='Logs'
         />
@@ -24,7 +24,7 @@
             class='rows px-2'
         >
             <div
-                v-for='(log, logidx) in filteredLogs'
+                v-for='log in logs'
                 :key='log.id'
                 class='col-12 pb-2'
             >
@@ -44,14 +44,6 @@
                         />
                     </div>
                     <div class='col-12 position-relative'>
-                        <TablerDelete
-                            v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'
-                            displaytype='icon'
-                            :size='24'
-                            class='position-absolute cursor-pointer end-0 mx-2 my-2'
-                            @delete='deleteLog(logidx)'
-                        />
-
                         <CopyField
                             mode='text'
                             :edit='props.subscription.role.permissions.includes("MISSION_WRITE")'
@@ -61,7 +53,7 @@
                             :model-value='log.content || ""'
                             style='background-color: var(--tblr-body-bg)'
                             @submit='updateLog(logidx, $event)'
-                            @delete='deleteLog(logidx)'
+                            @delete='props.subscription.log.delete(log.id)'
                         />
                     </div>
 
@@ -135,10 +127,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted } from 'vue'
-import type { ComputedRef } from 'vue';
+import { ref } from 'vue'
 import TagEntry from '../../util/TagEntry.vue';
-import type { MissionLog } from '../../../../types.ts';
 import CopyField from '../../util/CopyField.vue';
 import {
     TablerNone,
@@ -152,24 +142,29 @@ import {
 import {
     IconSettings
 } from '@tabler/icons-vue';
+import { liveQuery } from "dexie";
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import Subscription from '../../../../base/subscription.ts';
-import { useMapStore } from '../../../../stores/map.ts';
-const mapStore = useMapStore();
+import { useObservable } from "@vueuse/rxjs";
 
 const props = defineProps<{
     subscription: Subscription
 }>();
 
+const logs = useObservable(liveQuery(async () => {
+    return await props.subscription.log.list({
+        filter: paging.value.filter
+    })
+}))
+
 const submitOnEnter = ref(true);
-const sub = ref<Subscription | undefined>();
 const paging = ref({ filter: '' });
 
 const createLog = ref({
     content: '',
     keywords: []
 });
-const logs = ref<MissionLog[]>([]);
+
 const loading = ref<{
     logs: boolean,
     create: boolean,
@@ -180,16 +175,7 @@ const loading = ref<{
     ids: new Set()
 });
 
-onMounted(async () => {
-    sub.value = await mapStore.worker.db.subscriptionGet(props.subscription.guid);
-
-    if (!sub.value) {
-        await fetchLogs()
-    } else {
-        logs.value = sub.value.logs;
-    }
-});
-
+/**
 const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
     if (paging.value.filter.trim() === '') {
         return logs.value;
@@ -200,86 +186,35 @@ const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
         })
     }
 });
-
-async function fetchLogs() {
-    loading.value.logs = true;
-    logs.value = (await Subscription.logList(props.subscription.guid, {
-        missionToken: props.subscription.token
-    })).items;
-    loading.value.logs = false;
-}
+*/
 
 async function updateLog(logidx: number, content: string) {
-    if (sub.value) {
-        loading.value.ids.add(logidx);
-        const log = await Subscription.logUpdate(
-            props.subscription.guid,
-            logs.value[logidx].id,
-            {
-                content,
-                keywords: logs.value[logidx].keywords
-            },{
-                missionToken: props.subscription.token
-            }
-        );
-        sub.value.logs[logidx] = log;
-        loading.value.ids.delete(logidx);
-    } else {
-        loading.value.logs = true;
-        await Subscription.logUpdate(
-            props.subscription.guid,
-            logs.value[logidx].id,
-            {
-                content,
-                keywords: logs.value[logidx].keywords
-            },{
-                missionToken: props.subscription.token
-            }
-        );
-        await fetchLogs();
-    }
-}
-
-async function deleteLog(logidx: number): Promise<void> {
-    if (sub.value) {
-        loading.value.ids.add(logidx);
-        await Subscription.logDelete(props.subscription.guid, logs.value[logidx].id, {
+    loading.value.ids.add(logidx);
+    const log = await Subscription.logUpdate(
+        props.subscription.guid,
+        logs.value[logidx].id,
+        {
+            content,
+            keywords: logs.value[logidx].keywords
+        },{
             missionToken: props.subscription.token
-        });
-        sub.value.logs.splice(logidx, 1);
-        loading.value.ids.delete(logidx);
-    } else {
-        loading.value.logs = true;
-        await Subscription.logDelete(props.subscription.guid, logs.value[logidx].id, {
-            missionToken: props.subscription.token
-        });
-        await fetchLogs();
-    }
+        }
+    );
+    sub.value.logs[logidx] = log;
+    loading.value.ids.delete(logidx);
 }
 
 async function submitLog() {
     try {
-        if (sub.value) {
-            loading.value.create = true;
-            const log = await Subscription.logCreate(props.subscription.guid, createLog.value, {
-                missionToken: props.subscription.token
-            })
+        loading.value.logs = true;
 
-            sub.value.logs.push(log);
-
-            loading.value.create = false;
-        } else {
-            loading.value.logs = true;
-            await Subscription.logCreate(props.subscription.guid, createLog.value, {
-                missionToken: props.subscription.token
-            })
-            await fetchLogs();
-        }
+        await props.subscription.log.create({
+            content: createLog.value
+        });
 
         createLog.value.content = '';
     } catch (err) {
         loading.value.create = false;
-
         throw err;
     }
 }

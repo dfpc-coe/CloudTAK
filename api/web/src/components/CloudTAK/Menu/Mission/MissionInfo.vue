@@ -188,7 +188,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import type { MissionSubscriptions } from '../../../../types.ts'
 import { stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
@@ -223,14 +223,6 @@ const loading = ref({
 });
 
 const subscriptions = ref<MissionSubscriptions>([])
-
-async function etchSubscriptions() {
-    loading.value.users = true;
-    subscriptions.value = await Subscription.subscriptions(props.subscription.guid, {
-        missionToken: props.token
-    })
-    loading.value.users = false;
-}
 
 async function subscribe(subscribed: boolean) {
     loading.value.subscribe = true;

@@ -3,6 +3,7 @@ import { std, stdurl } from '../std.ts';
 import { useMapStore } from '../stores/map.ts';
 import { bbox } from '@turf/bbox';
 import type { DatabaseType } from '../base/database.ts';
+import SubscriptionLog from './subscription-logs.ts';
 import type { Remote } from 'comlink';
 import type Atlas from '../workers/atlas.ts';
 import type { Feature } from '../types.ts';
@@ -17,7 +18,6 @@ import type {
     MissionList,
     MissionLayer,
     MissionChanges,
-    MissionLogList,
     MissionLayerList,
     MissionLayer_Create,
     MissionLayer_Update,
@@ -61,6 +61,8 @@ export default class Subscription {
         this._db = db;
         this._atlas = atlas;
         this._remote = (opts && opts.remote === true) ? new BroadcastChannel('sync') : null
+
+        this.log = new SubscriptionLog(db, mission.guid, opts.token, atlas.token);
 
         this.subscribed = true;
         this.guid = mission.guid;
@@ -143,7 +145,7 @@ export default class Subscription {
                 for (const log of logs) {
                     await db.subscription_log.put({
                         id: log.id,
-                        dtf: log.dtf,
+                        dtg: log.dtg,
                         created: log.created,
                         mission: sub.meta.guid,
                         content: log.content,
@@ -157,10 +159,6 @@ export default class Subscription {
 
         return sub;
     }
-
-    async logs() {
-    }
-
 
     async collection(raw = false): Promise<FeatureCollection> {
         return {
@@ -274,7 +272,8 @@ export default class Subscription {
             token: String(this._atlas.token)
         }) as Mission;
 
-        this.logs = mission.logs || [] as Array<MissionLog>;
+        // TODO
+        //this.logs = mission.logs || [] as Array<MissionLog>;
         delete mission.logs;
         this.meta = mission;
     };
@@ -384,70 +383,6 @@ export default class Subscription {
         };
 
         return log.data;
-    }
-
-    static async logCreate(
-        guid: string,
-        body: object,
-        opts: {
-            token?: string;
-            missionToken?: string
-        } = {}
-    ): Promise<MissionLog> {
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log');
-
-        const log = await std(url, {
-            method: 'POST',
-            body: body,
-            token: opts.token,
-            headers: Subscription.headers(opts.missionToken)
-        }) as {
-            data: MissionLog
-        };
-
-        return log.data;
-    }
-
-    static async logDelete(
-        guid: string,
-        logid: string,
-        opts: {
-            token?: string
-            missionToken?: string
-        } = {}
-    ): Promise<void> {
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log/' + encodeURIComponent(logid));
-
-        await std(url, {
-            method: 'DELETE',
-            token: opts.token,
-            headers: Subscription.headers(opts.missionToken)
-        });
-
-        return;
-    }
-
-    static async logList(
-        guid: string,
-        opts: {
-            token?: string
-            missionToken?: string
-        }  = {}
-    ): Promise<MissionLogList> {
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log');
-
-        const list = await std(url, {
-            method: 'GET',
-            token: opts.token,
-            headers: Subscription.headers(opts.missionToken)
-        }) as MissionLogList;
-
-        list.items = list.items.map((l) => {
-            if (!l.content) l.content = '';
-            return l;
-        });
-
-        return list;
     }
 
     static async layerList(

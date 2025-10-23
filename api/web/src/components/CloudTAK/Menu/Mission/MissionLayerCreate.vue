@@ -43,7 +43,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import Subscription from '../../../../base/subscription.ts';
-import type { Mission, MissionLayer_Create } from '../../../../types.ts';
+import type { MissionLayer_Create } from '../../../../types.ts';
 
 const emit = defineEmits(['layer', 'cancel']);
 
