@@ -76,6 +76,6 @@ export default class Atlas {
 
 const atlas = new Atlas()
 
-new CloudTAKTransferHandler(atlas, Comlink.transferHandlers, false);
+new CloudTAKTransferHandler(atlas, atlas.db.db, Comlink.transferHandlers, false);
 
 Comlink.expose(Comlink.proxy(atlas));

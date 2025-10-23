@@ -36,6 +36,7 @@
         "@turf/meta": "^7.2.0",
         "@turf/point-on-feature": "^7.0.0",
         "@vueuse/core": "^13.0.0",
+        "@vueuse/rxjs": "^14.0.0",
         "autosize": "^6.0.1",
         "comlink": "^4.4.2",
         "cronstrue": "^3.0.0",

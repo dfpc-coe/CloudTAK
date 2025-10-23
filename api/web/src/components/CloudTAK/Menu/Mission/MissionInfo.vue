@@ -13,7 +13,7 @@
                     </div>
                     <div
                         class='datagrid-content'
-                        v-text='mission.createTime.replace(/T/, " ").replace(/:[0-9]+\..*/, "") + " UTC"'
+                        v-text='props.subscription.meta.createTime.replace(/T/, " ").replace(/:[0-9]+\..*/, "") + " UTC"'
                     />
                 </div>
                 <div class='col-6'>
@@ -37,7 +37,7 @@
                     </div>
                     <div
                         class='datagrid-content'
-                        v-text='Array.isArray(mission.content) ? mission.contents.length : 0 + " Items"'
+                        v-text='Array.isArray(props.subscription.meta.content) ? props.subscription.meta.contents.length : 0 + " Items"'
                     />
                 </div>
                 <div class='col-12'>
@@ -45,7 +45,7 @@
                         Groups (Channels)
                     </div>
                     <div
-                        v-for='group of mission.groups'
+                        v-for='group of props.subscription.meta.groups'
                         class='datagrid-content'
                     >
                         <span v-text='group' />
@@ -58,9 +58,9 @@
                     <div
                         class='datagrid-content'
                     >
-                        <template v-if='mission.keywords.length'>
+                        <template v-if='props.subscription.meta.keywords.length'>
                             <span
-                                v-for='keyword of mission.keywords'
+                                v-for='keyword of props.subscription.meta.keywords'
                                 v-text='keyword'
                             />
                         </template>
@@ -73,7 +73,7 @@
                     </div>
                     <div
                         class='datagrid-content'
-                        v-text='mission.description || "No Feed Description"'
+                        v-text='props.subscription.meta.description || "No Feed Description"'
                     />
                 </div>
                 <div class='col-12 row g-2'>
@@ -81,7 +81,7 @@
                         Subscription
                     </div>
                     <div
-                        v-if='subscribed === false'
+                        v-if='subscription.subscribed === false'
                         class='col-12'
                     >
                         <button
@@ -106,8 +106,8 @@
                         </div>
                         <div class='col-6'>
                             <button
-                                v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.mission.guid && sub'
-                                :disabled='!props.role.permissions.includes("MISSION_WRITE")'
+                                v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.subscription.meta.guid && sub'
+                                :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
                                 class='btn btn-green w-100'
                                 style='height: 32px;'
                                 @click='mapStore.makeActiveMission(sub)'
@@ -117,7 +117,7 @@
                             <button
                                 v-else
                                 class='btn btn-muted w-100'
-                                :disabled='!props.role.permissions.includes("MISSION_WRITE")'
+                                :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
                                 style='height: 32px;'
                                 @click='mapStore.makeActiveMission()'
                             >
@@ -170,7 +170,7 @@
                 />
                 <span
                     class='mx-2'
-                    v-text='props.mission.name + " Invite QR"'
+                    v-text='props.subscription.meta.name + " Invite QR"'
                 />
             </div>
         </div>
@@ -206,30 +206,13 @@ import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
 
 const emit = defineEmits(['refresh']);
-const props = defineProps({
-    mission: {
-        type: Object,
-        required: true
-    },
-    token: String,
-    role: {
-        type: Object,
-        required: true
-    }
-});
 
-const sub = ref<Subscription | undefined>();
+const props = defineProps<{
+    subscription: Subscription
+}>();
 
 const missionQRURL = computed(() => {
-    return String(stdurl(`/api/marti/missions/${props.mission.guid}/qr?token=${localStorage.token}`));
-});
-
-onMounted(async () => {
-    await fetchSubscriptions();
-
-    if (subscribed.value) {
-        sub.value = await mapStore.worker.db.subscriptionGet(props.mission.guid);
-    }
+    return String(stdurl(`/api/marti/missions/${props.subscription.guid}/qr?token=${localStorage.token}`));
 });
 
 const showQR = ref(false);
@@ -241,14 +224,9 @@ const loading = ref({
 
 const subscriptions = ref<MissionSubscriptions>([])
 
-const subscribed = computed(() => {
-    if (loading.value.subscribe) return;
-    return !!mapStore.getOverlayByMode('mission', props.mission.guid);
-});
-
-async function fetchSubscriptions() {
+async function etchSubscriptions() {
     loading.value.users = true;
-    subscriptions.value = await Subscription.subscriptions(props.mission.guid, {
+    subscriptions.value = await Subscription.subscriptions(props.subscription.guid, {
         missionToken: props.token
     })
     loading.value.users = false;
@@ -256,22 +234,22 @@ async function fetchSubscriptions() {
 
 async function subscribe(subscribed: boolean) {
     loading.value.subscribe = true;
-    const overlay = mapStore.getOverlayByMode('mission', props.mission.guid);
+    const overlay = mapStore.getOverlayByMode('mission', props.subscription.guid);
 
     if (subscribed === true && !overlay) {
         const missionOverlay = await Overlay.create(mapStore.map, {
-            name: props.mission.name,
-            url: `/mission/${encodeURIComponent(props.mission.name)}`,
+            name: props.subscription.name,
+            url: `/mission/${encodeURIComponent(props.subscription.name)}`,
             type: 'geojson',
             mode: 'mission',
             token: props.token,
-            mode_id: props.mission.guid,
+            mode_id: props.subscription.guid,
         })
 
         mapStore.overlays.push(missionOverlay);
-        await mapStore.loadMission(props.mission.guid);
+        await mapStore.loadMission(props.subscription.guid);
 
-        sub.value = await mapStore.worker.db.subscriptionGet(props.mission.guid);
+        sub.value = await mapStore.worker.db.subscriptionGet(props.subscription.guid);
 
         emit('refresh');
     } else if (subscribed === false && overlay) {

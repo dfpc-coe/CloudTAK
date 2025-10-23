@@ -1,11 +1,10 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type {
     Mission,
-    MissionLog,
     MissionRole
 } from '../types.ts';
 
-interface DBSubscription {
+export interface DBSubscription {
     guid: string;
     name: string;
     subscribed: boolean;
@@ -14,7 +13,7 @@ interface DBSubscription {
     token?: string;
 }
 
-interface DBSubscriptionLog {
+export interface DBSubscriptionLog {
     id: string;
     dtf: string;
     created: string;
@@ -25,17 +24,18 @@ interface DBSubscriptionLog {
     keywords: string[];
 }
 
-export const db = new Dexie('CloudTAK') as Dexie & {
+export type DatabaseType = Dexie & {
     subscription: EntityTable<DBSubscription, 'guid'>,
     subscription_log: EntityTable<DBSubscriptionLog, 'id'>
 };
 
-db.version(1).stores({
-    subscription: 'guid, name, subscribed, meta, role, token',
-    subscription_log: 'id, dtf, created, mission, content, creatorUid, contentHashes, keywords',
-});
+export function DatabaseInit() {
+    const db = new Dexie('CloudTAK') as DatabaseType;
 
-export type {
-    DBSubscription,
-    DBSubscriptionLog
+    db.version(1).stores({
+        subscription: 'guid, name, subscribed, meta, role, token',
+        subscription_log: 'id, dtf, created, mission, content, creatorUid, contentHashes, keywords',
+    });
+
+    return db;
 }

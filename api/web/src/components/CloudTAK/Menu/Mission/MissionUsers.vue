@@ -56,9 +56,7 @@ import {
 import MenuTemplate from '../../util/MenuTemplate.vue';
 
 const props = defineProps<{
-    mission: Mission,
-    token?: string,
-    role?: MissionRole
+    subscription: Subscription
 }>();
 
 const loading = ref(false);
@@ -70,8 +68,8 @@ onMounted(async () => {
 
 async function fetchSubscriptions() {
     loading.value = true;
-    subscriptions.value = await Subscription.subscriptions(props.mission.guid, {
-        missionToken: props.token
+    subscriptions.value = await Subscription.subscriptions(props.subscription.guid, {
+        missionToken: props.subscription.token
     });
     loading.value = false;
 }
