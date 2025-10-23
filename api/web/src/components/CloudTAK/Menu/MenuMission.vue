@@ -312,22 +312,8 @@ async function exportToPackage(format: string): Promise<void> {
 }
 
 async function fetchMission(): Promise<void> {
-    subscription.value = undefined;
-
-    const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission), {
+    subscription.value = await mapStore.worker.db.subscriptionGet(String(route.params.mission), {
         refresh: true
     });
-
-    try {
-        if (subMission) {
-            subscription.value = subMission;
-
-            if (subscription.token) {
-                token.value = subscription.token;
-            }
-        }
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
-    }
 }
 </script>
