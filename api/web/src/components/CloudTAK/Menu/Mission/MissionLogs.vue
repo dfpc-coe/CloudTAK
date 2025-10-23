@@ -29,7 +29,7 @@
                 class='col-12 pb-2'
             >
                 <TablerLoading
-                    v-if='loading.ids.has(logidx)'
+                    v-if='loading.ids.has(log.id)'
                     desc='Updating Log'
                 />
                 <template v-else>
@@ -52,7 +52,7 @@
                             :rows='Math.max(4, log.content.split("\n").length)'
                             :model-value='log.content || ""'
                             style='background-color: var(--tblr-body-bg)'
-                            @submit='updateLog(logidx, $event)'
+                            @submit='updateLog(log.id, $event)'
                             @delete='props.subscription.log.delete(log.id)'
                         />
                     </div>
@@ -188,19 +188,17 @@ const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
 });
 */
 
-async function updateLog(logidx: number, content: string) {
-    loading.value.ids.add(logidx);
-    const log = await Subscription.logUpdate(
-        props.subscription.guid,
-        logs.value[logidx].id,
+async function updateLog(logid: number, content: string) {
+    loading.value.ids.add(logid);
+
+    const log = await props.subscription.log.update(
+        logid,
         {
             content,
-            keywords: logs.value[logidx].keywords
-        },{
-            missionToken: props.subscription.token
+            keywords: logs.value.find(l => l.id === logid)?.keywords || []
         }
     );
-    sub.value.logs[logidx] = log;
+
     loading.value.ids.delete(logidx);
 }
 
@@ -208,9 +206,7 @@ async function submitLog() {
     try {
         loading.value.logs = true;
 
-        await props.subscription.log.create({
-            content: createLog.value
-        });
+        await props.subscription.log.create(createLog.value);
 
         createLog.value.content = '';
     } catch (err) {
