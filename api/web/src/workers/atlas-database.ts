@@ -573,9 +573,7 @@ export default class AtlasDatabase {
                 return;
             }
 
-            await sub.logs.list({
-                refresh: true
-            });
+            await sub.log.refresh();
         } else {
             console.warn('Unknown Mission Task', JSON.stringify(task));
         }
