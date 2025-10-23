@@ -199,7 +199,7 @@ async function updateLog(logid: number, content: string) {
         }
     );
 
-    loading.value.ids.delete(logidx);
+    loading.value.ids.delete(logid);
 }
 
 async function submitLog() {
