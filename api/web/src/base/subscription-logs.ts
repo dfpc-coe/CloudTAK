@@ -29,33 +29,47 @@ export default class SubscriptionLog {
         this.guid = guid;
     }
 
+    async refresh(): Promise<void> {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid) + '/log');
+
+        const list = await std(url, {
+            method: 'GET',
+            token: this._token,
+            headers: {
+                MissionAuthorization: this._missiontoken
+            }
+        }) as MissionLogList;
+
+        await this._db.transaction('rw',
+            this._db.subscription_log,
+            async () => {
+                await this._db.subscription_log
+                    .where('mission')
+                    .equals(this.guid)
+                    .delete();
+
+                for (const log of list.items) {
+                    await this._db.subscription_log.put({
+                        id: log.id,
+                        dtg: log.dtg,
+                        created: log.created,
+                        mission: this.guid,
+                        content: log.content || '',
+                        creatorUid: log.creatorUid,
+                        contentHashes: log.contentHashes,
+                        keywords: log.keywords
+                    });
+                }
+            }
+        )
+    }
+
     async list(opts?: {
         filter?: string,
         refresh: false,
     }): Promise<Array<MissionLog>> {
         if (opts?.refresh) {
-            const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid) + '/log');
-
-            const list = await std(url, {
-                method: 'GET',
-                token: this._token,
-                headers: {
-                    MissionAuthorization: this._missiontoken
-                }
-            }) as MissionLogList;
-
-            for (const log of list.items) {
-                await this._db.subscription_log.put({
-                    id: log.id,
-                    dtg: log.dtg,
-                    created: log.created,
-                    mission: sub.meta.guid,
-                    content: log.content || '',
-                    creatorUid: log.creatorUid,
-                    contentHashes: log.contentHashes,
-                    keywords: log.keywords
-                });
-            }
+            await this.refresh();
         }
 
         const logs = await this._db.subscription_log
