@@ -59,6 +59,10 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to add a log to a mission',
         body: Type.Object({
+            dtg: Type.String({
+                format: 'date-time',
+                default: new Date().toISOString()
+            }),
             content: Type.String(),
             keywords: Type.Optional(Type.Array(Type.String()))
         }),
@@ -79,6 +83,7 @@ export default async function router(schema: Schema, config: Config) {
                 req.params.name,
                 {
                     creatorUid: creatorUid,
+                    dtg: req.body.dtg,
                     content: req.body.content,
                     keywords: req.body.keywords
                 },

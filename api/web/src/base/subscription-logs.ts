@@ -109,7 +109,7 @@ export default class SubscriptionLog {
         return log.data;
     }
 
-    static async update(
+    async update(
         logid: string,
         body: {
             dtg?: string;
