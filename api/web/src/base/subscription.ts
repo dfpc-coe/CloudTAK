@@ -55,6 +55,7 @@ export default class Subscription {
         role: MissionRole,
         opts?: {
             token?: string,
+            missiontoken?: string,
             remote?: boolean
         }
     ) {
@@ -62,7 +63,7 @@ export default class Subscription {
         this._atlas = atlas;
         this._remote = (opts && opts.remote === true) ? new BroadcastChannel('sync') : null
 
-        this.log = new SubscriptionLog(db, mission.guid, opts.token, atlas.token);
+        this.log = new SubscriptionLog(db, mission.guid, opts.missiontoken, opts.token);
 
         this.subscribed = true;
         this.guid = mission.guid;
@@ -85,22 +86,25 @@ export default class Subscription {
         atlas: Atlas,
         db: DatabaseType,
         guid: string,
-        token?: string
+        opts: {
+            token?: string
+            missiontoken?: string
+        }
     ): Promise<Subscription> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
         url.searchParams.append('logs', 'true');
 
         const mission = await std(url, {
-            headers: Subscription.headers(token),
-            token: atlas.token
+            headers: Subscription.headers(opts.missiontoken),
+            token: opts.token
         }) as Mission;
 
         const logs = mission.logs || [] as Array<MissionLog>;
         delete mission.logs;
 
         const role = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/role', {
-            headers: Subscription.headers(token),
-            token: atlas.token
+            headers: Subscription.headers(opts.missiontoken),
+            token: opts.token
         }) as MissionRole;
 
         const sub = new Subscription(
@@ -108,12 +112,12 @@ export default class Subscription {
             db,
             mission,
             role,
-            { token }
+            opts
         );
 
         const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
-            headers: Subscription.headers(token),
-            token: atlas.token
+            headers: Subscription.headers(opts.missiontoken),
+            token: opts.token
         }) as FeatureCollection;
 
         for (const feat of fc.features) {
@@ -137,7 +141,7 @@ export default class Subscription {
                     subscribed: true,
                     meta: sub.meta,
                     role: sub.role,
-                    token: token || ''
+                    token: opts.missiontoken || ''
                 });
 
                 await db.subscription_log.where('mission').equals(guid).delete();
@@ -247,18 +251,6 @@ export default class Subscription {
         }
     }
 
-    async updateLogs(): Promise<void> {
-        if (this._remote) return;
-
-        const atlas = this._atlas as Atlas;
-
-        const logs = await Subscription.logList(this.meta.guid, {
-            missionToken: this.token,
-            token: atlas.token
-        });
-        this.logs.splice(0, this.logs.length, ...logs.items);
-    }
-
     headers(): Record<string, string> {
         return Subscription.headers(this.token);
     }
@@ -360,29 +352,6 @@ export default class Subscription {
             token: opts.token,
             headers: Subscription.headers(opts.missionToken)
         }) as MissionChanges;
-    }
-
-    static async logUpdate(
-        guid: string,
-        logid: string,
-        body: object,
-        opts: {
-            token?: string;
-            missionToken?: string
-        } = {}
-    ): Promise<MissionLog> {
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log/' + encodeURIComponent(logid));
-
-        const log = await std(url, {
-            method: 'PATCH',
-            body: body,
-            token: opts.token,
-            headers: Subscription.headers(opts.missionToken)
-        }) as {
-            data: MissionLog
-        };
-
-        return log.data;
     }
 
     static async layerList(

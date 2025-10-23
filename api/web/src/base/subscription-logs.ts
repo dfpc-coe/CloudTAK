@@ -63,6 +63,10 @@ export default class SubscriptionLog {
             .equals(this.guid)
             .toArray();
 
+        logs.sort((a, b) => {
+            return new Date(b.created).getTime() - new Date(a.created).getTime();
+        }).reverse();
+
         if (opts?.filter) {
             return logs.filter(log => log.content.toLowerCase().includes(opts.filter.toLowerCase()));
         } else {
@@ -91,7 +95,43 @@ export default class SubscriptionLog {
             data: MissionLog
         };
 
-        await db.subscription_log.put({
+        await this._db.subscription_log.put({
+            id: log.data.id,
+            dtg: log.data.dtg,
+            created: log.data.created,
+            mission: this.guid,
+            content: log.data.content || '',
+            creatorUid: log.data.creatorUid,
+            contentHashes: log.data.contentHashes,
+            keywords: log.data.keywords
+        });
+
+        return log.data;
+    }
+
+    static async update(
+        logid: string,
+        body: {
+            dtg?: string;
+            content: string;
+            contentHashes?: Array<string>;
+            keywords?: Array<string>;
+        },
+    ): Promise<MissionLog> {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid) + '/log/' + encodeURIComponent(logid));
+
+        const log = await std(url, {
+            method: 'PATCH',
+            body: body,
+            token: this._token,
+            headers: {
+                MissionAuthorization: this._missiontoken
+            }
+        }) as {
+            data: MissionLog
+        };
+
+        this._db.subscription_log.put({
             id: log.data.id,
             dtg: log.data.dtg,
             created: log.data.created,
@@ -118,6 +158,6 @@ export default class SubscriptionLog {
             }
         });
 
-        await db.subscription_log.delete(logid);
+        await this._db.subscription_log.delete(logid);
     }
 }

@@ -135,8 +135,14 @@ export default class AtlasDatabase {
         });
     }
 
-    async subscriptionLoad(guid: string, token?: string): Promise<Subscription> {
-        const sub = await Subscription.load(this.atlas, this.db, guid, token);
+    async subscriptionLoad(
+        guid: string,
+        opts: {
+            token?: string
+            missiontoken?: string
+        }
+  ): Promise<Subscription> {
+        const sub = await Subscription.load(this.atlas, this.db, guid, opts)
         this.subscriptions.set(guid, sub);
         return sub;
     }
@@ -561,12 +567,15 @@ export default class AtlasDatabase {
             }
         } else if (task.properties.type === 't-x-m-c-l' && task.properties.mission && task.properties.mission.guid) {
             const sub = this.subscriptions.get(task.properties.mission.guid);
+
             if (!sub) {
                 console.error(`Cannot refresh ${task.properties.mission.guid} logs as it is not subscribed`);
                 return;
             }
 
-            await sub.updateLogs();
+            await sub.logs.list({
+                refresh: true
+            });
         } else {
             console.warn('Unknown Mission Task', JSON.stringify(task));
         }

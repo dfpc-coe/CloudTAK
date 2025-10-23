@@ -335,7 +335,10 @@ export const useMapStore = defineStore('cloudtak', {
             let sub = await this.worker.db.subscriptionGet(guid);
 
             if (!sub) {
-                sub = await this.worker.db.subscriptionLoad(guid, overlay.token || undefined)
+                sub = await this.worker.db.subscriptionLoad(guid, {
+                    token: localStorage.token,
+                    missiontoken: overlay.token || undefined
+                })
             }
 
             // @ts-expect-error Source.setData is not defined
