@@ -40,7 +40,7 @@
                         />
                         <label
                             class='subheader ms-auto'
-                            v-text='log.created'
+                            v-text='log.dtg'
                         />
                     </div>
                     <div class='col-12 position-relative'>
