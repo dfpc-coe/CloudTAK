@@ -26,6 +26,16 @@ import type {
 
 /**
  * High Level Wrapper around the Data/Mission Sync API
+ *
+ * @property {string} guid - The unique identifier for the mission
+ * @property {string} name - The name of the mission
+ * @property {Mission} meta - The mission metadata
+ * @property {MissionRole} role - The role of the user in the mission
+ * @property {string} token - The CloudTAK Authentication token for API calls
+ * @property {string} [missiontoken] - The mission token for authentication
+ *
+ * @property {Map<string, COT>} cots - A map of COT features in the mission
+ * @property {boolean} subscribed - Whether the user is subscribed to the mission
  */
 export default class Subscription {
     _db: DatabaseType;
@@ -35,7 +45,12 @@ export default class Subscription {
 
     meta: Mission;
     role: MissionRole;
-    token?: string;
+
+    log: SubscriptionLog;
+
+    token: string;
+    missiontoken?: string;
+
     cots: Map<string, COT>;
 
     _dirty: boolean;
@@ -45,9 +60,6 @@ export default class Subscription {
     _remote: BroadcastChannel | null;
     _atlas: Atlas | Remote<Atlas>;
 
-    // Should features be automatically added
-    auto: boolean;
-
     constructor(
         atlas: Atlas | Remote<Atlas>,
         db: DatabaseType,
@@ -56,6 +68,7 @@ export default class Subscription {
         opts?: {
             token?: string,
             missiontoken?: string,
+            subscribed: boolean,
             remote?: boolean
         }
     ) {
@@ -65,21 +78,20 @@ export default class Subscription {
 
         this.log = new SubscriptionLog(db, mission.guid, opts.missiontoken, opts.token);
 
-        this.subscribed = true;
+        this.subscribed = opts.subscribed;
+
         this.guid = mission.guid;
         this.name = mission.name;
         this.meta = mission;
         this.role = role;
 
-        if (opts && opts.token) {
-            this.token = opts.token;
-        }
+        this.token = opts.token;
+
+        if (opts?.missiontoken) this.missiontoken = opts.missiontoken;
 
         this._dirty = false;
 
         this.cots = new Map();
-
-        this.auto = false;
     }
 
     static async load(
@@ -88,80 +100,102 @@ export default class Subscription {
         guid: string,
         opts: {
             token?: string
-            missiontoken?: string
+            missiontoken?: string,
+            subscribed: boolean
         }
     ): Promise<Subscription> {
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
-        url.searchParams.append('logs', 'true');
+        const exists = await db.subscription
+            .get(guid)
 
-        const mission = await std(url, {
-            headers: Subscription.headers(opts.missiontoken),
-            token: opts.token
-        }) as Mission;
+        if (exists) {
+            // TODO Check for Subscription Differences
 
-        const logs = mission.logs || [] as Array<MissionLog>;
-        delete mission.logs;
+            return new Subscription(
+                atlas,
+                db,
+                exists.meta,
+                exists.role,
+                {
+                    token: opts.token,
+                    missiontoken: exists.token,
+                    subscribed: exists.subscribed
+                }
+            );
+        } else {
+            const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
+            url.searchParams.append('logs', 'true');
 
-        const role = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/role', {
-            headers: Subscription.headers(opts.missiontoken),
-            token: opts.token
-        }) as MissionRole;
+            const mission = await std(url, {
+                headers: Subscription.headers(opts.missiontoken),
+                token: opts.token
+            }) as Mission;
 
-        const sub = new Subscription(
-            atlas,
-            db,
-            mission,
-            role,
-            opts
-        );
+            const logs = mission.logs || [] as Array<MissionLog>;
+            delete mission.logs;
 
-        const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
-            headers: Subscription.headers(opts.missiontoken),
-            token: opts.token
-        }) as FeatureCollection;
+            const role = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/role', {
+                headers: Subscription.headers(opts.missiontoken),
+                token: opts.token
+            }) as MissionRole;
 
-        for (const feat of fc.features) {
-            const cot = new COT(atlas, feat as Feature, {
-                mode: OriginMode.MISSION,
-                mode_id: guid
-            });
+            const sub = new Subscription(
+                atlas,
+                db,
+                mission,
+                role,
+                opts
+            );
 
-            sub.cots.set(String(cot.id), cot);
-        }
+            if (opts.subscribed) {
+                const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
+                    headers: Subscription.headers(opts.missiontoken),
+                    token: opts.token
+                }) as FeatureCollection;
 
-        await db.transaction('rw',
-            db.subscription,
-            db.subscription_log,
-            async () => {
-                await db.subscription.delete(guid);
-
-                await db.subscription.put({
-                    guid: sub.meta.guid,
-                    name: sub.meta.name,
-                    subscribed: true,
-                    meta: sub.meta,
-                    role: sub.role,
-                    token: opts.missiontoken || ''
-                });
-
-                await db.subscription_log.where('mission').equals(guid).delete();
-
-                for (const log of logs) {
-                    await db.subscription_log.put({
-                        id: log.id,
-                        dtg: log.dtg,
-                        created: log.created,
-                        mission: sub.meta.guid,
-                        content: log.content,
-                        creatorUid: log.creatorUid,
-                        contentHashes: log.contentHashes,
-                        keywords: log.keywords
+                for (const feat of fc.features) {
+                    const cot = new COT(atlas, feat as Feature, {
+                        mode: OriginMode.MISSION,
+                        mode_id: guid
                     });
+
+                    sub.cots.set(String(cot.id), cot);
                 }
             }
-        );
 
-        return sub;
+            await db.transaction('rw',
+                db.subscription,
+                db.subscription_log,
+                async () => {
+                    await db.subscription.delete(guid);
+
+                    await db.subscription.put({
+                        guid: sub.meta.guid,
+                        name: sub.meta.name,
+                        subscribed: true,
+                        meta: sub.meta,
+                        role: sub.role,
+                        token: opts.missiontoken || ''
+                    });
+
+                    await db.subscription_log.where('mission').equals(guid).delete();
+
+                    for (const log of logs) {
+                        await db.subscription_log.put({
+                            id: log.id,
+                            dtg: log.dtg,
+                            created: log.created,
+                            mission: sub.meta.guid,
+                            content: log.content,
+                            creatorUid: log.creatorUid,
+                            contentHashes: log.contentHashes,
+                            keywords: log.keywords
+                        });
+                    }
+                }
+            );
+
+            return sub;
+        }
     }
 
     async collection(raw = false): Promise<FeatureCollection> {
@@ -184,7 +218,7 @@ export default class Subscription {
     async delete(): Promise<void> {
         const mapStore = useMapStore();
 
-        await Subscription.delete(this.meta.guid, this.token);
+        await Subscription.delete(this.meta.guid, this.missiontoken);
         mapStore.worker.db.subscriptionDelete(this.meta.guid);
     }
 
@@ -245,14 +279,14 @@ export default class Subscription {
             const url = stdurl(`/api/marti/missions/${this.meta.guid}/cot/${uid}`);
             await std(url, {
                 method: 'DELETE',
-                headers: Subscription.headers(this.token),
+                headers: Subscription.headers(this.missiontoken),
                 token:  atlas.token
             })
         }
     }
 
     headers(): Record<string, string> {
-        return Subscription.headers(this.token);
+        return Subscription.headers(this.missiontoken);
     }
 
     async refresh(): Promise<void> {
@@ -308,19 +342,13 @@ export default class Subscription {
         return headers;
     }
 
-    static async subscriptions(
-        guid: string,
-        opts: {
-            token?: string,
-            missionToken?: string
-        } = {}
-    ): Promise<MissionSubscriptions> {
-        const url = stdurl(`/api/marti/missions/${encodeURIComponent(guid)}/subscriptions/roles`);
+    async subscriptions(): Promise<MissionSubscriptions> {
+        const url = stdurl(`/api/marti/missions/${encodeURIComponent(this.guid)}/subscriptions/roles`);
 
         const res = await std(url, {
             method: 'GET',
-            token: opts.token,
-            headers: Subscription.headers(opts.missionToken)
+            token: this.token,
+            headers: Subscription.headers(this.missiontoken)
         }) as {
             data: MissionSubscriptions
         };

@@ -181,7 +181,8 @@ const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
         return logs.value;
     } else {
         const filter = paging.value.filter.toLowerCase();
-        return logs.value.filter((log) => {
+
+        return logs.value.filter((log: MissionLog) => {
             return log.content.toLowerCase().includes(filter);
         })
     }

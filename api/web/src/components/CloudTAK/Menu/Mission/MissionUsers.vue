@@ -46,7 +46,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import type { MissionSubscriptions } from '../../../../../src/types.ts';
+import type { MissionSubscriptions } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';
 import {
     IconUserBolt,
@@ -68,9 +68,7 @@ onMounted(async () => {
 
 async function fetchSubscriptions() {
     loading.value = true;
-    subscriptions.value = await Subscription.subscriptions(props.subscription.guid, {
-        missionToken: props.subscription.token
-    });
+    subscriptions.value = await props.subscription.subscriptions();
     loading.value = false;
 }
 </script>

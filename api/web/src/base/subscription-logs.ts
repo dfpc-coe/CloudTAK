@@ -72,7 +72,7 @@ export default class SubscriptionLog {
             await this.refresh();
         }
 
-        let logs = await this._db.subscription_log
+        const logs = await this._db.subscription_log
             .where("mission")
             .equals(this.guid)
             .toArray();

@@ -312,8 +312,9 @@ async function exportToPackage(format: string): Promise<void> {
 }
 
 async function fetchMission(): Promise<void> {
-    subscription.value = await mapStore.worker.db.subscriptionGet(String(route.params.mission), {
-        refresh: true
+    subscription.value = await Subscription.load(mapStore.atlast, mapStore.db, String(route.params.mission), {
+        token: localStorage.token,
+        missiontoken: token.value,
     });
 }
 </script>
