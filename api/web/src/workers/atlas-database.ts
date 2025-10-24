@@ -3,7 +3,6 @@
 */
 
 import { std } from '../std.ts';
-import { db } from '../base/database.ts';
 import type { DatabaseType } from '../base/database.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
@@ -25,8 +24,6 @@ type NestedArray = {
 
 export default class AtlasDatabase {
     atlas: Atlas;
-
-    db: DatabaseType;
 
     cots: Map<string, COT>;
 
@@ -51,8 +48,6 @@ export default class AtlasDatabase {
         this.atlas = atlas;
 
         this.cots = new Map();
-
-        this.db = db;
 
         this.hidden = new Set();
 
@@ -154,7 +149,7 @@ export default class AtlasDatabase {
             subscribed: boolean
         }
     ): Promise<Subscription> {
-        const sub = await Subscription.load(this.atlas, this.db, guid, opts)
+        const sub = await Subscription.load(this.atlas, guid, opts)
         this.subscriptions.set(guid, sub);
         return sub;
     }
@@ -170,7 +165,7 @@ export default class AtlasDatabase {
         if (!sub) return;
 
         if (opts.refresh) {
-            await sub.refresh(this.db);
+            await sub.refresh();
         }
 
         return sub;
@@ -585,9 +580,7 @@ export default class AtlasDatabase {
                 return;
             }
 
-            await sub.log.refresh(
-                this.db
-            );
+            await sub.log.refresh();
         } else {
             console.warn('Unknown Mission Task', JSON.stringify(task));
         }

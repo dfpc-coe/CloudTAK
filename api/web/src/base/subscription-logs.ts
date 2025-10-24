@@ -1,3 +1,4 @@
+import { db } from './database.ts';
 import { std, stdurl } from '../std.ts';
 import type { DatabaseType } from '../base/database.ts';
 import type {
@@ -27,9 +28,7 @@ export default class SubscriptionLog {
         this.guid = guid;
     }
 
-    async refresh(
-        db: DatabaseType
-    ): Promise<void> {
+    async refresh(): Promise<void> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid) + '/log');
 
         const list = await std(url, {
@@ -62,7 +61,6 @@ export default class SubscriptionLog {
     }
 
     async list(
-        db: DatabaseType,
         opts?: {
             filter?: string,
             refresh: false,
@@ -85,7 +83,6 @@ export default class SubscriptionLog {
     }
 
     async create(
-        db: DatabaseType,
         body: {
             dtg?: string;
             content: string;
@@ -121,7 +118,6 @@ export default class SubscriptionLog {
     }
 
     async update(
-        db: DatabaseType,
         logid: string,
         body: {
             dtg?: string;
@@ -158,7 +154,6 @@ export default class SubscriptionLog {
     }
 
     async delete(
-        db: DatabaseType,
         logid: string,
     ): Promise<void> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid) + '/log/' + encodeURIComponent(logid));

@@ -304,7 +304,7 @@ async function exportToPackage(format: string): Promise<void> {
 }
 
 async function fetchMission(): Promise<void> {
-    subscription.value = await Subscription.load(mapStore.atlas, db, String(route.params.mission), {
+    subscription.value = await Subscription.load(mapStore.atlas, String(route.params.mission), {
         token: String(localStorage.token),
         missiontoken: token.value,
     });

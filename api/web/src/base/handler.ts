@@ -4,7 +4,6 @@
 
 import COT from '../base/cot.ts';
 import Subscription from '../base/subscription.ts';
-import type { DatabaseType } from '../base/database.ts';
 import type Atlas from '../workers/atlas.ts';
 import type { Remote, TransferHandler } from 'comlink'
 import type { Feature } from '../types.ts';
@@ -14,17 +13,14 @@ import type {
 } from '../types.ts';
 
 export class CloudTAKTransferHandler {
-    db: DatabaseType;
     atlas: Atlas | Remote<Atlas>;
     remote: boolean;
 
     constructor(
         atlas: Atlas | Remote<Atlas>,
-        db: DatabaseType,
         transferHandlers: Map<string, TransferHandler<unknown, unknown>>,
         remote: boolean
     ) {
-        this.db = db;
         this.atlas = atlas;
         this.remote = remote;
 
@@ -63,7 +59,6 @@ export class CloudTAKTransferHandler {
         }) => {
             const sub = new Subscription(
                 this.atlas,
-                this.db,
                 ser.mission,
                 ser.role,
                 {
