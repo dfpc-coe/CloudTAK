@@ -25,7 +25,7 @@
                     v-if='backType === "back"'
                     title='Close Menu'
                     icon='IconCircleArrowLeft'
-                    @click='router.back()'
+                    @click='routerBack'
                 >
                     <IconCircleArrowLeft
                         :size='32'
@@ -106,6 +106,14 @@ const props = defineProps({
         default: false,
     }
 });
+
+function routerBack() {
+    if (!router.options.history.state.back || String(router.options.history.state.back).startsWith('/login')) {
+        router.push("/")
+    } else {
+        router.back();
+    }
+}
 
 const backType = computed(() => {
     if (!props.back) return "none";

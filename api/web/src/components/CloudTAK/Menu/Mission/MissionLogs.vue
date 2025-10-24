@@ -53,7 +53,7 @@
                             :model-value='log.content || ""'
                             style='background-color: var(--tblr-body-bg)'
                             @submit='updateLog(log.id, $event)'
-                            @delete='props.subscription.log.delete(log.id)'
+                            @delete='props.subscription.log.delete(db, log.id)'
                         />
                     </div>
 
@@ -128,7 +128,7 @@
 
 <script setup lang='ts'>
 import { ref, computed } from 'vue'
-import type { ComputedRef } from 'vue';
+import type { Ref, ComputedRef } from 'vue';
 import type { MissionLog } from '../../../../types.ts';
 import TagEntry from '../../util/TagEntry.vue';
 import CopyField from '../../util/CopyField.vue';
@@ -147,15 +147,14 @@ import { liveQuery } from "dexie";
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import Subscription from '../../../../base/subscription.ts';
 import { useObservable } from "@vueuse/rxjs";
+import { db } from '../../../../base/database.ts';
 
 const props = defineProps<{
     subscription: Subscription
 }>();
 
-const logs = useObservable(liveQuery(async () => {
-    return await props.subscription.log.list({
-        filter: paging.value.filter
-    })
+const logs: Ref<Array<MissionLog>> = useObservable(liveQuery(async () => {
+    return await props.subscription.log.list(db)
 }))
 
 const submitOnEnter = ref(true);
@@ -169,7 +168,7 @@ const createLog = ref({
 const loading = ref<{
     logs: boolean,
     create: boolean,
-    ids: Set<number>
+    ids: Set<string>
 }> ({
     logs: false,
     create: false,
@@ -188,10 +187,11 @@ const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
     }
 });
 
-async function updateLog(logid: number, content: string) {
+async function updateLog(logid: string, content: string) {
     loading.value.ids.add(logid);
 
     await props.subscription.log.update(
+        db,
         logid,
         {
             content,
@@ -207,7 +207,10 @@ async function submitLog() {
     try {
         loading.value.logs = true;
 
-        await props.subscription.log.create(createLog.value);
+        await props.subscription.log.create(
+            db,
+            createLog.value
+        );
 
         createLog.value.content = '';
     } catch (err) {

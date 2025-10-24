@@ -13,7 +13,6 @@ import type {
 } from 'geojson'
 import type {
     Mission,
-    MissionLog,
     MissionRole,
     MissionList,
     MissionLayer,
@@ -38,8 +37,6 @@ import type {
  * @property {boolean} subscribed - Whether the user is subscribed to the mission
  */
 export default class Subscription {
-    _db: DatabaseType;
-
     guid: string;
     name: string;
 
@@ -55,28 +52,29 @@ export default class Subscription {
 
     _dirty: boolean;
 
-    subscribed?: boolean;
+    subscribed: boolean;
 
     _remote: BroadcastChannel | null;
     _atlas: Atlas | Remote<Atlas>;
 
     constructor(
         atlas: Atlas | Remote<Atlas>,
-        db: DatabaseType,
         mission: Mission,
         role: MissionRole,
-        opts?: {
-            token?: string,
-            missiontoken?: string,
+        opts: {
             subscribed: boolean,
+            token: string,
+            missiontoken?: string,
             remote?: boolean
         }
     ) {
-        this._db = db;
         this._atlas = atlas;
         this._remote = (opts && opts.remote === true) ? new BroadcastChannel('sync') : null
 
-        this.log = new SubscriptionLog(db, mission.guid, opts.missiontoken, opts.token);
+        this.log = new SubscriptionLog(mission.guid, {
+            missiontoken: opts.missiontoken,
+            token: opts.token
+        });
 
         this.subscribed = opts.subscribed;
 
@@ -101,7 +99,7 @@ export default class Subscription {
         opts: {
             token?: string
             missiontoken?: string,
-            subscribed: boolean
+            subscribed?: boolean
         }
     ): Promise<Subscription> {
         const exists = await db.subscription
@@ -112,7 +110,6 @@ export default class Subscription {
 
             return new Subscription(
                 atlas,
-                db,
                 exists.meta,
                 exists.role,
                 {
@@ -123,15 +120,13 @@ export default class Subscription {
             );
         } else {
             const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
-            url.searchParams.append('logs', 'true');
+
+            if (!opts.subscribed) opts.subscribed = false;
 
             const mission = await std(url, {
                 headers: Subscription.headers(opts.missiontoken),
                 token: opts.token
             }) as Mission;
-
-            const logs = mission.logs || [] as Array<MissionLog>;
-            delete mission.logs;
 
             const role = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/role', {
                 headers: Subscription.headers(opts.missiontoken),
@@ -140,7 +135,6 @@ export default class Subscription {
 
             const sub = new Subscription(
                 atlas,
-                db,
                 mission,
                 role,
                 opts
@@ -162,37 +156,16 @@ export default class Subscription {
                 }
             }
 
-            await db.transaction('rw',
-                db.subscription,
-                db.subscription_log,
-                async () => {
-                    await db.subscription.delete(guid);
+            await db.subscription.put({
+                guid: sub.meta.guid,
+                name: sub.meta.name,
+                subscribed: opts.subscribed,
+                meta: sub.meta,
+                role: sub.role,
+                token: opts.missiontoken || ''
+            });
 
-                    await db.subscription.put({
-                        guid: sub.meta.guid,
-                        name: sub.meta.name,
-                        subscribed: true,
-                        meta: sub.meta,
-                        role: sub.role,
-                        token: opts.missiontoken || ''
-                    });
-
-                    await db.subscription_log.where('mission').equals(guid).delete();
-
-                    for (const log of logs) {
-                        await db.subscription_log.put({
-                            id: log.id,
-                            dtg: log.dtg,
-                            created: log.created,
-                            mission: sub.meta.guid,
-                            content: log.content,
-                            creatorUid: log.creatorUid,
-                            contentHashes: log.contentHashes,
-                            keywords: log.keywords
-                        });
-                    }
-                }
-            );
+            await sub.log.refresh(db);
 
             return sub;
         }
@@ -215,11 +188,13 @@ export default class Subscription {
         return bbox(await this.collection());
     }
 
-    async delete(): Promise<void> {
+    async delete(db: DatabaseType): Promise<void> {
         const mapStore = useMapStore();
 
         await Subscription.delete(this.meta.guid, this.missiontoken);
-        mapStore.worker.db.subscriptionDelete(this.meta.guid);
+        await mapStore.worker.db.subscriptionDelete(this.meta.guid);
+
+        await db.subscription.delete(this.meta.guid);
     }
 
     /**
@@ -289,19 +264,17 @@ export default class Subscription {
         return Subscription.headers(this.missiontoken);
     }
 
-    async refresh(): Promise<void> {
+    async refresh(db: DatabaseType): Promise<void> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.meta.guid));
-        url.searchParams.append('logs', 'true');
 
         const mission = await std(url, {
             headers: this.headers(),
             token: String(this._atlas.token)
         }) as Mission;
 
-        // TODO
-        //this.logs = mission.logs || [] as Array<MissionLog>;
-        delete mission.logs;
         this.meta = mission;
+
+        await this.log.refresh(db);
     };
     static async fetch(guid: string, token?: string, opts: {
         logs?: boolean

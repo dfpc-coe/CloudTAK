@@ -200,7 +200,6 @@
                 <Suspense>
                     <router-view
                         v-if='subscription'
-                        :menu='true'
                         :subscription='subscription'
                         @refresh='fetchMission'
                     />
@@ -250,6 +249,8 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMapStore } from '../../../stores/map.ts';
+import { db } from '../../../base/database.ts';
+
 const mapStore = useMapStore();
 const route = useRoute();
 const router = useRouter();
@@ -282,38 +283,29 @@ async function shareToPackageSetup(): Promise<void> {
 async function deleteMission() {
     loading.value = true;
 
-    const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission));
+    if (!subscription.value) return;
 
-    try {
-        if (subMission) {
-            await subMission.delete();
+    await subscription.value.delete(db);
 
-            const overlay = mapStore.getOverlayByMode('mission', String(route.params.mission));
-            if (overlay) await mapStore.removeOverlay(overlay);
-        } else {
-            await Subscription.delete(String(route.params.mission), token.value);
-        }
+    const overlay = mapStore.getOverlayByMode('mission', String(route.params.mission));
+    if (overlay) await mapStore.removeOverlay(overlay);
 
-        router.replace('/menu/missions');
-    } catch (err) {
-        loading.value = false;
-        error.value = err instanceof Error ? err : new Error(String(err));
-    }
+    router.replace('/menu/missions');
 }
 
 async function exportToPackage(format: string): Promise<void> {
     if (!subscription.value) return;
 
     loadingInline.value = 'Generating Archive'
-    await std(`/api/marti/missions/${encodeURIComponent(subscription.value.meta.name)}/archive?download=true&format=${format}`, {
+    await std(`/api/marti/missions/${encodeURIComponent(subscription.value.guid)}/archive?download=true&format=${format}`, {
         download: true
     })
     loadingInline.value = undefined;
 }
 
 async function fetchMission(): Promise<void> {
-    subscription.value = await Subscription.load(mapStore.atlast, mapStore.db, String(route.params.mission), {
-        token: localStorage.token,
+    subscription.value = await Subscription.load(mapStore.atlas, db, String(route.params.mission), {
+        token: String(localStorage.token),
         missiontoken: token.value,
     });
 }

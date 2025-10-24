@@ -9,70 +9,70 @@ import type {
  * High Level Wrapper around the Data/Mission Sync API
  */
 export default class SubscriptionLog {
-    _db: DatabaseType;
     guid: string;
 
-    _token: string;
-    _missiontoken: string;
+    token: string;
+    missiontoken?: string;
 
     constructor(
-        db: DatabaseType,
         guid: string,
-        missiontoken: string,
-        token: string
+        opts: {
+            token: string,
+            missiontoken?: string,
+        }
     ) {
-        this._db = db;
-
-        this._token = token;
-        this._missiontoken = token;
+        this.token = opts.token;
+        this.missiontoken = opts.token;
 
         this.guid = guid;
     }
 
-    async refresh(): Promise<void> {
+    async refresh(
+        db: DatabaseType
+    ): Promise<void> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid) + '/log');
 
         const list = await std(url, {
             method: 'GET',
-            token: this._token,
+            token: this.token,
             headers: {
-                MissionAuthorization: this._missiontoken
+                MissionAuthorization: this.missiontoken
             }
         }) as MissionLogList;
 
-        await this._db.transaction('rw',
-            this._db.subscription_log,
-            async () => {
-                await this._db.subscription_log
-                    .where('mission')
-                    .equals(this.guid)
-                    .delete();
+        await db.transaction('rw', db.subscription_log, async () => {
+            await db.subscription_log
+                .where('mission')
+                .equals(this.guid)
+                .delete();
 
-                for (const log of list.items) {
-                    await this._db.subscription_log.put({
-                        id: log.id,
-                        dtg: log.dtg,
-                        created: log.created,
-                        mission: this.guid,
-                        content: log.content || '',
-                        creatorUid: log.creatorUid,
-                        contentHashes: log.contentHashes,
-                        keywords: log.keywords
-                    });
-                }
+            for (const log of list.items) {
+                await db.subscription_log.put({
+                    id: log.id,
+                    dtg: log.dtg,
+                    created: log.created,
+                    mission: this.guid,
+                    content: log.content || '',
+                    creatorUid: log.creatorUid,
+                    contentHashes: log.contentHashes,
+                    keywords: log.keywords
+                });
             }
-        )
+        });
     }
 
-    async list(opts?: {
-        filter?: string,
-        refresh: false,
-    }): Promise<Array<MissionLog>> {
+    async list(
+        db: DatabaseType,
+        opts?: {
+            filter?: string,
+            refresh: false,
+        }
+    ): Promise<Array<MissionLog>> {
         if (opts?.refresh) {
-            await this.refresh();
+            await this.refresh(db);
         }
 
-        const logs = await this._db.subscription_log
+        const logs = await db.subscription_log
             .where("mission")
             .equals(this.guid)
             .toArray();
@@ -85,6 +85,7 @@ export default class SubscriptionLog {
     }
 
     async create(
+        db: DatabaseType,
         body: {
             dtg?: string;
             content: string;
@@ -97,15 +98,15 @@ export default class SubscriptionLog {
         const log = await std(url, {
             method: 'POST',
             body: body,
-            token: this._token,
+            token: this.token,
             headers: {
-                MissionAuthorization: this._missiontoken
+                MissionAuthorization: this.missiontoken
             }
         }) as {
             data: MissionLog
         };
 
-        await this._db.subscription_log.put({
+        await db.subscription_log.put({
             id: log.data.id,
             dtg: log.data.dtg,
             created: log.data.created,
@@ -120,6 +121,7 @@ export default class SubscriptionLog {
     }
 
     async update(
+        db: DatabaseType,
         logid: string,
         body: {
             dtg?: string;
@@ -133,15 +135,15 @@ export default class SubscriptionLog {
         const log = await std(url, {
             method: 'PATCH',
             body: body,
-            token: this._token,
+            token: this.token,
             headers: {
-                MissionAuthorization: this._missiontoken
+                MissionAuthorization: this.missiontoken
             }
         }) as {
             data: MissionLog
         };
 
-        this._db.subscription_log.put({
+        await db.subscription_log.put({
             id: log.data.id,
             dtg: log.data.dtg,
             created: log.data.created,
@@ -156,18 +158,19 @@ export default class SubscriptionLog {
     }
 
     async delete(
+        db: DatabaseType,
         logid: string,
     ): Promise<void> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid) + '/log/' + encodeURIComponent(logid));
 
         await std(url, {
             method: 'DELETE',
-            token: this._token,
+            token: this.token,
             headers: {
-                MissionAuthorization: this._missiontoken
+                MissionAuthorization: this.missiontoken
             }
         });
 
-        await this._db.subscription_log.delete(logid);
+        await db.subscription_log.delete(logid);
     }
 }

@@ -80,8 +80,14 @@
                     <div class='datagrid-title user-select-none'>
                         Subscription
                     </div>
+
+                    <TablerLoading
+                        v-if='loading.subscribe'
+                        :inline='true'
+                        desc='Updating Subscription...'
+                    />
                     <div
-                        v-if='subscription.subscribed === false'
+                        v-else-if='props.subscription.subscribed === false'
                         class='col-12'
                     >
                         <button
@@ -93,7 +99,7 @@
                         </button>
                     </div>
                     <template
-                        v-else-if='subscription.subscribed === true'
+                        v-else-if='props.subscription.subscribed === true'
                     >
                         <div class='col-6'>
                             <button
@@ -110,7 +116,7 @@
                                 :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
                                 class='btn btn-green w-100'
                                 style='height: 32px;'
-                                @click='mapStore.makeActiveMission(sub)'
+                                @click='mapStore.makeActiveMission(props.subscription)'
                             >
                                 Make Active
                             </button>
@@ -125,11 +131,6 @@
                             </button>
                         </div>
                     </template>
-                    <TablerLoading
-                        v-else
-                        :inline='true'
-                        desc='Updating Subscription...'
-                    />
                 </div>
                 <div class='col-12 pt-3'>
                     <div class='datagrid-title user-select-none'>

@@ -3,7 +3,7 @@
 */
 
 import { std } from '../std.ts';
-import { DatabaseInit } from '../base/database.ts';
+import { db } from '../base/database.ts';
 import type { DatabaseType } from '../base/database.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
@@ -52,7 +52,7 @@ export default class AtlasDatabase {
 
         this.cots = new Map();
 
-        this.db = DatabaseInit();
+        this.db = db;
 
         this.hidden = new Set();
 
@@ -170,7 +170,7 @@ export default class AtlasDatabase {
         if (!sub) return;
 
         if (opts.refresh) {
-            await sub.refresh();
+            await sub.refresh(this.db);
         }
 
         return sub;
@@ -585,7 +585,9 @@ export default class AtlasDatabase {
                 return;
             }
 
-            await sub.log.refresh();
+            await sub.log.refresh(
+                this.db
+            );
         } else {
             console.warn('Unknown Mission Task', JSON.stringify(task));
         }
