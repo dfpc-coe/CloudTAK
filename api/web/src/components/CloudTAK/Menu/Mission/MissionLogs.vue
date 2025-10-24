@@ -194,6 +194,7 @@ async function updateLog(logid: number, content: string) {
         logid,
         {
             content,
+            dtg: logs.value.find(l => l.id === logid)?.dtg || new Date().toISOString(),
             keywords: logs.value.find(l => l.id === logid)?.keywords || []
         }
     );

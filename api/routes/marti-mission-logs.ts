@@ -105,9 +105,9 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to update a log on a mission',
         body: Type.Object({
-            dtg: Type.Optional(Type.String({
+            dtg: Type.String({
                 format: 'date-time'
-            })),
+            }),
             content: Type.String(),
             keywords: Type.Optional(Type.Array(Type.String()))
         }),
