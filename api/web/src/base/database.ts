@@ -31,13 +31,9 @@ export type DatabaseType = Dexie & {
     subscription_log: EntityTable<DBSubscriptionLog, 'id'>
 };
 
-export function DatabaseInit() {
-    const db = new Dexie('CloudTAK') as DatabaseType;
+export const db = new Dexie('CloudTAK') as DatabaseType;
 
-    db.version(1).stores({
-        subscription: 'guid, name, subscribed, meta, role, token',
-        subscription_log: 'id, dtf, created, mission, content, creatorUid, contentHashes, keywords, missionNames, servertime',
-    });
-
-    return db;
-}
+db.version(1).stores({
+    subscription: 'guid, name, subscribed, meta, role, token',
+    subscription_log: 'id, dtf, created, mission, content, creatorUid, contentHashes, keywords, missionNames, servertime',
+});

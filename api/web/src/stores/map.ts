@@ -15,7 +15,7 @@ import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
 import type { DatabaseType } from '../base/database.ts';
-import { DatabaseInit } from '../base/database.ts';
+import { db } from '../base/database.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay.ts';
@@ -87,8 +87,6 @@ export const useMapStore = defineStore('cloudtak', {
         const worker = Comlink.wrap<Atlas>(new Worker(AtlasWorker, {
             type: 'module'
         }));
-
-        const db = DatabaseInit();
 
         new CloudTAKTransferHandler(
             worker,
