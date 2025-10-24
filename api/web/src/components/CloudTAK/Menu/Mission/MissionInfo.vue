@@ -93,7 +93,7 @@
                         </button>
                     </div>
                     <template
-                        v-else-if='subscribed === true'
+                        v-else-if='subscription.subscribed === true'
                     >
                         <div class='col-6'>
                             <button
@@ -231,7 +231,7 @@ async function subscribe(subscribed: boolean) {
     if (subscribed === true && !overlay) {
         const missionOverlay = await Overlay.create(mapStore.map, {
             name: props.subscription.name,
-            url: `/mission/${encodeURIComponent(props.subscription.name)}`,
+            url: `/mission/${encodeURIComponent(props.subscription.guid)}`,
             type: 'geojson',
             mode: 'mission',
             token: props.token,
@@ -241,13 +241,9 @@ async function subscribe(subscribed: boolean) {
         mapStore.overlays.push(missionOverlay);
         await mapStore.loadMission(props.subscription.guid);
 
-        sub.value = await mapStore.worker.db.subscriptionGet(props.subscription.guid);
-
         emit('refresh');
     } else if (subscribed === false && overlay) {
         await mapStore.removeOverlay(overlay);
-
-        sub.value = undefined;
 
         emit('refresh');
     }
