@@ -16,7 +16,9 @@ export interface DBSubscription {
 export interface DBSubscriptionLog {
     id: string;
     dtg?: string;
+    missionNames: string[],
     created: string;
+    servertime: string,
     mission: string;
     content: string;
     creatorUid: string;
@@ -34,7 +36,7 @@ export function DatabaseInit() {
 
     db.version(1).stores({
         subscription: 'guid, name, subscribed, meta, role, token',
-        subscription_log: 'id, dtf, created, mission, content, creatorUid, contentHashes, keywords',
+        subscription_log: 'id, dtf, created, mission, content, creatorUid, contentHashes, keywords, missionNames, servertime',
     });
 
     return db;

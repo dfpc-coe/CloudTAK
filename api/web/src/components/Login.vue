@@ -153,6 +153,12 @@ const body = ref<Login_Create>({
 
 onMounted(async () => {
     await brandStore.init();
+
+    const deleteDB = indexedDB.deleteDatabase('CloudTAK');
+
+    deleteDB.onerror = (event) => {
+        console.error('Failed to delete existing database', event);
+    };
 })
 
 async function createLogin() {

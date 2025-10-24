@@ -6,7 +6,7 @@
         :border='false'
     >
         <div class='my-2'>
-            <div class='row g-0 mx-2'>
+            <div class='row g-2 mx-2'>
                 <div class='col-12'>
                     <div class='datagrid-title user-select-none'>
                         Created
@@ -28,7 +28,7 @@
                     <div
                         v-else
                         class='datagrid-content'
-                        v-text='subscriptions.length'
+                        v-text='subscriptions.length + " Users"'
                     />
                 </div>
                 <div class='col-6'>
@@ -37,7 +37,7 @@
                     </div>
                     <div
                         class='datagrid-content'
-                        v-text='Array.isArray(props.subscription.meta.content) ? props.subscription.meta.contents.length : 0 + " Items"'
+                        v-text='(Array.isArray(props.subscription.meta.contents) ? props.subscription.meta.contents.length : 0) + " Files"'
                     />
                 </div>
                 <div class='col-12'>
@@ -106,7 +106,7 @@
                         </div>
                         <div class='col-6'>
                             <button
-                                v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.subscription.meta.guid && sub'
+                                v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.subscription.meta.guid'
                                 :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
                                 class='btn btn-green w-100'
                                 style='height: 32px;'
@@ -188,8 +188,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
-import type { MissionSubscriptions } from '../../../../types.ts'
+import { ref, onMounted, computed } from 'vue';
+import type { MissionSubscriptions } from '../../../../types.ts';
 import { stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
 import {
@@ -217,12 +217,24 @@ const missionQRURL = computed(() => {
 
 const showQR = ref(false);
 
+const subscriptions = ref<MissionSubscriptions>([])
+
+onMounted(async () => {
+    loading.value.users = true;
+    await fetchSubscriptions();
+    loading.value.users = false;
+});
+
 const loading = ref({
     users: false,
     subscribe: false,
 });
 
-const subscriptions = ref<MissionSubscriptions>([])
+async function fetchSubscriptions() {
+    loading.value.users = true;
+    subscriptions.value = await props.subscription.subscriptions();
+    loading.value.users = false;
+}
 
 async function subscribe(subscribed: boolean) {
     loading.value.subscribe = true;
@@ -234,7 +246,7 @@ async function subscribe(subscribed: boolean) {
             url: `/mission/${encodeURIComponent(props.subscription.guid)}`,
             type: 'geojson',
             mode: 'mission',
-            token: props.token,
+            token: props.subscription.missiontoken,
             mode_id: props.subscription.guid,
         })
 

@@ -278,7 +278,10 @@ export const useMapStore = defineStore('cloudtak', {
 
             const missions = [];
 
-            for (const uid of await this.worker.db.subscriptionListUid({ dirty: true })) {
+            for (const uid of await this.worker.db.subscriptionListUid({
+                dirty: true,
+                subscribed: true
+            })) {
                 missions.push(this.loadMission(uid));
             }
             await Promise.allSettled(missions);
@@ -337,6 +340,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!sub) {
                 sub = await this.worker.db.subscriptionLoad(guid, {
                     token: localStorage.token,
+                    subscribed: true,
                     missiontoken: overlay.token || undefined
                 })
             }

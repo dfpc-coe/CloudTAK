@@ -99,14 +99,25 @@ export default class AtlasDatabase {
      * @param opts.dirty - If true return only subscriptions that have changed
      */
     async subscriptionListUid(opts?: {
-        dirty: boolean
+        dirty: boolean,
+        subscribed: boolean
     }): Promise<Set<string>> {
-        if (!opts) opts = { dirty: false };
+        if (!opts) opts = {
+            dirty: false,
+            subscribed: true
+        };
 
         return new Set(Array.from(this.subscriptions.values())
             .filter((sub) => {
                 if (!opts.dirty) return true;
                 return sub._dirty;
+            })
+            .filter((sub) => {
+                if (opts.subscribed !== undefined) {
+                    return opts.subscribed === sub.subscribed;
+                } else {
+                    return true;
+                }
             })
            .map((sub) => {
                 return sub.meta.guid
@@ -140,8 +151,9 @@ export default class AtlasDatabase {
         opts: {
             token?: string
             missiontoken?: string
+            subscribed: boolean
         }
-  ): Promise<Subscription> {
+    ): Promise<Subscription> {
         const sub = await Subscription.load(this.atlas, this.db, guid, opts)
         this.subscriptions.set(guid, sub);
         return sub;

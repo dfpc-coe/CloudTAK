@@ -217,6 +217,7 @@ onMounted(async () => {
 function logout() {
     user.value = undefined;
     delete localStorage.token;
+
     router.push("/login");
 }
 
