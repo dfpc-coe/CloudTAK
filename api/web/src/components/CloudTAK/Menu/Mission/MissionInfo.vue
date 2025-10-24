@@ -204,6 +204,7 @@ import {
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import Overlay from '../../../../base/overlay.ts';
 import { useMapStore } from '../../../../stores/map.ts';
+import { db } from '../../../../base/database.ts';
 const mapStore = useMapStore();
 
 const emit = defineEmits(['refresh']);
@@ -237,11 +238,11 @@ async function fetchSubscriptions() {
     loading.value.users = false;
 }
 
-async function subscribe(subscribed: boolean) {
+async function subscribe(subscribe: boolean) {
     loading.value.subscribe = true;
     const overlay = mapStore.getOverlayByMode('mission', props.subscription.guid);
 
-    if (subscribed === true && !overlay) {
+    if (subscribe === true && !overlay) {
         const missionOverlay = await Overlay.create(mapStore.map, {
             name: props.subscription.name,
             url: `/mission/${encodeURIComponent(props.subscription.guid)}`,
@@ -255,11 +256,13 @@ async function subscribe(subscribed: boolean) {
         await mapStore.loadMission(props.subscription.guid);
 
         emit('refresh');
-    } else if (subscribed === false && overlay) {
+    } else if (subscribe === false && overlay) {
         await mapStore.removeOverlay(overlay);
 
         emit('refresh');
     }
+
+    await props.subscription.update({ subscribed: subscribe });
 
     loading.value.subscribe = false;
 }

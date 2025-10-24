@@ -90,7 +90,6 @@ export const useMapStore = defineStore('cloudtak', {
 
         new CloudTAKTransferHandler(
             worker,
-            db,
             Comlink.transferHandlers,
             true
         );

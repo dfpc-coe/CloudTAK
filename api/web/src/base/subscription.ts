@@ -1,3 +1,4 @@
+import { db } from './database.ts'
 import COT, { OriginMode } from './cot.ts'
 import { std, stdurl } from '../std.ts';
 import { useMapStore } from '../stores/map.ts';
@@ -94,7 +95,6 @@ export default class Subscription {
 
     static async load(
         atlas: Atlas,
-        db: DatabaseType,
         guid: string,
         opts: {
             token?: string
@@ -165,9 +165,23 @@ export default class Subscription {
                 token: opts.missiontoken || ''
             });
 
-            await sub.log.refresh(db);
+            await sub.log.refresh();
 
             return sub;
+        }
+    }
+
+    async update(
+        body: {
+            subscribed?: boolean
+        }
+    ): Promise<void> {
+        if (body.subscribed !== undefined) {
+            await db.subscription.update(this.guid, {
+                subscribed: body.subscribed
+            });
+            
+            this.subscribed = body.subscribed;
         }
     }
 
@@ -188,7 +202,7 @@ export default class Subscription {
         return bbox(await this.collection());
     }
 
-    async delete(db: DatabaseType): Promise<void> {
+    async delete(): Promise<void> {
         const mapStore = useMapStore();
 
         await Subscription.delete(this.meta.guid, this.missiontoken);
@@ -264,7 +278,7 @@ export default class Subscription {
         return Subscription.headers(this.missiontoken);
     }
 
-    async refresh(db: DatabaseType): Promise<void> {
+    async refresh(): Promise<void> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.meta.guid));
 
         const mission = await std(url, {
