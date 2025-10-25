@@ -275,11 +275,11 @@ export const useMapStore = defineStore('cloudtak', {
 
             const missions = [];
 
-            for (const uid of await this.worker.db.subscriptionListUid({
+            for (const sub of await Subscription.localList({
                 dirty: true,
                 subscribed: true
             })) {
-                missions.push(this.loadMission(uid));
+                missions.push(this.loadMission(sub.guid));
             }
             await Promise.allSettled(missions);
         },
@@ -332,20 +332,32 @@ export const useMapStore = defineStore('cloudtak', {
             const oStore = this.map.getSource(String(overlay.id));
             if (!oStore) return false
 
-            let sub = await this.worker.db.subscriptionGet(guid);
+            let sub = await Subscription.load(this.worker, guid, {
+                token: localStorage.token,
+                subscribed: true,
+                missiontoken: overlay.token || undefined
+            });
 
-            if (!sub) {
-                sub = await this.worker.db.subscriptionLoad(guid, {
+            if (!sub || !sub.subscribed) {
+                await this.worker.db.subscriptionLoad(guid, {
                     token: localStorage.token,
                     subscribed: true,
                     missiontoken: overlay.token || undefined
                 })
+
+                sub = await Subscription.load(this.worker, guid, {
+                    token: localStorage.token,
+                    subscribed: true,
+                    missiontoken: overlay.token || undefined
+                });
+
+                if (!sub) return false;
             }
 
             // @ts-expect-error Source.setData is not defined
             oStore.setData(await sub.collection());
 
-            await this.worker.db.subscriptionClean(guid);
+            await sub.update({ dirty: false });
 
             return true;
         },

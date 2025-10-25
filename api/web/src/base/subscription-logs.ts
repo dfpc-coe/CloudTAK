@@ -28,15 +28,19 @@ export default class SubscriptionLog {
         this.guid = guid;
     }
 
+    headers(): Record<string, string> {
+        const headers: Record<string, string> = {};
+        if (this.missiontoken) headers.MissionAuthorization = this.missiontoken;
+        return headers;
+    }
+
     async refresh(): Promise<void> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid) + '/log');
 
         const list = await std(url, {
             method: 'GET',
             token: this.token,
-            headers: {
-                MissionAuthorization: this.missiontoken
-            }
+            headers: this.headers()
         }) as MissionLogList;
 
         await db.transaction('rw', db.subscription_log, async () => {
@@ -52,6 +56,8 @@ export default class SubscriptionLog {
                     created: log.created,
                     mission: this.guid,
                     content: log.content || '',
+                    missionNames: log.missionNames,
+                    servertime: log.servertime,
                     creatorUid: log.creatorUid,
                     contentHashes: log.contentHashes,
                     keywords: log.keywords
@@ -67,7 +73,7 @@ export default class SubscriptionLog {
         }
     ): Promise<Array<MissionLog>> {
         if (opts?.refresh) {
-            await this.refresh(db);
+            await this.refresh();
         }
 
         const logs = await db.subscription_log
@@ -96,9 +102,7 @@ export default class SubscriptionLog {
             method: 'POST',
             body: body,
             token: this.token,
-            headers: {
-                MissionAuthorization: this.missiontoken
-            }
+            headers: this.headers()
         }) as {
             data: MissionLog
         };
@@ -109,6 +113,8 @@ export default class SubscriptionLog {
             created: log.data.created,
             mission: this.guid,
             content: log.data.content || '',
+            missionNames: log.data.missionNames,
+            servertime: log.data.servertime,
             creatorUid: log.data.creatorUid,
             contentHashes: log.data.contentHashes,
             keywords: log.data.keywords
@@ -132,9 +138,7 @@ export default class SubscriptionLog {
             method: 'PATCH',
             body: body,
             token: this.token,
-            headers: {
-                MissionAuthorization: this.missiontoken
-            }
+            headers: this.headers()
         }) as {
             data: MissionLog
         };
@@ -144,6 +148,8 @@ export default class SubscriptionLog {
             dtg: log.data.dtg,
             created: log.data.created,
             mission: this.guid,
+            missionNames: log.data.missionNames,
+            servertime: log.data.servertime,
             content: log.data.content || '',
             creatorUid: log.data.creatorUid,
             contentHashes: log.data.contentHashes,
@@ -161,9 +167,7 @@ export default class SubscriptionLog {
         await std(url, {
             method: 'DELETE',
             token: this.token,
-            headers: {
-                MissionAuthorization: this.missiontoken
-            }
+            headers: this.headers()
         });
 
         await db.subscription_log.delete(logid);

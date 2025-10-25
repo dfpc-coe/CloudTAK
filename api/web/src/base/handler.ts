@@ -32,7 +32,9 @@ export class CloudTAKTransferHandler {
     subscription: TransferHandler<Subscription, {
         mission: Mission,
         role: MissionRole,
-        token?: string,
+        dirty: boolean,
+        subscribed: boolean,
+        missiontoken?: string,
         feats: Array<Feature>,
     }> = {
         canHandle: (obj): obj is Subscription => {
@@ -45,7 +47,7 @@ export class CloudTAKTransferHandler {
             }
 
             return [{
-                token: subscription.token,
+                missiontoken: subscription.missiontoken,
                 mission: subscription.meta,
                 role: subscription.role,
                 feats: feats
@@ -54,7 +56,7 @@ export class CloudTAKTransferHandler {
         deserialize: (ser: {
             mission: Mission,
             role: MissionRole,
-            token?: string,
+            missiontoken?: string,
             feats: Array<Feature>,
         }) => {
             const sub = new Subscription(
@@ -62,7 +64,7 @@ export class CloudTAKTransferHandler {
                 ser.mission,
                 ser.role,
                 {
-                    token: ser.token,
+                    missiontoken: ser.missiontoken,
                     remote: this.remote
                 }
             );

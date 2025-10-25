@@ -53,7 +53,7 @@
                             :model-value='log.content || ""'
                             style='background-color: var(--tblr-body-bg)'
                             @submit='updateLog(log.id, $event)'
-                            @delete='props.subscription.log.delete(db, log.id)'
+                            @delete='props.subscription.log.delete(log.id)'
                         />
                     </div>
 
@@ -147,14 +147,13 @@ import { liveQuery } from "dexie";
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import Subscription from '../../../../base/subscription.ts';
 import { useObservable } from "@vueuse/rxjs";
-import { db } from '../../../../base/database.ts';
 
 const props = defineProps<{
     subscription: Subscription
 }>();
 
 const logs: Ref<Array<MissionLog>> = useObservable(liveQuery(async () => {
-    return await props.subscription.log.list(db)
+    return await props.subscription.log.list()
 }))
 
 const submitOnEnter = ref(true);
@@ -191,7 +190,6 @@ async function updateLog(logid: string, content: string) {
     loading.value.ids.add(logid);
 
     await props.subscription.log.update(
-        db,
         logid,
         {
             content,
@@ -208,7 +206,6 @@ async function submitLog() {
         loading.value.logs = true;
 
         await props.subscription.log.create(
-            db,
             createLog.value
         );
 

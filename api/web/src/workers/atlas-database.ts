@@ -59,6 +59,7 @@ export default class AtlasDatabase {
         this.pendingHidden = new Set();
         this.pendingDelete = new Set();
 
+        // Only Stores GUID => CoT
         this.subscriptions = new Map();
         this.subscriptionPending = new Map(); // UID, Mission Guid
     }
@@ -88,46 +89,6 @@ export default class AtlasDatabase {
         await this.loadArchive()
     }
 
-    /**
-     * Return a list of Subscription GUIDs
-     * @param opts - Options
-     * @param opts.dirty - If true return only subscriptions that have changed
-     */
-    async subscriptionListUid(opts?: {
-        dirty: boolean,
-        subscribed: boolean
-    }): Promise<Set<string>> {
-        if (!opts) opts = {
-            dirty: false,
-            subscribed: true
-        };
-
-        return new Set(Array.from(this.subscriptions.values())
-            .filter((sub) => {
-                if (!opts.dirty) return true;
-                return sub._dirty;
-            })
-            .filter((sub) => {
-                if (opts.subscribed !== undefined) {
-                    return opts.subscribed === sub.subscribed;
-                } else {
-                    return true;
-                }
-            })
-           .map((sub) => {
-                return sub.meta.guid
-            }));
-    }
-
-    async subscriptionClean(guid: string): Promise<boolean> {
-        const sub = this.subscriptions.get(guid);
-        if (!sub) return false;
-
-        sub._dirty = false;
-
-        return true;
-    }
-
     async subscriptionList(): Promise<Array<{
         meta: Mission
         role: MissionRole
@@ -148,10 +109,9 @@ export default class AtlasDatabase {
             missiontoken?: string
             subscribed: boolean
         }
-    ): Promise<Subscription> {
+    ): Promise<void> {
         const sub = await Subscription.load(this.atlas, guid, opts)
         this.subscriptions.set(guid, sub);
-        return sub;
     }
 
     async subscriptionGet(
