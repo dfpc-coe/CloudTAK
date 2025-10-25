@@ -7,10 +7,12 @@ import type {
 export interface DBSubscription {
     guid: string;
     name: string;
-    subscribed: boolean;
     meta: Mission;
     role?: MissionRole;
     token?: string;
+
+    dirty: boolean;
+    subscribed: boolean;
 }
 
 export interface DBSubscriptionLog {
@@ -34,6 +36,6 @@ export type DatabaseType = Dexie & {
 export const db = new Dexie('CloudTAK') as DatabaseType;
 
 db.version(1).stores({
-    subscription: 'guid, name, subscribed, meta, role, token',
+    subscription: 'guid, name, meta, role, token, subscribed, dirty',
     subscription_log: 'id, dtf, created, mission, content, creatorUid, contentHashes, keywords, missionNames, servertime',
 });

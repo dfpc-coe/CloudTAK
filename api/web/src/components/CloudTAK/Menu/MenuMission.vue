@@ -285,7 +285,7 @@ async function deleteMission() {
 
     if (!subscription.value) return;
 
-    await subscription.value.delete(db);
+    await subscription.value.delete();
 
     const overlay = mapStore.getOverlayByMode('mission', String(route.params.mission));
     if (overlay) await mapStore.removeOverlay(overlay);
@@ -304,7 +304,7 @@ async function exportToPackage(format: string): Promise<void> {
 }
 
 async function fetchMission(): Promise<void> {
-    subscription.value = await Subscription.load(mapStore.atlas, String(route.params.mission), {
+    subscription.value = await Subscription.load(mapStore.worker, String(route.params.mission), {
         token: String(localStorage.token),
         missiontoken: token.value,
     });

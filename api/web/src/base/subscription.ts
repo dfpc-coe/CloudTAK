@@ -51,11 +51,11 @@ export default class Subscription {
 
     cots: Map<string, COT>;
 
-    _dirty: boolean;
-
+    dirty: boolean;
     subscribed: boolean;
 
-    _remote: BroadcastChannel | null;
+    _sync: BroadcastChannel
+    _remote: boolean;
     _atlas: Atlas | Remote<Atlas>;
 
     constructor(
@@ -70,7 +70,14 @@ export default class Subscription {
         }
     ) {
         this._atlas = atlas;
-        this._remote = (opts && opts.remote === true) ? new BroadcastChannel('sync') : null
+        this._sync = new BroadcastChannel('subscription');
+        this._remote = opts?.remote || false;
+
+        this._sync.onmessage = async (ev: MessageEvent) => {
+            if (ev.data.guid === this.guid) {
+                await this.reload();
+            }
+        };
 
         this.log = new SubscriptionLog(mission.guid, {
             missiontoken: opts.missiontoken,
@@ -88,7 +95,7 @@ export default class Subscription {
 
         if (opts?.missiontoken) this.missiontoken = opts.missiontoken;
 
-        this._dirty = false;
+        this.dirty = false;
 
         this.cots = new Map();
     }
@@ -106,8 +113,6 @@ export default class Subscription {
             .get(guid)
 
         if (exists) {
-            // TODO Check for Subscription Differences
-
             return new Subscription(
                 atlas,
                 exists.meta,
@@ -115,7 +120,7 @@ export default class Subscription {
                 {
                     token: opts.token,
                     missiontoken: exists.token,
-                    subscribed: exists.subscribed
+                    subscribed: opts.subscribed !== undefined ? opts.subscribed : exists.subscribed,
                 }
             );
         } else {
@@ -159,6 +164,7 @@ export default class Subscription {
             await db.subscription.put({
                 guid: sub.meta.guid,
                 name: sub.meta.name,
+                dirty: false,
                 subscribed: opts.subscribed,
                 meta: sub.meta,
                 role: sub.role,
@@ -173,16 +179,26 @@ export default class Subscription {
 
     async update(
         body: {
+            dirty?: boolean,
             subscribed?: boolean
         }
     ): Promise<void> {
         if (body.subscribed !== undefined) {
-            await db.subscription.update(this.guid, {
-                subscribed: body.subscribed
-            });
-            
             this.subscribed = body.subscribed;
         }
+
+        if (body.dirty !== undefined) {
+            this.dirty = body.dirty;
+        }
+
+        await db.subscription.update(this.guid, {
+            dirty: this.dirty,
+            subscribed: body.subscribed
+        });
+
+        this._sync.postMessage({
+            guid: this.guid
+        });
     }
 
     async collection(raw = false): Promise<FeatureCollection> {
@@ -228,7 +244,7 @@ export default class Subscription {
     ): Promise<void> {
         this.cots.set(String(cot.id), cot);
 
-        this._dirty = true;
+        this.dirty = true;
 
         const feat = cot.as_feature({
             clone: true
@@ -260,7 +276,7 @@ export default class Subscription {
 
         this.cots.delete(uid);
 
-        this._dirty = true;
+        this.dirty = true;
 
         const atlas = this._atlas as Atlas;
 
@@ -278,6 +294,24 @@ export default class Subscription {
         return Subscription.headers(this.missiontoken);
     }
 
+    /**
+     * Reload the Mission from the local Database
+     */
+    async reload(): Promise<void> {
+        const exists = await db.subscription
+            .get(this.guid)
+
+        if (exists) {
+            this.meta = exists.meta;
+            this.role = exists.role;
+            this.missiontoken = exists.token;
+            this.subscribed = exists.subscribed;
+        }
+    };
+
+    /**
+     * Perform a hard refresh of the Mission from the Server
+     */
     async refresh(): Promise<void> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.meta.guid));
 
@@ -288,7 +322,7 @@ export default class Subscription {
 
         this.meta = mission;
 
-        await this.log.refresh(db);
+        await this.log.refresh();
     };
     static async fetch(guid: string, token?: string, opts: {
         logs?: boolean
@@ -308,6 +342,61 @@ export default class Subscription {
             headers: Subscription.headers(token)
         }) as { data: Array<unknown> };
         if (list.data.length !== 1) throw new Error('Mission Error');
+    }
+
+    /**
+     * List all locally stored missions, with optional filtering
+     *
+     * @param filter - Filter options for the local mission list
+     * @param filter.role - Filter by minimum role
+     * @param filter.subscribed - Filter by subscription status
+     * @param filter.dirty - Filter by dirty status
+     */
+    static async localList(
+        filter?: {
+            role?: 'MISSION_OWNER' | 'MISSION_SUBSCRIBER' | 'MISSION_READONLY_SUBSCRIBER',
+            subscribed?: boolean,
+            dirty?: boolean
+        }
+    ): Promise<Set<{
+        guid: string;
+        name: string;
+    }>> {
+        let collection = db.subscription.toCollection();
+
+        if (filter?.subscribed !== undefined) {
+            collection = collection.filter((sub) => sub.subscribed === filter.subscribed);
+        }
+
+        if (filter?.dirty !== undefined) {
+            collection = collection.filter((sub) => sub.dirty === filter.dirty);
+        }
+
+        if (filter?.role !== undefined) {
+            collection = collection.filter((sub) => {
+                if (!sub.role) return false;
+
+                if (filter.role === 'MISSION_OWNER') {
+                    return sub.role.role === 'MISSION_OWNER'
+                } else if (filter.role === 'MISSION_SUBSCRIBER') {
+                    return sub.role.role === 'MISSION_OWNER' || sub.role.role === 'MISSION_SUBSCRIBER'
+                } else {
+                    return true;
+                }
+            });
+        }
+
+
+        const list = await collection
+            .sortBy('name');
+
+        const guids = new Set<string>();
+
+        for (const sub of list) {
+            guids.add(sub.guid);
+        }
+
+        return guids;
     }
 
     static async list(opts: {
