@@ -157,8 +157,8 @@ export default class Subscription {
             await db.subscription.put({
                 guid: sub.meta.guid,
                 name: sub.meta.name,
-                dirty: false,
-                subscribed: opts.subscribed,
+                dirty: sub.dirty,
+                subscribed: sub.subscribed,
                 meta: sub.meta,
                 role: sub.role,
                 token: opts.missiontoken || ''
@@ -186,7 +186,7 @@ export default class Subscription {
 
         await db.subscription.update(this.guid, {
             dirty: this.dirty,
-            subscribed: body.subscribed
+            subscribed: this.subscribed
         });
 
         this._sync.postMessage({
