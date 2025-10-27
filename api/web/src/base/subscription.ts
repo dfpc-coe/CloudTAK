@@ -3,9 +3,7 @@ import COT, { OriginMode } from './cot.ts'
 import { std, stdurl } from '../std.ts';
 import { useMapStore } from '../stores/map.ts';
 import { bbox } from '@turf/bbox';
-import type { DatabaseType } from '../base/database.ts';
 import SubscriptionLog from './subscription-logs.ts';
-import type { Remote } from 'comlink';
 import type Atlas from '../workers/atlas.ts';
 import type { Feature } from '../types.ts';
 import type {
@@ -63,7 +61,6 @@ export default class Subscription {
             subscribed: boolean,
             token: string,
             missiontoken?: string,
-            remote?: boolean
         }
     ) {
         this._sync = new BroadcastChannel('subscription');
@@ -98,7 +95,7 @@ export default class Subscription {
     static async load(
         guid: string,
         opts: {
-            token?: string
+            token: string
             atlas?: Atlas,
             missiontoken?: string,
             subscribed?: boolean
@@ -109,7 +106,6 @@ export default class Subscription {
 
         if (exists) {
             return new Subscription(
-                atlas,
                 exists.meta,
                 exists.role,
                 {
@@ -134,10 +130,12 @@ export default class Subscription {
             }) as MissionRole;
 
             const sub = new Subscription(
-                atlas,
                 mission,
                 role,
-                opts
+                {
+                    subscribed: false,
+                    ...opts
+                }
             );
 
             if (opts.atlas && opts.subscribed) {
@@ -147,7 +145,7 @@ export default class Subscription {
                 }) as FeatureCollection;
 
                 for (const feat of fc.features) {
-                    const cot = new COT(atlas, feat as Feature, {
+                    const cot = new COT(opts.atlas, feat as Feature, {
                         mode: OriginMode.MISSION,
                         mode_id: guid
                     });
@@ -370,9 +368,9 @@ export default class Subscription {
                 if (!sub.role) return false;
 
                 if (filter.role === 'MISSION_OWNER') {
-                    return sub.role.role === 'MISSION_OWNER'
+                    return sub.role.type === 'MISSION_OWNER'
                 } else if (filter.role === 'MISSION_SUBSCRIBER') {
-                    return sub.role.role === 'MISSION_OWNER' || sub.role.role === 'MISSION_SUBSCRIBER'
+                    return sub.role.type === 'MISSION_OWNER' || sub.role.type === 'MISSION_SUBSCRIBER'
                 } else {
                     return true;
                 }
@@ -383,7 +381,10 @@ export default class Subscription {
         const list = await collection
             .sortBy('name');
 
-        const guids = new Set<string>();
+        const guids = new Set<{
+            guid: string;
+            name: string;
+        }>();
 
         for (const sub of list) {
             guids.add({

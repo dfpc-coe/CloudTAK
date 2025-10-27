@@ -8,7 +8,7 @@ export interface DBSubscription {
     guid: string;
     name: string;
     meta: Mission;
-    role?: MissionRole;
+    role: MissionRole;
     token?: string;
 
     dirty: boolean;

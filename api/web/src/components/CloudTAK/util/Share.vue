@@ -256,7 +256,7 @@ import {
     IconShare2
 } from '@tabler/icons-vue';
 import Subscription from '../../../base/subscription.ts';
-import type { Mission, Contact, ContactList, Feature, Group } from '../../../types.ts'
+import type { Contact, ContactList, Feature, Group } from '../../../types.ts'
 import type { WorkerMessage } from '../../../base/events.ts';
 import COTContact from '../util/Contact.vue';
 import { useMapStore } from '../../../stores/map.ts';

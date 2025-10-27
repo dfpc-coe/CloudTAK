@@ -1,6 +1,5 @@
 import { db } from './database.ts';
 import { std, stdurl } from '../std.ts';
-import type { DatabaseType } from '../base/database.ts';
 import type {
     MissionLog,
     MissionLogList

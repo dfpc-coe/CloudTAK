@@ -112,7 +112,7 @@ import {
     IconAmbulance,
     IconShare2
 } from '@tabler/icons-vue';
-import type { Feature, Mission } from '../../../types.ts';
+import type { Feature } from '../../../types.ts';
 import Subscription from '../../../base/subscription.ts';
 import { server } from '../../../std.ts';
 import { useMapStore } from '../../../stores/map.ts';

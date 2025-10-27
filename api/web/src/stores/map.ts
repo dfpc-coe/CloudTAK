@@ -340,7 +340,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!sub || !sub.subscribed) {
                 await this.worker.db.subscriptionLoad(guid, {
-                    token: localStorage.token,
                     subscribed: true,
                     missiontoken: overlay.token || undefined
                 })
