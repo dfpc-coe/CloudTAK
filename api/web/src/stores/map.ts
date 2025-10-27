@@ -332,29 +332,14 @@ export const useMapStore = defineStore('cloudtak', {
             const oStore = this.map.getSource(String(overlay.id));
             if (!oStore) return false
 
-            let sub = await Subscription.load(guid, {
+            const sub = await Subscription.load(guid, {
                 token: localStorage.token,
                 subscribed: true,
                 missiontoken: overlay.token || undefined
             });
 
-            if (!sub || !sub.subscribed) {
-                await this.worker.db.subscriptionLoad(guid, {
-                    subscribed: true,
-                    missiontoken: overlay.token || undefined
-                })
-
-                sub = await Subscription.load(guid, {
-                    token: localStorage.token,
-                    subscribed: true,
-                    missiontoken: overlay.token || undefined
-                });
-
-                if (!sub) return false;
-            }
-
             // @ts-expect-error Source.setData is not defined
-            oStore.setData(await sub.collection());
+            oStore.setData(await sub.feature.collection());
 
             await sub.update({ dirty: false });
 
@@ -734,6 +719,7 @@ export const useMapStore = defineStore('cloudtak', {
                     try {
                         await this.loadMission(overlay.mode_id);
                     } catch (err) {
+                        console.error('Failed to load Mission', err)
                         // TODO: Handle this gracefully
                         // The Mission Sync is either:
                         // - Deleted

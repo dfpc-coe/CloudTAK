@@ -1,15 +1,11 @@
 import { db } from './database.ts'
-import COT, { OriginMode } from './cot.ts'
+import COT from './cot.ts'
 import { std, stdurl } from '../std.ts';
 import { useMapStore } from '../stores/map.ts';
-import { bbox } from '@turf/bbox';
-import SubscriptionLog from './subscription-logs.ts';
+import SubscriptionLog from './subscription-log.ts';
+import SubscriptionFeature from './subscription-feature.ts';
 import type Atlas from '../workers/atlas.ts';
 import type { Feature } from '../types.ts';
-import type {
-    BBox,
-    FeatureCollection
-} from 'geojson'
 import type {
     Mission,
     MissionRole,
@@ -22,6 +18,21 @@ import type {
     MissionSubscriptions
 } from '../types.ts';
 
+export enum SubscriptionEventType {
+    CREATE = 'subscription::create',
+    UPDATE = 'subscription::update',
+    DELETE = 'subscription::delete'
+}
+
+export type SubscriptionEvent = {
+    guid: string;
+    type: SubscriptionEventType;
+    state: {
+        dirty: boolean;
+        subscribed: boolean;
+    }
+}
+
 /**
  * High Level Wrapper around the Data/Mission Sync API
  *
@@ -32,7 +43,6 @@ import type {
  * @property {string} token - The CloudTAK Authentication token for API calls
  * @property {string} [missiontoken] - The mission token for authentication
  *
- * @property {Map<string, COT>} cots - A map of COT features in the mission
  * @property {boolean} subscribed - Whether the user is subscribed to the mission
  */
 export default class Subscription {
@@ -43,11 +53,10 @@ export default class Subscription {
     role: MissionRole;
 
     log: SubscriptionLog;
+    feature: SubscriptionFeature;
 
     token: string;
     missiontoken?: string;
-
-    cots: Map<string, COT>;
 
     dirty: boolean;
     subscribed: boolean;
@@ -76,6 +85,11 @@ export default class Subscription {
             token: opts.token
         });
 
+        this.feature = new SubscriptionFeature(mission.guid, {
+            missiontoken: opts.missiontoken,
+            token: opts.token
+        });
+
         this.subscribed = opts.subscribed;
 
         this.guid = mission.guid;
@@ -88,32 +102,48 @@ export default class Subscription {
         if (opts?.missiontoken) this.missiontoken = opts.missiontoken;
 
         this.dirty = false;
+    }
 
-        this.cots = new Map();
+    /**
+     * Return a Subscription instance of one already exists in the local DB,
+     */
+    static async from(
+        guid: string,
+        token: string,
+        opts?: {
+            subscribed?: boolean
+        }
+    ): Promise<Subscription | undefined> {
+        const exists = await db.subscription
+            .get(guid)
+
+        if (!exists || (opts?.subscribed !== undefined && exists.subscribed !== opts.subscribed)) {
+            return;
+        }
+
+        return new Subscription(
+            exists.meta,
+            exists.role,
+            {
+                token: token,
+                missiontoken: exists.token,
+                subscribed: opts?.subscribed !== undefined ? opts.subscribed : exists.subscribed,
+            }
+        );
     }
 
     static async load(
         guid: string,
         opts: {
             token: string
-            atlas?: Atlas,
             missiontoken?: string,
             subscribed?: boolean
         }
     ): Promise<Subscription> {
-        const exists = await db.subscription
-            .get(guid)
+        const exists = await this.from(guid, opts.token);
 
         if (exists) {
-            return new Subscription(
-                exists.meta,
-                exists.role,
-                {
-                    token: opts.token,
-                    missiontoken: exists.token,
-                    subscribed: opts.subscribed !== undefined ? opts.subscribed : exists.subscribed,
-                }
-            );
+            return exists;
         } else {
             const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
 
@@ -138,22 +168,6 @@ export default class Subscription {
                 }
             );
 
-            if (opts.atlas && opts.subscribed) {
-                const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
-                    headers: Subscription.headers(opts.missiontoken),
-                    token: opts.token
-                }) as FeatureCollection;
-
-                for (const feat of fc.features) {
-                    const cot = new COT(opts.atlas, feat as Feature, {
-                        mode: OriginMode.MISSION,
-                        mode_id: guid
-                    });
-
-                    sub.cots.set(String(cot.id), cot);
-                }
-            }
-
             await db.subscription.put({
                 guid: sub.meta.guid,
                 name: sub.meta.name,
@@ -165,6 +179,7 @@ export default class Subscription {
             });
 
             await sub.log.refresh();
+            await sub.feature.refresh();
 
             return sub;
         }
@@ -190,95 +205,30 @@ export default class Subscription {
         });
 
         this._sync.postMessage({
-            guid: this.guid
+            guid: this.guid,
+            type: SubscriptionEventType.UPDATE,
+            state: {
+                dirty: this.dirty,
+                subscribed: this.subscribed,
+            }
         });
-    }
-
-    async collection(raw = false): Promise<FeatureCollection> {
-        return {
-            type: 'FeatureCollection',
-            features: Array.from(this.cots.values()).map((f: COT) => {
-                if (raw) {
-                    return f.as_feature();
-                } else {
-                    return f.as_rendered();
-                }
-            })
-        }
-    }
-
-    async bounds(): Promise<BBox> {
-        return bbox(await this.collection());
     }
 
     async delete(): Promise<void> {
         const mapStore = useMapStore();
 
         await Subscription.delete(this.meta.guid, this.missiontoken);
-        await mapStore.worker.db.subscriptionDelete(this.meta.guid);
 
         await db.subscription.delete(this.meta.guid);
-    }
 
-    /**
-     * Upsert a feature into the mission.
-     * This will udpate the feature in the local DB, submit it to the TAK Server and
-     * mark the subscription as dirty for a re-render
-     *
-     * @param cot - The COT object to upsert
-     * @param opts - Options for updating the feature
-     * @param opts.skipNetwork - If true, the feature will not be updated on the server - IE in response to a Mission Change event
-     */
-    async updateFeature(
-        atlas: Atlas,
-        cot: COT,
-        opts: {
-            skipNetwork?: boolean
-        } = {}
-    ): Promise<void> {
-        this.cots.set(String(cot.id), cot);
-
-        this.dirty = true;
-
-        const feat = cot.as_feature({
-            clone: true
+        this._sync.postMessage({
+            guid: this.guid,
+            type: SubscriptionEventType.DELETE,
+            state: {
+                dirty: this.dirty,
+                subscribed: this.subscribed,
+            }
         });
-
-        feat.properties.dest = [{
-            mission: this.meta.name
-        }];
-
-        if (!opts.skipNetwork) {
-            await atlas.conn.sendCOT(feat);
-        }
-    }
-
-    /**
-     * Delete a feature from the mission.
-     *
-     * @param uid - The unique ID of the feature to delete
-     * @param opts - Options for deleting the feature
-     * @param opts.skipNetwork - If true, the feature will not be deleted from the server - IE in response to a Mission Change event
-     */
-    async deleteFeature(
-        atlas: Atlas,
-        uid: string,
-        opts: {
-            skipNetwork?: boolean
-        } = {}
-    ): Promise<void> {
-        this.cots.delete(uid);
-
-        this.dirty = true;
-
-        if (!opts.skipNetwork) {
-            const url = stdurl(`/api/marti/missions/${this.meta.guid}/cot/${uid}`);
-            await std(url, {
-                method: 'DELETE',
-                headers: Subscription.headers(this.missiontoken),
-                token:  atlas.token
-            })
-        }
     }
 
     headers(): Record<string, string> {
@@ -427,19 +377,6 @@ export default class Subscription {
         };
 
         return res.data
-    }
-
-    static async featList(
-        guid: string,
-        opts: {
-            token?: string
-            missionToken?: string
-        } = {}
-    ): Promise<FeatureCollection> {
-        return await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
-            token: opts.token,
-            headers: Subscription.headers(opts.missionToken)
-        }) as FeatureCollection;
     }
 
     static async changes(guid: string, opts: {

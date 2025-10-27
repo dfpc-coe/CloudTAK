@@ -3,7 +3,6 @@
 */
 
 import COT from '../base/cot.ts';
-import Subscription from '../base/subscription.ts';
 import type Atlas from '../workers/atlas.ts';
 import type { Remote, TransferHandler } from 'comlink'
 import type { Feature } from '../types.ts';
@@ -26,68 +25,6 @@ export class CloudTAKTransferHandler {
 
         transferHandlers.set("cot", this.cot);
         transferHandlers.set("cots", this.cots);
-        transferHandlers.set("subscription", this.subscription);
-    }
-
-    subscription: TransferHandler<Subscription, {
-        mission: Mission,
-        role: MissionRole,
-        subscribed: boolean,
-        missiontoken?: string,
-        feats: Array<Feature>,
-    }> = {
-        canHandle: (obj): obj is Subscription => {
-            return obj instanceof Subscription;
-        },
-        serialize: (subscription: Subscription) => {
-            const feats = [];
-            for (const cot of subscription.cots.values()) {
-                feats.push(cot.as_feature());
-            }
-
-            return [{
-                missiontoken: subscription.missiontoken,
-                mission: subscription.meta,
-                role: subscription.role,
-                subscribed: subscription.subscribed,
-                feats: feats
-            }, []]
-        },
-        deserialize: (ser: {
-            mission: Mission,
-            role: MissionRole,
-            subscribed: boolean,
-            missiontoken?: string,
-            feats: Array<Feature>,
-        }) => {
-            let token: string;
-
-            if (this.remote) {
-                token = String(localStorage.token);
-            } else {
-                token = (this.atlas as Atlas).token;
-            }
-
-            const sub = new Subscription(
-                ser.mission,
-                ser.role,
-                {
-                    token: token,
-                    missiontoken: ser.missiontoken,
-                    subscribed: ser.subscribed
-                }
-            );
-
-            for (const feat of ser.feats) {
-                const cot = new COT(this.atlas, feat, feat.origin, {
-                    remote: this.remote
-                });
-
-                sub.cots.set(cot.id, cot);
-            }
-
-            return sub;
-        }
     }
 
     cots: TransferHandler<Set<COT>, Array<Feature>> = {
