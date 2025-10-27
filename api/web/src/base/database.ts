@@ -1,8 +1,17 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type {
+    Feature,
     Mission,
     MissionRole
 } from '../types.ts';
+
+export interface DBSubscriptionFeature {
+    id: string;
+    path: string;
+    mission: string;
+    properties: Feature["properties"];
+    geometry: Feature["geometry"];
+}
 
 export interface DBSubscription {
     guid: string;
@@ -31,6 +40,7 @@ export interface DBSubscriptionLog {
 export type DatabaseType = Dexie & {
     subscription: EntityTable<DBSubscription, 'guid'>,
     subscription_log: EntityTable<DBSubscriptionLog, 'id'>
+    subscription_feature: EntityTable<DBSubscriptionFeature, 'id'>,
 };
 
 export const db = new Dexie('CloudTAK') as DatabaseType;
@@ -38,4 +48,5 @@ export const db = new Dexie('CloudTAK') as DatabaseType;
 db.version(1).stores({
     subscription: 'guid, name, meta, role, token, subscribed, dirty',
     subscription_log: 'id, dtf, created, mission, content, creatorUid, contentHashes, keywords, missionNames, servertime',
+    subscription_feature: 'id, path, mission, properties, geometry',
 });

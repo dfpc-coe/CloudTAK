@@ -124,11 +124,9 @@ async function refresh() {
 }
 
 async function fetchFeats() {
-    const fc = await Subscription.featList(props.subscription.name, {
-        missionToken: props.subscription.token
-    })
+    const features = await props.subscription.feature.list();
 
-    for (const feat of fc.features) {
+    for (const feat of features) {
         feats.value.set(feat.id, feat);
         orphaned.value.add(String(feat.id));
     }
