@@ -3,7 +3,6 @@
 */
 
 import { std } from '../std.ts';
-import type { DatabaseType } from '../base/database.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
@@ -105,13 +104,13 @@ export default class AtlasDatabase {
     async subscriptionLoad(
         guid: string,
         opts: {
-            token?: string
             missiontoken?: string
             subscribed: boolean
         }
     ): Promise<void> {
         const sub = await Subscription.load(guid, {
             ...opts,
+            token: this.atlas.token,
             atlas: this.atlas
         })
         this.subscriptions.set(guid, sub);

@@ -128,6 +128,7 @@
 
 <script setup lang='ts'>
 import { ref, computed } from 'vue'
+import { from } from 'rxjs';
 import type { Ref, ComputedRef } from 'vue';
 import type { MissionLog } from '../../../../types.ts';
 import TagEntry from '../../util/TagEntry.vue';
@@ -152,9 +153,11 @@ const props = defineProps<{
     subscription: Subscription
 }>();
 
-const logs: Ref<Array<MissionLog>> = useObservable(liveQuery(async () => {
-    return await props.subscription.log.list()
-}))
+const logs: Ref<Array<MissionLog>> = useObservable(
+    from(liveQuery(async () => {
+        return await props.subscription.log.list()
+    }))
+)
 
 const submitOnEnter = ref(true);
 const paging = ref({ filter: '' });

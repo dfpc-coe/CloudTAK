@@ -32,7 +32,6 @@ export class CloudTAKTransferHandler {
     subscription: TransferHandler<Subscription, {
         mission: Mission,
         role: MissionRole,
-        dirty: boolean,
         subscribed: boolean,
         missiontoken?: string,
         feats: Array<Feature>,
@@ -50,22 +49,32 @@ export class CloudTAKTransferHandler {
                 missiontoken: subscription.missiontoken,
                 mission: subscription.meta,
                 role: subscription.role,
+                subscribed: subscription.subscribed,
                 feats: feats
             }, []]
         },
         deserialize: (ser: {
             mission: Mission,
             role: MissionRole,
+            subscribed: boolean,
             missiontoken?: string,
             feats: Array<Feature>,
         }) => {
+            let token: string;
+
+            if (this.remote) {
+                token = String(localStorage.token);
+            } else {
+                token = (this.atlas as Atlas).token;
+            }
+
             const sub = new Subscription(
-                this.atlas,
                 ser.mission,
                 ser.role,
                 {
+                    token: token,
                     missiontoken: ser.missiontoken,
-                    remote: this.remote
+                    subscribed: ser.subscribed
                 }
             );
 

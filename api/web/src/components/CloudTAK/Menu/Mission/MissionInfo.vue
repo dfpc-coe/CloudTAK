@@ -204,7 +204,6 @@ import {
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import Overlay from '../../../../base/overlay.ts';
 import { useMapStore } from '../../../../stores/map.ts';
-import { db } from '../../../../base/database.ts';
 const mapStore = useMapStore();
 
 const emit = defineEmits(['refresh']);

@@ -249,7 +249,6 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMapStore } from '../../../stores/map.ts';
-import { db } from '../../../base/database.ts';
 
 const mapStore = useMapStore();
 const route = useRoute();
