@@ -90,19 +90,6 @@ export default class AtlasDatabase {
         await this.loadArchive()
     }
 
-    async subscriptionList(): Promise<Array<{
-        meta: Mission
-        role: MissionRole
-    }>> {
-
-        return Array.from(this.subscriptions.values()).map((sub) => {
-            return {
-                meta: sub.meta,
-                role: sub.role
-            }
-        });
-    }
-
     async subscriptionLoad(
         guid: string,
         opts: {
@@ -115,6 +102,7 @@ export default class AtlasDatabase {
             token: this.atlas.token,
             atlas: this.atlas
         })
+
         this.subscriptions.set(guid, sub);
     }
 
