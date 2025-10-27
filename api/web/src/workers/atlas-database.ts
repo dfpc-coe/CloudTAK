@@ -65,7 +65,9 @@ export default class AtlasDatabase {
 
     async makeActiveMission(guid? : string): Promise<void> {
         if (guid) {
-            this.mission = await this.subscriptionGet(guid);
+            const subscription = this.subscriptions.get(guid);
+            if (!subscription) throw new Error('Could not set Mission as active as it does not exist');
+            this.mission = subscription;
         } else {
             this.mission = undefined;
         }
@@ -114,23 +116,6 @@ export default class AtlasDatabase {
             atlas: this.atlas
         })
         this.subscriptions.set(guid, sub);
-    }
-
-    async subscriptionGet(
-        id: string,
-        opts: {
-            refresh?: boolean
-        } = {}
-     ): Promise<Subscription | undefined> {
-        const sub = this.subscriptions.get(id);
-
-        if (!sub) return;
-
-        if (opts.refresh) {
-            await sub.refresh();
-        }
-
-        return sub;
     }
 
     async subscriptionDelete(id: string): Promise<void> {
@@ -462,7 +447,7 @@ export default class AtlasDatabase {
                 }
             }
         } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-            const subscription = await this.subscriptionGet(cot.origin.mode_id);
+            const subscription = this.subscriptions.get(cot.origin.mode_id);
             if (!subscription) throw new Error('Could not delete as Mission Subscription does not exist');
 
             await subscription.deleteFeature(this.atlas, cot.id, {
