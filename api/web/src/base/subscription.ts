@@ -55,11 +55,8 @@ export default class Subscription {
     subscribed: boolean;
 
     _sync: BroadcastChannel
-    _remote: boolean;
-    _atlas: Atlas | Remote<Atlas>;
 
     constructor(
-        atlas: Atlas | Remote<Atlas>,
         mission: Mission,
         role: MissionRole,
         opts: {
@@ -69,9 +66,7 @@ export default class Subscription {
             remote?: boolean
         }
     ) {
-        this._atlas = atlas;
         this._sync = new BroadcastChannel('subscription');
-        this._remote = opts?.remote || false;
 
         this._sync.onmessage = async (ev: MessageEvent) => {
             if (ev.data.guid === this.guid) {
@@ -101,10 +96,10 @@ export default class Subscription {
     }
 
     static async load(
-        atlas: Atlas,
         guid: string,
         opts: {
             token?: string
+            atlas?: Atlas,
             missiontoken?: string,
             subscribed?: boolean
         }
@@ -145,7 +140,7 @@ export default class Subscription {
                 opts
             );
 
-            if (opts.subscribed) {
+            if (opts.atlas && opts.subscribed) {
                 const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
                     headers: Subscription.headers(opts.missiontoken),
                     token: opts.token
@@ -237,6 +232,7 @@ export default class Subscription {
      * @param opts.skipNetwork - If true, the feature will not be updated on the server - IE in response to a Mission Change event
      */
     async updateFeature(
+        atlas: Atlas,
         cot: COT,
         opts: {
             skipNetwork?: boolean
@@ -255,7 +251,7 @@ export default class Subscription {
         }];
 
         if (!opts.skipNetwork) {
-            await this._atlas.conn.sendCOT(feat);
+            await atlas.conn.sendCOT(feat);
         }
     }
 
@@ -267,18 +263,15 @@ export default class Subscription {
      * @param opts.skipNetwork - If true, the feature will not be deleted from the server - IE in response to a Mission Change event
      */
     async deleteFeature(
+        atlas: Atlas,
         uid: string,
         opts: {
             skipNetwork?: boolean
         } = {}
     ): Promise<void> {
-        if (this._remote) return;
-
         this.cots.delete(uid);
 
         this.dirty = true;
-
-        const atlas = this._atlas as Atlas;
 
         if (!opts.skipNetwork) {
             const url = stdurl(`/api/marti/missions/${this.meta.guid}/cot/${uid}`);
@@ -317,7 +310,7 @@ export default class Subscription {
 
         const mission = await std(url, {
             headers: this.headers(),
-            token: String(this._atlas.token)
+            token: this.token
         }) as Mission;
 
         this.meta = mission;
@@ -393,7 +386,10 @@ export default class Subscription {
         const guids = new Set<string>();
 
         for (const sub of list) {
-            guids.add(sub.guid);
+            guids.add({
+                name: sub.name,
+                guid: sub.guid
+            });
         }
 
         return guids;

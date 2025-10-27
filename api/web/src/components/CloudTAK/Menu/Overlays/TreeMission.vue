@@ -31,6 +31,8 @@ const props = defineProps<{
 const subscription = ref<Subscription | undefined >(undefined);
 
 onMounted(async () => {
-    subscription.value = await Subscription.load(mapStore.worker, props.overlay.mode_id || '');
+    subscription.value = await Subscription.load(props.overlay.mode_id || '', {
+        token: localStorage.token,
+    });
 });
 </script>

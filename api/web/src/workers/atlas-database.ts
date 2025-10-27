@@ -110,7 +110,10 @@ export default class AtlasDatabase {
             subscribed: boolean
         }
     ): Promise<void> {
-        const sub = await Subscription.load(this.atlas, guid, opts)
+        const sub = await Subscription.load(guid, {
+            ...opts,
+            atlas: this.atlas
+        })
         this.subscriptions.set(guid, sub);
     }
 
@@ -463,7 +466,7 @@ export default class AtlasDatabase {
             const subscription = await this.subscriptionGet(cot.origin.mode_id);
             if (!subscription) throw new Error('Could not delete as Mission Subscription does not exist');
 
-            await subscription.deleteFeature(cot.id, {
+            await subscription.deleteFeature(this.atlas, cot.id, {
                 skipNetwork: opts.skipNetwork
             });
         }
@@ -515,7 +518,7 @@ export default class AtlasDatabase {
                         continue;
                     }
 
-                    await sub.deleteFeature(change.contentUid, {
+                    await sub.deleteFeature(this.atlas, change.contentUid, {
                         // This is critical to ensure a recursive loop of doesn't occur
                         skipNetwork: true
                     });
@@ -625,7 +628,7 @@ export default class AtlasDatabase {
                 }, { skipSave: opts.skipSave })
             }
 
-            await sub.updateFeature(exists, {
+            await sub.updateFeature(this.atlas, exists, {
                 skipNetwork: !opts.authored
             });
 
