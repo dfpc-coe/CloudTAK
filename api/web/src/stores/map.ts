@@ -332,7 +332,7 @@ export const useMapStore = defineStore('cloudtak', {
             const oStore = this.map.getSource(String(overlay.id));
             if (!oStore) return false
 
-            let sub = await Subscription.load(this.worker, guid, {
+            let sub = await Subscription.load(guid, {
                 token: localStorage.token,
                 subscribed: true,
                 missiontoken: overlay.token || undefined
@@ -345,7 +345,7 @@ export const useMapStore = defineStore('cloudtak', {
                     missiontoken: overlay.token || undefined
                 })
 
-                sub = await Subscription.load(this.worker, guid, {
+                sub = await Subscription.load(guid, {
                     token: localStorage.token,
                     subscribed: true,
                     missiontoken: overlay.token || undefined

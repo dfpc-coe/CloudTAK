@@ -13,8 +13,57 @@ export const LayerIncomingResponse = AugmentedLayerIncoming;
 export const LayerOutgoingResponse = AugmentedLayerOutgoing;
 export const DataResponse = AugmentedData;
 
+export const GeoJSONFeatureGeometryPoint = Type.Object({
+    type: Type.Literal('Point'),
+    coordinates: Type.Tuple([Type.Number(), Type.Number()])
+});
+
+export const GeoJSONFeatureGeometryMultiPoint = Type.Object({
+    type: Type.Literal('MultiPoint'),
+    coordinates: Type.Array(Type.Tuple([Type.Number(), Type.Number()]))
+});
+
+export const GeoJSONFeatureGeometryLineString = Type.Object({
+    type: Type.Literal('LineString'),
+    coordinates: Type.Array(Type.Tuple([Type.Number(), Type.Number()]))
+});
+
+export const GeoJSONFeatureGeometryMultiLineString = Type.Object({
+    type: Type.Literal('MultiLineString'),
+    coordinates: Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()])))
+});
+
+export const GeoJSONFeatureGeometryPolygon = Type.Object({
+    type: Type.Literal('Polygon'),
+    coordinates: Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()])))
+});
+
+export const GeoJSONFeatureGeometryMultiPolygon = Type.Object({
+    type: Type.Literal('MultiPolygon'),
+    coordinates: Type.Array(Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()]))))
+});
+
+export const MultiGeoJSONFeature = Type.Object({
+    id: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    type: Type.Literal('Feature'),
+    properties: Type.Record(Type.String(), Type.Unknown()),
+    geometry: Type.Union([
+        GeoJSONFeatureGeometryPoint,
+        GeoJSONFeatureGeometryMultiPoint,
+        GeoJSONFeatureGeometryLineString,
+        GeoJSONFeatureGeometryMultiLineString,
+        GeoJSONFeatureGeometryPolygon,
+        GeoJSONFeatureGeometryMultiPolygon
+    ])
+});
+
+export const MultiGeoJSONFeatureCollection = Type.Object({
+    type: Type.Literal('FeatureCollection'),
+    features: Type.Array(MultiGeoJSONFeature)
+});
+
 export const GeoJSONFeature = Type.Object({
-    id: Type.Optional(Type.String()),
+    id: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     type: Type.Literal('Feature'),
     properties: Type.Record(Type.String(), Type.Unknown()),
     geometry: Feature.Geometry
