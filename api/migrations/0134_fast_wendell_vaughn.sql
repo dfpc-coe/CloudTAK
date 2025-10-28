@@ -1,0 +1,1 @@
+ALTER TABLE "profile_overlays" ADD COLUMN "frequency" integer;
