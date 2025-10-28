@@ -897,7 +897,7 @@ async function mountMap(): Promise<void> {
                 mapStore.map.setProjection({ type: "globe" });
             }
 
-            await mapStore.worker.db.updateImages(mapStore.map.listImages());
+            await mapStore.icons.updateImages();
 
             await mapStore.initOverlays();
 

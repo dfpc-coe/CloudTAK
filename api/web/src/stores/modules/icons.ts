@@ -1,7 +1,7 @@
 /**
  * Icon Color Manager for runtime icon recoloring
  */
-
+import { db } from '../../base/database.ts';
 import ms from 'milsymbol'
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import type { IconsetList } from '../../types.ts';
@@ -34,6 +34,11 @@ export default class IconManager {
         }
 
         return sprites;
+    }
+
+    public async updateImages(): Promise<void> {
+        const images = this.map.listImages();
+        await db.icon.bulkPut(images.map(id => ({ id })));
     }
 
     public async onStyleImageMissing(e: { id: string }): Promise<void> {
