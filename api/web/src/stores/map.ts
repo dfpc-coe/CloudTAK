@@ -274,7 +274,7 @@ export const useMapStore = defineStore('cloudtak', {
         },
 
         /**
-         * Trigger a rerender of the underlyin GeoJSON Features
+         * Trigger a rerender of the underlying GeoJSON Features
          */
         refresh: async function(): Promise<void> {
             await this.updateCOT();

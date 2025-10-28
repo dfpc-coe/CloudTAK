@@ -128,6 +128,9 @@ export default class Subscription {
         );
     }
 
+    /**
+     * Loads an existing Subscription from the local DB, or obtains it from the server
+     */
     static async load(
         guid: string,
         opts: {
@@ -139,6 +142,7 @@ export default class Subscription {
         const exists = await this.from(guid, opts.token);
 
         if (exists) {
+            await exists.refresh();
             return exists;
         } else {
             const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
@@ -174,10 +178,7 @@ export default class Subscription {
                 token: opts.missiontoken || ''
             });
 
-            await Promise.all([
-                sub.log.refresh(),
-                sub.feature.refresh(),
-            ]);
+            await sub.refresh();
 
             return sub;
         }
@@ -249,18 +250,26 @@ export default class Subscription {
     /**
      * Perform a hard refresh of the Mission from the Server
      */
-    async refresh(): Promise<void> {
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.meta.guid));
+    async refresh(opts?: {
+        refreshMission?: boolean
+    }): Promise<void> {
+        if (opts?.refreshMission) {
+            const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.meta.guid));
 
-        const mission = await std(url, {
-            headers: this.headers(),
-            token: this.token
-        }) as Mission;
+            const mission = await std(url, {
+                headers: this.headers(),
+                token: this.token
+            }) as Mission;
 
-        this.meta = mission;
+            this.meta = mission;
+        }
 
-        await this.log.refresh();
+        await Promise.all([
+            this.log.refresh(),
+            this.feature.refresh(),
+        ]);
     };
+
     static async fetch(guid: string, token?: string, opts: {
         logs?: boolean
     } = {}): Promise<Mission> {
