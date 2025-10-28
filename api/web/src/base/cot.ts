@@ -392,40 +392,50 @@ export default class COT {
         }
     }
 
+    as_rendered() {
+        return COT.as_rendered(this.as_feature());
+    }
+
     /**
      * The slimmer we can get the Features, the better
      * This returns the minium feature we need to actually style the COT in the vector tiles
      */
-    as_rendered(): GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> {
+    static as_rendered(
+        input: Feature
+    ): GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> {
         const feat: GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> = {
-            id: this.vectorId(),
+            id: this.vectorId(input.id),
             type: 'Feature',
             properties: {
-                id: this.id,        //Vector Tiles only support integer IDs so store in props
-                callsign: this._properties.callsign,
+                id: input.id,        //Vector Tiles only support integer IDs so store in props
+                callsign: input.properties.callsign,
             },
-            geometry: this._geometry
+            geometry: input.geometry
         };
 
         if (!feat.properties) feat.properties = {};
 
         for (const prop of RENDERED_PROPERTIES) {
-            if (this._properties[prop] !== undefined) {
-                feat.properties[prop] = this._properties[prop];
+            if (input.properties[prop] !== undefined) {
+                feat.properties[prop] = input.properties[prop];
             }
         }
 
         return feat;
     }
 
+    vectorId(): number {
+        return COT.vectorId(this.id);
+    }
+
     /**
      * string hash function to convert the COT ID into a number for use as a vector tile feature ID
      */
-    vectorId(): number {
+    static vectorId(id: string): number {
         let h = 0;
-        if (this.id.length === 0) return h;
-        for (let i = 0; i < this.id.length; i++) {
-            h = (h << 5) - h + this.id.charCodeAt(i);
+        if (id.length === 0) return h;
+        for (let i = 0; i < id.length; i++) {
+            h = (h << 5) - h + id.charCodeAt(i);
             h |= 0; // Ensure 32-bit integer
         }
 

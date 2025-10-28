@@ -186,7 +186,13 @@ export const useMapStore = defineStore('cloudtak', {
 
             await overlay.delete();
             if (overlay.mode === 'mission' && overlay.mode_id) {
-                await this.worker.db.subscriptionDelete(overlay.mode_id);
+                const sub = await Subscription.from(overlay.mode_id, localStorage.token, {
+                    subscribed: true
+                });
+
+                if (sub) {
+                    await sub.update({ subscribed: false });
+                }
             }
         },
         makeActiveMission: async function(mission?: Subscription): Promise<void> {
