@@ -44,132 +44,138 @@
                         :key='overlay.id'
                         class='col-lg py-2'
                     >
-                        <div class='py-2 px-3'>
-                            <div class='col-12 d-flex align-items-center'>
-                                <IconGripVertical
-                                    v-if='isDraggable'
-                                    v-tooltip='"Draw to reorder"'
-                                    class='drag-handle cursor-move'
-                                    role='button'
-                                    tabindex='0'
-                                    :size='20'
-                                    stroke='1'
-                                />
-
-                                <template v-if='!overlay.healthy()'>
-                                    <IconAlertTriangle
-                                        v-if='!isDraggable && !opened.has(overlay.id)'
-                                        v-tooltip='overlay._error ? overlay._error.message : "Unknown Error"'
-                                        :size='20'
-                                        stroke='1'
-                                    />
-                                </template>
-                                <template v-else-if='overlay.id !== 0'>
-                                    <TablerIconButton
-                                        v-if='!isDraggable && !opened.has(overlay.id)'
-                                        title='Expand Options'
-                                        @click='opened.add(overlay.id)'
-                                    >
-                                        <IconChevronRight
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
-                                    <TablerIconButton
-                                        v-else-if='!isDraggable'
-                                        title='Collapse Options'
-                                        @click='opened.delete(overlay.id)'
-                                    >
-                                        <IconChevronDown
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
-                                </template>
-
-                                <span class='mx-2'>
-                                    <IconMap
-                                        v-if='overlay.type === "raster"'
-                                        v-tooltip='"Raster"'
-                                        :size='20'
-                                        stroke='1'
-                                    />
-                                    <IconAmbulance
-                                        v-else-if='overlay.type === "geojson" && overlay.mode === "mission"'
-                                        v-tooltip='"Data Sync"'
-                                        :size='20'
-                                        stroke='1'
-                                    />
-                                    <IconVector
-                                        v-else
-                                        v-tooltip='"Vector"'
-                                        :size='20'
-                                        stroke='1'
-                                    />
-                                </span>
-
-                                <span
-                                    class='mx-2 user-select-none text-truncate'
-                                    style='width: 200px;'
-                                >
-                                    <a
-                                        v-if='overlay.mode === "mission"'
-                                        class='cursor-pointer text-underline'
-                                        @click='router.push(`/menu/missions/${overlay.mode_id}`)'
-                                        v-text='overlay.name'
-                                    />
-                                    <span
-                                        v-else
-                                        v-text='overlay.name'
-                                    />
-                                </span>
-
-                                <div class='ms-auto btn-list'>
-                                    <TablerIconButton
-                                        v-if='overlay.hasBounds()'
-                                        title='Zoom To Overlay'
-                                        @click.stop.prevent='overlay.zoomTo()'
-                                    >
-                                        <IconMaximize
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
-
-                                    <TablerDelete
-                                        v-if='
-                                            opened.has(overlay.id)
-                                                && ["mission", "data", "profile", "overlay"].includes(overlay.mode)
-                                        '
-                                        :key='overlay.id'
-                                        v-tooltip='"Delete Overlay"'
-                                        :size='20'
+                        <div class='py-2'>
+                            <div class='col-12 d-flex'>
+                                <div>
+                                    <IconGripVertical
+                                        v-if='isDraggable'
+                                        v-tooltip='"Draw to reorder"'
+                                        class='drag-handle cursor-move'
                                         role='button'
                                         tabindex='0'
-                                        displaytype='icon'
-                                        @delete='removeOverlay(overlay.id)'
+                                        :size='20'
+                                        stroke='1'
                                     />
 
-                                    <TablerIconButton
-                                        v-if='overlay.visible'
-                                        title='Hide Layer'
-                                        @click.stop.prevent='overlay.update({ visible: !overlay.visible })'
-                                    >
-                                        <IconEye
+                                    <template v-if='!overlay.healthy()'>
+                                        <IconAlertTriangle
+                                            v-if='!isDraggable && !opened.has(overlay.id)'
+                                            v-tooltip='overlay._error ? overlay._error.message : "Unknown Error"'
                                             :size='20'
                                             stroke='1'
                                         />
-                                    </TablerIconButton>
-                                    <TablerIconButton
-                                        v-else
-                                        title='Show Layer'
-                                        @click.stop.prevent='overlay.update({ visible: !overlay.visible })'
-                                    >
-                                        <IconEyeOff
+                                    </template>
+                                    <template v-else-if='overlay.id !== 0'>
+                                        <TablerIconButton
+                                            v-if='!isDraggable && !opened.has(overlay.id)'
+                                            title='Expand Options'
+                                            @click='opened.add(overlay.id)'
+                                        >
+                                            <IconChevronRight
+                                                :size='20'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
+                                        <TablerIconButton
+                                            v-else-if='!isDraggable'
+                                            title='Collapse Options'
+                                            @click='opened.delete(overlay.id)'
+                                        >
+                                            <IconChevronDown
+                                                :size='20'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
+                                    </template>
+                                </div>
+                                <div
+                                    class='row ms-1'
+                                    style='width: calc(100% - 32px);'
+                                >
+                                    <div class='d-flex align-items-center'>
+                                        <IconMap
+                                            v-if='overlay.type === "raster"'
+                                            v-tooltip='"Raster"'
                                             :size='20'
                                             stroke='1'
                                         />
-                                    </TablerIconButton>
+                                        <IconAmbulance
+                                            v-else-if='overlay.type === "geojson" && overlay.mode === "mission"'
+                                            v-tooltip='"Data Sync"'
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                        <IconVector
+                                            v-else
+                                            v-tooltip='"Vector"'
+                                            :size='20'
+                                            stroke='1'
+                                        />
+
+                                        <span
+                                            class='mx-2 user-select-none text-truncate'
+                                            style='width: calc(100% - 60px);'
+                                        >
+                                            <a
+                                                v-if='overlay.mode === "mission"'
+                                                class='cursor-pointer text-underline'
+                                                @click='router.push(`/menu/missions/${overlay.mode_id}`)'
+                                                v-text='overlay.name'
+                                            />
+                                            <span
+                                                v-else
+                                                v-text='overlay.name'
+                                            />
+                                        </span>
+                                    </div>
+
+                                    <div class='d-flex align-items-center'>
+                                        <div class='ms-auto btn-list'>
+                                            <TablerDelete
+                                                v-if='["mission", "data", "profile", "overlay"].includes(overlay.mode)'
+                                                :key='overlay.id'
+                                                v-tooltip='"Delete Overlay"'
+                                                :size='20'
+                                                role='button'
+                                                tabindex='0'
+                                                displaytype='icon'
+                                                @delete='removeOverlay(overlay.id)'
+                                            />
+
+                                            <TablerIconButton
+                                                v-if='overlay.hasBounds()'
+                                                title='Zoom To Overlay'
+                                                @click.stop.prevent='overlay.zoomTo()'
+                                            >
+                                                <IconMaximize
+                                                    :size='20'
+                                                    stroke='1'
+                                                />
+                                            </TablerIconButton>
+
+                                            <TablerIconButton
+                                                v-if='overlay.visible'
+                                                title='Hide Layer'
+                                                @click.stop.prevent='overlay.update({ visible: !overlay.visible })'
+                                            >
+                                                <IconEye
+                                                    :size='20'
+                                                    stroke='1'
+                                                />
+                                            </TablerIconButton>
+
+                                            <TablerIconButton
+                                                v-else
+                                                title='Show Layer'
+                                                @click.stop.prevent='overlay.update({ visible: !overlay.visible })'
+                                            >
+                                                <IconEyeOff
+                                                    :size='20'
+                                                    stroke='1'
+                                                />
+                                            </TablerIconButton>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -178,7 +184,7 @@
                             <div
                                 v-if='overlay.type === "raster"'
                                 class='col-12'
-                                style='margin-left: 30px; padding-right: 40px;'
+                                style='padding-left: 30px; padding-right: 40px;'
                             >
                                 <TablerRange
                                     v-model='overlay.opacity'
