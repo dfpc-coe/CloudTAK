@@ -209,6 +209,7 @@ export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
     id: Type.Integer(),
     pos: Type.Integer(),
+    frequency: Type.Union([Type.Null(), Type.Integer()]),
     opacity: Type.Number(),
     visible: Type.Boolean(),
     styles: Type.Array(Type.Unknown())
@@ -351,6 +352,7 @@ export const BasemapResponse = createSelectSchema(schemas.Basemap, {
     id: Type.Integer(),
     minzoom: Type.Integer(),
     maxzoom: Type.Integer(),
+    frequency: Type.Union([Type.Null(), Type.Integer()]),
     styles: Type.Array(Type.Unknown()),
     collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
     sharing_token: Type.Optional(Type.Union([Type.Null(), Type.String()])),
