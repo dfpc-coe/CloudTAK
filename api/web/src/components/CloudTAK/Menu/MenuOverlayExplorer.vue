@@ -108,11 +108,12 @@ async function createOverlay(overlay: Basemap) {
     loading.value = true;
 
     try {
-        await mapStore.overlays.push(await Overlay.create(mapStore.map, {
+        await mapStore.overlays.push(await Overlay.create({
             url: String(stdurl(`/api/basemap/${overlay.id}/tiles`)),
             name: overlay.name,
             mode: 'overlay',
             mode_id: String(overlay.id),
+            frequency: overlay.frequency,
             type: overlay.type,
             styles: overlay.styles
         }));

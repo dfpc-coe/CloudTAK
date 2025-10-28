@@ -309,7 +309,7 @@ async function createOverlay(asset: ProfileFile) {
     };
 
     if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
-        await mapStore.overlays.push(await Overlay.create(mapStore.map, {
+        await mapStore.overlays.push(await Overlay.create({
             url: String(url),
             name: asset.name,
             mode: 'profile',
@@ -317,7 +317,7 @@ async function createOverlay(asset: ProfileFile) {
             type: 'vector',
         }));
     } else {
-        await mapStore.overlays.push(await Overlay.create(mapStore.map, {
+        await mapStore.overlays.push(await Overlay.create({
             url: String(url),
             name: asset.name,
             mode: 'profile',

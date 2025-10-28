@@ -683,7 +683,7 @@ export const useMapStore = defineStore('cloudtak', {
                 const basemaps = await std(burl) as APIList<Basemap>;
 
                 if (basemaps.items.length > 0) {
-                    const basemap = await Overlay.create(map, {
+                    const basemap = await Overlay.create({
                         name: basemaps.items[0].name,
                         pos: -1,
                         type: 'raster',
@@ -698,7 +698,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             for (const item of profileOverlays.items) {
                 this.overlays.push(await Overlay.create(
-                    map,
                     item as ProfileOverlay,
                     {
                         skipSave: true
@@ -706,7 +705,7 @@ export const useMapStore = defineStore('cloudtak', {
                 ));
             }
 
-            this.overlays.push(await Overlay.internal(map, {
+            this.overlays.push(await Overlay.internal({
                 id: -1,
                 name: 'CoT Icons',
                 type: 'geojson',
