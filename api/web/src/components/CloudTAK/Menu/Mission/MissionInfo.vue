@@ -242,7 +242,7 @@ async function subscribe(subscribe: boolean) {
     const overlay = mapStore.getOverlayByMode('mission', props.subscription.guid);
 
     if (subscribe === true && !overlay) {
-        const missionOverlay = await Overlay.create(mapStore.map, {
+        const missionOverlay = await Overlay.create({
             name: props.subscription.name,
             url: `/mission/${encodeURIComponent(props.subscription.guid)}`,
             type: 'geojson',
