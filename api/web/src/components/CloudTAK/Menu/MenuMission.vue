@@ -1,7 +1,8 @@
 <template>
     <MenuTemplate
         :name='subscription ? subscription.meta.name : "Mission"'
-        :loading='!subscription || loading'
+        :error='error'
+        :loading='(!subscription && !error) || loading'
     >
         <template #buttons>
             <TablerDelete
@@ -68,7 +69,7 @@
                 </template>
             </TablerDropdown>
             <TablerRefreshButton
-                :loading='!subscription || loading'
+                :loading='(!subscription && !error) || loading'
                 @click='fetchMission'
             />
         </template>
@@ -303,9 +304,14 @@ async function exportToPackage(format: string): Promise<void> {
 }
 
 async function fetchMission(): Promise<void> {
-    subscription.value = await Subscription.load(String(route.params.mission), {
-        token: String(localStorage.token),
-        missiontoken: token.value,
-    });
+    try {
+        subscription.value = await Subscription.load(String(route.params.mission), {
+            token: String(localStorage.token),
+            missiontoken: token.value,
+        });
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+        loading.value = false;
+    }
 }
 </script>
