@@ -1,3 +1,4 @@
+import Icon from './icon.ts';
 import { v4 as randomUUID } from 'uuid';
 import { std } from '../std.ts';
 import { bbox } from '@turf/bbox'
@@ -63,6 +64,26 @@ export default class COT {
 
     origin: Origin
 
+    static async load(
+        atlas: Atlas,
+        feat: Feature,
+        origin?: Origin,
+        opts?: {
+            skipSave?: boolean;
+            remote?: boolean
+        }
+    ) {
+        const a = atlas as Atlas;
+        feat.properties = await COT.style(feat.geometry.type, feat.properties);
+
+        return new COT(
+            a,
+            feat,
+            origin,
+            opts
+        );
+    }
+
     constructor(
         atlas: Atlas | Remote<Atlas>,
         feat: Feature,
@@ -72,12 +93,6 @@ export default class COT {
             remote?: boolean
         }
     ) {
-        if (!opts || (opts && !opts.remote)) {
-            const a = atlas as Atlas;
-            // Remote properties will already have the default style applied
-            feat.properties = COT.style(a, feat.geometry.type, feat.properties);
-        }
-
         this.id = feat.id || randomUUID();
 
         this._path = feat.path || '/';
@@ -220,7 +235,7 @@ export default class COT {
             }
 
             if (update.properties) {
-                update.properties = COT.style(atlas, this._geometry.type, update.properties);
+                update.properties = await COT.style(this._geometry.type, update.properties);
 
                 if (isEqual(this.properties, update.properties)) {
                     delete update.properties
@@ -459,32 +474,48 @@ export default class COT {
     }
 
     async flyTo(): Promise<void> {
-        await this._atlas.postMessage({
-            type: WorkerMessageType.Map_FlyTo,
-            body: {
-                bounds: this.bounds(),
-                options: {
-                    maxZoom: 18,
-                    padding: {
-                        top: 20,
-                        bottom: 20,
-                        left: 20,
-                        right: 20
-                    },
+        if (this.geometry.type === 'Point') {
+            let zoom = 16
+            if (this.properties.minzoom) {
+                zoom = this.properties.minzoom;
+            }
+
+            await this._atlas.postMessage({
+                type: WorkerMessageType.Map_FlyTo,
+                body: {
+                    center: this.geometry.coordinates,
+                    // TODO check if there are min/max zoom properties and respect them
+                    zoom,
                     speed: Infinity,
                 }
-            }
-        })
+            })
+        } else {
+            await this._atlas.postMessage({
+                type: WorkerMessageType.Map_FitBounds,
+                body: {
+                    bounds: this.bounds(),
+                    options: {
+                        maxZoom: 18,
+                        padding: {
+                            top: 20,
+                            bottom: 20,
+                            left: 20,
+                            right: 20
+                        },
+                        speed: Infinity,
+                    }
+                }
+            })
+        }
     }
 
     /**
      * Consistent feature manipulation between add & update
      */
-    static style(
-        atlas: Atlas,
+    static async style(
         type: string,
         properties: Feature["properties"]
-    ): Feature["properties"] {
+    ): Promise<Feature["properties"]> {
         if (!properties.time) properties.time = new Date().toISOString();
         if (!properties.start) properties.start = new Date().toISOString();
         if (!properties.stale) {
@@ -546,7 +577,7 @@ export default class COT {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
 
-                if (!atlas.db.images.has(properties.icon)) {
+                if (!await Icon.has(properties.icon)) {
                     console.warn(`No Icon for: ${properties.icon} fallback to ${properties.type}`);
                     properties.icon = `${properties.type}`;
                 }

@@ -264,7 +264,7 @@ export default class AtlasDatabase {
 
                 for (const feat of await store.feature.list()) {
                     if (await expression.evaluate(feat) === true) {
-                        cots.add(new COT(this.atlas, feat, {
+                        cots.add(await COT.load(this.atlas, feat, {
                             mode: OriginMode.MISSION,
                             mode_id: sub.guid
                         }));
@@ -562,7 +562,7 @@ export default class AtlasDatabase {
             }
 
             if (!exists) {
-                exists = new COT(this.atlas, feat, {
+                exists = await COT.load(this.atlas, feat, {
                     mode: OriginMode.MISSION,
                     mode_id: mission_guid
                 }, opts);
@@ -594,7 +594,7 @@ export default class AtlasDatabase {
                     geometry: feat.geometry
                 }, { skipSave: opts.skipSave })
             } else {
-                exists = new COT(this.atlas, feat, {
+                exists = await COT.load(this.atlas, feat, {
                     mode: OriginMode.CONNECTION
                 }, opts);
 
@@ -647,7 +647,7 @@ export default class AtlasDatabase {
 
                 if (!feat) continue;
 
-                return new COT(this.atlas, feat, {
+                return await COT.load(this.atlas, feat, {
                     mode: OriginMode.MISSION,
                     mode_id: sub.guid
                 });

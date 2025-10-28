@@ -6,7 +6,6 @@ import type {
 } from '../types.ts';
 
 export interface DBIcon {
-    id: number;
     name: string;
 }
 
@@ -43,7 +42,7 @@ export interface DBSubscriptionLog {
 }
 
 export type DatabaseType = Dexie & {
-    icon: EntityTable<DBIcon, 'id'>,
+    icon: EntityTable<DBIcon, 'name'>,
     subscription: EntityTable<DBSubscription, 'guid'>,
     subscription_log: EntityTable<DBSubscriptionLog, 'id'>
     subscription_feature: EntityTable<DBSubscriptionFeature, 'id'>,
@@ -52,7 +51,7 @@ export type DatabaseType = Dexie & {
 export const db = new Dexie('CloudTAK') as DatabaseType;
 
 db.version(1).stores({
-    icon: 'id, name',
+    icon: 'name',
     subscription: 'guid, name, meta, role, token, subscribed, dirty',
     subscription_log: 'id, dtf, created, mission, content, creatorUid, contentHashes, keywords, missionNames, servertime',
     subscription_feature: 'id, path, mission, properties, geometry',

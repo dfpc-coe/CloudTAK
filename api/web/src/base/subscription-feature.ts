@@ -44,6 +44,10 @@ export default class SubscriptionFeature {
             headers: this.headers()
         }) as FeatureCollection;
 
+        for (const feat of list.features) {
+            feat.properties = await COT.style(feat.geometry.type, feat.properties);
+        }
+
         await db.transaction('rw', db.subscription_feature, async () => {
             await db.subscription_feature
                 .where('mission')
