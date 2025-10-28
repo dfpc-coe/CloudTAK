@@ -360,12 +360,20 @@ export const useMapStore = defineStore('cloudtak', {
                 const msg = event.data;
 
                 if (!msg || !msg.type) return;
-                if (msg.type === WorkerMessageType.Map_FlyTo) {
+                if (msg.type === WorkerMessageType.Map_FitBounds) {
                     if (msg.body.options.speed === null) {
                         msg.body.options.speed = Infinity;
                     }
 
                     map.fitBounds(msg.body.bounds, msg.body.options);
+                } else if (msg.type === WorkerMessageType.Map_FlyTo) {
+                    if (msg.body.speed === null) {
+                        msg.body.speed = Infinity;
+                    }
+
+                    if (!msg.body.zoom) msg.body.zoom = this.map.getZoom();
+
+                    map.flyTo(msg.body);
                 } else if (msg.type === WorkerMessageType.Profile_Location_Source) {
                     this.location = msg.body.source as LocationState;
                 } else if (msg.type === WorkerMessageType.Profile_Callsign) {
