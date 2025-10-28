@@ -466,8 +466,7 @@ export default class COT {
             await this._atlas.postMessage({
                 type: WorkerMessageType.Map_FlyTo,
                 body: {
-                    center: this.geometry.coordinates,
-                    // TODO check if there are min/max zoom properties and respect them
+                    center: [this.properties.center[0], this.properties.center[1]],
                     zoom,
                     speed: Infinity,
                 }

@@ -278,18 +278,7 @@ export const useMapStore = defineStore('cloudtak', {
          */
         refresh: async function(): Promise<void> {
             await this.updateCOT();
-
-            const missions = [];
-
-            for (const sub of await Subscription.localList({
-                dirty: true,
-                subscribed: true
-            })) {
-                missions.push(this.loadMission(sub.guid));
-            }
-            await Promise.allSettled(missions);
         },
-
         updateCOT: async function(): Promise<void> {
             try {
                 const diff = await this.worker.db.diff();
