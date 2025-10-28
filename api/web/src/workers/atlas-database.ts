@@ -30,9 +30,6 @@ export default class AtlasDatabase {
 
     hidden: Set<string>;
 
-    // Store ImageIDs currently loaded in MapLibre
-    images: Set<string>;
-
     pendingCreate: Map<string, COT>;
     pendingUpdate: Map<string, COT>;
     pendingHidden: Set<string>;
@@ -47,8 +44,6 @@ export default class AtlasDatabase {
         this.cots = new Map();
 
         this.hidden = new Set();
-
-        this.images = new Set();
 
         this.pendingCreate = new Map();
         this.pendingUpdate = new Map();
@@ -76,18 +71,8 @@ export default class AtlasDatabase {
         this.pendingUnhide.add(id);
     }
 
-    async hasIcon(icon: string): Promise<boolean> {
-        return this.images.has(icon);
-    }
-
     async init(): Promise<void> {
         await this.loadArchive()
-    }
-
-    updateImages(images: Array<string>): void {
-        for (const image of images) {
-            this.images.add(image);
-        }
     }
 
     /**
