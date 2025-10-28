@@ -630,7 +630,7 @@ export default class AtlasDatabase {
     ): Promise<COT | undefined> {
         if (!opts) opts = {};
 
-        const cot = this.cots.get(id);
+        let cot = this.cots.get(id);
 
         if (cot) {
             return cot;
@@ -648,10 +648,12 @@ export default class AtlasDatabase {
 
                 if (!feat) continue;
 
-                return await COT.load(this.atlas, feat, {
+                cot = await COT.load(this.atlas, feat, {
                     mode: OriginMode.MISSION,
                     mode_id: sub.guid
                 });
+
+                return cot;
             }
         }
 
