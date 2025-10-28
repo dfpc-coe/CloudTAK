@@ -641,6 +641,7 @@ export default class AtlasDatabase {
                 const store = await Subscription.from(sub.guid, this.atlas.token, {
                     subscribed: true
                 });
+
                 if (!store) continue;
 
                 const feat = await store.feature.from(id);

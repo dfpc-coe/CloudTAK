@@ -45,7 +45,7 @@ export default class SubscriptionFeature {
         }) as FeatureCollection;
 
         for (const feat of list.features) {
-            feat.properties = await COT.style(feat.geometry.type, feat.properties);
+            await COT.style(feat);
         }
 
         await db.transaction('rw', db.subscription_feature, async () => {

@@ -6,10 +6,6 @@ import COT from '../base/cot.ts';
 import type Atlas from '../workers/atlas.ts';
 import type { Remote, TransferHandler } from 'comlink'
 import type { Feature } from '../types.ts';
-import type {
-    Mission,
-    MissionRole,
-} from '../types.ts';
 
 export class CloudTAKTransferHandler {
     atlas: Atlas | Remote<Atlas>;

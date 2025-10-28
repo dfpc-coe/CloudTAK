@@ -74,7 +74,7 @@ export default class COT {
         }
     ) {
         const a = atlas as Atlas;
-        feat.properties = await COT.style(feat.geometry.type, feat.properties);
+        await COT.style(feat);
 
         return new COT(
             a,
@@ -105,23 +105,6 @@ export default class COT {
         this.instance = this._remote ? `remote:${randomUUID()}` : `db:${randomUUID()}`
 
         this.origin = origin || { mode: OriginMode.CONNECTION };
-
-        if (!this._properties.archived) {
-            this._properties.archived = false
-        }
-
-        if (!this._properties.id) {
-            this._properties.id = this.id;
-        }
-
-        if (!this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
-            this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
-
-            if (this._geometry.type === 'Point' && this._geometry.coordinates.length > 2) {
-                this._properties.center[2] = this._geometry.coordinates[2];
-            }
-        }
-
         if (this.origin.mode === OriginMode.CONNECTION && !this._remote) {
             const atlas = this._atlas as Atlas;
 
@@ -235,7 +218,7 @@ export default class COT {
             }
 
             if (update.properties) {
-                update.properties = await COT.style(this._geometry.type, update.properties);
+                update.properties = await COT.styleProperties(this._geometry.type, update.properties);
 
                 if (isEqual(this.properties, update.properties)) {
                     delete update.properties
@@ -509,10 +492,34 @@ export default class COT {
         }
     }
 
+    static async style(
+        feat: Feature
+    ): Promise<Feature> {
+        feat.properties = await COT.styleProperties(feat.geometry.type, feat.properties);
+
+        if (!feat.properties.archived) {
+            feat.properties.archived = false
+        }
+
+        if (!feat.properties.id) {
+            feat.properties.id = feat.id;
+        }
+
+        if (!feat.properties.center || (feat.properties.center[0] === 0 && feat.properties.center[1] === 0)) {
+            feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
+
+            if (feat.geometry.type === 'Point' && feat.geometry.coordinates.length > 2) {
+                feat.properties.center[2] = feat.geometry.coordinates[2];
+            }
+        }
+
+        return feat;
+    }
+
     /**
      * Consistent feature manipulation between add & update
      */
-    static async style(
+    static async styleProperties(
         type: string,
         properties: Feature["properties"]
     ): Promise<Feature["properties"]> {

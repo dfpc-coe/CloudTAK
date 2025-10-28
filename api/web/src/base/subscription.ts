@@ -1,11 +1,7 @@
 import { db } from './database.ts'
-import COT from './cot.ts'
 import { std, stdurl } from '../std.ts';
-import { useMapStore } from '../stores/map.ts';
 import SubscriptionLog from './subscription-log.ts';
 import SubscriptionFeature from './subscription-feature.ts';
-import type Atlas from '../workers/atlas.ts';
-import type { Feature } from '../types.ts';
 import type {
     Mission,
     MissionRole,
@@ -178,8 +174,10 @@ export default class Subscription {
                 token: opts.missiontoken || ''
             });
 
-            await sub.log.refresh();
-            await sub.feature.refresh();
+            await Promise.all([
+                sub.log.refresh(),
+                sub.feature.refresh(),
+            ]);
 
             return sub;
         }
@@ -215,8 +213,6 @@ export default class Subscription {
     }
 
     async delete(): Promise<void> {
-        const mapStore = useMapStore();
-
         await Subscription.delete(this.meta.guid, this.missiontoken);
 
         await db.subscription.delete(this.meta.guid);
