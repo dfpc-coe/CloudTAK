@@ -74,7 +74,7 @@ export default class Subscription {
     ) {
         this._sync = new BroadcastChannel('subscription');
 
-        this._sync.onmessage = async (ev: MessageEvent) => {
+        this._sync.onmessage = async (ev: MessageEvent<SubscriptionEvent>) => {
             if (ev.data.guid === this.guid) {
                 await this.reload();
             }
@@ -85,7 +85,7 @@ export default class Subscription {
             token: opts.token
         });
 
-        this.feature = new SubscriptionFeature(mission.guid, {
+        this.feature = new SubscriptionFeature(this, {
             missiontoken: opts.missiontoken,
             token: opts.token
         });

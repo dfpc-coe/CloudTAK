@@ -275,7 +275,7 @@ onMounted(async () => {
 
 async function shareToPackageSetup(): Promise<void> {
     if (!subscription.value) return;
-    shareToPackage.value.features = (await subscription.value.collection(true)).features as Feature[];
+    shareToPackage.value.features = (await subscription.value.feature.collection(true)).features as Feature[];
     shareToPackage.value.shown = true;
 }
 

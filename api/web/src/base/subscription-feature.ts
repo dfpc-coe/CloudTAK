@@ -1,30 +1,32 @@
 import { db } from './database.ts';
-import type { Atlas } from '../worker/atlas.ts';
+import COT from './cot.ts';
+import Subscription from './subscription.ts';
+import type Atlas from '../workers/atlas.ts';
 import { std, stdurl } from '../std.ts';
 import { bbox } from '@turf/bbox';
-import type { BBox } from 'geojson'
+import type { BBox, FeatureCollection as GeoJSONFeatureCollection } from 'geojson'
 import type { Feature, FeatureCollection } from '../types.ts';
 
 /**
  * High Level Wrapper around the Data/Mission Sync API
  */
 export default class SubscriptionFeature {
-    guid: string;
+    parent: Subscription;
 
     token: string;
     missiontoken?: string;
 
     constructor(
-        guid: string,
+        parent: Subscription,
         opts: {
             token: string,
             missiontoken?: string,
         }
     ) {
+        this.parent = parent;
+
         this.token = opts.token;
         this.missiontoken = opts.token;
-
-        this.guid = guid;
     }
 
     headers(): Record<string, string> {
@@ -34,7 +36,7 @@ export default class SubscriptionFeature {
     }
 
     async refresh(): Promise<void> {
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid) + '/cot');
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.parent.guid) + '/cot');
 
         const list = await std(url, {
             method: 'GET',
@@ -45,13 +47,13 @@ export default class SubscriptionFeature {
         await db.transaction('rw', db.subscription_feature, async () => {
             await db.subscription_feature
                 .where('mission')
-                .equals(this.guid)
+                .equals(this.parent.guid)
                 .delete();
 
             for (const feature of list.features) {
                 await db.subscription_feature.put({
                     id: feature.id,
-                    mission: this.guid,
+                    mission: this.parent.guid,
                     path: feature.path,
                     properties: feature.properties,
                     geometry: feature.geometry,
@@ -72,7 +74,7 @@ export default class SubscriptionFeature {
 
         const feats = await db.subscription_feature
             .where("mission")
-            .equals(this.guid)
+            .equals(this.parent.guid)
             .toArray();
 
         return feats.map(f => ({
@@ -84,11 +86,19 @@ export default class SubscriptionFeature {
         }));
     }
 
-    async bounds(): Promise<BBox> {
-        return bbox({
+    async collection(raw = true): Promise<FeatureCollection> {
+        const features = await this.list();
+
+        return {
             type: 'FeatureCollection',
-            features: await this.list()
-        });
+            features: features.map((feat) => {
+                return raw ? feat : COT.as_rendered(feat)
+            })
+        } as FeatureCollection;
+    }
+
+    async bounds(): Promise<BBox> {
+        return bbox(await this.collection() as GeoJSONFeatureCollection);
     }
 
     async from(
@@ -127,16 +137,24 @@ export default class SubscriptionFeature {
             skipNetwork?: boolean
         } = {}
     ): Promise<void> {
-        this.cots.set(String(cot.id), cot);
+        await db.subscription_feature.put({
+            id: cot.id,
+            mission: this.parent.guid,
+            path: cot.path,
+            properties: cot.properties,
+            geometry: cot.geometry,
+        });
 
-        this.dirty = true;
+        await this.parent.update({
+            dirty: true
+        })
 
         const feat = cot.as_feature({
             clone: true
         });
 
         feat.properties.dest = [{
-            mission: this.name
+            'mission-guid': this.parent.guid
         }];
 
         if (!opts.skipNetwork) {
@@ -159,15 +177,20 @@ export default class SubscriptionFeature {
             skipNetwork?: boolean
         } = {}
     ): Promise<void> {
-        this.cots.delete(uid);
+        await db.subscription_feature
+            .where("id")
+            .equals(uid)
+            .delete();
 
-        this.dirty = true;
+        await this.parent.update({
+            dirty: true
+        })
 
         if (!opts.skipNetwork) {
-            const url = stdurl(`/api/marti/missions/${this.guid}/cot/${uid}`);
+            const url = stdurl(`/api/marti/missions/${this.parent.guid}/cot/${uid}`);
             await std(url, {
                 method: 'DELETE',
-                headers: this.headers(this.missiontoken),
+                headers: this.headers(),
                 token:  atlas.token
             })
         }
