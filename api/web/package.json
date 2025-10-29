@@ -13,9 +13,7 @@
         "build": "vite build",
         "builds3": "VITE_MODE=s3 vite build",
         "lint": "eslint ./src/",
-        "test": "exit 0",
-        "test:run": "vitest run",
-        "test:ui": "vitest --ui"
+        "test": "exit 0"
     },
     "dependencies": {
         "@react-hookz/deep-equal": "^3.0.3",
