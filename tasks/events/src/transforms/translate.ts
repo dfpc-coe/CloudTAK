@@ -29,9 +29,9 @@ export default class GDALTranslate {
             env['GDAL_PDF_DPI'] = '300';
         }
 
-        cp.execFileSync('gdal_translate', [input, output], { env });
+        cp.execFileSync('gdal', ['raster', 'convert', input, output], { env });
 
-        cp.execFileSync('gdaladdo', ['-r', 'cubic', output]);
+        cp.execFileSync('gdal', ['raster', 'overview', '-r', 'cubic', output]);
 
         return output;
     }
