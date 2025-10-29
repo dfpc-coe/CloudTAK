@@ -148,7 +148,7 @@ function removeFeatures(mlayers: MissionLayer[]): void {
 }
 
 async function fetchLayers(): Promise<void> {
-    layers.value = (await props.subscription.layerList(props.subscription.name)).data;
+    layers.value = (await props.subscription.layerList()).data;
 
     if (layers.value) {
         removeFeatures(layers.value);

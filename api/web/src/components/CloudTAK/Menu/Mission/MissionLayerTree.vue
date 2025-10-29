@@ -185,7 +185,7 @@ function cots(layer: MissionLayer): Array<Feature> {
 async function deleteLayer(layer: MissionLayer) {
     loading.value = true;
 
-    await props.subscription.layerDelete(props.subscription.guid, layer.uid);
+    await props.subscription.layerDelete(layer.uid);
 
     emit('refresh')
 
