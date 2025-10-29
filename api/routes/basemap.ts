@@ -361,8 +361,6 @@ export default async function router(schema: Schema, config: Config) {
                 })
             }
 
-            console.error('TEST', basemap.sharing_token);
-
             res.json({
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
@@ -455,8 +453,6 @@ export default async function router(schema: Schema, config: Config) {
                     });
                 }
             }
-
-            console.error('TEST', basemap.sharing_token);
 
             res.json({
                 ...basemap,
