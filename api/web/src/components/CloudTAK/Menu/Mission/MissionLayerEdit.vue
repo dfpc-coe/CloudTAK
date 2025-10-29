@@ -60,10 +60,8 @@ async function editLayer() {
     try {
         loading.value.layer = true;
 
-        await Subscription.layerUpdate(props.subscription.guid, props.layer.uid, {
+        await props.subscription.layerUpdate(props.subscription.guid, props.layer.uid, {
             name: editing.value.name
-        }, {
-            missionToken: props.subscription.missiontoken
         });
 
         emit('layer', {
