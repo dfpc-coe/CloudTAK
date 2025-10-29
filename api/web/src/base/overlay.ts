@@ -6,7 +6,7 @@ import type {
 import { DrawToolMode } from '../stores/modules/draw.ts';
 import type { FeatureCollection } from 'geojson';
 import { bbox } from '@turf/bbox'
-import type { Map, LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
+import type { LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
 import cotStyles from './utils/styles.ts'
 import { std, stdurl } from '../std.js';
 import { useMapStore } from '../stores/map.js';
