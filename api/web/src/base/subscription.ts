@@ -111,7 +111,7 @@ export default class Subscription {
         }
     ): Promise<Subscription | undefined> {
         const exists = await db.subscription
-            .get(guid)
+        .get(guid)
 
         if (!exists || (opts?.subscribed !== undefined && exists.subscribed !== opts.subscribed)) {
             return;
@@ -244,7 +244,7 @@ export default class Subscription {
      */
     async reload(): Promise<void> {
         const exists = await db.subscription
-            .get(this.guid)
+        .get(this.guid)
 
         if (exists) {
             this.meta = exists.meta;
@@ -323,7 +323,7 @@ export default class Subscription {
 
 
         const list = await collection
-            .sortBy('name');
+        .sortBy('name');
 
         const guids = new Set<{
             guid: string;
@@ -373,23 +373,18 @@ export default class Subscription {
         return res.data
     }
 
-    static async changes(guid: string, opts: {
-        token?: string,
-        missionToken?: string
-    } = {}): Promise<MissionChanges> {
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/changes');
+    async changes(): Promise<MissionChanges> {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid) + '/changes');
 
         return await std(url, {
             method: 'GET',
-            token: opts.token,
-            headers: Subscription.headers(opts.missionToken)
+            token: this.token,
+            headers: Subscription.headers(this.missiontoken)
         }) as MissionChanges;
     }
 
-    async layerList(
-        guid: string
-    ): Promise<MissionLayerList> {
-        const url = stdurl(`/api/marti/missions/${encodeURIComponent(guid)}/layer`);
+    async layerList(): Promise<MissionLayerList> {
+        const url = stdurl(`/api/marti/missions/${encodeURIComponent(this.guid)}/layer`);
 
         const list = await std(url, {
             method: 'GET',
@@ -410,35 +405,33 @@ export default class Subscription {
         layerid: string,
         layer: MissionLayer_Update
     ): Promise<MissionLayer> {
-         const url = stdurl(`/api/marti/missions/${guid}/layer/${layerid}`);
+        const url = stdurl(`/api/marti/missions/${this.guid}/layer/${layerid}`);
 
-         return await std(url, {
-             method: 'PATCH',
-             body: layer,
-             token: this.token,
-             headers: Subscription.headers(this.missiontoken)
-         }) as MissionLayer;
+        return await std(url, {
+            method: 'PATCH',
+            body: layer,
+            token: this.token,
+            headers: Subscription.headers(this.missiontoken)
+        }) as MissionLayer;
     }
 
     async layerCreate(
-        guid: string,
         layer: MissionLayer_Create
     ): Promise<MissionLayer> {
-         const url = stdurl(`/api/marti/missions/${guid}/layer`);
+        const url = stdurl(`/api/marti/missions/${this.guid}/layer`);
 
-         return await std(url, {
-             method: 'POST',
-             body: layer,
-             token: this.token,
-             headers: Subscription.headers(this.missiontoken)
-         }) as MissionLayer;
+        return await std(url, {
+            method: 'POST',
+            body: layer,
+            token: this.token,
+            headers: Subscription.headers(this.missiontoken)
+        }) as MissionLayer;
     }
 
     async layerDelete(
-        guid: string,
         layeruid: string
     ): Promise<void> {
-        const url = stdurl(`/api/marti/missions/${guid}/layer/${layeruid}`);
+        const url = stdurl(`/api/marti/missions/${this.guid}/layer/${layeruid}`);
         await std(url, {
             method: 'DELETE',
             token: this.token,

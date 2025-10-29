@@ -65,7 +65,7 @@ async function createLayer() {
     try {
         loading.value.layer = true;
 
-        const res = await props.subscription.layerCreate(props.subscription.guid, layer.value);
+        const res = await props.subscription.layerCreate(layer.value);
 
         emit('layer', res);
     } catch (err) {
