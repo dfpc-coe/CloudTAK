@@ -57,10 +57,10 @@ export default defineConfig(({ mode }) => {
         test: {
             environment: 'jsdom',
             globals: true,
-            setupFiles: ['./src/test/setup.ts'],
-            alias: {
-                '@tak-ps/vue-tabler': '/src/test/__mocks__/@tak-ps/vue-tabler.ts',
+            deps: {
+                inline: ['@tak-ps/vue-tabler']
             },
+            setupFiles: ['./src/test/setup.ts'],
         },
     }
 
