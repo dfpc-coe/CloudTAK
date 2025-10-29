@@ -26,7 +26,7 @@ export default class SubscriptionFeature {
         this.parent = parent;
 
         this.token = opts.token;
-        this.missiontoken = opts.token;
+        this.missiontoken = opts.missiontoken;
     }
 
     headers(): Record<string, string> {

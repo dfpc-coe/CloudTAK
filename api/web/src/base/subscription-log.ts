@@ -22,7 +22,7 @@ export default class SubscriptionLog {
         }
     ) {
         this.token = opts.token;
-        this.missiontoken = opts.token;
+        this.missiontoken = opts.missiontoken;
 
         this.guid = guid;
     }

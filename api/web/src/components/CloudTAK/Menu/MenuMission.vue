@@ -309,6 +309,8 @@ async function fetchMission(): Promise<void> {
             token: String(localStorage.token),
             missiontoken: token.value,
         });
+
+        loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
         loading.value = false;
