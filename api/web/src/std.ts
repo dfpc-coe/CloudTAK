@@ -112,7 +112,19 @@ export async function std(
 
         const object = new File([await res.blob()], name);
         const file = window.URL.createObjectURL(object);
-        window.location.assign(file);
+
+        const link = document.createElement('a');
+        link.href = file;
+        link.download = name; // This is the magic attribute
+
+        // Append to body, click, and then remove
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up the blob URL to prevent memory leaks
+        window.URL.revokeObjectURL(file);
+
         return res;
     } else if (ContentType && ContentType.includes('application/json')) {
         return await res.json();
