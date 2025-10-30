@@ -932,6 +932,20 @@
       "when": 1760884810274,
       "tag": "0132_public_reptil",
       "breakpoints": true
+    },
+    {
+      "idx": 133,
+      "version": "7",
+      "when": 1761682954761,
+      "tag": "0133_wild_talon",
+      "breakpoints": true
+    },
+    {
+      "idx": 134,
+      "version": "7",
+      "when": 1761683682912,
+      "tag": "0134_fast_wendell_vaughn",
+      "breakpoints": true
     }
   ]
 }

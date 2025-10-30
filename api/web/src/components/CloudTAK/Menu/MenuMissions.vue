@@ -185,7 +185,13 @@ watch(paging.value, async () => {
 async function generateFilteredList() {
     const filtered = [];
 
-    subscribed.value = await mapStore.worker.db.subscriptionListUid();
+    const subs = await Subscription.localList({
+        subscribed: true
+    });
+
+    for (const sub of subs) {
+        subscribed.value.add(sub.guid);
+    }
 
     for (const mission of list.value) {
         if (!mission.name.toLowerCase().includes(paging.value.filter.toLowerCase())) {

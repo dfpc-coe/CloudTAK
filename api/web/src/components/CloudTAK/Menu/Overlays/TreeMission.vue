@@ -6,9 +6,7 @@
     >
         <MissionLayers
             :menu='false'
-            :mission='subscription.meta'
-            :token='subscription.token'
-            :role='subscription.role'
+            :subscription='subscription'
         />
     </div>
 </template>
@@ -21,8 +19,6 @@ import {
 import Overlay from '../../../../base/overlay.ts'
 import Subscription from '../../../../base/subscription.ts'
 import MissionLayers from '../Mission/MissionLayers.vue';
-import { useMapStore } from '../../../../stores/map.ts';
-const mapStore = useMapStore();
 
 const props = defineProps<{
     overlay: Overlay
@@ -31,6 +27,8 @@ const props = defineProps<{
 const subscription = ref<Subscription | undefined >(undefined);
 
 onMounted(async () => {
-    subscription.value = await mapStore.worker.db.subscriptionGet(props.overlay.mode_id || '');
+    subscription.value = await Subscription.load(props.overlay.mode_id || '', {
+        token: localStorage.token,
+    });
 });
 </script>

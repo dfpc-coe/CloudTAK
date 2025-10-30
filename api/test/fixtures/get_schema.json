@@ -264,6 +264,36 @@
         "query": false,
         "res": true
     },
+    "GET /connection/:connectionid/layer/:layerid/task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/layer/:layerid/task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/layer/:layerid/task/invoke": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/layer/:layerid/task/logs": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/layer/:layerid/task/capabilities": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/layer/:layerid/task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "POST /layer/redeploy": {
         "body": false,
         "query": false,
@@ -325,36 +355,6 @@
         "res": true
     },
     "DELETE /connection/:connectionid/layer/:layerid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/layer/:layerid/task": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid/layer/:layerid/task": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /connection/:connectionid/layer/:layerid/task/invoke": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/layer/:layerid/task/logs": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/layer/:layerid/task/capabilities": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /connection/:connectionid/layer/:layerid/task": {
         "body": false,
         "query": false,
         "res": true
@@ -1134,6 +1134,16 @@
         "query": true,
         "res": true
     },
+    "GET /server/package": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /server/package/:hash": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /search": {
         "body": false,
         "query": false,
@@ -1157,16 +1167,6 @@
     "GET /search/suggest": {
         "body": false,
         "query": true,
-        "res": true
-    },
-    "GET /server/package": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /server/package/:hash": {
-        "body": false,
-        "query": false,
         "res": true
     },
     "GET /server/repeater": {

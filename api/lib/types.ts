@@ -13,8 +13,57 @@ export const LayerIncomingResponse = AugmentedLayerIncoming;
 export const LayerOutgoingResponse = AugmentedLayerOutgoing;
 export const DataResponse = AugmentedData;
 
+export const GeoJSONFeatureGeometryPoint = Type.Object({
+    type: Type.Literal('Point'),
+    coordinates: Type.Tuple([Type.Number(), Type.Number()])
+});
+
+export const GeoJSONFeatureGeometryMultiPoint = Type.Object({
+    type: Type.Literal('MultiPoint'),
+    coordinates: Type.Array(Type.Tuple([Type.Number(), Type.Number()]))
+});
+
+export const GeoJSONFeatureGeometryLineString = Type.Object({
+    type: Type.Literal('LineString'),
+    coordinates: Type.Array(Type.Tuple([Type.Number(), Type.Number()]))
+});
+
+export const GeoJSONFeatureGeometryMultiLineString = Type.Object({
+    type: Type.Literal('MultiLineString'),
+    coordinates: Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()])))
+});
+
+export const GeoJSONFeatureGeometryPolygon = Type.Object({
+    type: Type.Literal('Polygon'),
+    coordinates: Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()])))
+});
+
+export const GeoJSONFeatureGeometryMultiPolygon = Type.Object({
+    type: Type.Literal('MultiPolygon'),
+    coordinates: Type.Array(Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()]))))
+});
+
+export const MultiGeoJSONFeature = Type.Object({
+    id: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    type: Type.Literal('Feature'),
+    properties: Type.Record(Type.String(), Type.Unknown()),
+    geometry: Type.Union([
+        GeoJSONFeatureGeometryPoint,
+        GeoJSONFeatureGeometryMultiPoint,
+        GeoJSONFeatureGeometryLineString,
+        GeoJSONFeatureGeometryMultiLineString,
+        GeoJSONFeatureGeometryPolygon,
+        GeoJSONFeatureGeometryMultiPolygon
+    ])
+});
+
+export const MultiGeoJSONFeatureCollection = Type.Object({
+    type: Type.Literal('FeatureCollection'),
+    features: Type.Array(MultiGeoJSONFeature)
+});
+
 export const GeoJSONFeature = Type.Object({
-    id: Type.Optional(Type.String()),
+    id: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     type: Type.Literal('Feature'),
     properties: Type.Record(Type.String(), Type.Unknown()),
     geometry: Feature.Geometry
@@ -160,6 +209,7 @@ export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
     id: Type.Integer(),
     pos: Type.Integer(),
+    frequency: Type.Union([Type.Null(), Type.Integer()]),
     opacity: Type.Number(),
     visible: Type.Boolean(),
     styles: Type.Array(Type.Unknown())
@@ -302,6 +352,7 @@ export const BasemapResponse = createSelectSchema(schemas.Basemap, {
     id: Type.Integer(),
     minzoom: Type.Integer(),
     maxzoom: Type.Integer(),
+    frequency: Type.Union([Type.Null(), Type.Integer()]),
     styles: Type.Array(Type.Unknown()),
     collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
     sharing_token: Type.Optional(Type.Union([Type.Null(), Type.String()])),
