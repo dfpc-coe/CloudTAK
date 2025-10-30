@@ -6,7 +6,7 @@ import type {
 import { DrawToolMode } from '../stores/modules/draw.ts';
 import type { FeatureCollection } from 'geojson';
 import { bbox } from '@turf/bbox'
-import type { Map, LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
+import type { LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
 import cotStyles from './utils/styles.ts'
 import { std, stdurl } from '../std.js';
 import { useMapStore } from '../stores/map.js';
@@ -18,6 +18,8 @@ export default class Overlay {
     _destroyed: boolean;
     _internal: boolean;
 
+    _timer: ReturnType<typeof setInterval> | null;
+
     _clickable: Array<{ id: string; type: string }>;
 
     _error?: Error;
@@ -26,6 +28,7 @@ export default class Overlay {
     id: number;
     name: string;
     username?: string;
+    frequency: number | null;
     created: string;
     updated: string;
     pos: number;
@@ -42,7 +45,6 @@ export default class Overlay {
     token: string | null;
 
     static async create(
-        map: Map,
         body: ProfileOverlay | ProfileOverlay_Create,
         opts: {
             internal?: boolean;
@@ -71,7 +73,7 @@ export default class Overlay {
                 body: ov
             }) as ProfileOverlay;
 
-            const overlay = new Overlay(map, ov, {
+            const overlay = new Overlay(ov, {
                 internal: opts.internal
             });
 
@@ -79,7 +81,7 @@ export default class Overlay {
 
             return overlay;
         } else {
-            const overlay = new Overlay(map, body as ProfileOverlay, {
+            const overlay = new Overlay(body as ProfileOverlay, {
                 internal: opts.internal
             });
 
@@ -90,7 +92,6 @@ export default class Overlay {
     }
 
     static async internal(
-        map: Map,
         body: {
             id: number;
             type: string;
@@ -99,12 +100,13 @@ export default class Overlay {
             clickable?: Array<{ id: string; type: string }>;
         }
     ): Promise<Overlay> {
-        const overlay = await Overlay.create(map, {
+        const overlay = await Overlay.create({
             ...body,
             visible: true,
             opacity: 1,
             username: 'internal',
             url: '',
+            frequency: null,
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             token: undefined,
@@ -121,10 +123,10 @@ export default class Overlay {
         return overlay;
     }
 
-    static async load(map: Map, id: number): Promise<Overlay> {
+    static async load(id: number): Promise<Overlay> {
         const remote = await std(`/api/profile/overlay/${id}`) as ProfileOverlay;
 
-        const ov = await Overlay.create(map, remote, {
+        const ov = await Overlay.create(remote, {
             skipSave: true
         });
 
@@ -132,7 +134,6 @@ export default class Overlay {
     }
 
     constructor(
-        map: Map,
         overlay: ProfileOverlay,
         opts: {
             internal?: boolean;
@@ -146,6 +147,7 @@ export default class Overlay {
         this.id = overlay.id;
         this.name = overlay.name;
         this.username = overlay.username;
+        this.frequency = overlay.frequency;
         this.created = overlay.created;
         this.updated = overlay.updated;
         this.actions = overlay.actions || {
@@ -160,6 +162,15 @@ export default class Overlay {
         this.url = overlay.url;
         this.styles = overlay.styles as Array<LayerSpecification>;
         this.token = overlay.token;
+
+        if (this.frequency) {
+            this._timer = setInterval(async () => {
+                const mapStore = useMapStore();
+                mapStore.map.refreshTiles(String(this.id));
+            }, this.frequency * 1000);
+        } else {
+            this._timer = null;
+        }
     }
 
     healthy(): boolean {
@@ -207,7 +218,7 @@ export default class Overlay {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
 
-            const tileJSON = await std(url.toString()) as TileJSON 
+            const tileJSON = await std(url.toString()) as TileJSON
 
             mapStore.map.addSource(String(this.id), {
                 ...tileJSON,
@@ -418,7 +429,7 @@ export default class Overlay {
 
         await this.save();
 
-        
+
         // Update attribution if this is a basemap
         if (this.mode === 'basemap') {
             const mapStore = useMapStore();
@@ -430,6 +441,11 @@ export default class Overlay {
         this._destroyed = true;
 
         const wasBasemap = this.mode === 'basemap';
+
+        if (this._timer) {
+            clearInterval(this._timer);
+            this._timer = null;
+        }
 
         this.remove();
 

@@ -128,4 +128,4 @@ jobs:
 
       - name: Test
         working-directory: ./api/web/
-        run: npm run test:run
+        run: npm run test

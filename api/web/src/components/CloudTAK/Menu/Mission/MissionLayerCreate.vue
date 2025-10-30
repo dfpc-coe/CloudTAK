@@ -43,13 +43,12 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import Subscription from '../../../../base/subscription.ts';
-import type { Mission, MissionLayer_Create } from '../../../../types.ts';
+import type { MissionLayer_Create } from '../../../../types.ts';
 
 const emit = defineEmits(['layer', 'cancel']);
 
 const props = defineProps<{
-    mission: Mission,
-    token?: string,
+    subscription: Subscription
 }>();
 
 const error = ref<Error | undefined>();
@@ -66,9 +65,7 @@ async function createLayer() {
     try {
         loading.value.layer = true;
 
-        const res = await Subscription.layerCreate(props.mission.guid, layer.value, {
-            missionToken: props.token
-        });
+        const res = await props.subscription.layerCreate(layer.value);
 
         emit('layer', res);
     } catch (err) {

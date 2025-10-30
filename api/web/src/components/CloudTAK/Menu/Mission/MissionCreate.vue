@@ -188,7 +188,7 @@ async function createMission() {
 
         if (res.error) throw new Error(res.error.message);
 
-        const missionOverlay = await Overlay.create(mapStore.map, {
+        const missionOverlay = await Overlay.create({
             name: res.data.name,
             url: `/mission/${encodeURIComponent(res.data.name)}`,
             type: 'geojson',

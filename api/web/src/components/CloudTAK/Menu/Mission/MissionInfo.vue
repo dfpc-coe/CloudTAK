@@ -6,14 +6,14 @@
         :border='false'
     >
         <div class='my-2'>
-            <div class='row g-0 mx-2'>
+            <div class='row g-2 mx-2'>
                 <div class='col-12'>
                     <div class='datagrid-title user-select-none'>
                         Created
                     </div>
                     <div
                         class='datagrid-content'
-                        v-text='mission.createTime.replace(/T/, " ").replace(/:[0-9]+\..*/, "") + " UTC"'
+                        v-text='props.subscription.meta.createTime.replace(/T/, " ").replace(/:[0-9]+\..*/, "") + " UTC"'
                     />
                 </div>
                 <div class='col-6'>
@@ -28,7 +28,7 @@
                     <div
                         v-else
                         class='datagrid-content'
-                        v-text='subscriptions.length'
+                        v-text='subscriptions.length + " Users"'
                     />
                 </div>
                 <div class='col-6'>
@@ -37,7 +37,7 @@
                     </div>
                     <div
                         class='datagrid-content'
-                        v-text='Array.isArray(mission.content) ? mission.contents.length : 0 + " Items"'
+                        v-text='(Array.isArray(props.subscription.meta.contents) ? props.subscription.meta.contents.length : 0) + " Files"'
                     />
                 </div>
                 <div class='col-12'>
@@ -45,7 +45,7 @@
                         Groups (Channels)
                     </div>
                     <div
-                        v-for='group of mission.groups'
+                        v-for='group of props.subscription.meta.groups'
                         class='datagrid-content'
                     >
                         <span v-text='group' />
@@ -58,9 +58,9 @@
                     <div
                         class='datagrid-content'
                     >
-                        <template v-if='mission.keywords.length'>
+                        <template v-if='props.subscription.meta.keywords.length'>
                             <span
-                                v-for='keyword of mission.keywords'
+                                v-for='keyword of props.subscription.meta.keywords'
                                 v-text='keyword'
                             />
                         </template>
@@ -73,46 +73,57 @@
                     </div>
                     <div
                         class='datagrid-content'
-                        v-text='mission.description || "No Feed Description"'
+                        v-text='props.subscription.meta.description || "No Feed Description"'
                     />
                 </div>
-                <div class='col-12 pt-3'>
+                <div class='col-12 row g-2'>
                     <div class='datagrid-title user-select-none'>
                         Subscription
                     </div>
-                    <button
-                        v-if='subscribed === false'
-                        class='btn btn-green'
-                        style='height: 32px;'
-                        @click='subscribe(true)'
+
+                    <TablerLoading
+                        v-if='loading.subscribe'
+                        :inline='true'
+                        desc='Updating Subscription...'
+                    />
+                    <div
+                        v-else-if='props.subscription.subscribed === false'
+                        class='col-12'
                     >
-                        Subscribe
-                    </button>
+                        <button
+                            class='btn btn-green w-100'
+                            style='height: 32px;'
+                            @click='subscribe(true)'
+                        >
+                            Subscribe
+                        </button>
+                    </div>
                     <template
-                        v-else-if='subscribed === true'
+                        v-else-if='props.subscription.subscribed === true'
                     >
-                        <div class='btn-list'>
+                        <div class='col-6'>
                             <button
-                                class='btn btn-danger'
+                                class='btn btn-danger w-100'
                                 style='height: 32px;'
                                 @click='subscribe(false)'
                             >
                                 Unsubscribe
                             </button>
-
+                        </div>
+                        <div class='col-6'>
                             <button
-                                v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.mission.guid && sub'
-                                :disabled='!props.role.permissions.includes("MISSION_WRITE")'
-                                class='btn btn-green'
+                                v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.subscription.meta.guid'
+                                :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                class='btn btn-green w-100'
                                 style='height: 32px;'
-                                @click='mapStore.makeActiveMission(sub)'
+                                @click='mapStore.makeActiveMission(props.subscription)'
                             >
                                 Make Active
                             </button>
                             <button
                                 v-else
-                                class='btn btn-muted'
-                                :disabled='!props.role.permissions.includes("MISSION_WRITE")'
+                                class='btn btn-muted w-100'
+                                :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
                                 style='height: 32px;'
                                 @click='mapStore.makeActiveMission()'
                             >
@@ -120,11 +131,6 @@
                             </button>
                         </div>
                     </template>
-                    <TablerLoading
-                        v-else
-                        :inline='true'
-                        desc='Updating Subscription...'
-                    />
                 </div>
                 <div class='col-12 pt-3'>
                     <div class='datagrid-title user-select-none'>
@@ -165,7 +171,7 @@
                 />
                 <span
                     class='mx-2'
-                    v-text='props.mission.name + " Invite QR"'
+                    v-text='props.subscription.meta.name + " Invite QR"'
                 />
             </div>
         </div>
@@ -183,8 +189,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted } from 'vue';
-import type { MissionSubscriptions } from '../../../../types.ts'
+import { ref, onMounted, computed } from 'vue';
+import type { MissionSubscriptions } from '../../../../types.ts';
 import { stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
 import {
@@ -201,81 +207,61 @@ import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
 
 const emit = defineEmits(['refresh']);
-const props = defineProps({
-    mission: {
-        type: Object,
-        required: true
-    },
-    token: String,
-    role: {
-        type: Object,
-        required: true
-    }
-});
 
-const sub = ref<Subscription | undefined>();
+const props = defineProps<{
+    subscription: Subscription
+}>();
 
 const missionQRURL = computed(() => {
-    return String(stdurl(`/api/marti/missions/${props.mission.guid}/qr?token=${localStorage.token}`));
-});
-
-onMounted(async () => {
-    await fetchSubscriptions();
-
-    if (subscribed.value) {
-        sub.value = await mapStore.worker.db.subscriptionGet(props.mission.guid);
-    }
+    return String(stdurl(`/api/marti/missions/${props.subscription.guid}/qr?token=${localStorage.token}`));
 });
 
 const showQR = ref(false);
+
+const subscriptions = ref<MissionSubscriptions>([])
+
+onMounted(async () => {
+    loading.value.users = true;
+    await fetchSubscriptions();
+    loading.value.users = false;
+});
 
 const loading = ref({
     users: false,
     subscribe: false,
 });
 
-const subscriptions = ref<MissionSubscriptions>([])
-
-const subscribed = computed(() => {
-    if (loading.value.subscribe) return;
-    return !!mapStore.getOverlayByMode('mission', props.mission.guid);
-});
-
 async function fetchSubscriptions() {
     loading.value.users = true;
-    subscriptions.value = await Subscription.subscriptions(props.mission.guid, {
-        missionToken: props.token
-    })
+    subscriptions.value = await props.subscription.subscriptions();
     loading.value.users = false;
 }
 
-async function subscribe(subscribed: boolean) {
+async function subscribe(subscribe: boolean) {
     loading.value.subscribe = true;
-    const overlay = mapStore.getOverlayByMode('mission', props.mission.guid);
+    const overlay = mapStore.getOverlayByMode('mission', props.subscription.guid);
 
-    if (subscribed === true && !overlay) {
-        const missionOverlay = await Overlay.create(mapStore.map, {
-            name: props.mission.name,
-            url: `/mission/${encodeURIComponent(props.mission.name)}`,
+    if (subscribe === true && !overlay) {
+        const missionOverlay = await Overlay.create({
+            name: props.subscription.name,
+            url: `/mission/${encodeURIComponent(props.subscription.guid)}`,
             type: 'geojson',
             mode: 'mission',
-            token: props.token,
-            mode_id: props.mission.guid,
+            token: props.subscription.missiontoken,
+            mode_id: props.subscription.guid,
         })
 
         mapStore.overlays.push(missionOverlay);
-        await mapStore.loadMission(props.mission.guid);
-
-        sub.value = await mapStore.worker.db.subscriptionGet(props.mission.guid);
+        await mapStore.loadMission(props.subscription.guid);
 
         emit('refresh');
-    } else if (subscribed === false && overlay) {
+    } else if (subscribe === false && overlay) {
         await mapStore.removeOverlay(overlay);
-
-        sub.value = undefined;
 
         emit('refresh');
     }
+
+    await props.subscription.update({ subscribed: subscribe });
 
     loading.value.subscribe = false;
 }

@@ -1,3 +1,4 @@
+import Icon from './icon.ts';
 import { v4 as randomUUID } from 'uuid';
 import { std } from '../std.ts';
 import { bbox } from '@turf/bbox'
@@ -63,6 +64,26 @@ export default class COT {
 
     origin: Origin
 
+    static async load(
+        atlas: Atlas,
+        feat: Feature,
+        origin?: Origin,
+        opts?: {
+            skipSave?: boolean;
+            remote?: boolean
+        }
+    ) {
+        const a = atlas as Atlas;
+        await COT.style(feat);
+
+        return new COT(
+            a,
+            feat,
+            origin,
+            opts
+        );
+    }
+
     constructor(
         atlas: Atlas | Remote<Atlas>,
         feat: Feature,
@@ -72,12 +93,6 @@ export default class COT {
             remote?: boolean
         }
     ) {
-        if (!opts || (opts && !opts.remote)) {
-            const a = atlas as Atlas;
-            // Remote properties will already have the default style applied
-            feat.properties = COT.style(a, feat.geometry.type, feat.properties);
-        }
-
         this.id = feat.id || randomUUID();
 
         this._path = feat.path || '/';
@@ -90,23 +105,6 @@ export default class COT {
         this.instance = this._remote ? `remote:${randomUUID()}` : `db:${randomUUID()}`
 
         this.origin = origin || { mode: OriginMode.CONNECTION };
-
-        if (!this._properties.archived) {
-            this._properties.archived = false
-        }
-
-        if (!this._properties.id) {
-            this._properties.id = this.id;
-        }
-
-        if (!this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
-            this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
-
-            if (this._geometry.type === 'Point' && this._geometry.coordinates.length > 2) {
-                this._properties.center[2] = this._geometry.coordinates[2];
-            }
-        }
-
         if (this.origin.mode === OriginMode.CONNECTION && !this._remote) {
             const atlas = this._atlas as Atlas;
 
@@ -220,7 +218,7 @@ export default class COT {
             }
 
             if (update.properties) {
-                update.properties = COT.style(atlas, this._geometry.type, update.properties);
+                update.properties = await COT.styleProperties(this._geometry.type, update.properties);
 
                 if (isEqual(this.properties, update.properties)) {
                     delete update.properties
@@ -392,40 +390,50 @@ export default class COT {
         }
     }
 
+    as_rendered() {
+        return COT.as_rendered(this.as_feature());
+    }
+
     /**
      * The slimmer we can get the Features, the better
      * This returns the minium feature we need to actually style the COT in the vector tiles
      */
-    as_rendered(): GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> {
+    static as_rendered(
+        input: Feature
+    ): GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> {
         const feat: GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> = {
-            id: this.vectorId(),
+            id: this.vectorId(input.id),
             type: 'Feature',
             properties: {
-                id: this.id,        //Vector Tiles only support integer IDs so store in props
-                callsign: this._properties.callsign,
+                id: input.id,        //Vector Tiles only support integer IDs so store in props
+                callsign: input.properties.callsign,
             },
-            geometry: this._geometry
+            geometry: input.geometry
         };
 
         if (!feat.properties) feat.properties = {};
 
         for (const prop of RENDERED_PROPERTIES) {
-            if (this._properties[prop] !== undefined) {
-                feat.properties[prop] = this._properties[prop];
+            if (input.properties[prop] !== undefined) {
+                feat.properties[prop] = input.properties[prop];
             }
         }
 
         return feat;
     }
 
+    vectorId(): number {
+        return COT.vectorId(this.id);
+    }
+
     /**
      * string hash function to convert the COT ID into a number for use as a vector tile feature ID
      */
-    vectorId(): number {
+    static vectorId(id: string): number {
         let h = 0;
-        if (this.id.length === 0) return h;
-        for (let i = 0; i < this.id.length; i++) {
-            h = (h << 5) - h + this.id.charCodeAt(i);
+        if (id.length === 0) return h;
+        for (let i = 0; i < id.length; i++) {
+            h = (h << 5) - h + id.charCodeAt(i);
             h |= 0; // Ensure 32-bit integer
         }
 
@@ -449,32 +457,71 @@ export default class COT {
     }
 
     async flyTo(): Promise<void> {
-        await this._atlas.postMessage({
-            type: WorkerMessageType.Map_FlyTo,
-            body: {
-                bounds: this.bounds(),
-                options: {
-                    maxZoom: 18,
-                    padding: {
-                        top: 20,
-                        bottom: 20,
-                        left: 20,
-                        right: 20
-                    },
+        if (this.geometry.type === 'Point') {
+            let zoom = 16
+            if (this.properties.minzoom) {
+                zoom = this.properties.minzoom;
+            }
+
+            await this._atlas.postMessage({
+                type: WorkerMessageType.Map_FlyTo,
+                body: {
+                    center: [this.properties.center[0], this.properties.center[1]],
+                    zoom,
                     speed: Infinity,
                 }
+            })
+        } else {
+            await this._atlas.postMessage({
+                type: WorkerMessageType.Map_FitBounds,
+                body: {
+                    bounds: this.bounds(),
+                    options: {
+                        maxZoom: 18,
+                        padding: {
+                            top: 20,
+                            bottom: 20,
+                            left: 20,
+                            right: 20
+                        },
+                        speed: Infinity,
+                    }
+                }
+            })
+        }
+    }
+
+    static async style(
+        feat: Feature
+    ): Promise<Feature> {
+        feat.properties = await COT.styleProperties(feat.geometry.type, feat.properties);
+
+        if (!feat.properties.archived) {
+            feat.properties.archived = false
+        }
+
+        if (!feat.properties.id) {
+            feat.properties.id = feat.id;
+        }
+
+        if (!feat.properties.center || (feat.properties.center[0] === 0 && feat.properties.center[1] === 0)) {
+            feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
+
+            if (feat.geometry.type === 'Point' && feat.geometry.coordinates.length > 2) {
+                feat.properties.center[2] = feat.geometry.coordinates[2];
             }
-        })
+        }
+
+        return feat;
     }
 
     /**
      * Consistent feature manipulation between add & update
      */
-    static style(
-        atlas: Atlas,
+    static async styleProperties(
         type: string,
         properties: Feature["properties"]
-    ): Feature["properties"] {
+    ): Promise<Feature["properties"]> {
         if (!properties.time) properties.time = new Date().toISOString();
         if (!properties.start) properties.start = new Date().toISOString();
         if (!properties.stale) {
@@ -536,7 +583,7 @@ export default class COT {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
 
-                if (!atlas.db.images.has(properties.icon)) {
+                if (!await Icon.has(properties.icon)) {
                     console.warn(`No Icon for: ${properties.icon} fallback to ${properties.type}`);
                     properties.icon = `${properties.type}`;
                 }

@@ -281,10 +281,11 @@ async function setBasemap(basemap: Basemap) {
     } else {
         const before = String(mapStore.overlays[0].styles[0].id);
 
-        mapStore.overlays.unshift(await Overlay.create(mapStore.map, {
+        mapStore.overlays.unshift(await Overlay.create({
             name: basemap.name,
             pos: -1,
             type: basemap.type,
+            frequency: basemap.frequency,
             url: `/api/basemap/${basemap.id}/tiles`,
             mode: 'basemap',
             mode_id: String(basemap.id),

@@ -127,6 +127,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue';
 import { OriginMode } from '../../../base/cot.ts';
+import Subscription from '../../../base/subscription.ts';
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
 import { useMapStore } from '../../../stores/map.ts';
@@ -182,15 +183,16 @@ async function genMenuItems() {
 
             if (!cot) throw new Error('Could not find marker');
 
-            if (await cot.origin.mode === OriginMode.CONNECTION) {
+            if (cot.origin.mode === OriginMode.CONNECTION) {
                 menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
                 menuItems.value.push({ id: 'delete', icon: '#radial-trash' })
 
-                if (await cot.geometry.type === 'Point') {
+                if (cot.geometry.type === 'Point') {
                     menuItems.value.push({ id: 'lock', icon: '#radial-lock' })
                 }
-            } else if (await cot.origin.mode === OriginMode.MISSION && await cot.origin.mode_id) {
-                const sub = await mapStore.worker.db.subscriptions.get(await cot.origin.mode_id);
+            } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
+
+                const sub = await Subscription.from(cot.origin.mode_id, localStorage.token);
 
                 if (sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
                     menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
@@ -198,7 +200,7 @@ async function genMenuItems() {
                 }
             }
 
-            if (await cot.properties.video) {
+            if (cot.properties.video) {
                 menuItems.value.push({ id: 'play', icon: '#radial-play' })
             }
         }

@@ -6,12 +6,12 @@ import vtpbf from 'vt-pbf';
 import { InferSelectModel } from 'drizzle-orm';
 import type { BBox } from 'geojson';
 import type { Response } from 'express';
-import { fetch as typedFetch } from '@tak-ps/etl'
+import typedFetch from '../fetch.js'
 import { Feature } from '@tak-ps/node-cot';
 import Config from '../config.js';
 import { EsriPolygon } from '../esri/types.js';
 import { Basemap } from '../schema.js';
-import { GeoJSONFeatureCollection, GeoJSONFeature } from '../types.js';
+import { GeoJSONFeatureCollection, GeoJSONFeature, MultiGeoJSONFeatureCollection } from '../types.js';
 import { pointOnFeature } from '@turf/point-on-feature';
 import { bboxPolygon } from '@turf/bbox-polygon';
 import { Static, Type } from '@sinclair/typebox'
@@ -455,7 +455,7 @@ export default class TileJSON {
 
                 if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 
-                const fc = await tileRes.typed(GeoJSONFeatureCollection);
+                const fc = await tileRes.typed(MultiGeoJSONFeatureCollection);
 
                 if (!fc.features.length) {
                     res.status(404).json({
@@ -469,7 +469,6 @@ export default class TileJSON {
                 const tileFeatures = geoJSONToTile({
                     type: 'FeatureCollection',
                     features: fc.features.map((feat) => {
-                        // @ts-expect-error Vector Tiles need a int parsable ID
                         feat.id = Number(feat.id);
                         return feat;
                     })

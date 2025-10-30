@@ -310,6 +310,7 @@ export default async function router(schema: Schema, config: Config) {
             overlay: Type.Boolean({ default: false }),
             tilesize: Type.Integer({ default: 256, minimum: 256, maximum: 512 }),
             attribution: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            frequency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.Enum(Basemap_Format)),
@@ -360,8 +361,6 @@ export default async function router(schema: Schema, config: Config) {
                 })
             }
 
-            console.error('TEST', basemap.sharing_token);
-
             res.json({
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
@@ -392,6 +391,7 @@ export default async function router(schema: Schema, config: Config) {
             url: Type.Optional(Type.String()),
             tilesize: Type.Optional(Type.Integer({ default: 256, minimum: 256, maximum: 512 })),
             attribution: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            frequency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.Enum(Basemap_Format)),
@@ -453,8 +453,6 @@ export default async function router(schema: Schema, config: Config) {
                     });
                 }
             }
-
-            console.error('TEST', basemap.sharing_token);
 
             res.json({
                 ...basemap,

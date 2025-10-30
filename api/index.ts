@@ -63,7 +63,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 
 export default async function server(config: Config): Promise<ServerManager> {
-    if (config.StackName !== 'test') {
+    if (config.StackName !== 'test' || process.env.CLOUDTAK_Mode === 'docker-compose') {
         // If the database is empty, populate it with generally sensible defaults
         await Bulldozer.fireItUp(config);
     }

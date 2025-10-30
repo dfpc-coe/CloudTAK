@@ -7,7 +7,7 @@
     >
         <template #buttons>
             <TablerIconButton
-                v-if='!upload && role && role.permissions.includes("MISSION_WRITE")'
+                v-if='!upload && props.subscription.role && props.subscription.role.permissions.includes("MISSION_WRITE")'
                 title='Upload File'
                 @click='upload = true'
             >
@@ -31,7 +31,7 @@
         >
             <Upload
                 ref='upload'
-                :url='stdurl(`/api/marti/missions/${props.mission.name}/upload`)'
+                :url='stdurl(`/api/marti/missions/${props.subscription.guid}/upload`)'
                 :headers='uploadHeaders'
                 :autoupload='false'
                 format='raw'
@@ -44,15 +44,15 @@
         </div>
 
         <TablerNone
-            v-else-if='!mission.contents.length'
+            v-else-if='!props.subscription.meta.contents.length'
             label='Files'
             :create='false'
         />
         <template v-else>
             <div
-                v-for='content in mission.contents'
+                v-for='content in props.subscription.meta.contents'
                 :key='content.data.uid'
-                class='col-12 d-flex px-2 py-2 hover'
+                class='col-12 d-flex px-2 py-2 hover rounded'
             >
                 <div
                     style='width: calc(100% - 120px)'
@@ -73,30 +73,34 @@
                         </div>
                     </div>
                 </div>
-                <div class='col-auto ms-auto btn-list'>
-                    <TablerDelete
-                        v-if='role && role.permissions.includes("MISSION_WRITE")'
-                        displaytype='icon'
-                        @delete='deleteFile(content.data.hash)'
-                    />
-                    <TablerIconButton
-                        title='Import File'
-                        @click='importFile(content.data.name, content.data.hash)'
-                    >
-                        <IconFileImport
-                            :size='32'
-                            stroke='1'
+                <div class='col-auto'>
+                    <div class='d-flex ms-auto'>
+                        <TablerDelete
+                            v-if='props.subscription.role && props.subscription.role.permissions.includes("MISSION_WRITE")'
+                            displaytype='icon'
+                            @delete='deleteFile(content.data.hash)'
                         />
-                    </TablerIconButton>
-                    <a
-                        v-tooltip='"Download Asset"'
-                        :href='downloadFile(content.data.hash)'
-                    ><IconDownload
-                        :size='32'
-                        stroke='1'
-                        color='white'
-                        class='cursor-pointer'
-                    /></a>
+                        <TablerIconButton
+                            title='Import File'
+                            @click='importFile(content.data.name, content.data.hash)'
+                        >
+                            <IconFileImport
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                        <TablerIconButton
+                            title='Download Asset'
+                            @click='downloadFile(content.data.name, content.data.hash)'
+                        >
+                            <IconDownload
+                                :size='32'
+                                stroke='1'
+                                color='white'
+                                class='cursor-pointer'
+                            />
+                        </TablerIconButton>
+                    </div>
                 </div>
             </div>
         </template>
@@ -107,11 +111,8 @@
 import { ref, computed, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../std.ts';
-import type {
-    Mission,
-    MissionRole,
-    Import,
-} from '../../../../types.ts';
+import Subscription from '../../../../base/subscription.ts';
+import type { Import } from '../../../../types.ts';
 import {
     IconPlus,
     IconFileImport,
@@ -129,10 +130,8 @@ import {
 import MenuTemplate from '../../util/MenuTemplate.vue';
 
 const props = defineProps<{
-    mission: Mission,
-    token?: string,
-    role?: MissionRole
-}>()
+    subscription: Subscription
+}>();
 
 const emit = defineEmits([ 'refresh' ]);
 
@@ -146,7 +145,7 @@ const upload = ref(false);
 const loading = ref(false)
 
 async function deleteFile(hash: string) {
-    await std(`/api/marti/missions/${props.mission.name}/upload/${hash}`, {
+    await std(`/api/marti/missions/${props.subscription.guid}/upload/${hash}`, {
         method: 'DELETE'
     });
 
@@ -158,8 +157,8 @@ const uploadHeaders = computed(() => {
         Authorization: `Bearer ${localStorage.token}`,
     }
 
-    if (props.token) {
-        headers.MissionAuthorization = props.token;
+    if (props.subscription.token) {
+        headers.MissionAuthorization = props.subscription.token;
     };
 
     return headers;
@@ -180,10 +179,14 @@ async function uploadStaged(ev: { name: string }) {
     emit("refresh");
 }
 
-function downloadFile(hash: string): string {
+async function downloadFile(name: string, hash: string): Promise<void> {
     const url = stdurl(`/api/marti/api/files/${hash}`)
     url.searchParams.append('token', localStorage.token);
-    return String(url);
+    url.searchParams.append('name', name);
+
+    await std(url, {
+        download: true
+    })
 }
 
 async function importFile(name: string, hash: string) {

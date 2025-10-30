@@ -1,17 +1,18 @@
 <template>
     <MenuTemplate
-        :name='mission ? mission.name : "Mission"'
-        :loading='!mission || loading'
+        :name='subscription ? subscription.meta.name : "Mission"'
+        :error='error'
+        :loading='(!subscription && !error) || loading'
     >
         <template #buttons>
             <TablerDelete
-                v-if='role.permissions.includes("MISSION_WRITE")'
+                v-if='!loading && subscription && subscription.role.permissions.includes("MISSION_WRITE")'
                 v-tooltip='"Delete"'
                 displaytype='icon'
                 @delete='deleteMission'
             />
             <TablerDropdown
-                v-if='missionSub'
+                v-if='subscription && subscription.subscribed'
             >
                 <TablerIconButton
                     title='More Options'
@@ -68,7 +69,7 @@
                 </template>
             </TablerDropdown>
             <TablerRefreshButton
-                :loading='!mission || loading'
+                :loading='(!subscription && !error) || loading'
                 @click='fetchMission'
             />
         </template>
@@ -84,6 +85,7 @@
             />
             <template v-else>
                 <div
+                    v-if='subscription && subscription.subscribed'
                     class='px-2 py-2 round btn-group w-100'
                     role='group'
                 >
@@ -196,20 +198,24 @@
                     /></label>
                 </div>
 
-                <router-view
-                    :menu='true'
-                    :mission='mission'
-                    :token='token'
-                    :role='role'
-                    @refresh='fetchMission'
-                />
+                <Suspense>
+                    <router-view
+                        v-if='subscription'
+                        :subscription='subscription'
+                        @refresh='fetchMission'
+                    />
+
+                    <template #fallback>
+                        <TablerLoading />
+                    </template>
+                </Suspense>
             </template>
         </template>
     </MenuTemplate>
 
     <ShareToPackage
-        v-if='shareToPackage.shown && missionSub'
-        :name='`${new Date().toISOString().replace(/T.*/, "")} ${mission ? mission.name : "Mission"}`'
+        v-if='shareToPackage.shown && subscription'
+        :name='`${new Date().toISOString().replace(/T.*/, "")} ${subscription ? subscription.meta.name : "Mission"}`'
         :feats='shareToPackage.features'
         @close='shareToPackage.shown = false'
     />
@@ -218,7 +224,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { std } from '../../../std.ts';
-import type { Feature, Mission, MissionRole } from '../../../types.ts';
+import type { Feature } from '../../../types.ts';
 import Subscription from '../../../base/subscription.ts';
 import {
     IconFile,
@@ -244,6 +250,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMapStore } from '../../../stores/map.ts';
+
 const mapStore = useMapStore();
 const route = useRoute();
 const router = useRouter();
@@ -260,76 +267,53 @@ const shareToPackage = ref<{
     features: []
 });
 
-const role = ref<MissionRole>({ type: 'MISSION_READONLY_SUBSCRIBER', permissions: [] });
 const loadingInline = ref<string | undefined>(undefined);
-const mission = ref<Mission | undefined>(undefined)
-const missionSub = ref<Subscription | undefined>(undefined)
+const subscription = ref<Subscription | undefined>(undefined)
 
 onMounted(async () => {
     await fetchMission();
 })
 
 async function shareToPackageSetup(): Promise<void> {
-    if (!missionSub.value) return;
-    shareToPackage.value.features = (await missionSub.value.collection(true)).features as Feature[];
+    if (!subscription.value) return;
+    shareToPackage.value.features = (await subscription.value.feature.collection(true)).features as Feature[];
     shareToPackage.value.shown = true;
 }
 
 async function deleteMission() {
-    const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission));
     loading.value = true;
 
-    try {
-        if (subMission) {
-            await subMission.delete();
+    if (!subscription.value) return;
 
-            const overlay = mapStore.getOverlayByMode('mission', String(route.params.mission));
-            if (overlay) await mapStore.removeOverlay(overlay);
-        } else {
-            await Subscription.delete(String(route.params.mission), token.value);
-        }
+    await subscription.value.delete();
 
-        router.replace('/menu/missions');
-    } catch (err) {
-        loading.value = false;
-        error.value = err instanceof Error ? err : new Error(String(err));
-    }
+    const overlay = mapStore.getOverlayByMode('mission', String(route.params.mission));
+    if (overlay) await mapStore.removeOverlay(overlay);
+
+    router.replace('/menu/missions');
 }
 
 async function exportToPackage(format: string): Promise<void> {
-    if (!mission.value) return;
+    if (!subscription.value) return;
 
     loadingInline.value = 'Generating Archive'
-    await std(`/api/marti/missions/${encodeURIComponent(mission.value.name)}/archive?download=true&format=${format}`, {
+    await std(`/api/marti/missions/${encodeURIComponent(subscription.value.guid)}/archive?download=true&format=${format}`, {
         download: true
     })
     loadingInline.value = undefined;
 }
 
 async function fetchMission(): Promise<void> {
-    mission.value = undefined;
-    missionSub.value = undefined;
-
-    const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission), {
-        refresh: true
-    });
-
     try {
-        if (subMission) {
-            missionSub.value = subMission;
+        subscription.value = await Subscription.load(String(route.params.mission), {
+            token: String(localStorage.token),
+            missiontoken: token.value,
+        });
 
-            role.value = subMission.role;
-
-            if (subMission.token) {
-                token.value = subMission.token;
-            }
-
-            mission.value = subMission.meta;
-        } else {
-            mission.value = await Subscription.fetch(String(route.params.mission), token.value);
-        }
+        loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
+        loading.value = false;
     }
 }
 </script>

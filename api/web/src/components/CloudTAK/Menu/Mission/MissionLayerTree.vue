@@ -64,7 +64,7 @@
                     />
 
                     <TablerIconButton
-                        v-if='role && role.permissions.includes("MISSION_WRITE")'
+                        v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'
                         title='Edit Name'
                         :size='24'
                         @click='edit.add(layer.uid)'
@@ -73,7 +73,7 @@
                     </TablerIconButton>
 
                     <TablerDelete
-                        v-if='role && role.permissions.includes("MISSION_WRITE")'
+                        v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'
                         displaytype='icon'
                         :size='24'
                         @delete='deleteLayer(layer)'
@@ -83,10 +83,8 @@
 
             <MissionLayerEdit
                 v-if='edit.has(layer.uid)'
-                :mission='props.mission'
-                :token='props.token'
+                :subscription='props.subscription'
                 :layer='layer'
-                :role='role'
                 @cancel='edit.delete(layer.uid)'
                 @layer='emit("refresh")'
             />
@@ -95,20 +93,17 @@
                 v-else-if='opened.has(layer.uid) && layer.type === "UID"'
                 class='mx-2'
             >
-                <SingleFeature
+                <FeatureRow
                     v-for='cot of cots(layer)'
                     :key='cot.id'
                     :delete-button='false'
                     :feature='cot'
-                    :mission='mission'
                 />
                 <MissionLayerTree
                     v-if='layer.mission_layers && layer.mission_layers.length'
                     :layers='layer.mission_layers as Array<MissionLayer>'
                     :feats='feats'
-                    :mission='mission'
-                    :token='token'
-                    :role='role'
+                    :subscription='subscription'
                     @refresh='emit("refresh")'
                 />
                 <TablerNone
@@ -120,19 +115,18 @@
             </div>
         </template>
 
-        <SingleFeature
+        <FeatureRow
             v-for='feat of orphanedFeats'
             :key='feat.id'
             :delete-button='false'
             :feature='feat'
-            :mission='mission'
         />
     </template>
 </template>
 
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
-import type { Mission, MissionLayer, MissionRole, Feature } from '../../../../types.ts';
+import type { MissionLayer, Feature } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';
 import MissionLayerTree from './MissionLayerTree.vue';
 import {
@@ -151,7 +145,7 @@ import {
     TablerLoading,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
-import SingleFeature from '../../util/FeatureRow.vue';
+import FeatureRow from '../../util/FeatureRow.vue';
 import MissionLayerEdit from './MissionLayerEdit.vue';
 
 const emit = defineEmits([
@@ -161,10 +155,8 @@ const emit = defineEmits([
 const props = defineProps<{
     layers: Array<MissionLayer>,
     feats: Map<string, Feature>,
-    mission: Mission,
+    subscription: Subscription,
     orphaned?: Set<string>,
-    token?: string,
-    role?: MissionRole
 }>();
 
 const opened = ref<Set<string>>(new Set());
@@ -193,9 +185,7 @@ function cots(layer: MissionLayer): Array<Feature> {
 async function deleteLayer(layer: MissionLayer) {
     loading.value = true;
 
-    await Subscription.layerDelete(props.mission.guid, layer.uid, {
-        missionToken: props.token
-    });
+    await props.subscription.layerDelete(layer.uid);
 
     emit('refresh')
 

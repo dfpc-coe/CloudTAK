@@ -104,7 +104,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import Subscription from '../../../../base/subscription.ts';
-import type { Mission, MissionChanges } from '../../../../types.ts';
+import type { MissionChanges } from '../../../../types.ts';
 import {
     IconSquarePlus,
     IconSquareX,
@@ -119,8 +119,7 @@ import {
 import MenuTemplate from '../../util/MenuTemplate.vue';
 
 const props = defineProps<{
-    mission: Mission,
-    token?: string
+    subscription: Subscription
 }>();
 
 const error = ref<Error | undefined>();
@@ -134,9 +133,7 @@ onMounted(async () => {
 async function fetchChanges() {
     loading.value = true;
     try {
-        changes.value = (await Subscription.changes(props.mission.guid, {
-            missionToken: props.token
-        })).data;
+        changes.value = (await props.subscription.changes()).data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

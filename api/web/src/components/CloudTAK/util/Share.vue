@@ -255,7 +255,8 @@ import {
     IconAmbulance,
     IconShare2
 } from '@tabler/icons-vue';
-import type { Mission, Contact, ContactList, Feature, Group } from '../../../types.ts'
+import Subscription from '../../../base/subscription.ts';
+import type { Contact, ContactList, Feature, Group } from '../../../types.ts'
 import type { WorkerMessage } from '../../../base/events.ts';
 import COTContact from '../util/Contact.vue';
 import { useMapStore } from '../../../stores/map.ts';
@@ -278,12 +279,18 @@ const filter = ref('');
 const mode = ref('users');
 
 const selectedGroups = ref<Set<Group>>(new Set())
-const selectedMissions = ref<Set<Mission>>(new Set())
+const selectedMissions = ref<Set<{
+    name: string
+    guid: string
+}>>(new Set())
 const selectedUsers = ref<Set<Contact>>(new Set())
 
 const contacts = ref<ContactList>([]);
 const channels = ref<Array<Group>>([]);
-const missions = ref<Array<Mission>>([]);
+const missions = ref<Array<{
+    name: string
+    guid: string
+}>>([]);
 
 const visibleChannels = computed<Array<Group>>(() => {
     return channels.value.filter((channel) => {
@@ -291,7 +298,10 @@ const visibleChannels = computed<Array<Group>>(() => {
     });
 });
 
-const visibleMissions = computed<Array<Mission>>(() => {
+const visibleMissions = computed<Array<{
+    name: string
+    guid: string
+}>>(() => {
     return missions.value.filter((mission) => {
         return mission.name.toLowerCase().includes(filter.value.toLowerCase());
     });
@@ -470,12 +480,9 @@ async function fetchChannelList() {
 async function fetchMissions() {
     loading.value = true;
 
-    missions.value = (await mapStore.worker.db.subscriptionList())
-        .filter((mission) => {
-            return mission.role.permissions.includes("MISSION_WRITE")
-        }).map((mission) => {
-            return mission.meta;
-        })
+    missions.value = Array.from(await Subscription.localList({
+        role: 'MISSION_SUBSCRIBER'
+    }))
 
     loading.value = false;
 }
