@@ -179,7 +179,7 @@ async function uploadStaged(ev: { name: string }) {
     emit("refresh");
 }
 
-async function downloadFile(name: string, hash: string): string {
+async function downloadFile(name: string, hash: string): Promise<void> {
     const url = stdurl(`/api/marti/api/files/${hash}`)
     url.searchParams.append('token', localStorage.token);
     url.searchParams.append('name', name);
