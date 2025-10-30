@@ -52,7 +52,7 @@
             <div
                 v-for='content in props.subscription.meta.contents'
                 :key='content.data.uid'
-                class='col-12 d-flex px-2 py-2 hover'
+                class='col-12 d-flex px-2 py-2 hover rounded'
             >
                 <div
                     style='width: calc(100% - 120px)'
@@ -73,30 +73,34 @@
                         </div>
                     </div>
                 </div>
-                <div class='col-auto ms-auto btn-list'>
-                    <TablerDelete
-                        v-if='props.subscription.role && props.subscription.role.permissions.includes("MISSION_WRITE")'
-                        displaytype='icon'
-                        @delete='deleteFile(content.data.hash)'
-                    />
-                    <TablerIconButton
-                        title='Import File'
-                        @click='importFile(content.data.name, content.data.hash)'
-                    >
-                        <IconFileImport
-                            :size='32'
-                            stroke='1'
+                <div class='col-auto'>
+                    <div class='d-flex ms-auto'>
+                        <TablerDelete
+                            v-if='props.subscription.role && props.subscription.role.permissions.includes("MISSION_WRITE")'
+                            displaytype='icon'
+                            @delete='deleteFile(content.data.hash)'
                         />
-                    </TablerIconButton>
-                    <a
-                        v-tooltip='"Download Asset"'
-                        :href='downloadFile(content.data.hash)'
-                    ><IconDownload
-                        :size='32'
-                        stroke='1'
-                        color='white'
-                        class='cursor-pointer'
-                    /></a>
+                        <TablerIconButton
+                            title='Import File'
+                            @click='importFile(content.data.name, content.data.hash)'
+                        >
+                            <IconFileImport
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                        <TablerIconButton
+                            title='Download Asset'
+                            @click='downloadFile(content.data.name, content.data.hash)'
+                        >
+                            <IconDownload
+                                :size='32'
+                                stroke='1'
+                                color='white'
+                                class='cursor-pointer'
+                            />
+                        </TablerIconButton>
+                    </div>
                 </div>
             </div>
         </template>
@@ -175,10 +179,14 @@ async function uploadStaged(ev: { name: string }) {
     emit("refresh");
 }
 
-function downloadFile(hash: string): string {
+async function downloadFile(name: string, hash: string): string {
     const url = stdurl(`/api/marti/api/files/${hash}`)
     url.searchParams.append('token', localStorage.token);
-    return String(url);
+    url.searchParams.append('name', name);
+
+    await std(url, {
+        download: true
+    })
 }
 
 async function importFile(name: string, hash: string) {
