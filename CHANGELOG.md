@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v11.48.0 - 2025-10-30
+
+- :tada: A complete rewrite of how Data Syncs are managed under the hood by using IndexDB as storage
+- :rocket: Data Sync Logs are now "live" due to the above change
+- :rocket: Improve performance of Data Syncs with large numbers of features
+- :tada: Add the ability to specify a refresh requency for overlays
+- :bug: Fix file names in downloaded Data Sync Files
+
 ### v11.47.0 - 2025-10-21
 
 - :rocket: Internally update all GET Layer operations to Layer Control class for consistency in checks
