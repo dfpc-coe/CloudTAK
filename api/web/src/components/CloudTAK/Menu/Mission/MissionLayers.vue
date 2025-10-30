@@ -1,6 +1,6 @@
 <template>
     <MenuTemplate
-        v-if='menu'
+        v-if='props.menu !== false'
         name='Mission Layers'
         :zindex='0'
         :back='false'
@@ -100,12 +100,10 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 import MissionLayerTree from './MissionLayerTree.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
     menu: boolean,
     subscription: Subscription
-}>, {
-    menu: true
-});
+}>()
 
 const createLayer = ref(false)
 const loading = ref(true);
