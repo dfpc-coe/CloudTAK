@@ -259,15 +259,15 @@ onMounted(() => {
 
     if (props.schema.type === 'object' && props.schema.properties) {
         for (const key in props.schema.properties) {
-            if (!data.value[key] && props.schema.properties[key].type === 'array') {
+            if (data.value[key] === undefined && props.schema.properties[key].type === 'array') {
                 data.value[key] = props.schema.properties[key].default || [];
-            } else if (!data.value[key] && props.schema.properties[key].type === 'boolean') {
+            } else if (data.value[key] === undefined && props.schema.properties[key].type === 'boolean') {
                 data.value[key] = props.schema.properties[key].default || false;
-            } else if (!data.value[key] && props.schema.properties[key].type === 'string') {
+            } else if (data.value[key] === undefined && props.schema.properties[key].type === 'string') {
                 data.value[key] = props.schema.properties[key].default || '';
-            } else if (!data.value[key] && props.schema.properties[key].type === 'integer') {
+            } else if (data.value[key] === undefined && props.schema.properties[key].type === 'integer') {
                 data.value[key] = props.schema.properties[key].default;
-            } else if (!data.value[key] && props.schema.properties[key].type === 'number') {
+            } else if (data.value[key] === undefined && props.schema.properties[key].type === 'number') {
                 data.value[key] = props.schema.properties[key].default;
             }
         }
