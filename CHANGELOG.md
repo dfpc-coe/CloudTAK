@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.49.0 - 2025-10-31
+
+- :rocket: Automatically generate a SigningSecret & MediaSecret when using CloudTAK Install script
+- :bug: Fix ECR Task List Permissions
+
 ### v11.48.0 - 2025-10-30
 
 - :tada: A complete rewrite of how Data Syncs are managed under the hood by using IndexDB as storage
