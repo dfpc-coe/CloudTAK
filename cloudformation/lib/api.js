@@ -181,6 +181,7 @@ export default {
                                 'ecr:Describe*',
                                 'ecr:Get*',
                                 'ecr:BatchDeleteImage',
+                                'ecr:BatchGetImage',
                                 'ecr:List*'
                             ],
                             Resource: [

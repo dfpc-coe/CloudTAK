@@ -70,6 +70,12 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
         echo "Generating a new .env file with default settings..."
         cp .env.example .env
         echo ".env file created. Please review and modify it as needed."
+
+        echo "Generating Random SigningSecret"
+        sed -i "s/^SigningSecret=.*/SigningSecret=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)/" .env
+
+        echo "Generating Random MediaSecret"
+        sed -i "s/^MediaSecret=.*/MediaSecret=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)/" .env
     else
         echo ".env file already exists. Skipping creation."
     fi
