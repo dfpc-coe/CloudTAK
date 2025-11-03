@@ -193,7 +193,7 @@
                     :key='mode'
                     :disabled='disabled'
                     :url='environment.ARCGIS_PORTAL'
-                    :readonly='true'
+                    :readonly='disabled'
                     :pane='false'
                     :username='environment.ARCGIS_USERNAME'
                     :password='environment.ARCGIS_PASSWORD'
