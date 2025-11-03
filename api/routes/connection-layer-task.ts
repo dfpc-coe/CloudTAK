@@ -18,7 +18,10 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Task Status',
         group: 'Task',
         params: Type.Object({
-            connectionid: Type.Integer(),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 })
+            ]),
             layerid: Type.Integer(),
         }),
         description: 'Get the status of a task stack in relation to a given layer',
@@ -27,11 +30,18 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: []
-            }, req.params.connectionid);
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.is_auth(config, req);
 
-            const layer = await layerControl.from(connection, req.params.layerid);
+                layer = await layerControl.from(null, req.params.layerid);
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: []
+                }, req.params.connectionid);
+
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             res.json(await CF.status(config, layer.id));
         } catch (err) {
@@ -43,18 +53,28 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Cancel Update',
         group: 'Task',
         params: Type.Object({
-            connectionid: Type.Integer(),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 })
+            ]),
             layerid: Type.Integer(),
         }),
         description: 'If a stack is currently updating, cancel the stack update',
         res: StandardResponse
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: []
-            }, req.params.connectionid);
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.is_auth(config, req);
 
-            const layer = await layerControl.from(connection, req.params.layerid);
+                layer = await layerControl.from(null, req.params.layerid);
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: []
+                }, req.params.connectionid);
+
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             await CF.cancel(config, layer.id);
 
@@ -71,18 +91,28 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Run Task',
         group: 'Task',
         params: Type.Object({
-            connectionid: Type.Integer(),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 })
+            ]),
             layerid: Type.Integer(),
         }),
         description: 'Manually invoke a Task',
         res: StandardResponse
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: []
-            }, req.params.connectionid);
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.is_auth(config, req);
 
-            const layer = await layerControl.from(connection, req.params.layerid);
+                layer = await layerControl.from(null, req.params.layerid);
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: []
+                }, req.params.connectionid);
+
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             await Lambda.invoke(config, layer.id)
 
@@ -99,7 +129,10 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Task Logs',
         group: 'Task',
         params: Type.Object({
-            connectionid: Type.Integer(),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 })
+            ]),
             layerid: Type.Integer(),
         }),
         description: 'Get the logs related to the given task',
@@ -108,11 +141,18 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: []
-            }, req.params.connectionid);
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.is_auth(config, req);
 
-            const layer = await layerControl.from(connection, req.params.layerid);
+                layer = await layerControl.from(null, req.params.layerid);
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: []
+                }, req.params.connectionid);
+
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             res.json(await Logs.list(config, layer));
         } catch (err) {
@@ -124,18 +164,28 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Task Capabilities',
         group: 'Task',
         params: Type.Object({
-            connectionid: Type.Integer(),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 })
+            ]),
             layerid: Type.Integer(),
         }),
         description: 'Get the Capabilities object',
         res: Capabilities
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: []
-            }, req.params.connectionid);
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.is_auth(config, req);
 
-            const layer = await layerControl.from(connection, req.params.layerid);
+                layer = await layerControl.from(null, req.params.layerid);
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: []
+                }, req.params.connectionid);
+
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             const capabilities = await Lambda.capabilities(config, layer.id);
 
@@ -149,7 +199,10 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Task Deploy',
         group: 'Task',
         params: Type.Object({
-            connectionid: Type.Integer(),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 })
+            ]),
             layerid: Type.Integer(),
         }),
         description: 'Deploy a task stack',
@@ -158,11 +211,18 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: []
-            }, req.params.connectionid);
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.is_auth(config, req);
 
-            const layer = await layerControl.from(connection, req.params.layerid);
+                layer = await layerControl.from(null, req.params.layerid);
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources: []
+                }, req.params.connectionid);
+
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             try {
                 await Logs.delete(config, layer);

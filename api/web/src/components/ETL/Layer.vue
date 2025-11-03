@@ -30,7 +30,7 @@
 
                                 <a
                                     class='card-title cursor-pointer mx-2'
-                                    @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}`)'
+                                    @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${layer.id}`)'
                                     v-text='layer.name'
                                 />
 
@@ -47,7 +47,7 @@
                                         </TablerIconButton>
                                         <TablerIconButton
                                             title='Edit'
-                                            @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}/edit`)'
+                                            @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${layer.id}/edit`)'
                                         >
                                             <IconPencil
                                                 :size='32'
@@ -150,8 +150,8 @@
                                                     "active": route.name === "layer-deployment",
                                                     "cursor-pointer": route.name !== "layer-deployment"
                                                 }'
-                                                @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`)'
-                                                @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`)'
+                                                @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/deployment`)'
+                                                @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/deployment`)'
                                             ><IconPlaneDeparture
                                                 :size='32'
                                                 stroke='1'
@@ -165,8 +165,8 @@
                                                     "active": route.name === "layer-alarm",
                                                     "cursor-pointer": route.name !== "layer-alarm"
                                                 }'
-                                                @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/alarm`)'
-                                                @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/alarm`)'
+                                                @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/alarm`)'
+                                                @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/alarm`)'
                                             ><IconAlarm
                                                  :size='32'
                                                  stroke='1'
@@ -258,8 +258,8 @@
                                                             "active": route.name === "layer-incoming-config",
                                                             "cursor-pointer": route.name !== "layer-incoming-config"
                                                         }'
-                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/config`)'
-                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/config`)'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/config`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/config`)'
                                                     ><IconAdjustments
                                                         :size='32'
                                                         stroke='1'
@@ -273,8 +273,8 @@
                                                             "active": route.name === "layer-incoming-environment",
                                                             "cursor-pointer": route.name !== "layer-incoming-environment"
                                                         }'
-                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/environment`)'
-                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/environment`)'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/environment`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/environment`)'
                                                     ><IconBeach
                                                         :size='32'
                                                         stroke='1'
@@ -287,8 +287,8 @@
                                                             "active": route.name === "layer-incoming-schema",
                                                             "cursor-pointer": route.name !== "layer-incoming-schema"
                                                         }'
-                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/schema`)'
-                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/schema`)'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/schema`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/schema`)'
                                                     ><IconSchema
                                                         :size='32'
                                                         stroke='1'
@@ -301,8 +301,8 @@
                                                             "active": route.name === "layer-incoming-styles",
                                                             "cursor-pointer": route.name !== "layer-incoming-styles"
                                                         }'
-                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/styles`)'
-                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/styles`)'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/styles`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/incoming/styles`)'
                                                     ><IconPaint
                                                         :size='32'
                                                         stroke='1'
@@ -337,8 +337,8 @@
                                                             "active": route.name === "layer-outgoing-config",
                                                             "cursor-pointer": route.name !== "layer-outgoing-config"
                                                         }'
-                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing/config`)'
-                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing/config`)'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/outgoing/config`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/outgoing/config`)'
                                                     ><IconAdjustments
                                                         :size='32'
                                                         stroke='1'
@@ -352,8 +352,8 @@
                                                             "active": route.name === "layer-outgoing-environment",
                                                             "cursor-pointer": route.name !== "layer-outgoing-environment"
                                                         }'
-                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing/environment`)'
-                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing/environment`)'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/outgoing/environment`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid || "template"}/layer/${route.params.layerid}/outgoing/environment`)'
                                                     ><IconBeach
                                                         :size='32'
                                                         stroke='1'
@@ -416,7 +416,6 @@ import {
     IconWorldUpload,
     IconPencil,
     IconDownload,
-    IconAlertTriangle,
     IconPlaneDeparture,
     IconAlarm,
     IconAdjustments,
@@ -479,7 +478,7 @@ async function refresh(full = false) {
 async function createOutgoing() {
     loading.value.outgoing = true;
 
-    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing`, {
+    await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/outgoing`, {
         method: 'POST',
         body: {}
     });
@@ -493,7 +492,7 @@ async function createOutgoing() {
 async function createIncoming() {
     loading.value.incoming = true;
 
-    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
+    await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/incoming`, {
         method: 'POST',
         body: {}
     });
@@ -505,13 +504,13 @@ async function createIncoming() {
 }
 
 async function fetch() {
-    const url = stdurl(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`);
+    const url = stdurl(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}`);
     url.searchParams.append('alarms', 'true');
     layer.value = await std(url) as ETLLayer;
 }
 
 async function cancelUpdate() {
-    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`, {
+    await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/task`, {
         method: 'DELETE'
     });
 }
@@ -519,33 +518,33 @@ async function cancelUpdate() {
 async function deleteConfig(direction: string) {
     loading.value.layer = true;
 
-    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/${direction}`, {
+    await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/${direction}`, {
         method: 'DELETE'
     });
 
     await fetch();
     await fetchStatus();
 
-    router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`);
+    router.push(`/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/deployment`);
 
     loading.value.layer = false;
 }
 
 async function fetchStatus(load = false) {
     loading.value.stack = load;
-    stack.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`) as ETLLayerTask;
+    stack.value = await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/task`) as ETLLayerTask;
     loading.value.stack = false;
 }
 
 async function downloadConfig() {
-    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}?download=true&token=${localStorage.token}`, {
+    await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}?download=true&token=${localStorage.token}`, {
         download: true
     });
 }
 
 async function fetchCapabilities() {
     try {
-        capabilities.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/capabilities`) as ETLLayerTaskCapabilities;
+        capabilities.value = await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/task/capabilities`) as ETLLayerTaskCapabilities;
         softAlert.value = false
     } catch (err) {
         softAlert.value = true;
