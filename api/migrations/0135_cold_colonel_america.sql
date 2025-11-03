@@ -1,0 +1,1 @@
+DROP TABLE "layer_alerts" CASCADE;
