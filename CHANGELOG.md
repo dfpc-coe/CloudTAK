@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v11.50.0 - 2025-11-03
+
+- :rocket: Remove Layer Alerts which is a feature that hasn't been used in over 2 years
+- :rocket: Closes: https://github.com/dfpc-coe/CloudTAK/issues/1059
+- :rocket: Closes: https://github.com/dfpc-coe/CloudTAK/issues/1060
+- :rocket: Continue to improve and iterate on Layer Template support
+
 ### v11.49.0 - 2025-10-31
 
 - :rocket: Automatically generate a SigningSecret & MediaSecret when using CloudTAK Install script
