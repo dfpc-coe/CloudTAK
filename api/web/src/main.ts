@@ -247,7 +247,6 @@ const router = VueRouter.createRouter({
 
 
         { path: '/connection/:connectionid/layer/:layerid/edit', name: 'layer-edit', component: () => import('./components/ETL/LayerEdit.vue') },
-        { path: '/connection/:connectionid/layer/:layerid/alert', name: 'layer-alerts', component: () => import('./components/ETL/LayerAlerts.vue') },
 
         { path: '/connection/:connectionid/data/new', name: 'data-new', component: () => import('./components/ETL/DataEdit.vue') },
         {

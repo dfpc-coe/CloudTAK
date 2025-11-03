@@ -13,7 +13,7 @@
         </div>
 
         <TablerLoading
-            v-if='loading.layer || !layer || !alerts || !stack'
+            v-if='loading.layer || !layer || !stack'
             class='text-white'
             desc='Loading Layer'
         />
@@ -43,16 +43,6 @@
                                             <IconDownload
                                                 :size='32'
                                                 stroke='1'
-                                            />
-                                        </TablerIconButton>
-                                        <TablerIconButton
-                                            title='Layer Alerts'
-                                            @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}/alert`)'
-                                        >
-                                            <IconAlertTriangle
-                                                :size='32'
-                                                stroke='1'
-                                                :class='{ "text-red": alerts.total }'
                                             />
                                         </TablerIconButton>
                                         <TablerIconButton
@@ -405,7 +395,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
-import type { ETLLayer, ETLLayerTask, ETLLayerTaskCapabilities, ETLLayerAlertList } from '../../types.ts';
+import type { ETLLayer, ETLLayerTask, ETLLayerTaskCapabilities } from '../../types.ts';
 import { std, stdurl } from '../../std.ts';
 import { useRoute, useRouter } from 'vue-router';
 import PageFooter from '../PageFooter.vue';
@@ -449,7 +439,6 @@ const loading = ref({
 const stack = ref<ETLLayerTask | undefined>(undefined)
 const layer = ref<ETLLayer | undefined>(undefined)
 const capabilities = ref<ETLLayerTaskCapabilities | undefined>(undefined);
-const alerts = ref<ETLLayerAlertList | undefined>(undefined);
 const looping = ref<ReturnType<typeof setInterval> | undefined>(undefined);
 
 watch(stack, async (newStack, oldStack) => {
@@ -471,8 +460,6 @@ onMounted(async () => {
     looping.value = setInterval(async () => {
         await refresh(false);
     }, 10 * 1000);
-
-    await fetchAlerts();
 
     loading.value.layer = false;
 });
@@ -564,9 +551,5 @@ async function fetchCapabilities() {
         softAlert.value = true;
         console.error(err);
     }
-}
-
-async function fetchAlerts() {
-    alerts.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/alert`) as ETLLayerAlertList;
 }
 </script>

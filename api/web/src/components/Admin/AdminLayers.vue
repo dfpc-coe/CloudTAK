@@ -249,7 +249,7 @@ async function listLayerSchema() {
     header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
-    
+
     // @ts-expect-error Worth trying to type at some point maybe but not now
     header.value.push(...schema.query.properties.sort.enum.map((h) => {
         return {
