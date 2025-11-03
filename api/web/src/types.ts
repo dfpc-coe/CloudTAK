@@ -164,7 +164,6 @@ export type ETLAgency = paths["/api/agency/{:agencyid}"]["get"]["responses"]["20
 
 export type ETLLayer = paths["/api/connection/{:connectionid}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLLayerList = paths["/api/connection/{:connectionid}/layer"]["get"]["responses"]["200"]["content"]["application/json"]
-export type ETLLayerAlertList = paths["/api/connection/{:connectionid}/layer/{:layerid}/alert"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLLayerTask = paths["/api/connection/{:connectionid}/layer/{:layerid}/task"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLLayerTaskCapabilities = paths["/api/connection/{:connectionid}/layer/{:layerid}/task/capabilities"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLLayerIncoming = paths["/api/connection/{:connectionid}/layer/{:layerid}/incoming"]["post"]["responses"]["200"]["content"]["application/json"]

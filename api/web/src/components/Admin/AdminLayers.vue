@@ -89,8 +89,8 @@
                             class='cursor-pointer'
                             role='menuitem'
                             tabindex='0'
-                            @keyup.enter='layer.connection ? stdclick(router, $event, `/connection/${layer.connection}/layer/${layer.id}`) : stdclick(router, $event, `/admin/layer/${layer.id}`)'
-                            @click='layer.connection ? stdclick(router, $event, `/connection/${layer.connection}/layer/${layer.id}`) : stdclick(router, $event, `/admin/layer/${layer.id}`)'
+                            @keyup.enter='stdclick(router, $event, `/connection/${layer.connection || "template"}/layer/${layer.id}`)'
+                            @click='stdclick(router, $event, `/connection/${layer.connection || "template"}/layer/${layer.id}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display && h.name === "name"'>
@@ -249,7 +249,7 @@ async function listLayerSchema() {
     header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
-    
+
     // @ts-expect-error Worth trying to type at some point maybe but not now
     header.value.push(...schema.query.properties.sort.enum.map((h) => {
         return {

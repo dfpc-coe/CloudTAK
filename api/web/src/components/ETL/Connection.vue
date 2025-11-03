@@ -359,6 +359,11 @@ const certificate = ref({
 const connection = ref<ETLConnection | undefined>();
 
 onMounted(async () => {
+    if (route.params.connectionid === 'template') {
+        router.push('/connection');
+        return;
+    }
+
     await fetch();
 
     if (connection.value && connection.value.readonly) {

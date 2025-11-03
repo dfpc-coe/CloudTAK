@@ -51,6 +51,12 @@ export interface EsriAuth {
     expiration?: number;
 }
 
+export const ESRIPortal = Type.Object({
+    id: Type.String(),
+    name: Type.String()
+    // There are more fields, but we only care about these for now
+});
+
 /**
  * Determine what type of ESRI Asset is being connected to
  * And handle unified auth between them
@@ -259,7 +265,7 @@ class EsriProxyPortal {
         // User could technically XSSish us but since this is a query parameter
         // the onus to protect the query is on ESRI as the input is already untrusted
 
-        const portal: any = await this.getPortal();
+        const portal = await this.getPortal();
 
         const query = [];
         if (opts.title) query.push(opts.title);
@@ -281,18 +287,28 @@ class EsriProxyPortal {
         return json as { username: string };
     }
 
-    async getPortal(): Promise<object> {
+    async getPortal(): Promise<Static<typeof ESRIPortal>> {
         try {
             const url = new URL(this.esri.base + '/portals/self');
             url.searchParams.append('f', 'json');
-            const res = await fetch(url);
 
-            const json = await res.json()
+            const headers = this.esri.standardHeaders();
+            const res = await fetch(url, {
+                headers
+            });
 
-            // @ts-expect-error Untyped Response
-            if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+            if (!res.ok) {
+                const json = await res.json();
+                // @ts-expect-error Untyped Response
+                if (json.error) {
+                    // @ts-expect-error Untyped Response
+                    throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+                } else {
+                    throw new Err(400, null, `ESRI Server returned HTTP ${res.status} ${res.statusText}`);
+                }
+            }
 
-            return json as object;
+            return await res.typed(ESRIPortal);
         } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
