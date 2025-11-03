@@ -20,53 +20,6 @@ import FloatingVue from 'floating-vue'
 
 import App from './App.vue'
 
-// Template layers are hosted under the `admin/` prefix and
-// Connection layers under the `connection/` prefix
-const LayerFragment = (prefix: string) => {
-    return {
-        component: () => import('./components/ETL/Layer.vue'),
-        children: [{
-            path: '',
-            name: `${prefix}-default`,
-            redirect: () => {
-                return { name: `${prefix}-deployment` };
-            }
-        },{
-            path: 'deployment',
-            name: `${prefix}-deployment`,
-            component: () => import('./components/ETL/Layer/LayerDeployment.vue')
-        },{
-            path: 'alarm',
-            name: `${prefix}-alarm`,
-            component: () => import('./components/ETL/Layer/LayerAlarm.vue')
-        },{
-            path: 'incoming/config',
-            name: `${prefix}-incoming-config`,
-            component: () => import('./components/ETL/Layer/LayerIncomingConfig.vue')
-        },{
-            path: 'incoming/environment',
-            name: `${prefix}-incoming-environment`,
-            component: () => import('./components/ETL/Layer/LayerEnvironment.vue')
-        },{
-            path: 'incoming/schema',
-            name: `${prefix}-incoming-schema`,
-            component: () => import('./components/ETL/Layer/LayerIncomingSchema.vue')
-        },{
-            path: 'incoming/styles',
-            name: `${prefix}-incoming-styles`,
-            component: () => import('./components/ETL/Layer/LayerIncomingStyles.vue')
-        },{
-            path: 'outgoing/environment',
-            name: `${prefix}-outgoing-environment`,
-            component: () => import('./components/ETL/Layer/LayerEnvironment.vue')
-        },{
-            path: 'outgoing/config',
-            name: `${prefix}-outgoing-config`,
-            component: () => import('./components/ETL/Layer/LayerOutgoingConfig.vue')
-        }]
-    }
-}
-
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHistory(),
     routes: [
@@ -242,12 +195,49 @@ const router = VueRouter.createRouter({
         {
             path: '/connection/:connectionid/layer/:layerid',
             name: 'layer',
-            ...LayerFragment('layer'),
+            component: () => import('./components/ETL/Layer.vue'),
+            children: [{
+                path: '',
+                name: `layer-default`,
+                redirect: () => {
+                    return { name: `layer-deployment` };
+                }
+            },{
+                path: 'deployment',
+                name: `layer-deployment`,
+                component: () => import('./components/ETL/Layer/LayerDeployment.vue')
+            },{
+                path: 'alarm',
+                name: `layer-alarm`,
+                component: () => import('./components/ETL/Layer/LayerAlarm.vue')
+            },{
+                path: 'incoming/config',
+                name: `layer-incoming-config`,
+                component: () => import('./components/ETL/Layer/LayerIncomingConfig.vue')
+            },{
+                path: 'incoming/environment',
+                name: `layer-incoming-environment`,
+                component: () => import('./components/ETL/Layer/LayerEnvironment.vue')
+            },{
+                path: 'incoming/schema',
+                name: `layer-incoming-schema`,
+                component: () => import('./components/ETL/Layer/LayerIncomingSchema.vue')
+            },{
+                path: 'incoming/styles',
+                name: `layer-incoming-styles`,
+                component: () => import('./components/ETL/Layer/LayerIncomingStyles.vue')
+            },{
+                path: 'outgoing/environment',
+                name: `layer-outgoing-environment`,
+                component: () => import('./components/ETL/Layer/LayerEnvironment.vue')
+            },{
+                path: 'outgoing/config',
+                name: `layer-outgoing-config`,
+                component: () => import('./components/ETL/Layer/LayerOutgoingConfig.vue')
+            }]
         },
 
-
         { path: '/connection/:connectionid/layer/:layerid/edit', name: 'layer-edit', component: () => import('./components/ETL/LayerEdit.vue') },
-        { path: '/connection/:connectionid/layer/:layerid/alert', name: 'layer-alerts', component: () => import('./components/ETL/LayerAlerts.vue') },
 
         { path: '/connection/:connectionid/data/new', name: 'data-new', component: () => import('./components/ETL/DataEdit.vue') },
         {
@@ -340,10 +330,6 @@ const router = VueRouter.createRouter({
                 path: 'layer/new',
                 name: 'admin-layer-new',
                 component: () => import('./components/Admin/AdminLayerTemplate.vue')
-            },{
-                path: 'layer/:layerid',
-                name: 'admin-layer',
-            ...LayerFragment('layer-template'),
             },{
                 path: 'video',
                 name: 'admin-videos',

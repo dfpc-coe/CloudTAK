@@ -21,18 +21,20 @@ export default class LayerControl {
     }
 
     async from(
-        connection: InferSelectModel<typeof Connection> | number,
+        connection: InferSelectModel<typeof Connection> | number | null,
         layerid: number
     ): Promise<Static<typeof LayerResponse>> {
         if (typeof connection === 'number') {
             connection = await this.config.models.Connection.from(connection);
         }
 
-        if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+        if (connection && connection.readonly) {
+            throw new Err(400, null, 'Connection is Read-Only mode');
+        }
 
         const layer = await this.config.models.Layer.augmented_from(layerid);
 
-        if (layer.connection !== connection.id) {
+        if (connection && layer.connection !== connection.id) {
             throw new Err(400, null, 'Layer does not belong to this connection');
         }
 
