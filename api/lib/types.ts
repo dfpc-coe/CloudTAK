@@ -228,12 +228,6 @@ export const FeatureResponse = Type.Composite([ Feature.Feature, Type.Object({
     path: Type.String({ default: '/' }),
 })]);
 
-export const LayerAlertResponse = createSelectSchema(schemas.LayerAlert, {
-    id: Type.Integer(),
-    hidden: Type.Boolean(),
-    layer: Type.Integer(),
-});
-
 export const ImportResponse = createSelectSchema(schemas.Import, {
     config: Type.Unknown(),
     result: Type.Unknown()

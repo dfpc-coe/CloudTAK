@@ -364,18 +364,6 @@ export const LayerIncoming = pgTable('layers_incoming', {
     groups: text().array().notNull().default([]),
 });
 
-export const LayerAlert = pgTable('layer_alerts', {
-    id: serial().primaryKey(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    layer: integer().notNull().references(() => Layer.id),
-    icon: text().notNull().default('alert-circle'),
-    priority: text().notNull().default('yellow'),
-    title: text().notNull(),
-    description: text().notNull().default('Details Unknown'),
-    hidden: boolean().notNull().default(false)
-});
-
 export const Setting = pgTable('settings', {
     key: text().primaryKey(),
     value: text().notNull().default('')
