@@ -141,9 +141,15 @@
                         placeholder='Filter by Title'
                     />
 
-                    <template v-if='loading.content'>
-                        <TablerLoading desc='Searching Content' />
-                    </template>
+                    <TablerLoading
+                        v-if='loading.content'
+                        desc='Searching Content'
+                    />
+                    <TablerNone
+                        v-else-if='content.total === 0'
+                        :create='false'
+                        label='Content Items'
+                    />
                     <div
                         v-else
                         class='table-responsive'
