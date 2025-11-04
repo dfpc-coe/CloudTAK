@@ -51,7 +51,7 @@ export default class AtlasTeam {
                     'Online Contact',
                     `${cot.properties.callsign} is now Online`,
                     `/cot/${cot.id}`,
-                    true
+                    false
                 );
             }
 
