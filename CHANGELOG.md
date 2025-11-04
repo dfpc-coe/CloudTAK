@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.51.0 - 2025-11-04
+
+- :tada: Add support for notifications being able to register themselves as Toasts
+- :rocket: Migrate entire Notification system out of memory and into IndexDB
+
 ### v11.50.0 - 2025-11-03
 
 - :rocket: Remove Layer Alerts which is a feature that hasn't been used in over 2 years
