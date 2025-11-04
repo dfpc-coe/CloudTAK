@@ -349,6 +349,15 @@ export default async function router(schema: Schema, config: Config) {
                 updated: sql`Now()`
             });
 
+            if (req.body.status === Import_Status.FAIL || req.body.status === Import_Status.SUCCESS) {
+                for (const client of config.wsClients.get(imported.username) || []) {
+                    client.ws.send(JSON.stringify({
+                        type: 'import',
+                        properties: imported
+                    }))
+                }
+            }
+
             res.json(imported);
         } catch (err) {
             Err.respond(err, res);

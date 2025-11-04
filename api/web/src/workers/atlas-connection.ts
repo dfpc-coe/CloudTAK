@@ -6,7 +6,7 @@ import { stdurl } from '../std.ts';
 import type Atlas from './atlas.ts';
 import TAKNotification from '../base/notification.ts';
 import { WorkerMessageType } from '../base/events.ts';
-import type { Feature } from '../types.ts';
+import type { Feature, Import } from '../types.ts';
 
 export default class AtlasConnection {
     atlas: Atlas;
@@ -72,6 +72,18 @@ export default class AtlasConnection {
                 };
 
                 throw new Error(err.properties.message);
+            } else if (body.type === 'import') {
+                const imp = (body as unknown as {
+                    properties: Import
+                }).properties;
+
+                await TAKNotification.create(
+                    'Import',
+                    `Import ${imp.status}`,
+                    `${imp.name} has been updated to status: ${imp.status}`,
+                    `/menu/imports/${imp.id}`,
+                    true
+                );
             } else if (body.type === 'cot') {
                 const feat = body.data as Feature;
 

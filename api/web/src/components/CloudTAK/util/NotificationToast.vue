@@ -2,7 +2,8 @@
     <teleport to='body'>
         <div
             v-if='notification'
-            class='toast-container position-fixed'
+            class='toast-container position-fixed cursor-pointer'
+            @click='navigateTo'
             :style='`
                 bottom: ${mapStore.toastOffset.y}px;
                 right: ${mapStore.toastOffset.x}px;
@@ -33,7 +34,7 @@
                         type='button'
                         class='ms-2 btn-close'
                         title='close'
-                        @click='emit("close")'
+                        @click.stop='emit("close")'
                     />
                 </div>
                 <div class='toast-body'>
@@ -47,11 +48,13 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import TAKNotification from '../../../base/notification.ts';
 import NotificationIcon from './NotificationIcon.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import timediff from '../../../timediff.ts';
 
+const router = useRouter();
 const timer = ref<ReturnType<typeof setTimeout> | null>(null);
 
 const emit = defineEmits<{
@@ -62,7 +65,7 @@ const props = withDefaults(defineProps<{
     id: string;
     timeout?: number;
 }>(), {
-    timeout: 3000,
+    timeout: 5000,
 });
 
 const notification = ref<TAKNotification | null>(null);
@@ -84,6 +87,13 @@ onUnmounted(() => {
         clearTimeout(timer.value);
     }
 });
+
+function navigateTo() {
+    if (notification.value?.url) {
+        router.push(notification.value.url);
+        emit('close');
+    }
+}
 </script>
 
 <style scoped>
