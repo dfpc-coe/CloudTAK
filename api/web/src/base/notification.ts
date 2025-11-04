@@ -97,7 +97,18 @@ export default class TAKNotification {
         return notification;
     }
 
-    async update(): Promise<void> {
+    static async update(id: string, opts: {
+        read?: boolean,
+        toast?: boolean
+    }): Promise<void> {
+        const n = await TAKNotification.from(id);
+        await n?.update(opts);
+    }
+
+    async update(opts: {
+        read?: boolean
+        toast?: boolean
+    }): Promise<void> {
         await db.notification.put({
             id: this.id,
             type: this.type,
@@ -105,8 +116,8 @@ export default class TAKNotification {
             body: this.body,
             url: this.url,
             created: this.created,
-            toast: this.toast,
-            read: this.read
+            toast: opts.toast ?? this.toast,
+            read: opts.read ?? this.read
         });
     }
 

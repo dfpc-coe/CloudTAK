@@ -87,10 +87,12 @@
 
     <NotificationToast
         v-for='n in filteredListToast'
+        :key='n.id'
         :type='n.type'
         :created='n.created'
         :name='n.name'
         :body='n.body'
+        @close='TAKNotification.update(n.id, { toast: false })'
     />
 </template>
 
