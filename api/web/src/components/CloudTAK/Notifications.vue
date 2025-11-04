@@ -3,7 +3,7 @@
         class='card'
         style='
             min-width: 400px;
-            max-height: 90vh;
+            max-height: 50vh;
         '
     >
         <div class='card-header d-flex align-items-center'>
@@ -12,7 +12,7 @@
             </h3>
             <div class='ms-auto btn-list'>
                 <TablerIconButton
-                    v-if='mapStore.notifications.length'
+                    v-if='list && list.length'
                     title='Search'
                     @click.stop.prevent='paging.shown = !paging.shown'
                 >
@@ -22,9 +22,9 @@
                     />
                 </TablerIconButton>
                 <TablerIconButton
-                    v-if='mapStore.notifications.length'
+                    v-if='list && list.length'
                     title='Delete All'
-                    @click='mapStore.notifications.splice(0, mapStore.notifications.length)'
+                    @click='TAKNotification.clear()'
                 >
                     <IconTrash
                         :size='32'
@@ -35,7 +35,7 @@
         </div>
         <div
             v-if='paging.shown'
-            class='col-12'
+            class='col-12 px-2'
         >
             <TablerInput
                 v-model='paging.filter'
@@ -44,7 +44,7 @@
             />
         </div>
         <TablerNone
-            v-if='list.length === 0'
+            v-if='!filteredList || filteredList.length === 0'
             label='Notifications'
             :create='false'
         />
@@ -53,42 +53,16 @@
             class='overflow-auto list-group list-group-flush list-group-hoverable'
         >
             <div
-                v-for='n in list'
+                v-for='n in filteredList'
+                :key='n.id'
                 class='list-group-item cursor-pointer'
                 data-toggle='collapse'
-                @click='follow(n)'
+                @click='router.push(n.url)'
             >
                 <div class='d-flex align-items-center'>
                     <div class='me-2'>
-                        <IconAlertTriangle
-                            v-if='n.type === "Alert"'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <IconHeartbeat
-                            v-else-if='n.type === "Medical"'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <IconMessage
-                            v-else-if='n.type === "Chat"'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <IconUser
-                            v-else-if='n.type === "Contact"'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <IconAmbulance
-                            v-else-if='n.type === "Mission"'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <IconCircleDot
-                            v-else
-                            :size='32'
-                            stroke='1'
+                        <NotificationIcon
+                            :type='n.type'
                         />
                     </div>
                     <div class='text-truncate'>
@@ -110,13 +84,24 @@
             </div>
         </div>
     </div>
+
+    <NotificationToast
+        v-for='n in filteredListToast'
+        :key='n.id'
+        :id='n.id'
+        @close='TAKNotification.update(n.id, { toast: false })'
+    />
 </template>
 
 <script setup lang='ts'>
+import { from } from 'rxjs';
 import { ref, computed } from 'vue';
+import { liveQuery } from 'dexie';
 import { useRouter } from 'vue-router';
-import { useMapStore } from '../../stores/map.ts';
-import type { TAKNotification } from '../../stores/map.ts';
+import { useObservable } from '@vueuse/rxjs';
+import TAKNotification from '../../base/notification.ts';
+import NotificationToast from './util/NotificationToast.vue';
+import NotificationIcon from './util/NotificationIcon.vue';
 import timeDiff from '../../timediff.ts';
 import {
     TablerNone,
@@ -124,32 +109,35 @@ import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
-    IconUser,
     IconTrash,
     IconSearch,
-    IconMessage,
-    IconAlertTriangle,
-    IconHeartbeat,
-    IconAmbulance,
-    IconCircleDot,
 } from '@tabler/icons-vue';
 
 const router = useRouter();
-const mapStore = useMapStore();
 
 const paging = ref({
     shown: false,
     filter: ''
 })
 
-const list = computed(() => {
-    return mapStore.notifications.filter((n) => {
+const filteredList = computed(() => {
+    if (!list.value) return [];
+    return list.value.filter((n) => {
         return n.name.toLowerCase().includes(paging.value.filter.toLowerCase())
+            || n.body.toLowerCase().includes(paging.value.filter.toLowerCase());
     })
 });
 
-function follow(n: TAKNotification) {
-    router.push(n.url)
-}
+const filteredListToast = computed(() => {
+    if (!list.value) return [];
+    return list.value.filter((n) => {
+        return n.toast && !n.read;
+    })
+});
 
+const list = useObservable(
+    from(liveQuery(async () => {
+        return await TAKNotification.list();
+    }))
+);
 </script>

@@ -4,13 +4,6 @@ import { std, stdurl } from '../std.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts'
 import type { Feature, Group, Server, Profile, Profile_Update, FeaturePropertyCreator } from '../types.ts';
 
-export type TAKNotification = {
-    type: string;
-    name: string;
-    body: string;
-    url: string;
-}
-
 export type ProfileLocation = {
     source: LocationState
     accuracy: number | undefined
@@ -136,24 +129,6 @@ export default class AtlasProfile {
                 this.atlas.conn.sendCOT(me.as_feature())
             }
         }, this.profile ? this.profile.tak_loc_freq : 2000);
-    }
-
-    pushNotification(notification: TAKNotification): void {
-        this.atlas.postMessage({
-            type: WorkerMessageType.Notification,
-            body: notification
-        });
-
-        if ('Notification' in self && Notification && Notification.permission !== 'denied') {
-            const n = new Notification(notification.name, {
-                body: notification.body
-            });
-
-            n.onclick = (event) => {
-                event.preventDefault(); // prevent the browser from focusing the Notification's tab
-            };
-
-        }
     }
 
     async loadServer(): Promise<Server> {

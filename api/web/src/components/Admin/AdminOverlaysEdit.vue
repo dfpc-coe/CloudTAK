@@ -36,8 +36,8 @@
                         label='Name'
                     >
                         <TablerToggle
-                            label='Enable Sharing'
                             v-model='overlay.sharing_enabled'
+                            label='Enable Sharing'
                         />
                     </TablerInput>
                 </div>
