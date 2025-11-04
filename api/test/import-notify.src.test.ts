@@ -114,6 +114,8 @@ test(`PATCH: api/import/<id> - Success`, (t) => {
             }
         });
 
+        ws.close();
+
         t.end();
     })
 });
