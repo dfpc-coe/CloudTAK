@@ -3,10 +3,10 @@
         <div
             v-if='notification'
             class='toast-container position-fixed'
-            style='
-                bottom: 10px;
-                right: 70px;
-            '
+            :style='`
+                bottom: ${mapStore.toastOffset.y}px;
+                right: ${mapStore.toastOffset.x}px;
+            `'
         >
             <div
                 class='toast show'
@@ -49,6 +49,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import TAKNotification from '../../../base/notification.ts';
 import NotificationIcon from './NotificationIcon.vue';
+import { useMapStore } from '../../../stores/map.ts';
 import timediff from '../../../timediff.ts';
 
 const timer = ref<ReturnType<typeof setTimeout> | null>(null);
@@ -65,11 +66,10 @@ const props = withDefaults(defineProps<{
 });
 
 const notification = ref<TAKNotification | null>(null);
+const mapStore = useMapStore();
 
 onMounted(async () => {
     notification.value = await TAKNotification.from(props.id);
-
-    console.error('HERE')
 
     timer.value = setTimeout(() => {
         if (timer.value) {
