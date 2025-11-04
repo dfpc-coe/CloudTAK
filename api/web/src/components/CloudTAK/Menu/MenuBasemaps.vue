@@ -130,6 +130,17 @@
                                         </div>
                                         <div
                                             class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                                            @click.stop.prevent='addOverlay(basemap)'
+                                        >
+                                            <IconBoxMultiple
+                                                v-tooltip='"Add Overlay"'
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                            <span class='mx-2'>Add as Overlay</span>
+                                        </div>
+                                        <div
+                                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
                                             @click.stop.prevent='download(basemap)'
                                         >
                                             <IconDownload
@@ -203,15 +214,18 @@ import {
     IconPlus,
     IconFolder,
     IconShare2,
-    IconSettings,
     IconDownload,
+    IconSettings,
+    IconBoxMultiple,
     IconDotsVertical,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 import type { LayerSpecification } from 'maplibre-gl'
+import { useRouter } from 'vue-router';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
+const router = useRouter();
 const isSystemAdmin = ref<boolean>(false);
 
 const error = ref<Error | undefined>();
@@ -308,6 +322,30 @@ function isCurrentBasemap(basemapId: number): boolean {
         overlay.mode === 'basemap' && overlay.mode_id === String(basemapId)
     );
     return !!currentBasemap;
+}
+
+async function addOverlay(basemap: Basemap) {
+    try {
+        // Insert in 1st position after basemap where mapStore.overlays[0] is the basemap
+        mapStore.overlays.splice(1, 0, await Overlay.create({
+            url: String(stdurl(`/api/basemap/${basemap.id}/tiles`)),
+            name: basemap.name,
+            mode: 'overlay',
+            mode_id: String(basemap.id),
+            frequency: basemap.frequency,
+            type: basemap.type,
+            styles: basemap.styles
+        }, {
+            before: String(mapStore.overlays[1].styles[0].id)
+        }));
+
+        loading.value = false;
+
+        router.push('/menu/overlays');
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
 }
 
 async function fetchList() {
