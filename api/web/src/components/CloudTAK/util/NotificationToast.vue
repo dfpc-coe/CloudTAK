@@ -51,24 +51,30 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import NotificationIcon from './NotificationIcon.vue';
 import timediff from '../../../timediff.ts';
+
 const timer = ref<ReturnType<typeof setTimeout> | null>(null);
 
 const emit = defineEmits<{
     (e: 'close'): void;
 }>();
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     name: string;
     type: string;
     body: string;
     created?: string;
-}>();
+    timeout?: number;
+}>(), {
+    timeout: 3000
+});
 
 onMounted(() => {
     timer.value = setTimeout(() => {
-        clearTimeout(timer.value!);
+        if (timer.value) {
+            clearTimeout(timer.value);
+        }
         emit('close');
-    }, 3000);
+    }, props.timeout);
 });
 
 onUnmounted(() => {
@@ -76,5 +82,32 @@ onUnmounted(() => {
         clearTimeout(timer.value);
     }
 });
-
 </script>
+
+<style scoped>
+.toast {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    width: 100%;
+
+    background-color: var(--bs-primary, #0d6efd);
+    animation: shrink 3s linear forwards;
+}
+
+@keyframes shrink {
+    from {
+        width: 100%;
+    }
+    to {
+        width: 0%;
+    }
+}
+</style>
+

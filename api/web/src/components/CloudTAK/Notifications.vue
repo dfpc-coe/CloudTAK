@@ -35,7 +35,7 @@
         </div>
         <div
             v-if='paging.shown'
-            class='col-12'
+            class='col-12 px-2'
         >
             <TablerInput
                 v-model='paging.filter'
@@ -44,7 +44,7 @@
             />
         </div>
         <TablerNone
-            v-if='!list || list.length === 0'
+            v-if='!filteredList || filteredList.length === 0'
             label='Notifications'
             :create='false'
         />
