@@ -15,6 +15,8 @@ export interface DBNotification {
     name: string;
     body: string;
     url: string;
+    toast: boolean;
+    read: boolean;
     created: string;
 }
 
@@ -62,7 +64,7 @@ export const db = new Dexie('CloudTAK') as DatabaseType;
 
 db.version(1).stores({
     icon: 'name',
-    notification: 'id, type, name, body, url, created',
+    notification: 'id, type, name, body, url, created, toast, read',
     subscription: 'guid, name, meta, role, token, subscribed, dirty',
     subscription_log: 'id, dtf, created, mission, content, creatorUid, contentHashes, keywords, missionNames, servertime',
     subscription_feature: 'id, path, mission, properties, geometry',

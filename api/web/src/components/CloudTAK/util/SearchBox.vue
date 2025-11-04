@@ -59,6 +59,7 @@
 
 <script setup lang='ts'>
 import type { SearchForward, SearchSuggest } from '../../../types.ts';
+import { v4 as randomUUID } from 'uuid';
 import Feature from './FeatureRow.vue';
 import { std, stdurl } from '../../../std.ts'
 import { useMapStore } from '../../../stores/map.ts';
@@ -187,7 +188,7 @@ async function fetchSearch(
         // Create a draw point on the map
         const pointName = items[0].address.split(',')[0].trim();
         const now = new Date().toISOString();
-        const featureId = crypto.randomUUID();
+        const featureId = randomUUID();
         const feature = {
             id: featureId,
             type: 'Feature' as const,
