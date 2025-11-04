@@ -339,6 +339,10 @@
                 @select='searchBoxShown = false'
             />
 
+            <NotificationToast
+
+            />
+
             <div
                 v-if='mapStore.isLoaded && mode === "Default"'
                 class='d-flex position-absolute top-0 text-white py-2'
@@ -482,6 +486,7 @@
 import GeoJSONInput from './GeoJSONInput.vue';
 import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import {useRoute, useRouter } from 'vue-router';
+import NotificationToast from './util/NotificationToast.vue';
 import FloatingVideo from './util/FloatingVideo.vue';
 import FloatingAttachment from './util/FloatingAttachment.vue';
 import DrawOverlay from './util/DrawOverlay.vue';
