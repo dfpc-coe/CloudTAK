@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v11.52.0 - 2025-11-04
+
+- :tada: Add WebSocket update for Import Success/Failure
+- :white_check_mark: Add Integration Tests for Import WebSocket updates
+- :rocket: Improve Notifcation Toast by making it clickable
+- :rocket: Dismiss Toast if clicked or closed
+
 ### v11.51.0 - 2025-11-04
 
 - :tada: Add support for notifications being able to register themselves as Toasts
