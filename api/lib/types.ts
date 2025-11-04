@@ -230,7 +230,9 @@ export const FeatureResponse = Type.Composite([ Feature.Feature, Type.Object({
 
 export const ImportResponse = createSelectSchema(schemas.Import, {
     config: Type.Unknown(),
-    result: Type.Unknown()
+    result: Type.Unknown(),
+    error: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+    source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
 });
 
 export const ErrorResponse = createSelectSchema(schemas.Errors, {
