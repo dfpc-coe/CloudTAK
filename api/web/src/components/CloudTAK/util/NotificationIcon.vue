@@ -33,8 +33,6 @@
 <script setup lang='ts' >
 import {
     IconUser,
-    IconTrash,
-    IconSearch,
     IconMessage,
     IconAlertTriangle,
     IconHeartbeat,
@@ -43,7 +41,7 @@ import {
 } from '@tabler/icons-vue';
 
 const props = withDefaults(defineProps<{
-    type: 'Alert' | 'Medical' | 'Chat' | 'Contact' | 'Mission';
+    type: string;
     size?: number;
 }>(), {
     size: 32,
