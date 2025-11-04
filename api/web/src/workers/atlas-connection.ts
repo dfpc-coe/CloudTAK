@@ -87,7 +87,8 @@ export default class AtlasConnection {
                         'Alert',
                         `${feat.properties.callsign} Created`,
                         '',
-                        `/cot/${feat.id}`
+                        `/cot/${feat.id}`,
+                        true
                     );
                 } else if ([
                     'b-r-f-h-c'
@@ -96,7 +97,8 @@ export default class AtlasConnection {
                         'Medical',
                         `New CASEVAC`,
                         `A CASEVAC has been requested for ${feat.properties.callsign}.`,
-                        `/cot/${feat.id}`
+                        `/cot/${feat.id}`,
+                        true
                     );
                 }
             } else if (body.type === 'task') {
@@ -113,7 +115,8 @@ export default class AtlasConnection {
                         'Mission',
                         `${task.properties.mission.name} Created`,
                         '',
-                        `/menu/missions/${task.properties.mission.guid}`
+                        `/menu/missions/${task.properties.mission.guid}`,
+                        true
                     );
                 } else {
                     console.warn('Unknown Task', JSON.stringify(task));
@@ -125,7 +128,8 @@ export default class AtlasConnection {
                         'Chat',
                         `${chat.chat.senderCallsign} to ${chat.chat.chatroom} says:`,
                         chat.remarks || '',
-                        `/menu/chats`
+                        `/menu/chats`,
+                        true
                     );
                 } else {
                     console.log('UNKNOWN Chat', body.data);

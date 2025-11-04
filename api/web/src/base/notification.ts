@@ -39,12 +39,12 @@ export default class TAKNotification {
      */
     static async from(
         id: string
-    ): Promise<TAKNotification | undefined> {
+    ): Promise<TAKNotification | null> {
         const exists = await db.notification
             .get(id)
 
         if (!exists) {
-            return;
+            return null;
         }
 
         return new TAKNotification(
