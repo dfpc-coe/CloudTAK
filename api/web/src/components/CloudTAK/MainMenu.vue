@@ -743,9 +743,21 @@ const menuWidth = ref<number>(400);
 const isSystemAdmin = ref<boolean>(false)
 const isAgencyAdmin = ref<boolean>(false)
 
-defineProps({
+const props = defineProps({
     compact: Boolean,
 })
+
+watch(props, () => {
+    if (props.compact && mapStore.toastOffset.x !== 70) {
+        mapStore.toastOffset.x = 70;
+    } else if (!props.compact && mapStore.toastOffset.x !== menuWidth.value + 10) {
+        mapStore.toastOffset.x = menuWidth.value + 10;
+    }
+});
+
+watch(menuWidth, () => {
+    mapStore.toastOffset.x = menuWidth.value + 10;
+});
 
 watch(resize, () => {
     if (resize.value && container.value && menu.value) {
@@ -796,6 +808,8 @@ watch(resize, () => {
 })
 
 onMounted(async () => {
+    mapStore.toastOffset.x = props.compact ? 70 : menuWidth.value + 10;
+
     version.value = (await mapStore.worker.profile.loadServer()).version;
     username.value = await mapStore.worker.profile.username();
     isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
@@ -838,7 +852,7 @@ function logout() {
     -ms-overflow-style: none;  /* Internet Explorer 10+ */
     scrollbar-width: none;  /* Firefox, Safari 18.2+, Chromium 121+ */
 }
-.noscroll::-webkit-scrollbar { 
+.noscroll::-webkit-scrollbar {
     display: none;  /* Older Safari and Chromium */
 }
 

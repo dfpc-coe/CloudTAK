@@ -52,6 +52,11 @@ export const useMapStore = defineStore('cloudtak', {
         manualLocationMode: boolean;
         gpsWatchId: number | null;
 
+        toastOffset: {
+            x: number;
+            y: number;
+        };
+
         permissions: {
             location: boolean;
             notification: boolean;
@@ -60,7 +65,6 @@ export const useMapStore = defineStore('cloudtak', {
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
         mapConfig: MapConfig;
-        notifications: Array<TAKNotification>;
         container?: HTMLElement;
         hasTerrain: boolean;
         hasNoChannels: boolean;
@@ -103,10 +107,10 @@ export const useMapStore = defineStore('cloudtak', {
             channel: new BroadcastChannel("cloudtak"),
             zoom: 'conditional',
             distanceUnit: 'meter',
+            toastOffset: { x: 70, y: 10 },
             manualLocationMode: false,
             gpsWatchId: null,
             locked: [],
-            notifications: [],
             hasTerrain: false,
             hasNoChannels: false,
             isTerrainEnabled: false,
@@ -383,11 +387,6 @@ export const useMapStore = defineStore('cloudtak', {
                     this.hasNoChannels = true;
                 } else if (msg.type === WorkerMessageType.Channels_List) {
                     this.hasNoChannels = false;
-                } else if (msg.type === WorkerMessageType.Notification) {
-                    this.notifications.push({
-                        ...msg.body,
-                        created: new Date().toISOString()
-                    } as TAKNotification);
                 } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
                     this.loadMission(msg.body.guid);
                 }

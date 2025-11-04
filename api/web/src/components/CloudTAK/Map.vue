@@ -369,7 +369,7 @@
                 </TablerDropdown>
 
                 <span
-                    v-if='mapStore.notifications.length'
+                    v-if='notifications'
                     class='badge bg-red mb-2'
                 />
                 <span
@@ -513,12 +513,15 @@ import {
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
 import MainMenu from './MainMenu.vue';
+import { from } from 'rxjs';
+import { useObservable } from '@vueuse/rxjs';
 import {
     TablerIconButton,
     TablerDropdown,
     TablerModal,
 } from '@tak-ps/vue-tabler';
 import { LocationState } from '../../base/events.ts';
+import TAKNotification from '../../base/notification.ts';
 import COT from '../../base/cot.ts';
 import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -526,6 +529,7 @@ import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore, PaneType } from '../../stores/float.ts';
+import { liveQuery } from 'dexie';
 import UploadImport from './util/UploadImport.vue'
 const mapStore = useMapStore();
 const floatStore = useFloatStore();
@@ -557,6 +561,12 @@ const upload = ref({
 const timer = ref<ReturnType<typeof setInterval> | undefined>()
 
 const loading = ref(true)
+
+const notifications = useObservable<number>(
+    from(liveQuery(async () => {
+        return await TAKNotification.count()
+    }))
+);
 
 const mobileDetected = computed(() => {
   //TODO: This needs to follow something like:

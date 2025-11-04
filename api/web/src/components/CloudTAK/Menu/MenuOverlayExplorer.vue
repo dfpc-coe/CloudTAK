@@ -23,6 +23,14 @@
                 </div>
             </div>
 
+            <div class='col-12 px-2 pb-2'>
+                <TablerInput
+                    icon='search'
+                    placeholder='Search Overlays...'
+                    v-model='paging.filter'
+                />
+            </div>
+
             <TablerLoading v-if='loading' />
             <template v-else>
                 <TablerNone
@@ -34,7 +42,7 @@
                     <div
                         v-for='ov in list.items'
                         :key='ov.id'
-                        class='cursor-pointer col-12 py-2 px-3 hover'
+                        class='cursor-pointer col-12 py-2 px-3 hover rounded'
                         @click='createOverlay(ov)'
                     >
                         <div class='col-12 py-2 px-2 d-flex align-items-center'>
@@ -69,6 +77,7 @@ import { std, stdurl } from '../../../std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
+    TablerInput,
     TablerLoading,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';

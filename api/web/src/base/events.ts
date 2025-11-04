@@ -1,6 +1,4 @@
 export enum WorkerMessageType {
-    Notification = 'cloudtak:notification',
-
     Map_FlyTo = 'cloudtak:map:flyto',
     Map_FitBounds = 'cloudtak:map:fitbounds',
     Map_Projection = 'cloudtak:map:projection',
