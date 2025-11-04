@@ -126,8 +126,8 @@ export default class AtlasConnection {
                 if (chat.chat) {
                     await TAKNotification.create(
                         'Chat',
-                        `${chat.chat.senderCallsign} to ${chat.chat.chatroom} says:`,
-                        chat.remarks || '',
+                        'New Chat Message',
+                        `${chat.chat.senderCallsign} to ${chat.chat.chatroom} says: ${chat.remarks}`,
                         `/menu/chats`,
                         true
                     );

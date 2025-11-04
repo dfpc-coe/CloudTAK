@@ -3,13 +3,13 @@
         <div
             v-if='notification'
             class='toast-container position-fixed'
-            :style='`
+            style='
                 bottom: 10px;
-                right: ${props.offset}px;
-            `'
+                right: 70px;
+            '
         >
             <div
-                class='toast'
+                class='toast show'
                 role='alert'
                 aria-live='assertive'
                 aria-atomic='true'
@@ -37,7 +37,7 @@
                     />
                 </div>
                 <div class='toast-body'>
-                    <span v-text='notification' />
+                    <span v-text='notification.body' />
                 </div>
                 <div class='loading-bar' />
             </div>
@@ -60,16 +60,16 @@ const emit = defineEmits<{
 const props = withDefaults(defineProps<{
     id: string;
     timeout?: number;
-    offset?: number;
 }>(), {
     timeout: 3000,
-    offset: 70
 });
 
 const notification = ref<TAKNotification | null>(null);
 
 onMounted(async () => {
     notification.value = await TAKNotification.from(props.id);
+
+    console.error('HERE')
 
     timer.value = setTimeout(() => {
         if (timer.value) {
