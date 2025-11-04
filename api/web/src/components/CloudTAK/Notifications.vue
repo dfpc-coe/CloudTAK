@@ -124,6 +124,7 @@ const filteredList = computed(() => {
     if (!list.value) return [];
     return list.value.filter((n) => {
         return n.name.toLowerCase().includes(paging.value.filter.toLowerCase())
+            || n.body.toLowerCase().includes(paging.value.filter.toLowerCase());
     })
 });
 
