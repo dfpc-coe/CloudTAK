@@ -573,7 +573,7 @@ import {
 
 const props = withDefaults(defineProps<{
     lease: VideoLease,
-    isSystemAdmin: boolean
+    isSystemAdmin?: boolean
 }>(), {
     isSystemAdmin: false
 });

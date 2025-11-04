@@ -339,10 +339,6 @@
                 @select='searchBoxShown = false'
             />
 
-            <NotificationToast
-
-            />
-
             <div
                 v-if='mapStore.isLoaded && mode === "Default"'
                 class='d-flex position-absolute top-0 text-white py-2'
@@ -373,7 +369,7 @@
                 </TablerDropdown>
 
                 <span
-                    v-if='mapStore.notifications.length'
+                    v-if='notifications'
                     class='badge bg-red mb-2'
                 />
                 <span
@@ -486,7 +482,6 @@
 import GeoJSONInput from './GeoJSONInput.vue';
 import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import {useRoute, useRouter } from 'vue-router';
-import NotificationToast from './util/NotificationToast.vue';
 import FloatingVideo from './util/FloatingVideo.vue';
 import FloatingAttachment from './util/FloatingAttachment.vue';
 import DrawOverlay from './util/DrawOverlay.vue';
@@ -518,12 +513,15 @@ import {
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
 import MainMenu from './MainMenu.vue';
+import { from } from 'rxjs';
+import { useObservable } from '@vueuse/rxjs';
 import {
     TablerIconButton,
     TablerDropdown,
     TablerModal,
 } from '@tak-ps/vue-tabler';
 import { LocationState } from '../../base/events.ts';
+import TAKNotification from '../../base/notification.ts';
 import COT from '../../base/cot.ts';
 import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -531,6 +529,7 @@ import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore, PaneType } from '../../stores/float.ts';
+import { liveQuery } from 'dexie';
 import UploadImport from './util/UploadImport.vue'
 const mapStore = useMapStore();
 const floatStore = useFloatStore();
@@ -562,6 +561,12 @@ const upload = ref({
 const timer = ref<ReturnType<typeof setInterval> | undefined>()
 
 const loading = ref(true)
+
+const notifications = useObservable<number>(
+    from(liveQuery(async () => {
+        return await TAKNotification.count()
+    }))
+);
 
 const mobileDetected = computed(() => {
   //TODO: This needs to follow something like:
