@@ -61,6 +61,10 @@ test(`PATCH: api/import/<id> - Success`, (t) => {
     conn.on('open', async () => {
         try {
             t.comment('Patching Request');
+
+            // Wait 1 second
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
             await flight.fetch(`/api/import/${id}`, {
                 method: 'PATCH',
                 auth: {
