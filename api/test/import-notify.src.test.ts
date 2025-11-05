@@ -56,11 +56,11 @@ test(`PATCH: api/import/<id> - Success`, (t) => {
     url.searchParams.append('connection', 'admin@example.com');
     url.searchParams.append('token', flight.token.admin);
 
-    const con = new ws(url);
+    const conn = new ws(url);
 
-    con.on('open', async () => {
+    conn.on('open', async () => {
         try {
-            const res = await flight.fetch(`/api/import/${id}`, {
+            await flight.fetch(`/api/import/${id}`, {
                 method: 'PATCH',
                 auth: {
                     bearer: flight.token.admin
@@ -69,14 +69,25 @@ test(`PATCH: api/import/<id> - Success`, (t) => {
                     status: 'Success'
                 }
             }, true);
+        } catch (err) {
+            t.error(err, 'no error');
+        }
+    });
 
-            t.ok(res.body.id, 'has id');
-            t.ok(res.body.created, 'has created');
-            res.body.created = '2025-09-12T00:12:46.016Z';
-            t.ok(res.body.updated, 'has updated');
-            res.body.updated = '2025-09-12T00:12:46.016Z';
+    conn.on('error', (err) => {
+        t.error(err, 'no error');
+    }).on('message', (data) => {
+        const res = JSON.parse(String(data));
 
-            t.deepEquals(res.body, {
+
+        t.ok(res.properties.created, 'has created');
+        res.properties.created = '2025-09-12T00:12:46.016Z';
+        t.ok(res.properties.updated, 'has updated');
+        res.properties.updated = '2025-09-12T00:12:46.016Z';
+
+        t.deepEquals(res, {
+            type: 'import',
+            properties: {
                 id: id,
                 created: '2025-09-12T00:12:46.016Z',
                 updated: '2025-09-12T00:12:46.016Z',
@@ -88,33 +99,10 @@ test(`PATCH: api/import/<id> - Success`, (t) => {
                 source: 'Upload',
                 source_id: null,
                 config: {}
-            });
-        } catch (err) {
-            t.error(err, 'no error');
-        }
-    });
-
-    con.on('error', (err) => {
-        t.error(err, 'no error');
-    }).on('message', (data) => {
-        t.deepEquals(JSON.parse(String(data)), {
-            type: 'import',
-            properties: {
-                id: id,
-                created: '2025-09-12T00:12:46.016Z',
-                updated: '2025-09-12T00:12:46.016Z',
-                name: 'test.zip',
-                status: 'Success',
-                error: null,
-                result: {},
-                username: 'admin@example.com',
-                sourcr: 'Upload',
-                source_id: null,
-                config: {}
             }
         });
 
-        ws.close();
+        conn.terminate();
 
         t.end();
     })
