@@ -54,7 +54,7 @@
         "pinia": "^3.0.0",
         "rxjs": "^7.8.2",
         "sortablejs": "^1.15.2",
-        "swagger-ui": "^5.25.4",
+        "swagger-ui-dist": "^5.30.2",
         "terra-draw": "^1.7.0",
         "terra-draw-maplibre-gl-adapter": "^1.1.1",
         "uuid": "^13.0.0",
