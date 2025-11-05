@@ -60,6 +60,7 @@ test(`PATCH: api/import/<id> - Success`, (t) => {
 
     conn.on('open', async () => {
         try {
+            t.comment('Patching Request');
             await flight.fetch(`/api/import/${id}`, {
                 method: 'PATCH',
                 auth: {
@@ -72,13 +73,10 @@ test(`PATCH: api/import/<id> - Success`, (t) => {
         } catch (err) {
             t.error(err, 'no error');
         }
-    });
-
-    conn.on('error', (err) => {
+    }).on('error', (err) => {
         t.error(err, 'no error');
     }).on('message', (data) => {
         const res = JSON.parse(String(data));
-
 
         t.ok(res.properties.created, 'has created');
         res.properties.created = '2025-09-12T00:12:46.016Z';
@@ -102,7 +100,7 @@ test(`PATCH: api/import/<id> - Success`, (t) => {
             }
         });
 
-        conn.terminate();
+        conn.close();
 
         t.end();
     })
