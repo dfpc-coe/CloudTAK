@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.53.1 - 2025-11-05
+
+- :bug: Pin Swagger Dist to avoid react error
+
 ### v11.53.0 - 2025-11-04
 
 - :tada: Allow adding Basemap Imagery as an overlay
