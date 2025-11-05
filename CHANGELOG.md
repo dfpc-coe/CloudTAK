@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.53.0 - 2025-11-04
+
+- :tada: Allow adding Basemap Imagery as an overlay
+
 ### v11.52.0 - 2025-11-04
 
 - :tada: Add WebSocket update for Import Success/Failure
@@ -56,7 +60,7 @@
 
 ### v11.45.0 - 2025-10-20
 
-> [!CAUTION]  
+> [!CAUTION]
 > ETLs should be updated to use `@tak-ps/etl@9.22.0` or above. Failure to update this dependency will cause the ETL Layer Get operations to fail with a schema error.
 
 - :rocket: Remove `stale` value from LayersIncoming and place it where it belongs in the `styles` layer
