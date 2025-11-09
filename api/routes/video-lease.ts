@@ -280,12 +280,21 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const auth = await Auth.is_auth(config, req, {
+                resources: [ { access: AuthResourceAccess.LEASE, id: undefined } ]
+            })
 
-            const lease = await videoControl.from(req.params.lease, {
-                username: user.email,
-                admin: user.access === AuthUserAccess.ADMIN
-            });
+            let lease: Static<typeof VideoLeaseResponse>;
+            if (auth instanceof AuthResource) {
+                lease = await videoControl.from(req.params.lease, {
+                    admin: true
+                });
+            } else if (auth instanceof AuthUser) {
+                lease = await videoControl.from(req.params.lease, {
+                    username: user.email,
+                    admin: user.access === AuthUserAccess.ADMIN
+                });
+            }
 
             const protocols = await videoControl.protocols(lease)
 
