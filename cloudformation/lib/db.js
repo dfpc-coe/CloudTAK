@@ -60,7 +60,7 @@ export default {
             DependsOn: ['DBMasterSecret'],
             Properties: {
                 Engine: 'postgres',
-                EngineVersion: '17.2',
+                EngineVersion: '17.6',
                 AllowMajorVersionUpgrade: false,
                 DBName: 'tak_ps_etl',
                 CopyTagsToSnapshot: true,
