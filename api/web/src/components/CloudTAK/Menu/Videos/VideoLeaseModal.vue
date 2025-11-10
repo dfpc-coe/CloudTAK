@@ -544,7 +544,7 @@
 import { std } from '../../../../std.ts';
 import { validateURL } from '../../../../base/validators.ts';
 import CopyField from '../../util/CopyField.vue';
-import { ref, watch, onMounted, withDefaults } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
 import VideoLeaseSourceType from '../../util/VideoLeaseSourceType.vue'
 import GroupSelect from '../../../util/GroupSelect.vue';

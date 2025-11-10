@@ -90,7 +90,8 @@ export const VideoConfig = Type.Object({
 export const PathConfig = Type.Object({
     name: Type.String(),
 
-    runOnInit: Type.String(),
+    source: Type.String(),
+    sourceOnDemand: Type.Boolean(),
 
     maxReaders: Type.Integer(),
 
@@ -143,18 +144,9 @@ export const Configuration = Type.Object({
 
 export default class VideoServiceControl {
     config: Config;
-    recording: Record<string, string>;
 
     constructor(config: Config) {
         this.config = config;
-
-        this.recording = {
-            recordPath: '/opt/mediamtx/recordings/%path/%Y-%m-%d_%H-%M-%S-%f',
-            recordFormat: 'fmp4',
-            recordPartDuration: '1s',
-            recordSegmentDuration: '1h',
-            recordDeleteAfter: '7d'
-        }
     }
 
     async url(): Promise<URL | null> {
@@ -168,21 +160,6 @@ export default class VideoServiceControl {
                 throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Media Service Configuration Error');
             }
         }
-    }
-
-    /**
-     * Generate an FFMPEG command to run a stream on demand.
-     *
-     * @param stream Untrusted User provided stream URL
-     * @param path Internally generated path for the stream
-     */
-    runOnInit(stream: string, path: string): string {
-        // Ensure it is a valid URL and not shell injection
-        const url = sanitizeURLSync(stream);
-
-        if (!url) throw new Err(400, null, 'Invalid URL provided for stream');
-
-        return `ffmpeg -re -i '${url}' -vcodec libx264 -profile:v baseline -g 60 -acodec aac -f mpegts 'srt://127.0.0.1:8890?streamid=publish:${path}'`
     }
 
     async settings(): Promise<{
@@ -500,7 +477,7 @@ export default class VideoServiceControl {
 
         await this.updateSecure(lease, opts.secure);
 
-        const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
+        const url = new URL(`/path`, video.url);
         url.port = '9997';
 
         headers.append('Content-Type', 'application/json');
@@ -525,9 +502,7 @@ export default class VideoServiceControl {
                         body: JSON.stringify({
                             name: lease.path,
                             source: lease.proxy,
-                            sourceOnDemand: true,
                             record: lease.recording,
-                            ...this.recording
                         })
                     })
 
@@ -549,9 +524,7 @@ export default class VideoServiceControl {
                 headers,
                 body: JSON.stringify({
                     name: lease.path,
-                    runOnInit: lease.proxy ? this.runOnInit(lease.proxy, lease.path) : undefined,
                     record: lease.recording,
-                    ...this.recording
                 })
             })
 
@@ -659,9 +632,8 @@ export default class VideoServiceControl {
                 headers,
                 body: JSON.stringify({
                     name: lease.path,
-                    runOnInit: lease.proxy ? this.runOnInit(lease.proxy, lease.path) : undefined,
+                    source: lease.proxy,
                     record: lease.recording,
-                    ...this.recording
                 }),
             })
 
@@ -694,6 +666,9 @@ export default class VideoServiceControl {
         return lease;
     }
 
+    /**
+     * Fetch Path Information from Media Server
+     */
     async path(pathid: string): Promise<Static<typeof PathListItem>> {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
