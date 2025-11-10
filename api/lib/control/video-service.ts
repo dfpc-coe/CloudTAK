@@ -518,6 +518,20 @@ export default class VideoServiceControl {
                     } else if (!res.ok) {
                         throw new Err(res.status, null, `External Video Server failed stream video - HTTP Error ${res.status}`);
                     }
+                } else {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({
+                            name: lease.path,
+                            source: lease.proxy,
+                            sourceOnDemand: true,
+                            record: lease.recording,
+                            ...this.recording
+                        })
+                    })
+
+                    if (!res.ok) throw new Err(500, null, await res.text())
                 }
             } catch (err) {
                 if (err instanceof Err) {
@@ -529,20 +543,20 @@ export default class VideoServiceControl {
                     throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Failed to generate proxy stream');
                 }
             }
-        }
-
-        const res = await fetch(url, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-                name: lease.path,
-                runOnInit: lease.proxy ? this.runOnInit(lease.proxy, lease.path) : undefined,
-                record: lease.recording,
-                ...this.recording
+        } else {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    name: lease.path,
+                    runOnInit: lease.proxy ? this.runOnInit(lease.proxy, lease.path) : undefined,
+                    record: lease.recording,
+                    ...this.recording
+                })
             })
-        })
 
-        if (!res.ok) throw new Err(500, null, await res.text())
+            if (!res.ok) throw new Err(500, null, await res.text())
+        }
 
         return lease;
     }
