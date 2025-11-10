@@ -104,7 +104,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
+            const user = await Auth.as_user(config, req);
 
             const requested = new URL(req.query.url);
 
@@ -127,7 +127,11 @@ export default async function router(schema: Schema, config: Config) {
                     message: 'CloudTAK could not parse a UUID from the provided stream'
                 })
             } else {
-                const lease = await config.models.VideoLease.from(eq(VideoLease.path, uuid[0]));
+                const lease = await videoControl.from(uuid[0], {
+                    username: user.email,
+                    admin: user.access === AuthUserAccess.ADMIN
+                });
+
                 const path = await videoControl.path(lease.path);
 
                 const base = {
