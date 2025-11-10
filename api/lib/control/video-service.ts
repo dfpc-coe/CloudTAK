@@ -1,6 +1,8 @@
 import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
+import { eq } from 'drizzle-orm'
 import { Type, Static } from '@sinclair/typebox';
+import { VideoLease } from '../schema.js';
 import { sanitizeURLSync } from 'url-sanitizer';
 import { VideoLeaseResponse } from '../types.js';
 import { VideoLease_SourceType } from '../enums.js';
@@ -545,15 +547,31 @@ export default class VideoServiceControl {
         return lease;
     }
 
+    /**
+     * Fetches a lease and performs permission checks based on the provided options
+     *
+     * @param leaseid Integer Lease ID or String Lease Path
+     *
+     * @param opts Options containing connection, username,
+     * @param opts.connection Connection ID if accessing via Connection
+     * @param opts.username Username if accessing via CloudTAK Map
+     * @param opts.admin Boolean indicating if the user is an admin
+     */
     async from(
-        leaseid: number,
+        id: number | string,
         opts: {
             connection?: number
             username?: string
             admin: boolean
         }
     ): Promise<Static<typeof VideoLeaseResponse>> {
-        const lease = await this.config.models.VideoLease.from(leaseid);
+        let lease;
+
+        if (typeof id === 'string') {
+            lease = await this.config.models.VideoLease.from(eq(VideoLease.path, id));
+        } else {
+            lease = await this.config.models.VideoLease.from(id);
+        }
 
         if (opts.admin) return lease;
 

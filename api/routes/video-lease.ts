@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type, Static } from '@sinclair/typebox'
 import moment from 'moment';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -174,7 +174,7 @@ export default async function router(schema: Schema, config: Config) {
                 Err.respond(new Err(400, null, 'Invalid URL'), res);
             }
 
-             Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -270,7 +270,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'VideoLease',
         description: 'Get a single Video Lease',
         params: Type.Object({
-            lease: Type.Integer()
+            lease: Type.Union([Type.Integer(), Type.String()])
         }),
         res: Type.Object({
             lease: VideoLeaseResponse,
@@ -290,10 +290,14 @@ export default async function router(schema: Schema, config: Config) {
                     admin: true
                 });
             } else if (auth instanceof AuthUser) {
+                const user = auth as AuthUser;
+
                 lease = await videoControl.from(req.params.lease, {
                     username: user.email,
                     admin: user.access === AuthUserAccess.ADMIN
                 });
+            } else {
+                throw new Err(401, null, 'Unauthorized');
             }
 
             const protocols = await videoControl.protocols(lease)
