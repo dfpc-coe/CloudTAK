@@ -370,8 +370,8 @@ export default class VideoServiceControl {
 
         if (c.config && c.config.hls) {
             // Format: http://localhost:8888/mystream/index.m3u8
-            const url = new URL(`/stream/${lease.id}/index.m3u8`, c.external);
-            url.port = '9997'
+            const url = new URL(`/stream/${lease.path}/index.m3u8`, c.external);
+            url.port = c.config.apiAddress.replace(':', '');
 
             if (lease.stream_user && lease.read_user) {
                 if (populated === ProtocolPopulation.READ && lease.read_user && lease.read_pass) {
