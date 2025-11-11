@@ -345,9 +345,9 @@ export default class VideoServiceControl {
         }
 
         if (c.config && c.config.hls) {
-            // Format: http://localhost:8888/mystream/index.m3u8
+            // Format: http://localhost:9997/mystream/index.m3u8 - Proxied
             const url = new URL(`/stream/${lease.path}/index.m3u8`, c.external);
-            url.port = c.config.apiAddress.replace(':', '');
+            url.port = '9997'
 
             if (lease.stream_user && lease.read_user) {
                 if (populated === ProtocolPopulation.READ && lease.read_user && lease.read_pass) {
