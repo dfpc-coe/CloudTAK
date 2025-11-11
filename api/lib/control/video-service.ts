@@ -3,7 +3,6 @@ import Config from '../config.js';
 import { eq } from 'drizzle-orm'
 import { Type, Static } from '@sinclair/typebox';
 import { VideoLease } from '../schema.js';
-import { sanitizeURLSync } from 'url-sanitizer';
 import { VideoLeaseResponse } from '../types.js';
 import { VideoLease_SourceType } from '../enums.js';
 import fetch from '../fetch.js';
@@ -651,9 +650,8 @@ export default class VideoServiceControl {
                     headers,
                     body: JSON.stringify({
                         name: lease.path,
-                        runOnInit: lease.proxy ? this.runOnInit(lease.proxy, lease.path) : undefined,
+                        source: lease.proxy,
                         record: lease.recording,
-                        ...this.recording
                     }),
                 })
 
