@@ -1183,6 +1183,76 @@ test('Style: {{round}} - Invalid Input', async () => {
     });
 });
 
+test('Style: Rotate', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            point: {
+                rotate: true
+            }
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            metadata: {},
+            rotate: true
+        },
+        geometry: {
+            coordinates: [0, 0],
+            type: 'Point'
+        },
+    });
+});
+
+test('Style: MinZoom/MaxZoom', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            stale: 123,
+            point: {
+                minzoom: '{{importance}}',
+                maxzoom: 10
+            }
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                importance: 5
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            minzoom: 5,
+            maxzoom: 10,
+            metadata: {
+                importance: 5
+            },
+            stale: 123000
+        },
+        geometry: {
+            coordinates: [0, 0],
+            type: 'Point'
+        },
+    });
+});
+
 // Test combined usage - real-world earthquake data formatting
 test('Style: Combined {{replace}} and {{round}} - Earthquake Data', async () => {
     const style = new Style({

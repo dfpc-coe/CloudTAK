@@ -71,6 +71,7 @@ interface validateStyleGeometry {
     id?: string;
     type?: string;
     remarks?: string;
+    rotate?: boolean;
     minzoom?: number | string;
     maxzoom?: number | string;
     stale?: number | string;
@@ -97,6 +98,9 @@ export const StylePoint = Type.Object({
     type: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
+    rotate: Type.Boolean({
+        default: true
+    }),
     minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     callsign: Type.Optional(Type.String()),
@@ -510,6 +514,7 @@ export default class Style {
 
             if (style.point['marker-color']) feature.properties['marker-color'] = style.point['marker-color'];
             if (style.point['marker-opacity']) feature.properties['marker-opacity'] = Number(style.point['marker-opacity']);
+            if (style.point.rotate !== undefined) feature.properties.rotate = style.point.rotate;
             if (style.point.icon) feature.properties.icon = style.point.icon;
         } else if (feature.geometry.type === 'LineString' && style.line) {
             if (style.line.id) feature.id = this.compile(style.line.id, feature.properties.metadata);
