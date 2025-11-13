@@ -65,7 +65,7 @@ export default {
         },
         EventsTaskDefinition: {
             Type: 'AWS::ECS::TaskDefinition',
-            DependsOn: ['SigningSecret', 'MediaSecret'],
+            DependsOn: ['SigningSecret'],
             Properties: {
                 Family: cf.join([cf.stackName, '-events']),
                 Cpu: cf.ref('ComputeCpu'),
