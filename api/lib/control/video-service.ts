@@ -620,7 +620,7 @@ export default class VideoServiceControl {
         try {
             await this.path(lease.path);
 
-            const url = new URL(`/v3/config/paths/patch/${lease.path}`, video.url);
+            const url = new URL(`/path/${lease.path}`, video.url);
             url.port = '9997';
 
             const headers = this.headers(video.username, video.password);
