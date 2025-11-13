@@ -458,19 +458,8 @@ app.use(pinia);
 app.use(FloatingVue);
 
 
-const plugins = import.meta.glob('../plugins/*.js', {
+import.meta.glob('../plugins/*.js', {
     eager: true
 });
-
-for (const path in plugins) {
-    const plugin = plugins[path].default; // Access the default export
-
-    if (typeof plugin.install === 'function' || typeof plugin === 'function') {
-        app.use(plugin);
-        console.log(`Plugin installed: ${path}`);
-    } else {
-        console.warn(`Plugin at ${path} does not have an install method.`);
-    }
-}
 
 app.mount('#app');
