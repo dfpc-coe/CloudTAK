@@ -617,6 +617,9 @@ export const useMapStore = defineStore('cloudtak', {
                     const feats = [];
 
                     for (const feat of features) {
+                        // TODO: Support Multi Select with both CoT and VT Features
+                        if (!feat.properties.id) continue;
+
                         const cot = await this.worker.db.get(feat.properties.id, {
                             mission: true
                         });

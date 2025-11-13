@@ -628,6 +628,8 @@ export default class AtlasDatabase {
             mission: false
         }
     ): Promise<COT | undefined> {
+        if (!id) throw new Error('Cannot get marker without an ID');
+
         if (!opts) opts = {};
 
         let cot = this.cots.get(id);
