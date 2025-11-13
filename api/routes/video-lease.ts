@@ -1,4 +1,5 @@
 import { Type, Static } from '@sinclair/typebox'
+import jwt from 'jsonwebtoken';
 import moment from 'moment';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -34,8 +35,23 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            if (req.body.user === 'management' && req.body.password === config.MediaSecret) {
-                res.json({ status: 200, message: 'Authorized' });
+            if (req.body.user === 'management') {
+                try {
+                    const output = jwt.verify(req.body.password, config.SigningSecret) as {
+                        internal: boolean,
+                        action: string
+                    };
+
+                    // Ensure an arbitrary valid token can't access this particular resource
+                    if (output.internal !== true || output.access !== AuthResourceAccess.MEDIA) {
+                        throw new Err(401, null, 'Unauthorized');
+                    }
+
+                    res.json({ status: 200, message: 'Authorized' });
+                } catch (err) {
+                    console.error(err);
+                    throw new Err(401, new Error(String(err)), 'Invalid Token')
+                }
             } else if ([Action.PUBLISH, Action.READ, Action.PLAYBACK].includes(req.body.action)) {
                 const lease = await config.models.VideoLease.from(eq(VideoLease.path, req.body.path))
 
