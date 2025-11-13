@@ -3,7 +3,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import ECSVideoControl, { Configuration, PathConfig, PathListItem } from '../lib/control/video-service.js';
+import ECSVideoControl, { Configuration, PathListItem } from '../lib/control/video-service.js';
 
 export default async function router(schema: Schema, config: Config) {
     const videoControl = new ECSVideoControl(config);
@@ -33,7 +33,6 @@ export default async function router(schema: Schema, config: Config) {
             path: Type.String()
         }),
         res: Type.Object({
-            config: PathConfig,
             path: PathListItem
         })
     }, async (req, res) => {
@@ -42,7 +41,6 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 path: await videoControl.path(req.params.path),
-                config: await videoControl.pathConfig(req.params.path)
             });
         } catch (err) {
             Err.respond(err, res);

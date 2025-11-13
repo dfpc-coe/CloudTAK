@@ -1,6 +1,8 @@
 import Err from '@openaddresses/batch-error';
+import jwt from 'jsonwebtoken';
 import Config from '../config.js';
 import { eq } from 'drizzle-orm'
+import { AuthResourceAccess } from '../auth.js';
 import { Type, Static } from '@sinclair/typebox';
 import { VideoLease } from '../schema.js';
 import { VideoLeaseResponse } from '../types.js';
@@ -88,12 +90,7 @@ export const VideoConfig = Type.Object({
 
 export const PathConfig = Type.Object({
     name: Type.String(),
-
     source: Type.String(),
-    sourceOnDemand: Type.Boolean(),
-
-    maxReaders: Type.Integer(),
-
     record: Type.Boolean(),
 });
 
@@ -164,8 +161,7 @@ export default class VideoServiceControl {
     async settings(): Promise<{
         configured: boolean;
         url?: string;
-        username?: string;
-        password?: string;
+        token?: string;
     }> {
         let video;
 
@@ -191,15 +187,17 @@ export default class VideoServiceControl {
         return {
             configured: true,
             url: video,
-            username: 'management',
-            password: this.config.MediaSecret
+            token: jwt.sign({
+                internal: true,
+                access: AuthResourceAccess.MEDIA
+            }, this.config.SigningSecret)
         }
     }
 
-    headers(username?: string, password?: string): Headers {
+    headers(token?: string): Headers {
         const headers = new Headers();
-        if (username && password) {
-            headers.append('Authorization', `Basic ${Buffer.from(username + ':' + password).toString('base64')}`);
+        if (token) {
+            headers.append('Authorization', `Bearer ${token}`);
         }
 
         return headers;
@@ -210,7 +208,7 @@ export default class VideoServiceControl {
 
         if (!video.configured) return video;
 
-        const headers = this.headers(video.username, video.password);
+        const headers = this.headers(video.token);
 
         const url = new URL('/v3/config/global/get', video.url);
         url.port = '9997';
@@ -220,7 +218,7 @@ export default class VideoServiceControl {
         const body = await res.typed(VideoConfig);
 
         // TODO support paging
-        const urlPaths = new URL('/v3/paths/list', video.url);
+        const urlPaths = new URL('/path', video.url);
         urlPaths.port = '9997';
 
         const resPaths = await fetch(urlPaths, { headers })
@@ -407,7 +405,7 @@ export default class VideoServiceControl {
     ): Promise<void> {
         const video = await this.settings();
 
-        if (!video.configured || !video.username) return;
+        if (!video.configured) return;
 
         if (secure && (!lease.stream_user || !lease.stream_pass || !lease.read_user || !lease.read_pass)) {
             await this.config.models.VideoLease.commit(lease.id, {
@@ -451,7 +449,7 @@ export default class VideoServiceControl {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
-        const headers = this.headers(video.username, video.password);
+        const headers = this.headers(video.token);
 
         if (opts.username && opts.connection) {
             throw new Err(400, null, 'Either username or connection must be set but not both');
@@ -623,7 +621,7 @@ export default class VideoServiceControl {
             const url = new URL(`/path/${lease.path}`, video.url);
             url.port = '9997';
 
-            const headers = this.headers(video.username, video.password);
+            const headers = this.headers(video.token);
             headers.append('Content-Type', 'application/json');
 
             const res = await fetch(url, {
@@ -639,10 +637,10 @@ export default class VideoServiceControl {
             if (!res.ok) throw new Err(500, null, await res.text())
         } catch (err) {
             if (err instanceof Err && err.status === 404) {
-                const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
+                const url = new URL(`/path`, video.url);
                 url.port = '9997';
 
-                const headers = this.headers(video.username, video.password);
+                const headers = this.headers(video.token);
                 headers.append('Content-Type', 'application/json');
 
                 const res = await fetch(url, {
@@ -671,9 +669,9 @@ export default class VideoServiceControl {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
-        const headers = this.headers(video.username, video.password);
+        const headers = this.headers(video.token);
 
-        const url = new URL(`/v3/paths/get/${pathid}`, video.url);
+        const url = new URL(`/path/${pathid}`, video.url);
         url.port = '9997';
 
         const res = await fetch(url, {
@@ -688,13 +686,13 @@ export default class VideoServiceControl {
         }
     }
 
-    async recordings(config: Static<typeof PathConfig>): Promise<Static<typeof Recording>> {
+    async recordings(path: string): Promise<Static<typeof Recording>> {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
-        const headers = this.headers(video.username, video.password);
+        const headers = this.headers(video.token);
 
-        const url = new URL(`/v3/recordings/get/${config.name}`, video.url);
+        const url = new URL(`/v3/recordings/get/${path}`, video.url);
         url.port = '9997';
 
         const res = await fetch(url, {
@@ -704,27 +702,6 @@ export default class VideoServiceControl {
 
         if (res.ok) {
             return await res.typed(Recording);
-        } else {
-            throw new Err(res.status, new Error(await res.text()), 'Media Server Error');
-        }
-    }
-
-    async pathConfig(pathid: string): Promise<Static<typeof PathConfig>> {
-        const video = await this.settings();
-        if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
-
-        const headers = this.headers(video.username, video.password);
-
-        const url = new URL(`/v3/config/paths/get/${pathid}`, video.url);
-        url.port = '9997';
-
-        const res = await fetch(url, {
-            method: 'GET',
-            headers,
-        });
-
-        if (res.ok) {
-            return await res.typed(PathConfig);
         } else {
             throw new Err(res.status, new Error(await res.text()), 'Media Server Error');
         }
@@ -748,7 +725,7 @@ export default class VideoServiceControl {
 
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
-        const headers = this.headers(video.username, video.password);
+        const headers = this.headers(video.token);
 
         const lease = await this.from(leaseid, opts);
 
@@ -760,7 +737,7 @@ export default class VideoServiceControl {
 
         await this.config.models.VideoLease.delete(leaseid);
 
-        const url = new URL(`/v3/config/paths/delete/${lease.path}`, video.url);
+        const url = new URL(`/path/${lease.path}`, video.url);
         url.port = '9997';
 
         await fetch(url, {

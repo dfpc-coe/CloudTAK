@@ -98,9 +98,9 @@ export const StylePoint = Type.Object({
     type: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
-    rotate: Type.Boolean({
+    rotate: Type.Optional(Type.Boolean({
         default: true
-    }),
+    })),
     minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     callsign: Type.Optional(Type.String()),
