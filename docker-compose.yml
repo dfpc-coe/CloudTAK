@@ -15,7 +15,6 @@ services:
             - CLOUDTAK_Mode=${CLOUDTAK_Mode}
             - CLOUDTAK_Config_media_url=${CLOUDTAK_Config_media_url}
             - SigningSecret=${SigningSecret}
-            - MediaSecret=${MediaSecret}
             - ASSET_BUCKET=${ASSET_BUCKET}
             - AWS_S3_Endpoint=${AWS_S3_Endpoint}
             - AWS_S3_AccessKeyId=${AWS_S3_AccessKeyId}
@@ -35,7 +34,6 @@ services:
         environment:
             - PMTILES_URL=${PMTILES_URL}
             - SigningSecret=${SigningSecret}
-            - MediaSecret=${MediaSecret}
             - ASSET_BUCKET=${ASSET_BUCKET}
             - AWS_S3_Endpoint=${AWS_S3_Endpoint}
             - AWS_S3_AccessKeyId=${AWS_S3_AccessKeyId}
@@ -67,7 +65,6 @@ services:
         environment:
             - API_URL=${API_URL}
             - SigningSecret=${SigningSecret}
-            - MediaSecret=${MediaSecret}
         ports:
             - "${MEDIA_PORT_API:-9997}:9997"
             - "${MEDIA_PORT_RTSP:-8554}:8554"
