@@ -34,6 +34,9 @@ export enum AuthResourceAccess {
     BASEMAP = 'basemap',
     CONNECTION = 'connection',
 
+    // Only used for media-infra <=> CloudTAK requests
+    MEDIA = 'media',
+
     // Becomes AuthUser
     PROFILE = 'profile'
 }

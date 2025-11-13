@@ -28,7 +28,6 @@ export default class Config {
     models: Models;
     StackName: string;
     SigningSecret: string;
-    MediaSecret: string;
     external?: External;
     API_URL: string;
     PMTILES_URL: string;
@@ -49,7 +48,6 @@ export default class Config {
         StackName: string;
         API_URL: string;
         PMTILES_URL: string;
-        MediaSecret: string;
         SigningSecret: string;
         wsClients: Map<string, ConnectionWebSocket[]>;
         pg: Pool<typeof pgtypes>;
@@ -62,7 +60,6 @@ export default class Config {
         this.nocache = init.nocache;
         this.models = init.models;
         this.StackName = init.StackName;
-        this.MediaSecret = init.MediaSecret;
         this.SigningSecret = init.SigningSecret;
         this.API_URL = init.API_URL;
         this.PMTILES_URL = init.PMTILES_URL;
@@ -94,12 +91,11 @@ export default class Config {
             process.env.AWS_REGION = 'us-east-1';
         }
 
-        let SigningSecret, MediaSecret, API_URL, PMTILES_URL, Bucket;
+        let SigningSecret, API_URL, PMTILES_URL, Bucket;
         if (!process.env.StackName || process.env.StackName === 'test') {
             process.env.StackName = 'test';
 
             SigningSecret = process.env.SigningSecret || 'coe-wildland-fire';
-            MediaSecret = process.env.MediaSecret || 'coe-wildland-fire-video';
             Bucket = process.env.ASSET_BUCKET;
             API_URL = process.env.API_URL || 'http://localhost:5001';
             PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
@@ -120,7 +116,6 @@ export default class Config {
 
             Bucket = process.env.ASSET_BUCKET;
             SigningSecret = process.env.SigningSecret || await Config.fetchSecret(process.env.StackName, 'secret');
-            MediaSecret = process.env.MediaSecret || await Config.fetchSecret(process.env.StackName, 'media');
         }
 
         const pg: Pool<typeof pgtypes> = await Pool.connect(args.postgres, pgtypes, {
@@ -150,7 +145,7 @@ export default class Config {
             nocache: (args.nocache || false),
             StackName: process.env.StackName,
             wsClients: new Map(),
-            server, SigningSecret, MediaSecret, API_URL, Bucket, pg, models, PMTILES_URL
+            server, SigningSecret, API_URL, Bucket, pg, models, PMTILES_URL
         });
 
         if (!config.silent) {
