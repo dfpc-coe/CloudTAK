@@ -73,7 +73,7 @@
         <div
             class='modal-body'
             :class='{ "modal-body--error": !!error }'
-            :style='`height: calc(100% - 50px)`'
+            :style='`height: calc(100% - 40px)`'
         >
             <div
                 v-if='loading'
