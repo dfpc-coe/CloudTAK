@@ -129,7 +129,8 @@ export default class Subscription {
     }
 
     /**
-     * Loads an existing Subscription from the local DB, or obtains it from the server
+     * Loads an existing Subscription from the local DB an refreshes it,
+     * or creates a new Subscription from the server if it does not exist locally.
      */
     static async load(
         guid: string,
