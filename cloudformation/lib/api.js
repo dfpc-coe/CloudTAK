@@ -402,7 +402,7 @@ export default {
         },
         TaskDefinition: {
             Type: 'AWS::ECS::TaskDefinition',
-            DependsOn: ['SigningSecret', 'MediaSecret'],
+            DependsOn: ['SigningSecret'],
             Properties: {
                 Family: cf.stackName,
                 Cpu: cf.ref('ComputeCpu'),

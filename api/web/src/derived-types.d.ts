@@ -4355,6 +4355,7 @@ export interface paths {
                                     center: number[];
                                     minzoom?: number;
                                     maxzoom?: number;
+                                    rotate?: boolean;
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
@@ -4785,6 +4786,7 @@ export interface paths {
                                 center: number[];
                                 minzoom?: number;
                                 maxzoom?: number;
+                                rotate?: boolean;
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
@@ -5169,431 +5171,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/connection/{:connectionid}/layer/{:layerid}/alert": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List layer alerts */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort: "id" | "created" | "updated" | "layer" | "icon" | "priority" | "title" | "description" | "hidden" | "enableRLS";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                };
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":connectionid": number;
-                    /** @description No Description */
-                    ":layerid": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                created: string;
-                                updated: string;
-                                layer: number;
-                                icon: string;
-                                priority: string;
-                                title: string;
-                                description: string;
-                                hidden: boolean;
-                            }[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create a new layer alert */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":connectionid": number;
-                    /** @description No Description */
-                    ":layerid": number;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        title: string;
-                        /** @description Human readable description */
-                        description?: string;
-                        icon?: string;
-                        priority?: "green" | "yellow" | "red";
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            layer: number;
-                            icon: string;
-                            priority: string;
-                            title: string;
-                            description: string;
-                            hidden: boolean;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        /** Delete all alerts for the layer */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":connectionid": number;
-                    /** @description No Description */
-                    ":layerid": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/connection/{:connectionid}/layer/{:layerid}/alert/{:alertid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete all alerts for the layer */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":connectionid": number;
-                    /** @description No Description */
-                    ":layerid": number;
-                    /** @description No Description */
-                    ":alertid": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/layer/{:layerid}/cot": {
         parameters: {
             query?: never;
@@ -5639,6 +5216,7 @@ export interface paths {
                                 center?: number[];
                                 minzoom?: number;
                                 maxzoom?: number;
+                                rotate?: boolean;
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
@@ -5894,6 +5472,7 @@ export interface paths {
                                         center?: number[];
                                         minzoom?: number;
                                         maxzoom?: number;
+                                        rotate?: boolean;
                                         range?: number;
                                         bearing?: number;
                                         creator?: {
@@ -6236,6 +5815,7 @@ export interface paths {
                                 center: number[];
                                 minzoom?: number;
                                 maxzoom?: number;
+                                rotate?: boolean;
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
@@ -6587,6 +6167,7 @@ export interface paths {
                                     center: number[];
                                     minzoom?: number;
                                     maxzoom?: number;
+                                    rotate?: boolean;
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
@@ -7116,7 +6697,7 @@ export interface paths {
                 header?: never;
                 path: {
                     /** @description No Description */
-                    ":connectionid": number;
+                    ":connectionid": "template" | number;
                     /** @description No Description */
                     ":layerid": number;
                 };
@@ -7205,7 +6786,7 @@ export interface paths {
                 header?: never;
                 path: {
                     /** @description No Description */
-                    ":connectionid": number;
+                    ":connectionid": "template" | number;
                     /** @description No Description */
                     ":layerid": number;
                 };
@@ -7293,7 +6874,7 @@ export interface paths {
                 header?: never;
                 path: {
                     /** @description No Description */
-                    ":connectionid": number;
+                    ":connectionid": "template" | number;
                     /** @description No Description */
                     ":layerid": number;
                 };
@@ -7396,7 +6977,7 @@ export interface paths {
                 header?: never;
                 path: {
                     /** @description No Description */
-                    ":connectionid": number;
+                    ":connectionid": "template" | number;
                     /** @description No Description */
                     ":layerid": number;
                 };
@@ -7498,7 +7079,7 @@ export interface paths {
                 header?: never;
                 path: {
                     /** @description No Description */
-                    ":connectionid": number;
+                    ":connectionid": "template" | number;
                     /** @description No Description */
                     ":layerid": number;
                 };
@@ -7604,7 +7185,7 @@ export interface paths {
                 header?: never;
                 path: {
                     /** @description No Description */
-                    ":connectionid": number;
+                    ":connectionid": "template" | number;
                     /** @description No Description */
                     ":layerid": number;
                 };
@@ -7860,7 +7441,7 @@ export interface paths {
                 header?: never;
                 path: {
                     /** @description No Description */
-                    ":connectionid": number;
+                    ":connectionid": "template" | number;
                 };
                 cookie?: never;
             };
@@ -7941,6 +7522,8 @@ export interface paths {
                                             type?: string;
                                             remarks?: string;
                                             stale?: number | string;
+                                            /** @default true */
+                                            rotate: boolean;
                                             minzoom?: number | string;
                                             maxzoom?: number | string;
                                             callsign?: string;
@@ -8015,6 +7598,8 @@ export interface paths {
                                                     type?: string;
                                                     remarks?: string;
                                                     stale?: number | string;
+                                                    /** @default true */
+                                                    rotate: boolean;
                                                     minzoom?: number | string;
                                                     maxzoom?: number | string;
                                                     callsign?: string;
@@ -8246,6 +7831,8 @@ export interface paths {
                                         type?: string;
                                         remarks?: string;
                                         stale?: number | string;
+                                        /** @default true */
+                                        rotate: boolean;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
                                         callsign?: string;
@@ -8320,6 +7907,8 @@ export interface paths {
                                                 type?: string;
                                                 remarks?: string;
                                                 stale?: number | string;
+                                                /** @default true */
+                                                rotate: boolean;
                                                 minzoom?: number | string;
                                                 maxzoom?: number | string;
                                                 callsign?: string;
@@ -8497,6 +8086,8 @@ export interface paths {
                                 type?: string;
                                 remarks?: string;
                                 stale?: number | string;
+                                /** @default true */
+                                rotate?: boolean;
                                 minzoom?: number | string;
                                 maxzoom?: number | string;
                                 callsign?: string;
@@ -8571,6 +8162,8 @@ export interface paths {
                                         type?: string;
                                         remarks?: string;
                                         stale?: number | string;
+                                        /** @default true */
+                                        rotate?: boolean;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
                                         callsign?: string;
@@ -8652,6 +8245,8 @@ export interface paths {
                                     type?: string;
                                     remarks?: string;
                                     stale?: number | string;
+                                    /** @default true */
+                                    rotate: boolean;
                                     minzoom?: number | string;
                                     maxzoom?: number | string;
                                     callsign?: string;
@@ -8726,6 +8321,8 @@ export interface paths {
                                             type?: string;
                                             remarks?: string;
                                             stale?: number | string;
+                                            /** @default true */
+                                            rotate: boolean;
                                             minzoom?: number | string;
                                             maxzoom?: number | string;
                                             callsign?: string;
@@ -8961,6 +8558,8 @@ export interface paths {
                                 type?: string;
                                 remarks?: string;
                                 stale?: number | string;
+                                /** @default true */
+                                rotate?: boolean;
                                 minzoom?: number | string;
                                 maxzoom?: number | string;
                                 callsign?: string;
@@ -9035,6 +8634,8 @@ export interface paths {
                                         type?: string;
                                         remarks?: string;
                                         stale?: number | string;
+                                        /** @default true */
+                                        rotate?: boolean;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
                                         callsign?: string;
@@ -9120,6 +8721,8 @@ export interface paths {
                                     type?: string;
                                     remarks?: string;
                                     stale?: number | string;
+                                    /** @default true */
+                                    rotate: boolean;
                                     minzoom?: number | string;
                                     maxzoom?: number | string;
                                     callsign?: string;
@@ -9194,6 +8797,8 @@ export interface paths {
                                             type?: string;
                                             remarks?: string;
                                             stale?: number | string;
+                                            /** @default true */
+                                            rotate: boolean;
                                             minzoom?: number | string;
                                             maxzoom?: number | string;
                                             callsign?: string;
@@ -9639,7 +9244,7 @@ export interface paths {
                 header?: never;
                 path: {
                     /** @description No Description */
-                    ":connectionid": number;
+                    ":connectionid": "template" | number;
                     /** @description No Description */
                     ":layerid": number;
                 };
@@ -9714,6 +9319,8 @@ export interface paths {
                                         type?: string;
                                         remarks?: string;
                                         stale?: number | string;
+                                        /** @default true */
+                                        rotate: boolean;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
                                         callsign?: string;
@@ -9788,6 +9395,8 @@ export interface paths {
                                                 type?: string;
                                                 remarks?: string;
                                                 stale?: number | string;
+                                                /** @default true */
+                                                rotate: boolean;
                                                 minzoom?: number | string;
                                                 maxzoom?: number | string;
                                                 callsign?: string;
@@ -9913,7 +9522,7 @@ export interface paths {
                 header?: never;
                 path: {
                     /** @description No Description */
-                    ":connectionid": number;
+                    ":connectionid": "template" | number;
                     /** @description No Description */
                     ":layerid": number;
                 };
@@ -10102,6 +9711,8 @@ export interface paths {
                                         type?: string;
                                         remarks?: string;
                                         stale?: number | string;
+                                        /** @default true */
+                                        rotate: boolean;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
                                         callsign?: string;
@@ -10176,6 +9787,8 @@ export interface paths {
                                                 type?: string;
                                                 remarks?: string;
                                                 stale?: number | string;
+                                                /** @default true */
+                                                rotate: boolean;
                                                 minzoom?: number | string;
                                                 maxzoom?: number | string;
                                                 callsign?: string;
@@ -10310,7 +9923,7 @@ export interface paths {
                 header?: never;
                 path: {
                     /** @description No Description */
-                    ":connectionid": number;
+                    ":connectionid": "template" | number;
                     /** @description No Description */
                     ":layerid": number;
                 };
@@ -10861,7 +10474,7 @@ export interface paths {
                                 connection: number | null;
                                 layer: number | null;
                                 source_id: string | null;
-                                source_type: string;
+                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
@@ -11007,7 +10620,7 @@ export interface paths {
                                 connection: number | null;
                                 layer: number | null;
                                 source_id: string | null;
-                                source_type: string;
+                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
@@ -11238,7 +10851,7 @@ export interface paths {
                                 connection: number | null;
                                 layer: number | null;
                                 source_id: string | null;
-                                source_type: string;
+                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
@@ -11488,7 +11101,7 @@ export interface paths {
                                 connection: number | null;
                                 layer: number | null;
                                 source_id: string | null;
-                                source_type: string;
+                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
@@ -13676,11 +13289,11 @@ export interface paths {
                                 updated: string;
                                 name: string;
                                 status: string;
-                                error: string | null;
+                                error?: null | string;
                                 result: unknown;
                                 username: string;
                                 source: string;
-                                source_id: string | null;
+                                source_id?: null | string;
                                 config: unknown;
                             }[];
                         };
@@ -13867,11 +13480,11 @@ export interface paths {
                             updated: string;
                             name: string;
                             status: string;
-                            error: string | null;
+                            error?: null | string;
                             result: unknown;
                             username: string;
                             source: string;
-                            source_id: string | null;
+                            source_id?: null | string;
                             config: unknown;
                         };
                     };
@@ -13976,11 +13589,11 @@ export interface paths {
                             updated: string;
                             name: string;
                             status: string;
-                            error: string | null;
+                            error?: null | string;
                             result: unknown;
                             username: string;
                             source: string;
-                            source_id: string | null;
+                            source_id?: null | string;
                             config: unknown;
                         };
                     };
@@ -14072,11 +13685,11 @@ export interface paths {
                             updated: string;
                             name: string;
                             status: string;
-                            error: string | null;
+                            error?: null | string;
                             result: unknown;
                             username: string;
                             source: string;
-                            source_id: string | null;
+                            source_id?: null | string;
                             config: unknown;
                         };
                     };
@@ -14266,11 +13879,11 @@ export interface paths {
                             updated: string;
                             name: string;
                             status: string;
-                            error: string | null;
+                            error?: null | string;
                             result: unknown;
                             username: string;
                             source: string;
-                            source_id: string | null;
+                            source_id?: null | string;
                             config: unknown;
                         };
                     };
@@ -14554,6 +14167,8 @@ export interface paths {
                                             type?: string;
                                             remarks?: string;
                                             stale?: number | string;
+                                            /** @default true */
+                                            rotate: boolean;
                                             minzoom?: number | string;
                                             maxzoom?: number | string;
                                             callsign?: string;
@@ -14628,6 +14243,8 @@ export interface paths {
                                                     type?: string;
                                                     remarks?: string;
                                                     stale?: number | string;
+                                                    /** @default true */
+                                                    rotate: boolean;
                                                     minzoom?: number | string;
                                                     maxzoom?: number | string;
                                                     callsign?: string;
@@ -14847,6 +14464,8 @@ export interface paths {
                                         type?: string;
                                         remarks?: string;
                                         stale?: number | string;
+                                        /** @default true */
+                                        rotate: boolean;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
                                         callsign?: string;
@@ -14921,6 +14540,8 @@ export interface paths {
                                                 type?: string;
                                                 remarks?: string;
                                                 stale?: number | string;
+                                                /** @default true */
+                                                rotate: boolean;
                                                 minzoom?: number | string;
                                                 maxzoom?: number | string;
                                                 callsign?: string;
@@ -15144,6 +14765,8 @@ export interface paths {
                                             type?: string;
                                             remarks?: string;
                                             stale?: number | string;
+                                            /** @default true */
+                                            rotate: boolean;
                                             minzoom?: number | string;
                                             maxzoom?: number | string;
                                             callsign?: string;
@@ -15218,6 +14841,8 @@ export interface paths {
                                                     type?: string;
                                                     remarks?: string;
                                                     stale?: number | string;
+                                                    /** @default true */
+                                                    rotate: boolean;
                                                     minzoom?: number | string;
                                                     maxzoom?: number | string;
                                                     callsign?: string;
@@ -15425,6 +15050,8 @@ export interface paths {
                                         type?: string;
                                         remarks?: string;
                                         stale?: number | string;
+                                        /** @default true */
+                                        rotate: boolean;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
                                         callsign?: string;
@@ -15499,6 +15126,8 @@ export interface paths {
                                                 type?: string;
                                                 remarks?: string;
                                                 stale?: number | string;
+                                                /** @default true */
+                                                rotate: boolean;
                                                 minzoom?: number | string;
                                                 maxzoom?: number | string;
                                                 callsign?: string;
@@ -15615,291 +15244,6 @@ export interface paths {
                 };
             };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/template/{:templateid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return a single Layer Template */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":templateid": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            status?: string;
-                            created: string;
-                            updated: string;
-                            template: boolean;
-                            connection: null | number;
-                            username: null | string;
-                            uuid: string;
-                            name: string;
-                            description: string;
-                            enabled: boolean;
-                            logging: boolean;
-                            task: string;
-                            memory: number;
-                            timeout: number;
-                            priority: "high" | "low" | "off";
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            parent?: {
-                                id: number;
-                                name: string;
-                                enabled: boolean;
-                            };
-                            incoming?: {
-                                layer: number;
-                                created: string;
-                                updated: string;
-                                config: {
-                                    timezone?: {
-                                        timezone: string;
-                                    };
-                                };
-                                cron: string | null;
-                                webhooks: boolean;
-                                enabled_styles: boolean;
-                                styles: {
-                                    line?: {
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                    };
-                                    point?: {
-                                        "marker-color"?: string;
-                                        "marker-opacity"?: string;
-                                        id?: string;
-                                        type?: string;
-                                        remarks?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        icon?: string;
-                                    };
-                                    polygon?: {
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        fill?: string;
-                                        "fill-opacity"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        callsign?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                    };
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    stale?: number | string;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    queries?: {
-                                        query: string;
-                                        delete?: boolean;
-                                        styles?: {
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            stale?: number | string;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            line?: {
-                                                stroke?: string;
-                                                "stroke-style"?: string;
-                                                "stroke-opacity"?: string;
-                                                "stroke-width"?: string;
-                                                id?: string;
-                                                remarks?: string;
-                                                stale?: number | string;
-                                                minzoom?: number | string;
-                                                maxzoom?: number | string;
-                                                callsign?: string;
-                                                links?: {
-                                                    remarks: string;
-                                                    url: string;
-                                                }[];
-                                            };
-                                            point?: {
-                                                "marker-color"?: string;
-                                                "marker-opacity"?: string;
-                                                id?: string;
-                                                type?: string;
-                                                remarks?: string;
-                                                stale?: number | string;
-                                                minzoom?: number | string;
-                                                maxzoom?: number | string;
-                                                callsign?: string;
-                                                links?: {
-                                                    remarks: string;
-                                                    url: string;
-                                                }[];
-                                                icon?: string;
-                                            };
-                                            polygon?: {
-                                                stroke?: string;
-                                                "stroke-style"?: string;
-                                                "stroke-opacity"?: string;
-                                                "stroke-width"?: string;
-                                                fill?: string;
-                                                "fill-opacity"?: string;
-                                                id?: string;
-                                                remarks?: string;
-                                                callsign?: string;
-                                                stale?: number | string;
-                                                minzoom?: number | string;
-                                                maxzoom?: number | string;
-                                                links?: {
-                                                    remarks: string;
-                                                    url: string;
-                                                }[];
-                                            };
-                                        };
-                                    }[];
-                                };
-                                environment: unknown;
-                                ephemeral: {
-                                    [key: string]: unknown;
-                                };
-                                data: number | null;
-                                groups: string[];
-                            };
-                            outgoing?: {
-                                layer: number;
-                                created: string;
-                                updated: string;
-                                environment: unknown;
-                                ephemeral: {
-                                    [key: string]: unknown;
-                                };
-                                filters: {
-                                    queries?: {
-                                        query: string;
-                                    }[];
-                                };
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -17991,6 +17335,7 @@ export interface paths {
                                 center: number[];
                                 minzoom?: number;
                                 maxzoom?: number;
+                                rotate?: boolean;
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
@@ -18340,6 +17685,7 @@ export interface paths {
                                     center: number[];
                                     minzoom?: number;
                                     maxzoom?: number;
+                                    rotate?: boolean;
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
@@ -19532,7 +18878,7 @@ export interface paths {
                     "application/json": {
                         /**
                          * Format: date-time
-                         * @default 2025-10-28T20:35:20.020Z
+                         * @default 2025-11-13T22:25:24.925Z
                          */
                         dtg: string;
                         content: string;
@@ -20158,6 +19504,7 @@ export interface paths {
                                     center: number[];
                                     minzoom?: number;
                                     maxzoom?: number;
+                                    rotate?: boolean;
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
@@ -26146,6 +25493,7 @@ export interface paths {
                                     center: number[];
                                     minzoom?: number;
                                     maxzoom?: number;
+                                    rotate?: boolean;
                                     range?: number;
                                     bearing?: number;
                                     creator?: {
@@ -26467,6 +25815,7 @@ export interface paths {
                             center: number[];
                             minzoom?: number;
                             maxzoom?: number;
+                            rotate?: boolean;
                             range?: number;
                             bearing?: number;
                             creator?: {
@@ -26716,6 +26065,7 @@ export interface paths {
                                 center: number[];
                                 minzoom?: number;
                                 maxzoom?: number;
+                                rotate?: boolean;
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
@@ -27141,6 +26491,7 @@ export interface paths {
                                 center: number[];
                                 minzoom?: number;
                                 maxzoom?: number;
+                                rotate?: boolean;
                                 range?: number;
                                 bearing?: number;
                                 creator?: {
@@ -32410,7 +31761,7 @@ export interface paths {
                                 connection: number | null;
                                 layer: number | null;
                                 source_id: string | null;
-                                source_type: string;
+                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
@@ -32558,7 +31909,7 @@ export interface paths {
                                 connection: number | null;
                                 layer: number | null;
                                 source_id: string | null;
-                                source_type: string;
+                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
@@ -32679,7 +32030,7 @@ export interface paths {
                 header?: never;
                 path: {
                     /** @description No Description */
-                    ":lease": number;
+                    ":lease": number | string;
                 };
                 cookie?: never;
             };
@@ -32701,7 +32052,7 @@ export interface paths {
                                 connection: number | null;
                                 layer: number | null;
                                 source_id: string | null;
-                                source_type: string;
+                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
@@ -32717,8 +32068,7 @@ export interface paths {
                             };
                             config?: {
                                 name: string;
-                                runOnInit: string;
-                                maxReaders: number;
+                                source: string;
                                 record: boolean;
                             };
                             path?: {
@@ -32971,7 +32321,7 @@ export interface paths {
                                 connection: number | null;
                                 layer: number | null;
                                 source_id: string | null;
-                                source_type: string;
+                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
@@ -33243,8 +32593,7 @@ export interface paths {
                         "application/json": {
                             config: {
                                 name: string;
-                                runOnInit: string;
-                                maxReaders: number;
+                                source: string;
                                 record: boolean;
                             };
                             path: {
@@ -33702,6 +33051,7 @@ export interface paths {
                                     center: number[];
                                     minzoom?: number;
                                     maxzoom?: number;
+                                    rotate?: boolean;
                                     range?: number;
                                     bearing?: number;
                                     creator?: {

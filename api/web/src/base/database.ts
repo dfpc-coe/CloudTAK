@@ -20,6 +20,14 @@ export interface DBNotification {
     created: string;
 }
 
+export interface DBVideo {
+    id: string;
+    created: string;
+    updated: string;
+    lease: number;
+    username: string;
+}
+
 export interface DBSubscriptionFeature {
     id: string;
     path: string;
@@ -54,6 +62,7 @@ export interface DBSubscriptionLog {
 
 export type DatabaseType = Dexie & {
     icon: EntityTable<DBIcon, 'name'>,
+    video: EntityTable<DBVideo, 'id'>,
     notification: EntityTable<DBNotification, 'id'>,
     subscription: EntityTable<DBSubscription, 'guid'>,
     subscription_log: EntityTable<DBSubscriptionLog, 'id'>
@@ -64,6 +73,7 @@ export const db = new Dexie('CloudTAK') as DatabaseType;
 
 db.version(1).stores({
     icon: 'name',
+    video: 'id, created, updated, lease, username',
     notification: 'id, type, name, body, url, created, toast, read',
     subscription: 'guid, name, meta, role, token, subscribed, dirty',
     subscription_log: 'id, dtf, created, mission, content, creatorUid, contentHashes, keywords, missionNames, servertime',
