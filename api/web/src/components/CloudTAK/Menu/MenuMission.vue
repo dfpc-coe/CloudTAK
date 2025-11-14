@@ -306,6 +306,7 @@ async function exportToPackage(format: string): Promise<void> {
 async function fetchMission(): Promise<void> {
     try {
         subscription.value = await Subscription.load(String(route.params.mission), {
+            reload: false,
             token: String(localStorage.token),
             missiontoken: token.value,
         });

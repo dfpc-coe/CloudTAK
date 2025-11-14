@@ -106,11 +106,11 @@ export default class SubscriptionFeature {
     }
 
     async from(
-        id: string
+        uid: string
     ): Promise<Feature | undefined> {
         const f = await db.subscription_feature
-            .where("id")
-            .equals(id)
+            .where("[mission+id]")
+            .equals([this.parent.guid, uid])
             .first();
 
         if (!f) return;
@@ -182,8 +182,8 @@ export default class SubscriptionFeature {
         } = {}
     ): Promise<void> {
         await db.subscription_feature
-            .where("id")
-            .equals(uid)
+            .where("[mission+id]")
+            .equals([this.parent.guid, uid])
             .delete();
 
         await this.parent.update({

@@ -30,7 +30,7 @@
         stroke='1'
     />
 </template>
-<script setup lang='ts' >
+<script setup lang='ts'>
 import {
     IconUser,
     IconMessage,
