@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v12.0.0 - 2025-11-13
+
+> [!WARNING]
+> If using the CloudTAK Media-Infra, you must update to v7.0.0 or above to ensure compatibility with this release.
+> If you are not using Media-Infra, no action is required.
+
+- :tada: Greatly improved performance in HLS Media Proxying
+
 ### v11.53.1 - 2025-11-05
 
 - :bug: Pin Swagger Dist to avoid react error
