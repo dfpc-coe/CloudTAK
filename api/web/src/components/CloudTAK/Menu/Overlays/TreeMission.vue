@@ -27,8 +27,6 @@ const props = defineProps<{
 const subscription = ref<Subscription | undefined >(undefined);
 
 onMounted(async () => {
-    subscription.value = await Subscription.from(props.overlay.mode_id || '', {
-        token: localStorage.token,
-    });
+    subscription.value = await Subscription.from(props.overlay.mode_id || '', localStorage.token);
 });
 </script>

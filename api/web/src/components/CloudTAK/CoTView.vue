@@ -920,9 +920,7 @@ const time = ref('relative');
 watch(cot, async () => {
     if (cot.value) {
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-            subscription.value = await Subscription.from(cot.value.origin.mode_id, {
-                token: localStorage.token
-            });
+            subscription.value = await Subscription.from(cot.value.origin.mode_id, localStorage.token);
         } else {
             subscription.value = undefined;
         }
@@ -986,9 +984,7 @@ async function load_cot() {
     }))
 
     if (baseCOT && baseCOT.origin.mode === OriginMode.MISSION && baseCOT.origin.mode_id) {
-        subscription.value = await Subscription.from(baseCOT.origin.mode_id, {
-            token: localStorage.token
-        });
+        subscription.value = await Subscription.from(baseCOT.origin.mode_id, localStorage.token);
     }
 
     if (baseCOT) {
