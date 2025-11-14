@@ -134,7 +134,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick, useTemplateRef } from 
 import { std, stdurl } from '../../../../src/std.ts';
 import StatusDot from './../../util/StatusDot.vue';
 import VideoLeaseSourceType from './VideoLeaseSourceType.vue';
-import type { VideoLeaseResponse } from '../../../types.ts';
+import type { VideoLeaseResponse, VideoLeaseMetadata } from '../../../types.ts';
 import Hls from 'hls.js'
 import { useFloatStore } from '../../../stores/float.ts';
 import type { VideoPane } from '../../../stores/float.ts';
@@ -187,8 +187,8 @@ const player = ref<Hls | undefined>()
 
 // Video streaming data
 const video = ref(floatStore.panes.get(props.uid) as VideoPane);
-const videoLease = ref<VideoLeaseResponse["lease"] | undefined>(); // CloudTAK video lease
-const videoProtocols = ref<VideoLeaseResponse["protocols"] | undefined>(); // Available streaming protocols
+const videoLease = ref<VideoLeaseResponse | undefined>(); // CloudTAK video lease
+const videoProtocols = ref<VideoLeaseMetadata["protocols"] | undefined>(); // Available streaming protocols
 
 // Drag and resize functionality
 const observer = ref<ResizeObserver | undefined>(); // Watches for container resize events
@@ -494,7 +494,7 @@ async function requestLease(): Promise<void> {
             loading.value = false;
         } else if (active.value.leasable) {
             // Stream can be leased - create temporary lease
-            const { lease, protocols } = await std('/api/video/lease', {
+            const lease = await std('/api/video/lease', {
                 method: 'POST',
                 body:  {
                     name: 'Temporary Lease',
@@ -503,6 +503,8 @@ async function requestLease(): Promise<void> {
                     proxy: video.value.config.url // Proxy the external stream
                 }
             }) as VideoLeaseResponse
+
+            const { protocols } = await std(`/api/video/lease/${lease.path}/metadata`) as VideoLeaseMetadata;
 
             videoLease.value = lease;
             videoProtocols.value = protocols;

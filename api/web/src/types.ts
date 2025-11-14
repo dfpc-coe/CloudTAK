@@ -25,9 +25,10 @@ export type Search = paths["/api/search"]["get"]["responses"]["200"]["content"][
 export type SearchSuggest = paths["/api/search/suggest"]["get"]["responses"]["200"]["content"]["application/json"];
 export type SearchForward = paths["/api/search/forward"]["get"]["responses"]["200"]["content"]["application/json"];
 
-export type VideoLease = paths["/api/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]["lease"];
+export type VideoLease = paths["/api/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type VideoLeaseList = paths["/api/video/lease"]["get"]["responses"]["200"]["content"]["application/json"];
-export type VideoLeaseProtocols = paths["/api/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]["protocols"];
+export type VideoLeaseMetadata = paths["/api/video/lease/{:lease}/metadata"]["get"]["responses"]["200"]["content"]["application/json"];
+export type VideoLeaseProtocols = paths["/api/video/lease/{:lease}/metadata"]["get"]["responses"]["200"]["content"]["application/json"]["protocols"];
 export type VideoLeaseResponse = paths["/api/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Subscription = paths["/api/marti/subscription/{:clientuid}"]["get"]["responses"]["200"]["content"]["application/json"];
