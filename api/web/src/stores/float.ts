@@ -74,7 +74,7 @@ export const useFloatStore = defineStore('float', {
 
             this.panes.set(connection.uuid, {
                 uid: connection.uuid,
-                name: connection.name,
+                name: connection.alias,
                 type: PaneType.VIDEO,
                 config: {
                     type: VideoStoreType.CONNECTION,
