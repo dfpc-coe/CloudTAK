@@ -3,6 +3,7 @@ import { Type } from '@sinclair/typebox'
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Projection, Profile_Zoom, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text } from './enums.js';
+import { VideoLease_SourceType} from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
 import { Basemap_Format, Basemap_Scheme, Basemap_Type } from '../lib/enums.js';
@@ -204,6 +205,7 @@ export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     expiration: Type.Union([Type.Null(), Type.String()]),
     channel: Type.Union([Type.Null(), Type.String()]),
     proxy: Type.Union([Type.Null(), Type.String()]),
+    source_type: Type.Enum(VideoLease_SourceType)
 });
 
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {

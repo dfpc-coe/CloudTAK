@@ -355,6 +355,8 @@ async function deleteLease(lease: VideoLease): Promise<void> {
         });
 
         await fetchLeases();
+
+        loading.value.main = false;
     } catch (err) {
         loading.value.main = false;
         throw err;
