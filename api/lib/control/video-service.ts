@@ -490,7 +490,7 @@ export default class VideoServiceControl {
                     if (res.status === 404) {
                         throw new Err(400, null, 'External Video Server reports Video Stream not found');
                     } else if (!res.ok) {
-                        throw new Err(res.status, null, `External Video Server failed stream video - HTTP Error ${res.status}`);
+                        throw new Err(res.status, null, `External Video Server failed stream video - HTTP Error ${res.status}, ${await res.text()}`);
                     }
                 } else {
                     const res = await fetch(url, {
