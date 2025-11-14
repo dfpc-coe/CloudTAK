@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
         plugins: [
             vue(),
             VitePWA({
-                registerType: 'autoUpdate',
+                registerType: 'prompt',
                 manifest: {
                     name: 'CloudTAK',
                     short_name: 'CloudTAK',
@@ -30,7 +30,26 @@ export default defineConfig(({ mode }) => {
                 workbox: {
                     maximumFileSizeToCacheInBytes: 3000000,
                     clientsClaim: true,
-                    skipWaiting: true
+                    skipWaiting: true,
+                    // Clean up outdated caches automatically
+                    cleanupOutdatedCaches: true,
+                    // Ensure all navigation requests go through service worker
+                    navigationPreload: true,
+                    // Runtime caching strategy for API calls
+                    runtimeCaching: [
+                        {
+                            urlPattern: /^https:\/\/.*\/api\/.*/i,
+                            handler: 'NetworkFirst',
+                            options: {
+                                cacheName: 'api-cache',
+                                expiration: {
+                                    maxEntries: 50,
+                                    maxAgeSeconds: 60 * 60 // 1 hour
+                                },
+                                networkTimeoutSeconds: 10
+                            }
+                        }
+                    ]
                 }
             })
         ],
