@@ -15250,340 +15250,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/ldap/channel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Channels by proxy */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    agency?: number;
-                    /** @description No Description */
-                    filter: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                rdn: string;
-                                name: string;
-                                description: unknown;
-                            }[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/ldap/user": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create a machine user */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name: string;
-                        description: string;
-                        agency_id: number | null;
-                        channels: {
-                            id: number;
-                            access: "write" | "read" | "duplex";
-                        }[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            integrationId?: number;
-                            auth: {
-                                ca?: string[];
-                                /** @description PEM formatted client certificate */
-                                cert: string;
-                                /** @description PEM formatted private key */
-                                key: string;
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/ldap/user/{:email}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Reset the password on an existing user and regen a certificate */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":email": string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            integrationId?: number;
-                            auth: {
-                                ca?: string[];
-                                /** @description PEM formatted client certificate */
-                                cert: string;
-                                /** @description PEM formatted private key */
-                                key: string;
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/iconset": {
         parameters: {
             query?: never;
@@ -16984,6 +16650,340 @@ export interface paths {
             };
         };
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ldap/channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Channels by proxy */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    agency?: number;
+                    /** @description No Description */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                rdn: string;
+                                name: string;
+                                description: unknown;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ldap/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a machine user */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        description: string;
+                        agency_id: number | null;
+                        channels: {
+                            id: number;
+                            access: "write" | "read" | "duplex";
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            integrationId?: number;
+                            auth: {
+                                ca?: string[];
+                                /** @description PEM formatted client certificate */
+                                cert: string;
+                                /** @description PEM formatted private key */
+                                key: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ldap/user/{:email}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reset the password on an existing user and regen a certificate */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":email": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            integrationId?: number;
+                            auth: {
+                                ca?: string[];
+                                /** @description PEM formatted client certificate */
+                                cert: string;
+                                /** @description PEM formatted private key */
+                                key: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         post?: never;
         delete?: never;
         options?: never;
@@ -18878,7 +18878,7 @@ export interface paths {
                     "application/json": {
                         /**
                          * Format: date-time
-                         * @default 2025-11-13T22:25:24.925Z
+                         * @default 2025-11-14T06:03:24.171Z
                          */
                         dtg: string;
                         content: string;
@@ -31900,51 +31900,27 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            lease: {
-                                id: number;
-                                name: string;
-                                created: string;
-                                updated: string;
-                                username: string | null;
-                                connection: number | null;
-                                layer: number | null;
-                                source_id: string | null;
-                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
-                                source_model: string;
-                                publish: boolean;
-                                recording: boolean;
-                                ephemeral: boolean;
-                                channel: null | string;
-                                expiration: null | string;
-                                path: string;
-                                stream_user: string | null;
-                                stream_pass: string | null;
-                                read_user: string | null;
-                                read_pass: string | null;
-                                proxy: null | string;
-                            };
-                            protocols: {
-                                rtmp?: {
-                                    name: string;
-                                    url: string;
-                                };
-                                rtsp?: {
-                                    name: string;
-                                    url: string;
-                                };
-                                webrtc?: {
-                                    name: string;
-                                    url: string;
-                                };
-                                hls?: {
-                                    name: string;
-                                    url: string;
-                                };
-                                srt?: {
-                                    name: string;
-                                    url: string;
-                                };
-                            };
+                            id: number;
+                            name: string;
+                            created: string;
+                            updated: string;
+                            username: string | null;
+                            connection: number | null;
+                            layer: number | null;
+                            source_id: string | null;
+                            source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                            source_model: string;
+                            publish: boolean;
+                            recording: boolean;
+                            ephemeral: boolean;
+                            channel: null | string;
+                            expiration: null | string;
+                            path: string;
+                            stream_user: string | null;
+                            stream_pass: string | null;
+                            read_user: string | null;
+                            read_pass: string | null;
+                            proxy: null | string;
                         };
                     };
                 };
@@ -32043,73 +32019,27 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            lease: {
-                                id: number;
-                                name: string;
-                                created: string;
-                                updated: string;
-                                username: string | null;
-                                connection: number | null;
-                                layer: number | null;
-                                source_id: string | null;
-                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
-                                source_model: string;
-                                publish: boolean;
-                                recording: boolean;
-                                ephemeral: boolean;
-                                channel: null | string;
-                                expiration: null | string;
-                                path: string;
-                                stream_user: string | null;
-                                stream_pass: string | null;
-                                read_user: string | null;
-                                read_pass: string | null;
-                                proxy: null | string;
-                            };
-                            config?: {
-                                name: string;
-                                source: string;
-                                record: boolean;
-                            };
-                            path?: {
-                                name: string;
-                                confName: string;
-                                source: {
-                                    id: string;
-                                    type: string;
-                                } | null;
-                                ready: boolean;
-                                readyTime: string | null;
-                                tracks: string[];
-                                bytesReceived: number;
-                                bytesSent: number;
-                                readers: {
-                                    type: string;
-                                    id: string;
-                                }[];
-                            };
-                            protocols: {
-                                rtmp?: {
-                                    name: string;
-                                    url: string;
-                                };
-                                rtsp?: {
-                                    name: string;
-                                    url: string;
-                                };
-                                webrtc?: {
-                                    name: string;
-                                    url: string;
-                                };
-                                hls?: {
-                                    name: string;
-                                    url: string;
-                                };
-                                srt?: {
-                                    name: string;
-                                    url: string;
-                                };
-                            };
+                            id: number;
+                            name: string;
+                            created: string;
+                            updated: string;
+                            username: string | null;
+                            connection: number | null;
+                            layer: number | null;
+                            source_id: string | null;
+                            source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                            source_model: string;
+                            publish: boolean;
+                            recording: boolean;
+                            ephemeral: boolean;
+                            channel: null | string;
+                            expiration: null | string;
+                            path: string;
+                            stream_user: string | null;
+                            stream_pass: string | null;
+                            read_user: string | null;
+                            read_pass: string | null;
+                            proxy: null | string;
                         };
                     };
                 };
@@ -32312,28 +32242,137 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            lease: {
-                                id: number;
+                            id: number;
+                            name: string;
+                            created: string;
+                            updated: string;
+                            username: string | null;
+                            connection: number | null;
+                            layer: number | null;
+                            source_id: string | null;
+                            source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                            source_model: string;
+                            publish: boolean;
+                            recording: boolean;
+                            ephemeral: boolean;
+                            channel: null | string;
+                            expiration: null | string;
+                            path: string;
+                            stream_user: string | null;
+                            stream_pass: string | null;
+                            read_user: string | null;
+                            read_pass: string | null;
+                            proxy: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/video/lease/{:lease}/metadata": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single Video Lease Metadata */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":lease": number | string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            path?: {
                                 name: string;
-                                created: string;
-                                updated: string;
-                                username: string | null;
-                                connection: number | null;
-                                layer: number | null;
-                                source_id: string | null;
-                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
-                                source_model: string;
-                                publish: boolean;
-                                recording: boolean;
-                                ephemeral: boolean;
-                                channel: null | string;
-                                expiration: null | string;
-                                path: string;
-                                stream_user: string | null;
-                                stream_pass: string | null;
-                                read_user: string | null;
-                                read_pass: string | null;
-                                proxy: null | string;
+                                confName: string;
+                                source: {
+                                    id: string;
+                                    type: string;
+                                } | null;
+                                ready: boolean;
+                                readyTime: string | null;
+                                tracks: string[];
+                                bytesReceived: number;
+                                bytesSent: number;
+                                readers: {
+                                    type: string;
+                                    id: string;
+                                }[];
                             };
                             protocols: {
                                 rtmp?: {
@@ -32422,6 +32461,12 @@ export interface paths {
                 };
             };
         };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/video/service": {
@@ -32591,11 +32636,6 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            config: {
-                                name: string;
-                                source: string;
-                                record: boolean;
-                            };
                             path: {
                                 name: string;
                                 confName: string;

@@ -292,8 +292,43 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             lease: Type.Union([Type.Integer(), Type.String()])
         }),
+        res: VideoLeaseResponse,
+    }, async (req, res) => {
+        try {
+            const auth = await Auth.is_auth(config, req, {
+                resources: [ { access: AuthResourceAccess.LEASE, id: undefined } ]
+            })
+
+            let lease: Static<typeof VideoLeaseResponse>;
+            if (auth instanceof AuthResource) {
+                lease = await videoControl.from(req.params.lease, {
+                    admin: true
+                });
+            } else if (auth instanceof AuthUser) {
+                const user = auth as AuthUser;
+
+                lease = await videoControl.from(req.params.lease, {
+                    username: user.email,
+                    admin: user.access === AuthUserAccess.ADMIN
+                });
+            } else {
+                throw new Err(401, null, 'Unauthorized');
+            }
+
+            res.json(lease);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/video/lease/:lease/metadata', {
+        name: 'Get Lease Metadata',
+        group: 'VideoLease',
+        description: 'Get a single Video Lease Metadata',
+        params: Type.Object({
+            lease: Type.Union([Type.Integer(), Type.String()])
+        }),
         res: Type.Object({
-            lease: VideoLeaseResponse,
             path: Type.Optional(PathListItem),
             protocols: Protocols
         })
@@ -323,13 +358,12 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 res.json({
-                    lease,
                     protocols,
                     path: await videoControl.path(lease.path),
                 });
             } catch (err) {
                 console.error(err);
-                res.json({ lease, protocols });
+                res.json({ protocols });
             }
         } catch (err) {
              Err.respond(err, res);
@@ -375,10 +409,7 @@ export default async function router(schema: Schema, config: Config) {
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             proxy: Type.Optional(Type.String())
         }),
-        res: Type.Object({
-            lease: VideoLeaseResponse,
-            protocols: Protocols
-        })
+        res: VideoLeaseResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -405,10 +436,7 @@ export default async function router(schema: Schema, config: Config) {
                 proxy: req.body.proxy
             })
 
-            res.json({
-                lease,
-                protocols: await videoControl.protocols(lease)
-            });
+            res.json(lease);
         } catch (err) {
              Err.respond(err, res);
         }
@@ -445,10 +473,7 @@ export default async function router(schema: Schema, config: Config) {
             }),
             proxy: Type.Optional(Type.String())
         }),
-        res: Type.Object({
-            lease: VideoLeaseResponse,
-            protocols: Protocols
-        })
+        res: VideoLeaseResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -475,10 +500,7 @@ export default async function router(schema: Schema, config: Config) {
                 admin: user.access === AuthUserAccess.ADMIN
             });
 
-            res.json({
-                lease,
-                protocols: await videoControl.protocols(lease)
-            });
+            res.json(lease);
         } catch (err) {
              Err.respond(err, res);
         }
