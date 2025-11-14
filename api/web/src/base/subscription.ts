@@ -131,11 +131,19 @@ export default class Subscription {
     /**
      * Loads an existing Subscription from the local DB an refreshes it,
      * or creates a new Subscription from the server if it does not exist locally.
+     *
+     * @param guid - The unique identifier for the mission
+     * @param opts - Options for loading the subscription
+     * @param opts.token - The CloudTAK Authentication token for API calls
+     * @param opts.reload - Whether to reload the mission from the local DB
+     * @param opts.missiontoken - The mission token for authentication
+     * @param opts.subscribed - Whether the user is subscribed to the mission
      */
     static async load(
         guid: string,
         opts: {
             token: string
+            reload?: boolean,
             missiontoken?: string,
             subscribed?: boolean
         }
@@ -143,7 +151,10 @@ export default class Subscription {
         const exists = await this.from(guid, opts.token);
 
         if (exists) {
-            await exists.refresh();
+            if (opts.reload !== false) {
+                await exists.refresh();
+            }
+
             return exists;
         } else {
             if (!opts.subscribed) opts.subscribed = false;
