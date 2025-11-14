@@ -83,7 +83,7 @@
             </div>
             <template v-else-if='error'>
                 <div class='error-state d-flex flex-column align-items-center justify-content-center text-center gap-3 h-100 w-100'>
-                    <div class="row g-2 w-100">
+                    <div class='row g-2 w-100'>
                         <TablerAlert
                             class='error-alert w-100'
                             title='Video Error'

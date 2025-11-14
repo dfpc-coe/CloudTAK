@@ -3,11 +3,11 @@
         <div
             v-if='notification'
             class='toast-container position-fixed cursor-pointer'
-            @click='navigateTo'
             :style='`
                 bottom: ${mapStore.toastOffset.y}px;
                 right: ${mapStore.toastOffset.x}px;
             `'
+            @click='navigateTo'
         >
             <div
                 class='toast show'

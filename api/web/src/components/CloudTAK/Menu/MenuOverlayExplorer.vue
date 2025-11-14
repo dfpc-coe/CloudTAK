@@ -25,9 +25,9 @@
 
             <div class='col-12 px-2 pb-2'>
                 <TablerInput
+                    v-model='paging.filter'
                     icon='search'
                     placeholder='Search Overlays...'
-                    v-model='paging.filter'
                 />
             </div>
 

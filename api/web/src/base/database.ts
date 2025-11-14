@@ -73,9 +73,9 @@ export const db = new Dexie('CloudTAK') as DatabaseType;
 
 db.version(1).stores({
     icon: 'name',
-    video: 'id, created, updated, lease, username',
+    video: 'id, username',
     notification: 'id, type, name, body, url, created, toast, read',
-    subscription: 'guid, name, meta, role, token, subscribed, dirty',
-    subscription_log: 'id, dtf, created, mission, content, creatorUid, contentHashes, keywords, missionNames, servertime',
-    subscription_feature: 'id, path, mission, properties, geometry',
+    subscription: 'guid, name',
+    subscription_log: 'id, [mission+id]',
+    subscription_feature: 'id, mission, [mission+id]',
 });
