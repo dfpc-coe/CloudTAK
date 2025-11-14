@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.0.1 - 2025-11-13
+
+- :bug: Fix interconnected service loop that could occur, resulting in slow API responses
+
 ### v12.0.0 - 2025-11-13
 
 > [!WARNING]
