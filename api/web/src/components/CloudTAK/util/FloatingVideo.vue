@@ -72,7 +72,8 @@
         </div>
         <div
             class='modal-body'
-            :style='`height: calc(100% - 40px)`'
+            :class='{ "modal-body--error": !!error }'
+            :style='`height: calc(100% - 50px)`'
         >
             <div
                 v-if='loading'
@@ -81,28 +82,33 @@
                 <TablerLoading label='Loading Stream' />
             </div>
             <template v-else-if='error'>
-                <TablerAlert
-                    title='Video Error'
-                    :compact='true'
-                    :err='error'
-                />
-
-                <div class='row g-2 col-12 ps-2 pt-4'>
-                    <div class='col-md-6'>
-                        <TablerButton
-                            class='w-100'
-                            @click='$emit("close")'
-                        >
-                            Close Player
-                        </TablerButton>
+                <div class='error-state d-flex flex-column align-items-center justify-content-center text-center gap-3 h-100 w-100'>
+                    <div class="row g-2 w-100">
+                        <TablerAlert
+                            class='error-alert w-100'
+                            title='Video Error'
+                            :compact='true'
+                            :err='error'
+                        />
                     </div>
-                    <div class='col-md-6'>
-                        <TablerButton
-                            class='w-100'
-                            @click='requestLease'
-                        >
-                            Retry
-                        </TablerButton>
+
+                    <div class='row g-2 w-100 error-actions'>
+                        <div class='col-md-6'>
+                            <TablerButton
+                                class='w-100'
+                                @click='$emit("close")'
+                            >
+                                Close Player
+                            </TablerButton>
+                        </div>
+                        <div class='col-md-6'>
+                            <TablerButton
+                                class='w-100'
+                                @click='requestLease'
+                            >
+                                Retry
+                            </TablerButton>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -542,6 +548,22 @@ async function requestLease(): Promise<void> {
 
 .video-container {
     container-type: inline-size;
+}
+
+.modal-body--error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-state {
+    padding: 1rem;
+    max-width: 520px;
+}
+
+.error-alert,
+.error-actions {
+    max-width: 480px;
 }
 
 @container (max-width: 500px) {
