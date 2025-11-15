@@ -430,7 +430,7 @@ export default {
                                 ':',
                                 cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
                                 '@',
-                                cf.getAtt('DBInstance', 'Endpoint.Address'),
+                                cf.getAtt('DBCluster', 'Endpoint.Address'),
                                 ':5432/tak_ps_etl?sslmode=require'
                             ])
                         },

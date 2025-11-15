@@ -12,6 +12,19 @@
 
 ### Pending Release
 
+### v12.0.2 - 2025-11-13
+
+> [!WARNING]
+> This release updates the underlying database to AWS Aurora-Postgres
+> It automatically updates the POSTGRES endpoints to use the new cluster endpoints
+> but does not replace/remove the old RDS instances. The next versioned release
+> will remove the old RDS instances.
+>
+> A manual database migration is required if using our provided CloudFormation templates
+> https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Migrating.html
+
+- :tada: Migrate to AWS Aurora-Postgres for improved performance and scalability
+
 ### v12.0.1 - 2025-11-13
 
 - :bug: Fix interconnected service loop that could occur, resulting in slow API responses
