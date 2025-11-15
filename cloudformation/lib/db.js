@@ -8,7 +8,8 @@ export default {
             Description: 'Database size to create',
             AllowedValues: [
                 'db.t4g.micro',
-                'db.m6g.large'
+                'db.t4g.small',
+                'db.t4g.medium'
             ]
         }
     },
@@ -53,6 +54,38 @@ export default {
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole'])
                 ],
                 Path: '/'
+            }
+        },
+        DBCluster: {
+            Type: 'AWS::RDS::DBCluster',
+            Properties: {
+                Engine: 'aurora-postgresql',
+                EngineVersion: '17.5',
+                EngineMode: 'provisioned',
+                DatabaseName: 'tak_ps_etl',
+                Port: 5432,
+                NetworkType: 'DUAL',
+                DBClusterIdentifier: cf.stackName,
+                MasterUsername: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
+                MasterUserPassword: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
+                DBSubnetGroupName: cf.ref('DBSubnet'),
+                PreferredMaintenanceWindow: 'Sun:23:00-Sun:23:30',
+                PreferredBackupWindow: '22:00-23:00',
+                PerformanceInsightsEnabled: true,
+                PerformanceInsightsKmsKeyId: cf.ref('KMS'),
+                PerformanceInsightsRetentionPeriod: 7,
+                VpcSecurityGroupIds: [cf.ref('DBVPCSecurityGroup')],
+                StorageEncrypted: true,
+                DeletionProtection: true,
+                CopyTagsToSnapshot: true
+            }
+        },
+        DBClusterInstanceA: {
+            Type: 'AWS::RDS::DBInstance',
+            Properties: {
+                DBClusterIdentifier: cf.ref('DBCluster'),
+                DBInstanceClass: cf.ref('DatabaseType'),
+                Engine: 'aurora-postgresql'
             }
         },
         DBInstance: {
@@ -124,6 +157,18 @@ export default {
         }
     },
     Outputs: {
+        Cluster: {
+            Description: 'Postgres Aurora Connection String',
+            Value: cf.join([
+                'postgresql://',
+                cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
+                ':',
+                cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
+                '@',
+                cf.getAtt('DBCluster', 'Endpoint.Address'),
+                ':5432/tak_ps_etl'
+            ])
+        },
         DB: {
             Description: 'Postgres Connection String',
             Value: cf.join([

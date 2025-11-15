@@ -1,11 +1,11 @@
 <template>
     <div
         ref='container'
-        class='position-absolute bg-dark rounded border resizable-content text-white'
+        class='position-absolute bg-dark rounded border resizable-content text-white video-container'
     >
         <div
-            style='height: 40px;'
-            class='d-flex align-items-center px-2 py-2'
+            style='height: 50px;'
+            class='d-flex align-items-center px-2 py-2 border-bottom border-secondary'
         >
             <div
                 ref='drag-handle'
@@ -33,7 +33,7 @@
 
             <div class='mx-2'>
                 <div
-                    class='text-sm'
+                    class='text-sm text-truncate'
                     v-text='title'
                 />
                 <div
@@ -44,14 +44,17 @@
             </div>
 
             <div class='btn-list ms-auto'>
-                <span v-if='active && active.metadata'>
+                <span
+                    v-if='active && active.metadata'
+                    class='watchers-info'
+                >
                     <IconUsersGroup
                         :size='24'
                         stroke='1'
                     />
                     <span v-text='active.metadata.watchers + 1' />
                     <span
-                        class='ms-1'
+                        class='ms-1 watcher-text'
                         v-text='active.metadata.watchers + 1 > 1 ? "Watchers" : "Watcher"'
                     />
                 </span>
@@ -69,6 +72,7 @@
         </div>
         <div
             class='modal-body'
+            :class='{ "modal-body--error": !!error }'
             :style='`height: calc(100% - 40px)`'
         >
             <div
@@ -78,28 +82,33 @@
                 <TablerLoading label='Loading Stream' />
             </div>
             <template v-else-if='error'>
-                <TablerAlert
-                    title='Video Error'
-                    :compact='true'
-                    :err='error'
-                />
-
-                <div class='row g-2 col-12 ps-2 pt-4'>
-                    <div class='col-md-6'>
-                        <TablerButton
-                            class='w-100'
-                            @click='$emit("close")'
-                        >
-                            Close Player
-                        </TablerButton>
+                <div class='error-state d-flex flex-column align-items-center justify-content-center text-center gap-3 h-100 w-100'>
+                    <div class='row g-2 w-100'>
+                        <TablerAlert
+                            class='error-alert w-100'
+                            title='Video Error'
+                            :compact='true'
+                            :err='error'
+                        />
                     </div>
-                    <div class='col-md-6'>
-                        <TablerButton
-                            class='w-100'
-                            @click='requestLease'
-                        >
-                            Retry
-                        </TablerButton>
+
+                    <div class='row g-2 w-100 error-actions'>
+                        <div class='col-md-6'>
+                            <TablerButton
+                                class='w-100'
+                                @click='$emit("close")'
+                            >
+                                Close Player
+                            </TablerButton>
+                        </div>
+                        <div class='col-md-6'>
+                            <TablerButton
+                                class='w-100'
+                                @click='requestLease'
+                            >
+                                Retry
+                            </TablerButton>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -381,7 +390,6 @@ async function createPlayer(): Promise<void> {
                 return;
             }
 
-            // Handle fatal errors with appropriate recovery strategies
             switch (data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
                     console.log("Fatal network error:", data);
@@ -391,10 +399,8 @@ async function createPlayer(): Promise<void> {
                     console.log("Fatal media error:", data);
                     if (player.value) {
                         try {
-                            // Attempt built-in media error recovery
                             player.value.recoverMediaError();
                         } catch {
-                            // Fall back to full retry if recovery fails
                             handleStreamError(data.error);
                         }
                     } else {
@@ -446,12 +452,11 @@ function handleStreamError(streamError: Error): void {
         
         // Retry after delay
         setTimeout(() => {
-            // Clean up existing player before retry
             if (player.value) {
                 player.value.destroy();
                 player.value = undefined;
             }
-            // Attempt to recreate player
+
             createPlayer();
         }, delay);
     } else {
@@ -461,8 +466,9 @@ function handleStreamError(streamError: Error): void {
             player.value.destroy();
             player.value = undefined;
         }
+
         error.value = streamError;
-        retryCount.value = 0; // Reset for potential future attempts
+        retryCount.value = 0;
     }
 }
 
@@ -471,7 +477,6 @@ function handleStreamError(streamError: Error): void {
  * Handles both existing active streams and creation of new temporary leases
  */
 async function requestLease(): Promise<void> {
-    // Validate prerequisites
     if (!video.value) {
         error.value = new Error('Video URL could not be loaded');
         return;
@@ -530,12 +535,10 @@ async function requestLease(): Promise<void> {
 </script>
 
 <style>
-/* Drag functionality styling */
 .dragging {
     cursor: move !important;
 }
 
-/* Resizable container with minimum dimensions */
 .resizable-content {
     min-height: 300px;
     min-width: 400px;
@@ -543,18 +546,46 @@ async function requestLease(): Promise<void> {
     overflow: auto;
 }
 
-/* Hide inappropriate controls for live streaming */
-/* Timeline/seek bar - not useful for live streams */
+.video-container {
+    container-type: inline-size;
+}
+
+.modal-body--error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-state {
+    padding: 1rem;
+    max-width: 520px;
+}
+
+.error-alert,
+.error-actions {
+    max-width: 480px;
+}
+
+@container (max-width: 500px) {
+    .watchers-info .watcher-text {
+        display: none;
+    }
+}
+
+@container (max-width: 450px) {
+    .watchers-info {
+        display: none !important;
+    }
+}
+
 .live-video::-webkit-media-controls-timeline {
     display: none;
 }
 
-/* Current time display - not meaningful for live streams */
 .live-video::-webkit-media-controls-current-time-display {
     display: none;
 }
 
-/* Remaining time display - not applicable to live streams */
 .live-video::-webkit-media-controls-time-remaining-display {
     display: none;
 }
