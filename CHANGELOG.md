@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v12.0.3 - 2025-11-13
+
+> [!WARNING]
+> If using the provided CloudFormation templates, update to 12.0.2 first and follow the deploy
+> notes there before updating to 12.0.3
+>
+- :tada: Remove old single instance RDS instance - note you will have to remove delete projection and remove manually from console, a snapshot is recommended before deletion.
+
 ### v12.0.2 - 2025-11-13
 
 > [!WARNING]
