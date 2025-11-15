@@ -28,14 +28,6 @@ export default {
                 KmsKeyId: cf.ref('KMS')
             }
         },
-        DBMasterSecretAttachment: {
-            Type: 'AWS::SecretsManager::SecretTargetAttachment',
-            Properties: {
-                SecretId: cf.ref('DBMasterSecret'),
-                TargetId: cf.ref('DBInstance'),
-                TargetType: 'AWS::RDS::DBInstance'
-            }
-        },
         DBMonitoringRole: {
             Type: 'AWS::IAM::Role',
             Properties: {
@@ -88,38 +80,6 @@ export default {
                 Engine: 'aurora-postgresql'
             }
         },
-        DBInstance: {
-            Type: 'AWS::RDS::DBInstance',
-            DependsOn: ['DBMasterSecret'],
-            Properties: {
-                Engine: 'postgres',
-                EngineVersion: '17.6',
-                AllowMajorVersionUpgrade: false,
-                DBName: 'tak_ps_etl',
-                CopyTagsToSnapshot: true,
-                DBInstanceIdentifier: cf.stackName,
-                MonitoringInterval: 60,
-                MonitoringRoleArn: cf.getAtt('DBMonitoringRole', 'Arn'),
-                KmsKeyId: cf.ref('KMS'),
-                StorageEncrypted: true,
-                MasterUsername: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
-                MasterUserPassword: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
-                PreferredMaintenanceWindow: 'Sun:23:00-Sun:23:30',
-                PreferredBackupWindow: '22:00-23:00',
-                EnablePerformanceInsights: true,
-                PerformanceInsightsKMSKeyId: cf.ref('KMS'),
-                PerformanceInsightsRetentionPeriod: 7,
-                AllocatedStorage: 200,
-                MaxAllocatedStorage: 200,
-                BackupRetentionPeriod: 10,
-                StorageType: 'gp2',
-                DBInstanceClass: cf.ref('DatabaseType'),
-                VPCSecurityGroups: [cf.ref('DBVPCSecurityGroup')],
-                DBSubnetGroupName: cf.ref('DBSubnet'),
-                PubliclyAccessible: false,
-                DeletionProtection: true
-            }
-        },
         DBSubnet: {
             Type: 'AWS::RDS::DBSubnetGroup',
             Properties: {
@@ -157,7 +117,7 @@ export default {
         }
     },
     Outputs: {
-        Cluster: {
+        DB: {
             Description: 'Postgres Aurora Connection String',
             Value: cf.join([
                 'postgresql://',
@@ -166,18 +126,6 @@ export default {
                 cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
                 '@',
                 cf.getAtt('DBCluster', 'Endpoint.Address'),
-                ':5432/tak_ps_etl'
-            ])
-        },
-        DB: {
-            Description: 'Postgres Connection String',
-            Value: cf.join([
-                'postgresql://',
-                cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
-                ':',
-                cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
-                '@',
-                cf.getAtt('DBInstance', 'Endpoint.Address'),
                 ':5432/tak_ps_etl'
             ])
         }
