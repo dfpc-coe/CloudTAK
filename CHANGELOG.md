@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.1.0 - 2025-11-14
+
+- :rocket: Detect if coordinates are entered in SearchBox and allow selection
+
 ### v12.0.3 - 2025-11-13
 
 > [!WARNING]
