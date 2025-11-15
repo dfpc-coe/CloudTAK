@@ -51,7 +51,7 @@ export default cf.merge(
     RDSAlarms({
         prefix: 'Batch',
         topic: cf.ref('HighUrgencyAlarmTopic'),
-        instance: cf.ref('DBInstance')
+        instance: cf.ref('DBClusterInstanceA')
 
     })
 );
