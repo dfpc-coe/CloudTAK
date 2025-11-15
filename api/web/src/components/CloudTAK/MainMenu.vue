@@ -46,29 +46,28 @@
                         <div class='modal-title'>
                             Main Menu
                         </div>
-                        <div class='ms-auto'>
-                            <template v-if='!compact'>
-                                <TablerIconButton
-                                    v-if='preferredLayout !== "list"'
-                                    title='List View'
-                                    @click='setPreferredLayout("list")'
-                                >
-                                    <IconLayoutList
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
-                                <TablerIconButton
-                                    v-if='preferredLayout !== "tiles"'
-                                    title='Tile View'
-                                    @click='setPreferredLayout("tiles")'
-                                >
-                                    <IconLayoutGrid
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
-                            </template>
+
+                        <div class='ms-auto d-flex align-items-center menu-layout-toggle'>
+                            <TablerIconButton
+                                v-if='preferredLayout !== "list"'
+                                title='List View'
+                                @click='setPreferredLayout("list")'
+                            >
+                                <IconLayoutList
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                            <TablerIconButton
+                                v-if='preferredLayout !== "tiles"'
+                                title='Tile View'
+                                @click='setPreferredLayout("tiles")'
+                            >
+                                <IconLayoutGrid
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
                         </div>
                     </div>
                 </div>
@@ -82,68 +81,27 @@
                     >
                         <TablerInput
                             v-model='menuFilter'
-                            :autofocus='true'
                             placeholder='Search...'
+                            :autofocus='true'
                             icon='search'
+                            class='mb-0'
                         />
                     </div>
                     <template v-if='menuLayout === "list"'>
-                        <div
-                            v-if='filteredMenuItems.length'
-                            class='mx-2'
-                        >
-                            <div
+                        <template v-if='filteredMenuItems.length'>
+                            <MenuItemCard
                                 v-for='item in filteredMenuItems'
                                 :key='item.key'
-                                role='menuitem'
-                                :tabindex='compact ? undefined : 0'
-                                class='cursor-pointer col-12 d-flex align-items-center menu-entry'
-                                :class='{
-                                    "py-2 px-3 mb-1 hover menu-entry-card": !compact,
-                                    "py-1 px-2 hover-button": compact,
-                                    "position-relative": compact && item.adminBadge
-                                }'
-                                @click='router.push(item.route)'
-                                @keyup.enter='router.push(item.route)'
-                            >
-                                <component
-                                    :is='item.icon'
-                                    v-tooltip='{
-                                        content: item.tooltip,
-                                        placement: "left",
-                                    }'
-                                    :tabindex='compact ? 0 : undefined'
-                                    :title='item.tooltip'
-                                    class='menu-entry-icon'
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <span
-                                    v-if='compact && item.adminBadge'
-                                    class='position-absolute badge bg-blue text-white'
-                                    style='top: 5px; right: 5px; font-size: 10px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%;'
-                                >A</span>
-                                <div
-                                    v-if='!compact'
-                                    class='menu-entry-content'
-                                >
-                                    <div
-                                        class='menu-entry-label'
-                                        v-text='item.label'
-                                    />
-                                    <div
-                                        v-if='item.description'
-                                        class='menu-entry-description'
-                                        v-text='item.description'
-                                    />
-                                </div>
-                                <span
-                                    v-if='!compact && item.adminBadge'
-                                    class='badge border border-blue bg-blue text-white ms-auto'
-                                    v-text='item.adminBadge'
-                                />
-                            </div>
-                        </div>
+                                :icon='item.icon'
+                                :label='item.label'
+                                :description='item.description'
+                                :tooltip='item.tooltip'
+                                :badge='item.adminBadge'
+                                layout='list'
+                                :compact='compact'
+                                @select='router.push(item.route)'
+                            />
+                        </template>
                         <TablerNone
                             v-else
                             label='No menu items match your search'
@@ -156,35 +114,18 @@
                             v-if='filteredMenuItems.length'
                             class='menu-tiles px-3 py-3'
                         >
-                            <div
+                            <MenuItemCard
                                 v-for='item in filteredMenuItems'
                                 :key='`tile-${item.key}`'
-                                class='menu-tile text-white cursor-pointer user-select-none'
-                                role='menuitem'
-                                tabindex='0'
-                                @click='router.push(item.route)'
-                                @keyup.enter='router.push(item.route)'
-                            >
-                                <component
-                                    :is='item.icon'
-                                    :size='36'
-                                    stroke='1'
-                                />
-                                <div
-                                    class='tile-label mt-2'
-                                    v-text='item.label'
-                                />
-                                <div
-                                    v-if='item.description'
-                                    class='tile-description'
-                                    v-text='item.description'
-                                />
-                                <span
-                                    v-if='item.adminBadge'
-                                    class='badge border border-blue bg-blue text-white mt-2'
-                                    v-text='item.adminBadge'
-                                />
-                            </div>
+                                :icon='item.icon'
+                                :label='item.label'
+                                :description='item.description'
+                                :tooltip='item.tooltip'
+                                :badge='item.adminBadge'
+                                layout='tiles'
+                                :compact='false'
+                                @select='router.push(item.route)'
+                            />
                         </div>
                         <TablerNone
                             v-else
@@ -356,6 +297,7 @@ import {
 import { useMapStore } from '../../stores/map.ts';
 import { useBrandStore } from '../../stores/brand.ts';
 import { useRouter, useRoute } from 'vue-router';
+import MenuItemCard from './Menu/MenuItemCard.vue';
 const route = useRoute();
 const router = useRouter();
 
@@ -393,7 +335,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Your Features',
         route: '/menu/features',
         tooltip: 'Your Features',
-        description: 'Browse and manage your saved features.',
+        description: 'Manage saved features',
         icon: IconMapPin,
     },
     {
@@ -401,7 +343,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Overlays',
         route: '/menu/overlays',
         tooltip: 'Overlays',
-        description: 'Toggle and configure mission overlays.',
+        description: 'Toggle and configure data overlays',
         icon: IconBoxMultiple,
     },
     {
@@ -409,7 +351,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Contacts',
         route: '/menu/contacts',
         tooltip: 'Contacts',
-        description: 'Manage and search for contacts.',
+        description: 'Manage and search for contacts',
         icon: IconUsers,
     },
     {
@@ -417,7 +359,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'BaseMaps',
         route: '/menu/basemaps',
         tooltip: 'Basemaps',
-        description: 'Switch between available basemaps.',
+        description: 'Switch between available basemaps',
         icon: IconMap,
     },
     {
@@ -425,7 +367,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Data Sync',
         route: '/menu/missions',
         tooltip: 'Data Sync',
-        description: 'Manage mission data synchronizations.',
+        description: 'Real-Time Datasets',
         icon: IconAmbulance,
     },
     {
@@ -433,7 +375,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Data Package',
         route: '/menu/packages',
         tooltip: 'Data Packages',
-        description: 'Create and share Data Packages.',
+        description: 'Create and share Data Packages',
         icon: IconPackages,
     },
     {
@@ -441,7 +383,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Channels',
         route: '/menu/channels',
         tooltip: 'Channels',
-        description: 'Join and manage Data Channels.',
+        description: 'Join and manage Data Channels',
         icon: IconAffiliate,
     },
     {
@@ -449,7 +391,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Videos',
         route: '/menu/videos',
         tooltip: 'Videos',
-        description: 'Access live and recorded video feeds.',
+        description: 'Access live and recorded video feeds',
         icon: IconVideo,
     },
     {
@@ -457,7 +399,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Chats',
         route: '/menu/chats',
         tooltip: 'Chats',
-        description: 'Open chat threads and history.',
+        description: 'Open chat threads and history',
         icon: IconMessage,
     },
     {
@@ -465,7 +407,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Routes',
         route: '/menu/routes',
         tooltip: 'Routes',
-        description: 'Plan and manage route overlays.',
+        description: 'Plan and manage route overlays',
         icon: IconRoute,
     },
     {
@@ -473,7 +415,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Uploaded Files',
         route: '/menu/files',
         tooltip: 'Your Files',
-        description: 'Browse files you have uploaded.',
+        description: 'Browse files you have uploaded',
         icon: IconFiles,
     },
     {
@@ -481,7 +423,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Imports',
         route: '/menu/imports',
         tooltip: 'Imports',
-        description: 'Review and manage data imports.',
+        description: 'Review and manage data imports',
         icon: IconFileImport,
     },
     {
@@ -489,7 +431,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Iconsets',
         route: '/menu/iconsets',
         tooltip: 'Iconsets',
-        description: 'Customize icon collections.',
+        description: 'Customize Icons',
         icon: IconPhoto,
     },
     {
@@ -497,7 +439,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Connections',
         route: '/menu/connections',
         tooltip: 'Connections (Admin)',
-        description: 'Manage Connection Integrations',
+        description: 'Manage Integrations',
         icon: IconNetwork,
         adminBadge: 'Admin',
         requiresAgencyAdmin: true,
@@ -507,7 +449,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'COT Debugger',
         route: '/menu/debugger',
         tooltip: 'Debugger (Admin)',
-        description: 'Inspect and debug COT traffic.',
+        description: 'Inspect and debug COT traffic',
         icon: IconBug,
         adminBadge: 'Admin',
         requiresSystemAdmin: true,
@@ -706,82 +648,10 @@ function logout() {
    flex-grow: 1;
 }
 
-.menu-layout-toggle .btn-active {
-    background-color: rgba(255, 255, 255, 0.18);
-    border-color: rgba(255, 255, 255, 0.35);
-}
-
 .menu-tiles {
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-}
-
-.menu-tile {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    background-color: rgba(0, 0, 0, 0.35);
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.menu-tile:hover,
-.menu-tile:focus {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-}
-
-.tile-label {
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.tile-description {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.78);
-}
-
-.menu-entry {
-    gap: 0.75rem;
-}
-
-.menu-entry-card {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    background-color: rgba(0, 0, 0, 0.35);
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.menu-entry-card:hover,
-.menu-entry-card:focus-within {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-}
-
-.menu-entry-icon {
-    flex-shrink: 0;
-}
-
-.menu-entry-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-}
-
-.menu-entry-label {
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.menu-entry-description {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.78);
 }
 
 </style>
