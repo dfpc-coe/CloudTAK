@@ -19,6 +19,7 @@ export enum VideoStoreType {
 
 export type VideoPane = {
     uid: string,
+    name?: string,
     type: PaneType.VIDEO,
     config: {
         type: VideoStoreType,
@@ -32,6 +33,7 @@ export type VideoPane = {
 
 export type AttachmentPane = {
     uid: string,
+    name?: string,
     type: PaneType.ATTACHMENT,
     config: {
         attachment: Attachment,
@@ -72,6 +74,7 @@ export const useFloatStore = defineStore('float', {
 
             this.panes.set(connection.uuid, {
                 uid: connection.uuid,
+                name: connection.alias,
                 type: PaneType.VIDEO,
                 config: {
                     type: VideoStoreType.CONNECTION,
@@ -94,6 +97,7 @@ export const useFloatStore = defineStore('float', {
 
             this.panes.set(uid, {
                 uid,
+                name: cot.properties.callsign,
                 type: PaneType.VIDEO,
                 config: {
                     type: VideoStoreType.COT,

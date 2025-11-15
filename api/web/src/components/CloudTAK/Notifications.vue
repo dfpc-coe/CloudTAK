@@ -87,8 +87,8 @@
 
     <NotificationToast
         v-for='n in filteredListToast'
-        :key='n.id'
         :id='n.id'
+        :key='n.id'
         @close='TAKNotification.update(n.id, { toast: false })'
     />
 </template>

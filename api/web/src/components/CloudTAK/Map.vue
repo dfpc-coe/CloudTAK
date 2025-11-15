@@ -445,6 +445,7 @@
             >
                 <FloatingVideo
                     v-if='float.type === PaneType.VIDEO'
+                    :title='float.name || "Video Stream"'
                     :uid='float.uid'
                     @close='floatStore.panes.delete(float.uid)'
                 />
