@@ -57,11 +57,11 @@ export default {
             }
         },
         DBCluster: {
-            Type: "AWS::RDS::DBCluster",
+            Type: 'AWS::RDS::DBCluster',
             Properties: {
-                Engine: "aurora-postgresql",
+                Engine: 'aurora-postgresql',
                 EngineVersion: '17.5',
-                EngineMode: "provisioned",
+                EngineMode: 'provisioned',
                 DatabaseName: 'tak_ps_etl',
                 Port: 5432,
                 NetworkType: 'DUAL',
@@ -81,11 +81,11 @@ export default {
             }
         },
         DBClusterInstanceA: {
-            Type: "AWS::RDS::DBInstance",
+            Type: 'AWS::RDS::DBInstance',
             Properties: {
                 DBClusterIdentifier: cf.ref('DBCluster'),
                 DBInstanceClass: cf.ref('DatabaseType'),
-                Engine: "aurora-postgresql"
+                Engine: 'aurora-postgresql'
             }
         },
         DBInstance: {
