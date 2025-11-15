@@ -47,7 +47,34 @@
                         <div class='modal-title'>
                             Main Menu
                         </div>
-                        <div />
+                        <div class='d-flex justify-content-end align-items-center menu-layout-toggle'>
+                            <template v-if='!compact'>
+                                <TablerIconButton
+                                    title='List View'
+                                    class='hover-button'
+                                    :class='{ "btn-active": preferredLayout === "list" }'
+                                    :hover='false'
+                                    @click='setPreferredLayout("list")'
+                                >
+                                    <IconLayoutList
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
+                                <TablerIconButton
+                                    title='Tile View'
+                                    class='hover-button ms-2'
+                                    :class='{ "btn-active": preferredLayout === "tiles" }'
+                                    :hover='false'
+                                    @click='setPreferredLayout("tiles")'
+                                >
+                                    <IconLayoutGrid
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
+                            </template>
+                        </div>
                     </div>
                 </div>
                 <div
@@ -55,518 +82,110 @@
                     style='height: calc(100% - 106px)'
                 >
                     <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/features")'
-                        @keyup.enter='router.push("/menu/features")'
+                        v-if='!compact'
+                        class='px-3 pt-3 pb-1'
                     >
-                        <IconMapPin
-                            v-tooltip='{
-                                content: "Your Features",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Features Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
+                        <TablerInput
+                            v-model='menuFilter'
+                            placeholder='Search...'
+                            icon='search'
                         />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Your Features</span>
                     </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/overlays")'
-                        @keyup.enter='router.push("/menu/overlays")'
-                    >
-                        <IconBoxMultiple
-                            v-tooltip='{
-                                content: "Overlays",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Overlays Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
+                    <template v-if='menuLayout === "list"'>
+                        <template v-if='filteredMenuItems.length'>
+                            <div
+                                v-for='item in filteredMenuItems'
+                                :key='item.key'
+                                role='menuitem'
+                                :tabindex='compact ? undefined : 0'
+                                class='cursor-pointer col-12 d-flex align-items-center'
+                                :class='{
+                                    "py-2 px-3 hover": !compact,
+                                    "py-1 px-2 hover-button": compact,
+                                    "position-relative": compact && item.adminBadge
+                                }'
+                                @click='router.push(item.route)'
+                                @keyup.enter='router.push(item.route)'
+                            >
+                                <component
+                                    :is='item.icon'
+                                    v-tooltip='{
+                                        content: item.tooltip,
+                                        placement: "left",
+                                    }'
+                                    :tabindex='compact ? 0 : undefined'
+                                    :title='item.tooltip'
+                                    :class='{ "mx-2": compact }'
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span
+                                    v-if='compact && item.adminBadge'
+                                    class='position-absolute badge bg-blue text-white'
+                                    style='top: 5px; right: 5px; font-size: 10px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%;'
+                                >A</span>
+                                <span
+                                    v-if='!compact'
+                                    class='mx-2 user-select-none'
+                                    style='font-size: 18px;'
+                                    v-text='item.label'
+                                />
+                                <span
+                                    v-if='!compact && item.adminBadge'
+                                    class='ms-auto badge border border-blue bg-blue text-white'
+                                    v-text='item.adminBadge'
+                                />
+                            </div>
+                        </template>
+                        <TablerNone
+                            v-else
+                            label='No menu items match your search'
+                            :create='false'
+                            class='px-3'
                         />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Overlays</span>
-                    </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/contacts")'
-                        @keyup.enter='router.push("/menu/contacts")'
-                    >
-                        <IconUsers
-                            v-tooltip='{
-                                content: "Contacts",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Contacts Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Contacts</span>
-                    </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/basemaps")'
-                        @keyup.enter='router.push("/menu/basemaps")'
-                    >
-                        <IconMap
-                            v-tooltip='{
-                                content: "Basemaps",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Basemaps Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >BaseMaps</span>
-                    </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/missions")'
-                        @keyup.enter='router.push("/menu/missions")'
-                    >
-                        <IconAmbulance
-                            v-tooltip='{
-                                content: "Data Sync",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Data Syncs Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Data Sync</span>
-                    </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/packages")'
-                        @keyup.enter='router.push("/menu/packages")'
-                    >
-                        <IconPackages
-                            v-tooltip='{
-                                content: "Data Packages",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Data Packages Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Data Package</span>
-                    </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/channels")'
-                        @keyup.enter='router.push("/menu/channels")'
-                    >
-                        <IconAffiliate
-                            v-tooltip='{
-                                content: "Channels",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Channels Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Channels</span>
-                    </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/videos")'
-                        @keyup.enter='router.push("/menu/videos")'
-                    >
-                        <IconVideo
-                            v-tooltip='{
-                                content: "Videos",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Videos Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Videos</span>
-                    </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/chats")'
-                        @keyup.enter='router.push("/menu/chats")'
-                    >
-                        <IconMessage
-                            v-tooltip='{
-                                content: "Chats",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Chats Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Chats</span>
-                    </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/routes")'
-                        @keyup.enter='router.push("/menu/routes")'
-                    >
-                        <IconRoute
-                            v-tooltip='{
-                                content: "Routes",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Routes Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Routes</span>
-                    </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/files")'
-                        @keyup.enter='router.push("/menu/files")'
-                    >
-                        <IconFiles
-                            v-tooltip='{
-                                content: "Your Files",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Files Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Uploaded Files</span>
-                    </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/imports")'
-                        @keyup.enter='router.push("/menu/imports")'
-                    >
-                        <IconFileImport
-                            v-tooltip='{
-                                content: "Imports",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Imports Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Imports</span>
-                    </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/iconsets")'
-                        @keyup.enter='router.push("/menu/iconsets")'
-                    >
-                        <IconPhoto
-                            v-tooltip='{
-                                content: "Iconsets",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Iconsets Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Iconsets</span>
-                    </div>
-
-                    <div
-                        v-if='isAgencyAdmin || isSystemAdmin'
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center position-relative'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/connections")'
-                        @keyup.enter='router.push("/menu/connections")'
-                    >
-                        <IconNetwork
-                            v-tooltip='{
-                                content: "Connections (Admin)",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Connections Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='compact'
-                            class='position-absolute badge bg-blue text-white'
-                            style='top: 5px; right: 5px; font-size: 10px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%;'
-                        >A</span>
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Connections</span>
-                        <span
-                            v-if='!compact'
-                            class='ms-auto badge border border-blue bg-blue text-white'
+                    </template>
+                    <template v-else>
+                        <div
+                            v-if='filteredMenuItems.length'
+                            class='menu-tiles px-3 py-3'
                         >
-                            Admin
-                        </span>
-                    </div>
-                    <div
-                        v-if='isSystemAdmin'
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center position-relative'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/debugger")'
-                        @keyup.enter='router.push("/menu/debugger")'
-                    >
-                        <IconBug
-                            v-tooltip='{
-                                content: "Debugger (Admin)",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='COT Debugger'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
+                            <div
+                                v-for='item in filteredMenuItems'
+                                :key='`tile-${item.key}`'
+                                class='menu-tile text-white cursor-pointer user-select-none'
+                                role='menuitem'
+                                tabindex='0'
+                                @click='router.push(item.route)'
+                                @keyup.enter='router.push(item.route)'
+                            >
+                                <component
+                                    :is='item.icon'
+                                    :size='36'
+                                    stroke='1'
+                                />
+                                <div
+                                    class='tile-label mt-2'
+                                    v-text='item.label'
+                                />
+                                <div
+                                    v-if='item.description'
+                                    class='tile-description'
+                                    v-text='item.description'
+                                />
+                                <span
+                                    v-if='item.adminBadge'
+                                    class='badge border border-blue bg-blue text-white mt-2'
+                                    v-text='item.adminBadge'
+                                />
+                            </div>
+                        </div>
+                        <TablerNone
+                            v-else
+                            label='No menu items match your search'
+                            :create='false'
+                            class='px-3'
                         />
-                        <span
-                            v-if='compact'
-                            class='position-absolute badge bg-blue text-white'
-                            style='top: 5px; right: 5px; font-size: 10px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%;'
-                        >A</span>
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >COT Debugger</span>
-                        <span
-                            v-if='!compact'
-                            class='ms-auto badge border border-blue bg-blue text-white'
-                        >
-                            Admin
-                        </span>
-                    </div>
-                    <div
-                        v-if='isSystemAdmin'
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center position-relative'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/admin")'
-                        @keyup.enter='router.push("/admin")'
-                    >
-                        <IconServerCog
-                            v-tooltip='{
-                                content: "Server Settings (Admin)",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Server Admin Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='compact'
-                            class='position-absolute badge bg-blue text-white'
-                            style='top: 5px; right: 5px; font-size: 10px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%;'
-                        >A</span>
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Server</span>
-                        <span
-                            v-if='!compact'
-                            class='ms-auto badge border border-blue bg-blue text-white'
-                        >
-                            Admin
-                        </span>
-                    </div>
-                    <div
-                        role='menuitem'
-                        :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
-                        :class='{
-                            "py-2 px-3 hover": !compact,
-                            "py-1 px-2 hover-button": compact
-                        }'
-                        @click='router.push("/menu/settings")'
-                        @keyup.enter='router.push("/menu/settings")'
-                    >
-                        <IconSettings
-                            v-tooltip='{
-                                content: "Display Settings",
-                                placement: "left",
-                            }'
-                            :tabindex='compact ? 0 : undefined'
-                            title='Open Settings Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            v-if='!compact'
-                            class='mx-2 user-select-none'
-                            style='font-size: 18px;'
-                        >Settings</span>
-                    </div>
+                    </template>
                 </div>
             </template>
 
@@ -694,7 +313,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, useTemplateRef, onMounted } from 'vue';
+import { ref, watch, useTemplateRef, onMounted, computed } from 'vue';
+import type { Component } from 'vue';
 import {
     IconBug,
     IconMap,
@@ -717,10 +337,14 @@ import {
     IconBoxMultiple,
     IconFileImport,
     IconAffiliate,
+    IconLayoutGrid,
+    IconLayoutList,
 } from '@tabler/icons-vue';
 import {
     TablerDropdown,
-    TablerIconButton
+    TablerIconButton,
+    TablerInput,
+    TablerNone,
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../stores/map.ts';
 import { useBrandStore } from '../../stores/brand.ts';
@@ -742,10 +366,204 @@ const username = ref<string>('Username')
 const menuWidth = ref<number>(400);
 const isSystemAdmin = ref<boolean>(false)
 const isAgencyAdmin = ref<boolean>(false)
+const menuFilter = ref('');
+
+type MenuItemConfig = {
+    key: string;
+    label: string;
+    route: string;
+    tooltip: string;
+    description?: string;
+    icon: Component;
+    adminBadge?: string;
+    requiresSystemAdmin?: boolean;
+    requiresAgencyAdmin?: boolean;
+};
+
+const baseMenuItems: MenuItemConfig[] = [
+    {
+        key: 'features',
+        label: 'Your Features',
+        route: '/menu/features',
+        tooltip: 'Your Features',
+        description: 'Browse and manage your saved features.',
+        icon: IconMapPin,
+    },
+    {
+        key: 'overlays',
+        label: 'Overlays',
+        route: '/menu/overlays',
+        tooltip: 'Overlays',
+        description: 'Toggle and configure mission overlays.',
+        icon: IconBoxMultiple,
+    },
+    {
+        key: 'contacts',
+        label: 'Contacts',
+        route: '/menu/contacts',
+        tooltip: 'Contacts',
+        description: 'Manage and search for TAK contacts.',
+        icon: IconUsers,
+    },
+    {
+        key: 'basemaps',
+        label: 'BaseMaps',
+        route: '/menu/basemaps',
+        tooltip: 'Basemaps',
+        description: 'Switch between available basemaps.',
+        icon: IconMap,
+    },
+    {
+        key: 'missions',
+        label: 'Data Sync',
+        route: '/menu/missions',
+        tooltip: 'Data Sync',
+        description: 'Manage mission data synchronizations.',
+        icon: IconAmbulance,
+    },
+    {
+        key: 'packages',
+        label: 'Data Package',
+        route: '/menu/packages',
+        tooltip: 'Data Packages',
+        description: 'Create and share TAK data packages.',
+        icon: IconPackages,
+    },
+    {
+        key: 'channels',
+        label: 'Channels',
+        route: '/menu/channels',
+        tooltip: 'Channels',
+        description: 'Join and manage TAK data channels.',
+        icon: IconAffiliate,
+    },
+    {
+        key: 'videos',
+        label: 'Videos',
+        route: '/menu/videos',
+        tooltip: 'Videos',
+        description: 'Access live and recorded video feeds.',
+        icon: IconVideo,
+    },
+    {
+        key: 'chats',
+        label: 'Chats',
+        route: '/menu/chats',
+        tooltip: 'Chats',
+        description: 'Open TAK chat threads and history.',
+        icon: IconMessage,
+    },
+    {
+        key: 'routes',
+        label: 'Routes',
+        route: '/menu/routes',
+        tooltip: 'Routes',
+        description: 'Plan and manage route overlays.',
+        icon: IconRoute,
+    },
+    {
+        key: 'files',
+        label: 'Uploaded Files',
+        route: '/menu/files',
+        tooltip: 'Your Files',
+        description: 'Browse files you have uploaded.',
+        icon: IconFiles,
+    },
+    {
+        key: 'imports',
+        label: 'Imports',
+        route: '/menu/imports',
+        tooltip: 'Imports',
+        description: 'Review and manage data imports.',
+        icon: IconFileImport,
+    },
+    {
+        key: 'iconsets',
+        label: 'Iconsets',
+        route: '/menu/iconsets',
+        tooltip: 'Iconsets',
+        description: 'Customize icon collections.',
+        icon: IconPhoto,
+    },
+    {
+        key: 'connections',
+        label: 'Connections',
+        route: '/menu/connections',
+        tooltip: 'Connections (Admin)',
+        description: 'Manage TAK connections and bridges.',
+        icon: IconNetwork,
+        adminBadge: 'Admin',
+        requiresAgencyAdmin: true,
+    },
+    {
+        key: 'debugger',
+        label: 'COT Debugger',
+        route: '/menu/debugger',
+        tooltip: 'Debugger (Admin)',
+        description: 'Inspect and debug COT traffic.',
+        icon: IconBug,
+        adminBadge: 'Admin',
+        requiresSystemAdmin: true,
+    },
+    {
+        key: 'server',
+        label: 'Server',
+        route: '/admin',
+        tooltip: 'Server Settings (Admin)',
+        description: 'Configure CloudTAK server settings.',
+        icon: IconServerCog,
+        adminBadge: 'Admin',
+        requiresSystemAdmin: true,
+    },
+    {
+        key: 'settings',
+        label: 'Settings',
+        route: '/menu/settings',
+        tooltip: 'Display Settings',
+        description: 'Adjust personal display preferences.',
+        icon: IconSettings,
+    },
+];
 
 const props = defineProps({
     compact: Boolean,
 })
+
+const storedLayoutPref = typeof window !== 'undefined' ? localStorage.getItem('cloudtak-menu-layout') : null;
+const preferredLayout = ref<'list' | 'tiles'>(storedLayoutPref === 'tiles' ? 'tiles' : 'list');
+const menuLayout = computed(() => props.compact ? 'list' : preferredLayout.value);
+
+const menuItems = computed(() => {
+    return baseMenuItems.filter((item) => {
+        if (item.requiresSystemAdmin && !isSystemAdmin.value) return false;
+        if (item.requiresAgencyAdmin && !(isAgencyAdmin.value || isSystemAdmin.value)) return false;
+        return true;
+    });
+});
+
+const filteredMenuItems = computed(() => {
+    const term = menuFilter.value.trim().toLowerCase();
+    if (!term) return menuItems.value;
+
+    return menuItems.value.filter((item) => {
+        const label = item.label.toLowerCase();
+        const tooltip = item.tooltip.toLowerCase();
+        const description = item.description?.toLowerCase() ?? '';
+
+        return (
+            label.includes(term)
+            || tooltip.includes(term)
+            || description.includes(term)
+        );
+    });
+});
+
+function setPreferredLayout(mode: 'list' | 'tiles') {
+    preferredLayout.value = mode;
+    if (typeof window !== 'undefined') {
+        localStorage.setItem('cloudtak-menu-layout', mode);
+    }
+}
 
 watch(props, () => {
     if (props.compact && mapStore.toastOffset.x !== 70) {
@@ -877,6 +695,46 @@ function logout() {
 }
 .right {
    flex-grow: 1;
+}
+
+.menu-layout-toggle .btn-active {
+    background-color: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.menu-tiles {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+.menu-tile {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.35);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.menu-tile:hover,
+.menu-tile:focus {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.tile-label {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.tile-description {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.78);
 }
 
 </style>
