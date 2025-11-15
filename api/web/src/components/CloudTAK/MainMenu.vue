@@ -43,33 +43,28 @@
                     }'
                 >
                     <div class='modal-header px-0 mx-2 align-center'>
-                        <div class='modal-title' />
                         <div class='modal-title'>
                             Main Menu
                         </div>
-                        <div class='d-flex justify-content-end align-items-center menu-layout-toggle'>
+                        <div class='ms-auto'>
                             <template v-if='!compact'>
                                 <TablerIconButton
+                                    v-if='preferredLayout !== "list"'
                                     title='List View'
-                                    class='hover-button'
-                                    :class='{ "btn-active": preferredLayout === "list" }'
-                                    :hover='false'
                                     @click='setPreferredLayout("list")'
                                 >
                                     <IconLayoutList
-                                        :size='20'
+                                        :size='32'
                                         stroke='1'
                                     />
                                 </TablerIconButton>
                                 <TablerIconButton
+                                    v-if='preferredLayout !== "tiles"'
                                     title='Tile View'
-                                    class='hover-button ms-2'
-                                    :class='{ "btn-active": preferredLayout === "tiles" }'
-                                    :hover='false'
                                     @click='setPreferredLayout("tiles")'
                                 >
                                     <IconLayoutGrid
-                                        :size='20'
+                                        :size='32'
                                         stroke='1'
                                     />
                                 </TablerIconButton>
@@ -83,24 +78,28 @@
                 >
                     <div
                         v-if='!compact'
-                        class='px-3 pt-3 pb-1'
+                        class='px-3 pt-3 pb-2'
                     >
                         <TablerInput
                             v-model='menuFilter'
+                            :autofocus='true'
                             placeholder='Search...'
                             icon='search'
                         />
                     </div>
                     <template v-if='menuLayout === "list"'>
-                        <template v-if='filteredMenuItems.length'>
+                        <div
+                            v-if='filteredMenuItems.length'
+                            class='mx-2'
+                        >
                             <div
                                 v-for='item in filteredMenuItems'
                                 :key='item.key'
                                 role='menuitem'
                                 :tabindex='compact ? undefined : 0'
-                                class='cursor-pointer col-12 d-flex align-items-center'
+                                class='cursor-pointer col-12 d-flex align-items-center menu-entry'
                                 :class='{
-                                    "py-2 px-3 hover": !compact,
+                                    "py-2 px-3 mb-1 hover menu-entry-card": !compact,
                                     "py-1 px-2 hover-button": compact,
                                     "position-relative": compact && item.adminBadge
                                 }'
@@ -115,7 +114,7 @@
                                     }'
                                     :tabindex='compact ? 0 : undefined'
                                     :title='item.tooltip'
-                                    :class='{ "mx-2": compact }'
+                                    class='menu-entry-icon'
                                     :size='32'
                                     stroke='1'
                                 />
@@ -124,19 +123,27 @@
                                     class='position-absolute badge bg-blue text-white'
                                     style='top: 5px; right: 5px; font-size: 10px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%;'
                                 >A</span>
-                                <span
+                                <div
                                     v-if='!compact'
-                                    class='mx-2 user-select-none'
-                                    style='font-size: 18px;'
-                                    v-text='item.label'
-                                />
+                                    class='menu-entry-content'
+                                >
+                                    <div
+                                        class='menu-entry-label'
+                                        v-text='item.label'
+                                    />
+                                    <div
+                                        v-if='item.description'
+                                        class='menu-entry-description'
+                                        v-text='item.description'
+                                    />
+                                </div>
                                 <span
                                     v-if='!compact && item.adminBadge'
-                                    class='ms-auto badge border border-blue bg-blue text-white'
+                                    class='badge border border-blue bg-blue text-white ms-auto'
                                     v-text='item.adminBadge'
                                 />
                             </div>
-                        </template>
+                        </div>
                         <TablerNone
                             v-else
                             label='No menu items match your search'
@@ -402,7 +409,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Contacts',
         route: '/menu/contacts',
         tooltip: 'Contacts',
-        description: 'Manage and search for TAK contacts.',
+        description: 'Manage and search for contacts.',
         icon: IconUsers,
     },
     {
@@ -426,7 +433,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Data Package',
         route: '/menu/packages',
         tooltip: 'Data Packages',
-        description: 'Create and share TAK data packages.',
+        description: 'Create and share Data Packages.',
         icon: IconPackages,
     },
     {
@@ -434,7 +441,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Channels',
         route: '/menu/channels',
         tooltip: 'Channels',
-        description: 'Join and manage TAK data channels.',
+        description: 'Join and manage Data Channels.',
         icon: IconAffiliate,
     },
     {
@@ -450,7 +457,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Chats',
         route: '/menu/chats',
         tooltip: 'Chats',
-        description: 'Open TAK chat threads and history.',
+        description: 'Open chat threads and history.',
         icon: IconMessage,
     },
     {
@@ -490,7 +497,7 @@ const baseMenuItems: MenuItemConfig[] = [
         label: 'Connections',
         route: '/menu/connections',
         tooltip: 'Connections (Admin)',
-        description: 'Manage TAK connections and bridges.',
+        description: 'Manage Connection Integrations',
         icon: IconNetwork,
         adminBadge: 'Admin',
         requiresAgencyAdmin: true,
@@ -530,6 +537,7 @@ const props = defineProps({
 })
 
 const storedLayoutPref = typeof window !== 'undefined' ? localStorage.getItem('cloudtak-menu-layout') : null;
+
 const preferredLayout = ref<'list' | 'tiles'>(storedLayoutPref === 'tiles' ? 'tiles' : 'list');
 const menuLayout = computed(() => props.compact ? 'list' : preferredLayout.value);
 
@@ -560,6 +568,7 @@ const filteredMenuItems = computed(() => {
 
 function setPreferredLayout(mode: 'list' | 'tiles') {
     preferredLayout.value = mode;
+
     if (typeof window !== 'undefined') {
         localStorage.setItem('cloudtak-menu-layout', mode);
     }
@@ -733,6 +742,44 @@ function logout() {
 }
 
 .tile-description {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.menu-entry {
+    gap: 0.75rem;
+}
+
+.menu-entry-card {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.menu-entry-card:hover,
+.menu-entry-card:focus-within {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.menu-entry-icon {
+    flex-shrink: 0;
+}
+
+.menu-entry-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.menu-entry-label {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.menu-entry-description {
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.78);
 }
