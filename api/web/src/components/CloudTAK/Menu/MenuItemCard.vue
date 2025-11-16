@@ -11,7 +11,6 @@
             v-if='icon'
             v-tooltip='tooltipBinding'
             :title='tooltip'
-            :tabindex='compact ? 0 : undefined'
             :size='iconSize'
             stroke='1'
             class='menu-item-card__icon'
@@ -22,34 +21,44 @@
             class='menu-item-card__badge menu-item-card__badge--compact'
         >{{ badgeInitial }}</span>
 
-        <template v-if='layout === "tiles"'>
-            <div class='menu-item-card__body menu-item-card__body--tile'>
-                <div class='menu-item-card__label'>{{ label }}</div>
-                <div
-                    v-if='description'
-                    class='menu-item-card__description'
-                >{{ description }}</div>
+        <template v-if='!compact'>
+            <template v-if='layout === "tiles"'>
+                <div class='menu-item-card__body menu-item-card__body--tile'>
+                    <div class='menu-item-card__label'>
+                        {{ label }}
+                    </div>
+                    <div
+                        v-if='description'
+                        class='menu-item-card__description'
+                    >
+                        {{ description }}
+                    </div>
+                    <span
+                        v-if='badge'
+                        class='menu-item-card__badge menu-item-card__badge--tile'
+                    >{{ badge }}</span>
+                </div>
+            </template>
+            <template v-else-if='compact'>
+                <span class='menu-item-card__label menu-item-card__label--compact'>{{ label }}</span>
+            </template>
+            <template v-else>
+                <div class='menu-item-card__body'>
+                    <div class='menu-item-card__label'>
+                        {{ label }}
+                    </div>
+                    <div
+                        v-if='description'
+                        class='menu-item-card__description'
+                    >
+                        {{ description }}
+                    </div>
+                </div>
                 <span
                     v-if='badge'
-                    class='menu-item-card__badge menu-item-card__badge--tile'
+                    class='menu-item-card__badge menu-item-card__badge--admin ms-auto'
                 >{{ badge }}</span>
-            </div>
-        </template>
-        <template v-else-if='compact'>
-            <span class='menu-item-card__label menu-item-card__label--compact'>{{ label }}</span>
-        </template>
-        <template v-else>
-            <div class='menu-item-card__body'>
-                <div class='menu-item-card__label'>{{ label }}</div>
-                <div
-                    v-if='description'
-                    class='menu-item-card__description'
-                >{{ description }}</div>
-            </div>
-            <span
-                v-if='badge'
-                class='menu-item-card__badge menu-item-card__badge--admin ms-auto'
-            >{{ badge }}</span>
+            </template>
         </template>
     </div>
 </template>
@@ -94,7 +103,7 @@ const props = defineProps({
 const classes = computed(() => ({
     'menu-item-card': true,
     [`menu-item-card--${props.layout}`]: true,
-    'menu-item-card--compact': props.compact,
+    'menu-item-card--compact position-relative': props.compact,
 }));
 
 const iconSize = computed(() => props.layout === 'tiles' ? 36 : 32);
@@ -103,6 +112,10 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
 </script>
 
 <style scoped>
+.menu-item-card--compact {
+
+}
+
 .menu-item-card {
     display: flex;
     align-items: center;

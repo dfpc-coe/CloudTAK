@@ -110,7 +110,7 @@
                     </div>
                     <TablerNone
                         v-else
-                        label='No menu items match your search'
+                        label='menu items match your search'
                         :create='false'
                         class='px-3'
                     />
@@ -121,7 +121,7 @@
                     style='height: calc(100% - 106px)'
                 >
                     <div
-                        class='d-flex flex-column gap-2 mx-1 my-2'
+                        class='hover'
                     >
                         <MenuItemCard
                             v-for='item in menuItems'
@@ -135,7 +135,7 @@
                             @select='router.push(item.route)'
                         />
                     </div>
-            </div>
+                </div>
             </template>
 
             <div
