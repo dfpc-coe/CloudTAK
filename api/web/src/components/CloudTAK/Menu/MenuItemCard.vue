@@ -117,7 +117,6 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
     border-radius: 12px;
     background-color: rgba(0, 0, 0, 0.35);
     padding: 0.85rem 1rem;
-    margin: 0.5rem 1.5rem;
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
