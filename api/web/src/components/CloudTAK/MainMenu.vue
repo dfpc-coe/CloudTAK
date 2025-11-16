@@ -72,11 +72,11 @@
                     </div>
                 </div>
                 <div
+                    v-if='!compact'
                     class='col-12 overflow-auto noscroll'
                     style='height: calc(100% - 106px)'
                 >
                     <div
-                        v-if='!compact'
                         class='px-3 pt-3 pb-2'
                     >
                         <TablerInput
@@ -87,54 +87,55 @@
                             class='mb-0'
                         />
                     </div>
-                    <template v-if='menuLayout === "list"'>
-                        <template v-if='filteredMenuItems.length'>
-                            <MenuItemCard
-                                v-for='item in filteredMenuItems'
-                                :key='item.key'
-                                :icon='item.icon'
-                                :label='item.label'
-                                :description='item.description'
-                                :tooltip='item.tooltip'
-                                :badge='item.adminBadge'
-                                layout='list'
-                                :compact='compact'
-                                @select='router.push(item.route)'
-                            />
-                        </template>
-                        <TablerNone
-                            v-else
-                            label='No menu items match your search'
-                            :create='false'
-                            class='px-3'
+                    <div
+                        v-if='filteredMenuItems.length'
+                        class='pb-3'
+                        :class='{
+                            "menu-tiles px-3 py-3": menuLayout === "tiles",
+                            "d-flex flex-column gap-2 mx-3": menuLayout === "list"
+                        }'
+                    >
+                        <MenuItemCard
+                            v-for='item in filteredMenuItems'
+                            :key='`tile-${item.key}`'
+                            :icon='item.icon'
+                            :label='item.label'
+                            :description='item.description'
+                            :tooltip='item.tooltip'
+                            :badge='item.adminBadge'
+                            :layout='menuLayout'
+                            :compact='false'
+                            @select='router.push(item.route)'
                         />
-                    </template>
-                    <template v-else>
-                        <div
-                            v-if='filteredMenuItems.length'
-                            class='menu-tiles px-3 py-3'
-                        >
-                            <MenuItemCard
-                                v-for='item in filteredMenuItems'
-                                :key='`tile-${item.key}`'
-                                :icon='item.icon'
-                                :label='item.label'
-                                :description='item.description'
-                                :tooltip='item.tooltip'
-                                :badge='item.adminBadge'
-                                layout='tiles'
-                                :compact='false'
-                                @select='router.push(item.route)'
-                            />
-                        </div>
-                        <TablerNone
-                            v-else
-                            label='No menu items match your search'
-                            :create='false'
-                            class='px-3'
-                        />
-                    </template>
+                    </div>
+                    <TablerNone
+                        v-else
+                        label='No menu items match your search'
+                        :create='false'
+                        class='px-3'
+                    />
                 </div>
+                <div
+                    v-else
+                    class='col-12 overflow-auto noscroll'
+                    style='height: calc(100% - 106px)'
+                >
+                    <div
+                        class='d-flex flex-column gap-2 mx-1 my-2'
+                    >
+                        <MenuItemCard
+                            v-for='item in menuItems'
+                            :key='`compact-${item.key}`'
+                            :icon='item.icon'
+                            :label='item.label'
+                            :tooltip='item.tooltip'
+                            :badge='item.adminBadge'
+                            :layout='"list"'
+                            :compact='true'
+                            @select='router.push(item.route)'
+                        />
+                    </div>
+            </div>
             </template>
 
             <div
