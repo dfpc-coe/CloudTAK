@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.2.1 - 2025-11-14
+
+- :white_check_mark: Add Attachment Integration Tests
+
 ### v12.2.0 - 2025-11-14
 
 - :tada: Update Menu Styling and allow choosing between list and menu view
