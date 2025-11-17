@@ -20,7 +20,7 @@
         </template>
         <template #default>
             <div class='d-flex flex-column gap-3 p-2'>
-                <div class='d-flex flex-column flex-sm-row align-items-sm-center gap-2'>
+                <div class='d-flex mx-2 flex-column flex-sm-row align-items-sm-center gap-2'>
                     <TablerInput
                         v-model='paging.filter'
                         :autofocus='true'
@@ -49,26 +49,28 @@
                         />
                         <div
                             v-else
-                            class='d-flex flex-column gap-3'
+                            class='d-flex mx-2 flex-column gap-3'
                         >
                             <article
                                 v-for='(mission, mission_it) in filteredList'
                                 :key='mission_it'
-                                class='border border-white border-opacity-25 rounded-4 bg-dark bg-opacity-25 p-3 text-white d-flex flex-column flex-md-row gap-3 position-relative'
+                                class='menu-missions__card p-3 text-white d-flex flex-column flex-md-row gap-3 position-relative'
                                 role='button'
                                 tabindex='0'
                                 @click='openMission(mission, false)'
                                 @keydown.enter.prevent='openMission(mission, false)'
                                 @keydown.space.prevent='openMission(mission, false)'
                             >
-                                <div class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 p-2'>
+                                <div class='menu-missions__icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 p-2'>
                                     <IconLock
                                         v-if='mission.passwordProtected'
+                                        class='menu-missions__icon'
                                         :size='ICON_SIZE'
                                         stroke='1'
                                     />
                                     <IconLockOpen
                                         v-else
+                                        class='menu-missions__icon'
                                         :size='ICON_SIZE'
                                         stroke='1'
                                     />
@@ -102,7 +104,7 @@
 
                                     <div
                                         v-if='typeof missionPasswords[mission.guid] === "string"'
-                                        class='d-flex flex-column flex-lg-row align-items-start gap-2'
+                                        class='d-flex flex-column mx-2 flex-lg-row align-items-start gap-2'
                                     >
                                         <TablerInput
                                             v-model='missionPasswords[mission.guid]'
@@ -139,9 +141,9 @@
                                     <IconAccessPoint
                                         v-if='subscribed.has(mission.guid)'
                                         v-tooltip='"Subscribed"'
+                                        class='menu-missions__icon text-success'
                                         :size='ICON_SIZE'
                                         stroke='1'
-                                        class='text-success'
                                     />
                                 </div>
                             </article>
@@ -305,3 +307,34 @@ async function fetchMissions() {
     loading.value = false;
 }
 </script>
+
+<style scoped>
+.menu-missions__icon-wrapper {
+    width: 3rem;
+    height: 3rem;
+    min-width: 3rem;
+    min-height: 3rem;
+    flex-shrink: 0;
+}
+
+.menu-missions__icon {
+    width: 24px;
+    height: 24px;
+    aspect-ratio: 1 / 1;
+    display: block;
+}
+
+.menu-missions__card {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    background-color: rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.menu-missions__card:hover,
+.menu-missions__card:focus-within {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+</style>
