@@ -228,13 +228,17 @@
                                         v-if='card.overlay.type === "geojson" && card.overlay.id === -1'
                                         class='mb-3'
                                     >
-                                        <TreeCots :element='card.overlay' />
+                                        <TreeCots
+                                            :element='card.overlay'
+                                        />
                                     </div>
                                     <div
                                         v-if='card.overlay.mode === "mission"'
                                         class='mb-3'
                                     >
-                                        <TreeMission :overlay='card.overlay' />
+                                        <TreeMission
+                                            :overlay='card.overlay'
+                                        />
                                     </div>
                                     <TreeVector
                                         v-if='card.overlay.type === "vector"'
