@@ -65,23 +65,21 @@
                             :key='card.overlay.id'
                             class='menu-overlays__card border border-white border-opacity-25 rounded-4 bg-black bg-opacity-25 p-3 shadow-sm'
                             :class='{
-                                "menu-overlays__card--dragging": isDraggable
+                                "menu-overlays__card--dragging": isDraggable,
+                                "cursor-pointer": !isDraggable && card.overlay.id !== 0
                             }'
+                            @click='handleCardClick(card.overlay.id)'
+                            @keydown.enter.prevent='handleCardKeydown(card.overlay.id)'
+                            @keydown.space.prevent='handleCardKeydown(card.overlay.id)'
                         >
                             <div
-                                class='menu-overlays__card-main d-flex justify-content-between gap-3'
+                                class='d-flex justify-content-between gap-3'
                             >
                                 <div
-                                    class='menu-overlays__card-info d-flex align-items-center gap-2 flex-grow-1 w-100 overflow-hidden'
-                                    :class='{
-                                        "cursor-pointer": !isDraggable && card.overlay.id !== 0
-                                    }'
+                                    class='d-flex align-items-center gap-2 flex-grow-1 w-100 overflow-hidden'
                                     role='button'
                                     :tabindex='!isDraggable && card.overlay.id !== 0 ? 0 : -1'
                                     :aria-disabled='isDraggable || card.overlay.id === 0'
-                                    @click='handleCardClick(card.overlay.id)'
-                                    @keydown.enter.prevent='handleCardKeydown(card.overlay.id)'
-                                    @keydown.space.prevent='handleCardKeydown(card.overlay.id)'
                                 >
                                     <IconGripVertical
                                         v-if='isDraggable'
@@ -114,9 +112,9 @@
                                         class='flex-shrink-0 text-white-50'
                                     />
 
-                                    <div class='menu-overlays__title-block flex-grow-1 w-100 overflow-hidden'>
+                                    <div class='flex-grow-1 w-100 overflow-hidden'>
                                         <div class='menu-overlays__title-row d-flex align-items-center gap-2 w-100'>
-                                            <div class='menu-overlays__name-wrapper d-flex align-items-center flex-grow-1 w-100 overflow-hidden'>
+                                            <div class='d-flex align-items-center flex-grow-1 w-100 overflow-hidden'>
                                                 <a
                                                     v-if='card.overlay.mode === "mission"'
                                                     class='menu-overlays__name menu-overlays__name--link fw-semibold text-decoration-underline d-inline-flex align-items-center'
@@ -146,7 +144,10 @@
                                     </div>
                                 </div>
 
-                                <div class='d-flex flex-column align-items-end gap-2'>
+                                <div
+                                    style='min-width: 100px;'
+                                    class='d-flex flex-column align-items-end gap-2'
+                                >
                                     <span
                                         class='badge rounded-pill small d-inline-flex align-items-center gap-1 px-2 py-1'
                                         :class='statusToneClasses[card.status.tone]'
@@ -365,7 +366,7 @@ const reorderButtonTitle = computed(() => {
     }
     return 'Edit Order';
 });
- 
+
 watch(overlayFilter, () => {
     if (isDraggable.value && !canEditOrder.value) {
         isDraggable.value = false;
@@ -544,14 +545,6 @@ async function removeOverlay(id: number) {
     transform: translateY(-1px);
     border-color: rgba(255, 255, 255, 0.4) !important;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-}
-
-.menu-overlays__title-block {
-    min-width: 0;
-}
-
-.menu-overlays__name-wrapper {
-    min-width: 0;
 }
 
 .menu-overlays__name {
