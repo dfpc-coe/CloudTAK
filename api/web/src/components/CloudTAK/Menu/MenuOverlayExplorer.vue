@@ -8,7 +8,7 @@
         </template>
         <template #default>
             <div class='menu-overlay-explorer menu-overlays d-flex flex-column gap-3'>
-                <div class='menu-overlays__controls d-flex align-items-center gap-3 flex-wrap'>
+                <div class='menu-overlays__controls mx-2 mt-2 d-flex align-items-center gap-3 flex-wrap'>
                     <TablerInput
                         v-model='paging.filter'
                         icon='search'
@@ -17,51 +17,51 @@
                     />
                 </div>
 
-                <article
-                    class='menu-overlays__card menu-overlay-explorer__card menu-overlay-explorer__card--files cursor-pointer'
-                    role='button'
-                    tabindex='0'
-                    @click='goToFiles'
-                    @keydown.enter.prevent='goToFiles'
-                    @keydown.space.prevent='goToFiles'
-                >
-                    <div class='menu-overlays__card-main d-flex justify-content-between gap-3'>
-                        <div class='menu-overlays__card-info d-flex align-items-center gap-2 flex-grow-1'>
-                            <IconUser
-                                class='menu-overlays__type-icon'
-                                :size='24'
-                                stroke='1'
-                            />
-                            <div class='menu-overlays__title-block flex-grow-1'>
-                                <div class='menu-overlays__title-row d-flex align-items-center gap-2'>
-                                    <span class='menu-overlays__name fw-semibold'>Your Files</span>
-                                    <span class='menu-overlays__status menu-overlays__status--success d-inline-flex align-items-center gap-1 rounded-pill px-2 py-1 small'>
-                                        <span class='menu-overlays__status-dot' />
-                                        Local
-                                    </span>
-                                </div>
-                                <p class='menu-overlay-explorer__description mb-0 small'>Access overlays you have uploaded</p>
-                            </div>
-                        </div>
-                        <div class='menu-overlays__card-actions d-flex align-items-center gap-2 flex-wrap'>
-                            <TablerIconButton
-                                title='Open Files'
-                                @click.stop.prevent='goToFiles'
-                            >
-                                <IconFolder
-                                    :size='20'
-                                    stroke='1'
-                                />
-                            </TablerIconButton>
-                        </div>
-                    </div>
-                </article>
-
                 <TablerLoading v-if='loading' />
                 <template v-else>
+                    <article
+                        class='menu-overlays__card menu-overlay-explorer__card menu-overlay-explorer__card--files mx-2 cursor-pointer'
+                        role='button'
+                        tabindex='0'
+                        @click='goToFiles'
+                        @keydown.enter.prevent='goToFiles'
+                        @keydown.space.prevent='goToFiles'
+                    >
+                        <div class='menu-overlays__card-main d-flex justify-content-between gap-3'>
+                            <div class='menu-overlays__card-info d-flex align-items-center gap-2 flex-grow-1'>
+                                <IconUser
+                                    class='menu-overlays__type-icon'
+                                    :size='24'
+                                    stroke='1'
+                                />
+                                <div class='menu-overlays__title-block flex-grow-1'>
+                                    <div class='menu-overlays__title-row d-flex align-items-center gap-2'>
+                                        <span class='menu-overlays__name fw-semibold'>Your Files</span>
+                                        <span class='menu-overlays__status menu-overlays__status--success d-inline-flex align-items-center gap-1 rounded-pill px-2 py-1 small'>
+                                            <span class='menu-overlays__status-dot' />
+                                            Local
+                                        </span>
+                                    </div>
+                                    <p class='menu-overlay-explorer__description mb-0 small'>Access overlays you have uploaded</p>
+                                </div>
+                            </div>
+                            <div class='menu-overlays__card-actions d-flex align-items-center gap-2 flex-wrap'>
+                                <TablerIconButton
+                                    title='Open Files'
+                                    @click.stop.prevent='goToFiles'
+                                >
+                                    <IconFolder
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
+                            </div>
+                        </div>
+                    </article>
+
                     <div
                         v-if='explorerCards.length'
-                        class='menu-overlays__list d-flex flex-column'
+                        class='menu-overlays__list mx-2 d-flex flex-column'
                     >
                         <article
                             v-for='card in explorerCards'
