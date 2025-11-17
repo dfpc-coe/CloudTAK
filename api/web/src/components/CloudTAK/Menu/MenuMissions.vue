@@ -49,19 +49,19 @@
                         />
                         <div
                             v-else
-                            class='d-flex flex-column gap-3'
+                            class='d-flex flex-column gap-3 mx-2'
                         >
                             <article
                                 v-for='(mission, mission_it) in filteredList'
                                 :key='mission_it'
-                                class='menu-missions__card p-3 text-white d-flex flex-column flex-md-row gap-3 position-relative'
+                                class='menu-missions__card text-white d-flex flex-column flex-md-row gap-3 position-relative'
                                 role='button'
                                 tabindex='0'
                                 @click='openMission(mission, false)'
                                 @keydown.enter.prevent='openMission(mission, false)'
                                 @keydown.space.prevent='openMission(mission, false)'
                             >
-                                <div class='menu-missions__icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 p-2'>
+                                <div class='menu-missions__icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ps-2 pt-2'>
                                     <IconLock
                                         v-if='mission.passwordProtected'
                                         :size='24'
@@ -74,7 +74,7 @@
                                     />
                                 </div>
 
-                                <div class='flex-grow-1 d-flex flex-column gap-2'>
+                                <div class='flex-grow-1 d-flex flex-column gap-2 py-2'>
                                     <div class='d-flex flex-wrap align-items-center gap-2'>
                                         <span
                                             class='fw-semibold text-truncate'
@@ -136,7 +136,7 @@
                                     </div>
                                 </div>
 
-                                <div class='d-flex align-items-center gap-2'>
+                                <div class='d-flex align-items-center gap-2 pe-2'>
                                     <IconAccessPoint
                                         v-if='subscribed.has(mission.guid)'
                                         v-tooltip='"Subscribed"'
