@@ -208,6 +208,7 @@
                                 <div
                                     v-if='!isDraggable && opened.has(card.overlay.id)'
                                     class='mt-3 p-3 rounded-3 border border-white border-opacity-10 bg-black bg-opacity-25'
+                                    @click.stop
                                 >
                                     <div
                                         v-if='card.overlay.type === "raster"'
