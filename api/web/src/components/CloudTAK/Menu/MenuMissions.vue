@@ -80,18 +80,24 @@
                                             class='fw-semibold text-truncate'
                                             v-text='mission.name'
                                         />
+                                    </div>
+
+                                    <div
+                                        v-if='missionKeywords(mission).length'
+                                        class='d-flex flex-wrap align-items-center gap-2'
+                                    >
                                         <span
-                                            class='badge rounded-pill text-bg-warning'
-                                            v-if='mission.passwordProtected'
-                                        >
-                                            Locked
-                                        </span>
-                                        <span
-                                            class='badge rounded-pill text-bg-success'
-                                            v-else
-                                        >
-                                            Unlocked
-                                        </span>
+                                            v-for='keyword in missionKeywords(mission)'
+                                            :key='`${mission.guid}-${keyword}`'
+                                            class='badge rounded-pill text-bg-info text-uppercase small fw-semibold'
+                                            v-text='keyword'
+                                        />
+                                    </div>
+                                    <div
+                                        v-else
+                                        class='text-secondary small'
+                                    >
+                                        No keywords
                                     </div>
 
                                     <div
@@ -276,6 +282,13 @@ async function fetchMission(mission: Mission, password?: string): Promise<Missio
 
     const m = await std(url) as Mission;
     return m;
+}
+
+function missionKeywords(mission: Mission): string[] {
+    if (!Array.isArray(mission.keywords)) return [];
+    return mission.keywords
+        .map((keyword) => typeof keyword === 'string' ? keyword.trim() : '')
+        .filter((keyword): keyword is string => keyword.length > 0);
 }
 
 async function fetchMissions() {
