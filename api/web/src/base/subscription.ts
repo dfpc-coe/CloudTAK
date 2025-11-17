@@ -152,7 +152,9 @@ export default class Subscription {
 
         if (exists) {
             if (opts.reload !== false) {
-                await exists.refresh();
+                await exists.refresh({
+                    refreshMission: true
+                });
             }
 
             if (opts.subscribed !== undefined) {
