@@ -66,10 +66,14 @@
                         <article
                             v-for='card in explorerCards'
                             :key='card.basemap.id'
-                            class='menu-overlays__card menu-overlay-explorer__card cursor-pointer'
+                            :class='[
+                                "menu-overlays__card",
+                                "menu-overlay-explorer__card",
+                                card.exists || loading ? "opacity-50 pe-none" : "cursor-pointer"
+                            ]'
                             role='button'
-                            tabindex='0'
-                            :aria-disabled='loading'
+                            :tabindex='card.exists ? -1 : 0'
+                            :aria-disabled='loading || card.exists'
                             @click='handleExplorerSelect(card.basemap)'
                             @keydown.enter.prevent='handleExplorerSelect(card.basemap)'
                             @keydown.space.prevent='handleExplorerSelect(card.basemap)'
@@ -128,8 +132,8 @@
 
                                 <div class='menu-overlays__card-actions d-flex align-items-center gap-2 flex-wrap'>
                                     <TablerIconButton
-                                        title='Add Overlay'
-                                        :disabled='loading'
+                                        :title='card.exists ? "Overlay already added" : "Add Overlay"'
+                                        :disabled='loading || card.exists'
                                         @click.stop.prevent='handleExplorerSelect(card.basemap)'
                                     >
                                         <IconPlus
@@ -199,13 +203,22 @@ type ExplorerBadge = { label: string; tone: ExplorerBadgeTone };
 type ExplorerStatusTone = 'success' | 'warning';
 type ExplorerStatus = { label: string; tone: ExplorerStatusTone };
 type ExplorerType = 'raster' | 'vector' | 'other';
-type ExplorerCard = { basemap: Basemap; status: ExplorerStatus; badges: ExplorerBadge[]; type: ExplorerType };
+type ExplorerCard = { basemap: Basemap; status: ExplorerStatus; badges: ExplorerBadge[]; type: ExplorerType; exists: boolean };
+
+const overlayBasemapIds = computed<Set<string>>(() => {
+    return new Set(
+        mapStore.overlays
+            .filter((overlay) => overlay.mode === 'overlay' && overlay.mode_id)
+            .map((overlay) => String(overlay.mode_id))
+    );
+});
 
 const explorerCards = computed<ExplorerCard[]>(() => list.value.items.map((basemap) => ({
     basemap,
     status: resolveExplorerStatus(basemap),
     badges: getExplorerBadges(basemap),
-    type: resolveExplorerType(basemap.type)
+    type: resolveExplorerType(basemap.type),
+    exists: overlayBasemapIds.value.has(String(basemap.id))
 })));
 
 watch(
@@ -219,8 +232,13 @@ onMounted(async () => {
     await fetchList();
 });
 
+function basemapExists(basemap: Basemap): boolean {
+    return overlayBasemapIds.value.has(String(basemap.id));
+}
+
 async function handleExplorerSelect(basemap: Basemap) {
     if (loading.value) return;
+    if (basemapExists(basemap)) return;
     await createOverlay(basemap);
 }
 
@@ -432,8 +450,4 @@ async function fetchList() {
     color: rgba(255, 255, 255, 0.7);
 }
 
-.menu-overlay-explorer__card[aria-disabled='true'] {
-    pointer-events: none;
-    opacity: 0.6;
-}
 </style>
