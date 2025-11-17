@@ -116,17 +116,19 @@
 
                                     <div class='menu-overlays__title-block flex-grow-1'>
                                         <div class='menu-overlays__title-row d-flex align-items-center gap-2'>
-                                            <a
-                                                v-if='card.overlay.mode === "mission"'
-                                                class='menu-overlays__name text-underline fw-semibold flex-grow-1'
-                                                @click.stop='router.push(`/menu/missions/${card.overlay.mode_id}`)'
-                                                v-text='card.overlay.name'
-                                            />
-                                            <span
-                                                v-else
-                                                class='menu-overlays__name fw-semibold flex-grow-1'
-                                                v-text='card.overlay.name'
-                                            />
+                                            <div class='menu-overlays__name-wrapper flex-grow-1'>
+                                                <a
+                                                    v-if='card.overlay.mode === "mission"'
+                                                    class='menu-overlays__name menu-overlays__name--link text-underline fw-semibold'
+                                                    @click.stop='router.push(`/menu/missions/${card.overlay.mode_id}`)'
+                                                    v-text='card.overlay.name'
+                                                />
+                                                <span
+                                                    v-else
+                                                    class='menu-overlays__name fw-semibold'
+                                                    v-text='card.overlay.name'
+                                                />
+                                            </div>
 
                                             <span
                                                 class='menu-overlays__status d-inline-flex align-items-center gap-1 rounded-pill px-2 py-1 small'
@@ -549,8 +551,21 @@ async function removeOverlay(id: number) {
     min-width: 0;
 }
 
+.menu-overlays__name-wrapper {
+    flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+
 .menu-overlays__name {
     min-width: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.menu-overlays__name--link {
+    width: fit-content;
 }
 
 .menu-overlays__status--success {
