@@ -109,7 +109,7 @@
         "@types/qr-image": "^3.2.9",
         "@types/sanitize-html": "^2.16.0",
         "@types/semver-sort": "^0.0.5",
-        "@types/sinon": "^20.0.0",
+        "@types/sinon": "^21.0.0",
         "@types/spritesmith": "^3.4.5",
         "@types/suncalc": "^1.9.2",
         "@types/swagger-ui-express": "^4.1.3",
