@@ -155,6 +155,10 @@ export default class Subscription {
                 await exists.refresh();
             }
 
+            if (opts.subscribed !== undefined) {
+                await exists.update({ subscribed: opts.subscribed });
+            }
+
             return exists;
         } else {
             if (!opts.subscribed) opts.subscribed = false;
