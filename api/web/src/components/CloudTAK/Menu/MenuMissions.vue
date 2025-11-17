@@ -49,7 +49,7 @@
                         />
                         <div
                             v-else
-                            class='d-flex mx-2 flex-column gap-3'
+                            class='d-flex flex-column gap-3'
                         >
                             <article
                                 v-for='(mission, mission_it) in filteredList'
@@ -64,14 +64,12 @@
                                 <div class='menu-missions__icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 p-2'>
                                     <IconLock
                                         v-if='mission.passwordProtected'
-                                        class='menu-missions__icon'
-                                        :size='32'
+                                        :size='24'
                                         stroke='1'
                                     />
                                     <IconLockOpen
                                         v-else
-                                        class='menu-missions__icon'
-                                        :size='32'
+                                        :size='24'
                                         stroke='1'
                                     />
                                 </div>
@@ -142,7 +140,7 @@
                                     <IconAccessPoint
                                         v-if='subscribed.has(mission.guid)'
                                         v-tooltip='"Subscribed"'
-                                        class='menu-missions__icon text-success'
+                                        class='text-success'
                                         :size='32'
                                         stroke='1'
                                     />
