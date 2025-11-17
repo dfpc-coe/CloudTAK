@@ -35,7 +35,7 @@
 
         <template #default>
             <div class='menu-overlays d-flex flex-column gap-3'>
-                <div class='menu-overlays__controls d-flex align-items-center gap-3 flex-wrap'>
+                <div class='menu-overlays__controls mt-2 d-flex mx-2 align-items-center gap-3 flex-wrap'>
                     <TablerInput
                         v-model='overlayFilter'
                         placeholder='Search overlays...'
@@ -57,7 +57,7 @@
                     <div
                         v-if='overlayCards.length'
                         ref='sortableRef'
-                        class='menu-overlays__list d-flex flex-column gap-3'
+                        class='menu-overlays__list d-flex flex-column gap-3 mx-2'
                     >
                         <article
                             v-for='card in overlayCards'
@@ -131,7 +131,7 @@
                                             </div>
 
                                             <span
-                                                class='badge rounded-pill text-uppercase small d-inline-flex align-items-center gap-1 px-2 py-1'
+                                                class='badge rounded-pill small d-inline-flex align-items-center gap-1 px-2 py-1'
                                                 :class='statusToneClasses[card.status.tone]'
                                                 :title='card.status.tooltip || ""'
                                             >
@@ -145,7 +145,7 @@
                                             <span
                                                 v-for='badge in card.badges'
                                                 :key='`${card.overlay.id}-${badge.label}`'
-                                                class='badge rounded-pill text-uppercase small'
+                                                class='badge rounded-pill small'
                                                 :class='badgeToneClasses[badge.tone]'
                                             >
                                                 {{ badge.label }}
