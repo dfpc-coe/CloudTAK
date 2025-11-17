@@ -140,6 +140,7 @@
                                             <span class='mx-2'>Add as Overlay</span>
                                         </div>
                                         <div
+                                            v-if='basemap.sharing_enabled'
                                             class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
                                             @click.stop.prevent='download(basemap)'
                                         >
