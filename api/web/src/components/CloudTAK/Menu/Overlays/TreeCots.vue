@@ -11,7 +11,6 @@
     <template v-else>
         <div
             v-if='Object.keys(groups).length'
-            class='ms-3'
         >
             <div class='align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
