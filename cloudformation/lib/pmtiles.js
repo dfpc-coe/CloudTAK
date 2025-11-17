@@ -22,7 +22,7 @@ export default {
             Properties: {
                 FunctionName: cf.join([cf.stackName, '-pmtiles']),
                 MemorySize: 256,
-                Timeout: 15,
+                Timeout: 60,
                 Description: 'Return Mapbox Vector Tiles from a PMTiles Store',
                 PackageType: 'Image',
                 Environment: {

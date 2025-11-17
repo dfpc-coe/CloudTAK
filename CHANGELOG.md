@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.2.2 - 2025-11-14
+
+- :rocket: Increase PMTiles Timeout
+
 ### v12.2.1 - 2025-11-14
 
 - :white_check_mark: Add Attachment Integration Tests
