@@ -2,6 +2,7 @@
     <div
         v-for='l of overlay.styles'
         :key='l.id'
+        @click.stop
     >
         <template v-if='["fill", "line", "circle", "symbol"].includes(l.type)'>
             <div class='me-2'>

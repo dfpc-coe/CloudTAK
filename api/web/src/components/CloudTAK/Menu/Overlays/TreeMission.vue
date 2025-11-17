@@ -1,6 +1,9 @@
 <template>
     <TablerLoading v-if='!subscription' />
-    <div v-else>
+    <div
+        v-else
+        @click.stop
+    >
         <MissionLayers
             :menu='false'
             :subscription='subscription'
