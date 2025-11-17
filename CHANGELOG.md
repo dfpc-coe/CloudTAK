@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.2.0 - 2025-11-14
+
+- :tada: Update Menu Styling and allow choosing between list and menu view
+- :bug: Fix bug in MissionLog DTG generation
+- :rocket: Update styling of DataPackage view
+
 ### v12.1.0 - 2025-11-14
 
 - :rocket: Detect if coordinates are entered in SearchBox and allow selection
