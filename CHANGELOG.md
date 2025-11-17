@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.3.2 - 2025-11-17
+
+- :white_check_mark: Add Basemap ArcGIS FeatureServer Tests
+
 ### v12.3.1 - 2025-11-17
 
 - :white_check_mark: Add Basemap ArcGIS Tests
