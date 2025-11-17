@@ -505,7 +505,7 @@
                 <button
                     v-if='!disabled'
                     class='btn btn-secondary'
-                    @click='fetchLease'
+                    @click='emit("close")'
                 >
                     Cancel
                 </button>
