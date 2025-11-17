@@ -263,7 +263,7 @@ onMounted(async () => {
 });
 
 async function downloadFile(): void {
-    if (!pkg.value) return '';
+    if (!pkg.value) return;
 
     const url = stdurl(`/api/marti/api/files/${pkg.value.Hash}`)
     url.searchParams.append('token', localStorage.token);
