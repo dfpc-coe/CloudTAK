@@ -2,7 +2,7 @@
     <TablerLoading v-if='!subscription' />
     <div
         v-else
-        class='ms-3'
+        @click.stop
     >
         <MissionLayers
             :menu='false'
