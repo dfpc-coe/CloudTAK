@@ -129,14 +129,6 @@
                                                     v-text='card.overlay.name'
                                                 />
                                             </div>
-
-                                            <span
-                                                class='badge rounded-pill small d-inline-flex align-items-center gap-1 px-2 py-1'
-                                                :class='statusToneClasses[card.status.tone]'
-                                                :title='card.status.tooltip || ""'
-                                            >
-                                                {{ card.status.label }}
-                                            </span>
                                         </div>
                                         <div
                                             v-if='card.badges.length'
@@ -154,50 +146,60 @@
                                     </div>
                                 </div>
 
-                                <div class='menu-overlays__card-actions d-flex align-items-center gap-2 flex-wrap'>
-                                    <TablerIconButton
-                                        v-if='card.overlay.hasBounds()'
-                                        title='Zoom To Overlay'
-                                        @click.stop.prevent='card.overlay.zoomTo()'
+                                <div class='d-flex flex-column align-items-end gap-2'>
+                                    <span
+                                        class='badge rounded-pill small d-inline-flex align-items-center gap-1 px-2 py-1'
+                                        :class='statusToneClasses[card.status.tone]'
+                                        :title='card.status.tooltip || ""'
                                     >
-                                        <IconMaximize
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
+                                        {{ card.status.label }}
+                                    </span>
 
-                                    <TablerIconButton
-                                        v-if='card.overlay.visible'
-                                        title='Hide Layer'
-                                        @click.stop.prevent='card.overlay.update({ visible: !card.overlay.visible })'
-                                    >
-                                        <IconEye
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
+                                    <div class='d-flex align-items-center gap-2 flex-wrap justify-content-end w-100'>
+                                        <TablerIconButton
+                                            v-if='card.overlay.hasBounds()'
+                                            title='Zoom To Overlay'
+                                            @click.stop.prevent='card.overlay.zoomTo()'
+                                        >
+                                            <IconMaximize
+                                                :size='20'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
 
-                                    <TablerIconButton
-                                        v-else
-                                        title='Show Layer'
-                                        @click.stop.prevent='card.overlay.update({ visible: !card.overlay.visible })'
-                                    >
-                                        <IconEyeOff
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
+                                        <TablerIconButton
+                                            v-if='card.overlay.visible'
+                                            title='Hide Layer'
+                                            @click.stop.prevent='card.overlay.update({ visible: !card.overlay.visible })'
+                                        >
+                                            <IconEye
+                                                :size='20'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
 
-                                    <TablerDelete
-                                        v-if='["mission", "data", "profile", "overlay"].includes(card.overlay.mode)'
-                                        :key='card.overlay.id'
-                                        v-tooltip='"Delete Overlay"'
-                                        :size='20'
-                                        role='button'
-                                        tabindex='0'
-                                        displaytype='icon'
-                                        @delete='removeOverlay(card.overlay.id)'
-                                    />
+                                        <TablerIconButton
+                                            v-else
+                                            title='Show Layer'
+                                            @click.stop.prevent='card.overlay.update({ visible: !card.overlay.visible })'
+                                        >
+                                            <IconEyeOff
+                                                :size='20'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
+
+                                        <TablerDelete
+                                            v-if='["mission", "data", "profile", "overlay"].includes(card.overlay.mode)'
+                                            :key='card.overlay.id'
+                                            v-tooltip='"Delete Overlay"'
+                                            :size='20'
+                                            role='button'
+                                            tabindex='0'
+                                            displaytype='icon'
+                                            @delete='removeOverlay(card.overlay.id)'
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
