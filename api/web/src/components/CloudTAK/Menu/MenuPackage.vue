@@ -54,7 +54,7 @@
             <template v-else>
                 <div class='container-fluid px-2 px-sm-3 py-4'>
                     <div class='row gy-3 gx-0 gx-lg-3'>
-                        <div class='col-12 col-lg-8'>
+                        <div class='col-12'>
                             <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
                                 <div class='card-body d-flex flex-column gap-4'>
                                     <div class='d-flex align-items-center gap-3'>
@@ -130,7 +130,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class='col-12 col-md-4'>
+                        <div class='col-12'>
                             <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
                                 <div class='card-body d-flex flex-column gap-3'>
                                     <p class='text-uppercase text-white-50 small mb-1'>
@@ -157,24 +157,6 @@
                                         />
                                         <span>Share Package</span>
                                     </button>
-                                    <a
-                                        v-if='pkg'
-                                        :href='downloadFile()'
-                                        class='btn btn-link text-white text-decoration-none w-100 d-flex align-items-center justify-content-center gap-2'
-                                    >
-                                        <IconDownload
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                        <span>Download Zip</span>
-                                    </a>
-                                    <div class='border-top border-light-subtle pt-3 mt-2'>
-                                        <small class='text-uppercase text-white-50 d-block mb-1'>Submitted By</small>
-                                        <p
-                                            class='mb-0 fw-semibold text-white'
-                                            v-text='pkg.SubmissionUser'
-                                        />
-                                    </div>
                                 </div>
                             </div>
                         </div>
