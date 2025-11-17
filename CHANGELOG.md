@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.4.0 - 2025-11-17
+
+- :rocket: Add support for Spotted CoTs
+- :rocket: Ensure an Overlay can't be added twice from Overlay Explorer
+- :bug: Don't allow XML Download is Basemap Sharing is disabled
+
 ### v12.3.2 - 2025-11-17
 
 - :white_check_mark: Add Basemap ArcGIS FeatureServer Tests
