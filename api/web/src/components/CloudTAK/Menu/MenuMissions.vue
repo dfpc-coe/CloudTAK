@@ -9,7 +9,7 @@
                 @click='create = true'
             >
                 <IconPlus
-                    :size='ICON_SIZE'
+                    :size='32'
                     stroke='1'
                 />
             </TablerIconButton>
@@ -19,8 +19,8 @@
             />
         </template>
         <template #default>
-            <div class='d-flex flex-column gap-3 p-2'>
-                <div class='d-flex mx-2 flex-column flex-sm-row align-items-sm-center gap-2'>
+            <div class='d-flex flex-column'>
+                <div class='d-flex mx-2 pt-2 flex-column flex-sm-row align-items-sm-center gap-2'>
                     <TablerInput
                         v-model='paging.filter'
                         :autofocus='true'
@@ -65,13 +65,13 @@
                                     <IconLock
                                         v-if='mission.passwordProtected'
                                         class='menu-missions__icon'
-                                        :size='ICON_SIZE'
+                                        :size='32'
                                         stroke='1'
                                     />
                                     <IconLockOpen
                                         v-else
                                         class='menu-missions__icon'
-                                        :size='ICON_SIZE'
+                                        :size='32'
                                         stroke='1'
                                     />
                                 </div>
@@ -80,6 +80,7 @@
                                     <div class='d-flex flex-wrap align-items-center gap-2'>
                                         <span
                                             class='fw-semibold text-truncate'
+                                            style='max-width: calc(100% - 20px)'
                                             v-text='mission.name'
                                         />
                                     </div>
@@ -142,7 +143,7 @@
                                         v-if='subscribed.has(mission.guid)'
                                         v-tooltip='"Subscribed"'
                                         class='menu-missions__icon text-success'
-                                        :size='ICON_SIZE'
+                                        :size='32'
                                         stroke='1'
                                     />
                                 </div>
@@ -201,7 +202,6 @@ import EmptyInfo from '../util/EmptyInfo.vue';
 import Subscription from '../../../base/subscription.ts';
 
 const mapStore = useMapStore();
-const ICON_SIZE = 24;
 
 const error = ref<Error | undefined>();
 const create = ref(false)
@@ -315,13 +315,6 @@ async function fetchMissions() {
     min-width: 3rem;
     min-height: 3rem;
     flex-shrink: 0;
-}
-
-.menu-missions__icon {
-    width: 24px;
-    height: 24px;
-    aspect-ratio: 1 / 1;
-    display: block;
 }
 
 .menu-missions__card {
