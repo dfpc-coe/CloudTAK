@@ -103,7 +103,7 @@ const props = defineProps({
 const classes = computed(() => ({
     'menu-item-card': true,
     [`menu-item-card--${props.layout}`]: true,
-    'menu-item-card--compact position-relative': props.compact,
+    'menu-item-card--compact position-relative hover-button': props.compact,
 }));
 
 const iconSize = computed(() => props.layout === 'tiles' ? 36 : 32);
