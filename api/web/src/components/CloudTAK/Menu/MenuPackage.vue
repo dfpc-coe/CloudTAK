@@ -262,7 +262,7 @@ onMounted(async () => {
     await fetch();
 });
 
-async function downloadFile(): void {
+async function downloadFile(): Promise<void> {
     if (!pkg.value) return;
 
     const url = stdurl(`/api/marti/api/files/${pkg.value.Hash}`)
