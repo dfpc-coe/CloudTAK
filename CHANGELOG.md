@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.3.0 - 2025-11-17
+
+- :rocket: Improve UI of Overlays Menu
+- :rocket: Improve UI of Overlays Explorer Menu
+- :rocket: Improve UI of Data Syncs
+
 ### v12.2.2 - 2025-11-14
 
 - :rocket: Increase PMTiles Timeout
