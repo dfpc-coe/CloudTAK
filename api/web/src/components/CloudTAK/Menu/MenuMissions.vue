@@ -9,7 +9,7 @@
                 @click='create = true'
             >
                 <IconPlus
-                    :size='32'
+                    :size='ICON_SIZE'
                     stroke='1'
                 />
             </TablerIconButton>
@@ -19,98 +19,130 @@
             />
         </template>
         <template #default>
-            <div class='col-12 px-2 py-2'>
-                <TablerInput
-                    v-model='paging.filter'
-                    :autofocus='true'
-                    icon='search'
-                    placeholder='Filter'
-                />
-            </div>
-
-            <ChannelInfo />
-
-            <EmptyInfo v-if='mapStore.hasNoChannels' />
-
-            <TablerNone
-                v-if='!list.length'
-                :create='false'
-                label='Data Syncs'
-            />
-            <TablerAlert
-                v-else-if='error'
-                :err='error'
-            />
-            <template v-else>
-                <div
-                    v-for='(mission, mission_it) in filteredList'
-                    :key='mission_it'
-                    class='cursor-pointer col-12 py-2 hover'
-                    @click='openMission(mission, false)'
-                >
-                    <div class='px-3 d-flex'>
-                        <div class='d-flex justify-content-center align-items-center'>
-                            <IconLock
-                                v-if='mission.passwordProtected'
-                                :size='32'
-                                stroke='1'
-                            />
-                            <IconLockOpen
-                                v-else
-                                :size='32'
-                                stroke='1'
-                            />
-                        </div>
-                        <div class='mx-2'>
-                            <div class='col-12'>
-                                <span v-text='mission.name' />
-                            </div>
-                            <div
-                                v-if='typeof missionPasswords[mission.guid] === "string"'
-                                class='d-flex'
-                            >
-                                <TablerInput
-                                    v-model='missionPasswords[mission.guid]'
-                                    type='password'
-                                    placeholder='Password'
-                                    :error='errors[mission.guid]'
-                                    @keyup.enter='openMission(mission, true)'
-                                />
-
-                                <button
-                                    class='btn btn-primary ms-2'
-                                    @click='openMission(mission, true)'
-                                >
-                                    Unlock
-                                </button>
-                            </div>
-                            <div
-                                v-else
-                                class='col-12'
-                            >
-                                <span
-                                    class='text-secondary'
-                                    v-text='mission.createTime.replace(/T.*/, "")'
-                                />
-                                &nbsp;-&nbsp;
-                                <span
-                                    class='text-secondary'
-                                    v-text='mission.contents.length + " Items"'
-                                />
-                            </div>
-                        </div>
-                        <div class='col-auto ms-auto align-items-center d-flex'>
-                            <IconAccessPoint
-                                v-if='subscribed.has(mission.guid)'
-                                v-tooltip='"Subscribed"'
-                                :size='32'
-                                stroke='1'
-                                class='text-green'
-                            />
-                        </div>
-                    </div>
+            <div class='d-flex flex-column gap-3 p-2'>
+                <div class='d-flex flex-column flex-sm-row align-items-sm-center gap-2'>
+                    <TablerInput
+                        v-model='paging.filter'
+                        :autofocus='true'
+                        icon='search'
+                        placeholder='Filter data syncs'
+                        class='flex-grow-1'
+                    />
                 </div>
-            </template>
+
+                <ChannelInfo />
+
+                <EmptyInfo v-if='mapStore.hasNoChannels' />
+
+                <TablerLoading v-if='loading' />
+                <template v-else>
+                    <TablerAlert
+                        v-if='error'
+                        :err='error'
+                    />
+                    <template v-else>
+                        <TablerNone
+                            v-if='!filteredList.length'
+                            :create='false'
+                            label='No data syncs match your filter'
+                            class='px-2'
+                        />
+                        <div
+                            v-else
+                            class='d-flex flex-column gap-3'
+                        >
+                            <article
+                                v-for='(mission, mission_it) in filteredList'
+                                :key='mission_it'
+                                class='border border-white border-opacity-25 rounded-4 bg-dark bg-opacity-25 p-3 text-white d-flex flex-column flex-md-row gap-3 position-relative'
+                                role='button'
+                                tabindex='0'
+                                @click='openMission(mission, false)'
+                                @keydown.enter.prevent='openMission(mission, false)'
+                                @keydown.space.prevent='openMission(mission, false)'
+                            >
+                                <div class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 p-2'>
+                                    <IconLock
+                                        v-if='mission.passwordProtected'
+                                        :size='ICON_SIZE'
+                                        stroke='1'
+                                    />
+                                    <IconLockOpen
+                                        v-else
+                                        :size='ICON_SIZE'
+                                        stroke='1'
+                                    />
+                                </div>
+
+                                <div class='flex-grow-1 d-flex flex-column gap-2'>
+                                    <div class='d-flex flex-wrap align-items-center gap-2'>
+                                        <span
+                                            class='fw-semibold text-truncate'
+                                            v-text='mission.name'
+                                        />
+                                        <span
+                                            class='badge rounded-pill text-bg-warning'
+                                            v-if='mission.passwordProtected'
+                                        >
+                                            Locked
+                                        </span>
+                                        <span
+                                            class='badge rounded-pill text-bg-success'
+                                            v-else
+                                        >
+                                            Unlocked
+                                        </span>
+                                    </div>
+
+                                    <div
+                                        v-if='typeof missionPasswords[mission.guid] === "string"'
+                                        class='d-flex flex-column flex-lg-row align-items-start gap-2'
+                                    >
+                                        <TablerInput
+                                            v-model='missionPasswords[mission.guid]'
+                                            type='password'
+                                            placeholder='Password'
+                                            :error='errors[mission.guid]'
+                                            class='flex-grow-1 w-100'
+                                            @keyup.enter='openMission(mission, true)'
+                                        />
+
+                                        <button
+                                            class='btn btn-primary px-3'
+                                            type='button'
+                                            @click.stop='openMission(mission, true)'
+                                        >
+                                            Unlock
+                                        </button>
+                                    </div>
+                                    <div
+                                        v-else
+                                        class='text-secondary small d-flex flex-wrap align-items-center gap-2'
+                                    >
+                                        <span
+                                            v-text='mission.createTime.replace(/T.*/, "")'
+                                        />
+                                        <span class='text-white-50'>•</span>
+                                        <span
+                                            v-text='mission.contents.length + " Items"'
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class='d-flex align-items-center gap-2'>
+                                    <IconAccessPoint
+                                        v-if='subscribed.has(mission.guid)'
+                                        v-tooltip='"Subscribed"'
+                                        :size='ICON_SIZE'
+                                        stroke='1'
+                                        class='text-success'
+                                    />
+                                </div>
+                            </article>
+                        </div>
+                    </template>
+                </template>
+            </div>
         </template>
     </MenuTemplate>
 
@@ -144,7 +176,8 @@ import {
     TablerInput,
     TablerNone,
     TablerAlert,
-    TablerModal
+    TablerModal,
+    TablerLoading
 } from '@tak-ps/vue-tabler';
 import type { Mission } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
@@ -160,6 +193,7 @@ import EmptyInfo from '../util/EmptyInfo.vue';
 import Subscription from '../../../base/subscription.ts';
 
 const mapStore = useMapStore();
+const ICON_SIZE = 24;
 
 const error = ref<Error | undefined>();
 const create = ref(false)
