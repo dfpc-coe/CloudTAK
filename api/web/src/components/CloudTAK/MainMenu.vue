@@ -120,21 +120,17 @@
                     class='col-12 overflow-auto noscroll'
                     style='height: calc(100% - 106px)'
                 >
-                    <div
-                        class='hover'
-                    >
-                        <MenuItemCard
-                            v-for='item in menuItems'
-                            :key='`compact-${item.key}`'
-                            :icon='item.icon'
-                            :label='item.label'
-                            :tooltip='item.tooltip'
-                            :badge='item.adminBadge'
-                            :layout='"list"'
-                            :compact='true'
-                            @select='router.push(item.route)'
-                        />
-                    </div>
+                    <MenuItemCard
+                        v-for='item in menuItems'
+                        :key='`compact-${item.key}`'
+                        :icon='item.icon'
+                        :label='item.label'
+                        :tooltip='item.tooltip'
+                        :badge='item.adminBadge'
+                        :layout='"list"'
+                        :compact='true'
+                        @select='router.push(item.route)'
+                    />
                 </div>
             </template>
 
