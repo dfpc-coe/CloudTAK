@@ -1,0 +1,225 @@
+<template>
+    <div
+        :class='classes'
+        role='menuitem'
+        tabindex='0'
+        @click='$emit("select")'
+        @keyup.enter='$emit("select")'
+    >
+        <component
+            :is='icon'
+            v-if='icon'
+            v-tooltip='tooltipBinding'
+            :title='tooltip'
+            :size='iconSize'
+            stroke='1'
+            class='menu-item-card__icon'
+        />
+
+        <span
+            v-if='compact && badge'
+            class='menu-item-card__badge menu-item-card__badge--compact'
+        >{{ badgeInitial }}</span>
+
+        <template v-if='!compact'>
+            <template v-if='layout === "tiles"'>
+                <div class='menu-item-card__body menu-item-card__body--tile'>
+                    <div class='menu-item-card__label'>
+                        {{ label }}
+                    </div>
+                    <div
+                        v-if='description'
+                        class='menu-item-card__description'
+                    >
+                        {{ description }}
+                    </div>
+                    <span
+                        v-if='badge'
+                        class='menu-item-card__badge menu-item-card__badge--tile'
+                    >{{ badge }}</span>
+                </div>
+            </template>
+            <template v-else-if='compact'>
+                <span class='menu-item-card__label menu-item-card__label--compact'>{{ label }}</span>
+            </template>
+            <template v-else>
+                <div class='menu-item-card__body'>
+                    <div class='menu-item-card__label'>
+                        {{ label }}
+                    </div>
+                    <div
+                        v-if='description'
+                        class='menu-item-card__description'
+                    >
+                        {{ description }}
+                    </div>
+                </div>
+                <span
+                    v-if='badge'
+                    class='menu-item-card__badge menu-item-card__badge--admin ms-auto'
+                >{{ badge }}</span>
+            </template>
+        </template>
+    </div>
+</template>
+
+<script setup lang='ts'>
+import { computed } from 'vue';
+import type { Component, PropType } from 'vue';
+
+type LayoutVariant = 'list' | 'tiles';
+
+const props = defineProps({
+    icon: {
+        type: Object as PropType<Component>,
+        required: true
+    },
+    label: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        default: ''
+    },
+    tooltip: {
+        type: String,
+        default: ''
+    },
+    badge: {
+        type: String,
+        default: ''
+    },
+    layout: {
+        type: String as PropType<LayoutVariant>,
+        default: 'list'
+    },
+    compact: {
+        type: Boolean,
+        default: false
+    }
+});
+
+const classes = computed(() => ({
+    'menu-item-card': true,
+    [`menu-item-card--${props.layout}`]: true,
+    'menu-item-card--compact position-relative hover-button': props.compact,
+}));
+
+const iconSize = computed(() => props.layout === 'tiles' ? 36 : 32);
+const badgeInitial = computed(() => props.badge ? props.badge[0] : '');
+const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, placement: 'left' } : undefined);
+</script>
+
+<style scoped>
+.menu-item-card--compact {
+
+}
+
+.menu-item-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #fff;
+    cursor: pointer;
+    user-select: none;
+}
+
+.menu-item-card--list:not(.menu-item-card--compact) {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.35);
+    padding: 0.85rem 1rem;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.menu-item-card--list:not(.menu-item-card--compact):hover,
+.menu-item-card--list:not(.menu-item-card--compact):focus-within {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.menu-item-card--tiles {
+    flex-direction: column;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.35);
+    padding: 1rem;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.menu-item-card--tiles:hover,
+.menu-item-card--tiles:focus-within {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.menu-item-card--compact {
+    padding: 0.5rem 0.75rem;
+}
+
+.menu-item-card__icon {
+    flex-shrink: 0;
+}
+
+.menu-item-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.menu-item-card__body--tile {
+    align-items: center;
+}
+
+.menu-item-card__label {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.menu-item-card__label--compact {
+    font-size: 0.95rem;
+}
+
+.menu-item-card__description {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.menu-item-card__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+}
+
+.menu-item-card__badge--tile {
+    border: 1px solid rgba(99, 137, 255, 0.9);
+    background-color: rgba(99, 137, 255, 0.25);
+    color: #fff;
+    margin-top: 0.5rem;
+}
+
+.menu-item-card__badge--admin {
+    border: 1px solid rgba(99, 137, 255, 0.9);
+    background-color: rgba(99, 137, 255, 0.25);
+    color: #fff;
+}
+
+.menu-item-card__badge--compact {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    font-size: 10px;
+    background: #228be6;
+    color: white;
+}
+</style>

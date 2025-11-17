@@ -202,7 +202,7 @@
                     <router-view
                         v-if='subscription'
                         :subscription='subscription'
-                        @refresh='fetchMission'
+                        @refresh='fetchMission(true)'
                     />
 
                     <template #fallback>
@@ -303,10 +303,12 @@ async function exportToPackage(format: string): Promise<void> {
     loadingInline.value = undefined;
 }
 
-async function fetchMission(): Promise<void> {
+async function fetchMission(reload = false): Promise<void> {
+    loading.value = true;
+
     try {
         subscription.value = await Subscription.load(String(route.params.mission), {
-            reload: false,
+            reload,
             token: String(localStorage.token),
             missiontoken: token.value,
         });

@@ -22,6 +22,7 @@
             <div class='col-12 px-2 py-2'>
                 <TablerInput
                     v-model='paging.filter'
+                    :autofocus='true'
                     icon='search'
                     placeholder='Filter'
                 />

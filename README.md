@@ -7,7 +7,7 @@
 <p align=center>Facilitate ETL operations to bring non-TAK data sources into a TAK Server</p>
 
 <p align='center'>
-    <a href="https://codecov.io/gh/dfpc-coe/node-CoT" >
+    <a href="https://codecov.io/gh/dfpc-coe/CloudTAK" >
         <img src="https://codecov.io/github/dfpc-coe/CloudTAK/graph/badge.svg?token=O9PK0XT9Z2"/>
     </a>
 </p>
