@@ -21,52 +21,54 @@
         />
         <div
             v-else
-            class='rows px-2'
+            class='rows px-2 d-flex flex-column gap-3'
         >
             <div
                 v-for='log in filteredLogs'
                 :key='log.id'
-                class='col-12 pb-2'
+                class='col-12'
             >
                 <TablerLoading
                     v-if='loading.ids.has(log.id)'
                     desc='Updating Log'
                 />
                 <template v-else>
-                    <div class='d-flex'>
-                        <label
-                            class='subheader'
-                            v-text='log.creatorUid'
-                        />
-                        <label
-                            class='subheader ms-auto'
-                            v-text='log.dtg'
-                        />
-                    </div>
-                    <div class='col-12 position-relative'>
-                        <CopyField
-                            mode='text'
-                            :edit='props.subscription.role.permissions.includes("MISSION_WRITE")'
-                            :deletable='props.subscription.role.permissions.includes("MISSION_WRITE")'
-                            :hover='props.subscription.role.permissions.includes("MISSION_WRITE")'
-                            :rows='Math.max(4, log.content.split("\n").length)'
-                            :model-value='log.content || ""'
-                            style='background-color: var(--tblr-body-bg)'
-                            @submit='updateLog(log.id, $event)'
-                            @delete='props.subscription.log.delete(log.id)'
-                        />
-                    </div>
-
                     <div
-                        v-if='log.keywords.length'
-                        class='col-12 pt-1'
+                        class='card bg-dark bg-opacity-50 border border-white border-opacity-25 rounded text-white w-100 p-3 d-flex gap-3 align-items-start flex-row shadow-sm'
+                        role='menuitem'
+                        tabindex='0'
                     >
-                        <span
-                            v-for='keyword in log.keywords'
-                            :key='keyword'
-                            class='me-1 badge badge-outline bg-blue-lt'
-                            v-text='keyword'
-                        />
+                        <div class='d-flex flex-column w-100'>
+                            <div class='d-flex align-items-center flex-wrap w-100 gap-2'>
+                                <div class='fw-semibold'>
+                                    {{ log.creatorUid || 'Unknown Author' }}
+                                </div>
+                                <span class='ms-auto text-white-50 small text-nowrap'>{{ formatDtg(log.dtg) }}</span>
+                            </div>
+                            <CopyField
+                                class='w-100'
+                                mode='text'
+                                :edit='props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                :deletable='props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                :hover='props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                :rows='Math.max(4, log.content.split("\n").length)'
+                                :model-value='log.content || ""'
+                                @submit='updateLog(log.id, $event)'
+                                @delete='props.subscription.log.delete(log.id)'
+                            />
+
+                            <div
+                                v-if='log.keywords.length'
+                                class='d-flex flex-wrap gap-2'
+                            >
+                                <span
+                                    v-for='keyword in log.keywords'
+                                    :key='keyword'
+                                    class='badge text-bg-primary text-uppercase rounded-pill px-3 py-1 small'
+                                    v-text='keyword'
+                                />
+                            </div>
+                        </div>
                     </div>
                 </template>
             </div>
@@ -142,7 +144,8 @@ import {
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import {
-    IconSettings
+    IconSettings,
+    IconNotes
 } from '@tabler/icons-vue';
 import { liveQuery } from "dexie";
 import MenuTemplate from '../../util/MenuTemplate.vue';
@@ -178,16 +181,33 @@ const loading = ref<{
 });
 
 const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
+    const allLogs = logs.value || [];
+
     if (paging.value.filter.trim() === '') {
-        return logs.value;
+        return allLogs;
     } else {
         const filter = paging.value.filter.toLowerCase();
 
-        return logs.value.filter((log: MissionLog) => {
+        return allLogs.filter((log: MissionLog) => {
             return log.content.toLowerCase().includes(filter);
         })
     }
 });
+
+function formatDtg(dtg?: string) {
+    if (!dtg) return 'No DTG';
+
+    const parsed = new Date(dtg);
+
+    if (Number.isNaN(parsed.getTime())) {
+        return dtg;
+    }
+
+    return parsed.toLocaleString(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+    });
+}
 
 async function updateLog(logid: string, content: string) {
     loading.value.ids.add(logid);
