@@ -42,36 +42,6 @@
                         icon='search'
                         class='flex-grow-1'
                     />
-                    <div class='menu-overlays__layout-toggle d-flex gap-2'>
-                        <TablerIconButton
-                            class='menu-overlays__layout-button rounded-2'
-                            :class='{
-                                "menu-overlays__layout-button--active": menuLayout === "list"
-                            }'
-                            title='List View'
-                            @click='setLayout("list")'
-                        >
-                            <IconLayoutList
-                                :size='28'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
-                        <TablerIconButton
-                            class='menu-overlays__layout-button rounded-2'
-                            :class='[
-                                { "menu-overlays__layout-button--active": menuLayout === "tiles" },
-                                { "pe-none": isDraggable },
-                                { "opacity-50": isDraggable }
-                            ]'
-                            :title='tileLayoutTitle'
-                            @click='setLayout("tiles")'
-                        >
-                            <IconLayoutGrid
-                                :size='28'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
-                    </div>
                 </div>
 
                 <p
@@ -87,11 +57,7 @@
                     <div
                         v-if='overlayCards.length'
                         ref='sortableRef'
-                        class='menu-overlays__list'
-                        :class='[
-                            `menu-overlays__list--${menuLayout}`,
-                            menuLayout === "list" ? ["d-flex", "flex-column"] : []
-                        ]'
+                        class='menu-overlays__list d-flex flex-column'
                     >
                         <article
                             v-for='card in overlayCards'
@@ -99,15 +65,24 @@
                             :key='card.overlay.id'
                             class='menu-overlays__card'
                             :class='{
-                                "menu-overlays__card--dragging": isDraggable,
-                                "menu-overlays__card--tiles": menuLayout === "tiles"
+                                "menu-overlays__card--dragging": isDraggable
                             }'
                         >
                             <div
                                 class='menu-overlays__card-main d-flex justify-content-between gap-3'
-                                :class='menuLayout === "tiles" ? ["flex-column", "align-items-start"] : []'
                             >
-                                <div class='menu-overlays__card-info d-flex align-items-center gap-2 flex-grow-1'>
+                                <div
+                                    class='menu-overlays__card-info d-flex align-items-center gap-2 flex-grow-1'
+                                    :class='{
+                                        "cursor-pointer": !isDraggable && card.overlay.id !== 0
+                                    }'
+                                    role='button'
+                                    :tabindex='!isDraggable && card.overlay.id !== 0 ? 0 : -1'
+                                    :aria-disabled='isDraggable || card.overlay.id === 0'
+                                    @click='handleCardClick(card.overlay.id)'
+                                    @keydown.enter.prevent='handleCardKeydown(card.overlay.id)'
+                                    @keydown.space.prevent='handleCardKeydown(card.overlay.id)'
+                                >
                                     <IconGripVertical
                                         v-if='isDraggable'
                                         v-tooltip='"Drag to reorder"'
@@ -144,7 +119,7 @@
                                             <a
                                                 v-if='card.overlay.mode === "mission"'
                                                 class='menu-overlays__name text-underline fw-semibold flex-grow-1'
-                                                @click='router.push(`/menu/missions/${card.overlay.mode_id}`)'
+                                                @click.stop='router.push(`/menu/missions/${card.overlay.mode_id}`)'
                                                 v-text='card.overlay.name'
                                             />
                                             <span
@@ -178,28 +153,7 @@
                                     </div>
                                 </div>
 
-                                <div
-                                    class='menu-overlays__card-actions d-flex align-items-center gap-2'
-                                    :class='menuLayout === "tiles" ? ["w-100", "justify-content-start", "flex-wrap"] : []'
-                                >
-                                    <TablerIconButton
-                                        v-if='!isDraggable && card.overlay.id !== 0'
-                                        class='menu-overlays__collapse-btn'
-                                        :title='opened.has(card.overlay.id) ? "Collapse Options" : "Expand Options"'
-                                        @click='toggleOverlay(card.overlay.id)'
-                                    >
-                                        <IconChevronDown
-                                            v-if='opened.has(card.overlay.id)'
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                        <IconChevronRight
-                                            v-else
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
-
+                                <div class='menu-overlays__card-actions d-flex align-items-center gap-2 flex-wrap'>
                                     <TablerIconButton
                                         v-if='card.overlay.hasBounds()'
                                         title='Zoom To Overlay'
@@ -312,8 +266,6 @@ import TreeVector from './Overlays/TreeVector.vue';
 import TreeMission from './Overlays/TreeMission.vue';
 import {
     IconGripVertical,
-    IconChevronRight,
-    IconChevronDown,
     IconAmbulance,
     IconMaximize,
     IconVector,
@@ -322,16 +274,13 @@ import {
     IconPencilCheck,
     IconPlus,
     IconEye,
-    IconMap,
-    IconLayoutGrid,
-    IconLayoutList
+    IconMap
 } from '@tabler/icons-vue';
 import Sortable from 'sortablejs';
 import type { SortableEvent } from 'sortablejs';
 import { useMapStore } from '../../../../src/stores/map.ts';
 import type Overlay from '../../../../src/base/overlay.ts';
 
-type LayoutVariant = 'list' | 'tiles';
 type OverlayBadgeTone = 'primary' | 'neutral' | 'mission' | 'warning' | 'muted';
 type OverlayBadge = { label: string; tone: OverlayBadgeTone };
 type OverlayStatusTone = 'success' | 'warning' | 'danger';
@@ -347,11 +296,6 @@ const isDraggable = ref(false);
 const loading = ref(false);
 const opened = ref<Set<number>>(new Set());
 const overlayFilter = ref('');
-const overlayLayoutKey = 'cloudtak-overlay-layout';
-const storedLayoutPref = typeof window !== 'undefined'
-    ? localStorage.getItem(overlayLayoutKey)
-    : null;
-const preferredLayout = ref<LayoutVariant>(storedLayoutPref === 'tiles' ? 'tiles' : 'list');
 
 const isLoaded = mapStore.isLoaded;
 const overlays = (mapStore as unknown as { overlays: Overlay[] }).overlays;
@@ -359,7 +303,6 @@ const overlays = (mapStore as unknown as { overlays: Overlay[] }).overlays;
 const sortableRef = useTemplateRef<HTMLElement>('sortableRef');
 
 const hasSearchTerm = computed(() => overlayFilter.value.trim().length > 0);
-const menuLayout = computed<LayoutVariant>(() => preferredLayout.value);
 
 const filteredOverlays = computed<Overlay[]>(() => {
     const term = overlayFilter.value.trim().toLowerCase();
@@ -384,39 +327,25 @@ const overlayCards = computed<OverlayCard[]>(() => filteredOverlays.value.map((o
     badges: getOverlayBadges(overlay)
 })));
 
-const canEditOrder = computed(() => {
-    return menuLayout.value === 'list'
-        && !hasSearchTerm.value
-        && overlays.length > 1;
-});
+const canEditOrder = computed(() => !hasSearchTerm.value && overlays.length > 1);
 
 const showDragHint = computed(() => overlays.length > 1 && !isDraggable.value && !canEditOrder.value);
 
 const dragHintCopy = computed(() => {
     if (!showDragHint.value) return '';
-
-    const requirements: string[] = [];
-    if (menuLayout.value !== 'list') requirements.push('switch to list view');
-    if (hasSearchTerm.value) requirements.push('clear the search');
-
-    return `Reordering available once you ${requirements.join(' and ')}.`;
+    return 'Reordering available once you clear the search.';
 });
 
 const reorderButtonTitle = computed(() => {
     if (isDraggable.value) return 'Save Order';
     if (!canEditOrder.value) {
         if (overlays.length <= 1) return 'Add another overlay to reorder';
-        return 'Switch to list view and clear search to reorder overlays';
+        return 'Clear the search to reorder overlays';
     }
     return 'Edit Order';
 });
-
-const tileLayoutTitle = computed(() => {
-    if (isDraggable.value) return 'Finish editing order before switching layouts';
-    return 'Tile View';
-});
-
-watch([overlayFilter, menuLayout], () => {
+ 
+watch(overlayFilter, () => {
     if (isDraggable.value && !canEditOrder.value) {
         isDraggable.value = false;
     }
@@ -426,11 +355,10 @@ watch(
     () => ({
         container: sortableRef.value,
         draggable: isDraggable.value,
-        layout: menuLayout.value,
         hasSearch: hasSearchTerm.value
     }),
-    ({ container, draggable, layout, hasSearch }) => {
-        const canSort = !!container && draggable && layout === 'list' && !hasSearch;
+    ({ container, draggable, hasSearch }) => {
+        const canSort = !!container && draggable && !hasSearch;
         if (canSort && container) {
             if (sortable && sortable.el === container) return;
             if (sortable) sortable.destroy();
@@ -455,20 +383,6 @@ onBeforeUnmount(() => {
     }
 });
 
-function setLayout(mode: LayoutVariant) {
-    if (preferredLayout.value === mode) return;
-
-    if (mode === 'tiles') {
-        isDraggable.value = false;
-    }
-
-    preferredLayout.value = mode;
-
-    if (typeof window !== 'undefined') {
-        localStorage.setItem(overlayLayoutKey, mode);
-    }
-}
-
 function handleReorderToggle() {
     if (isDraggable.value) {
         isDraggable.value = false;
@@ -486,6 +400,16 @@ function toggleOverlay(id: number) {
     } else {
         opened.value.add(id);
     }
+}
+
+function handleCardClick(id: number) {
+    if (isDraggable.value) return;
+    if (id === 0) return;
+    toggleOverlay(id);
+}
+
+function handleCardKeydown(id: number) {
+    handleCardClick(id);
 }
 
 function resolveOverlayStatus(overlay: Overlay): OverlayStatus {
@@ -585,14 +509,6 @@ async function removeOverlay(id: number) {
 </script>
 
 <style scoped>
-.menu-overlays__layout-button {
-    background-color: rgba(255, 255, 255, 0.08);
-}
-
-.menu-overlays__layout-button--active {
-    background-color: rgba(99, 137, 255, 0.35);
-}
-
 .menu-overlays__hint {
     color: rgba(255, 255, 255, 0.75);
 }
@@ -601,23 +517,24 @@ async function removeOverlay(id: number) {
     gap: 0.75rem;
 }
 
-.menu-overlays__list--tiles {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-}
-
 .menu-overlays__card {
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 14px;
     background-color: rgba(0, 0, 0, 0.35);
     padding: 0.85rem 1rem;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .menu-overlays__card--dragging {
     border-color: rgba(99, 137, 255, 0.6);
     box-shadow: 0 0 0 1px rgba(99, 137, 255, 0.5);
+}
+
+.menu-overlays__card:hover,
+.menu-overlays__card:focus-within {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 .menu-overlays__drag-handle {
