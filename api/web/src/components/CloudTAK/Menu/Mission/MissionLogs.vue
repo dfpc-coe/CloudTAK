@@ -34,7 +34,7 @@
                 />
                 <template v-else>
                     <div
-                        class='card bg-dark bg-opacity-50 border border-white border-opacity-25 rounded text-white w-100 p-3 d-flex gap-3 align-items-start flex-row shadow-sm'
+                        class='card bg-dark bg-opacity-50 border border-white border-opacity-25 rounded text-white w-100 p-2 d-flex gap-3 align-items-start flex-row shadow-sm'
                         role='menuitem'
                         tabindex='0'
                     >
@@ -73,15 +73,20 @@
                 </template>
             </div>
         </div>
-
-        <TablerLoading
-            v-if='loading.create'
-            desc='Creating Log'
-            :compact='true'
-        />
-
         <template v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'>
-            <div class='mx-2'>
+            <div
+                class='mx-2 position-relative'
+                :aria-busy='loading.create'
+            >
+                <div
+                    v-if='loading.create'
+                    class='position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-75 rounded-4 z-3'
+                >
+                    <TablerLoading
+                        desc='Creating Log'
+                        :compact='true'
+                    />
+                </div>
                 <TablerInput
                     v-model='createLog.content'
                     label='Create Log'
@@ -117,6 +122,7 @@
                     <div class='ms-auto'>
                         <button
                             class='btn btn-primary'
+                            :disabled='loading.create'
                             @click='submitLog'
                         >
                             Save Log
@@ -225,17 +231,21 @@ async function updateLog(logid: string, content: string) {
 }
 
 async function submitLog() {
-    try {
-        loading.value.logs = true;
+    if (loading.value.create || !createLog.value.content.trim()) return;
 
+    loading.value.logs = true;
+    loading.value.create = true;
+
+    try {
         await props.subscription.log.create(
             createLog.value
         );
 
         createLog.value.content = '';
-    } catch (err) {
+        createLog.value.keywords = [];
+    } finally {
         loading.value.create = false;
-        throw err;
+        loading.value.logs = false;
     }
 }
 </script>
