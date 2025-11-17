@@ -39,7 +39,7 @@
                 @staged='uploadStaged($event)'
                 @error='error = $event'
                 @cancel='upload = false'
-                @done='upload = false'
+                @done='doneUpload'
             />
         </div>
 
@@ -163,6 +163,11 @@ const uploadHeaders = computed(() => {
 
     return headers;
 });
+
+async function doneUpload() {
+    upload.value = false;
+    emit("refresh");
+}
 
 async function uploadStaged(ev: { name: string }) {
 
