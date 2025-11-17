@@ -46,7 +46,7 @@
 
                 <p
                     v-if='showDragHint'
-                    class='menu-overlays__hint small mb-0'
+                    class='small mb-0 text-white-50'
                 >
                     {{ dragHintCopy }}
                 </p>
@@ -57,13 +57,13 @@
                     <div
                         v-if='overlayCards.length'
                         ref='sortableRef'
-                        class='menu-overlays__list d-flex flex-column'
+                        class='menu-overlays__list d-flex flex-column gap-3'
                     >
                         <article
                             v-for='card in overlayCards'
                             :id='String(card.overlay.id)'
                             :key='card.overlay.id'
-                            class='menu-overlays__card'
+                            class='menu-overlays__card border border-white border-opacity-25 rounded-4 bg-black bg-opacity-25 p-3 shadow-sm'
                             :class='{
                                 "menu-overlays__card--dragging": isDraggable
                             }'
@@ -72,7 +72,7 @@
                                 class='menu-overlays__card-main d-flex justify-content-between gap-3'
                             >
                                 <div
-                                    class='menu-overlays__card-info d-flex align-items-center gap-2 flex-grow-1'
+                                    class='menu-overlays__card-info d-flex align-items-center gap-2 flex-grow-1 w-100 overflow-hidden'
                                     :class='{
                                         "cursor-pointer": !isDraggable && card.overlay.id !== 0
                                     }'
@@ -86,7 +86,7 @@
                                     <IconGripVertical
                                         v-if='isDraggable'
                                         v-tooltip='"Drag to reorder"'
-                                        class='drag-handle cursor-move menu-overlays__drag-handle'
+                                        class='drag-handle cursor-move text-white-50'
                                         role='button'
                                         tabindex='0'
                                         :size='20'
@@ -97,45 +97,44 @@
                                         v-tooltip='"Raster"'
                                         :size='20'
                                         stroke='1'
-                                        class='menu-overlays__type-icon'
+                                        class='flex-shrink-0 text-white-50'
                                     />
                                     <IconAmbulance
                                         v-else-if='card.overlay.type === "geojson" && card.overlay.mode === "mission"'
                                         v-tooltip='"Data Sync"'
                                         :size='20'
                                         stroke='1'
-                                        class='menu-overlays__type-icon'
+                                        class='flex-shrink-0 text-white-50'
                                     />
                                     <IconVector
                                         v-else
                                         v-tooltip='"Vector"'
                                         :size='20'
                                         stroke='1'
-                                        class='menu-overlays__type-icon'
+                                        class='flex-shrink-0 text-white-50'
                                     />
 
-                                    <div class='menu-overlays__title-block flex-grow-1'>
-                                        <div class='menu-overlays__title-row d-flex align-items-center gap-2'>
-                                            <div class='menu-overlays__name-wrapper flex-grow-1'>
+                                    <div class='menu-overlays__title-block flex-grow-1 w-100 overflow-hidden'>
+                                        <div class='menu-overlays__title-row d-flex align-items-center gap-2 w-100'>
+                                            <div class='menu-overlays__name-wrapper d-flex align-items-center flex-grow-1 w-100 overflow-hidden'>
                                                 <a
                                                     v-if='card.overlay.mode === "mission"'
-                                                    class='menu-overlays__name menu-overlays__name--link text-underline fw-semibold'
+                                                    class='menu-overlays__name menu-overlays__name--link fw-semibold text-decoration-underline d-inline-flex align-items-center'
                                                     @click.stop='router.push(`/menu/missions/${card.overlay.mode_id}`)'
                                                     v-text='card.overlay.name'
                                                 />
                                                 <span
                                                     v-else
-                                                    class='menu-overlays__name fw-semibold'
+                                                    class='menu-overlays__name fw-semibold d-inline-flex align-items-center flex-grow-1 text-truncate'
                                                     v-text='card.overlay.name'
                                                 />
                                             </div>
 
                                             <span
-                                                class='menu-overlays__status d-inline-flex align-items-center gap-1 rounded-pill px-2 py-1 small'
-                                                :class='`menu-overlays__status--${card.status.tone}`'
+                                                class='badge rounded-pill text-uppercase small d-inline-flex align-items-center gap-1 px-2 py-1'
+                                                :class='statusToneClasses[card.status.tone]'
                                                 :title='card.status.tooltip || ""'
                                             >
-                                                <span class='menu-overlays__status-dot' />
                                                 {{ card.status.label }}
                                             </span>
                                         </div>
@@ -146,8 +145,8 @@
                                             <span
                                                 v-for='badge in card.badges'
                                                 :key='`${card.overlay.id}-${badge.label}`'
-                                                class='menu-overlays__badge'
-                                                :class='`menu-overlays__badge--${badge.tone}`'
+                                                class='badge rounded-pill text-uppercase small'
+                                                :class='badgeToneClasses[badge.tone]'
                                             >
                                                 {{ badge.label }}
                                             </span>
@@ -205,11 +204,11 @@
                             <transition name='menu-overlays-fade'>
                                 <div
                                     v-if='!isDraggable && opened.has(card.overlay.id)'
-                                    class='menu-overlays__card-details'
+                                    class='mt-3 p-3 rounded-3 border border-white border-opacity-10 bg-black bg-opacity-25'
                                 >
                                     <div
                                         v-if='card.overlay.type === "raster"'
-                                        class='menu-overlays__detail'
+                                        class='mb-3'
                                     >
                                         <TablerRange
                                             v-model='card.overlay.opacity'
@@ -222,14 +221,18 @@
                                             })'
                                         />
                                     </div>
-                                    <TreeCots
+                                    <div
                                         v-if='card.overlay.type === "geojson" && card.overlay.id === -1'
-                                        :element='card.overlay'
-                                    />
-                                    <TreeMission
+                                        class='mb-3'
+                                    >
+                                        <TreeCots :element='card.overlay' />
+                                    </div>
+                                    <div
                                         v-if='card.overlay.mode === "mission"'
-                                        :overlay='card.overlay'
-                                    />
+                                        class='mb-3'
+                                    >
+                                        <TreeMission :overlay='card.overlay' />
+                                    </div>
                                     <TreeVector
                                         v-if='card.overlay.type === "vector"'
                                         :overlay='card.overlay'
@@ -291,6 +294,20 @@ type OverlayCard = { overlay: Overlay; status: OverlayStatus; badges: OverlayBad
 
 const mapStore = useMapStore();
 const router = useRouter();
+
+const statusToneClasses: Record<OverlayStatusTone, string> = {
+    success: 'bg-success-subtle text-success-emphasis border border-success border-opacity-50',
+    warning: 'bg-warning-subtle text-warning-emphasis border border-warning border-opacity-50',
+    danger: 'bg-danger-subtle text-danger-emphasis border border-danger border-opacity-50'
+};
+
+const badgeToneClasses: Record<OverlayBadgeTone, string> = {
+    mission: 'bg-primary text-white border border-primary border-opacity-50',
+    primary: 'bg-info-subtle text-info-emphasis border border-info border-opacity-50',
+    neutral: 'bg-light bg-opacity-10 text-light border border-light border-opacity-25',
+    warning: 'bg-warning-subtle text-warning-emphasis border border-warning border-opacity-50',
+    muted: 'bg-secondary-subtle text-secondary-emphasis border border-secondary border-opacity-50'
+};
 
 let sortable: Sortable | undefined;
 
@@ -511,40 +528,20 @@ async function removeOverlay(id: number) {
 </script>
 
 <style scoped>
-.menu-overlays__hint {
-    color: rgba(255, 255, 255, 0.75);
-}
-
-.menu-overlays__list {
-    gap: 0.75rem;
-}
-
 .menu-overlays__card {
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 14px;
-    background-color: rgba(0, 0, 0, 0.35);
-    padding: 0.85rem 1rem;
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .menu-overlays__card--dragging {
-    border-color: rgba(99, 137, 255, 0.6);
+    border-color: rgba(99, 137, 255, 0.6) !important;
     box-shadow: 0 0 0 1px rgba(99, 137, 255, 0.5);
 }
 
 .menu-overlays__card:hover,
 .menu-overlays__card:focus-within {
     transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.4) !important;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-}
-
-.menu-overlays__drag-handle {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.menu-overlays__type-icon {
-    flex-shrink: 0;
 }
 
 .menu-overlays__title-block {
@@ -552,10 +549,7 @@ async function removeOverlay(id: number) {
 }
 
 .menu-overlays__name-wrapper {
-    flex-grow: 1;
     min-width: 0;
-    display: flex;
-    align-items: center;
 }
 
 .menu-overlays__name {
@@ -566,71 +560,6 @@ async function removeOverlay(id: number) {
 
 .menu-overlays__name--link {
     width: fit-content;
-}
-
-.menu-overlays__status--success {
-    background-color: rgba(47, 179, 68, 0.2);
-    color: #2fb344;
-}
-
-.menu-overlays__status--warning {
-    background-color: rgba(247, 161, 0, 0.2);
-    color: #f7a100;
-}
-
-.menu-overlays__status--danger {
-    background-color: rgba(214, 57, 57, 0.25);
-    color: #d63939;
-}
-
-.menu-overlays__status-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: currentColor;
-}
-
-.menu-overlays__badge {
-    font-size: 0.75rem;
-    padding: 0.1rem 0.5rem;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.menu-overlays__badge--mission {
-    border-color: rgba(99, 137, 255, 0.9);
-    background-color: rgba(99, 137, 255, 0.25);
-}
-
-.menu-overlays__badge--primary {
-    border-color: rgba(36, 163, 255, 0.9);
-    background-color: rgba(36, 163, 255, 0.2);
-}
-
-.menu-overlays__badge--neutral {
-    border-color: rgba(255, 255, 255, 0.35);
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.menu-overlays__badge--muted {
-    border-color: rgba(120, 120, 120, 0.8);
-    background-color: rgba(120, 120, 120, 0.2);
-}
-
-.menu-overlays__card-details {
-    margin-top: 0.75rem;
-    padding: 0.75rem;
-    border-radius: 10px;
-    background-color: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.menu-overlays__detail {
-    margin-bottom: 0.75rem;
-}
-
-.menu-overlays__detail:last-child {
-    margin-bottom: 0;
 }
 
 .menu-overlays-fade-enter-active,
