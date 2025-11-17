@@ -151,7 +151,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconSettings,
-    IconNotes
 } from '@tabler/icons-vue';
 import { liveQuery } from "dexie";
 import MenuTemplate from '../../util/MenuTemplate.vue';
