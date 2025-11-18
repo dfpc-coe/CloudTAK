@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.5.0 - 2025-11-18
+
+- :rocket: Refine Mobile Detection to match Bootstrap 5
+- :tada: Use TablerModal when in mobile mode
+- :rocket: Add Preserve History option for Outgoing ArcGIS Layers
+
 ### v12.4.1 - 2025-11-18
 
 - :arrow_up: Update MediaServer@7.1.0
