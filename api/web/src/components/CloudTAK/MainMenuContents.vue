@@ -2,7 +2,25 @@
     <template
         v-if='!["home", "home-menu"].includes(String(route.name))'
     >
-        <router-view />
+        <template v-if='modal'>
+            <div class='modal-header'>
+                <div class='modal-title'>
+                    Main Menu
+                </div>
+
+                <button
+                    type='button'
+                    class='btn-close'
+                    aria-label='Close'
+                    @click='emit("close")'
+                />
+            </div>
+
+            <router-view />
+        </template>
+        <template v-else>
+            <router-view />
+        </template>
     </template>
     <template v-else>
         <div

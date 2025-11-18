@@ -8,9 +8,9 @@
             class='position-relative w-100 h-100 px-0'
         >
             <MainMenuContents
-                @close='router.push("/")'
                 :compact='false'
                 :modal='true'
+                @close='router.push("/")'
             />
         </div>
     </TablerModal>
@@ -56,10 +56,9 @@ import {
     TablerModal,
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../stores/map.ts';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import MainMenuContents from './MainMenuContents.vue';
 
-const route = useRoute();
 const router = useRouter();
 
 const mapStore = useMapStore();
