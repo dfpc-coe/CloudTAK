@@ -35,21 +35,6 @@ export default defineConfig(({ mode }) => {
                     cleanupOutdatedCaches: true,
                     // Ensure all navigation requests go through service worker
                     navigationPreload: true,
-                    // Runtime caching strategy for API calls
-                    runtimeCaching: [
-                        {
-                            urlPattern: /^https:\/\/.*\/api\/.*/i,
-                            handler: 'NetworkFirst',
-                            options: {
-                                cacheName: 'api-cache',
-                                expiration: {
-                                    maxEntries: 50,
-                                    maxAgeSeconds: 60 * 60 // 1 hour
-                                },
-                                networkTimeoutSeconds: 10
-                            }
-                        }
-                    ]
                 }
             })
         ],
