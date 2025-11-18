@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.5.1 - 2025-11-18
+
+- :rocket: Remove smaller DB sizes that aren't compatible with Aurora Postgres
+
 ### v12.5.0 - 2025-11-18
 
 - :rocket: Refine Mobile Detection to match Bootstrap 5
