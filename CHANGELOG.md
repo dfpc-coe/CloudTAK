@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.4.1 - 2025-11-18
+
+- :arrow_up: Update MediaServer@7.1.0
+
 ### v12.4.0 - 2025-11-17
 
 - :rocket: Add support for Spotted CoTs
