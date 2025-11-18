@@ -31,7 +31,10 @@
                 :size='24'
             />
 
-            <div class='mx-2'>
+            <div
+                class='mx-2'
+                style='max-width: calc(100% - 100px);'
+            >
                 <div
                     class='text-sm text-truncate'
                     v-text='title'
