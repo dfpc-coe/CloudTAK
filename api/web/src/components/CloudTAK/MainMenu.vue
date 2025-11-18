@@ -1,14 +1,17 @@
 <template>
     <TablerModal
         v-if='mapStore.isMobileDetected'
-        :header='String(route.name) === "home-menu" ? "Main Menu" : ""'
         size='xl'
     >
         <div
             ref='menu'
             class='position-relative w-100 h-100 px-0'
         >
-            <MainMenuContents :compact='false' />
+            <MainMenuContents
+                @close='router.push("/")'
+                :compact='false'
+                :modal='true'
+            />
         </div>
     </TablerModal>
     <template v-else>
@@ -53,10 +56,11 @@ import {
     TablerModal,
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../stores/map.ts';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import MainMenuContents from './MainMenuContents.vue';
 
 const route = useRoute();
+const router = useRouter();
 
 const mapStore = useMapStore();
 
