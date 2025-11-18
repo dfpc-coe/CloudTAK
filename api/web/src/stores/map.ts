@@ -50,6 +50,7 @@ export const useMapStore = defineStore('cloudtak', {
         location: LocationState;
         distanceUnit: string;
         manualLocationMode: boolean;
+        mobileDetected: boolean;
         gpsWatchId: number | null;
 
         toastOffset: {
@@ -110,6 +111,7 @@ export const useMapStore = defineStore('cloudtak', {
             toastOffset: { x: 70, y: 10 },
             manualLocationMode: false,
             gpsWatchId: null,
+            mobileDetected: false,
             locked: [],
             hasTerrain: false,
             hasNoChannels: false,
