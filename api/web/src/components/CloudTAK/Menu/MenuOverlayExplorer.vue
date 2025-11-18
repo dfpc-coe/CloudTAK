@@ -42,7 +42,9 @@
                                             Local
                                         </span>
                                     </div>
-                                    <p class='menu-overlay-explorer__description mb-0 small'>Access overlays you have uploaded</p>
+                                    <p class='menu-overlay-explorer__description mb-0 small'>
+                                        Access overlays you have uploaded
+                                    </p>
                                 </div>
                             </div>
                             <div class='menu-overlays__card-actions d-flex align-items-center gap-2 flex-wrap'>
