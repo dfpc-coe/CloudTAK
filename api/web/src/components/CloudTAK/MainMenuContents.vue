@@ -8,9 +8,10 @@
         <div
             v-if='!compact'
             class='sticky-top col-12 border-bottom border-light'
-            style='border-radius: 0px;'
             :class='{
-                "bg-dark": !compact
+                "bg-dark rounded-0": !compact,
+                "rounded-0": !modal,
+                "rounded-top": modal
             }'
         >
             <div class='modal-header px-0 mx-2 align-center'>
@@ -18,7 +19,7 @@
                     Main Menu
                 </div>
 
-                <div class='ms-auto d-flex align-items-center menu-layout-toggle'>
+                <div class='ms-auto btn-list d-flex align-items-center menu-layout-toggle'>
                     <TablerIconButton
                         v-if='preferredLayout !== "list"'
                         title='List View'
@@ -35,6 +36,17 @@
                         @click='setPreferredLayout("tiles")'
                     >
                         <IconLayoutGrid
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+
+                    <TablerIconButton
+                        v-if='props.modal'
+                        title='Close Menu'
+                        @click='emit("close")'
+                    >
+                        <IconX
                             :size='32'
                             stroke='1'
                         />
@@ -108,7 +120,9 @@
     <div
         class='position-absolute bottom-0 start-0 end-0'
         :class='{
-            "bg-dark border-top border-white": !compact && String(route.name) === "home-menu"
+            "bg-dark border-top border-white": !compact && String(route.name) === "home-menu",
+            "rounded-0": !modal,
+            "rounded-bottom": modal
         }'
     >
         <div
@@ -230,6 +244,7 @@
 import { ref, onMounted, computed } from 'vue';
 import type { Component } from 'vue';
 import {
+    IconX,
     IconBug,
     IconMap,
     IconUser,
@@ -270,6 +285,10 @@ const router = useRouter();
 
 const mapStore = useMapStore();
 const brandStore = useBrandStore();
+
+const emit = defineEmits<{
+    (e: 'close'): void;
+}>();
 
 const version = ref('');
 const username = ref<string>('Username')
@@ -436,6 +455,7 @@ const baseMenuItems: MenuItemConfig[] = [
 
 const props = defineProps({
     compact: Boolean,
+    modal: Boolean
 })
 
 const storedLayoutPref = typeof window !== 'undefined' ? localStorage.getItem('cloudtak-menu-layout') : null;
