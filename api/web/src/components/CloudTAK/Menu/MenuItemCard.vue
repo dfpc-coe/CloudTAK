@@ -112,10 +112,6 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
 </script>
 
 <style scoped>
-.menu-item-card--compact {
-
-}
-
 .menu-item-card {
     display: flex;
     align-items: center;

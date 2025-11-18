@@ -544,6 +544,8 @@ const locationClickHandler = ref<((e: MapMouseEvent) => void) | null>(null);
 const height = ref<number>(window.innerHeight);
 const width = ref<number>(window.innerWidth);
 
+mapStore.mobileDetected = detectMobile();
+
 // Show a popup if no channels are selected on load
 const warnChannels = ref<boolean>(false)
 
@@ -569,13 +571,21 @@ const notifications = useObservable<number>(
     }))
 );
 
-const mobileDetected = computed(() => {
+function detectMobile() {
   //TODO: This needs to follow something like:
   // https://stackoverflow.com/questions/47219272/how-can-i-monitor-changing-window-sizes-in-vue
-  return (
-    ( width.value <= 800 )
-    || ( height.value <= 800 )
-  );
+    return (
+        ( width.value <= 800 )
+        || ( height.value <= 800 )
+    );
+}
+
+const mobileDetected = computed(() => {
+    return detectMobile();
+});
+
+watch(mobileDetected, () => {
+    mapStore.mobileDetected = mobileDetected.value;
 });
 
 const displayZoom = computed(() => {
