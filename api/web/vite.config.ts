@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
         plugins: [
             vue(),
             VitePWA({
-                registerType: 'autoUpdate',
+                registerType: 'prompt',
                 manifest: {
                     name: 'CloudTAK',
                     short_name: 'CloudTAK',
@@ -30,7 +30,9 @@ export default defineConfig(({ mode }) => {
                 workbox: {
                     maximumFileSizeToCacheInBytes: 3000000,
                     clientsClaim: true,
-                    skipWaiting: true
+                    skipWaiting: true,
+                    // Clean up outdated caches automatically
+                    cleanupOutdatedCaches: true,
                 }
             })
         ],
@@ -45,9 +47,9 @@ export default defineConfig(({ mode }) => {
                     video: path.resolve(__dirname, 'video.html'),
                 },
                 output: {
-                    entryFileNames: `assets/[name].js`,
-                    chunkFileNames: `assets/[name].js`,
-                    assetFileNames: `assets/[name].[ext]`
+                    entryFileNames: `assets/[name]-[hash].js`,
+                    chunkFileNames: `assets/[name]-[hash].js`,
+                    assetFileNames: `assets/[name]-[hash].[ext]`
                 }
             },
         },
