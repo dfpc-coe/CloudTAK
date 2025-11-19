@@ -54,7 +54,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { server } from '../../../std.ts';
-import type { PackageList, Package } from '../../../types.ts';
+import type { ServerAdminPackageList } from '../../../types.ts';
 import {
     TablerRefreshButton,
     TablerLoading,
@@ -65,7 +65,7 @@ import {
 
 const loading = ref(true);
 const error = ref<Error | undefined>();
-const list = ref<PackageList>({
+const list = ref<ServerAdminPackageList>({
     total: 0,
     items: []
 })
@@ -91,7 +91,7 @@ async function fetchList() {
     }
 }
 
-async function deletePackage(pkg: Package) {
+async function deletePackage(pkg: ServerAdminPackageList["items"][0]) {
     loading.value = true;
     try {
         await server.DELETE(`/api/server/package/{:hash}`, {
