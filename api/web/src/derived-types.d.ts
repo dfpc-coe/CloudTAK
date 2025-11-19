@@ -4501,6 +4501,7 @@ export interface paths {
                                         type?: string;
                                         point?: string;
                                         callsign?: string;
+                                        mission?: string;
                                         url?: string;
                                         mime?: string;
                                         remarks?: string;
@@ -4932,6 +4933,7 @@ export interface paths {
                                     type?: string;
                                     point?: string;
                                     callsign?: string;
+                                    mission?: string;
                                     url?: string;
                                     mime?: string;
                                     remarks?: string;
@@ -5362,6 +5364,7 @@ export interface paths {
                                     type?: string;
                                     point?: string;
                                     callsign?: string;
+                                    mission?: string;
                                     url?: string;
                                     mime?: string;
                                     remarks?: string;
@@ -5618,6 +5621,7 @@ export interface paths {
                                             type?: string;
                                             point?: string;
                                             callsign?: string;
+                                            mission?: string;
                                             url?: string;
                                             mime?: string;
                                             remarks?: string;
@@ -5961,6 +5965,7 @@ export interface paths {
                                     type?: string;
                                     point?: string;
                                     callsign?: string;
+                                    mission?: string;
                                     url?: string;
                                     mime?: string;
                                     remarks?: string;
@@ -6313,6 +6318,7 @@ export interface paths {
                                         type?: string;
                                         point?: string;
                                         callsign?: string;
+                                        mission?: string;
                                         url?: string;
                                         mime?: string;
                                         remarks?: string;
@@ -17481,6 +17487,7 @@ export interface paths {
                                     type?: string;
                                     point?: string;
                                     callsign?: string;
+                                    mission?: string;
                                     url?: string;
                                     mime?: string;
                                     remarks?: string;
@@ -17831,6 +17838,7 @@ export interface paths {
                                         type?: string;
                                         point?: string;
                                         callsign?: string;
+                                        mission?: string;
                                         url?: string;
                                         mime?: string;
                                         remarks?: string;
@@ -18876,11 +18884,8 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /**
-                         * Format: date-time
-                         * @default 2025-11-14T06:03:24.171Z
-                         */
-                        dtg: string;
+                        /** Format: date-time */
+                        dtg?: string;
                         content: string;
                         keywords?: string[];
                     };
@@ -19650,6 +19655,7 @@ export interface paths {
                                         type?: string;
                                         point?: string;
                                         callsign?: string;
+                                        mission?: string;
                                         url?: string;
                                         mime?: string;
                                         remarks?: string;
@@ -21340,7 +21346,10 @@ export interface paths {
         /** Helper API to list packages */
         get: {
             parameters: {
-                query?: never;
+                query: {
+                    /** @description Filter packages by name */
+                    filter: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -25639,6 +25648,7 @@ export interface paths {
                                         type?: string;
                                         point?: string;
                                         callsign?: string;
+                                        mission?: string;
                                         url?: string;
                                         mime?: string;
                                         remarks?: string;
@@ -25961,6 +25971,7 @@ export interface paths {
                                 type?: string;
                                 point?: string;
                                 callsign?: string;
+                                mission?: string;
                                 url?: string;
                                 mime?: string;
                                 remarks?: string;
@@ -26211,6 +26222,7 @@ export interface paths {
                                     type?: string;
                                     point?: string;
                                     callsign?: string;
+                                    mission?: string;
                                     url?: string;
                                     mime?: string;
                                     remarks?: string;
@@ -26637,6 +26649,7 @@ export interface paths {
                                     type?: string;
                                     point?: string;
                                     callsign?: string;
+                                    mission?: string;
                                     url?: string;
                                     mime?: string;
                                     remarks?: string;
@@ -33237,6 +33250,7 @@ export interface paths {
                                         type?: string;
                                         point?: string;
                                         callsign?: string;
+                                        mission?: string;
                                         url?: string;
                                         mime?: string;
                                         remarks?: string;
