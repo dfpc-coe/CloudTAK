@@ -3,7 +3,7 @@
         <template #buttons>
             <div class='d-flex align-items-center gap-2'>
                 <TablerDelete
-                    v-if='pkg && (profile && profile.username === pkg.username)'
+                    v-if='pkg && (profile && (profile.username === pkg.username || profile.system_admin))'
                     displaytype='icon'
                     @delete='deleteFile(pkg)'
                 />
