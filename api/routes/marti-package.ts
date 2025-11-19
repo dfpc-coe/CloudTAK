@@ -197,6 +197,7 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await config.models.Profile.from(user.email);
             const auth = profile.auth;
             const creatorUid = profile.username;
+            const id = crypto.randomUUID();
 
             if (!req.body.basemaps.length && !req.body.features.length && !req.body.assets.length) {
                 throw new Err(400, null, 'Cannot share an empty package');
@@ -204,7 +205,6 @@ export default async function router(schema: Schema, config: Config) {
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const id = crypto.randomUUID();
             const pkg = new DataPackage(id, req.body.name || id);
 
             pkg.setEphemeral();
@@ -275,18 +275,21 @@ export default async function router(schema: Schema, config: Config) {
             const { size } = await fsp.stat(out);
 
             let content;
-            if (req.body.public) {
-                const hash = await DataPackage.hash(out);
 
+            const hash = await DataPackage.hash(out);
+
+            if (req.body.public) {
                 await api.Files.uploadPackage({
-                    name: pkg.settings.name, creatorUid, hash,
+                    name: pkg.settings.name,
+                    creatorUid,
+                    hash,
                     keywords: req.body.keywords,
                     groups: req.body.groups
                 }, fs.createReadStream(out));
 
                 // TODO Ask ARA for a Content endpoint to lookup by hash to mirror upload API
                 content = {
-                    UID: id,
+                    UID: hash,
                     SubmissionDateTime: new Date().toISOString(),
                     Keywords: [],
                     MIMEType: 'application/octet-stream',
@@ -298,7 +301,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             } else {
                 content = await api.Files.upload({
-                    name: id,
+                    name: hash,
                     contentLength: size,
                     keywords: req.body.keywords,
                     creatorUid,
