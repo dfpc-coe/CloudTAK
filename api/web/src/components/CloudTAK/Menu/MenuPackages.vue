@@ -63,8 +63,8 @@
                         class='menu-packages__card text-white d-flex flex-column flex-md-row gap-3 position-relative'
                         role='button'
                         tabindex='0'
-                        @click='router.push(`/menu/packages/${pkg.UID}?hash=${pkg.Hash}`)'
-                        @keyup.enter='router.push(`/menu/packages/${pkg.UID}?hash=${pkg.Hash}`)'
+                        @click='router.push(`/menu/packages/${pkg.uid}`)'
+                        @keyup.enter='router.push(`/menu/packages/${pkg.uid}`)'
                     >
                         <div class='menu-packages__icon-wrapper ms-2 mt-2 d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'>
                             <IconPackage
@@ -124,7 +124,7 @@ import type { PackageList } from '../../../../src/types.ts';
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { server } from '../../../../src/std.ts';
+import { server } from '../../../std.ts';
 
 import {
     TablerNone,
