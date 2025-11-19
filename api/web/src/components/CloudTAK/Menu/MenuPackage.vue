@@ -216,9 +216,9 @@ const shareFeat = computed<Feature | undefined>(() => {
             type: 'b-f-t-r',
             how: 'h-e',
             fileshare: {
-                filename: pkg.value.Name + '.zip',
+                filename: pkg.value.name + '.zip',
                 senderUrl: `${serverConfig.value.api}/Marti/sync/content?hash=${pkg.value.hash}`,
-                sizeInBytes: parseInt(pkg.value.size),
+                sizeInBytes: pkg.value.size,
                 sha256: pkg.value.hash,
                 senderUid: `ANDROID-CloudTAK-${profile.value.username}`,
                 senderCallsign: profile.value.tak_callsign,
