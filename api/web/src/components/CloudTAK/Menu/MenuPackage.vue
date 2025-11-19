@@ -98,7 +98,7 @@
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Package Hash</small>
                                             <p
                                                 class='fs-6 fw-semibold text-white mb-0 text-break'
-                                                v-text='pkg.items[pkg.items.length - 1]?.hash || "—"'
+                                                v-text='pkg.hash || "—"'
                                             />
                                         </div>
                                         <div class='col-12'>
