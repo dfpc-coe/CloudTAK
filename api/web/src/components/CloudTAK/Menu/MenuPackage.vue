@@ -58,7 +58,7 @@
                             <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
                                 <div class='card-body d-flex flex-column gap-4'>
                                     <div class='d-flex align-items-center gap-3'>
-                                        <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-3 d-flex align-items-center justify-content-center'>
+                                        <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-1 d-flex align-items-center justify-content-center'>
                                             <IconPackage
                                                 :size='32'
                                                 stroke='1'
@@ -69,7 +69,8 @@
                                                 Package
                                             </p>
                                             <h2
-                                                class='h4 mb-0'
+                                                class='h4 mb-0 text-truncate'
+                                                style='max-width: calc(100% - 48px);'
                                                 v-text='pkg.Name'
                                             />
                                         </div>
