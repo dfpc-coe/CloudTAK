@@ -466,7 +466,7 @@ const plugins: Record<string, {
 });
 
 for (const path in plugins) {
-    await plugins[path].default.install();
+    app.use(plugins[path].default);
 }
 
 app.mount('#app');

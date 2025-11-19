@@ -1,6 +1,10 @@
+import type { App } from 'vue';
+
 export interface PluginInstance {
 }
 
 export interface PluginStatic {
-    install(): PluginInstance;
+    install(
+        app: App,
+    ): PluginInstance;
 }
