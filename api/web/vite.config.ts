@@ -33,8 +33,6 @@ export default defineConfig(({ mode }) => {
                     skipWaiting: true,
                     // Clean up outdated caches automatically
                     cleanupOutdatedCaches: true,
-                    // Ensure all navigation requests go through service worker
-                    navigationPreload: true,
                 }
             })
         ],
