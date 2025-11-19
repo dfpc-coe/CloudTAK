@@ -54,14 +54,14 @@
                             <article
                                 v-for='(mission, mission_it) in filteredList'
                                 :key='mission_it'
-                                class='menu-missions__card text-white d-flex flex-column flex-md-row gap-3 position-relative p-2'
+                                class='menu-missions__card text-white d-flex flex-column flex-md-row gap-3 position-relative'
                                 role='button'
                                 tabindex='0'
                                 @click='openMission(mission, false)'
                                 @keydown.enter.prevent='openMission(mission, false)'
                                 @keydown.space.prevent='openMission(mission, false)'
                             >
-                                <div class='menu-missions__icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'>
+                                <div class='menu-missions__icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ps-2 pt-2'>
                                     <IconLock
                                         v-if='mission.passwordProtected'
                                         :size='24'

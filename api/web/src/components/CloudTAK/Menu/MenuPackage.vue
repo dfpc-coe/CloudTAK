@@ -76,16 +76,16 @@
                                         </div>
                                     </div>
 
-                                    <div class='row row-cols-1 row-cols-sm-2 gy-3 gx-0 gx-sm-3'>
-                                        <div class='col'>
+                                    <div class='row gy-3 gx-0 gx-sm-3'>
+                                        <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Created By</small>
                                             <p
-                                                class='fs-6 fw-semibold text-white mb-0'
+                                                class='text-start text-white fw-semibold p-0 text-decoration-none'
                                                 v-text='pkg.SubmissionUser'
                                             />
                                         </div>
-                                        <div class='col'>
-                                            <small class='text-uppercase text-white-50 d-block mb-1'>Created</small>
+                                        <div class='col-12 col-lg-6'>
+                                            <small class='text-uppercase text-white-50 d-block'>Created</small>
                                             <button
                                                 type='button'
                                                 class='btn btn-link text-start text-white fw-semibold p-0 text-decoration-none'
@@ -94,16 +94,16 @@
                                                 {{ relative ? timeDiff(pkg.SubmissionDateTime) : pkg.SubmissionDateTime }}
                                             </button>
                                         </div>
-                                        <div class='col'>
+                                        <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Package Hash</small>
-                                            <p
+                                            <CopyField
                                                 class='fs-6 fw-semibold text-white mb-0 text-break'
                                                 v-text='pkg.Hash'
                                             />
                                         </div>
-                                        <div class='col'>
+                                        <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Size</small>
-                                            <p class='fs-6 fw-semibold text-white mb-0'>
+                                            <p class='fs-6 text-white mb-0'>
                                                 {{ packageSize }}
                                             </p>
                                         </div>

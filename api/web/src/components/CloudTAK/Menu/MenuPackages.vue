@@ -57,13 +57,13 @@
                     <article
                         v-for='pkg in filteredList'
                         :key='pkg.Hash'
-                        class='menu-packages__card text-white d-flex flex-column flex-md-row gap-3 position-relative p-2'
+                        class='menu-packages__card text-white d-flex flex-column flex-md-row gap-3 position-relative'
                         role='button'
                         tabindex='0'
                         @click='router.push(`/menu/packages/${pkg.UID}?hash=${pkg.Hash}`)'
                         @keyup.enter='router.push(`/menu/packages/${pkg.UID}?hash=${pkg.Hash}`)'
                     >
-                        <div class='menu-packages__icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'>
+                        <div class='menu-packages__icon-wrapper ms-2 mt-2 d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'>
                             <IconPackage
                                 :size='24'
                                 stroke='1'
