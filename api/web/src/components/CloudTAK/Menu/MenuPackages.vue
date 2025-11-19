@@ -59,7 +59,7 @@
                 >
                     <article
                         v-for='pkg in list.items'
-                        :key='pkg.Hash'
+                        :key='pkg.uid'
                         class='menu-packages__card text-white d-flex flex-column flex-md-row gap-3 position-relative'
                         role='button'
                         tabindex='0'
@@ -78,19 +78,19 @@
                                 <span
                                     class='fw-semibold text-truncate'
                                     style='max-width: calc(100% - 20px)'
-                                    v-text='pkg.Name'
+                                    v-text='pkg.name'
                                 />
                             </div>
 
                             <div
                                 v-if='
-                                    (pkg.Keywords || [])
+                                    pkg.keywords
                                         .filter((k) => k && k.trim() !== "missionpackage")
                                         .length > 0'
                                 class='d-flex flex-wrap align-items-center gap-2'
                             >
                                 <template
-                                    v-for='keyword in pkg.Keywords || []'
+                                    v-for='keyword in pkg.keywords'
                                     :key='keyword'
                                 >
                                     <span
@@ -107,9 +107,9 @@
                             </div>
 
                             <div class='text-secondary small d-flex flex-wrap align-items-center gap-2'>
-                                <div v-text='timeDiff(pkg.SubmissionDateTime)' />
+                                <div v-text='timeDiff(pkg.created)' />
                                 <span class='text-white-50'>•</span>
-                                <div v-text='pkg.SubmissionUser' />
+                                <div v-text='pkg.username' />
                             </div>
                         </div>
                     </article>
@@ -121,10 +121,10 @@
 
 <script setup lang='ts'>
 import type { PackageList } from '../../../../src/types.ts';
-import { ref, watch, computed, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { std, stdurl } from '../../../../src/std.ts';
+import { server } from '../../../../src/std.ts';
 
 import {
     TablerNone,
@@ -174,8 +174,22 @@ async function fetchList() {
         upload.value = false;
         error.value = undefined;
         loading.value = true;
-        const url = stdurl('/api/marti/package');
-        list.value = await std(url) as PackageList;
+
+        const res = await server.GET('/api/marti/package', {
+            params: {
+                query: {
+                    filter: paging.value.filter,
+                }
+            }
+        });
+
+        if (res.error) {
+            loading.value = false;
+            error.value = Error(res.error.message);
+            return;
+        }
+
+        list.value = res.data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
