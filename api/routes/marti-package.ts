@@ -380,6 +380,12 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Packages',
         group: 'MartiPackages',
         description: 'Helper API to list packages',
+        query: Type.Object({
+            filter: Type.String({
+                description: 'Filter packages by name',
+                default: ''
+            })
+        }),
         res: Type.Object({
             total: Type.Integer(),
             items: Type.Array(Package)
@@ -391,7 +397,8 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const pkg = await api.Package.list({
-                tool: 'public'
+                tool: 'public',
+                name: req.query.filter || undefined
             });
 
             res.json({

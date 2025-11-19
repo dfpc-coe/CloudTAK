@@ -1,7 +1,6 @@
 <template>
     <MenuTemplate
         name='Data Packages'
-        :loading='loading'
     >
         <template #buttons>
             <TablerIconButton
@@ -40,8 +39,12 @@
                 <ChannelInfo label='Data Packages' />
                 <EmptyInfo v-if='mapStore.hasNoChannels' />
 
+                <TablerLoading
+                    v-if='loading'
+                    class='my-5'
+                />
                 <TablerAlert
-                    v-if='error'
+                    v-else-if='error'
                     title='Packages Error'
                     :err='error'
                 />
@@ -55,7 +58,7 @@
                     class='d-flex flex-column gap-3 mx-2'
                 >
                     <article
-                        v-for='pkg in filteredList'
+                        v-for='pkg in list.items'
                         :key='pkg.Hash'
                         class='menu-packages__card text-white d-flex flex-column flex-md-row gap-3 position-relative'
                         role='button'
@@ -80,7 +83,10 @@
                             </div>
 
                             <div
-                                v-if='(pkg.Keywords || []).length > 0'
+                                v-if='
+                                    (pkg.Keywords || [])
+                                        .filter((k) => k && k.trim() !== "missionpackage")
+                                        .length > 0'
                                 class='d-flex flex-wrap align-items-center gap-2'
                             >
                                 <template
@@ -88,11 +94,16 @@
                                     :key='keyword'
                                 >
                                     <span
-                                        v-if='keyword.startsWith("#")'
                                         class='badge rounded-pill text-bg-info text-uppercase small fw-semibold'
                                         v-text='keyword'
                                     />
                                 </template>
+                            </div>
+                            <div
+                                v-else
+                                class='text-secondary small'
+                            >
+                                No keywords
                             </div>
 
                             <div class='text-secondary small d-flex flex-wrap align-items-center gap-2'>
@@ -110,7 +121,7 @@
 
 <script setup lang='ts'>
 import type { PackageList } from '../../../../src/types.ts';
-import { ref, computed, onMounted } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { std, stdurl } from '../../../../src/std.ts';
@@ -120,6 +131,7 @@ import {
     TablerAlert,
     TablerIconButton,
     TablerRefreshButton,
+    TablerLoading,
     TablerInput,
 } from '@tak-ps/vue-tabler';
 import {
@@ -153,11 +165,8 @@ onMounted(async () => {
     await fetchList();
 });
 
-const filteredList = computed(() => {
-    return list.value.items.filter((pkg) => {
-        return pkg.Name.toLowerCase()
-            .includes(paging.value.filter.toLowerCase());
-    })
+watch(paging.value, async () => {
+    await fetchList();
 });
 
 async function fetchList() {
