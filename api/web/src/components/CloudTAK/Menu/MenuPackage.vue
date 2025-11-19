@@ -96,7 +96,7 @@
                                         </div>
                                         <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Package Hash</small>
-                                            <CopyField
+                                            <p
                                                 class='fs-6 fw-semibold text-white mb-0 text-break'
                                                 v-text='pkg.Hash'
                                             />

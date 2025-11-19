@@ -388,7 +388,14 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(Package)
+            items: Type.Array(Type.Object({
+                uid: Type.String(),
+                name: Type.String(),
+                username: Type.String(),
+                created: Type.String({ format: 'date-time' }),
+                keywords: Type.Array(Type.String()),
+                items: Type.Array(Package)
+            }))
         })
     }, async (req, res) => {
         try {
@@ -401,9 +408,31 @@ export default async function router(schema: Schema, config: Config) {
                 name: req.query.filter || undefined
             });
 
+            const byUID: Map<string, Package[]> = new Map();
+            for (const p of pkg.results) {
+                if (!byUID.has(p.UID)) byUID.set(p.UID, []);
+                byUID.get(p.UID)?.push(p);
+            }
+
+            const items = [];
+            for (const [ uid, packages ] of byUID.entries()) {
+                packages.sort((a, b) => {
+                    return new Date(a.SubmissionDateTime).getTime() - new Date(b.SubmissionDateTime).getTime();
+                });
+
+                items.push({
+                    uid,
+                    name: packages[packages.length - 1].Name,
+                    keywords: packages[packages.length - 1].Keywords || [],
+                    created: packages[packages.length - 1].SubmissionDateTime,
+                    username: packages[packages.length - 1].SubmissionUser,
+                    items: packages
+                });
+            }
+
             res.json({
                 total: pkg.resultCount,
-                items: pkg.results
+                items
             });
         } catch (err) {
              Err.respond(err, res);
