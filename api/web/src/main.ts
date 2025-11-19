@@ -6,6 +6,8 @@ import { createPinia } from 'pinia'
 // @ts-expect-error Virtual Module
 import { registerSW } from 'virtual:pwa-register'
 
+let swRegistration: ServiceWorkerRegistration | undefined;
+
 // Register service worker with automatic reload on update
 // This ensures the service worker is replaced immediately and no old JavaScript is requested
 const updateSW = registerSW({
@@ -21,6 +23,7 @@ const updateSW = registerSW({
     },
     onRegisteredSW(swUrl: string, registration: ServiceWorkerRegistration | undefined) {
         console.log('Service Worker registered:', swUrl);
+        swRegistration = registration;
         
         // Check for updates every hour
         if (registration) {
@@ -477,6 +480,13 @@ router.onError((error, to) => {
         }
     }
 })
+
+router.beforeEach((to, from, next) => {
+    if (swRegistration) {
+        swRegistration.update();
+    }
+    next();
+});
 
 const app = createApp(App);
 const pinia = createPinia()
