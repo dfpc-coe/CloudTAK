@@ -21365,10 +21365,18 @@ export interface paths {
                         "application/json": {
                             total: number;
                             items: {
+                                /** @description UID of the package */
                                 uid: string;
+                                /** @description Name of the latest package version */
                                 name: string;
+                                /** @description Hash of the latest package version */
+                                hash: string;
+                                /** @description Submission User of the latest package version */
                                 username: string;
-                                /** Format: date-time */
+                                /**
+                                 * Format: date-time
+                                 * @description Submission DateTime of the latest package version
+                                 */
                                 created: string;
                                 keywords: string[];
                                 items: {
@@ -21713,15 +21721,10 @@ export interface paths {
          *
          *                 DataPackages uploaded once will have a single entry by UID, however DataPackages uploaded multiple times
          *                 will have the same UID but multiple hash values with the latest having the most recent submission date
-         *
-         *                 By default this api will return the latest package, however if you provide a hash query parameter it will return that specific package
          */
         get: {
             parameters: {
-                query?: {
-                    /** @description No Description */
-                    hash?: string;
-                };
+                query?: never;
                 header?: never;
                 path: {
                     /** @description No Description */
@@ -21738,18 +21741,34 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            EXPIRATION: string;
-                            UID: string;
-                            SubmissionDateTime: string;
-                            Size: string;
-                            PrimaryKey: string;
-                            Hash: string;
-                            CreatorUid?: null | string;
-                            Name: string;
-                            MIMEType?: string;
-                            SubmissionUser?: string;
-                            Keywords?: string[];
-                            Tool?: string;
+                            /** @description UID of the package */
+                            uid: string;
+                            /** @description Name of the latest package version */
+                            name: string;
+                            /** @description Hash of the latest package version */
+                            hash: string;
+                            /** @description Submission User of the latest package version */
+                            username: string;
+                            /**
+                             * Format: date-time
+                             * @description Submission DateTime of the latest package version
+                             */
+                            created: string;
+                            keywords: string[];
+                            items: {
+                                EXPIRATION: string;
+                                UID: string;
+                                SubmissionDateTime: string;
+                                Size: string;
+                                PrimaryKey: string;
+                                Hash: string;
+                                CreatorUid?: null | string;
+                                Name: string;
+                                MIMEType?: string;
+                                SubmissionUser?: string;
+                                Keywords?: string[];
+                                Tool?: string;
+                            }[];
                         };
                     };
                 };

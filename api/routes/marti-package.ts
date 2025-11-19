@@ -389,11 +389,28 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Object({
             total: Type.Integer(),
             items: Type.Array(Type.Object({
-                uid: Type.String(),
-                name: Type.String(),
-                username: Type.String(),
-                created: Type.String({ format: 'date-time' }),
-                keywords: Type.Array(Type.String()),
+                uid: Type.String({
+                    description: 'UID of the package'
+                }),
+                name: Type.String({
+                    description: 'Name of the latest package version'
+                }),
+                hash: Type.String({
+                    description: 'Hash of the latest package version'
+                }),
+                size: Type.Integer({
+                    description: 'Size of the latest package version in bytes'
+                }),
+                username: Type.Optional(Type.String({
+                    description: 'Submission User of the latest package version'
+                })),
+                created: Type.String({
+                    format: 'date-time',
+                    description: 'Submission DateTime of the latest package version'
+                }),
+                keywords: Type.Array(Type.String({
+                    description: 'Keywords of the latest package version'
+                })),
                 items: Type.Array(Package)
             }))
         })
@@ -408,7 +425,7 @@ export default async function router(schema: Schema, config: Config) {
                 name: req.query.filter || undefined
             });
 
-            const byUID: Map<string, Package[]> = new Map();
+            const byUID: Map<string, Static<typeof Package>[]> = new Map();
             for (const p of pkg.results) {
                 if (!byUID.has(p.UID)) byUID.set(p.UID, []);
                 byUID.get(p.UID)?.push(p);
@@ -424,6 +441,8 @@ export default async function router(schema: Schema, config: Config) {
                     uid,
                     name: packages[packages.length - 1].Name,
                     keywords: packages[packages.length - 1].Keywords || [],
+                    hash: packages[packages.length - 1].Hash,
+                    size: !isNaN(Number(packages[packages.length - 1].Size)) ? Number(packages[packages.length -1].Size) : 0,
                     created: packages[packages.length - 1].SubmissionDateTime,
                     username: packages[packages.length - 1].SubmissionUser,
                     items: packages
@@ -447,16 +466,33 @@ export default async function router(schema: Schema, config: Config) {
 
             DataPackages uploaded once will have a single entry by UID, however DataPackages uploaded multiple times
             will have the same UID but multiple hash values with the latest having the most recent submission date
-
-            By default this api will return the latest package, however if you provide a hash query parameter it will return that specific package
         `,
         params: Type.Object({
             uid: Type.String()
         }),
-        query: Type.Object({
-            hash: Type.Optional(Type.String())
-        }),
-        res: Package
+        res: Type.Object({
+            uid: Type.String({
+                description: 'UID of the package'
+            }),
+            name: Type.String({
+                description: 'Name of the latest package version'
+            }),
+            hash: Type.String({
+                description: 'Hash of the latest package version'
+            }),
+            size: Type.Integer({
+                description: 'Size of the latest package version in bytes'
+            }),
+            username: Type.Optional(Type.String({
+                description: 'Submission User of the latest package version'
+            })),
+            created: Type.String({
+                format: 'date-time',
+                description: 'Submission DateTime of the latest package version'
+            }),
+            keywords: Type.Array(Type.String()),
+            items: Type.Array(Package)
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -473,13 +509,16 @@ export default async function router(schema: Schema, config: Config) {
                 return new Date(a.SubmissionDateTime).getTime() - new Date(b.SubmissionDateTime).getTime();
             });
 
-            if (req.query.hash) {
-                const match = pkg.results.find((p) => p.Hash === req.query.hash);
-                if (!match) throw new Err(404, null, 'Package found but no matching hash');
-                return res.json(match);
-            } else {
-                res.json(pkg.results[pkg.results.length - 1]);
-            }
+            res.json({
+                uid: req.params.uid,
+                name: pkg.results[pkg.results.length - 1].Name,
+                hash: pkg.results[pkg.results.length - 1].Hash,
+                size: !isNaN(Number(pkg.results[pkg.results.length - 1].Size)) ? Number(pkg.results[pkg.results.length -1].Size) : 0,
+                keywords: pkg.results[pkg.results.length - 1].Keywords || [],
+                created: pkg.results[pkg.results.length - 1].SubmissionDateTime,
+                username: pkg.results[pkg.results.length - 1].SubmissionUser,
+                items: pkg.results
+            });
         } catch (err) {
              Err.respond(err, res);
         }
@@ -523,7 +562,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (
                 user.access !== AuthUserAccess.ADMIN
-                && pkg.SubmissionUser !== user.email
+                || pkg.SubmissionUser !== user.email
             ) {
                 throw new Err(403, null, 'Insufficient Acces to delete Package');
             }
