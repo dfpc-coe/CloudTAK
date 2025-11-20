@@ -83,7 +83,7 @@
                                     >
                                         <span
                                             v-for='keyword of props.subscription.meta.keywords'
-                                            :key='keyword'
+                                            :key='String(keyword)'
                                             class='badge rounded-pill text-bg-primary text-uppercase fw-semibold'
                                             v-text='keyword'
                                         />
