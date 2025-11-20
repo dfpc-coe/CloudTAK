@@ -5,147 +5,182 @@
         :back='false'
         :border='false'
     >
-        <div class='my-2'>
-            <div class='row g-2 mx-2'>
+        <div class='container-fluid px-2 px-sm-3'>
+            <div class='row gy-3 gx-0 gx-lg-3'>
                 <div class='col-12'>
-                    <div class='datagrid-title user-select-none'>
-                        Created
-                    </div>
-                    <div
-                        class='datagrid-content'
-                        v-text='props.subscription.meta.createTime.replace(/T/, " ").replace(/:[0-9]+\..*/, "") + " UTC"'
-                    />
-                </div>
-                <div class='col-6'>
-                    <div class='datagrid-title user-select-none'>
-                        Subscribers
-                    </div>
+                    <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
+                        <div class='card-body d-flex flex-column gap-4'>
+                            <div class='d-flex align-items-center gap-3'>
+                                <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-1 d-flex align-items-center justify-content-center'>
+                                    <IconBroadcast
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </div>
+                                <div class='flex-grow-1'>
+                                    <p class='text-uppercase text-white-50 small mb-1'>
+                                        Mission
+                                    </p>
+                                    <h2
+                                        class='h4 mb-0 text-truncate'
+                                        style='max-width: calc(100% - 48px);'
+                                        v-text='props.subscription.name'
+                                    />
+                                </div>
+                            </div>
 
-                    <TablerLoading
-                        v-if='loading.users'
-                        :inline='true'
-                    />
-                    <div
-                        v-else
-                        class='datagrid-content'
-                        v-text='subscriptions.length + " Users"'
-                    />
-                </div>
-                <div class='col-6'>
-                    <div class='datagrid-title user-select-none'>
-                        Contents
+                            <div class='row gy-3 gx-0 gx-sm-3'>
+                                <div class='col-12 col-lg-6'>
+                                    <small class='text-uppercase text-white-50 d-block'>Created</small>
+                                    <p class='text-white fw-semibold p-0 mb-0'>
+                                        {{ props.subscription.meta.createTime.replace(/T/, " ").replace(/:[0-9]+\..*/, "") + " UTC" }}
+                                    </p>
+                                </div>
+                                <div class='col-12 col-lg-6'>
+                                    <small class='text-uppercase text-white-50 d-block'>Subscribers</small>
+                                    <TablerLoading
+                                        v-if='loading.users'
+                                        :inline='true'
+                                    />
+                                    <p
+                                        v-else
+                                        class='text-white fw-semibold p-0 mb-0'
+                                        v-text='subscriptions.length + " Users"'
+                                    />
+                                </div>
+                                <div class='col-12'>
+                                    <small class='text-uppercase text-white-50 d-block mb-1'>Contents</small>
+                                    <p
+                                        class='text-white fw-semibold mb-0'
+                                        v-text='(Array.isArray(props.subscription.meta.contents) ? props.subscription.meta.contents.length : 0) + " Files"'
+                                    />
+                                </div>
+                                <div class='col-12'>
+                                    <small class='text-uppercase text-white-50 d-block mb-1'>Groups (Channels)</small>
+                                    <div
+                                        v-if='props.subscription.meta.groups && props.subscription.meta.groups.length'
+                                        class='d-flex flex-wrap gap-2'
+                                    >
+                                        <span
+                                            v-for='group of props.subscription.meta.groups'
+                                            :key='group'
+                                            class='badge rounded-pill text-bg-secondary text-uppercase fw-semibold'
+                                            v-text='group'
+                                        />
+                                    </div>
+                                    <p
+                                        v-else
+                                        class='text-white-50 mb-0'
+                                    >
+                                        None
+                                    </p>
+                                </div>
+                                <div class='col-12'>
+                                    <small class='text-uppercase text-white-50 d-block mb-2'>Keywords</small>
+                                    <div
+                                        v-if='props.subscription.meta.keywords.length'
+                                        class='d-flex flex-wrap gap-2'
+                                    >
+                                        <span
+                                            v-for='keyword of props.subscription.meta.keywords'
+                                            :key='keyword'
+                                            class='badge rounded-pill text-bg-primary text-uppercase fw-semibold'
+                                            v-text='keyword'
+                                        />
+                                    </div>
+                                    <p
+                                        v-else
+                                        class='text-white-50 mb-0'
+                                    >
+                                        None
+                                    </p>
+                                </div>
+                                <div class='col-12'>
+                                    <small class='text-uppercase text-white-50 d-block mb-1'>Description</small>
+                                    <p
+                                        class='text-white mb-0'
+                                        v-text='props.subscription.meta.description || "No Feed Description"'
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div
-                        class='datagrid-content'
-                        v-text='(Array.isArray(props.subscription.meta.contents) ? props.subscription.meta.contents.length : 0) + " Files"'
-                    />
                 </div>
+
                 <div class='col-12'>
-                    <div class='datagrid-title user-select-none'>
-                        Groups (Channels)
-                    </div>
-                    <div
-                        v-for='group of props.subscription.meta.groups'
-                        class='datagrid-content'
-                    >
-                        <span v-text='group' />
-                    </div>
-                </div>
-                <div class='col-12'>
-                    <div class='datagrid-title user-select-none'>
-                        Keywords
-                    </div>
-                    <div
-                        class='datagrid-content'
-                    >
-                        <template v-if='props.subscription.meta.keywords.length'>
-                            <span
-                                v-for='keyword of props.subscription.meta.keywords'
-                                v-text='keyword'
+                    <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
+                        <div class='card-body d-flex flex-column gap-3'>
+                            <p class='text-uppercase text-white-50 small mb-1'>
+                                Quick Actions
+                            </p>
+
+                            <TablerLoading
+                                v-if='loading.subscribe'
+                                :inline='true'
+                                desc='Updating Subscription...'
                             />
-                        </template>
-                        <span v-else>None</span>
-                    </div>
-                </div>
-                <div class='col-12'>
-                    <div class='datagrid-title user-select-none'>
-                        Description
-                    </div>
-                    <div
-                        class='datagrid-content'
-                        v-text='props.subscription.meta.description || "No Feed Description"'
-                    />
-                </div>
-                <div class='col-12 row g-2'>
-                    <div class='datagrid-title user-select-none'>
-                        Subscription
-                    </div>
+                            <template v-else>
+                                <button
+                                    v-if='props.subscription.subscribed === false'
+                                    class='btn btn-success w-100 d-flex align-items-center justify-content-center gap-2'
+                                    @click='subscribe(true)'
+                                >
+                                    <IconPlus
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                    <span>Subscribe</span>
+                                </button>
+                                <template v-else>
+                                    <button
+                                        class='btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2'
+                                        @click='subscribe(false)'
+                                    >
+                                        <IconMinus
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                        <span>Unsubscribe</span>
+                                    </button>
 
-                    <TablerLoading
-                        v-if='loading.subscribe'
-                        :inline='true'
-                        desc='Updating Subscription...'
-                    />
-                    <div
-                        v-else-if='props.subscription.subscribed === false'
-                        class='col-12'
-                    >
-                        <button
-                            class='btn btn-green w-100'
-                            style='height: 32px;'
-                            @click='subscribe(true)'
-                        >
-                            Subscribe
-                        </button>
-                    </div>
-                    <template
-                        v-else-if='props.subscription.subscribed === true'
-                    >
-                        <div class='col-6'>
+                                    <button
+                                        v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.subscription.meta.guid'
+                                        :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                        class='btn btn-success w-100 d-flex align-items-center justify-content-center gap-2'
+                                        @click='mapStore.makeActiveMission(props.subscription)'
+                                    >
+                                        <IconCheck
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                        <span>Make Active</span>
+                                    </button>
+                                    <button
+                                        v-else
+                                        class='btn btn-secondary w-100 d-flex align-items-center justify-content-center gap-2'
+                                        :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                        @click='mapStore.makeActiveMission()'
+                                    >
+                                        <IconX
+                                            :size='20'
+                                            stroke='1'
+                                        />
+                                        <span>Deactivate</span>
+                                    </button>
+                                </template>
+                            </template>
+
                             <button
-                                class='btn btn-danger w-100'
-                                style='height: 32px;'
-                                @click='subscribe(false)'
+                                class='btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2'
+                                @click='showQR = true'
                             >
-                                Unsubscribe
+                                <IconQrcode
+                                    :size='20'
+                                    stroke='1'
+                                />
+                                <span>Invite QR Code</span>
                             </button>
                         </div>
-                        <div class='col-6'>
-                            <button
-                                v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.subscription.meta.guid'
-                                :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
-                                class='btn btn-green w-100'
-                                style='height: 32px;'
-                                @click='mapStore.makeActiveMission(props.subscription)'
-                            >
-                                Make Active
-                            </button>
-                            <button
-                                v-else
-                                class='btn btn-muted w-100'
-                                :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
-                                style='height: 32px;'
-                                @click='mapStore.makeActiveMission()'
-                            >
-                                Deactivate
-                            </button>
-                        </div>
-                    </template>
-                </div>
-                <div class='col-12 pt-3'>
-                    <div class='datagrid-title user-select-none'>
-                        Tools
-                    </div>
-                    <div class='btn-list'>
-                        <TablerIconButton
-                            title='Invite QR Code'
-                            @click='showQR = true'
-                        >
-                            <IconQrcode
-                                :size='32'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
                     </div>
                 </div>
             </div>
@@ -194,11 +229,15 @@ import type { MissionSubscriptions } from '../../../../types.ts';
 import { stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
 import {
-    IconQrcode
+    IconQrcode,
+    IconBroadcast,
+    IconPlus,
+    IconMinus,
+    IconCheck,
+    IconX
 } from '@tabler/icons-vue';
 import {
     TablerLoading,
-    TablerIconButton,
     TablerModal,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
