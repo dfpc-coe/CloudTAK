@@ -4,14 +4,9 @@ import vue from '@vitejs/plugin-vue'
 import icons from './public/logos/icons.ts';
 
 export default defineConfig(({ mode }) => {
-    if (!process.env.API_URL) process.env.API_URL = '"http://localhost:5001"';
-
     const env = loadEnv(mode, process.cwd(), '');
 
     const res = {
-        define: {
-            'process.env.API_URL': env.API_URL
-        },
         plugins: [
             vue()
         ],
@@ -30,8 +25,8 @@ export default defineConfig(({ mode }) => {
         server: {
             port: 8080,
             proxy: {
-                '/api/manifest.webmanifest': {
-                    target: env.API_URL.replace(/"/g, ''),
+                '/api': {
+                    target: 'http://localhost:5001',
                     changeOrigin: true,
                 }
             }
