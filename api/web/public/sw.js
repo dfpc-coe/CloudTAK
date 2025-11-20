@@ -20,10 +20,6 @@ self.addEventListener('install', (event) => {
                     for (const imported of entry.imports || []) {
                         assets.add(imported);
                     }
-
-                    for (const imported of entry.dynamicImports || []) {
-                        assets.add(imported);
-                    }
                 });
 
                 await cache.addAll(Array.from(assets));
@@ -53,16 +49,14 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
     if (event.request.method !== 'GET') return;
-    
+
     event.respondWith(
         (async () => {
             const cache = await caches.open(CACHE_NAME);
-            
+
             // Cache First Strategy
             const cachedResponse = await cache.match(event.request);
             if (cachedResponse) {
-
-                console.error('MATCHED RESPONSE', event.request.url);
                 return cachedResponse;
             }
 
