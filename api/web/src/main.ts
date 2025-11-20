@@ -3,6 +3,16 @@ import type { PluginStatic } from '../plugin.ts'
 import * as VueRouter from 'vue-router'
 import { createPinia } from 'pinia'
 
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then((registration) => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, (err) => {
+            console.log('ServiceWorker registration failed: ', err);
+        });
+    });
+}
+
 import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'
 
