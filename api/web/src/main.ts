@@ -3,36 +3,6 @@ import type { PluginStatic } from '../plugin.ts'
 import * as VueRouter from 'vue-router'
 import { createPinia } from 'pinia'
 
-// @ts-expect-error Virtual Module
-import { registerSW } from 'virtual:pwa-register'
-
-const updateSW = registerSW({
-    immediate: true,
-    onNeedRefresh() {
-        console.log('New version available - reloading to update...');
-        updateSW(true);
-    },
-    onOfflineReady() {
-        console.log('App ready to work offline!')
-    },
-    onRegisteredSW(swUrl: string, registration: ServiceWorkerRegistration | undefined) {
-        console.log('Service Worker registered:', swUrl);
-
-        // Check for updates every hour
-        if (registration) {
-            setInterval(async () => {
-                console.log('Checking for service worker updates...');
-
-                try {
-                    await registration.update()
-                } catch (err) {
-                    console.error('Failed to check for SW update', err);
-                }
-            }, 60 * 60 * 1000); // 1 hour
-        }
-    }
-})
-
 import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'
 
@@ -480,8 +450,6 @@ router.onError((error, to) => {
 })
 
 router.beforeEach(async (to, from, next) => {
-    await updateSW()
-
     next();
 });
 
