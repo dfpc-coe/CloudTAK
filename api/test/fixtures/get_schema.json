@@ -639,6 +639,11 @@
         "query": false,
         "res": true
     },
+    "GET /manifest.webmanifest": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "POST /marti/export": {
         "body": true,
         "query": true,
