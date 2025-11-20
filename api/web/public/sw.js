@@ -4,7 +4,29 @@ const VERSION = params.get('v') || Math.random().toString(36).substring(2, 8);
 const CACHE_NAME = `cloudtak-cache-${VERSION}`;
 
 self.addEventListener('install', (event) => {
-    self.skipWaiting();
+    event.waitUntil((async () => {
+        const cache = await caches.open(CACHE_NAME);
+
+        try {
+            const res = await fetch('./.vite/manifest.json');
+            if (res.ok) {
+                const manifest = await res.json();
+                const assets = new Set(['./', './index.html', './docs.html', './video.html']);
+
+                Object.values(manifest).forEach((entry) => {
+                    if (entry.file) assets.add(`./${entry.file}`);
+                    if (entry.css) entry.css.forEach((c) => assets.add(`./${c}`));
+                    if (entry.assets) entry.assets.forEach((a) => assets.add(`./${a}`));
+                });
+
+                await cache.addAll(Array.from(assets));
+            }
+        } catch (err) {
+            console.warn('Failed to pre-cache Vite chunks:', err);
+        }
+
+        self.skipWaiting();
+    })());
 });
 
 self.addEventListener('activate', (event) => {
