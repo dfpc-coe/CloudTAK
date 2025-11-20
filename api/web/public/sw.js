@@ -11,12 +11,19 @@ self.addEventListener('install', (event) => {
             const res = await fetch('./.vite/manifest.json');
             if (res.ok) {
                 const manifest = await res.json();
-                const assets = new Set(['./', './index.html', './docs.html', './video.html']);
+                const assets = new Set(['./index.html']);
 
                 Object.values(manifest).forEach((entry) => {
-                    if (entry.file) assets.add(`./${entry.file}`);
-                    if (entry.css) entry.css.forEach((c) => assets.add(`./${c}`));
-                    if (entry.assets) entry.assets.forEach((a) => assets.add(`./${a}`));
+                    assets.add(`./${entry.file}`);
+                    assets.add(`./${entry.src}`);
+
+                    for (const imported of entry.imports || []) {
+                        assets.add(imported);
+                    }
+
+                    for (const imported of entry.dynamicImports || []) {
+                        assets.add(imported);
+                    }
                 });
 
                 await cache.addAll(Array.from(assets));
@@ -34,37 +41,31 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
     if (event.request.method !== 'GET') return;
-
+    
     event.respondWith(
         (async () => {
             const cache = await caches.open(CACHE_NAME);
+            
+            // Cache First Strategy
+            const cachedResponse = await cache.match(event.request);
+            if (cachedResponse) {
 
-            // Network First Strategy
+                console.error('MATCHED RESPONSE', event.request.url);
+                return cachedResponse;
+            }
+
             try {
                 const networkResponse = await fetch(event.request);
 
                 // Cache valid responses
-                // We only cache basic type responses (same origin) to avoid caching opaque responses from other domains unless intended
-                // However, for a map app, we might want to cache tiles from other domains if they are CORS enabled.
-                // But 'basic' restricts to same-origin.
-                // If the user wants "all assets", they might mean map tiles too.
-                // Map tiles usually come from other domains (or /api/ which is proxied).
-                // If /api/ is proxied, it's same origin.
-                // If map tiles are external, 'basic' will filter them out.
-                // Let's stick to 'basic' for safety unless we know we need CORS.
                 if (networkResponse && networkResponse.status === 200) {
                     cache.put(event.request, networkResponse.clone());
                 }
 
                 return networkResponse;
             } catch (error) {
-                // Network failed, try cache
-                const cachedResponse = await cache.match(event.request);
-                if (cachedResponse) {
-                    return cachedResponse;
-                }
-
                 // Fallback for navigation (SPA)
                 if (event.request.mode === 'navigate') {
                     const cachedIndex = await cache.match('/index.html');
