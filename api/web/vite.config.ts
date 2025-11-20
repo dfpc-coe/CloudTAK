@@ -28,10 +28,10 @@ export default defineConfig(({ mode }) => {
                     enabled: true
                 },
                 workbox: {
+                    sourcemap: true,
                     maximumFileSizeToCacheInBytes: 3000000,
                     clientsClaim: true,
                     skipWaiting: true,
-                    // Clean up outdated caches automatically
                     cleanupOutdatedCaches: true,
                 }
             })

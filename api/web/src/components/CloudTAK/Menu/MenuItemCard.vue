@@ -71,7 +71,7 @@ type LayoutVariant = 'list' | 'tiles';
 
 const props = defineProps({
     icon: {
-        type: Object as PropType<Component>,
+        type: Function as PropType<Component>,
         required: true
     },
     label: {
