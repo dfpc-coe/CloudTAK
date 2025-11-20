@@ -455,20 +455,14 @@ router.onError((error, to) => {
         error.message.includes('Importing a module script failed')
     ) {
         if (!to?.query?.reload) {
-            window.location.href = to.fullPath;
+            if (navigator.onLine) {
+                window.location.href = to.fullPath;
+            } else {
+                console.error('Offline: Skipping reload for missing module', error);
+            }
         }
     }
 })
-
-router.beforeEach(async (to, from, next) => {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready.then((registration) => {
-            registration.update();
-        });
-    }
-
-    next();
-});
 
 const app = createApp(App);
 const pinia = createPinia()
