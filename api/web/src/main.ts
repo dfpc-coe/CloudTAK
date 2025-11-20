@@ -461,6 +461,12 @@ router.onError((error, to) => {
 })
 
 router.beforeEach(async (to, from, next) => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then((registration) => {
+            registration.update();
+        });
+    }
+
     next();
 });
 
