@@ -33,6 +33,7 @@ export default defineConfig(({ mode }) => {
                     clientsClaim: true,
                     skipWaiting: true,
                     cleanupOutdatedCaches: true,
+                    globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
                 }
             })
         ],
