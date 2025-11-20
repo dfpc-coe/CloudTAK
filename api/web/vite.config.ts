@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
             include: ["showdown", "@tak-ps/vue-tabler"],
         },
         build: {
+            manifest: true,
             rollupOptions: {
                 input: {
                     main: path.resolve(__dirname, 'index.html'),
