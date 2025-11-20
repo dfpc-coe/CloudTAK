@@ -14,11 +14,18 @@ self.addEventListener('install', (event) => {
                 const assets = new Set(['./index.html']);
 
                 Object.values(manifest).forEach((entry) => {
-                    assets.add(`./${entry.file}`);
+                    if (entry.file.endsWith('.html')) {
+                        assets.add(`./${entry.file}`);
+                    }
+
                     assets.add(`./${entry.src}`);
 
                     for (const imported of entry.imports || []) {
                         assets.add(imported);
+                    }
+
+                    for (const cssFile of entry.css || []) {
+                        assets.add(cssFile);
                     }
                 });
 
