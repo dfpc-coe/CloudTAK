@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cloudtak-cache-v1';
+const CACHE_NAME = `cloudtak-cache-${Math.random().toString(36).substring(2, 15)}`;
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();

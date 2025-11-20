@@ -1,11 +1,12 @@
 import { createApp } from 'vue'
+import { version } from '../package.json'
 import type { PluginStatic } from '../plugin.ts'
 import * as VueRouter from 'vue-router'
 import { createPinia } from 'pinia'
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then((registration) => {
+        navigator.serviceWorker.register(`/sw.js?v=${version}`).then((registration) => {
             console.log('ServiceWorker registration successful with scope: ', registration.scope);
         }, (err) => {
             console.log('ServiceWorker registration failed: ', err);

@@ -27,7 +27,6 @@ export function stdurl(url: string | URL): URL {
     } catch (err) {
         if (err instanceof TypeError) {
             url = new URL(String(self.location.origin).replace(/\/$/, '') + url);
-            console.error(url);
         } else {
             throw err;
         }
