@@ -12,7 +12,9 @@ export default defineConfig(({ mode }) => {
             'process.env.API_URL': env.API_URL
         },
         plugins: [
-            vue(),
+            vue({
+                include: [/\.vue$/],
+            }),
             VitePWA({
                 registerType: 'prompt',
                 manifest: {
@@ -47,11 +49,6 @@ export default defineConfig(({ mode }) => {
                     docs: path.resolve(__dirname, 'docs.html'),
                     video: path.resolve(__dirname, 'video.html'),
                 },
-                output: {
-                    entryFileNames: `assets/[name]-[hash].js`,
-                    chunkFileNames: `assets/[name]-[hash].js`,
-                    assetFileNames: `assets/[name]-[hash].[ext]`
-                }
             },
         },
         server: {
