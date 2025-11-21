@@ -58,6 +58,10 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
 
     if (event.request.method !== 'GET') return;
+
+    // Only handle same-origin requests
+    if (url.origin !== self.location.origin) return;
+
     if (
         event.request.url.includes('/api')
         && !event.request.url.includes('/api/iconset/')
