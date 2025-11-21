@@ -27,7 +27,7 @@
             />
 
             <div class='d-flex flex-column'>
-                <div class='d-flex mx-2 pt-2 flex-column flex-sm-row align-items-sm-center gap-2'>
+                <div class='d-flex mx-2 pt-2 flex-row gap-2'>
                     <TablerInput
                         v-model='paging.filter'
                         icon='search'
@@ -60,7 +60,7 @@
                     <article
                         v-for='pkg in list.items'
                         :key='pkg.uid'
-                        class='menu-packages__card text-white d-flex flex-column flex-md-row gap-3 position-relative'
+                        class='menu-packages__card text-white d-flex flex-row gap-3 position-relative'
                         role='button'
                         tabindex='0'
                         @click='router.push(`/menu/packages/${pkg.uid}`)'
