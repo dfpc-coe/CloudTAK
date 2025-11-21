@@ -60,7 +60,7 @@
                                 @keydown.enter.prevent='openMission(mission, false)'
                                 @keydown.space.prevent='openMission(mission, false)'
                             >
-                                <div class='menu-missions__icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ps-2 pt-2'>
+                                <div class='menu-missions__icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 mt-2'>
                                     <IconLock
                                         v-if='mission.passwordProtected'
                                         :size='24'
