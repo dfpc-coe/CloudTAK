@@ -1,51 +1,29 @@
 <template>
     <MenuTemplate name='Settings'>
-        <MenuItem
-            @click='router.push("/menu/settings/callsign")'
-            @keyup.enter='router.push("/menu/settings/callsign")'
-        >
-            <IconUserCog
-                :size='32'
-                stroke='1'
+        <div class='col-12 d-flex flex-column gap-2 p-3'>
+            <MenuItemCard
+                :icon='IconUserCog'
+                label='Callsign & Device Preferences'
+                @select='router.push("/menu/settings/callsign")'
             />
-            <span
-                class='mx-2'
-                style='font-size: 18px;'
-            >Callsign &amp; Device Preferences</span>
-        </MenuItem>
-        <MenuItem
-            @click='router.push("/menu/settings/display")'
-            @keyup.enter='router.push("/menu/settings/display")'
-        >
-            <IconAdjustments
-                :size='32'
-                stroke='1'
+            <MenuItemCard
+                :icon='IconAdjustments'
+                label='Display Preferences'
+                @select='router.push("/menu/settings/display")'
             />
-            <span
-                class='mx-2'
-                style='font-size: 18px;'
-            >Display Preferences</span>
-        </MenuItem>
-        <MenuItem
-            @click='router.push("/menu/settings/tokens")'
-            @keyup.enter='router.push("/menu/settings/tokens")'
-        >
-            <IconRobot
-                :size='32'
-                stroke='1'
+            <MenuItemCard
+                :icon='IconRobot'
+                label='API Tokens'
+                @select='router.push("/menu/settings/tokens")'
             />
-            <span
-                class='mx-2'
-                style='font-size: 18px;'
-            >API Tokens</span>
-        </MenuItem>
+        </div>
     </MenuTemplate>
 </template>
 
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import MenuItem from '../util/MenuItem.vue'
+import MenuItemCard from './MenuItemCard.vue';
 import {
     IconRobot,
     IconUserCog,

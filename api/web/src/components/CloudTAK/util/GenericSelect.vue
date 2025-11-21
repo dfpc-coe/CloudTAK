@@ -1,5 +1,5 @@
 <template>
-    <div class='col-12'>
+    <div class='col-12 d-flex flex-column gap-2'>
         <template v-if='props.disabled'>
             <div
                 v-for='item in props.items'
@@ -52,7 +52,10 @@
                 :key='item.id'
             >
                 <div
-                    class='d-flex align-items-center hover rounded cursor-pointer'
+                    class='d-flex align-items-center rounded cursor-pointer'
+                    :class='{
+                        "hover": props.hover
+                    }'
                     @click='selected.has(item.id) ? selected.delete(item.id) : selected.add(item.id)'
                 >
                     <div
@@ -103,9 +106,11 @@ defineSlots<{
 
 const props = withDefaults(defineProps<{
     disabled?: boolean
+    hover?: boolean
     items: T[]
 }>(), {
-    disabled: false
+    disabled: false,
+    hover: true
 })
 
 const selected = ref<Set<string | number>>(new Set());

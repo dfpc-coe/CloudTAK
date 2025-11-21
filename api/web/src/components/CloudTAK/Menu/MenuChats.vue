@@ -47,6 +47,7 @@
                     ref='select'
                     role='menu'
                     :disabled='!multiselect'
+                    :hover='false'
                     :items='filteredChats'
                 >
                     <template #buttons='{disabled}'>
@@ -57,25 +58,12 @@
                         />
                     </template>
                     <template #item='{item}'>
-                        <div
-                            role='menuitem'
-                            tabindex='0'
-                            :class='{
-                                "hover cursor-pointer": !multiselect
-                            }'
-                            class='col-12 py-2 px-3 d-flex align-items-center'
-                            @click='multiselect ? undefined : router.push(`/menu/chats/${item.chatroom}`)'
-                        >
-                            <IconUser
-                                :size='32'
-                                stroke='1'
-                            />
-                            <span
-                                class='mx-2'
-                                style='font-size: 18px;'
-                                v-text='item.chatroom'
-                            />
-                        </div>
+                        <MenuItemCard
+                            :icon='IconUser'
+                            :label='item.chatroom'
+                            class='w-100'
+                            @select='multiselect ? undefined : router.push(`/menu/chats/${item.chatroom}`)'
+                        />
                     </template>
                 </GenericSelect>
             </template>
@@ -89,6 +77,7 @@ import type { ComponentExposed } from 'vue-component-type-helpers'
 import { server } from '../../../std.ts';
 import type { ProfileChatroomList } from '../../../types.ts';
 import GenericSelect from '../util/GenericSelect.vue';
+import MenuItemCard from './MenuItemCard.vue';
 import {
     TablerNone,
     TablerAlert,

@@ -45,7 +45,7 @@
         </div>
 
         <div
-            class='col-12 overflow-auto'
+            class='row d-flex flex-row overflow-auto align-content-start'
             style='height: calc(100vh - 114px)'
         >
             <TablerLoading

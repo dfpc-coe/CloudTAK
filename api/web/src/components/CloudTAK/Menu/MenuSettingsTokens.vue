@@ -20,20 +20,13 @@
             />
         </template>
         <template #default>
-            <div
-                v-for='t in tokens.items'
-                :key='t.id'
-                class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'
-                @click='token = t'
-            >
-                <IconRobot
-                    :size='32'
-                    stroke='1'
-                />
-                <span
-                    class='mx-2 user-select-none'
-                    style='font-size: 18px;'
-                    v-text='t.name'
+            <div class='col-12 d-flex flex-column gap-2 p-3'>
+                <MenuItemCard
+                    v-for='t in tokens.items'
+                    :key='t.id'
+                    :icon='IconRobot'
+                    :label='t.name'
+                    @select='token = t'
                 />
             </div>
         </template>
@@ -50,6 +43,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import MenuTemplate from '../util/MenuTemplate.vue';
+import MenuItemCard from './MenuItemCard.vue';
 import { std } from '../../../std.ts';
 import TokenModal from './Settings/TokenModal.vue';
 import {
