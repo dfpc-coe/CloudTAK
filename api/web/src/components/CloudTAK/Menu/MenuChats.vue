@@ -47,6 +47,7 @@
                     ref='select'
                     role='menu'
                     :disabled='!multiselect'
+                    :hover='false'
                     :items='filteredChats'
                 >
                     <template #buttons='{disabled}'>
