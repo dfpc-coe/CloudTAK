@@ -1,7 +1,8 @@
 const params = new URL(location).searchParams;
 const VERSION = params.get('v') || Math.random().toString(36).substring(2, 8);
+const BUILD  = params.get('build') || Math.random().toString(36).substring(2, 8)m ;
 
-const CACHE_NAME = `cloudtak-cache-${VERSION}`;
+const CACHE_NAME = `cloudtak-cache-${VERSION}-${BUILD}`;
 
 self.addEventListener('install', (event) => {
     event.waitUntil((async () => {
