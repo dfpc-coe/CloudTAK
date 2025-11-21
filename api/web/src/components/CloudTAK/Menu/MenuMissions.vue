@@ -1,7 +1,6 @@
 <template>
     <MenuTemplate
         name='Data Syncs'
-        :loading='loading'
     >
         <template #buttons>
             <TablerIconButton
@@ -299,6 +298,7 @@ async function fetchMissions() {
 
         list.value = (await Subscription.list()).data;
     } catch (err) {
+        loading.value = false;
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 

@@ -591,7 +591,7 @@ export default class COT {
                 properties.icon = `2525D:${properties.milsym.id}`;
             } else {
                 // TODO Only add icon if one actually exists in the spritejson
-                if (!['u-d-p'].includes(properties.type)) {
+                if (!['u-d-p', 'b-m-p-s-m'].includes(properties.type)) {
                     properties.icon = `${properties.type}`;
                 }
             }

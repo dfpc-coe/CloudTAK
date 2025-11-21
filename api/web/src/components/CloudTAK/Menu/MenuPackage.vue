@@ -3,7 +3,7 @@
         <template #buttons>
             <div class='d-flex align-items-center gap-2'>
                 <TablerDelete
-                    v-if='pkg && (profile && profile.username === pkg.SubmissionUser)'
+                    v-if='pkg && (profile && (profile.username === pkg.username || profile.system_admin))'
                     displaytype='icon'
                     @delete='deleteFile(pkg)'
                 />
@@ -58,7 +58,7 @@
                             <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
                                 <div class='card-body d-flex flex-column gap-4'>
                                     <div class='d-flex align-items-center gap-3'>
-                                        <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-3 d-flex align-items-center justify-content-center'>
+                                        <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-1 d-flex align-items-center justify-content-center'>
                                             <IconPackage
                                                 :size='32'
                                                 stroke='1'
@@ -69,51 +69,52 @@
                                                 Package
                                             </p>
                                             <h2
-                                                class='h4 mb-0'
-                                                v-text='pkg.Name'
+                                                class='h4 mb-0 text-truncate'
+                                                style='max-width: calc(100% - 48px);'
+                                                v-text='pkg.name'
                                             />
                                         </div>
                                     </div>
 
-                                    <div class='row row-cols-1 row-cols-sm-2 gy-3 gx-0 gx-sm-3'>
-                                        <div class='col'>
+                                    <div class='row gy-3 gx-0 gx-sm-3'>
+                                        <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Created By</small>
                                             <p
-                                                class='fs-6 fw-semibold text-white mb-0'
-                                                v-text='pkg.SubmissionUser'
+                                                class='text-start text-white fw-semibold p-0 text-decoration-none'
+                                                v-text='pkg.username'
                                             />
                                         </div>
-                                        <div class='col'>
-                                            <small class='text-uppercase text-white-50 d-block mb-1'>Created</small>
+                                        <div class='col-12 col-lg-6'>
+                                            <small class='text-uppercase text-white-50 d-block'>Created</small>
                                             <button
                                                 type='button'
                                                 class='btn btn-link text-start text-white fw-semibold p-0 text-decoration-none'
                                                 @click='relative = !relative'
                                             >
-                                                {{ relative ? timeDiff(pkg.SubmissionDateTime) : pkg.SubmissionDateTime }}
+                                                {{ relative ? timeDiff(pkg.created) : pkg.created }}
                                             </button>
                                         </div>
-                                        <div class='col'>
+                                        <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Package Hash</small>
                                             <p
                                                 class='fs-6 fw-semibold text-white mb-0 text-break'
-                                                v-text='pkg.Hash'
+                                                v-text='pkg.hash || "—"'
                                             />
                                         </div>
-                                        <div class='col'>
+                                        <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Size</small>
-                                            <p class='fs-6 fw-semibold text-white mb-0'>
+                                            <p class='fs-6 text-white mb-0'>
                                                 {{ packageSize }}
                                             </p>
                                         </div>
                                         <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-2'>Hashtags</small>
                                             <div
-                                                v-if='(pkg.Keywords || []).length'
+                                                v-if='(pkg.keywords || []).length'
                                                 class='d-flex flex-wrap gap-2'
                                             >
                                                 <span
-                                                    v-for='keyword in pkg.Keywords'
+                                                    v-for='keyword in pkg.keywords'
                                                     :key='keyword'
                                                     class='badge rounded-pill text-bg-primary text-uppercase fw-semibold'
                                                     v-text='keyword'
@@ -215,13 +216,13 @@ const shareFeat = computed<Feature | undefined>(() => {
             type: 'b-f-t-r',
             how: 'h-e',
             fileshare: {
-                filename: pkg.value.Name + '.zip',
-                senderUrl: `${serverConfig.value.api}/Marti/sync/content?hash=${pkg.value.Hash}`,
-                sizeInBytes: parseInt(pkg.value.Size),
-                sha256: pkg.value.Hash,
+                filename: pkg.value.name + '.zip',
+                senderUrl: `${serverConfig.value.api}/Marti/sync/content?hash=${pkg.value.hash}`,
+                sizeInBytes: pkg.value.size,
+                sha256: pkg.value.hash,
                 senderUid: `ANDROID-CloudTAK-${profile.value.username}`,
                 senderCallsign: profile.value.tak_callsign,
-                name: pkg.value.Name
+                name: pkg.value.name
             },
             metadata: {},
         },
@@ -233,10 +234,10 @@ const shareFeat = computed<Feature | undefined>(() => {
 });
 
 const packageSize = computed(() => {
-    if (!pkg.value?.Size) return '—';
+    if (!pkg.value?.size) return '—';
 
-    const bytes = Number(pkg.value.Size);
-    if (!Number.isFinite(bytes) || bytes < 0) return `${pkg.value.Size} B`;
+    const bytes = Number(pkg.value.size);
+    if (!Number.isFinite(bytes) || bytes < 0) return `${pkg.value.size} B`;
 
     return formatBytes(bytes);
 });
@@ -265,12 +266,12 @@ onMounted(async () => {
 async function downloadFile(): Promise<void> {
     if (!pkg.value) return;
 
-    const url = stdurl(`/api/marti/api/files/${pkg.value.Hash}`)
+    const url = stdurl(`/api/marti/api/files/${pkg.value.hash}`)
     url.searchParams.append('token', localStorage.token);
-    url.searchParams.append('name', pkg.value.Name + '.zip');
-    
+    url.searchParams.append('name', pkg.value.name + '.zip');
+
     await std(url, {
-        download: true 
+        download: true
     });
 }
 
@@ -285,9 +286,6 @@ async function fetch() {
                 path: {
                     ':uid': String(route.params.package)
                 },
-                query: {
-                    hash: route.query.hash ? String(route.query.hash) : undefined
-                }
             }
         });
 
@@ -311,10 +309,10 @@ async function deleteFile(pkg: Package) {
         await server.DELETE('/api/marti/package/{:uid}', {
             params: {
                 path: {
-                    ':uid': pkg.UID
+                    ':uid': pkg.uid
                 },
                 query: {
-                    hash: pkg.Hash
+                    hash: pkg.hash
                 }
             }
         });
@@ -335,9 +333,9 @@ async function createImport() {
     try {
         const res = await server.POST('/api/import', {
             body: {
-                name: pkg.value.Name,
+                name: pkg.value.name,
                 source: 'Package',
-                source_id: pkg.value.Hash
+                source_id: pkg.value.hash
             }
         });
 

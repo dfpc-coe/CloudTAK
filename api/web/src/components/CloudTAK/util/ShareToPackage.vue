@@ -214,7 +214,7 @@ async function share() {
     if (props.upload && uploadRef.value) {
         const res = await uploadRef.value.upload() as Content;
 
-        router.push(`/menu/packages/${res.Hash}`);
+        router.push(`/menu/packages/${res.UID}`);
 
         emit('done');
     } else {
@@ -240,7 +240,7 @@ async function share() {
 
             emit('done');
 
-            router.push(`/menu/packages/${res.data.Hash}`);
+            router.push(`/menu/packages/${res.data.UID}`);
         } catch (err) {
             loading.value = false;
             throw err;

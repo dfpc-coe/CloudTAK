@@ -1,4 +1,5 @@
 import Err from '@openaddresses/batch-error';
+import fs from 'node:fs';
 import path from 'node:path';
 import ImportControl, { ImportSourceEnum }  from './control/import.js';
 import Sinks from './sinks.js';
@@ -11,6 +12,10 @@ import TAK, { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from './connection-config.js';
 import { MachineConnConfig, ProfileConnConfig } from './connection-config.js';
+
+const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8')) as {
+    version: string;
+};
 
 export class ConnectionClient {
     config: ConnectionConfig;
@@ -46,6 +51,15 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     importControl: ImportControl;
     closed: boolean;
 
+    /**
+     * In Low Bandwith environments the WebSocket can persist
+     * even when the connection is not adequately transferring data
+     *
+     * A status message is sent every 5 seconds to ensure the client can
+     * detect this and notify the user and/or attempt a reconnect
+     */
+    pingInterval: ReturnType<typeof setInterval>;
+
     constructor(config: Config) {
         super();
 
@@ -54,10 +68,32 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.importControl = new ImportControl(config);
 
         this.sinks = new Sinks(config);
+
+        this.pingInterval = setInterval(() => {
+            try {
+                for (const clients of this.config.wsClients.values()) {
+                    for (const client of clients) {
+                        client.ws.send(JSON.stringify({
+                            type: 'status',
+                            data: {
+                                version: pkg.version,
+                                time: new Date().toISOString(),
+                            }
+                        }));
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to send ping: ', err);
+            }
+        }, 5000);
+
+        this.pingInterval.unref();
     }
 
     async close(): Promise<void> {
         this.closed = true;
+
+        clearInterval(this.pingInterval);
 
         for (const conn of this.values()) {
             conn.destroy();
