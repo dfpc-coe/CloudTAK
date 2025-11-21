@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v12.7.0 - 2025-11-21
+
+- :rocket: Fix some padding issues in menu
+- :rocket: Better Settings Menu Style
+- :rocket: Better Chats Menu Style
+- :rocket: Better API Token Menu Style
+- :rocket: Avoid Caching CrossOrigin ServiceWorker requests
+
 ### v12.6.0 - 2025-11-20
 
 - :tada: Complete rewrite of Service Worker to completely cache map frontend
