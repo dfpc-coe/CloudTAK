@@ -12,6 +12,17 @@
 
 ### Pending Release
 
+### v12.6.0 - 2025-11-20
+
+- :tada: Complete rewrite of Service Worker to completely cache map frontend
+- :tada: Custom Build/Version support for ServiceWorker Updates
+- :tada: 5sec `status` updates on WebSocket that include version numbers so service worker can be updated if underlying version changes
+- :tada: Group Data Packages with the same UID as they are "revisions"
+- :rocket: Allow filtering by Data Package Name
+- :rocket: Fix bugs related to UID vs Hash and remove the need for a ?hash parameter in the frontend routes
+- :rocket: Allow CloudTAK Admins to delete all Data Packages, regardless of ownership
+- :tada: Rewrite Mission Info Pane in a similiar style to DataPackage.vue
+
 ### v12.5.1 - 2025-11-18
 
 - :rocket: Remove smaller DB sizes that aren't compatible with Aurora Postgres
