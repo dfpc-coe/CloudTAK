@@ -86,16 +86,18 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 console.error('Failed to send ping: ', err);
             }
         }, 5000);
+
+        this.pingInterval.unref();
     }
 
     async close(): Promise<void> {
         this.closed = true;
 
+        clearInterval(this.pingInterval);
+
         for (const conn of this.values()) {
             conn.destroy();
         }
-
-        clearInterval(this.pingInterval);
 
         this.clear();
     }
