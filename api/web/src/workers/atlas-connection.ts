@@ -15,6 +15,8 @@ export default class AtlasConnection {
     isOpen: boolean;
     ws: WebSocket | undefined;
 
+    version: string | undefined;
+
     constructor(atlas: Atlas) {
         this.atlas = atlas;
 
@@ -145,6 +147,17 @@ export default class AtlasConnection {
                     );
                 } else {
                     console.log('UNKNOWN Chat', body.data);
+                }
+            } else if (body.type === 'status') {
+                const status = body.data as { version: string };
+
+                if (!this.version) {
+                    this.version = status.version;
+                } else if (this.version !== status.version) {
+                    console.log(`Version change detected: ${this.version} -> ${status.version}`);
+                    await navigator.serviceWorker.ready.then(registration => {
+                        registration.update();
+                    });
                 }
             } else {
                 console.log('UNKNOWN', body.data);
