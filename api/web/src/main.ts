@@ -6,7 +6,7 @@ import { createPinia } from 'pinia'
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register(`/sw.js?v=${version}`).then((registration) => {
+        navigator.serviceWorker.register(`/sw.js?v=${version}&build=${import.meta.env.HASH}`).then((registration) => {
             console.log('ServiceWorker registration successful with scope: ', registration.scope);
         }, (err) => {
             console.log('ServiceWorker registration failed: ', err);

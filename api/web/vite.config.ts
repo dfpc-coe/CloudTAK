@@ -5,6 +5,9 @@ import icons from './public/logos/icons.ts';
 
 export default defineConfig(({ mode }) => {
     const res = {
+        define: {
+            'import.meta.env.HASH': JSON.stringify(Math.random().toString(36).substring(2, 15)),
+        },
         plugins: [
             vue()
         ],
