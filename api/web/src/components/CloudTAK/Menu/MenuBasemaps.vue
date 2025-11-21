@@ -57,51 +57,31 @@
                 @create='editModal = {}'
             />
             <template v-else>
-                <MenuItem
-                    v-for='collection in list.collections'
-                    :key='collection.name'
-                    @click='setCollection(collection.name)'
-                    @keyup.enter='setCollection(collection.name)'
-                >
-                    <div class='d-flex align-items-center my-2'>
-                        <IconFolder
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            class='mx-2 text-truncate user-select-none'
-                            style='font-size: 18px; width: 240px;'
-                            v-text='collection.name'
-                        />
-                    </div>
-                </MenuItem>
-                <MenuItem
-                    v-for='basemap in list.items'
-                    :key='basemap.id'
-                    :class='{ "bg-blue text-white": isCurrentBasemap(basemap.id) }'
-                    @click='setBasemap(basemap)'
-                    @keyup.enter='setBasemap(basemap)'
-                >
-                    <div class='d-flex align-items-center my-2'>
-                        <IconMap
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            class='mx-2 text-truncate user-select-none'
-                            style='font-size: 18px; width: 220px;'
-                            v-text='basemap.name'
-                        />
-
-                        <div class='ms-auto d-flex align-items-center'>
+                <div class='col-12 d-flex flex-column gap-2 p-3'>
+                    <MenuItemCard
+                        v-for='collection in list.collections'
+                        :key='collection.name'
+                        :icon='IconFolder'
+                        :label='collection.name'
+                        @select='setCollection(collection.name)'
+                    />
+                    <MenuItemCard
+                        v-for='basemap in list.items'
+                        :key='basemap.id'
+                        :icon='IconMap'
+                        :label='basemap.name'
+                        :class='{ "bg-blue text-white": isCurrentBasemap(basemap.id) }'
+                        @select='setBasemap(basemap)'
+                    >
+                        <div class='d-flex align-items-center'>
                             <span
                                 v-if='!basemap.username'
-                                class='mx-3 ms-auto badge border'
+                                class='mx-3 badge border'
                                 :class='isCurrentBasemap(basemap.id) ? "bg-white text-blue" : "bg-blue text-white"'
                             >Public</span>
                             <span
                                 v-else
-                                class='mx-3 ms-auto badge border bg-red text-white'
+                                class='mx-3 badge border bg-red text-white'
                             >Private</span>
 
                             <TablerDropdown>
@@ -165,8 +145,8 @@
                                 </template>
                             </TablerDropdown>
                         </div>
-                    </div>
-                </MenuItem>
+                    </MenuItemCard>
+                </div>
 
                 <div class='col-lg-12 d-flex'>
                     <div class='ms-auto'>
@@ -193,7 +173,7 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, watch } from 'vue';
-import MenuItem from '../util/MenuItem.vue';
+import MenuItemCard from './MenuItemCard.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import { server, stdurl } from '../../../std.ts';
 import Overlay from '../../../base/overlay.ts';
