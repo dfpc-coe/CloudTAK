@@ -19,7 +19,7 @@
         </template>
         <template #default>
             <div class='d-flex flex-column'>
-                <div class='d-flex mx-2 pt-2 flex-column flex-sm-row align-items-sm-center gap-2'>
+                <div class='d-flex mx-2 pt-2 flex-row align-items-sm-center gap-2'>
                     <TablerInput
                         v-model='paging.filter'
                         :autofocus='true'
