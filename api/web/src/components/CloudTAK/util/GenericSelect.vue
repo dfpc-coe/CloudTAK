@@ -1,5 +1,5 @@
 <template>
-    <div class='col-12'>
+    <div class='col-12 d-flex flex-column gap-2'>
         <template v-if='props.disabled'>
             <div
                 v-for='item in props.items'
