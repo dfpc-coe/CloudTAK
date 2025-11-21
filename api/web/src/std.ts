@@ -5,15 +5,9 @@ import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
 
 
-// Allow serving through Vue for hotloading
-// Disable if serving over 5000 as that's likely a docker compose install
-const baseUrl = new URL(process.env.API_URL || self.location.origin);
-if (
-    baseUrl.hostname === 'localhost'
-    && baseUrl.port !== '5000'
-) baseUrl.port = '5001'
-
-export const server = createClient<paths>({ baseUrl: String(baseUrl) });
+export const server = createClient<paths>({
+    baseUrl: self.location.origin
+});
 
 const AuthMiddleware: Middleware = {
     async onRequest({ request }) {
@@ -32,7 +26,7 @@ export function stdurl(url: string | URL): URL {
         url = new URL(url);
     } catch (err) {
         if (err instanceof TypeError) {
-            url = new URL(String(baseUrl).replace(/\/$/, '') + url);
+            url = new URL(String(self.location.origin).replace(/\/$/, '') + url);
         } else {
             throw err;
         }

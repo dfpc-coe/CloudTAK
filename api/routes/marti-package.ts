@@ -197,6 +197,7 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await config.models.Profile.from(user.email);
             const auth = profile.auth;
             const creatorUid = profile.username;
+            const id = crypto.randomUUID();
 
             if (!req.body.basemaps.length && !req.body.features.length && !req.body.assets.length) {
                 throw new Err(400, null, 'Cannot share an empty package');
@@ -204,7 +205,6 @@ export default async function router(schema: Schema, config: Config) {
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const id = crypto.randomUUID();
             const pkg = new DataPackage(id, req.body.name || id);
 
             pkg.setEphemeral();
@@ -275,18 +275,21 @@ export default async function router(schema: Schema, config: Config) {
             const { size } = await fsp.stat(out);
 
             let content;
-            if (req.body.public) {
-                const hash = await DataPackage.hash(out);
 
+            const hash = await DataPackage.hash(out);
+
+            if (req.body.public) {
                 await api.Files.uploadPackage({
-                    name: pkg.settings.name, creatorUid, hash,
+                    name: pkg.settings.name,
+                    creatorUid,
+                    hash,
                     keywords: req.body.keywords,
                     groups: req.body.groups
                 }, fs.createReadStream(out));
 
                 // TODO Ask ARA for a Content endpoint to lookup by hash to mirror upload API
                 content = {
-                    UID: id,
+                    UID: hash,
                     SubmissionDateTime: new Date().toISOString(),
                     Keywords: [],
                     MIMEType: 'application/octet-stream',
@@ -298,7 +301,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             } else {
                 content = await api.Files.upload({
-                    name: id,
+                    name: hash,
                     contentLength: size,
                     keywords: req.body.keywords,
                     creatorUid,
@@ -380,9 +383,39 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Packages',
         group: 'MartiPackages',
         description: 'Helper API to list packages',
+        query: Type.Object({
+            filter: Type.String({
+                description: 'Filter packages by name',
+                default: ''
+            })
+        }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(Package)
+            items: Type.Array(Type.Object({
+                uid: Type.String({
+                    description: 'UID of the package'
+                }),
+                name: Type.String({
+                    description: 'Name of the latest package version'
+                }),
+                hash: Type.String({
+                    description: 'Hash of the latest package version'
+                }),
+                size: Type.Integer({
+                    description: 'Size of the latest package version in bytes'
+                }),
+                username: Type.Optional(Type.String({
+                    description: 'Submission User of the latest package version'
+                })),
+                created: Type.String({
+                    format: 'date-time',
+                    description: 'Submission DateTime of the latest package version'
+                }),
+                keywords: Type.Array(Type.String({
+                    description: 'Keywords of the latest package version'
+                })),
+                items: Type.Array(Package)
+            }))
         })
     }, async (req, res) => {
         try {
@@ -391,12 +424,37 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const pkg = await api.Package.list({
-                tool: 'public'
+                tool: 'public',
+                name: req.query.filter || undefined
             });
+
+            const byUID: Map<string, Static<typeof Package>[]> = new Map();
+            for (const p of pkg.results) {
+                if (!byUID.has(p.UID)) byUID.set(p.UID, []);
+                byUID.get(p.UID)?.push(p);
+            }
+
+            const items = [];
+            for (const [ uid, packages ] of byUID.entries()) {
+                packages.sort((a, b) => {
+                    return new Date(a.SubmissionDateTime).getTime() - new Date(b.SubmissionDateTime).getTime();
+                });
+
+                items.push({
+                    uid,
+                    name: packages[packages.length - 1].Name,
+                    keywords: packages[packages.length - 1].Keywords || [],
+                    hash: packages[packages.length - 1].Hash,
+                    size: !isNaN(Number(packages[packages.length - 1].Size)) ? Number(packages[packages.length -1].Size) : 0,
+                    created: packages[packages.length - 1].SubmissionDateTime,
+                    username: packages[packages.length - 1].SubmissionUser,
+                    items: packages
+                });
+            }
 
             res.json({
                 total: pkg.resultCount,
-                items: pkg.results
+                items
             });
         } catch (err) {
              Err.respond(err, res);
@@ -411,16 +469,33 @@ export default async function router(schema: Schema, config: Config) {
 
             DataPackages uploaded once will have a single entry by UID, however DataPackages uploaded multiple times
             will have the same UID but multiple hash values with the latest having the most recent submission date
-
-            By default this api will return the latest package, however if you provide a hash query parameter it will return that specific package
         `,
         params: Type.Object({
             uid: Type.String()
         }),
-        query: Type.Object({
-            hash: Type.Optional(Type.String())
-        }),
-        res: Package
+        res: Type.Object({
+            uid: Type.String({
+                description: 'UID of the package'
+            }),
+            name: Type.String({
+                description: 'Name of the latest package version'
+            }),
+            hash: Type.String({
+                description: 'Hash of the latest package version'
+            }),
+            size: Type.Integer({
+                description: 'Size of the latest package version in bytes'
+            }),
+            username: Type.Optional(Type.String({
+                description: 'Submission User of the latest package version'
+            })),
+            created: Type.String({
+                format: 'date-time',
+                description: 'Submission DateTime of the latest package version'
+            }),
+            keywords: Type.Array(Type.String()),
+            items: Type.Array(Package)
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -437,13 +512,16 @@ export default async function router(schema: Schema, config: Config) {
                 return new Date(a.SubmissionDateTime).getTime() - new Date(b.SubmissionDateTime).getTime();
             });
 
-            if (req.query.hash) {
-                const match = pkg.results.find((p) => p.Hash === req.query.hash);
-                if (!match) throw new Err(404, null, 'Package found but no matching hash');
-                return res.json(match);
-            } else {
-                res.json(pkg.results[pkg.results.length - 1]);
-            }
+            res.json({
+                uid: req.params.uid,
+                name: pkg.results[pkg.results.length - 1].Name,
+                hash: pkg.results[pkg.results.length - 1].Hash,
+                size: !isNaN(Number(pkg.results[pkg.results.length - 1].Size)) ? Number(pkg.results[pkg.results.length -1].Size) : 0,
+                keywords: pkg.results[pkg.results.length - 1].Keywords || [],
+                created: pkg.results[pkg.results.length - 1].SubmissionDateTime,
+                username: pkg.results[pkg.results.length - 1].SubmissionUser,
+                items: pkg.results
+            });
         } catch (err) {
              Err.respond(err, res);
         }
@@ -487,7 +565,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (
                 user.access !== AuthUserAccess.ADMIN
-                && pkg.SubmissionUser !== user.email
+                || pkg.SubmissionUser !== user.email
             ) {
                 throw new Err(403, null, 'Insufficient Acces to delete Package');
             }

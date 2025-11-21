@@ -639,6 +639,11 @@
         "query": false,
         "res": true
     },
+    "GET /manifest.webmanifest": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "POST /marti/export": {
         "body": true,
         "query": true,
@@ -801,12 +806,12 @@
     },
     "GET /marti/package": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "GET /marti/package/:uid": {
         "body": false,
-        "query": true,
+        "query": false,
         "res": true
     },
     "DELETE /marti/package/:uid": {

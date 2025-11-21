@@ -4,6 +4,7 @@
 
 import { stdurl } from '../std.ts';
 import type Atlas from './atlas.ts';
+import { version } from '../../package.json'
 import TAKNotification from '../base/notification.ts';
 import { WorkerMessageType } from '../base/events.ts';
 import type { Feature, Import } from '../types.ts';
@@ -15,12 +16,16 @@ export default class AtlasConnection {
     isOpen: boolean;
     ws: WebSocket | undefined;
 
+    version: string;
+
     constructor(atlas: Atlas) {
         this.atlas = atlas;
 
         this.isDestroyed = false;
         this.isOpen = false;
         this.ws = undefined;
+
+        this.version = version;
     }
 
     // COTs are submitted to pending and picked up by the partial update code every .5s
@@ -145,6 +150,17 @@ export default class AtlasConnection {
                     );
                 } else {
                     console.log('UNKNOWN Chat', body.data);
+                }
+            } else if (body.type === 'status') {
+                const status = body.data as { version: string };
+
+                if (!this.version) {
+                    this.version = status.version;
+                } else if (this.version !== status.version) {
+                    console.log(`Version change detected: ${this.version} -> ${status.version}`);
+                    await navigator.serviceWorker.ready.then(registration => {
+                        registration.update();
+                    });
                 }
             } else {
                 console.log('UNKNOWN', body.data);

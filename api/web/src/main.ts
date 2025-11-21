@@ -1,20 +1,18 @@
 import { createApp } from 'vue'
+import { version } from '../package.json'
 import type { PluginStatic } from '../plugin.ts'
 import * as VueRouter from 'vue-router'
 import { createPinia } from 'pinia'
 
-// @ts-expect-error Virtual Module
-import { registerSW } from 'virtual:pwa-register'
-
-registerSW({
-    immediate: true,
-    onNeedRefresh() {
-        console.error('App needs refresh');
-    },
-    onOfflineReady() {
-        console.log('App ready to work offline!')
-    }
-})
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register(`/sw.js?v=${version}&build=${import.meta.env.HASH}`).then((registration) => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, (err) => {
+            console.log('ServiceWorker registration failed: ', err);
+        });
+    });
+}
 
 import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'
@@ -451,6 +449,21 @@ const router = VueRouter.createRouter({
     ]
 });
 
+router.onError((error, to) => {
+    if (
+        error.message.includes('Failed to fetch dynamically imported module') ||
+        error.message.includes('Importing a module script failed')
+    ) {
+        if (!to?.query?.reload) {
+            if (navigator.onLine) {
+                window.location.href = to.fullPath;
+            } else {
+                console.error('Offline: Skipping reload for missing module', error);
+            }
+        }
+    }
+})
+
 const app = createApp(App);
 const pinia = createPinia()
 
@@ -466,7 +479,7 @@ const plugins: Record<string, {
 });
 
 for (const path in plugins) {
-    await plugins[path].default.install();
+    app.use(plugins[path].default);
 }
 
 app.mount('#app');

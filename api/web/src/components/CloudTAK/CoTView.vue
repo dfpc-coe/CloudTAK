@@ -286,7 +286,7 @@
 
         <div
             v-if='mode === "default"'
-            class='overflow-auto'
+            class='overflow-auto overflow-x-hidden'
             style='height: calc(100vh - 225px)'
         >
             <div class='row g-0'>
@@ -792,7 +792,7 @@
         <template v-else-if='mode === "channels"'>
             <div
                 style='height: calc(100vh - 225px)'
-                class='overflow-auto'
+                class='overflow-auto overflow-x-hidden'
             >
                 <Subscriptions :cot='cot' />
             </div>
