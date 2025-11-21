@@ -60,7 +60,7 @@
                     <article
                         v-for='pkg in list.items'
                         :key='pkg.uid'
-                        class='menu-packages__card text-white d-flex flex-column flex-md-row gap-3 position-relative'
+                        class='menu-packages__card text-white d-flex flex-row gap-3 position-relative'
                         role='button'
                         tabindex='0'
                         @click='router.push(`/menu/packages/${pkg.uid}`)'
