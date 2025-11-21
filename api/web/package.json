@@ -7,7 +7,7 @@
         "node": ">= 22"
     },
     "scripts": {
-        "serve": "vite serve --port 8080",
+        "serve": "DEV=true vite serve --port 8080",
         "typegen": "openapi-typescript http://localhost:5001/api/swagger --output src/derived-types.d.ts",
         "check": "vue-tsc",
         "build": "vite build",
