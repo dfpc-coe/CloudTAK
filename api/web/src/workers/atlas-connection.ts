@@ -4,6 +4,7 @@
 
 import { stdurl } from '../std.ts';
 import type Atlas from './atlas.ts';
+import { version } from '../../package.json'
 import TAKNotification from '../base/notification.ts';
 import { WorkerMessageType } from '../base/events.ts';
 import type { Feature, Import } from '../types.ts';
@@ -15,7 +16,7 @@ export default class AtlasConnection {
     isOpen: boolean;
     ws: WebSocket | undefined;
 
-    version: string | undefined;
+    version: string;
 
     constructor(atlas: Atlas) {
         this.atlas = atlas;
@@ -23,6 +24,8 @@ export default class AtlasConnection {
         this.isDestroyed = false;
         this.isOpen = false;
         this.ws = undefined;
+
+        this.version = version;
     }
 
     // COTs are submitted to pending and picked up by the partial update code every .5s
