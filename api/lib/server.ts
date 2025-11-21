@@ -25,7 +25,9 @@ export default class ServerManager {
             new Promise((resolve) => {
                 this.wss.close(resolve);
             }),
+            this.config.conns.close()
         ]);
+
 
         this.config.pg.end();
     }
