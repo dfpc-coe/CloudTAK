@@ -77,9 +77,13 @@
             </div>
 
             <div class='mx-2 my-2'>
-                <TablerSlidedown :arrow='true'>
-                    <div class='d-flex align-items-center'>
-                        <span class='strong'>Style Options</span>
+                <TablerSlidedown
+                    :arrow='true'
+                    :clickAnywhereExpand='true'
+                >
+                    <div class='d-flex align-items-center w-100'>
+                        <span>Style Options</span>
+                        <div :style='previewStyle' />
                     </div>
                     <template #expanded>
                         <TablerColour
@@ -98,6 +102,13 @@
                             :max='10'
                             :step='1'
                         />
+                        <TablerRange
+                            v-model='config.opacity'
+                            label='Opacity'
+                            :min='0'
+                            :max='1'
+                            :step='0.1'
+                        />
                     </template>
                 </TablerSlidedown>
             </div>
@@ -114,7 +125,7 @@
 
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
-import { ref, toRaw } from 'vue'
+import { ref, toRaw, computed } from 'vue'
 import Coordinate from './util/Coordinate.vue';
 import PropertyDistance from './util/PropertyDistance.vue';
 import Ellipse from '@turf/ellipse'
@@ -151,7 +162,21 @@ const config = ref({
     ],
     color: '#d63939',
     style: 'solid',
-    width: 3
+    width: 3,
+    opacity: 1
+});
+
+const previewStyle = computed(() => {
+    const style = config.value.style === 'outlined' ? 'solid' : config.value.style;
+    return {
+        width: '100px',
+        borderTopWidth: `${config.value.width}px`,
+        borderTopStyle: style as any,
+        borderTopColor: config.value.color,
+        opacity: config.value.opacity,
+        marginLeft: 'auto',
+        marginRight: '1rem'
+    };
 });
 
 async function submitRings() {
@@ -167,6 +192,8 @@ async function submitRings() {
             how: 'h-g-i-g-o',
             color: toRaw(config.value.color),
             archived: true,
+            'marker-color': toRaw(config.value.color),
+            'marker-opacity': toRaw(config.value.opacity),
             time: new Date().toISOString(),
             start: new Date().toISOString(),
             stale: new Date().toISOString(),
@@ -200,6 +227,7 @@ async function submitRings() {
                 stroke: toRaw(config.value.color),
                 'stroke-width': toRaw(config.value.width),
                 'stroke-style': toRaw(config.value.style),
+                'stroke-opacity': toRaw(config.value.opacity),
                 archived: true,
                 shape: {
                     ellipse: {
