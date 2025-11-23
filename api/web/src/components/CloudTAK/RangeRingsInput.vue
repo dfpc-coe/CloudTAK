@@ -168,10 +168,11 @@ const config = ref({
 
 const previewStyle = computed(() => {
     const style = config.value.style === 'outlined' ? 'solid' : config.value.style;
+
     return {
         width: '100px',
         borderTopWidth: `${config.value.width}px`,
-        borderTopStyle: style as any,
+        borderTopStyle: style as 'solid' | 'dashed' | 'dotted',
         borderTopColor: config.value.color,
         opacity: config.value.opacity,
         marginLeft: 'auto',
