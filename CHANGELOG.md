@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.8.0 - 2025-11-23
+
+- :tada: Allow setting style properties on Range Ring Creation
+- :rocket: Update Basemap Menu to new Item Style
+- :rocket: Update Route Menu to new Item Style
+
 ### v12.7.0 - 2025-11-21
 
 - :rocket: Fix some padding issues in menu
