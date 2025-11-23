@@ -76,6 +76,32 @@
                 </div>
             </div>
 
+            <div class='mx-2 my-2'>
+                <TablerSlidedown :arrow='true'>
+                    <div class='d-flex align-items-center'>
+                        <span class='strong'>Style Options</span>
+                    </div>
+                    <template #expanded>
+                        <TablerColour
+                            v-model='config.color'
+                            label='Color'
+                        />
+                        <TablerEnum
+                            v-model='config.style'
+                            label='Style'
+                            :options='["solid", "dashed", "dotted", "outlined"]'
+                        />
+                        <TablerRange
+                            v-model='config.width'
+                            label='Width'
+                            :min='1'
+                            :max='10'
+                            :step='1'
+                        />
+                    </template>
+                </TablerSlidedown>
+            </div>
+
             <button
                 class='btn btn-primary w-100 mt-3'
                 @click='submitRings'
@@ -100,6 +126,10 @@ import {
 import {
     TablerInput,
     TablerModal,
+    TablerColour,
+    TablerEnum,
+    TablerRange,
+    TablerSlidedown
 } from '@tak-ps/vue-tabler';
 import type { LngLatLike } from 'maplibre-gl'
 import { useMapStore } from '../../stores/map.ts';
@@ -118,7 +148,10 @@ const config = ref({
     coordinates: [
         Math.round(center.lng * 1000000) / 1000000,
         Math.round(center.lat * 1000000) / 1000000,
-    ]
+    ],
+    color: '#d63939',
+    style: 'solid',
+    width: 3
 });
 
 async function submitRings() {
@@ -132,7 +165,7 @@ async function submitRings() {
             id,
             type: toRaw(config.value.type),
             how: 'h-g-i-g-o',
-            color: '#00FF00',
+            color: toRaw(config.value.color),
             archived: true,
             time: new Date().toISOString(),
             start: new Date().toISOString(),
@@ -163,7 +196,10 @@ async function submitRings() {
                 id: ringid,
                 type: 'u-d-c-c',
                 how: 'h-g-i-g-o',
-                color: '#00FF00',
+                color: toRaw(config.value.color),
+                stroke: toRaw(config.value.color),
+                'stroke-width': toRaw(config.value.width),
+                'stroke-style': toRaw(config.value.style),
                 archived: true,
                 shape: {
                     ellipse: {
