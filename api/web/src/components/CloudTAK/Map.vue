@@ -717,6 +717,13 @@ onMounted(async () => {
         }
     });
 
+    window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            searchBoxShown.value = true;
+        }
+    });
+
     window.addEventListener('keyup', (e) => {
         if (e.key == 'Escape') {
             if (mapStore.radial.mode) {
