@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.9.0 - 2025-11-23
+
+- :tada: Intercept CTRL+F and open Search Box
+
 ### v12.8.0 - 2025-11-23
 
 - :tada: Allow setting style properties on Range Ring Creation
