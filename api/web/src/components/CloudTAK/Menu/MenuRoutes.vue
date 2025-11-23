@@ -38,44 +38,23 @@
                 label='Routes'
             />
             <template v-else>
-                <div
-                    v-for='cot of routes.values()'
-                    :key='cot.id'
-                >
-                    <div
-                        class='col-12 py-2 px-3 d-flex align-items-center hover user-select-none cursor-pointer'
-                        @click='clickRoute(cot)'
+                <div class='col-12 d-flex flex-column gap-2 p-3'>
+                    <MenuItemCard
+                        v-for='cot of routes.values()'
+                        :key='cot.id'
+                        :icon='IconRoute'
+                        :icon-color='cot.properties["stroke"] || "#ffffff"'
+                        :label='cot.properties.callsign'
+                        :description='cot.geometry.type === "LineString" ? Math.round(cot.length() * 1000) / 1000 + " km" : ""'
+                        @select='clickRoute(cot)'
                     >
-                        <div class='col-auto'>
-                            <IconRoute
-                                :size='32'
-                                :color='cot.properties["stroke"] || "#ffffff"'
-                                stroke='1'
+                        <div class='d-flex btn-list'>
+                            <TablerDelete
+                                displaytype='icon'
+                                @delete='deleteRoute(cot.id)'
                             />
                         </div>
-                        <div class='col-auto'>
-                            <div
-                                class='col-12 text-truncate px-2'
-                                style='max-width: 250px;'
-                                v-text='cot.properties.callsign'
-                            />
-                            <div class='col-12 subheader'>
-                                <span
-                                    v-if='cot.geometry.type === "LineString"'
-                                    class='mx-2'
-                                    v-text='Math.round(cot.length() * 1000) / 1000 + " km"'
-                                />
-                            </div>
-                        </div>
-                        <div class='col-auto ms-auto'>
-                            <div class='d-flex btn-list'>
-                                <TablerDelete
-                                    displaytype='icon'
-                                    @delete='deleteRoute(cot.id)'
-                                />
-                            </div>
-                        </div>
-                    </div>
+                    </MenuItemCard>
                 </div>
             </template>
         </template>
@@ -88,6 +67,7 @@ import { useRouter } from 'vue-router';
 import COT from '../../../base/cot.ts';
 import { server } from '../../../std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import MenuItemCard from './MenuItemCard.vue';
 import {
     TablerNone,
     TablerInput,

@@ -122,6 +122,18 @@ export default class AtlasConnection {
                 const task = body.data as Feature;
 
                 if (task.properties.type.startsWith('t-x-m-c')) {
+                    console.error('TASK', task.properties);
+
+                    if (task.properties.type === 't-x-m-c-l' && task.properties.mission) {
+                        await TAKNotification.create(
+                            'Mission',
+                            `${task.properties.mission.name} Log Entry`,
+                            'Log Entry Added or Modified',
+                            `/menu/missions/${task.properties.mission.guid}/logs`,
+                            true
+                        );
+                    }
+
                     // Mission Change Tasking
                     await this.atlas.db.subChange(task);
                 } else if (task.properties.type === 't-x-d-d') {

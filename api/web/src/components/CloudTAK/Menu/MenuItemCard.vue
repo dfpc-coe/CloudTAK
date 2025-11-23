@@ -12,6 +12,7 @@
             v-tooltip='tooltipBinding'
             :title='tooltip'
             :size='iconSize'
+            :color='iconColor'
             stroke='1'
             class='menu-item-card__icon'
         />
@@ -58,6 +59,9 @@
                     v-if='badge'
                     class='menu-item-card__badge menu-item-card__badge--admin ms-auto'
                 >{{ badge }}</span>
+                <div v-if='$slots.default' class='ms-auto'>
+                    <slot />
+                </div>
             </template>
         </template>
     </div>
@@ -73,6 +77,10 @@ const props = defineProps({
     icon: {
         type: Function as unknown as PropType<Component>,
         required: true
+    },
+    iconColor: {
+        type: String,
+        default: undefined
     },
     label: {
         type: String,
