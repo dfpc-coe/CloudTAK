@@ -1,5 +1,5 @@
 /*
-* ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
+* AtlasConnection - Maintain the WebSocket connection with CloudTAK Server
 */
 
 import { std } from '../std.ts';
@@ -28,8 +28,6 @@ export default class AtlasDatabase {
     // Stores Active Mission if present
     mission?: string;
 
-    hidden: Set<string>;
-
     pendingCreate: Map<string, COT>;
     pendingUpdate: Map<string, COT>;
     pendingHidden: Set<string>;
@@ -42,8 +40,6 @@ export default class AtlasDatabase {
         this.atlas = atlas;
 
         this.cots = new Map();
-
-        this.hidden = new Set();
 
         this.pendingCreate = new Map();
         this.pendingUpdate = new Map();
@@ -62,44 +58,18 @@ export default class AtlasDatabase {
         }
     }
 
+    /**
+     * Only Called by non-Mission CoTs, caller is responsible for creating Filters
+     */
     async hide(id: string): Promise<void> {
-        const cot = await this.get(id, {
-            mission: true
-        });
-
-        if (cot && cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-            this.hidden.add(id);
-
-            this.atlas.postMessage({
-                type: WorkerMessageType.Mission_Change_Feature,
-                body: {
-                    guid: cot.origin.mode_id
-                }
-            });
-        } else {
-            this.pendingHidden.add(id);
-        }
+        this.pendingHidden.add(id);
     }
 
+    /**
+     * Only Called by non-Mission CoTs, caller is responsible for removing Filters
+     */
     async unhide(id: string): Promise<void> {
-        const cot = await this.get(id, {
-            mission: true
-        });
-
-        if (cot && cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-            this.hidden.delete(id);
-
-            this.atlas.postMessage({
-                type: WorkerMessageType.Mission_Change_Feature,
-                body: {
-                    guid: cot.origin.mode_id
-                }
-            });
-            return;
-        } else {
-            this.hidden.delete(id);
-            this.pendingUnhide.add(id);
-        }
+        this.pendingUnhide.add(id);
     }
 
     async init(): Promise<void> {
@@ -150,7 +120,6 @@ export default class AtlasDatabase {
             const stale = new Date(cot.properties.stale).getTime();
 
             if (this.pendingHidden.has(String(cot.id))) {
-                this.hidden.add(cot.id);
                 diff.remove.push(cot.vectorId())
                 this.pendingHidden.delete(cot.id);
             } else if (
@@ -599,7 +568,7 @@ export default class AtlasDatabase {
                     mode_id: mission_guid
                 }, opts);
             } else {
-                exists.update({
+                await exists.update({
                     path: feat.path,
                     properties: feat.properties,
                     geometry: feat.geometry
@@ -620,7 +589,7 @@ export default class AtlasDatabase {
             return exists;
         } else {
             if (exists) {
-                exists.update({
+                await exists.update({
                     path: feat.path,
                     properties: feat.properties,
                     geometry: feat.geometry
