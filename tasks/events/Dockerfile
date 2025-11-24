@@ -30,7 +30,7 @@ COPY --from=0 /usr/local/bin/tile-join /usr/local/bin/
 RUN apk add nodejs npm gdal-tools curl  gdal-driver-all
 
 # PMTiles: https://github.com/protomaps/go-pmtiles/releases
-RUN export VERSION_PMTILES='1.28.0' && \
+RUN export VERSION_PMTILES='1.28.2' && \
     curl -L "https://github.com/protomaps/go-pmtiles/releases/download/v${VERSION_PMTILES}/go-pmtiles_${VERSION_PMTILES}_Linux_x86_64.tar.gz" > /tmp/pmtiles.tar.gz && \
     tar -xzvf /tmp/pmtiles.tar.gz && \
     mv pmtiles /usr/local/bin/
