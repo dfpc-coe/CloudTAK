@@ -7,6 +7,7 @@ import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
 import Subscription from '../base/subscription.ts';
+import Filter from '../base/filter.ts';
 import { coordEach } from '@turf/meta'
 import COT, { OriginMode } from '../base/cot.ts';
 import { WorkerMessageType } from '../base/events.ts';
@@ -28,8 +29,6 @@ export default class AtlasDatabase {
     // Stores Active Mission if present
     mission?: string;
 
-    hidden: Set<string>;
-
     pendingCreate: Map<string, COT>;
     pendingUpdate: Map<string, COT>;
     pendingHidden: Set<string>;
@@ -42,8 +41,6 @@ export default class AtlasDatabase {
         this.atlas = atlas;
 
         this.cots = new Map();
-
-        this.hidden = new Set();
 
         this.pendingCreate = new Map();
         this.pendingUpdate = new Map();
@@ -68,7 +65,13 @@ export default class AtlasDatabase {
         });
 
         if (cot && cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-            this.hidden.add(id);
+            await Filter.create(
+                cot.properties.callsign + ' Hidden',
+                `hidden-${cot.id}`,
+                'AtlasDatabase',
+                true,
+                `id = "${id}"`
+            )
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Mission_Change_Feature,
@@ -87,7 +90,7 @@ export default class AtlasDatabase {
         });
 
         if (cot && cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-            this.hidden.delete(id);
+            await Filter.delete({ external: `hidden-${id}` });
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Mission_Change_Feature,
@@ -97,7 +100,7 @@ export default class AtlasDatabase {
             });
             return;
         } else {
-            this.hidden.delete(id);
+            await Filter.delete({ external: `hidden-${id}` });
             this.pendingUnhide.add(id);
         }
     }
@@ -150,7 +153,14 @@ export default class AtlasDatabase {
             const stale = new Date(cot.properties.stale).getTime();
 
             if (this.pendingHidden.has(String(cot.id))) {
-                this.hidden.add(cot.id);
+                await Filter.create(
+                    cot.properties.callsign + ' Hidden',
+                    `hidden-${cot.id}`,
+                    'AtlasDatabase',
+                    true,
+                    `id = "${id}"`
+                )
+
                 diff.remove.push(cot.vectorId())
                 this.pendingHidden.delete(cot.id);
             } else if (
