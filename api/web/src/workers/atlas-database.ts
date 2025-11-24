@@ -7,7 +7,6 @@ import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
 import Subscription from '../base/subscription.ts';
-import Filter from '../base/filter.ts';
 import { coordEach } from '@turf/meta'
 import COT, { OriginMode } from '../base/cot.ts';
 import { WorkerMessageType } from '../base/events.ts';
@@ -59,53 +58,18 @@ export default class AtlasDatabase {
         }
     }
 
+    /**
+     * Only Called by non-Mission CoTs, caller is responsible for creating Filters
+     */
     async hide(id: string): Promise<void> {
-        const cot = await this.get(id, {
-            mission: true
-        });
-
-        if (!cot) return;
-
-        await Filter.create(
-            cot.properties.callsign + ' Hidden',
-            `hidden-${cot.id}`,
-            'AtlasDatabase',
-            true,
-            `id = "${cot.id}"`
-        )
-
-        if (cot && cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-            this.atlas.postMessage({
-                type: WorkerMessageType.Mission_Change_Feature,
-                body: {
-                    guid: cot.origin.mode_id
-                }
-            });
-        } else {
-            this.pendingHidden.add(id);
-        }
+        this.pendingHidden.add(id);
     }
 
+    /**
+     * Only Called by non-Mission CoTs, caller is responsible for removing Filters
+     */
     async unhide(id: string): Promise<void> {
-        const cot = await this.get(id, {
-            mission: true
-        });
-
-        if (cot && cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-            await Filter.delete({ external: `hidden-${id}` });
-
-            this.atlas.postMessage({
-                type: WorkerMessageType.Mission_Change_Feature,
-                body: {
-                    guid: cot.origin.mode_id
-                }
-            });
-            return;
-        } else {
-            await Filter.delete({ external: `hidden-${id}` });
-
-            this.pendingUnhide.add(id);
-        }
+        this.pendingUnhide.add(id);
     }
 
     async init(): Promise<void> {

@@ -375,8 +375,6 @@ export const useMapStore = defineStore('cloudtak', {
                 missiontoken: overlay.token || undefined
             });
 
-            console.error(`Mission:${guid} Setting Data`);
-
             // @ts-expect-error Source.setData is not defined
             oStore.setData(await sub.feature.collection(false));
 

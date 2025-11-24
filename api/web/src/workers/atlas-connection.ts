@@ -172,6 +172,7 @@ export default class AtlasConnection {
                     console.log(`Version change detected: ${this.version} -> ${status.version}`);
                     await navigator.serviceWorker.ready.then(registration => {
                         registration.update();
+                        this.version = status.version;
                     });
                 }
             } else {
