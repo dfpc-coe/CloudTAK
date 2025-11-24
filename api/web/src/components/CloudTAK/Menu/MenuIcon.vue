@@ -1,66 +1,76 @@
 <template>
-    <MenuTemplate :name='icon.name'>
+    <MenuTemplate name='Icon'>
         <template #buttons>
-            <TablerDelete
-                v-if='iconset.username || isSystemAdmin'
-                displaytype='icon'
-                @delete='deleteIcon'
-            />
-
-            <TablerIconButton
-                v-if='iconset.username || isSystemAdmin'
-                title='Edit'
-                @click='editModal = icon'
-            >
-                <IconSettings
-                    :size='32'
-                    stroke='1'
+            <div class='d-flex align-items-center gap-2'>
+                <TablerDelete
+                    v-if='iconset.username || isSystemAdmin'
+                    displaytype='icon'
+                    @delete='deleteIcon'
                 />
-            </TablerIconButton>
+
+                <TablerIconButton
+                    v-if='iconset.username || isSystemAdmin'
+                    title='Edit'
+                    @click='editModal = icon'
+                >
+                    <IconSettings
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+            </div>
         </template>
         <template #default>
-            <div class='mx-4'>
-                <TablerLoading v-if='loading' />
-                <template v-else>
-                    <div class='pb-4'>
-                        <div class='d-flex justify-content-center mt-3'>
-                            <img
-                                :src='iconurl(icon)'
-                                width='64'
-                            >
+            <TablerLoading v-if='loading' />
+            <template v-else>
+                <div class='container-fluid px-2 px-sm-3 py-4'>
+                    <div class='row gy-3 gx-0 gx-lg-3'>
+                        <div class='col-12'>
+                            <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
+                                <div class='card-body d-flex flex-column gap-4'>
+                                    <div class='d-flex align-items-center gap-3'>
+                                        <div class='rounded bg-white p-1 d-flex align-items-center justify-content-center'>
+                                            <img
+                                                :src='iconurl(icon)'
+                                                width='32'
+                                                height='32'
+                                                style='object-fit: contain;'
+                                            >
+                                        </div>
+                                        <div class='flex-grow-1'>
+                                            <p class='text-uppercase text-white-50 small mb-1'>
+                                                Icon
+                                            </p>
+                                            <h2
+                                                class='h4 mb-0 text-truncate'
+                                                style='max-width: calc(100% - 48px);'
+                                                v-text='icon.name'
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div class='row gy-3 gx-0 gx-sm-3'>
+                                        <div class='col-12'>
+                                            <small class='text-uppercase text-white-50 d-block mb-1'>Iconset</small>
+                                            <p
+                                                class='text-start text-white fw-semibold p-0 text-decoration-none'
+                                                v-text='icon.iconset'
+                                            />
+                                        </div>
+                                        <div class='col-12'>
+                                            <small class='text-uppercase text-white-50 d-block mb-1'>Type 2525b</small>
+                                            <p
+                                                class='text-start text-white fw-semibold p-0 text-decoration-none'
+                                                v-text='icon.type2525b || "None"'
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class='datagrid'>
-                        <div class='datagrid-item'>
-                            <div class='datagrid-title'>
-                                Iconset
-                            </div>
-                            <div
-                                class='datagrid-content'
-                                v-text='icon.iconset'
-                            />
-                        </div>
-                        <div class='datagrid-item'>
-                            <div class='datagrid-title'>
-                                Name
-                            </div>
-                            <div
-                                class='datagrid-content'
-                                v-text='icon.name'
-                            />
-                        </div>
-                        <div class='datagrid-item'>
-                            <div class='datagrid-title'>
-                                Type 2525b
-                            </div>
-                            <div
-                                class='datagrid-content'
-                                v-text='icon.type2525b || "None"'
-                            />
-                        </div>
-                    </div>
-                </template>
-            </div>
+                </div>
+            </template>
         </template>
     </MenuTemplate>
 
