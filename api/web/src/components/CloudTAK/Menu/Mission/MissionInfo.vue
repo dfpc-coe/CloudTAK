@@ -295,6 +295,10 @@ async function subscribe(subscribe: boolean) {
 
         emit('refresh');
     } else if (subscribe === false && overlay) {
+        if (mapStore.mission && mapStore.mission.meta.guid === props.subscription.meta.guid) {
+            mapStore.makeActiveMission();
+        }
+
         await mapStore.removeOverlay(overlay);
 
         emit('refresh');

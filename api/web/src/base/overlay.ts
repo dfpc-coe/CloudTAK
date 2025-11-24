@@ -27,6 +27,7 @@ export default class Overlay {
 
     id: number;
     name: string;
+    active: boolean;
     username?: string;
     frequency: number | null;
     created: string;
@@ -146,6 +147,7 @@ export default class Overlay {
 
         this.id = overlay.id;
         this.name = overlay.name;
+        this.active = overlay.active;
         this.username = overlay.username;
         this.frequency = overlay.frequency;
         this.created = overlay.created;
@@ -214,7 +216,7 @@ export default class Overlay {
     } = {}) {
         const mapStore = useMapStore();
 
-        if (this.type ==='raster' && this.url) {
+        if (this.type === 'raster' && this.url) {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
 
@@ -383,6 +385,7 @@ export default class Overlay {
     async replace(
         overlay: {
             name?: string
+            active?: boolean;
             username?: string
             actions?: ProfileOverlay["actions"];
             type?: string;
@@ -401,6 +404,7 @@ export default class Overlay {
         this.remove();
 
         if (overlay.name) this.name = overlay.name;
+        if (overlay.active !== undefined) this.active = overlay.active;
         if (overlay.username) this.username = overlay.username;
         if (overlay.actions) this.actions = overlay.actions || { feature: [] };
         if (overlay.type) this.type = overlay.type;
@@ -513,6 +517,7 @@ export default class Overlay {
                 pos: this.pos,
                 name: this.name,
                 type: this.type,
+                active: this.active,
                 opacity: this.opacity,
                 mode_id: this.mode_id,
                 url: this.url,
