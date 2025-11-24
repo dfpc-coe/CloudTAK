@@ -1,5 +1,5 @@
 /*
-* ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
+* AtlasConnection - Maintain the WebSocket connection with CloudTAK Server
 */
 
 import { std } from '../std.ts';
