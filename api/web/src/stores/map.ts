@@ -355,11 +355,18 @@ export const useMapStore = defineStore('cloudtak', {
             }
         ): Promise<Subscription | null> {
             const overlay = this.getOverlayByMode('mission', guid)
-            if (!overlay || !overlay.mode_id) return null;
+            if (!overlay || !overlay.mode_id) {
+                console.error(`Mission:${guid} not found in overlays`);
+                return null;
+            }
 
             if (!this.map) throw new Error('Cannot loadMission before map has loaded');
             const oStore = this.map.getSource(String(overlay.id));
-            if (!oStore) return null
+
+            if (!oStore) {
+                console.error(`Mission:${guid} No Source Found`);
+                return null
+            }
 
             const sub = await Subscription.load(guid, {
                 token: localStorage.token,
@@ -369,7 +376,7 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             // @ts-expect-error Source.setData is not defined
-            oStore.setData(await sub.feature.collection());
+            oStore.setData(await sub.feature.collection(false));
 
             await sub.update({ dirty: false });
 

@@ -7,6 +7,8 @@ import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { distance } from '@turf/distance';
 import type { GeoJSONFeatureId } from 'maplibre-gl'
 import type COT from '../../base/cot.ts';
+import Filter from '../../base/filter.ts';
+import { OriginMode } from '../../base/cot.ts';
 import { std, stdurl } from '../../std.ts';
 import type { Feature, FeatureCollection } from '../../types.ts';
 import type { Polygon, Position } from 'geojson';
@@ -276,12 +278,23 @@ export default class DrawTool {
 
             delete feat.properties.center;
 
+            const editing = this.editing;
+
             await this.stop();
 
-            await this.mapStore.worker.db.add(feat as Feature);
+            await this.mapStore.worker.db.add(feat as Feature, {
+                authored: true
+            });
 
             await this.mapStore.refresh();
-        })
+
+            if (editing && editing.origin.mode === OriginMode.MISSION && editing.origin.mode_id) {
+                await this.mapStore.loadMission(editing.origin.mode_id);
+            } else {
+                await this.mapStore.worker.db.unhide(editing.id);
+                await this.mapStore.refresh();
+            }
+        });
 
         this.mode = DrawToolMode.STATIC;
         this.snapping = new Set();
@@ -307,7 +320,7 @@ export default class DrawTool {
         );
     }
 
-    async stop(): Promise<void> {
+    async stop(refresh = true): Promise<void> {
         this.mode = DrawToolMode.STATIC;
 
         // Reset cursor to default BEFORE stopping draw operations
@@ -316,10 +329,20 @@ export default class DrawTool {
         this.draw.stop();
         this.snapping.clear()
 
-        if (this.editing) {
-            await this.mapStore.worker.db.unhide(this.editing.id);
-            this.editing = null;
-            await this.mapStore.refresh();
+        if (!this.editing) return;
+
+        await Filter.delete({ external: `hidden-${this.editing.id}` });
+
+        if (refresh) {
+            if (this.editing && this.editing.origin.mode === OriginMode.MISSION && this.editing.origin.mode_id) {
+                await this.mapStore.loadMission(this.editing.origin.mode_id);
+                this.editing = null;
+            } else {
+                await this.mapStore.worker.db.unhide(this.editing.id);
+                this.editing = null;
+
+                await this.mapStore.refresh();
+            }
         }
     }
 
@@ -349,8 +372,20 @@ export default class DrawTool {
                 }
             });
 
-            await this.mapStore.worker.db.hide(cot.id);
-            await this.mapStore.refresh();
+            await Filter.create(
+                cot.properties.callsign + ' Hidden',
+                `hidden-${cot.id}`,
+                'AtlasDatabase',
+                true,
+                `id = "${cot.id}"`
+           )
+
+            if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
+                await this.mapStore.loadMission(cot.origin.mode_id);
+            } else {
+                await this.mapStore.worker.db.hide(cot.id);
+                await this.mapStore.refresh();
+            }
 
             const errorStatus = this.draw.addFeatures([feat as terraDraw.GeoJSONStoreFeatures]).filter((status) => {
                 return !status.valid;

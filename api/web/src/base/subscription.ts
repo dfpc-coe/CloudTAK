@@ -151,14 +151,17 @@ export default class Subscription {
         const exists = await this.from(guid, opts.token);
 
         if (exists) {
+            if (opts.subscribed !== undefined || opts.missiontoken !== undefined) {
+                await exists.update({
+                    subscribed: opts.subscribed ?? exists.subscribed,
+                    token: opts.missiontoken ?? exists.token
+                });
+            }
+
             if (opts.reload !== false) {
                 await exists.refresh({
                     refreshMission: true
                 });
-            }
-
-            if (opts.subscribed !== undefined) {
-                await exists.update({ subscribed: opts.subscribed });
             }
 
             return exists;
@@ -205,7 +208,8 @@ export default class Subscription {
     async update(
         body: {
             dirty?: boolean,
-            subscribed?: boolean
+            subscribed?: boolean,
+            token?: string
         }
     ): Promise<void> {
         if (body.subscribed !== undefined) {
@@ -216,9 +220,14 @@ export default class Subscription {
             this.dirty = body.dirty;
         }
 
+        if (body.token !== undefined) {
+            this.token = body.token;
+        }
+
         await db.subscription.update(this.guid, {
             dirty: this.dirty,
-            subscribed: this.subscribed
+            subscribed: this.subscribed,
+            token: this.token
         });
 
         this._sync.postMessage({
