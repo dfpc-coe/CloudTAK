@@ -568,7 +568,7 @@ export default class AtlasDatabase {
                     mode_id: mission_guid
                 }, opts);
             } else {
-                exists.update({
+                await exists.update({
                     path: feat.path,
                     properties: feat.properties,
                     geometry: feat.geometry
@@ -589,7 +589,7 @@ export default class AtlasDatabase {
             return exists;
         } else {
             if (exists) {
-                exists.update({
+                await exists.update({
                     path: feat.path,
                     properties: feat.properties,
                     geometry: feat.geometry
