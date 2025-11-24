@@ -1,4 +1,6 @@
 import { db } from './database.ts'
+import type { Feature } from './types.ts';
+import jsonata from 'jsonata';
 import { v4 as randomUUID } from 'uuid';
 
 /**
@@ -19,6 +21,8 @@ export default class Filter {
     internal: boolean;
     query: string;
 
+    expression: jsonata.Expression;
+
     constructor(
         name: string,
         external: string,
@@ -33,11 +37,32 @@ export default class Filter {
         this.source = source;
         this.internal = internal;
         this.query = query;
+
+        this.expression = jsonata(this.query);
     }
 
-    /**
-     * Return a Subscription instance of one already exists in the local DB,
-     */
+    test(feature: Feature): boolean {
+        return this.expression.evaluate(feature);
+    }
+
+    static async list(): Promise<Filter[]> {
+        const filters = await db.filter.toArray();
+
+        return filters.map(f => {
+            const filter = new Filter(
+                f.name,
+                f.external,
+                f.source,
+                f.internal,
+                f.query
+            );
+
+            filter.id = f.id;
+
+            return filter;
+        });
+    }
+
     static async from(
         id: string
     ): Promise<Filter | null> {

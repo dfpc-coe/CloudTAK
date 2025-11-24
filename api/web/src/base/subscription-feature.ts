@@ -1,4 +1,5 @@
 import { db } from './database.ts';
+import Filter from './filter.ts';
 import COT from './cot.ts';
 import Subscription from './subscription.ts';
 import type Atlas from '../workers/atlas.ts';
@@ -68,7 +69,6 @@ export default class SubscriptionFeature {
 
     async list(
         opts?: {
-            filter?: string,
             refresh: false,
         }
     ): Promise<Array<Feature>> {
@@ -93,12 +93,26 @@ export default class SubscriptionFeature {
     async collection(raw = true): Promise<FeatureCollection> {
         const features = await this.list();
 
-        return {
-            type: 'FeatureCollection',
-            features: features.map((feat) => {
-                return raw ? feat : COT.as_rendered(feat)
-            })
-        } as FeatureCollection;
+        if (raw) {
+            return {
+                type: 'FeatureCollection',
+                features: features.map((feat) => {
+                    return feat
+                })
+            } as FeatureCollection;
+        } else {
+            const filters = await Filter.list();
+
+            return {
+                type: 'FeatureCollection',
+                features: features
+                    .filter((feat) => {
+                        return filters.some((filter) => {
+                            return !filter.test(feat);
+                        })
+                    })
+            } as FeatureCollection;
+        }
     }
 
     async bounds(): Promise<BBox> {
