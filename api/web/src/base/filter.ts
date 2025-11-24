@@ -1,5 +1,5 @@
 import { db } from './database.ts'
-import type { Feature } from './types.ts';
+import type { Feature } from '../types.ts';
 import jsonata from 'jsonata';
 import { v4 as randomUUID } from 'uuid';
 
@@ -41,8 +41,8 @@ export default class Filter {
         this.expression = jsonata(this.query);
     }
 
-    test(feature: Feature): boolean {
-        return this.expression.evaluate(feature);
+    async test(feature: Feature): Promise<boolean> {
+        return await this.expression.evaluate(feature);
     }
 
     static async list(): Promise<Filter[]> {
@@ -147,13 +147,14 @@ export default class Filter {
             throw new Error('Either id or external must be provided for deletion.');
         } else if (id.id) {
             await db.filter
-            .where('id')
-            .equals(id.id)
-            .delete();
+                .where('id')
+                .equals(id.id)
+                .delete();
         } else if (id.external) {
             await db.filter
                 .where('external')
                 .equals(id.external)
+                .delete();
         }
     }
 }
