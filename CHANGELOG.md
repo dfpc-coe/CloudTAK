@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.10.0 - 2025-11-24
+
+- :rocket: Unsubscribe Mission make inactive - Closes: https://github.com/dfpc-coe/CloudTAK/issues/944
+- :tada: Store current active state in the DB to ensure it is retained across restarts
+
 ### v12.9.0 - 2025-11-23
 
 - :tada: Intercept CTRL+F and open Search Box
