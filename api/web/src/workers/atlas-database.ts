@@ -63,12 +63,43 @@ export default class AtlasDatabase {
     }
 
     async hide(id: string): Promise<void> {
-        this.pendingHidden.add(id);
+        const cot = await this.get(id, {
+            mission: true
+        });
+
+        if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
+            this.hidden.add(id);
+
+            this.atlas.postMessage({
+                type: WorkerMessageType.Mission_Change_Feature,
+                body: {
+                    guid: cot.origin.mode_id
+                }
+            });
+        } else {
+            this.pendingHidden.add(id);
+        }
     }
 
     async unhide(id: string): Promise<void> {
-        this.hidden.delete(id);
-        this.pendingUnhide.add(id);
+        const cot = await this.get(id, {
+            mission: true
+        });
+
+        if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
+            this.hidden.delete(id);
+
+            this.atlas.postMessage({
+                type: WorkerMessageType.Mission_Change_Feature,
+                body: {
+                    guid: cot.origin.mode_id
+                }
+            });
+            return;
+        } else {
+            this.hidden.delete(id);
+            this.pendingUnhide.add(id);
+        }
     }
 
     async init(): Promise<void> {
