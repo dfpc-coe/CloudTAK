@@ -9,6 +9,14 @@ export interface DBIcon {
     name: string;
 }
 
+export interface DBFilter {
+    id: string;
+    name: string;
+    source: string;
+    internal: boolean;
+    query: string;
+}
+
 export interface DBNotification {
     id: string;
     type: string;
@@ -73,6 +81,7 @@ export const db = new Dexie('CloudTAK') as DatabaseType;
 
 db.version(1).stores({
     icon: 'name',
+    filter: 'id',
     video: 'id, username',
     notification: 'id, type, name, body, url, created, toast, read',
     subscription: 'guid, name',
