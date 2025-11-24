@@ -102,15 +102,23 @@ export default class SubscriptionFeature {
             } as FeatureCollection;
         } else {
             const filters = await Filter.list();
+            const filtered: Feature[] = [];
+
+            for (const feat of features) {
+                let blocked = false;
+                for (const filter of filters) {
+                    if (await filter.test(feat)) {
+                        blocked = true;
+                        break;
+                    }
+                }
+
+                if (!blocked) filtered.push(feat);
+            }
 
             return {
                 type: 'FeatureCollection',
-                features: features
-                    .filter((feat) => {
-                        return filters.some((filter) => {
-                            return !filter.test(feat);
-                        })
-                    })
+                features: filtered
             } as FeatureCollection;
         }
     }
