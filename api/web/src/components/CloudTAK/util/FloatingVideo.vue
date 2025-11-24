@@ -76,7 +76,7 @@
         <div
             class='modal-body'
             :class='{ "modal-body--error": !!error }'
-            :style='`height: calc(100% - 40px)`'
+            :style='`height: calc(100% - 50px)`'
         >
             <div
                 v-if='loading'
@@ -264,6 +264,7 @@ onMounted(async () => {
     // Set up drag functionality
     if (dragHandle.value) {
         dragHandle.value.addEventListener('mousedown', dragStart);
+        dragHandle.value.addEventListener('touchstart', touchStart, { passive: false });
     }
 
     // Start the video lease request process
@@ -317,6 +318,48 @@ function dragEnd() {
     container.value.removeEventListener('mouseup', dragEnd);
 
     // Remove visual feedback for dragging state
+    dragHandle.value.classList.remove('dragging');
+}
+
+function touchStart(event: TouchEvent) {
+    if (!container.value || !dragHandle.value) return;
+    event.preventDefault();
+
+    const touch = event.touches[0];
+    lastPosition.value.left = touch.clientX;
+    lastPosition.value.top = touch.clientY;
+
+    dragHandle.value.classList.add('dragging');
+
+    container.value.addEventListener('touchmove', touchMove, { passive: false });
+    container.value.addEventListener('touchend', touchEnd);
+    container.value.addEventListener('touchcancel', touchEnd);
+}
+
+function touchMove(event: TouchEvent) {
+    if (!container.value || !dragHandle.value || !video.value) return;
+    event.preventDefault();
+
+    const touch = event.touches[0];
+    const dragElRect = container.value.getBoundingClientRect();
+
+    video.value.config.x = dragElRect.left + touch.clientX - lastPosition.value.left;
+    video.value.config.y = dragElRect.top + touch.clientY - lastPosition.value.top;
+
+    lastPosition.value.left = touch.clientX;
+    lastPosition.value.top = touch.clientY;
+
+    container.value.style.top = video.value.config.y + 'px';
+    container.value.style.left = video.value.config.x + 'px';
+}
+
+function touchEnd() {
+    if (!container.value || !dragHandle.value) return;
+
+    container.value.removeEventListener('touchmove', touchMove);
+    container.value.removeEventListener('touchend', touchEnd);
+    container.value.removeEventListener('touchcancel', touchEnd);
+
     dragHandle.value.classList.remove('dragging');
 }
 
@@ -546,7 +589,7 @@ async function requestLease(): Promise<void> {
     min-height: 300px;
     min-width: 400px;
     resize: both;
-    overflow: auto;
+    overflow: hidden;
 }
 
 .video-container {
