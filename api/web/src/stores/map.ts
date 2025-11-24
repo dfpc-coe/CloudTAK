@@ -203,8 +203,31 @@ export const useMapStore = defineStore('cloudtak', {
         },
         makeActiveMission: async function(mission?: Subscription): Promise<void> {
             this.mission = mission;
-
             await this.worker.db.makeActiveMission(mission ? mission.meta.guid : undefined);
+
+            if (mission) {
+                for (const overlay of this.overlays) {
+                    if (overlay.mode !== 'mission' || !overlay.mode_id) continue;
+
+                    if (overlay.mode_id !== mission.meta.guid && overlay.active) {
+                        // The API call to make active will disable all active overlays on the backend so no need for networkIO
+                        overlay.active = false;
+                    } else if (overlay.mode_id === mission.meta.guid) {
+                        overlay.active = true;
+
+                        await overlay.save();
+                    }
+                }
+            } else {
+                for (const overlay of this.overlays) {
+                    if (overlay.mode !== 'mission' || !overlay.mode_id) continue;
+
+                    if (overlay.active) {
+                        overlay.active = false;
+                        await overlay.save();
+                    }
+                }
+            }
         },
         getOverlayById(id: number): Overlay | null {
             for (const overlay of this.overlays) {
@@ -330,13 +353,13 @@ export const useMapStore = defineStore('cloudtak', {
             opts?: {
                 reload: boolean;
             }
-        ): Promise<boolean> {
+        ): Promise<Subscription | null> {
             const overlay = this.getOverlayByMode('mission', guid)
-            if (!overlay || !overlay.mode_id) return false;
+            if (!overlay || !overlay.mode_id) return null;
 
             if (!this.map) throw new Error('Cannot loadMission before map has loaded');
             const oStore = this.map.getSource(String(overlay.id));
-            if (!oStore) return false
+            if (!oStore) return null
 
             const sub = await Subscription.load(guid, {
                 token: localStorage.token,
@@ -350,7 +373,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             await sub.update({ dirty: false });
 
-            return true;
+            return sub;
         },
         init: async function(container: HTMLElement) {
             this.container = container;
@@ -730,9 +753,13 @@ export const useMapStore = defineStore('cloudtak', {
                     if (!source) continue;
 
                     try {
-                        await this.loadMission(overlay.mode_id, {
+                        const sub = await this.loadMission(overlay.mode_id, {
                             reload: true
                         });
+
+                        if (sub && overlay.active) {
+                            await this.makeActiveMission(sub);
+                        }
                     } catch (err) {
                         console.error('Failed to load Mission', err)
                         // TODO: Handle this gracefully

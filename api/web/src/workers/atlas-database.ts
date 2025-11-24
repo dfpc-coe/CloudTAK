@@ -67,7 +67,7 @@ export default class AtlasDatabase {
             mission: true
         });
 
-        if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
+        if (cot && cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
             this.hidden.add(id);
 
             this.atlas.postMessage({
@@ -86,7 +86,7 @@ export default class AtlasDatabase {
             mission: true
         });
 
-        if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
+        if (cot && cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
             this.hidden.delete(id);
 
             this.atlas.postMessage({
