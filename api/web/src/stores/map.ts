@@ -325,7 +325,12 @@ export const useMapStore = defineStore('cloudtak', {
          * Given a mission Guid, attempt to refresh the Map Layer, loading the mission if it isn't already loaded
          * @returns {boolean} True if successful, false if not
          */
-        loadMission: async function(guid: string): Promise<boolean> {
+        loadMission: async function(
+            guid: string,
+            opts?: {
+                reload: boolean;
+            }
+        ): Promise<boolean> {
             const overlay = this.getOverlayByMode('mission', guid)
             if (!overlay || !overlay.mode_id) return false;
 
@@ -335,6 +340,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             const sub = await Subscription.load(guid, {
                 token: localStorage.token,
+                reload: opts?.reload || false,
                 subscribed: true,
                 missiontoken: overlay.token || undefined
             });
@@ -351,10 +357,11 @@ export const useMapStore = defineStore('cloudtak', {
 
             await this.worker.init(localStorage.token);
 
-            this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
+            this.channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
                 const msg = event.data;
 
                 if (!msg || !msg.type) return;
+
                 if (msg.type === WorkerMessageType.Map_FitBounds) {
                     if (msg.body.options.speed === null) {
                         msg.body.options.speed = Infinity;
@@ -390,7 +397,7 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (msg.type === WorkerMessageType.Channels_List) {
                     this.hasNoChannels = false;
                 } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
-                    this.loadMission(msg.body.guid);
+                    await this.loadMission(msg.body.guid);
                 }
             }
 
@@ -723,7 +730,9 @@ export const useMapStore = defineStore('cloudtak', {
                     if (!source) continue;
 
                     try {
-                        await this.loadMission(overlay.mode_id);
+                        await this.loadMission(overlay.mode_id, {
+                            reload: true
+                        });
                     } catch (err) {
                         console.error('Failed to load Mission', err)
                         // TODO: Handle this gracefully
