@@ -64,15 +64,17 @@ export default class AtlasDatabase {
             mission: true
         });
 
-        if (cot && cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-            await Filter.create(
-                cot.properties.callsign + ' Hidden',
-                `hidden-${cot.id}`,
-                'AtlasDatabase',
-                true,
-                `id = "${id}"`
-            )
+        if (!cot) return;
 
+        await Filter.create(
+            cot.properties.callsign + ' Hidden',
+            `hidden-${cot.id}`,
+            'AtlasDatabase',
+            true,
+            `id = "${cot.id}"`
+        )
+
+        if (cot && cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
             this.atlas.postMessage({
                 type: WorkerMessageType.Mission_Change_Feature,
                 body: {
@@ -101,6 +103,7 @@ export default class AtlasDatabase {
             return;
         } else {
             await Filter.delete({ external: `hidden-${id}` });
+
             this.pendingUnhide.add(id);
         }
     }
@@ -153,14 +156,6 @@ export default class AtlasDatabase {
             const stale = new Date(cot.properties.stale).getTime();
 
             if (this.pendingHidden.has(String(cot.id))) {
-                await Filter.create(
-                    cot.properties.callsign + ' Hidden',
-                    `hidden-${cot.id}`,
-                    'AtlasDatabase',
-                    true,
-                    `id = "${cot.id}"`
-                )
-
                 diff.remove.push(cot.vectorId())
                 this.pendingHidden.delete(cot.id);
             } else if (
