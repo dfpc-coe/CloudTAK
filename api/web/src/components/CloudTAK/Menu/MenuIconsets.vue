@@ -83,20 +83,12 @@
                 </div>
 
                 <template v-if='mode === "iconsets"'>
-                    <div class='card'>
-                        <div class='card-header'>
-                            <h3 class='card-title'>
-                                Iconsets
-                            </h3>
-                        </div>
-
-                        <div class='col-12 px-2 pb-2'>
-                            <TablerInput
-                                v-model='paging.filter'
-                                icon='search'
-                                placeholder='Filter'
-                            />
-                        </div>
+                    <div class='mx-2 my-2'>
+                        <TablerInput
+                            v-model='paging.filter'
+                            icon='search'
+                            placeholder='Filter'
+                        />
                     </div>
 
                     <TablerLoading
@@ -112,22 +104,22 @@
                         label='Iconsets'
                         :create='false'
                     />
-                    <div
-                        v-for='iconset in list.items'
-                        :key='iconset.uid'
-                        class='col-12 hover cursor-pointer py-2 px-3'
-                        @click='router.push(`/menu/iconset/${iconset.uid}`)'
-                    >
-                        <div class='d-flex align-items-center'>
-                            <span v-text='iconset.name' />
-                            <div class='ms-auto d-flex align-items-center'>
+                    <div class='col-12 d-flex flex-column gap-2 p-3'>
+                        <MenuItemCard
+                            v-for='iconset in list.items'
+                            :key='iconset.uid'
+                            :icon='IconAlbum'
+                            :label='iconset.name'
+                            @select='router.push(`/menu/iconset/${iconset.uid}`)'
+                        >
+                            <div class='d-flex align-items-center'>
                                 <span
                                     v-if='!iconset.username'
-                                    class='mx-3 ms-auto badge border bg-blue text-white'
+                                    class='mx-3 badge border bg-blue text-white'
                                 >Public</span>
                                 <span
                                     v-else
-                                    class='mx-3 ms-auto badge border bg-red text-white'
+                                    class='mx-3 badge border bg-red text-white'
                                 >Private</span>
                                 <TablerIconButton
                                     title='Download TAK Zip'
@@ -139,7 +131,7 @@
                                     />
                                 </TablerIconButton>
                             </div>
-                        </div>
+                        </MenuItemCard>
                     </div>
                     <div class='col-lg-12 d-flex'>
                         <div class='ms-auto'>
@@ -175,6 +167,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import MenuItemCard from './MenuItemCard.vue';
 import { std, stdurl } from '../../../std.ts';
 import Upload from '../../util/Upload.vue';
 import IconCombineds from '../util/Icons.vue'

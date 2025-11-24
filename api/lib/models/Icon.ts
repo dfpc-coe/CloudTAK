@@ -11,7 +11,6 @@ export type Icon = {
     iconset: string;
     type2525b: string;
     data: string;
-    data_alt: string;
     path: string;
     username: string;
 }
@@ -41,7 +40,6 @@ export default class IconModel extends Modeler<typeof pgschema.Icon> {
             iconset: pgschema.Icon.iconset,
             type2525b: pgschema.Icon.type2525b,
             data: pgschema.Icon.data,
-            data_alt: pgschema.Icon.data_alt,
             path: pgschema.Icon.path,
             username: pgschema.Iconset.username
         }).from(this.generic)

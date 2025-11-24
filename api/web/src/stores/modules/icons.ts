@@ -29,7 +29,7 @@ export default class IconManager {
         for (const iconset of iconsets.items) {
             sprites.push({
                 id: iconset.uid,
-                url: String(stdurl(`/api/iconset/${iconset.uid}/sprites?token=${localStorage.token}&alt=true`))
+                url: String(stdurl(`/api/iconset/${iconset.uid}/sprites?token=${localStorage.token}`))
             });
         }
 

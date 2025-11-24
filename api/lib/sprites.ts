@@ -11,7 +11,6 @@ const SpriteSmith = promisify(spritesmith.run);
 
 type SpriteConfig = {
     name?: string;
-    useDataAlt?: boolean;
 };
 
 export default class SpriteBuilder {
@@ -50,7 +49,7 @@ export default class SpriteBuilder {
     static async from_icons(icons: Array<Static<typeof IconResponse>>, spriteConfig: SpriteConfig = {}) {
         const src = [];
         for (const icon of icons) {
-            const contents = await Sharp(Buffer.from(spriteConfig.useDataAlt && icon.data_alt ? icon.data_alt : icon.data, 'base64'))
+            const contents = await Sharp(icon.data, 'base64')
                 .resize(32, 32, {
                     fit: 'contain',
                     background: {r: 0, g: 0, b: 0, alpha: 0}
