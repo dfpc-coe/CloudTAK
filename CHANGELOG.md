@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.11.0 - 2025-11-24
+
+- :rocket: IndexDB Storage of Data Filters
+- :bug: Fixes a significant bug where Data Sync edits could end up not propagating to the underlying sync
+
 ### v12.10.0 - 2025-11-24
 
 - :rocket: Unsubscribe Mission make inactive - Closes: https://github.com/dfpc-coe/CloudTAK/issues/944
