@@ -158,7 +158,7 @@ export default class AtlasDatabase {
                     `hidden-${cot.id}`,
                     'AtlasDatabase',
                     true,
-                    `id = "${id}"`
+                    `id = "${cot.id}"`
                 )
 
                 diff.remove.push(cot.vectorId())

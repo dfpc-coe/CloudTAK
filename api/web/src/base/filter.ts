@@ -48,7 +48,7 @@ export default class Filter {
 
         const filter = new Filter(
             exists.name,
-            exsts.external,
+            exists.external,
             exists.source,
             exists.internal,
             exists.query
