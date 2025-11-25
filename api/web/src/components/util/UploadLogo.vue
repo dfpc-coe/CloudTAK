@@ -11,11 +11,11 @@
         />
     </div>
     <div
-        v-if='base64Data'
+        v-if='base64Data || props.preview'
         class='mt-3 row d-flex align-items-center justify-content-center'
     >
         <img
-            :src='base64Data'
+            :src='base64Data || props.preview'
             alt='Logo Preview'
             class='img-thumbnail'
             style='max-width: 200px;'
@@ -35,6 +35,7 @@ const props = defineProps<{
     modelValue?: string;
     label?: string;
     disabled?: boolean;
+    preview?: string;
 }>();
 
 const base64Data = ref<string | undefined>(props.modelValue);
