@@ -1159,6 +1159,11 @@
         "query": false,
         "res": true
     },
+    "GET /server/video": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /server": {
         "body": false,
         "query": false,

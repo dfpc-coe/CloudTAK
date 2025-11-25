@@ -38,6 +38,7 @@
                         <UploadLogo
                             label='Icon Data'
                             v-model='icon.data'
+                            :preview='icon.id ? iconurl() : undefined'
                             @fileName='updateName'
                         />
                     </div>
