@@ -83,12 +83,12 @@ onMounted(async () => {
 
 async function fetch() {
     loading.value.icon = true;
-    editing.value = await std(`/api/iconset/${route.params.iconset}/icon/${encodeURIComponent(props.icon.name)}`);
+    editing.value = await std(`/api/iconset/${route.params.iconset}/icon/${props.icon.id}`);
     loading.value.icon = false;
 }
 
 async function submit() {
-    const url = await stdurl(`/api/iconset/${route.params.iconset}/icon/${props.icon.id ? encodeURIComponent(props.icon.name) : ''}`);
+    const url = await stdurl(`/api/iconset/${route.params.iconset}/icon/${props.icon.id ? props.icon.id : ''}`);
 
     await std(url, {
         method: props.icon.id ? 'PATCH' : 'POST',

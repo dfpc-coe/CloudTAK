@@ -245,7 +245,7 @@ function removeIcon() {
 }
 
 function iconurl(icon) {
-    const url = stdurl(`/api/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}/raw`);
+    const url = stdurl(`/api/iconset/${icon.iconset}/icon/${icon.id}/raw`);
     url.searchParams.append('token', localStorage.token);
     return String(url);
 }

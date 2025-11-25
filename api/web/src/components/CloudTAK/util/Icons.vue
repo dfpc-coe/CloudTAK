@@ -27,7 +27,7 @@
                         v-for='icon in list.items'
                         :key='icon.name'
                         class='col-sm-2'
-                        @click='router.push(`/menu/iconset/${icon.iconset}/${encodeURIComponent(icon.name)}`)'
+                        @click='router.push(`/menu/iconset/${icon.iconset}/${icon.id}`)'
                     >
                         <div class='card card-sm hover cursor-pointer'>
                             <div class='col-12'>
@@ -127,7 +127,7 @@ onMounted(async () => {
 });
 
 function iconurl(icon) {
-    const url = stdurl(`/api/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}/raw`);
+    const url = stdurl(`/api/iconset/${icon.iconset}/icon/${icon.id}/raw`);
     url.searchParams.append('token', localStorage.token);
     return String(url);
 }

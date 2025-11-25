@@ -175,29 +175,36 @@ async function refresh() {
 }
 
 async function submit() {
-    const url = await stdurl(`/api/iconset/${route.params.iconset}/icon/${icon.value.id ? encodeURIComponent(icon.value.name) : ''}`);
+    if (icon.value.id) {
+        const url = await stdurl(`/api/iconset/${route.params.iconset}/icon/${icon.value.id}`);
 
-    const res = await std(url, {
-        method: icon.value.id ? 'PATCH' : 'POST',
-        body: icon.value
-    });
-
-    if (!icon.value.id) {
-        router.push(`/menu/iconset/${route.params.iconset}/icon/${encodeURIComponent(res.name)}`);
+        icon.value = await std(url, {
+            method: 'PATCH',
+            body: icon.value
+        });
     } else {
-        disabled.value = true;
-        await refresh();
+        const url = await stdurl(`/api/iconset/${route.params.iconset}/icon`);
+
+        icon.value = await std(url, {
+            method: 'POST',
+            body: icon.value
+        });
+
+        router.push(`/menu/iconset/${route.params.iconset}/icon/${icon.id}`);
     }
+
+    disabled.value = true;
+    await refresh();
 }
 
 function iconurl() {
-    const url = stdurl(`/api/iconset/${icon.value.iconset}/icon/${encodeURIComponent(icon.value.name)}/raw`);
+    const url = stdurl(`/api/iconset/${icon.value.iconset}/icon/${icon.value.id}/raw`);
     url.searchParams.append('token', localStorage.token);
     return String(url);
 }
 
 async function fetch() {
-    const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${encodeURIComponent(route.params.icon)}`);
+    const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${route.params.icon}`);
     icon.value = await std(url);
 }
 
@@ -213,7 +220,7 @@ async function fetchIconset() {
 
 async function deleteIcon() {
     loading.value = true;
-    const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${encodeURIComponent(route.params.icon)}`);
+    const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${route.params.icon}`);
     iconset.value = await std(url, {
         method: 'DELETE'
     });
