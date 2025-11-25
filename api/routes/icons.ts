@@ -320,6 +320,10 @@ export default async function router(schema: Schema, config: Config) {
                 iconset: iconset.uid
             });
 
+            if (!icon.data.startsWith('data:')) {
+                icon.data = `data:image/png;base64,${icon.data}`;
+            }
+
             res.json(icon);
 
             await Sprites.regen(config, iconset.uid);
@@ -367,6 +371,12 @@ export default async function router(schema: Schema, config: Config) {
                     AND ${scope}
                 `
             });
+
+            for (const icon of list.items) {
+                if (!icon.data.startsWith('data:')) {
+                    icon.data = `data:image/png;base64,${icon.data}`;
+                }
+            }
 
             res.json(list)
 
