@@ -31,6 +31,7 @@
                     <div
                         v-if='description'
                         class='menu-item-card__description'
+                        :class='descriptionClass'
                     >
                         {{ description }}
                     </div>
@@ -51,6 +52,7 @@
                     <div
                         v-if='description'
                         class='menu-item-card__description'
+                        :class='descriptionClass'
                     >
                         {{ description }}
                     </div>
@@ -87,6 +89,10 @@ const props = defineProps({
         required: true
     },
     description: {
+        type: String,
+        default: ''
+    },
+    descriptionClass: {
         type: String,
         default: ''
     },
