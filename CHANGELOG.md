@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.11.1 - 2025-11-24
+
+- :rocket: Fix Changelog version
+
 ### v12.11.0 - 2025-11-24
 
 - :tada: Reimplement Iconsets Menu for visual consistency
