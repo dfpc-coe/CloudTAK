@@ -75,7 +75,7 @@
         </div>
         <template v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'>
             <div
-                class='mx-2 position-relative'
+                class='px-2 position-relative'
                 :aria-busy='loading.create'
             >
                 <div
