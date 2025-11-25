@@ -1,10 +1,12 @@
-import { db } from './database.ts'
+import { db, NotificationType } from './database.ts'
 import type { DBNotification } from './database.ts';
 import { v4 as randomUUID } from 'uuid';
 
+export { NotificationType };
+
 export default class TAKNotification {
     id: string;
-    type: string;
+    type: NotificationType;
     name: string;
     body: string;
     url: string;
@@ -14,7 +16,7 @@ export default class TAKNotification {
 
     constructor(
         id: string,
-        type: string,
+        type: NotificationType,
         name: string,
         body: string,
         url: string,
@@ -62,7 +64,7 @@ export default class TAKNotification {
     }
 
     static async create(
-        type: string,
+        type: NotificationType,
         name: string,
         body: string,
         url: string,

@@ -5,7 +5,7 @@
 import { stdurl } from '../std.ts';
 import type Atlas from './atlas.ts';
 import { version } from '../../package.json'
-import TAKNotification from '../base/notification.ts';
+import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../base/events.ts';
 import type { Feature, Import } from '../types.ts';
 
@@ -83,7 +83,7 @@ export default class AtlasConnection {
                 }).properties;
 
                 await TAKNotification.create(
-                    'Import',
+                    NotificationType.Import,
                     `Import ${imp.status}`,
                     `${imp.name} has been updated to status: ${imp.status}`,
                     `/menu/imports/${imp.id}`,
@@ -101,7 +101,7 @@ export default class AtlasConnection {
                     'b-a-o-opn'
                 ].includes(feat.properties.type)) {
                     await TAKNotification.create(
-                        'Alert',
+                        NotificationType.Alert,
                         `${feat.properties.callsign} Created`,
                         '',
                         `/cot/${feat.id}`,
@@ -111,7 +111,7 @@ export default class AtlasConnection {
                     'b-r-f-h-c'
                 ].includes(feat.properties.type)) {
                     await TAKNotification.create(
-                        'Medical',
+                        NotificationType.Medical,
                         `New CASEVAC`,
                         `A CASEVAC has been requested for ${feat.properties.callsign}.`,
                         `/cot/${feat.id}`,
@@ -126,7 +126,7 @@ export default class AtlasConnection {
 
                     if (task.properties.type === 't-x-m-c-l' && task.properties.mission) {
                         await TAKNotification.create(
-                            'Mission',
+                            NotificationType.Mission,
                             `${task.properties.mission.name} Log Entry`,
                             'Log Entry Added or Modified',
                             `/menu/missions/${task.properties.mission.guid}/logs`,
@@ -141,7 +141,7 @@ export default class AtlasConnection {
                     console.error('DELETE', task.properties);
                 } else if (task.properties.type === 't-x-m-n' && task.properties.mission) {
                     await TAKNotification.create(
-                        'Mission',
+                        NotificationType.Mission,
                         `${task.properties.mission.name} Created`,
                         '',
                         `/menu/missions/${task.properties.mission.guid}`,
@@ -154,7 +154,7 @@ export default class AtlasConnection {
                 const chat = (body.data as Feature).properties;
                 if (chat.chat) {
                     await TAKNotification.create(
-                        'Chat',
+                        NotificationType.Chat,
                         'New Chat Message',
                         `${chat.chat.senderCallsign} to ${chat.chat.chatroom} says: ${chat.remarks}`,
                         `/menu/chats`,
