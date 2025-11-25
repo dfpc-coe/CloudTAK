@@ -17,8 +17,9 @@ export default async function router(schema: Schema, config: Config) {
         res: VideoConnectionList
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
-            const auth = (await config.models.Profile.from(user.email)).auth;
+            await Auth.as_user(config, req, { admin: true });
+
+            const auth = config.serverCert();
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const list = await api.Video.list(req.query);
