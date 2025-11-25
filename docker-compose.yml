@@ -60,11 +60,12 @@ services:
             - AWS_S3_SecretAccessKey=${AWS_S3_SecretAccessKey}
 
     media:
-        image: ghcr.io/dfpc-coe/media-infra:v7.1.0
+        image: ghcr.io/dfpc-coe/media-infra:v7.2.0
         restart: 'always'
         environment:
             - API_URL=${API_URL}
             - SigningSecret=${SigningSecret}
+            - CLOUDTAK_Config_media_url=${CLOUDTAK_Config_media_url}
         ports:
             - "${MEDIA_PORT_API:-9997}:9997"
             - "${MEDIA_PORT_RTSP:-8554}:8554"
