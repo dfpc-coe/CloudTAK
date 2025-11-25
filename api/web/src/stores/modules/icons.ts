@@ -6,6 +6,7 @@ import Icon from '../../base/icon.ts'
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import type { IconsetList } from '../../types.ts';
 import { std, stdurl } from '../../std.ts';
+import { db, type DBIconset } from '../../base/database.ts';
 
 export default class IconManager {
     private cache = new Map<string, HTMLCanvasElement>();
@@ -13,6 +14,10 @@ export default class IconManager {
 
     constructor(map: MapLibreMap) {
         this.map = map;
+    }
+
+    static async from(uid: string): Promise<DBIconset | undefined> {
+        return await db.iconset.get(uid);
     }
 
     static async sprites(): Promise<Array<{
@@ -26,6 +31,9 @@ export default class IconManager {
 
         // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
         const iconsets = await std('/api/iconset?limit=100') as IconsetList;
+
+        await db.iconset.bulkPut(iconsets.items);
+
         for (const iconset of iconsets.items) {
             sprites.push({
                 id: iconset.uid,

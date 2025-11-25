@@ -9,6 +9,21 @@ export interface DBIcon {
     name: string;
 }
 
+export interface DBIconset {
+    uid: string;
+    created: string;
+    updated: string;
+    version: number;
+    name: string;
+    username: string | null;
+    default_group: string | null;
+    default_friendly: string | null;
+    default_hostile: string | null;
+    default_neutral: string | null;
+    default_unknown: string | null;
+    skip_resize: boolean;
+}
+
 export interface DBFilter {
     id: string;
     external: string;
@@ -71,6 +86,7 @@ export interface DBSubscriptionLog {
 
 export type DatabaseType = Dexie & {
     icon: EntityTable<DBIcon, 'name'>,
+    iconset: EntityTable<DBIconset, 'uid'>,
     video: EntityTable<DBVideo, 'id'>,
     filter: EntityTable<DBFilter, 'id'>,
     notification: EntityTable<DBNotification, 'id'>,
@@ -83,6 +99,7 @@ export const db = new Dexie('CloudTAK') as DatabaseType;
 
 db.version(1).stores({
     icon: 'name',
+    iconset: 'uid, name',
     filter: 'id, external',
     video: 'id, username',
     notification: 'id, type, name, body, url, created, toast, read',
