@@ -33,9 +33,18 @@ export interface DBFilter {
     query: string;
 }
 
+export enum NotificationType {
+    Contact = 'Contact',
+    Import = 'Import',
+    Alert = 'Alert',
+    Medical = 'Medical',
+    Mission = 'Mission',
+    Chat = 'Chat'
+}
+
 export interface DBNotification {
     id: string;
-    type: string;
+    type: NotificationType;
     name: string;
     body: string;
     url: string;
