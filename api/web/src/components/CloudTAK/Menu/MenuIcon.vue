@@ -52,9 +52,9 @@
                                     <div class='row gy-3 gx-0 gx-sm-3'>
                                         <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Iconset</small>
-                                            <router-link
-                                                :to='`/menu/iconset/${icon.iconset}`'
-                                                class='text-start text-blue fw-semibold p-0 text-decoration-none'
+                                            <p
+                                                @click='router.push(`/menu/iconset/${icon.iconset}`)'
+                                                class='text-start text-blue fw-semibold cursor-pointer p-0 text-decoration-none'
                                                 v-text='iconset.name'
                                             />
                                         </div>
