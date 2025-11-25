@@ -35,9 +35,10 @@
                     </div>
 
                     <div class='col-12'>
-                        <TablerInput
-                            label='Base64 Data'
+                        <UploadLogo
+                            label='Icon Data'
                             v-model='icon.data'
+                            @fileName='updateName'
                         />
                     </div>
 
@@ -138,6 +139,7 @@ import {
     IconPencil,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import UploadLogo from '../../util/UploadLogo.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -225,5 +227,9 @@ async function deleteIcon() {
         method: 'DELETE'
     });
     router.push(`/menu/iconset/${route.params.iconset}`);
+}
+
+function updateName(name) {
+    icon.value.name = name;
 }
 </script>

@@ -2,9 +2,9 @@
     <div class='mb-3'>
         <TablerInput
             id='logoUpload'
-            :label='props.label || "Upload PNG Logo"'
+            :label='props.label || "Upload PNG/SVG Logo"'
             type='file'
-            accept='image/png'
+            accept='image/png, image/svg+xml'
             :disabled='props.disabled'
             :error='error'
             @change='onFileChange'
@@ -29,7 +29,7 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler'
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'fileName']);
 
 const props = defineProps<{
     modelValue?: string;
@@ -57,8 +57,10 @@ function onFileChange(event: Event) {
     const file = target.files[0];
     if (!file) return;
 
-    if (file.type !== 'image/png') {
-        error.value = 'Please upload a PNG file.';
+    emit('fileName', file.name);
+
+    if (!['image/png', 'image/svg+xml'].includes(file.type)) {
+        error.value = 'Please upload a PNG or SVG file.';
         base64Data.value = '';
         return;
     }
