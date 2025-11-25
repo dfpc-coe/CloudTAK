@@ -38,7 +38,6 @@
                         <UploadLogo
                             label='Icon Data'
                             v-model='icon.data'
-                            :preview='icon.id ? iconurl() : undefined'
                             @fileName='updateName'
                         />
                     </div>
@@ -208,7 +207,15 @@ function iconurl() {
 
 async function fetch() {
     const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${route.params.icon}`);
-    icon.value = await std(url);
+    const res = await std(url);
+
+    if (res.name.endsWith('.svg') && !res.data.startsWith('data:image/svg+xml;base64,')) {
+        res.data = `data:image/svg+xml;base64,${res.data}`;
+    } else if (res.name.endsWith('.png') && !res.data.startsWith('data:image/png;base64,')) {
+        res.data = `data:image/png;base64,${res.data}`;
+    }
+
+    icon.value = res;
 }
 
 async function fetchIconset() {
