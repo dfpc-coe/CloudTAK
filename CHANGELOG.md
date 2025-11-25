@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.11.5 - 2025-11-25
+
+- :rocket: Update MediaInfra Container
+
 ### v12.11.4 - 2025-11-25
 
 - :rocket: Continue to refine VideoLease permission parameters
