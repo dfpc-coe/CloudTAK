@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.11.3 - 2025-11-25
+
+- :white_check_mark: Add Video Lease Creation Test
+
 ### v12.11.2 - 2025-11-24
 
 - :rocket: Small permission changes to VideoActive endpoint
