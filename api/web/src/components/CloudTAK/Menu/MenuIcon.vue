@@ -52,9 +52,10 @@
                                     <div class='row gy-3 gx-0 gx-sm-3'>
                                         <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Iconset</small>
-                                            <p
-                                                class='text-start text-white fw-semibold p-0 text-decoration-none'
-                                                v-text='icon.iconset'
+                                            <router-link
+                                                :to='`/menu/iconset/${icon.iconset}`'
+                                                class='text-start text-blue fw-semibold p-0 text-decoration-none'
+                                                v-text='iconset.name'
                                             />
                                         </div>
                                         <div class='col-12'>
@@ -86,6 +87,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '../../../std.ts';
 import { useMapStore } from '../../../stores/map.ts';
+import IconManager from '../../../stores/modules/icons.ts';
 import {
     TablerDelete,
     TablerLoading,
@@ -136,8 +138,13 @@ async function fetch() {
 }
 
 async function fetchIconset() {
-    const url = stdurl(`/api/iconset/${route.params.iconset}`);
-    iconset.value = await std(url);
+    const is = await IconManager.from(route.params.iconset);
+    if (is) {
+        iconset.value = is;
+    } else {
+        const url = stdurl(`/api/iconset/${route.params.iconset}`);
+        iconset.value = await std(url);
+    }
 }
 
 async function deleteIcon() {
