@@ -4,7 +4,7 @@
             <TablerIconButton
                 v-if='iconset.username || isSystemAdmin'
                 title='Create Icon'
-                @click='editIconModal = {}'
+                @click='router.push(`/menu/iconset/${iconset.uid}/new`)'
             >
                 <IconPlus
                     :size='32'
@@ -59,11 +59,6 @@
         :icon='editIconsetModal'
         @close='refresh'
     />
-    <IconEditModal
-        v-if='editIconModal'
-        :icon='editIconModal'
-        @close='refresh'
-    />
 </template>
 
 <script setup>
@@ -82,7 +77,6 @@ import {
     IconDownload,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import IconEditModal from './Icon/EditModal.vue';
 import IconsetEditModal from './Iconset/EditModal.vue';
 import { useMapStore } from '/src/stores/map.ts';
 
@@ -92,7 +86,6 @@ const mapStore = useMapStore();
 
 const loading = ref(true);
 const editIconsetModal = ref(false);
-const editIconModal = ref(false);
 const isSystemAdmin = ref(false);
 const iconset = ref({
     uid: ''
@@ -105,7 +98,6 @@ onMounted(async () => {
 
 async function refresh() {
     loading.value = true;
-    editIconModal.value = false;
     editIconsetModal.value = false;
     await fetchIconset();
     loading.value = false;

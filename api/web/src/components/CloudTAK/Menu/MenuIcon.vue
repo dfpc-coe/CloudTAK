@@ -164,7 +164,7 @@ async function refresh() {
 
     await fetchIconset();
 
-    if (route.params.icon) {
+    if (route.params.icon !== 'new') {
         disabled.value = true;
         await fetch();
     } else {
