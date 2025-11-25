@@ -36,7 +36,7 @@
 
                     <div class='col-12'>
                         <TablerInput
-                            label='2525B Type'
+                            label='Base64 Data'
                             v-model='icon.data'
                         />
                     </div>
@@ -190,7 +190,7 @@ async function submit() {
             body: icon.value
         });
 
-        router.push(`/menu/iconset/${route.params.iconset}/icon/${icon.id}`);
+        router.push(`/menu/iconset/${route.params.iconset}/${icon.value.id}`);
     }
 
     disabled.value = true;
