@@ -47,7 +47,7 @@
                     <div class='d-flex align-items-center'>
                         <div>
                             <img
-                                :src='iconurl(selected)'
+                                :src='selected.data'
                                 style='width: 25px; height: auto; margin-right: 5px;'
                             >
                         </div>
@@ -131,7 +131,7 @@
                                         >
                                             <img
                                                 v-tooltip='icon.name'
-                                                :src='iconurl(icon)'
+                                                :src='icon.data'
                                                 style='width: 25px; height: 25px; margin-right: 5px;'
                                             >
                                         </div>
@@ -242,12 +242,6 @@ function removeIcon() {
     selected.value.path = '';
     selected.value.iconset = false;
     selected.value.name = '';
-}
-
-function iconurl(icon) {
-    const url = stdurl(`/api/iconset/${icon.iconset}/icon/${icon.id}/raw`);
-    url.searchParams.append('token', localStorage.token);
-    return String(url);
 }
 
 async function fetch() {
