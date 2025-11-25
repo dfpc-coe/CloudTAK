@@ -4,7 +4,7 @@ import type COT from '../base/cot.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import {
     WorkerMessageType
-} from './atlas-message.ts';
+} from '../base/events.ts';
 
 import type { ContactList, Contact } from '../types.ts';
 
