@@ -57,7 +57,7 @@ import {
 
 const loading = ref(true);
 const error = ref<Error | undefined>();
-const list = ref<ServerAdminPackageList>({
+const list = ref<ServerAdminVideoList>({
     videoConnections: []
 })
 

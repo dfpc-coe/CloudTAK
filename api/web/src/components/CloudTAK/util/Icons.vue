@@ -39,7 +39,7 @@
                                     }'
                                 >
                                     <img
-                                        :src='iconurl(icon)'
+                                        :src='icon.data'
                                         height='32'
                                         width='32'
                                     >
@@ -125,12 +125,6 @@ watch(paging.value, async () => {
 onMounted(async () => {
     await fetchList();
 });
-
-function iconurl(icon) {
-    const url = stdurl(`/api/iconset/${icon.iconset}/icon/${icon.id}/raw`);
-    url.searchParams.append('token', localStorage.token);
-    return String(url);
-}
 
 async function fetchList() {
     loading.value = true;

@@ -394,6 +394,11 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
+
+            if (!icon.data.startsWith('data:')) {
+                icon.data = `data:image/png;base64,${icon.data}`;
+            }
+
             res.json(icon);
         } catch (err) {
             Err.respond(err, res);
@@ -440,6 +445,10 @@ export default async function router(schema: Schema, config: Config) {
 
             icon = await config.models.Icon.commit(icon.id, req.body);
 
+            if (!icon.data.startsWith('data:')) {
+                icon.data = `data:image/png;base64,${icon.data}`;
+            }
+
             res.json(icon);
 
             await Sprites.regen(config, iconset.uid);
@@ -477,36 +486,6 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             await Sprites.regen(config, iconset.uid);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/iconset/:iconset/icon/:icon/raw', {
-        name: 'Get Raw',
-        group: 'Icons',
-        params: Type.Object({
-            iconset: Type.String(),
-            icon: Type.Integer()
-        }),
-        query: Type.Object({
-            token: Type.Optional(Type.String()),
-        }),
-        description: 'Icon Data',
-    }, async (req, res) => {
-        try {
-            const user = await Auth.as_user(config, req, { token: true });
-
-            const iconset = await config.models.Iconset.from(req.params.iconset);
-            if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
-                throw new Err(400, null, 'You don\'t have permission to access this resource');
-            }
-
-            const icon = await config.models.Icon.from(sql`
-                (${req.params.iconset} = iconset AND id = ${req.params.icon})
-            `);
-
-            res.status(200).send(Buffer.from(icon.data, 'base64'));
         } catch (err) {
             Err.respond(err, res);
         }

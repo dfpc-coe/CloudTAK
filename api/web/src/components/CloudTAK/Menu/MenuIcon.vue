@@ -78,7 +78,7 @@
                                     <div class='d-flex align-items-center gap-3'>
                                         <div class='rounded bg-white p-1 d-flex align-items-center justify-content-center'>
                                             <img
-                                                :src='iconurl(icon)'
+                                                :src='icon.data'
                                                 width='32'
                                                 height='32'
                                                 style='object-fit: contain;'
@@ -197,12 +197,6 @@ async function submit() {
 
     disabled.value = true;
     await refresh();
-}
-
-function iconurl() {
-    const url = stdurl(`/api/iconset/${icon.value.iconset}/icon/${icon.value.id}/raw`);
-    url.searchParams.append('token', localStorage.token);
-    return String(url);
 }
 
 async function fetch() {
