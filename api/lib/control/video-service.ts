@@ -559,7 +559,16 @@ export default class VideoServiceControl {
 
         if (opts.admin) return lease;
 
-        if (lease.username) {
+        if (opts.connection) {
+            if (lease.connection !== opts.connection) {
+                throw new Err(400, null, 'Connections can only access leases created in the context of the connection');
+            } else {
+                return lease;
+            }
+        } else if (opts.username === lease.username) {
+            // User accessing their own lease
+            return lease;
+        } else {
             const profile = await this.config.models.Profile.from(opts.username);
             const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             const groups = (await api.Group.list({ useCache: true }))
@@ -568,11 +577,9 @@ export default class VideoServiceControl {
             if (lease.username !== opts.username && (!lease.channel || !groups.includes(lease.channel))) {
                 throw new Err(400, null, 'You can only access a lease you created or that is assigned to a channel you are in');
             }
-        } else if (lease.connection !== opts.connection) {
-            throw new Err(400, null, 'Connections can only access leases created in the context of the connection');
-        }
 
-        return lease;
+            return lease;
+        }
     }
 
     async commit(
