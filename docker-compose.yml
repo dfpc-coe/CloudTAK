@@ -60,7 +60,7 @@ services:
             - AWS_S3_SecretAccessKey=${AWS_S3_SecretAccessKey}
 
     media:
-        image: ghcr.io/dfpc-coe/media-infra:v8.0.0
+        image: ghcr.io/dfpc-coe/media-infra:v8.0.1
         restart: 'always'
         environment:
             - API_URL=${API_URL}
