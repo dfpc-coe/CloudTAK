@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v12.11.0 - 2025-11-24
+
+- :tada: Reimplement Iconsets Menu for visual consistency
+- :rocket: Allowing CloudTAK specific icon overrides, while visually pleasant violated the Common in COP and was never implemented in operational use as it resulted in a large visual deviation from TAK EUD clients.
+- :rocket: Icon Menu updates for visual consistency
+- :rocket: Load Iconset Database into memory
+- :rocket: Migrate NotificationType from String to Enum
+
 ### v12.10.0 - 2025-11-24
 
 - :rocket: Unsubscribe Mission make inactive - Closes: https://github.com/dfpc-coe/CloudTAK/issues/944
