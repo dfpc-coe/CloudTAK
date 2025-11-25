@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.11.4 - 2025-11-25
+
+- :rocket: Continue to refine VideoLease permission parameters
+
 ### v12.11.3 - 2025-11-25
 
 - :white_check_mark: Add Video Lease Creation Test
