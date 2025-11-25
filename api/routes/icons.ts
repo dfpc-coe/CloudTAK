@@ -380,7 +380,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         params: Type.Object({
             iconset: Type.String(),
-            icon: Type.String()
+            icon: Type.Integer()
         }),
         description: 'Icon Metadata',
         res: IconResponse
@@ -393,7 +393,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
-            const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
+            const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
             res.json(icon);
         } catch (err) {
             Err.respond(err, res);
@@ -405,7 +405,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         params: Type.Object({
             iconset: Type.String(),
-            icon: Type.String()
+            icon: Type.Integer()
         }),
         description: 'Update Icon in Iconset',
         body: Type.Object({
@@ -426,13 +426,17 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
-            let icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
+            let icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
 
             if (req.body.name && path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
+
             if (req.body.name) {
                 await config.models.Icon.commit(icon.id, { path: `${icon.iconset}/${req.body.name}` });
             }
-            if (req.body.type2525b === '') delete req.body.type2525b;
+
+            if (req.body.type2525b === '') {
+                req.body.type2525b = null;
+            }
 
             icon = await config.models.Icon.commit(icon.id, req.body);
 
@@ -449,7 +453,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         params: Type.Object({
             iconset: Type.String(),
-            icon: Type.String()
+            icon: Type.Integer()
         }),
         description: 'Remove Icon from Iconset',
         res: StandardResponse
@@ -465,7 +469,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
-            await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
+            await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
 
             res.json({
                 status: 200,
@@ -483,7 +487,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         params: Type.Object({
             iconset: Type.String(),
-            icon: Type.String()
+            icon: Type.Integer()
         }),
         query: Type.Object({
             token: Type.Optional(Type.String()),
@@ -499,7 +503,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const icon = await config.models.Icon.from(sql`
-                (${req.params.iconset} = iconset AND ${req.params.icon} = name)
+                (${req.params.iconset} = iconset AND id = ${req.params.icon})
             `);
 
             res.status(200).send(Buffer.from(icon.data, 'base64'));
