@@ -433,6 +433,10 @@ const router = VueRouter.createRouter({
                     path: 'packages',
                     name: 'admin-server-packages',
                     component: () => import('./components/Admin/Server/ServerPackages.vue')
+                },{
+                    path: 'videos',
+                    name: 'admin-server-videos',
+                    component: () => import('./components/Admin/Server/ServerVideos.vue')
                 }]
             },{
                 path: 'config',
