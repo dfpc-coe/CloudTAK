@@ -83,7 +83,7 @@
                 <TablerInput
                     v-model='menuFilter'
                     placeholder='Search...'
-                    :autofocus='true'
+                    :autofocus='!mapStore.isMobileDetected'
                     icon='search'
                     class='mb-0'
                 />
