@@ -72,8 +72,6 @@ services:
             - "${MEDIA_PORT_RTMP:-1935}:1935"
             - "${MEDIA_PORT_HLS:-8888}:8888"
             - "${MEDIA_PORT_SRT:-8890}:8890"
-        volumes:
-            - .docker-media:/opt/mediamtx
 
     postgis:
         platform: linux/amd64
