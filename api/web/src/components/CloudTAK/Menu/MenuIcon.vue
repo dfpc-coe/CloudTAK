@@ -3,17 +3,17 @@
         <template #buttons>
             <div class='d-flex align-items-center gap-2'>
                 <TablerDelete
-                    v-if='iconset.username || isSystemAdmin'
+                    v-if='(iconset.username || isSystemAdmin) && disabled'
                     displaytype='icon'
                     @delete='deleteIcon'
                 />
 
                 <TablerIconButton
-                    v-if='iconset.username || isSystemAdmin'
+                    v-if='(iconset.username || isSystemAdmin) && disabled'
                     title='Edit'
-                    @click='editModal = icon'
+                    @click='disabled = false'
                 >
-                    <IconSettings
+                    <IconPencil
                         :size='32'
                         stroke='1'
                     />
@@ -23,7 +23,53 @@
         <template #default>
             <TablerLoading v-if='loading' />
             <template v-else>
-                <div class='container-fluid px-2 px-sm-3 py-4'>
+                <div
+                    v-if='disabled === false'
+                    class='row mx-0 gap-4'
+                >
+                    <div class='col-12'>
+                        <TablerInput
+                            label='Name'
+                            v-model='icon.name'
+                        />
+                    </div>
+
+                    <div class='col-12'>
+                        <TablerInput
+                            label='2525B Type'
+                            v-model='icon.data'
+                        />
+                    </div>
+
+                    <div class='col-12'>
+                        <TablerInput
+                            label='2525B Type'
+                            v-model='icon.type2525b'
+                        />
+                    </div>
+
+                    <div class='d-flex'>
+                        <div class='ms-auto d-flex gap-2'>
+                            <div
+                                v-if='icon.id'
+                                class='btn btn-secondary'
+                                @click='refresh'
+                            >
+                                Cancel
+                            </div>
+                            <div
+                                class='btn btn-primary'
+                                @click='submit'
+                            >
+                                Submit
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div
+                    v-else
+                    class='container-fluid px-2 px-sm-3 py-4'
+                >
                     <div class='row gy-3 gx-0 gx-lg-3'>
                         <div class='col-12'>
                             <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
@@ -74,12 +120,6 @@
             </template>
         </template>
     </MenuTemplate>
-
-    <IconEditModal
-        v-if='editModal'
-        :icon='editModal'
-        @close='refresh'
-    />
 </template>
 
 <script setup>
@@ -91,13 +131,13 @@ import IconManager from '../../../stores/modules/icons.ts';
 import {
     TablerDelete,
     TablerLoading,
-    TablerIconButton
+    TablerIconButton,
+    TablerInput
 } from '@tak-ps/vue-tabler';
 import {
-    IconSettings,
+    IconPencil,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import IconEditModal from './Icon/EditModal.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -105,9 +145,10 @@ const router = useRouter();
 const mapStore = useMapStore();
 
 const loading = ref(true);
-const editModal = ref(false);
 const isSystemAdmin = ref(false);
-    
+
+const disabled = ref(true);
+
 const iconset = ref({});
 const icon = ref({
     id: false
@@ -119,11 +160,34 @@ onMounted(async () => {
 });
 
 async function refresh() {
-    editModal.value = false;
     loading.value = true;
+
     await fetchIconset();
-    await fetch();
+
+    if (route.params.icon) {
+        disabled.value = true;
+        await fetch();
+    } else {
+        disabled.value = false;
+    }
+
     loading.value = false;
+}
+
+async function submit() {
+    const url = await stdurl(`/api/iconset/${route.params.iconset}/icon/${icon.value.id ? encodeURIComponent(icon.value.name) : ''}`);
+
+    const res = await std(url, {
+        method: icon.value.id ? 'PATCH' : 'POST',
+        body: icon.value
+    });
+
+    if (!icon.value.id) {
+        router.push(`/menu/iconset/${route.params.iconset}/icon/${encodeURIComponent(res.name)}`);
+    } else {
+        disabled.value = true;
+        await refresh();
+    }
 }
 
 function iconurl() {
@@ -153,6 +217,6 @@ async function deleteIcon() {
     iconset.value = await std(url, {
         method: 'DELETE'
     });
-    router.push(`/iconset/${route.params.iconset}`);
+    router.push(`/menu/iconset/${route.params.iconset}`);
 }
 </script>
