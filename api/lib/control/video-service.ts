@@ -559,12 +559,6 @@ export default class VideoServiceControl {
 
         if (opts.admin) return lease;
 
-        if (lease.connection && !opts.connection) {
-            throw new Err(400, null, 'Lease must be edited in the context of a Connection');
-        } else if (lease.username && !opts.username) {
-            throw new Err(400, null, 'Lease must be edited in the context of the CloudTAK Map');
-        }
-
         if (lease.username) {
             const profile = await this.config.models.Profile.from(opts.username);
             const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
@@ -605,15 +599,20 @@ export default class VideoServiceControl {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
-        if (body.secure !== undefined) {
-            // Performs Permission Check
-            const lease = await this.from(leaseid, opts);
-            await this.updateSecure(lease, body.secure, body.secure_rotate);
-        } else {
-            await this.from(leaseid, opts);
+        let lease = await this.from(leaseid, opts);
+
+        if (lease.connection && !opts.connection) {
+            throw new Err(400, null, 'Lease must be edited in the context of a Connection');
+        } else if (lease.username && !opts.username) {
+            throw new Err(400, null, 'Lease must be edited in the context of the CloudTAK Map');
         }
 
-        const lease = await this.config.models.VideoLease.commit(leaseid, body);
+        if (body.secure !== undefined) {
+            // Performs Permission Check
+            await this.updateSecure(lease, body.secure, body.secure_rotate);
+        }
+
+        lease = await this.config.models.VideoLease.commit(leaseid, body);
 
         try {
             await this.path(lease.path);

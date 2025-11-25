@@ -53,7 +53,7 @@
                             <article
                                 v-for='(mission, mission_it) in filteredList'
                                 :key='mission_it'
-                                class='menu-missions__card text-white d-flex flex-column flex-md-row gap-3 position-relative'
+                                class='menu-missions__card text-white d-flex flex-row gap-3 position-relative'
                                 role='button'
                                 tabindex='0'
                                 @click='openMission(mission, false)'
