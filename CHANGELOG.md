@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.11.2 - 2025-11-24
+
+- :rocket: Small permission changes to VideoActive endpoint
+
 ### v12.11.1 - 2025-11-24
 
 - :rocket: Fix Changelog version
