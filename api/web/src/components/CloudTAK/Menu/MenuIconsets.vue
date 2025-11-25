@@ -238,6 +238,7 @@ async function download(iconset) {
 
 async function fetchList() {
     loading.value = true;
+    error.value = undefined;
 
     try {
         const url = stdurl('/api/iconset');
