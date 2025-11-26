@@ -565,19 +565,22 @@ export default class VideoServiceControl {
             } else {
                 return lease;
             }
-        } else if (opts.username === lease.username) {
-            // User accessing their own lease
-            return lease;
-        } else {
-            const profile = await this.config.models.Profile.from(opts.username);
-            const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-            const groups = (await api.Group.list({ useCache: true }))
-                .data.map((group) => group.name);
+        } else if (opts.username) {
+            if (opts.username === lease.username) {
+                return lease;
+            } else {
+                const profile = await this.config.models.Profile.from(opts.username);
+                const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+                const groups = (await api.Group.list({ useCache: true }))
+                    .data.map((group) => group.name);
 
-            if (lease.username !== opts.username && (!lease.channel || !groups.includes(lease.channel))) {
-                throw new Err(400, null, 'You can only access a lease you created or that is assigned to a channel you are in');
+                if (lease.username !== opts.username && (!lease.channel || !groups.includes(lease.channel))) {
+                    throw new Err(400, null, 'You can only access a lease you created or that is assigned to a channel you are in');
+                }
+
+                return lease;
             }
-
+        } else {
             return lease;
         }
     }

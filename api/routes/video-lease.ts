@@ -144,7 +144,6 @@ export default async function router(schema: Schema, config: Config) {
                 })
             } else {
                 const lease = await videoControl.from(uuid[0], {
-                    username: user.email,
                     admin: user.access === AuthUserAccess.ADMIN
                 });
 
