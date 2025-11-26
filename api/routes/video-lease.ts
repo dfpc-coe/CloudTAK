@@ -1,4 +1,5 @@
-import { Type } from '@sinclair/typebox'
+import { Type, Static } from '@sinclair/typebox'
+import jwt from 'jsonwebtoken';
 import moment from 'moment';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -10,7 +11,7 @@ import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import { VideoLease_SourceType, AllBoolean, AllBooleanCast } from '../lib/enums.js';
 import { VideoLease } from '../lib/schema.js'
 import { eq } from 'drizzle-orm';
-import ECSVideoControl, { Action, Protocols, PathConfig, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
+import ECSVideoControl, { Action, Protocols, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
@@ -34,8 +35,23 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            if (req.body.user === 'management' && req.body.password === config.MediaSecret) {
-                res.json({ status: 200, message: 'Authorized' });
+            if (req.body.user === 'management') {
+                try {
+                    const output = jwt.verify(req.body.password, config.SigningSecret) as {
+                        internal: boolean,
+                        access: string
+                    };
+
+                    // Ensure an arbitrary valid token can't access this particular resource
+                    if (output.internal !== true || output.access !== AuthResourceAccess.MEDIA) {
+                        throw new Err(401, null, 'Unauthorized');
+                    }
+
+                    res.json({ status: 200, message: 'Authorized' });
+                } catch (err) {
+                    console.error(err);
+                    throw new Err(401, new Error(String(err)), 'Invalid Token')
+                }
             } else if ([Action.PUBLISH, Action.READ, Action.PLAYBACK].includes(req.body.action)) {
                 const lease = await config.models.VideoLease.from(eq(VideoLease.path, req.body.path))
 
@@ -104,7 +120,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
+            const user = await Auth.as_user(config, req);
 
             const requested = new URL(req.query.url);
 
@@ -127,7 +143,10 @@ export default async function router(schema: Schema, config: Config) {
                     message: 'CloudTAK could not parse a UUID from the provided stream'
                 })
             } else {
-                const lease = await config.models.VideoLease.from(eq(VideoLease.path, uuid[0]));
+                const lease = await videoControl.from(uuid[0], {
+                    admin: user.access === AuthUserAccess.ADMIN
+                });
+
                 const path = await videoControl.path(lease.path);
 
                 const base = {
@@ -174,7 +193,7 @@ export default async function router(schema: Schema, config: Config) {
                 Err.respond(new Err(400, null, 'Invalid URL'), res);
             }
 
-             Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -270,35 +289,80 @@ export default async function router(schema: Schema, config: Config) {
         group: 'VideoLease',
         description: 'Get a single Video Lease',
         params: Type.Object({
-            lease: Type.Integer()
+            lease: Type.Union([Type.Integer(), Type.String()])
+        }),
+        res: VideoLeaseResponse,
+    }, async (req, res) => {
+        try {
+            const auth = await Auth.is_auth(config, req, {
+                resources: [ { access: AuthResourceAccess.LEASE, id: undefined } ]
+            })
+
+            let lease: Static<typeof VideoLeaseResponse>;
+            if (auth instanceof AuthResource) {
+                lease = await videoControl.from(req.params.lease, {
+                    admin: true
+                });
+            } else if (auth instanceof AuthUser) {
+                const user = auth as AuthUser;
+
+                lease = await videoControl.from(req.params.lease, {
+                    username: user.email,
+                    admin: user.access === AuthUserAccess.ADMIN
+                });
+            } else {
+                throw new Err(401, null, 'Unauthorized');
+            }
+
+            res.json(lease);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/video/lease/:lease/metadata', {
+        name: 'Get Lease Metadata',
+        group: 'VideoLease',
+        description: 'Get a single Video Lease Metadata',
+        params: Type.Object({
+            lease: Type.Union([Type.Integer(), Type.String()])
         }),
         res: Type.Object({
-            lease: VideoLeaseResponse,
-            config: Type.Optional(PathConfig),
             path: Type.Optional(PathListItem),
             protocols: Protocols
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const auth = await Auth.is_auth(config, req, {
+                resources: [ { access: AuthResourceAccess.LEASE, id: undefined } ]
+            })
 
-            const lease = await videoControl.from(req.params.lease, {
-                username: user.email,
-                admin: user.access === AuthUserAccess.ADMIN
-            });
+            let lease: Static<typeof VideoLeaseResponse>;
+            if (auth instanceof AuthResource) {
+                lease = await videoControl.from(req.params.lease, {
+                    admin: true
+                });
+            } else if (auth instanceof AuthUser) {
+                const user = auth as AuthUser;
+
+                lease = await videoControl.from(req.params.lease, {
+                    username: user.email,
+                    admin: user.access === AuthUserAccess.ADMIN
+                });
+            } else {
+                throw new Err(401, null, 'Unauthorized');
+            }
 
             const protocols = await videoControl.protocols(lease)
 
             try {
                 res.json({
-                    lease,
                     protocols,
                     path: await videoControl.path(lease.path),
-                    config: await videoControl.pathConfig(lease.path),
                 });
             } catch (err) {
                 console.error(err);
-                res.json({ lease, protocols });
+                res.json({ protocols });
             }
         } catch (err) {
              Err.respond(err, res);
@@ -344,10 +408,7 @@ export default async function router(schema: Schema, config: Config) {
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             proxy: Type.Optional(Type.String())
         }),
-        res: Type.Object({
-            lease: VideoLeaseResponse,
-            protocols: Protocols
-        })
+        res: VideoLeaseResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -374,10 +435,7 @@ export default async function router(schema: Schema, config: Config) {
                 proxy: req.body.proxy
             })
 
-            res.json({
-                lease,
-                protocols: await videoControl.protocols(lease)
-            });
+            res.json(lease);
         } catch (err) {
              Err.respond(err, res);
         }
@@ -414,10 +472,7 @@ export default async function router(schema: Schema, config: Config) {
             }),
             proxy: Type.Optional(Type.String())
         }),
-        res: Type.Object({
-            lease: VideoLeaseResponse,
-            protocols: Protocols
-        })
+        res: VideoLeaseResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -444,10 +499,7 @@ export default async function router(schema: Schema, config: Config) {
                 admin: user.access === AuthUserAccess.ADMIN
             });
 
-            res.json({
-                lease,
-                protocols: await videoControl.protocols(lease)
-            });
+            res.json(lease);
         } catch (err) {
              Err.respond(err, res);
         }

@@ -42,13 +42,12 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import Subscription from '../../../../base/subscription.ts';
-import type { Mission, MissionLayer } from '../../../../types.ts';
+import type { MissionLayer } from '../../../../types.ts';
 
 const emit = defineEmits(['layer', 'cancel']);
 const props = defineProps<{
-    mission: Mission,
+    subscription: Subscription,
     layer: MissionLayer,
-    token?: string,
 }>();
 
 const error = ref<Error | undefined>();
@@ -61,10 +60,8 @@ async function editLayer() {
     try {
         loading.value.layer = true;
 
-        await Subscription.layerUpdate(props.mission.guid, props.layer.uid, {
+        await props.subscription.layerUpdate(props.subscription.guid, props.layer.uid, {
             name: editing.value.name
-        }, {
-            missionToken: props.token
         });
 
         emit('layer', {

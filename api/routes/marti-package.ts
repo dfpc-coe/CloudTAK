@@ -5,9 +5,12 @@ import crypto from 'node:crypto';
 import busboy from 'busboy';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
-import { Type } from '@sinclair/typebox'
+import { pipeline } from 'node:stream/promises';
+import { Type, Static } from '@sinclair/typebox'
+import { sql } from 'drizzle-orm';
 import S3 from '../lib/aws/s3.js';
 import { CoTParser, FileShare, DataPackage } from '@tak-ps/node-cot';
+import TileJSON from '../lib/control/tilejson.js';
 import { StandardResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -17,6 +20,9 @@ import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Content } from '@tak-ps/node-tak/lib/api/files';
 import { Package } from '@tak-ps/node-tak/lib/api/package';
 import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
+import {
+    MissionOptions,
+} from '@tak-ps/node-tak/lib/api/mission';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.post('/marti/package', {
@@ -71,12 +77,16 @@ export default async function router(schema: Schema, config: Config) {
                     singleFile = (async () => {
                         const { ext } = path.parse(meta.filename);
                         const filePath = path.resolve(os.tmpdir(), `${crypto.randomUUID()}${ext}`);
-                        await fsp.writeFile(filePath, file);
+
+                        await pipeline(
+                            file,
+                            await fs.createWriteStream(filePath)
+                        )
 
                         try {
                             return await DataPackage.parse(filePath)
                         } catch (err) {
-                            console.error('ok - treaing as unique file (not a DataPackage)', err);
+                            console.error('ok - treating as unique file (not a DataPackage)', err);
 
                             const pkg = new DataPackage(id, id);
 
@@ -152,6 +162,9 @@ export default async function router(schema: Schema, config: Config) {
                 })),
                 group: Type.Optional(Type.String({
                     description: 'A Channel/Group to share the package with'
+                })),
+                mission: Type.Optional(Type.String({
+                    description: 'A Mission GUID to share the package with, note the user must be actively subscribed to the Mission'
                 }))
             }), {
                 default: [],
@@ -184,6 +197,7 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await config.models.Profile.from(user.email);
             const auth = profile.auth;
             const creatorUid = profile.username;
+            const id = crypto.randomUUID();
 
             if (!req.body.basemaps.length && !req.body.features.length && !req.body.assets.length) {
                 throw new Err(400, null, 'Cannot share an empty package');
@@ -191,7 +205,6 @@ export default async function router(schema: Schema, config: Config) {
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const id = crypto.randomUUID();
             const pkg = new DataPackage(id, req.body.name || id);
 
             pkg.setEphemeral();
@@ -210,9 +223,11 @@ export default async function router(schema: Schema, config: Config) {
 
             for (const basemapid of req.body.basemaps) {
                 const basemap = await config.models.Basemap.from(basemapid);
+
                 if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
                 }
+
                 const xml: string = (new BasemapParser({
                     customMapSource: {
                         name: { _text: basemap.name },
@@ -220,7 +235,7 @@ export default async function router(schema: Schema, config: Config) {
                         maxZoom: { _text: basemap.maxzoom },
                         tileType: { _text: basemap.format },
                         tileUpdate: { _text: 'None' },
-                        url: { _text: basemap.url },
+                        url: { _text: TileJSON.proxyShare(config, basemap) },
                         backgroundColor: { _text: '#000000' },
                     }
                 })).to_xml();
@@ -260,18 +275,21 @@ export default async function router(schema: Schema, config: Config) {
             const { size } = await fsp.stat(out);
 
             let content;
-            if (req.body.public) {
-                const hash = await DataPackage.hash(out);
 
+            const hash = await DataPackage.hash(out);
+
+            if (req.body.public) {
                 await api.Files.uploadPackage({
-                    name: pkg.settings.name, creatorUid, hash,
+                    name: pkg.settings.name,
+                    creatorUid,
+                    hash,
                     keywords: req.body.keywords,
                     groups: req.body.groups
                 }, fs.createReadStream(out));
 
                 // TODO Ask ARA for a Content endpoint to lookup by hash to mirror upload API
                 content = {
-                    UID: id,
+                    UID: hash,
                     SubmissionDateTime: new Date().toISOString(),
                     Keywords: [],
                     MIMEType: 'application/octet-stream',
@@ -283,20 +301,21 @@ export default async function router(schema: Schema, config: Config) {
                 }
             } else {
                 content = await api.Files.upload({
-                    name: id,
+                    name: hash,
                     contentLength: size,
                     keywords: req.body.keywords,
                     creatorUid,
                 }, fs.createReadStream(out));
             }
 
-            await pkg.destroy();
-
             const client = config.conns.get(profile.username);
 
-            if (client && req.body.destinations.length) {
+            if (
+                client
+                    && req.body.destinations.length
+                    && req.body.destinations.filter((d) => !d.mission).length
+            ) {
                 const url = new URL(config.server.api);
-
 
                 const cot = new FileShare({
                     filename: id,
@@ -311,15 +330,50 @@ export default async function router(schema: Schema, config: Config) {
 
                 if (!cot.raw.event.detail) cot.raw.event.detail = {};
                 cot.raw.event.detail.marti = {
-                    dest: req.body.destinations.map((dest) => {
-                        return { _attributes: dest };
-                    })
+                    dest: req.body.destinations
+                        .filter((d) => !d.mission)
+                        .map((dest) => {
+                            return { _attributes: dest };
+                        })
                 }
 
                 client.tak.write([cot]);
             }
 
+            if (req.body.destinations.length && req.body.destinations.filter((d) => d.mission).length) {
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+                const guids = req.body.destinations.filter((d) => d.mission).map((d) => d.mission) as string[];
+
+                const ovs = new Map();
+                (await config.models.ProfileOverlay.list({
+                    where: sql`
+                        username = ${user.email}
+                        AND mode = 'mission'
+                    `
+                })).items.map(o => ovs.set(o.mode_id, o));
+
+                for (const guid of guids) {
+                    if (!ovs.get(guid)) {
+                        throw new Err(400, null, `You are not subscribed to mission ${guid}`);
+                    }
+
+                    const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                        ? { token: String(req.headers['missionauthorization']) }
+                        : await config.conns.subscription(user.email, guid)
+
+                    await api.Mission.upload(
+                        guid,
+                        user.email,
+                        fs.createReadStream(out),
+                        opts
+                    );
+                }
+            }
+
             res.json(content)
+
+            await pkg.destroy();
         } catch (err) {
             Err.respond(err, res);
         }
@@ -329,9 +383,39 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Packages',
         group: 'MartiPackages',
         description: 'Helper API to list packages',
+        query: Type.Object({
+            filter: Type.String({
+                description: 'Filter packages by name',
+                default: ''
+            })
+        }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(Package)
+            items: Type.Array(Type.Object({
+                uid: Type.String({
+                    description: 'UID of the package'
+                }),
+                name: Type.String({
+                    description: 'Name of the latest package version'
+                }),
+                hash: Type.String({
+                    description: 'Hash of the latest package version'
+                }),
+                size: Type.Integer({
+                    description: 'Size of the latest package version in bytes'
+                }),
+                username: Type.Optional(Type.String({
+                    description: 'Submission User of the latest package version'
+                })),
+                created: Type.String({
+                    format: 'date-time',
+                    description: 'Submission DateTime of the latest package version'
+                }),
+                keywords: Type.Array(Type.String({
+                    description: 'Keywords of the latest package version'
+                })),
+                items: Type.Array(Package)
+            }))
         })
     }, async (req, res) => {
         try {
@@ -340,12 +424,37 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const pkg = await api.Package.list({
-                tool: 'public'
+                tool: 'public',
+                name: req.query.filter || undefined
             });
+
+            const byUID: Map<string, Static<typeof Package>[]> = new Map();
+            for (const p of pkg.results) {
+                if (!byUID.has(p.UID)) byUID.set(p.UID, []);
+                byUID.get(p.UID)?.push(p);
+            }
+
+            const items = [];
+            for (const [ uid, packages ] of byUID.entries()) {
+                packages.sort((a, b) => {
+                    return new Date(a.SubmissionDateTime).getTime() - new Date(b.SubmissionDateTime).getTime();
+                });
+
+                items.push({
+                    uid,
+                    name: packages[packages.length - 1].Name,
+                    keywords: packages[packages.length - 1].Keywords || [],
+                    hash: packages[packages.length - 1].Hash,
+                    size: !isNaN(Number(packages[packages.length - 1].Size)) ? Number(packages[packages.length -1].Size) : 0,
+                    created: packages[packages.length - 1].SubmissionDateTime,
+                    username: packages[packages.length - 1].SubmissionUser,
+                    items: packages
+                });
+            }
 
             res.json({
                 total: pkg.resultCount,
-                items: pkg.results
+                items
             });
         } catch (err) {
              Err.respond(err, res);
@@ -355,11 +464,38 @@ export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/package/:uid', {
         name: 'Get Package',
         group: 'MartiPackages',
-        description: 'Helper API to get a single package',
+        description: `
+            Helper API to get metadata for a single package
+
+            DataPackages uploaded once will have a single entry by UID, however DataPackages uploaded multiple times
+            will have the same UID but multiple hash values with the latest having the most recent submission date
+        `,
         params: Type.Object({
             uid: Type.String()
         }),
-        res: Package
+        res: Type.Object({
+            uid: Type.String({
+                description: 'UID of the package'
+            }),
+            name: Type.String({
+                description: 'Name of the latest package version'
+            }),
+            hash: Type.String({
+                description: 'Hash of the latest package version'
+            }),
+            size: Type.Integer({
+                description: 'Size of the latest package version in bytes'
+            }),
+            username: Type.Optional(Type.String({
+                description: 'Submission User of the latest package version'
+            })),
+            created: Type.String({
+                format: 'date-time',
+                description: 'Submission DateTime of the latest package version'
+            }),
+            keywords: Type.Array(Type.String()),
+            items: Type.Array(Package)
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -372,7 +508,20 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!pkg.results.length) throw new Err(404, null, 'Package not found');
 
-            res.json(pkg.results[0]);
+            pkg.results.sort((a, b) => {
+                return new Date(a.SubmissionDateTime).getTime() - new Date(b.SubmissionDateTime).getTime();
+            });
+
+            res.json({
+                uid: req.params.uid,
+                name: pkg.results[pkg.results.length - 1].Name,
+                hash: pkg.results[pkg.results.length - 1].Hash,
+                size: !isNaN(Number(pkg.results[pkg.results.length - 1].Size)) ? Number(pkg.results[pkg.results.length -1].Size) : 0,
+                keywords: pkg.results[pkg.results.length - 1].Keywords || [],
+                created: pkg.results[pkg.results.length - 1].SubmissionDateTime,
+                username: pkg.results[pkg.results.length - 1].SubmissionUser,
+                items: pkg.results
+            });
         } catch (err) {
              Err.respond(err, res);
         }
@@ -381,9 +530,12 @@ export default async function router(schema: Schema, config: Config) {
     await schema.delete('/marti/package/:uid', {
         name: 'Delete Package',
         group: 'MartiPackages',
-        description: 'Helper API to delete a single package',
+        description: 'Helper API to delete a package',
         params: Type.Object({
             uid: Type.String()
+        }),
+        query: Type.Object({
+            hash: Type.Optional(Type.String())
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -405,11 +557,15 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(404, null, 'Package not found');
             }
 
-            const pkg = pkgs.results[0];
+            pkgs.results.sort((a, b) => {
+                return new Date(a.SubmissionDateTime).getTime() - new Date(b.SubmissionDateTime).getTime();
+            });
+
+            const pkg = pkgs.results[pkgs.results.length - 1];
 
             if (
                 user.access !== AuthUserAccess.ADMIN
-                && pkg.SubmissionUser !== user.email
+                || pkg.SubmissionUser !== user.email
             ) {
                 throw new Err(403, null, 'Insufficient Acces to delete Package');
             }

@@ -1,7 +1,11 @@
+import Err from '@openaddresses/batch-error';
 import { Static } from '@sinclair/typebox'
+import {InferSelectModel} from 'drizzle-orm';
+import { Connection } from '../schema.js';
 import Alarm from '../aws/alarm.js';
 import type { InferInsertModel } from 'drizzle-orm';
 import Lambda from '../aws/lambda.js';
+import ECR from '../aws/ecr.js';
 import CloudFormation from '../aws/cloudformation.js';
 import Config from '../config.js';
 import { LayerResponse } from '../types.js';
@@ -16,6 +20,27 @@ export default class LayerControl {
         this.alarm = new Alarm(config.StackName);
     }
 
+    async from(
+        connection: InferSelectModel<typeof Connection> | number | null,
+        layerid: number
+    ): Promise<Static<typeof LayerResponse>> {
+        if (typeof connection === 'number') {
+            connection = await this.config.models.Connection.from(connection);
+        }
+
+        if (connection && connection.readonly) {
+            throw new Err(400, null, 'Connection is Read-Only mode');
+        }
+
+        const layer = await this.config.models.Layer.augmented_from(layerid);
+
+        if (connection && layer.connection !== connection.id) {
+            throw new Err(400, null, 'Layer does not belong to this connection');
+        }
+
+        return layer;
+    }
+
     async generate(
         input: InferInsertModel<typeof Layer>,
         opts?: {
@@ -25,6 +50,13 @@ export default class LayerControl {
         }
     ): Promise<Static<typeof LayerResponse>> {
         const base = await this.config.models.Layer.generate(input);
+
+        // name-v<major>.<minor>.<patch>
+        if (!input.task || !input.task.match(/^(.+)-v(\d+)\.(\d+)\.(\d+)$/)) {
+            throw new Err(400, null, 'Layer Task must be in the format name-v<major>.<minor>.<patch>');
+        } else if (!await ECR.exists(input.task)) {
+            throw new Err(400, null, `Layer Task ${input.task} does not exist in AWS Container Registry`);
+        }
 
         if (opts && opts.incoming) {
             await this.config.models.LayerIncoming.generate({

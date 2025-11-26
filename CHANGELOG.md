@@ -12,6 +12,429 @@
 
 ### Pending Release
 
+### v12.12.1 - 2025-11-26
+
+- :rocket: Additional permissions checks for viewing Leased Streams:
+
+### v12.12.0 - 2025-11-26
+
+- :rocket: Merge Icon editing into single sidebar component
+- :rocket: Migrate API from using name as primary key to icon ID to allow renaming icons
+- :rocket: Stronger Validation checks on Icon POST/PATCH
+- :rocket: Store Icon Buffers as Base64 encoded Data URL
+- :tada: Allow uploading SVG icons
+
+### v12.11.5 - 2025-11-25
+
+- :rocket: Update MediaInfra Container
+
+### v12.11.4 - 2025-11-25
+
+- :rocket: Continue to refine VideoLease permission parameters
+
+### v12.11.3 - 2025-11-25
+
+- :white_check_mark: Add Video Lease Creation Test
+
+### v12.11.2 - 2025-11-24
+
+- :rocket: Small permission changes to VideoActive endpoint
+
+### v12.11.1 - 2025-11-24
+
+- :rocket: Fix Changelog version
+
+### v12.11.0 - 2025-11-24
+
+- :tada: Reimplement Iconsets Menu for visual consistency
+- :rocket: Allowing CloudTAK specific icon overrides, while visually pleasant violated the Common in COP and was never implemented in operational use as it resulted in a large visual deviation from TAK EUD clients.
+- :rocket: Icon Menu updates for visual consistency
+- :rocket: Load Iconset Database into memory
+- :rocket: Migrate NotificationType from String to Enum
+
+### v12.10.0 - 2025-11-24
+
+- :rocket: Unsubscribe Mission make inactive - Closes: https://github.com/dfpc-coe/CloudTAK/issues/944
+- :tada: Store current active state in the DB to ensure it is retained across restarts
+
+### v12.9.0 - 2025-11-23
+
+- :tada: Intercept CTRL+F and open Search Box
+
+### v12.8.0 - 2025-11-23
+
+- :tada: Allow setting style properties on Range Ring Creation
+- :rocket: Update Basemap Menu to new Item Style
+- :rocket: Update Route Menu to new Item Style
+
+### v12.7.0 - 2025-11-21
+
+- :rocket: Fix some padding issues in menu
+- :rocket: Better Settings Menu Style
+- :rocket: Better Chats Menu Style
+- :rocket: Better API Token Menu Style
+- :rocket: Avoid Caching CrossOrigin ServiceWorker requests
+
+### v12.6.0 - 2025-11-20
+
+- :tada: Complete rewrite of Service Worker to completely cache map frontend
+- :tada: Custom Build/Version support for ServiceWorker Updates
+- :tada: 5sec `status` updates on WebSocket that include version numbers so service worker can be updated if underlying version changes
+- :tada: Group Data Packages with the same UID as they are "revisions"
+- :rocket: Allow filtering by Data Package Name
+- :rocket: Fix bugs related to UID vs Hash and remove the need for a ?hash parameter in the frontend routes
+- :rocket: Allow CloudTAK Admins to delete all Data Packages, regardless of ownership
+- :tada: Rewrite Mission Info Pane in a similiar style to DataPackage.vue
+
+### v12.5.1 - 2025-11-18
+
+- :rocket: Remove smaller DB sizes that aren't compatible with Aurora Postgres
+
+### v12.5.0 - 2025-11-18
+
+- :rocket: Refine Mobile Detection to match Bootstrap 5
+- :tada: Use TablerModal when in mobile mode
+- :rocket: Add Preserve History option for Outgoing ArcGIS Layers
+
+### v12.4.1 - 2025-11-18
+
+- :arrow_up: Update MediaServer@7.1.0
+
+### v12.4.0 - 2025-11-17
+
+- :rocket: Add support for Spotted CoTs
+- :rocket: Ensure an Overlay can't be added twice from Overlay Explorer
+- :bug: Don't allow XML Download is Basemap Sharing is disabled
+
+### v12.3.2 - 2025-11-17
+
+- :white_check_mark: Add Basemap ArcGIS FeatureServer Tests
+
+### v12.3.1 - 2025-11-17
+
+- :white_check_mark: Add Basemap ArcGIS Tests
+
+### v12.3.0 - 2025-11-17
+
+- :rocket: Improve UI of Overlays Menu
+- :rocket: Improve UI of Overlays Explorer Menu
+- :rocket: Improve UI of Data Syncs
+
+### v12.2.2 - 2025-11-14
+
+- :rocket: Increase PMTiles Timeout
+
+### v12.2.1 - 2025-11-14
+
+- :white_check_mark: Add Attachment Integration Tests
+
+### v12.2.0 - 2025-11-14
+
+- :tada: Update Menu Styling and allow choosing between list and menu view
+- :bug: Fix bug in MissionLog DTG generation
+- :rocket: Update styling of DataPackage view
+
+### v12.1.0 - 2025-11-14
+
+- :rocket: Detect if coordinates are entered in SearchBox and allow selection
+
+### v12.0.3 - 2025-11-13
+
+> [!WARNING]
+> If using the provided CloudFormation templates, update to 12.0.2 first and follow the deploy
+> notes there before updating to 12.0.3
+>
+- :tada: Remove old single instance RDS instance - note you will have to remove delete projection and remove manually from console, a snapshot is recommended before deletion.
+
+### v12.0.2 - 2025-11-13
+
+> [!WARNING]
+> This release updates the underlying database to AWS Aurora-Postgres
+> It automatically updates the POSTGRES endpoints to use the new cluster endpoints
+> but does not replace/remove the old RDS instances. The next versioned release
+> will remove the old RDS instances.
+>
+> A manual database migration is required if using our provided CloudFormation templates
+> https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Migrating.html
+
+- :tada: Migrate to AWS Aurora-Postgres for improved performance and scalability
+
+### v12.0.1 - 2025-11-13
+
+- :bug: Fix interconnected service loop that could occur, resulting in slow API responses
+
+### v12.0.0 - 2025-11-13
+
+> [!WARNING]
+> If using the CloudTAK Media-Infra, you must update to v7.0.0 or above to ensure compatibility with this release.
+> If you are not using Media-Infra, no action is required.
+
+- :tada: Greatly improved performance in HLS Media Proxying
+
+### v11.53.1 - 2025-11-05
+
+- :bug: Pin Swagger Dist to avoid react error
+
+### v11.53.0 - 2025-11-04
+
+- :tada: Allow adding Basemap Imagery as an overlay
+
+### v11.52.0 - 2025-11-04
+
+- :tada: Add WebSocket update for Import Success/Failure
+- :white_check_mark: Add Integration Tests for Import WebSocket updates
+- :rocket: Improve Notifcation Toast by making it clickable
+- :rocket: Dismiss Toast if clicked or closed
+
+### v11.51.0 - 2025-11-04
+
+- :tada: Add support for notifications being able to register themselves as Toasts
+- :rocket: Migrate entire Notification system out of memory and into IndexDB
+
+### v11.50.0 - 2025-11-03
+
+- :rocket: Remove Layer Alerts which is a feature that hasn't been used in over 2 years
+- :rocket: Closes: https://github.com/dfpc-coe/CloudTAK/issues/1059
+- :rocket: Closes: https://github.com/dfpc-coe/CloudTAK/issues/1060
+- :rocket: Continue to improve and iterate on Layer Template support
+
+### v11.49.0 - 2025-10-31
+
+- :rocket: Automatically generate a SigningSecret & MediaSecret when using CloudTAK Install script
+- :bug: Fix ECR Task List Permissions
+
+### v11.48.0 - 2025-10-30
+
+- :tada: A complete rewrite of how Data Syncs are managed under the hood by using IndexDB as storage
+- :rocket: Data Sync Logs are now "live" due to the above change
+- :rocket: Improve performance of Data Syncs with large numbers of features
+- :tada: Add the ability to specify a refresh requency for overlays
+- :bug: Fix file names in downloaded Data Sync Files
+
+### v11.47.0 - 2025-10-21
+
+- :rocket: Internally update all GET Layer operations to Layer Control class for consistency in checks
+- :rocket: Make Environment/Schema/Style UI Panes on Outgoing ETLs resilient to partial Capability Failures
+
+### v11.46.0 - 2025-10-21
+
+- :rocket: Perform a Regex pattern match on Layer Tasks on creation
+- :rocket: Ensure the Task image exists in the ECR before deploying
+
+### v11.45.0 - 2025-10-20
+
+> [!CAUTION]
+> ETLs should be updated to use `@tak-ps/etl@9.22.0` or above. Failure to update this dependency will cause the ETL Layer Get operations to fail with a schema error.
+
+- :rocket: Remove `stale` value from LayersIncoming and place it where it belongs in the `styles` layer
+- :bug: Allow previewing attached images with capital letters as the extension - IE `.JPG`
+- :tada: Implement `minzoom` & `maxzoom` properties in the Style Editor
+
+### v11.44.0 - 2025-10-17
+
+- :rocket: Update all filter expressions to the modern syntax
+- :rocket: Add the ability for features to control their display via a min/max zoom property
+
+### v11.43.0 - 2025-10-17
+
+- :rocket: Limit height of notification pane and allow scroll if notificatons overflow
+- :rocket: Simplify entry of configure options in the UI (Underlying API is unchanged)
+
+### v11.42.3 - 2025-10-17
+
+- :bug: `UI` Enforce a truststore password
+
+### v11.42.2 - 2025-10-17
+
+- :rocket: `UI` Support Line Style on Polygon Edges
+
+### v11.42.1 - 2025-10-16
+
+- :bug: `API` Filter out undefined header values
+
+### v11.42.0 - 2025-10-16
+
+- :rocket: `UI` Add generic image in Imports list as a fallback
+- :rocket: `UI` Show Share toggle for Basemaps
+- :rocket: `UI` Hide sharing button if sharing has been disaabled for a Basemap
+- :tada: `UI` Automatically proxy shared basemap URLs if they are not supported by the majority of clients - IE ESRI Image/Map/Feature Servers
+- :white_check_mark Add Basemap Sharing Integration Tests
+
+### v11.41.0 - 2025-10-13
+
+- :rocket: Add KMS export & Geofence Secrets
+- :bug: `UI` Fix display of agency information in Connection UI
+- :tada: `API` Move Font serving to an API operation to facillitate graceful fallback when requested font glyphs are unavailable.
+
+### v11.40.0 - 2025-10-10
+
+- :rocket: Remove unused ProfileMission Table
+- :tada: Add ability to share to Data Sync Mission
+- :rocket: `UI` Truncate Mission Content values
+- :tada: Implement Server Package List
+- :arrow_up: Update node-cot to add additional optional fields
+
+### v11.39.0 - 2025-10-07
+
+- :rocket: Wrap Mission Logs to ensure they are fully visible - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1022
+- :tada: Allow editing Mission Logs
+- :rocket: Add `deletable` prop in CopyField.vue
+- :bug: Fix PATCH Mission Log API, the underlying API Call in node-tak didn't include the log ID
+
+### v11.38.0 - 2025-10-07
+
+- :tada: Introduce a Bash Script for managing Docker Compose based deployments
+
+### v11.37.0 - 2025-10-07
+
+- :bug: Fix an issue & add unit tests for a case when an uploaded DataPackage would be treated as a file within a data package instead of an existing one
+- :bug: Short circuit on ConnectionFeature insertion if there are no features to insert
+
+### v11.36.0 - 2025-10-06
+
+- :rocket: Internally buffer Connection Features
+
+### v11.35.0 - 2025-10-02
+
+- :bug: Handle Zipped Zips as a KMZ can be inside a DataPackage or the DataPackage can BE the KMZ
+
+### v11.34.0 - 2025-10-02
+
+- :bug: When Sharing to a mission the `skip_network` flag would prevent the CoT from actually being added to the mission over the network, resulting in the CoT being lost when the user refreshed their page. This version fixes this issue by setting the authored flag to true when adding to a mission.
+- :rocket: `UI` Show a `clear` button when text is entered into a search box
+- :rocket: `UI` Allow the user to show their password in plaintext with an `eye` button on password fields.
+
+### v11.33.5 - 2025-10-02
+
+- :rocket: Require a password on exported TrustStores & Certs
+
+### v11.33.4 - 2025-10-01
+
+- :bug: Modify OpenSSL Commands for Truststore
+
+### v11.33.3 - 2025-10-01
+
+- :bug: Fix call to generate TrustStore p12 file
+
+### v11.33.2 - 2025-10-01
+
+- :bug: Fix call to generate TrustStore p12 file
+
+### v11.33.1 - 2025-10-01
+
+- :rocket: Cleaner Admin Imports Menu
+
+### v11.33.0 - 2025-10-01
+
+- :tada: Support Cursor-On-Target Line Styles
+- :rocket: Allow downloading truststore on External Connections
+- :bug: Allow including CA chain when PATCHing a connection
+
+### v11.32.0 - 2025-10-01
+
+- :rocket: `UI` Use Network icon to show External Connections vs Paused Cloud Connections
+- :tada: Allow downloading the generated TrustStore
+
+### v11.31.0 - 2025-09-30
+
+- :rocket: Fix serious issue with management of user features - Closes: #664
+- :tada: Add the ability to recover deleted Archived Features
+
+### v11.30.0 - 2025-09-29
+
+- :rocket: Adds debounce to CoT Remarks & name updates to avoid Mission/API updates on each character change
+- :tada: Moves CoTs to mission instead of Copy in ShareToMission component
+- :bug: Hides the scrollbar to prevent mini icons in side menu in Chromium based browsers
+
+### v11.29.0 - 2025-09-29
+
+> [!WARNING]
+> Alternate deploy tools will need to update to use the now consistent `PMTILES_URL`  env var instead of `APIROOT`
+
+- :rocket: Use consistent Env Var names between services
+
+### v11.28.4 - 2025-09-29
+
+- :bug: Ensure Attachment images don't overflow their div
+
+### v11.28.3 - 2025-09-29
+
+- :bug: Filter by Data Package `uid` and `hash` to ensure updated data packages are retried correctly
+- :bug: Migrate to Mission Creation POST to ensure  mission  names don't cause issues and follow REST principals more closely
+- :bug: Fix JPEG import as attachment UI
+- :bug: Don't attempt to PUT mission content if there is no mission content to PUT
+
+### v11.28.2 - 2025-09-29
+
+- :bug: Fix Display of `.jpeg` file extensions in CoT Viewer
+
+### v11.28.1 - 2025-09-29
+
+- :bug: Fix Data Package import by Hash instead of UID
+
+### v11.28.0 - 2025-09-26
+
+- :rocket: Add additional administrative management support for user Imports
+
+### v11.27.4 - 2025-09-24
+
+- :bug: Ensure the UI doesn't throw errors when looking at a CoT if no iconsets are loaded
+
+### v11.27.3 - 2025-09-23
+
+- :bug: When deleting an Iconset, navigate back to Iconsets list instead of 404ing @AdventureSeeker423
+- :bug: When uploading an Iconset, don't double parse the resultant JSON @AdventureSeeker423
+
+### v11.27.2 - 2025-09-22
+
+- :bug: Ensure cert & integrationId are set in Create Machine User UI
+
+### v11.27.1 - 2025-09-19
+
+- :bug: PUT Requests to Machine User API wouldn't return CA Chain
+
+### v11.27.0 - 2025-09-19
+
+- :rocket: Use slidedown for Files Menu
+- :rocket Add Search Bar for Files Menu
+- :rocket: Add Number of Selected Users and/or Channels to Share Modal
+- :tada: Add the ability to add a Profile File into a Data Sync
+
+### v11.26.0 - 2025-09-19
+
+- :tada: API To allow deleting one or more Chatrooms
+- :tada: API to allow deleting one or more Chats
+- :rocket: GroupSelect Vue3 Component to allow actions to be performed on an arbitrary list of components (IE chats & Chatrooms)
+
+### v11.25.0 - 2025-09-18
+
+- :rocket: Return P12 with Full cert chain when using Connection with External Integration
+
+### v11.24.0 - 2025-09-18
+
+- :rocket: Store the CA chain in the database when calling SignCertificate
+
+### v11.23.0 - 2025-09-17
+
+- :rocket: Simplify Data Sync Layer Creation and only allow the creation of Groups (IE Folders) from the UI
+- :bug: Fix bug where username containing integer would result in no WebSocket connection
+- :bug: Fix MultiSelect on Data Sync CoTs by ensuring `.properties.id` is always populated on new CoTs
+- :bug: Fix padding issue in Settings Menu when selecting `type` property
+
+### v11.22.0 - 2025-09-15
+
+- :rocket: Move Data Sync submission to explicitly use the `authored` flag instead of using Pending Queues
+- :bug: Fix another recursive Data Sync bug where an EUD editing a feature would result in a loop
+
+### v11.21.0 - 2025-09-15
+
+- :arrow_up: Update Tabler Core
+- :rocket: Reset Color Property when switching from `u-d-p` to `a-*`
+
+### v11.20.0 - 2025-09-14
+
+- :tada: Significant Updates to CoT Selection
+
 ### v11.19.0 - 2025-09-12
 
 - :arrow_up: Circle Opacity Support

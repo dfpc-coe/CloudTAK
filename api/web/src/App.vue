@@ -7,17 +7,21 @@
             <div class='container-xl'>
                 <div class='col-auto'>
                     <img
+                        v-if='brandStore'
+                        alt='Agency Logo'
+                        :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloudTAKLogo.svg"'
                         class='cursor-pointer'
+                        draggable='false'
                         height='50'
                         width='50'
-                        src='/logo.png'
                         @click='router.push("/")'
                     >
                 </div>
                 <div class='col mx-2'>
-                    <div class='page-pretitle'>
-                        Colorado - DFPC - CoE
-                    </div>
+                    <div
+                        class='page-pretitle'
+                        v-text='brandStore.login && brandStore.login.name ? brandStore.login.name : ""'
+                    />
                     <h2 class='page-title'>
                         CloudTAK
                     </h2>
@@ -95,7 +99,9 @@
             </div>
         </header>
 
-        <Loading v-if='loading && !route.path.includes("configure") && !route.path.includes("login")' />
+        <Loading
+            v-if='loading && !route.path.includes("configure") && !route.path.includes("login")'
+        />
         <router-view
             v-else
             :user='user'
@@ -138,6 +144,7 @@ import { std } from './std.ts';
 
 const router = useRouter();
 const route = useRoute();
+const brandStore = useBrandStore();
 
 const loading = ref(true);
 const login = ref(false);
@@ -186,7 +193,6 @@ onMounted(async () => {
         status = 'configured';
     }
 
-    const brandStore = useBrandStore();
     await brandStore.init();
 
     window.addEventListener('unhandledrejection', (e) => {
@@ -211,6 +217,7 @@ onMounted(async () => {
 function logout() {
     user.value = undefined;
     delete localStorage.token;
+
     router.push("/login");
 }
 
@@ -263,6 +270,10 @@ $cloudtak-blue: #07556D;
 
 .btn-primary {
     background-color: $cloudtak-blue !important;
+}
+
+.bg-accent {
+    background-color: #283547 !important;
 }
 
 .bg-child {

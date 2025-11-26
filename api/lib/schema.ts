@@ -1,9 +1,11 @@
 import { sql } from 'drizzle-orm';
+import { primaryKey } from "drizzle-orm/pg-core";
 import { Static } from '@sinclair/typebox'
 import type { StyleContainer } from './style.js';
 import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from './palette.js';
 import { Polygon, Point } from 'geojson';
+import { ImportResult } from './control/import.js'
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { TAKGroup, TAKRole } from  '@tak-ps/node-tak/lib/api/types';
@@ -89,6 +91,7 @@ export const ProfileFile = pgTable('profile_files', {
 
 export const ProfileChat = pgTable('profile_chats', {
     id: serial().primaryKey(),
+    read: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
     chatroom: text().notNull(),
     sender_callsign: text().notNull(),
@@ -146,13 +149,17 @@ export const ProfileVideo = pgTable('profile_videos', {
 })
 
 export const ProfileFeature = pgTable('profile_features', {
-    id: text().primaryKey().notNull(),
+    id: text().notNull(),
     path: text().notNull().default('/'),
+    deleted: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
     properties: json().notNull().default({}),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
 }, (table) => {
     return {
+        pk: primaryKey({
+            columns: [table.username, table.id]
+        }),
         username_idx: index("profile_features_username_idx").on(table.username),
     }
 })
@@ -161,6 +168,8 @@ export const Basemap = pgTable('basemaps', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    sharing_enabled: boolean().notNull().default(false),
+    sharing_token: text(),
     name: text().notNull(),
     title: text().notNull().default('callsign'), // Title of features within the layer
     url: text().notNull(),
@@ -168,6 +177,7 @@ export const Basemap = pgTable('basemaps', {
     username: text().references(() => Profile.username),
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
     tilesize: integer().notNull().default(256),
+    frequency: integer(),
     attribution: text(),
     center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
     minzoom: integer().notNull().default(0),
@@ -199,7 +209,7 @@ export const Import = pgTable('imports', {
     name: text().notNull(),
     status: text().notNull().default(Import_Status.PENDING),
     error: text(),
-    result: json().notNull().default({}),
+    result: json().$type<Static<typeof ImportResult>>().notNull().default({}),
     username: text().notNull().references(() => Profile.username),
     source: text().notNull().default('Upload'),
     source_id: text(),
@@ -251,7 +261,6 @@ export const Icon = pgTable('icons', {
     iconset: text().notNull().references(() => Iconset.uid),
     type2525b: text(),
     data: text().notNull(),
-    data_alt: text(),
     path: text().notNull()
 });
 
@@ -267,6 +276,21 @@ export const Connection = pgTable('connections', {
     enabled: boolean().notNull().default(true),
     auth: json().$type<Static<typeof ConnectionAuth>>().notNull()
 });
+
+export const ConnectionFeature = pgTable('connection_features', {
+    id: text().notNull(),
+    path: text().notNull().default('/'),
+    connection: integer().notNull().references(() => Connection.id),
+    properties: json().notNull().default({}),
+    geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
+}, (table) => {
+    return {
+        pk: primaryKey({
+            columns: [table.connection, table.id]
+        }),
+        connection_idx: index("connection_features_connection_idx").on(table.connection),
+    }
+})
 
 export const Data = pgTable('data', {
     id: serial().primaryKey(),
@@ -329,23 +353,14 @@ export const LayerIncoming = pgTable('layers_incoming', {
 
     enabled_styles: boolean().notNull().default(false),
     styles: json().$type<Static<typeof StyleContainer>>().notNull().default({}),
-    stale: integer().notNull().default(20),
     environment: json().notNull().default({}),
     ephemeral: json().$type<Record<string, any>>().notNull().default({}),
     config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
-    data: integer().references(() => Data.id)
-});
 
-export const LayerAlert = pgTable('layer_alerts', {
-    id: serial().primaryKey(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    layer: integer().notNull().references(() => Layer.id),
-    icon: text().notNull().default('alert-circle'),
-    priority: text().notNull().default('yellow'),
-    title: text().notNull(),
-    description: text().notNull().default('Details Unknown'),
-    hidden: boolean().notNull().default(false)
+    // Data Destinations
+    data: integer().references(() => Data.id),
+    // Empty Array = All Groups
+    groups: text().array().notNull().default([]),
 });
 
 export const Setting = pgTable('settings', {
@@ -408,23 +423,16 @@ export const ProfileInterest = pgTable('profile_interests', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
-export const ProfileMission = pgTable('profile_missions', {
-    id: serial().primaryKey(),
-    name: text().notNull(),
-    guid: text().notNull(),
-    token: text().notNull(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-});
-
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial().primaryKey(),
     name: text().notNull(),
+    active: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     pos: integer().notNull().default(5),
     type: text().notNull().default('vector'),
+    frequency: integer(),
     opacity: numeric().notNull().default('1'),
     visible: boolean().notNull().default(true),
     token: text(),

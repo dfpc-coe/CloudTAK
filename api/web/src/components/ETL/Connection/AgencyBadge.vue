@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import {
     TablerModal,
     TablerLoading
@@ -88,6 +88,12 @@ const agency = ref<ETLAgency | undefined>();
 
 watch(info, async () => {
     await fetch()
+});
+
+onMounted(async () => {
+    if (props.connection.agency) {
+        await fetch()
+    }
 });
 
 async function fetch() {

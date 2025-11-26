@@ -14,6 +14,8 @@ import IconManager from './modules/icons.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
+import type { DatabaseType } from '../base/database.ts';
+import { db } from '../base/database.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay.ts';
@@ -33,6 +35,8 @@ export const useMapStore = defineStore('cloudtak', {
         _map?: mapgl.Map;
         _draw?: DrawTool;
         _icons?: IconManager;
+
+        db: DatabaseType;
         channel: BroadcastChannel;
 
         toImport: Feature[]
@@ -46,7 +50,13 @@ export const useMapStore = defineStore('cloudtak', {
         location: LocationState;
         distanceUnit: string;
         manualLocationMode: boolean;
+        isMobileDetected: boolean;
         gpsWatchId: number | null;
+
+        toastOffset: {
+            x: number;
+            y: number;
+        };
 
         permissions: {
             location: boolean;
@@ -56,7 +66,6 @@ export const useMapStore = defineStore('cloudtak', {
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
         mapConfig: MapConfig;
-        notifications: Array<TAKNotification>;
         container?: HTMLElement;
         hasTerrain: boolean;
         hasNoChannels: boolean;
@@ -95,13 +104,15 @@ export const useMapStore = defineStore('cloudtak', {
             callsign: 'Unknown',
             toImport: [],
             location: LocationState.Loading,
+            db,
             channel: new BroadcastChannel("cloudtak"),
             zoom: 'conditional',
             distanceUnit: 'meter',
+            toastOffset: { x: 70, y: 10 },
             manualLocationMode: false,
             gpsWatchId: null,
+            isMobileDetected: false,
             locked: [],
-            notifications: [],
             hasTerrain: false,
             hasNoChannels: false,
             isTerrainEnabled: false,
@@ -181,13 +192,42 @@ export const useMapStore = defineStore('cloudtak', {
 
             await overlay.delete();
             if (overlay.mode === 'mission' && overlay.mode_id) {
-                await this.worker.db.subscriptionDelete(overlay.mode_id);
+                const sub = await Subscription.from(overlay.mode_id, localStorage.token, {
+                    subscribed: true
+                });
+
+                if (sub) {
+                    await sub.update({ subscribed: false });
+                }
             }
         },
         makeActiveMission: async function(mission?: Subscription): Promise<void> {
             this.mission = mission;
-
             await this.worker.db.makeActiveMission(mission ? mission.meta.guid : undefined);
+
+            if (mission) {
+                for (const overlay of this.overlays) {
+                    if (overlay.mode !== 'mission' || !overlay.mode_id) continue;
+
+                    if (overlay.mode_id !== mission.meta.guid && overlay.active) {
+                        // The API call to make active will disable all active overlays on the backend so no need for networkIO
+                        overlay.active = false;
+                    } else if (overlay.mode_id === mission.meta.guid) {
+                        overlay.active = true;
+
+                        await overlay.save();
+                    }
+                }
+            } else {
+                for (const overlay of this.overlays) {
+                    if (overlay.mode !== 'mission' || !overlay.mode_id) continue;
+
+                    if (overlay.active) {
+                        overlay.active = false;
+                        await overlay.save();
+                    }
+                }
+            }
         },
         getOverlayById(id: number): Overlay | null {
             for (const overlay of this.overlays) {
@@ -263,19 +303,11 @@ export const useMapStore = defineStore('cloudtak', {
         },
 
         /**
-         * Trigger a rerender of the underlyin GeoJSON Features
+         * Trigger a rerender of the underlying GeoJSON Features
          */
         refresh: async function(): Promise<void> {
             await this.updateCOT();
-
-            const missions = [];
-
-            for (const uid of await this.worker.db.subscriptionListUid({ dirty: true })) {
-                missions.push(this.loadMission(uid));
-            }
-            await Promise.allSettled(missions);
         },
-
         updateCOT: async function(): Promise<void> {
             try {
                 const diff = await this.worker.db.diff();
@@ -316,42 +348,64 @@ export const useMapStore = defineStore('cloudtak', {
          * Given a mission Guid, attempt to refresh the Map Layer, loading the mission if it isn't already loaded
          * @returns {boolean} True if successful, false if not
          */
-        loadMission: async function(guid: string): Promise<boolean> {
+        loadMission: async function(
+            guid: string,
+            opts?: {
+                reload: boolean;
+            }
+        ): Promise<Subscription | null> {
             const overlay = this.getOverlayByMode('mission', guid)
-            if (!overlay || !overlay.mode_id) return false;
+            if (!overlay || !overlay.mode_id) {
+                console.error(`Mission:${guid} not found in overlays`);
+                return null;
+            }
 
             if (!this.map) throw new Error('Cannot loadMission before map has loaded');
             const oStore = this.map.getSource(String(overlay.id));
-            if (!oStore) return false
 
-            let sub = await this.worker.db.subscriptionGet(guid);
-
-            if (!sub) {
-                sub = await this.worker.db.subscriptionLoad(guid, overlay.token || undefined)
+            if (!oStore) {
+                console.error(`Mission:${guid} No Source Found`);
+                return null
             }
 
+            const sub = await Subscription.load(guid, {
+                token: localStorage.token,
+                reload: opts?.reload || false,
+                subscribed: true,
+                missiontoken: overlay.token || undefined
+            });
+
             // @ts-expect-error Source.setData is not defined
-            oStore.setData(await sub.collection());
+            oStore.setData(await sub.feature.collection(false));
 
-            await this.worker.db.subscriptionClean(guid);
+            await sub.update({ dirty: false });
 
-            return true;
+            return sub;
         },
         init: async function(container: HTMLElement) {
             this.container = container;
 
             await this.worker.init(localStorage.token);
 
-            this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
+            this.channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
                 const msg = event.data;
 
                 if (!msg || !msg.type) return;
-                if (msg.type === WorkerMessageType.Map_FlyTo) {
+
+                if (msg.type === WorkerMessageType.Map_FitBounds) {
                     if (msg.body.options.speed === null) {
                         msg.body.options.speed = Infinity;
                     }
 
                     map.fitBounds(msg.body.bounds, msg.body.options);
+                } else if (msg.type === WorkerMessageType.Map_FlyTo) {
+                    if (msg.body.speed === null) {
+                        msg.body.speed = Infinity;
+                    }
+
+                    if (!msg.body.zoom) msg.body.zoom = this.map.getZoom();
+
+                    map.flyTo(msg.body);
                 } else if (msg.type === WorkerMessageType.Profile_Location_Source) {
                     this.location = msg.body.source as LocationState;
                 } else if (msg.type === WorkerMessageType.Profile_Callsign) {
@@ -372,13 +426,8 @@ export const useMapStore = defineStore('cloudtak', {
                     this.hasNoChannels = true;
                 } else if (msg.type === WorkerMessageType.Channels_List) {
                     this.hasNoChannels = false;
-                } else if (msg.type === WorkerMessageType.Notification) {
-                    this.notifications.push({
-                        ...msg.body,
-                        created: new Date().toISOString()
-                    } as TAKNotification);
                 } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
-                    this.loadMission(msg.body.guid);
+                    await this.loadMission(msg.body.guid);
                 }
             }
 
@@ -432,7 +481,7 @@ export const useMapStore = defineStore('cloudtak', {
                 maxPitch: 85,
                 style: {
                     version: 8,
-                    glyphs: String(stdurl('/fonts')) + '/{fontstack}/{range}.pbf',
+                    glyphs: String(stdurl('/api/fonts')) + '/{fontstack}/{range}.pbf?token=' + localStorage.token,
                     sprite: sprites,
                     sources: {
                         '-1': {
@@ -542,7 +591,12 @@ export const useMapStore = defineStore('cloudtak', {
             map.on('click', async (e: MapMouseEvent) => {
                 if (this.draw.mode !== DrawToolMode.STATIC) return;
 
-                if (this.radial.mode) this.radial.mode = undefined;
+                if (this.radial.mode) {
+                    // Clicking away closes the radial menu
+                    this.radial.mode = undefined;
+                    return;
+                }
+
                 if (this.select.feats) this.select.feats = [];
 
                 // Ignore Non-Clickable Layer
@@ -602,6 +656,9 @@ export const useMapStore = defineStore('cloudtak', {
                     const feats = [];
 
                     for (const feat of features) {
+                        // TODO: Support Multi Select with both CoT and VT Features
+                        if (!feat.properties.id) continue;
+
                         const cot = await this.worker.db.get(feat.properties.id, {
                             mission: true
                         });
@@ -667,7 +724,7 @@ export const useMapStore = defineStore('cloudtak', {
                 const basemaps = await std(burl) as APIList<Basemap>;
 
                 if (basemaps.items.length > 0) {
-                    const basemap = await Overlay.create(map, {
+                    const basemap = await Overlay.create({
                         name: basemaps.items[0].name,
                         pos: -1,
                         type: 'raster',
@@ -682,7 +739,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             for (const item of profileOverlays.items) {
                 this.overlays.push(await Overlay.create(
-                    map,
                     item as ProfileOverlay,
                     {
                         skipSave: true
@@ -690,7 +746,7 @@ export const useMapStore = defineStore('cloudtak', {
                 ));
             }
 
-            this.overlays.push(await Overlay.internal(map, {
+            this.overlays.push(await Overlay.internal({
                 id: -1,
                 name: 'CoT Icons',
                 type: 'geojson',
@@ -704,8 +760,15 @@ export const useMapStore = defineStore('cloudtak', {
                     if (!source) continue;
 
                     try {
-                        await this.loadMission(overlay.mode_id);
+                        const sub = await this.loadMission(overlay.mode_id, {
+                            reload: true
+                        });
+
+                        if (sub && overlay.active) {
+                            await this.makeActiveMission(sub);
+                        }
                     } catch (err) {
+                        console.error('Failed to load Mission', err)
                         // TODO: Handle this gracefully
                         // The Mission Sync is either:
                         // - Deleted

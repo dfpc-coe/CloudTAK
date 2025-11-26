@@ -4,7 +4,7 @@
         :zindex='0'
         :back='false'
         :border='false'
-        :loading='loading.logs'
+        :loading='!logs'
     >
         <div class='col-12 pb-2 px-2'>
             <TablerInput
@@ -21,65 +21,72 @@
         />
         <div
             v-else
-            class='rows px-2'
+            class='rows px-2 d-flex flex-column gap-3'
         >
             <div
-                v-for='(log, logidx) in filteredLogs'
+                v-for='log in filteredLogs'
                 :key='log.id'
-                class='col-12 pb-2'
+                class='col-12'
             >
                 <TablerLoading
-                    v-if='loading.ids.has(logidx)'
-                    desc='Deleting Log'
+                    v-if='loading.ids.has(log.id)'
+                    desc='Updating Log'
                 />
                 <template v-else>
-                    <div class='d-flex'>
-                        <label
-                            class='subheader'
-                            v-text='log.creatorUid'
-                        />
-                        <label
-                            class='subheader ms-auto'
-                            v-text='log.created'
-                        />
-                    </div>
-                    <div class='col-12 position-relative'>
-                        <TablerDelete
-                            v-if='role.permissions.includes("MISSION_WRITE")'
-                            displaytype='icon'
-                            :size='24'
-                            class='position-absolute cursor-pointer end-0 mx-2 my-2'
-                            @delete='deleteLog(logidx)'
-                        />
-                        <pre
-                            class='rounded mb-1'
-                            v-text='log.content || "None"'
-                        />
-                    </div>
-
                     <div
-                        v-if='log.keywords.length'
-                        class='col-12 pt-1'
+                        class='card bg-dark bg-opacity-50 border border-white border-opacity-25 rounded text-white w-100 p-2 d-flex gap-3 align-items-start flex-row shadow-sm'
+                        role='menuitem'
+                        tabindex='0'
                     >
-                        <span
-                            v-for='keyword in log.keywords'
-                            :key='keyword'
-                            class='me-1 badge badge-outline bg-blue-lt'
-                            v-text='keyword'
-                        />
+                        <div class='d-flex flex-column w-100'>
+                            <div class='d-flex align-items-center flex-wrap w-100 gap-2'>
+                                <div class='fw-semibold'>
+                                    {{ log.creatorUid || 'Unknown Author' }}
+                                </div>
+                                <span class='ms-auto text-white-50 small text-nowrap'>{{ formatDtg(log.dtg) }}</span>
+                            </div>
+                            <CopyField
+                                class='w-100'
+                                mode='text'
+                                :edit='props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                :deletable='props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                :hover='props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                :rows='Math.max(4, log.content.split("\n").length)'
+                                :model-value='log.content || ""'
+                                @submit='updateLog(log.id, $event)'
+                                @delete='props.subscription.log.delete(log.id)'
+                            />
+
+                            <div
+                                v-if='log.keywords.length'
+                                class='d-flex flex-wrap gap-2'
+                            >
+                                <span
+                                    v-for='keyword in log.keywords'
+                                    :key='keyword'
+                                    class='badge text-bg-primary text-uppercase rounded-pill px-3 py-1 small'
+                                    v-text='keyword'
+                                />
+                            </div>
+                        </div>
                     </div>
                 </template>
             </div>
         </div>
-
-        <TablerLoading
-            v-if='loading.create'
-            desc='Creating Log'
-            :compact='true'
-        />
-
-        <template v-if='role.permissions.includes("MISSION_WRITE")'>
-            <div class='mx-2'>
+        <template v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'>
+            <div
+                class='px-2 position-relative'
+                :aria-busy='loading.create'
+            >
+                <div
+                    v-if='loading.create'
+                    class='position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-75 rounded-4 z-3'
+                >
+                    <TablerLoading
+                        desc='Creating Log'
+                        :compact='true'
+                    />
+                </div>
                 <TablerInput
                     v-model='createLog.content'
                     label='Create Log'
@@ -115,6 +122,7 @@
                     <div class='ms-auto'>
                         <button
                             class='btn btn-primary'
+                            :disabled='loading.create'
                             @click='submitLog'
                         >
                             Save Log
@@ -127,129 +135,116 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted } from 'vue'
-import type { ComputedRef } from 'vue';
-import TagEntry from '../../util/TagEntry.vue';
+import { ref, computed } from 'vue'
+import { from } from 'rxjs';
+import type { Ref, ComputedRef } from 'vue';
 import type { MissionLog } from '../../../../types.ts';
+import TagEntry from '../../util/TagEntry.vue';
+import CopyField from '../../util/CopyField.vue';
 import {
     TablerNone,
     TablerInput,
-    TablerDelete,
     TablerToggle,
     TablerLoading,
     TablerDropdown,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import {
-    IconSettings
+    IconSettings,
 } from '@tabler/icons-vue';
+import { liveQuery } from "dexie";
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import Subscription from '../../../../base/subscription.ts';
-import { useMapStore } from '../../../../stores/map.ts';
-const mapStore = useMapStore();
+import { useObservable } from "@vueuse/rxjs";
 
-const props = defineProps({
-    mission: {
-        type: Object,
-        required: true
-    },
-    token: String,
-    role: {
-        type: Object,
-        required: true
-    }
-})
+const props = defineProps<{
+    subscription: Subscription
+}>();
+
+const logs: Ref<Array<MissionLog>> = useObservable(
+    from(liveQuery(async () => {
+        return await props.subscription.log.list()
+    }))
+)
 
 const submitOnEnter = ref(true);
-const sub = ref<Subscription | undefined>();
 const paging = ref({ filter: '' });
 
 const createLog = ref({
     content: '',
     keywords: []
 });
-const logs = ref<MissionLog[]>([]);
+
 const loading = ref<{
     logs: boolean,
     create: boolean,
-    ids: Set<number>
+    ids: Set<string>
 }> ({
     logs: false,
     create: false,
     ids: new Set()
 });
 
-onMounted(async () => {
-    sub.value = await mapStore.worker.db.subscriptionGet(props.mission.guid);
-
-    if (!sub.value) {
-        await fetchLogs()
-    } else {
-        logs.value = sub.value.logs;
-    }
-});
-
 const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
+    const allLogs = logs.value || [];
+
     if (paging.value.filter.trim() === '') {
-        return logs.value;
+        return allLogs;
     } else {
         const filter = paging.value.filter.toLowerCase();
-        return logs.value.filter((log) => {
+
+        return allLogs.filter((log: MissionLog) => {
             return log.content.toLowerCase().includes(filter);
         })
     }
 });
 
-async function fetchLogs() {
-    loading.value.logs = true;
-    logs.value = (await Subscription.logList(props.mission.guid, {
-        missionToken: props.token
-    })).items;
-    loading.value.logs = false;
+function formatDtg(dtg?: string) {
+    if (!dtg) return 'No DTG';
+
+    const parsed = new Date(dtg);
+
+    if (Number.isNaN(parsed.getTime())) {
+        return dtg;
+    }
+
+    return parsed.toLocaleString(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+    });
 }
 
-async function deleteLog(logidx: number): Promise<void> {
-    if (sub.value) {
-        loading.value.ids.add(logidx);
-        await Subscription.logDelete(props.mission.guid, logs.value[logidx].id, {
-            missionToken: props.token
-        });
-        sub.value.logs.splice(logidx, 1);
-        loading.value.ids.delete(logidx);
-    } else {
-        loading.value.logs = true;
-        await Subscription.logDelete(props.mission.guid, logs.value[logidx].id, {
-            missionToken: props.token
-        });
-        await fetchLogs();
-    }
+async function updateLog(logid: string, content: string) {
+    loading.value.ids.add(logid);
+
+    await props.subscription.log.update(
+        logid,
+        {
+            content,
+            dtg: logs.value.find(l => l.id === logid)?.dtg || new Date().toISOString(),
+            keywords: logs.value.find(l => l.id === logid)?.keywords || []
+        }
+    );
+
+    loading.value.ids.delete(logid);
 }
 
 async function submitLog() {
+    if (loading.value.create || !createLog.value.content.trim()) return;
+
+    loading.value.logs = true;
+    loading.value.create = true;
+
     try {
-        if (sub.value) {
-            loading.value.create = true;
-            const log = await Subscription.logCreate(props.mission.guid, createLog.value, {
-                missionToken: props.token
-            })
+        await props.subscription.log.create(
+            createLog.value
+        );
 
-            sub.value.logs.push(log);
-
-            loading.value.create = false;
-        } else {
-            loading.value.logs = true;
-            await Subscription.logCreate(props.mission.guid, createLog.value, {
-                missionToken: props.token
-            })
-            await fetchLogs();
-        }
-
-        createLog.value.keywords = [];
         createLog.value.content = '';
-    } catch (err) {
+        createLog.value.keywords = [];
+    } finally {
         loading.value.create = false;
-
-        throw err;
+        loading.value.logs = false;
     }
 }
 </script>

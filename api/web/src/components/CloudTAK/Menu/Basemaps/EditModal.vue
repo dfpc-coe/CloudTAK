@@ -104,13 +104,27 @@
             </template>
             <template v-else>
                 <div class='row row-cards'>
+                    <TablerInlineAlert
+                        v-if='warnSharing'
+                        severity='danger'
+                        title='You are disabling sharing'
+                        description='Disabling sharing will prevent other users from sharing the basemap and will also disable their access if they basemap has already been shared'
+                        :dismissable='true'
+                    />
+
                     <div class='col-12 col-lg-6 mt-3'>
                         <TablerInput
                             v-model='editing.name'
                             required
                             label='Name'
                             :error='errors.name'
-                        />
+                        >
+                            <TablerToggle
+                                v-model='editing.sharing_enabled'
+                                label='Enable Sharing'
+                                @change='editing.sharing_enabled ? warnSharing = false : warnSharing = true'
+                            />
+                        </TablerInput>
                     </div>
                     <div class='col-12 col-lg-3 mt-3'>
                         <TablerEnum
@@ -239,7 +253,9 @@ import {
     TablerModal,
     TablerDelete,
     TablerLoading,
+    TablerInlineAlert,
     TablerIconButton,
+    TablerToggle,
     TablerEnum,
     TablerInput
 } from '@tak-ps/vue-tabler';
@@ -254,6 +270,7 @@ const props = defineProps({
 });
 
 const mapStore = useMapStore();
+const warnSharing = ref(false);
 
 const loading = ref(false);
 
@@ -283,6 +300,7 @@ const editing = ref({
     maxzoom: 16,
     tilesize: 256,
     attribution: '',
+    sharing_enabled: true,
     format: 'png',
     bounds: [-180, -90, 180, 90 ],
     center: [0, 0],

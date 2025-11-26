@@ -86,9 +86,11 @@
                     z-index: 1;
                     width: 250px;
                     height: 40px;
-                    border-radius: 0px 6px 0px 0px;
                     background-color: rgba(0, 0, 0, 0.5);
                 '
+                :style='{
+                    "border-radius": mapStore.selected.size ? "0px" : "0px 6px 0px 0px"
+                }'
             >
                 <div
                     class='d-flex align-items-center'
@@ -101,6 +103,7 @@
                         <TablerIconButton
                             v-if='mapStore.location === LocationState.Live'
                             :title='locationTooltip'
+                            :hover='false'
                             @click='setLocation'
                         >
                             <IconLocation
@@ -113,6 +116,7 @@
                         <TablerIconButton
                             v-else-if='mapStore.location === LocationState.Preset'
                             :title='locationTooltip'
+                            :hover='false'
                             @click='setLocation'
                         >
                             <IconLocationPin
@@ -125,6 +129,7 @@
                         <TablerIconButton
                             v-else
                             title='Set Your Location Button'
+                            :hover='false'
                             @click='setLocation'
                         >
                             <IconLocationOff
@@ -341,6 +346,7 @@
                     z-index: 2;
                     width: 120px;
                     right: 60px;
+                    padding-left: 10px;
                     background-color: rgba(0, 0, 0, 0.5);
                     border-radius: 0px 0px 0px 6px;
                 '
@@ -349,6 +355,8 @@
                     <TablerIconButton
                         id='map-notifications'
                         title='Notifications Icon'
+                        class='hover-button'
+                        :hover='false'
                     >
                         <IconBell
                             :size='40'
@@ -361,7 +369,7 @@
                 </TablerDropdown>
 
                 <span
-                    v-if='mapStore.notifications.length'
+                    v-if='notifications'
                     class='badge bg-red mb-2'
                 />
                 <span
@@ -380,7 +388,8 @@
                 <TablerIconButton
                     v-if='noMenuShown'
                     title='Open Menu'
-                    class='mx-2 cursor-pointer hover-button'
+                    class='mx-2 hover-button'
+                    :hover='false'
                     @click='router.push("/menu")'
                 >
                     <IconMenu2
@@ -391,7 +400,7 @@
                 <TablerIconButton
                     v-else
                     title='Close Menu'
-                    class='mx-2 cursor-pointer hover-button'
+                    class='mx-2 cursor-pointer'
                     @click='closeAllMenu'
                 >
                     <IconX
@@ -402,11 +411,11 @@
             </div>
 
 
-            <SideMenu
+            <MainMenu
                 v-if='
                     mapStore.isLoaded
                         && (
-                            (noMenuShown && !mobileDetected)
+                            (noMenuShown && !isMobileDetected)
                             || (!noMenuShown)
                         )
                 '
@@ -436,6 +445,7 @@
             >
                 <FloatingVideo
                     v-if='float.type === PaneType.VIDEO'
+                    :title='float.name || "Video Stream"'
                     :uid='float.uid'
                     @close='floatStore.panes.delete(float.uid)'
                 />
@@ -503,13 +513,16 @@ import {
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
-import SideMenu from './MainMenu.vue';
+import MainMenu from './MainMenu.vue';
+import { from } from 'rxjs';
+import { useObservable } from '@vueuse/rxjs';
 import {
     TablerIconButton,
     TablerDropdown,
     TablerModal,
 } from '@tak-ps/vue-tabler';
 import { LocationState } from '../../base/events.ts';
+import TAKNotification from '../../base/notification.ts';
 import COT from '../../base/cot.ts';
 import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -517,6 +530,7 @@ import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore, PaneType } from '../../stores/float.ts';
+import { liveQuery } from 'dexie';
 import UploadImport from './util/UploadImport.vue'
 const mapStore = useMapStore();
 const floatStore = useFloatStore();
@@ -529,6 +543,8 @@ const mode = ref<string>('Default');
 const locationClickHandler = ref<((e: MapMouseEvent) => void) | null>(null);
 const height = ref<number>(window.innerHeight);
 const width = ref<number>(window.innerWidth);
+
+mapStore.isMobileDetected = detectMobile();
 
 // Show a popup if no channels are selected on load
 const warnChannels = ref<boolean>(false)
@@ -549,18 +565,32 @@ const timer = ref<ReturnType<typeof setInterval> | undefined>()
 
 const loading = ref(true)
 
-const mobileDetected = computed(() => {
+const notifications = useObservable<number>(
+    from(liveQuery(async () => {
+        return await TAKNotification.count()
+    }))
+);
+
+function detectMobile() {
   //TODO: This needs to follow something like:
   // https://stackoverflow.com/questions/47219272/how-can-i-monitor-changing-window-sizes-in-vue
-  return (
-    ( width.value <= 800 )
-    || ( height.value <= 800 )
-  );
+    return (
+        ( width.value <= 576 )
+        || ( height.value <= 576 )
+    );
+}
+
+const isMobileDetected = computed(() => {
+    return detectMobile();
+});
+
+watch(isMobileDetected, () => {
+    mapStore.isMobileDetected = isMobileDetected.value;
 });
 
 const displayZoom = computed(() => {
     if (mapStore.zoom === 'conditional') {
-        return mobileDetected;
+        return isMobileDetected;
     } else {
         return mapStore.zoom === 'always' ? true : false;
     }
@@ -684,6 +714,13 @@ onMounted(async () => {
         if (dt && dt.types && (dt.types.indexOf ? dt.types.indexOf('Files') != -1 : dt.types.includes('Files'))) {
             upload.value.shown = true;
             upload.value.dragging = true;
+        }
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            searchBoxShown.value = true;
         }
     });
 
@@ -888,7 +925,7 @@ async function mountMap(): Promise<void> {
                 mapStore.map.setProjection({ type: "globe" });
             }
 
-            await mapStore.worker.db.updateImages(mapStore.map.listImages());
+            await mapStore.icons.updateImages();
 
             await mapStore.initOverlays();
 

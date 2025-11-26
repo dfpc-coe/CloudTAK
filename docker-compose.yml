@@ -12,17 +12,16 @@ services:
         ports:
             - "5000:5000"
         environment:
-            - CLOUDTAK_Mode=docker-compose
-            - CLOUDTAK_Config_media_url=http://media
-            - SigningSecret=coe-wildland-fire
-            - MediaSecret=coe-wildland-fire-video
-            - ASSET_BUCKET=cloudtak
-            - AWS_S3_Endpoint=http://store:9000
-            - AWS_S3_AccessKeyId=cloudtakminioadmin
-            - AWS_S3_SecretAccessKey=cloudtakminioadmin
-            - POSTGRES=postgres://docker:docker@postgis:5432/gis
-            - API_URL=http://localhost:5000
-            - PMTILES_URL=http://tiles:5002
+            - CLOUDTAK_Mode=${CLOUDTAK_Mode}
+            - CLOUDTAK_Config_media_url=${CLOUDTAK_Config_media_url}
+            - SigningSecret=${SigningSecret}
+            - ASSET_BUCKET=${ASSET_BUCKET}
+            - AWS_S3_Endpoint=${AWS_S3_Endpoint}
+            - AWS_S3_AccessKeyId=${AWS_S3_AccessKeyId}
+            - AWS_S3_SecretAccessKey=${AWS_S3_SecretAccessKey}
+            - POSTGRES=${POSTGRES}
+            - API_URL=${API_URL}
+            - PMTILES_URL=${PMTILES_URL}
 
     tiles:
         platform: linux/amd64
@@ -33,12 +32,12 @@ services:
         ports:
             - "5002:5002"
         environment:
-            - SigningSecret=coe-wildland-fire
-            - MediaSecret=coe-wildland-fire-video
-            - ASSET_BUCKET=cloudtak
-            - AWS_S3_Endpoint=http://store:9000
-            - AWS_S3_AccessKeyId=cloudtakminioadmin
-            - AWS_S3_SecretAccessKey=cloudtakminioadmin
+            - PMTILES_URL=${PMTILES_URL}
+            - SigningSecret=${SigningSecret}
+            - ASSET_BUCKET=${ASSET_BUCKET}
+            - AWS_S3_Endpoint=${AWS_S3_Endpoint}
+            - AWS_S3_AccessKeyId=${AWS_S3_AccessKeyId}
+            - AWS_S3_SecretAccessKey=${AWS_S3_SecretAccessKey}
 
     events:
         platform: linux/amd64
@@ -52,30 +51,27 @@ services:
         ports:
             - "5003:5003"
         environment:
-            - CLOUDTAK_Mode=docker-compose
-            - API_URL=http://api:5000
-            - SigningSecret=coe-wildland-fire
-            - ASSET_BUCKET=cloudtak
-            - AWS_S3_Endpoint=http://store:9000
-            - AWS_S3_AccessKeyId=cloudtakminioadmin
-            - AWS_S3_SecretAccessKey=cloudtakminioadmin
+            - CLOUDTAK_Mode=${CLOUDTAK_Mode}
+            - API_URL=${API_URL}
+            - SigningSecret=${SigningSecret}
+            - ASSET_BUCKET=${ASSET_BUCKET}
+            - AWS_S3_Endpoint=${AWS_S3_Endpoint}
+            - AWS_S3_AccessKeyId=${AWS_S3_AccessKeyId}
+            - AWS_S3_SecretAccessKey=${AWS_S3_SecretAccessKey}
 
     media:
-        image: ghcr.io/dfpc-coe/media-infra:v4.2.0
+        image: ghcr.io/dfpc-coe/media-infra:v8.0.1
         restart: 'always'
         environment:
-            - FORCE_NEW_CONFIG=false
-            - CLOUDTAK_URL=http://api:5000/api
-            - SigningSecret=coe-wildland-fire
-            - MediaSecret=coe-wildland-fire-video
+            - API_URL=${API_URL}
+            - SigningSecret=${SigningSecret}
+            - CLOUDTAK_Config_media_url=${CLOUDTAK_Config_media_url}
         ports:
-            - 9997:9997
-            - 8554:8554
-            - 1935:1935
-            - 8888:8888
-            - 8890:8890
-        volumes:
-            - .docker-media:/opt/mediamtx
+            - "${MEDIA_PORT_API:-9997}:9997"
+            - "${MEDIA_PORT_RTSP:-8554}:8554"
+            - "${MEDIA_PORT_RTMP:-1935}:1935"
+            - "${MEDIA_PORT_HLS:-8888}:8888"
+            - "${MEDIA_PORT_SRT:-8890}:8890"
 
     postgis:
         platform: linux/amd64
@@ -92,14 +88,14 @@ services:
         platform: linux/amd64
         image: minio/minio:RELEASE.2024-08-17T01-24-54Z
         entrypoint: sh
-        command: -c 'mkdir -p /data/cloudtak && /usr/bin/minio server /data --console-address ":9001"'
+        command: -c 'mkdir -p /data/cloudtak && /usr/bin/minio server /data --console-address ":9002"'
         restart: 'always'
         volumes:
             - .docker-store:/data
         ports:
             - 9000:9000
-            - 9001:9001
+            - 9002:9002
         environment:
-            - MINIO_ROOT_USER=cloudtakminioadmin
-            - MINIO_ROOT_PASSWORD=cloudtakminioadmin
-            - MINIO_DEFAULT_BUCKETS=cloudtak
+            - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+            - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+            - MINIO_DEFAULT_BUCKETS=${ASSET_BUCKET}

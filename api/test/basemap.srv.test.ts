@@ -101,6 +101,7 @@ test('POST: api/basemap', async (t) => {
             body: {
                 name: 'Test Basemap',
                 url: 'https://test.com/test/{z}/{x}/{y}',
+                sharing_enabled: false
             }
         }, true);
 
@@ -114,8 +115,11 @@ test('POST: api/basemap', async (t) => {
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
             attribution: "",
+            frequency: null,
             title: 'callsign',
             username: 'admin@example.com',
+            sharing_enabled: false,
+            sharing_token: null,
             collection: null,
             tilesize: 256,
             minzoom: 0,
@@ -188,6 +192,9 @@ test('PATCH: api/basemap/1', async (t) => {
             title: 'callsign',
             username: 'admin@example.com',
             attribution: "",
+            frequency: null,
+            sharing_enabled: false,
+            sharing_token: null,
             collection: null,
             tilesize: 256,
             minzoom: 0,

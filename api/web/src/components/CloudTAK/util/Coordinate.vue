@@ -20,7 +20,10 @@
                 @update:model-value='coordinateEntry($event)'
             />
             <template v-if='modes.length'>
-                <div role='menu'>
+                <div
+                    role='menu'
+                    class='mx-2'
+                >
                     <span
                         v-if='modes.includes("dd")'
                         v-tooltip='"Decimal Degrees"'
@@ -28,7 +31,7 @@
                         tabindex='0'
                         class='my-1 px-2 user-select-none'
                         :class='{
-                            "bg-gray-500 rounded-bottom text-blue": config.mode === "dd",
+                            "bg-accent rounded-bottom text-blue": config.mode === "dd",
                             "cursor-pointer": config.mode !== "dd",
                         }'
                         @click='config.mode = "dd"'
@@ -40,7 +43,7 @@
                         role='menuitem'
                         tabindex='0'
                         :class='{
-                            "bg-gray-500 rounded-bottom text-blue": config.mode === "dms",
+                            "bg-accent rounded-bottom text-blue": config.mode === "dms",
                             "cursor-pointer": config.mode !== "dms",
                         }'
                         @click='config.mode = "dms"'
@@ -52,7 +55,7 @@
                         role='menuitem'
                         tabindex='0'
                         :class='{
-                            "bg-gray-500 rounded-bottom text-blue": config.mode === "mgrs",
+                            "bg-accent rounded-bottom text-blue": config.mode === "mgrs",
                             "cursor-pointer": config.mode !== "mgrs",
                         }'
                         @click='config.mode = "mgrs"'
@@ -64,7 +67,7 @@
                         role='menuitem'
                         tabindex='0'
                         :class='{
-                            "bg-gray-500 rounded-bottom text-blue": config.mode === "utm",
+                            "bg-accent rounded-bottom text-blue": config.mode === "utm",
                             "cursor-pointer": config.mode !== "utm",
                         }'
                         @click='config.mode = "utm"'

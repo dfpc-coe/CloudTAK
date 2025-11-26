@@ -22,14 +22,14 @@ export default {
             Properties: {
                 FunctionName: cf.join([cf.stackName, '-pmtiles']),
                 MemorySize: 256,
-                Timeout: 15,
+                Timeout: 60,
                 Description: 'Return Mapbox Vector Tiles from a PMTiles Store',
                 PackageType: 'Image',
                 Environment: {
                     Variables: {
                         StackName: cf.stackName,
                         ASSET_BUCKET: cf.ref('AssetBucket'),
-                        APIROOT: cf.join(['https://tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                        PMTILES_URL: cf.join(['https://tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                         SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
                     }
                 },

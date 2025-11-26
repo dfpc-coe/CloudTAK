@@ -11,7 +11,7 @@
     <template v-else>
         <div
             v-if='Object.keys(groups).length'
-            class='ms-3'
+            @click.stop
         >
             <div class='align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
@@ -30,7 +30,7 @@
                 />
                 <ContactPuck
                     class='mx-2'
-                    :compact='true'
+                    :size='20'
                     :team='"White"'
                 /> Teams
             </div>
@@ -58,7 +58,7 @@
 
                         <ContactPuck
                             class='mx-2'
-                            :compact='true'
+                            :size='20'
                             :team='group'
                         /><span v-text='`${group} Team`' />
                     </div>
@@ -93,6 +93,7 @@
         <div
             v-if='Object.keys(markers).length'
             class='ms-3'
+            @click.stop
         >
             <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
@@ -185,6 +186,7 @@
         <div
             v-if='Object.keys(paths).length'
             class='ms-3'
+            @click.stop
         >
             <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight

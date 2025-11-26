@@ -12,54 +12,59 @@
                 v-model='inMode'
                 :size='24'
             />
-            <span
-                v-tooltip='"Square Feet"'
-                class='my-1 px-2 user-select-none'
-                :class='{
-                    "bg-gray-500 rounded-bottom text-blue": mode === "sqfeet",
-                    "cursor-pointer": mode !== "sqfeet",
-                }'
-                role='menuitem'
-                tabindex='0'
-                @keyup.enter='mode = "sqfeet"'
-                @click='mode = "sqfeet"'
-            >Feet<sup>2</sup></span>
-            <span
-                v-tooltip='"Square Meters"'
-                class='my-1 px-2 user-select-none'
-                :class='{
-                    "bg-gray-500 rounded-bottom text-blue": mode === "sqmeter",
-                    "cursor-pointer": mode !== "sqmeter",
-                }'
-                role='menuitem'
-                tabindex='0'
-                @keyup.enter='mode = "sqmeter"'
-                @click='mode = "sqmeter"'
-            >Meters<sup>2</sup></span>
-            <span
-                v-tooltip='"Acres"'
-                class='my-1 px-2 user-select-none'
-                :class='{
-                    "bg-gray-500 rounded-bottom": mode === "acre",
-                    "cursor-pointer": mode !== "acre",
-                }'
-                role='menuitem'
-                tabindex='0'
-                @keyup.enter='mode = "acre"'
-                @click='mode = "acre"'
-            >Acres</span>
-            <span
-                v-tooltip='"Hectare"'
-                class='my-1 px-2 user-select-none'
-                :class='{
-                    "bg-gray-500 rounded-bottom": mode === "ha",
-                    "cursor-pointer": mode !== "ha",
-                }'
-                role='menuitem'
-                tabindex='0'
-                @keyup.enter='mode = "ha"'
-                @click='mode = "ha"'
-            >Ha</span>
+            <div
+                class='mx-2'
+                role='menu'
+            >
+                <span
+                    v-tooltip='"Square Feet"'
+                    class='my-1 px-2 user-select-none'
+                    :class='{
+                        "bg-accent rounded-bottom text-blue": mode === "sqfeet",
+                        "cursor-pointer": mode !== "sqfeet",
+                    }'
+                    role='menuitem'
+                    tabindex='0'
+                    @keyup.enter='mode = "sqfeet"'
+                    @click='mode = "sqfeet"'
+                >Feet<sup>2</sup></span>
+                <span
+                    v-tooltip='"Square Meters"'
+                    class='my-1 px-2 user-select-none'
+                    :class='{
+                        "bg-accent rounded-bottom text-blue": mode === "sqmeter",
+                        "cursor-pointer": mode !== "sqmeter",
+                    }'
+                    role='menuitem'
+                    tabindex='0'
+                    @keyup.enter='mode = "sqmeter"'
+                    @click='mode = "sqmeter"'
+                >Meters<sup>2</sup></span>
+                <span
+                    v-tooltip='"Acres"'
+                    class='my-1 px-2 user-select-none'
+                    :class='{
+                        "bg-accent rounded-bottom": mode === "acre",
+                        "cursor-pointer": mode !== "acre",
+                    }'
+                    role='menuitem'
+                    tabindex='0'
+                    @keyup.enter='mode = "acre"'
+                    @click='mode = "acre"'
+                >Acres</span>
+                <span
+                    v-tooltip='"Hectare"'
+                    class='my-1 px-2 user-select-none'
+                    :class='{
+                        "bg-accent rounded-bottom": mode === "ha",
+                        "cursor-pointer": mode !== "ha",
+                    }'
+                    role='menuitem'
+                    tabindex='0'
+                    @keyup.enter='mode = "ha"'
+                    @click='mode = "ha"'
+                >Ha</span>
+            </div>
         </div>
     </div>
 </template>

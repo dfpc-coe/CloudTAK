@@ -88,7 +88,7 @@ export default class DataTransform {
                 path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles'), {
                     std: true,
                     quiet: false,
-                    name: asset,
+                    name: this.msg.job.name,
                     description: 'Automatically Converted by @tak-ps/etl',
                     layer: 'out',
                     force: true,
@@ -98,7 +98,8 @@ export default class DataTransform {
                     },
                     zoom: {
                         min: 0,
-                        max: 14
+                        base: 6,
+                        max: 14,
                     }
                 }
             );

@@ -17,13 +17,12 @@
                 />
             </div>
 
-            <div class='mx-2'>
-                <div
-                    v-if='pane ? pane.config.attachment : "Attachment"'
-                    class='text-sm'
-                    v-text='pane.config.attachment.name'
-                />
-            </div>
+            <div
+                v-if='pane ? pane.config.attachment : "Attachment"'
+                class='text-sm text-truncate'
+                style='width: calc(100% - 100px);'
+                v-text='pane.config.attachment.name'
+            />
 
             <div class='btn-list ms-auto'>
                 <TablerIconButton

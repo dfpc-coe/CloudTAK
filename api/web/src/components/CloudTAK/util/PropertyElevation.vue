@@ -6,36 +6,44 @@
             color='#6b7990'
             class='ms-2 me-1'
         />
-        <label class='subheader user-select-none'>Distance</label>
+        <label
+            class='subheader user-select-none'
+            v-text='props.label'
+        />
         <div class='mx-2'>
             <CopyField
                 v-model='inMode'
                 :size='24'
             />
-            <span
-                v-tooltip='"Feet"'
-                class='my-1 px-2 user-select-none'
-                :class='{
-                    "bg-gray-500 rounded-bottom text-blue": mode === "feet",
-                    "cursor-pointer": mode !== "feet",
-                }'
-                role='menuitem'
-                tabindex='0'
-                @keyup.enter='mode = "feet"'
-                @click='mode = "feet"'
-            >Feet</span>
-            <span
-                v-tooltip='"Meters"'
-                class='my-1 px-2 user-select-none'
-                :class='{
-                    "bg-gray-500 rounded-bottom text-blue": mode === "meter",
-                    "cursor-pointer": mode !== "meter",
-                }'
-                role='menuitem'
-                tabindex='0'
-                @keyup.enter='mode = "meter"'
-                @click='mode = "meter"'
-            >Meters</span>
+            <div
+                class='mx-2'
+                role='menu'
+            >
+                <span
+                    v-tooltip='"Feet"'
+                    class='my-1 px-2 user-select-none'
+                    :class='{
+                        "bg-accent rounded-bottom text-blue": mode === "feet",
+                        "cursor-pointer": mode !== "feet",
+                    }'
+                    role='menuitem'
+                    tabindex='0'
+                    @keyup.enter='mode = "feet"'
+                    @click='mode = "feet"'
+                >Feet</span>
+                <span
+                    v-tooltip='"Meters"'
+                    class='my-1 px-2 user-select-none'
+                    :class='{
+                        "bg-accent rounded-bottom text-blue": mode === "meter",
+                        "cursor-pointer": mode !== "meter",
+                    }'
+                    role='menuitem'
+                    tabindex='0'
+                    @keyup.enter='mode = "meter"'
+                    @click='mode = "meter"'
+                >Meters</span>
+            </div>
         </div>
     </div>
 </template>
@@ -48,6 +56,10 @@ import {
 } from '@tabler/icons-vue';
 
 const props = defineProps({
+    label: {
+        type: String,
+        default: 'Elevation'
+    },
     elevation: {
         type: Number,
         required: true

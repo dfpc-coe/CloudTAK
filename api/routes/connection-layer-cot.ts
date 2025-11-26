@@ -1,8 +1,9 @@
 import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
+import { GenerateUpsert } from '@openaddresses/batch-generic';
 import crypto from 'node:crypto';
 import Err from '@openaddresses/batch-error';
-import Cacher from '../lib/cacher.js';
+import { ConnectionFeature } from '../lib/schema.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Style from '../lib/style.js';
 import Config from '../lib/config.js';
@@ -37,9 +38,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(req.params.layerid);
-            });
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a Connection');
             if (!layer.incoming) throw new Err(400, null, 'Incoming Layer Configuration has not been applied');
@@ -229,6 +228,35 @@ export default async function router(schema: Schema, config: Config) {
             } else {
                 // Don't push already stale data as they will instantly disappear on the device
                 cots = cots.filter(cot => cot.is_stale);
+
+                if (layer.incoming.groups.length) {
+                    for (const cot of cots) {
+                        for (const group of layer.incoming.groups) {
+                            cot.addDest({ group });
+                        }
+                    }
+                }
+
+                const insertValues = [];
+                for (const cot of cots) {
+                    insertValues.push({
+                        path: '/',
+                        connection: layer.connection,
+                        ...(await CoTParser.to_geojson(cot))
+                    })
+                }
+
+                try {
+                    if (insertValues.length) {
+                        await config.models.ConnectionFeature.generate(insertValues, {
+                            upsert: GenerateUpsert.UPDATE,
+                            upsertTarget: [ ConnectionFeature.connection, ConnectionFeature.id ]
+                        })
+                    }
+                } catch (err) {
+                    // We don't throw as priority is TAK Server Delivery
+                    console.error(err);
+                }
             }
 
             if (cots.length === 0 && !errors.length) {
@@ -278,9 +306,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(req.params.layerid);
-            });
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a Connection');
 
@@ -328,9 +354,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(req.params.layerid);
-            });
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a connection');
 

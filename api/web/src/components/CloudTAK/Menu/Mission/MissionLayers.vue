@@ -1,6 +1,6 @@
 <template>
     <MenuTemplate
-        v-if='menu'
+        v-if='props.menu !== false'
         name='Mission Layers'
         :zindex='0'
         :back='false'
@@ -8,12 +8,12 @@
     >
         <template #buttons>
             <TablerIconButton
-                v-if='!createLayer && role && role.permissions.includes("MISSION_WRITE")'
+                v-if='!createLayer && !loading && subscription.role && subscription.role.permissions.includes("MISSION_WRITE")'
                 title='New Mission Layer'
                 :size='24'
                 @click='createLayer = true'
             >
-                <IconPlus
+                <IconFolderPlus
                     :size='32'
                     stroke='1'
                 />
@@ -24,17 +24,20 @@
             />
         </template>
 
-        <div class='col-12'>
+        <div
+            v-if='createLayer'
+            class='col-12 px-2 pb-4'
+        >
             <MissionLayerCreate
-                v-if='createLayer'
-                class='px-2'
-                :mission='props.mission'
-                :token='props.token'
+                :subscription='props.subscription'
                 @layer='refresh'
                 @cancel='createLayer = false'
             />
+        </div>
+
+        <div class='col-12'>
             <TablerLoading
-                v-else-if='loading'
+                v-if='loading'
                 class='mx-2'
                 desc='Loading Layers...'
             />
@@ -49,9 +52,7 @@
                     :orphaned='orphaned'
                     :layers='layers'
                     :feats='feats'
-                    :mission='mission'
-                    :role='role'
-                    :token='token'
+                    :subscription='props.subscription'
                     @refresh='refresh'
                 />
             </template>
@@ -74,9 +75,7 @@
             :orphaned='orphaned'
             :layers='layers'
             :feats='feats'
-            :mission='mission'
-            :role='role'
-            :token='token'
+            :subscription='subscription'
             @refresh='refresh'
         />
     </template>
@@ -85,7 +84,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import {
-    IconPlus,
+    IconFolderPlus,
 } from '@tabler/icons-vue';
 import {
     TablerNone,
@@ -94,8 +93,6 @@ import {
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import type {
-    Mission,
-    MissionRole,
     MissionLayer
 } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';
@@ -105,9 +102,7 @@ import MissionLayerCreate from './MissionLayerCreate.vue';
 
 const props = defineProps<{
     menu: boolean,
-    mission: Mission,
-    token?: string,
-    role?: MissionRole
+    subscription: Subscription
 }>()
 
 const createLayer = ref(false)
@@ -129,11 +124,9 @@ async function refresh() {
 }
 
 async function fetchFeats() {
-    const fc = await Subscription.featList(props.mission.name, {
-        missionToken: props.token
-    })
+    const features = await props.subscription.feature.list();
 
-    for (const feat of fc.features) {
+    for (const feat of features) {
         feats.value.set(feat.id, feat);
         orphaned.value.add(String(feat.id));
     }
@@ -155,9 +148,7 @@ function removeFeatures(mlayers: MissionLayer[]): void {
 }
 
 async function fetchLayers(): Promise<void> {
-    layers.value = (await Subscription.layerList(props.mission.name, {
-        missionToken: props.token
-    })).data;
+    layers.value = (await props.subscription.layerList()).data;
 
     if (layers.value) {
         removeFeatures(layers.value);

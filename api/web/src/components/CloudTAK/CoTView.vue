@@ -6,6 +6,7 @@
     />
     <template v-else>
         <div
+            :key='String(route.params.uid)'
             class='col-12 border-light border-bottom d-flex'
             style='border-radius: 0px;'
         >
@@ -26,7 +27,7 @@
                     <div
                         class='col-auto mx-2'
                         :style='`
-                            width: calc(100% - 40px);
+                            width: calc(100% - 50px);
                         `'
                     >
                         <CopyField
@@ -34,7 +35,7 @@
                             :edit='is_editable'
                             :minheight='44'
                             :hover='is_editable'
-                            @update:model-value='updateProperty("callsign", $event)'
+                            @submit='updateProperty("callsign", $event)'
                         />
                     </div>
                 </div>
@@ -148,57 +149,59 @@
                             </TablerIconButton>
 
                             <template #dropdown>
-                                <div class='px-1 py-1'>
-                                    <div
-                                        v-if='
-                                            cot.properties.attachments !== undefined
-                                                && cot.properties.video !== undefined
-                                                && cot.properties.sensor !== undefined
-                                        '
-                                    >
-                                        No Properties to add
+                                <div class='card'>
+                                    <div class='card-body'>
+                                        <div
+                                            v-if='
+                                                cot.properties.attachments !== undefined
+                                                    && cot.properties.video !== undefined
+                                                    && cot.properties.sensor !== undefined
+                                            '
+                                        >
+                                            No Properties to add
+                                        </div>
+                                        <template v-else>
+                                            <div
+                                                v-if='cot.properties.attachments === undefined'
+                                                role='button'
+                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                @click='updatePropertyAttachment([])'
+                                            >
+                                                <IconPaperclip
+                                                    stroke='1'
+                                                    :size='32'
+                                                /><div class='mx-2'>
+                                                    Add Attachment
+                                                </div>
+                                            </div>
+                                            <div
+                                                v-if='cot.properties.video === undefined'
+                                                role='button'
+                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                @click='updateProperty("video", { url: "" })'
+                                            >
+                                                <IconMovie
+                                                    stroke='1'
+                                                    :size='32'
+                                                /><div class='mx-2'>
+                                                    Add Video
+                                                </div>
+                                            </div>
+                                            <div
+                                                v-if='cot.properties.sensor === undefined'
+                                                role='button'
+                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                @click='updateProperty("sensor", {})'
+                                            >
+                                                <IconCone
+                                                    stroke='1'
+                                                    :size='32'
+                                                /><div class='mx-2'>
+                                                    Add Sensor
+                                                </div>
+                                            </div>
+                                        </template>
                                     </div>
-                                    <template v-else>
-                                        <div
-                                            v-if='cot.properties.attachments === undefined'
-                                            role='button'
-                                            class='hover px-2 py-2 d-flex align-items-center'
-                                            @click='updatePropertyAttachment([])'
-                                        >
-                                            <IconPaperclip
-                                                stroke='1'
-                                                :size='32'
-                                            /><div class='mx-2'>
-                                                Add Attachment
-                                            </div>
-                                        </div>
-                                        <div
-                                            v-if='cot.properties.video === undefined'
-                                            role='button'
-                                            class='hover px-2 py-2 d-flex align-items-center'
-                                            @click='updateProperty("video", { url: "" })'
-                                        >
-                                            <IconMovie
-                                                stroke='1'
-                                                :size='32'
-                                            /><div class='mx-2'>
-                                                Add Video
-                                            </div>
-                                        </div>
-                                        <div
-                                            v-if='cot.properties.sensor === undefined'
-                                            role='button'
-                                            class='hover px-2 py-2 d-flex align-items-center'
-                                            @click='updateProperty("sensor", {})'
-                                        >
-                                            <IconCone
-                                                stroke='1'
-                                                :size='32'
-                                            /><div class='mx-2'>
-                                                Add Sensor
-                                            </div>
-                                        </div>
-                                    </template>
                                 </div>
                             </template>
                         </TablerDropdown>
@@ -283,7 +286,7 @@
 
         <div
             v-if='mode === "default"'
-            class='overflow-auto'
+            class='overflow-auto overflow-x-hidden'
             style='height: calc(100vh - 225px)'
         >
             <div class='row g-0'>
@@ -291,7 +294,7 @@
                     v-if='subscription'
                     class='col-12'
                 >
-                    <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-gray-500'>
+                    <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-accent'>
                         <IconAmbulance
                             :size='32'
                             stroke='1'
@@ -305,18 +308,11 @@
                     </div>
                 </div>
 
-                <div
-                    class='pt-2'
-                    :class='{
-                        "col-md-8": center.length > 2,
-                        "col-12": center.length <= 2,
-                    }'
-                >
+                <div class='pt-2 col-12 px-2'>
                     <PropertyType
-                        v-if='cot.properties.type.startsWith("a-") || cot.properties.type === "u-d-p"'
+                        v-if='cot.properties.type.startsWith("a-") || cot.properties.type.startsWith("u-")'
                         :key='cot.properties.type'
                         :edit='is_editable'
-                        :hover='is_editable'
                         :model-value='cot.properties.type'
                         @update:model-value='updatePropertyType($event)'
                     />
@@ -330,6 +326,7 @@
                     }'
                 >
                     <Coordinate
+                        :key='String(route.params.uid)'
                         :label='cot.geometry.type === "Point" ? "Location" : "Center"'
                         :edit='is_editable'
                         :hover='is_editable'
@@ -342,8 +339,10 @@
                     class='col-md-4 pt-2'
                 >
                     <PropertyElevation
+                        :key='String(route.params.uid)'
+                        label='Elevation'
                         :unit='units.display_elevation'
-                        :elevation='cot.properties.center[2]'
+                        :elevation='center[2]'
                     />
                 </div>
 
@@ -352,6 +351,7 @@
                     class='col-12 pt-2'
                 >
                     <LineLength
+                        :key='String(route.params.uid)'
                         :cot='cot'
                         :unit='units.display_distance'
                     />
@@ -362,6 +362,7 @@
                     class='col-12 pt-2'
                 >
                     <PolygonArea
+                        :key='String(route.params.uid)'
                         :cot='cot'
                     />
                 </div>
@@ -387,9 +388,9 @@
                     }'
                 >
                     <PropertySpeed
+                        :key='cot.properties.id'
                         :unit='units.display_speed'
                         :speed='cot.properties.speed'
-                        class='py-2'
                     />
                 </div>
 
@@ -402,9 +403,9 @@
                     }'
                 >
                     <PropertyBearing
+                        :key='cot.properties.id'
                         label='Course'
                         :model-value='cot.properties.course'
-                        class='py-2'
                     />
                 </div>
 
@@ -413,6 +414,7 @@
                     class='pt-2'
                 >
                     <PropertyPhone
+                        :key='cot.properties.id'
                         :phone='cot.properties.contact.phone'
                     />
                 </div>
@@ -423,6 +425,7 @@
                 class='col-12 pt-2'
             >
                 <PropertyEmail
+                    :key='cot.properties.id'
                     :email='username'
                 />
             </div>
@@ -432,6 +435,7 @@
                 class='col-12 py-2'
             >
                 <PropertyAttachments
+                    :key='cot.properties.id'
                     :model-value='cot.properties.attachments'
                     @update:model-value='updatePropertyAttachment($event)'
                 />
@@ -456,7 +460,7 @@
                         :rows='10'
                         :edit='is_editable'
                         :hover='is_editable'
-                        @update:model-value='updateProperty("remarks", $event)'
+                        @submit='updateProperty("remarks", $event)'
                     />
                 </div>
             </div>
@@ -475,7 +479,7 @@
                     <label class='subheader user-select-none'>Geofence</label>
                 </div>
 
-                <div class='mx-2 bg-gray-500 row user-select-none'>
+                <div class='mx-2 bg-accent row user-select-none'>
                     <TablerToggle
                         label='Elevation Monitored'
                         :model-value='cot.properties.geofence.elevationMonitored'
@@ -520,7 +524,7 @@
                                 <th>Value</th>
                             </tr>
                         </thead>
-                        <tbody class='bg-gray-500'>
+                        <tbody class='bg-accent'>
                             <tr
                                 v-for='(link, link_it) of cot.properties.links'
                                 :key='link_it'
@@ -565,7 +569,7 @@
                                 <th>Value</th>
                             </tr>
                         </thead>
-                        <tbody class='bg-gray-500'>
+                        <tbody class='bg-accent'>
                             <tr>
                                 <td>Time</td><td v-text='timeProp' />
                             </tr>
@@ -582,6 +586,7 @@
 
             <PropertySensor
                 v-if='cot.properties.sensor !== undefined'
+                :key='cot.properties.id'
                 :model-value='cot.properties.sensor'
                 class='my-2 mx-2'
                 @update:model-value='updateProperty("sensor", $event)'
@@ -589,6 +594,7 @@
 
             <PropertyMilSym
                 v-if='cot.properties.milsym'
+                :key='cot.properties.id'
                 label='Unit Information'
                 :model-value='cot.properties.milsym.id'
             />
@@ -607,7 +613,7 @@
                     <label class='subheader user-select-none'>Style</label>
                 </div>
                 <div class='px-2 py-3'>
-                    <div class='row g-2 rounded px-2 bg-gray-500 pb-2'>
+                    <div class='row g-2 rounded px-2 bg-accent pb-2'>
                         <template v-if='cot.geometry.type === "Point"'>
                             <div class='col-12'>
                                 <IconSelect
@@ -720,6 +726,7 @@
                 class='pt-2'
             >
                 <PropertyCreator
+                    :key='cot.properties.id'
                     :creator='cot.properties.creator'
                 />
             </div>
@@ -768,7 +775,7 @@
                                 <th>Value</th>
                             </tr>
                         </thead>
-                        <tbody class='bg-gray-500'>
+                        <tbody class='bg-accent'>
                             <tr
                                 v-for='prop of Object.keys(cot.properties.takv)'
                                 :key='prop'
@@ -785,7 +792,7 @@
         <template v-else-if='mode === "channels"'>
             <div
                 style='height: calc(100vh - 225px)'
-                class='overflow-auto'
+                class='overflow-auto overflow-x-hidden'
             >
                 <Subscriptions :cot='cot' />
             </div>
@@ -793,13 +800,13 @@
         <template v-else-if='mode === "raw"'>
             <div
                 style='height: calc(100vh - 225px)'
-                class='overflow-auto'
+                class='overflow-auto col-12'
             >
                 <CopyField
                     mode='pre'
                     style='
+                        width: calc(100% - 100px);
                         height: calc(100vh - 225px);
-                        width: 100%;
                     '
                     :model-value='JSON.stringify(cot.as_feature(), null, 4)'
                 />
@@ -811,7 +818,7 @@
         v-if='share && cot'
         :feats='[cot.as_feature()]'
         @done='share = false'
-        @cancel='share = false'
+        @close='share = false'
     />
 </template>
 
@@ -913,7 +920,7 @@ const time = ref('relative');
 watch(cot, async () => {
     if (cot.value) {
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-            subscription.value = await mapStore.worker.db.subscriptionGet(cot.value.origin.mode_id);
+            subscription.value = await Subscription.from(cot.value.origin.mode_id, localStorage.token);
         } else {
             subscription.value = undefined;
         }
@@ -957,10 +964,16 @@ const is_editable = computed(() => {
 const center = computed(() => {
     if (!cot.value) return [0,0];
 
-    return [
+    const arr = [
         Math.round(cot.value.properties.center[0] * 1000000) / 1000000,
         Math.round(cot.value.properties.center[1] * 1000000) / 1000000,
     ]
+
+    if (cot.value.properties.center.length > 2) {
+        arr.push(Math.round(cot.value.properties.center[2] * 100) / 100)
+    }
+
+    return arr;
 })
 
 async function load_cot() {
@@ -971,7 +984,7 @@ async function load_cot() {
     }))
 
     if (baseCOT && baseCOT.origin.mode === OriginMode.MISSION && baseCOT.origin.mode_id) {
-        subscription.value = await mapStore.worker.db.subscriptionGet(baseCOT.origin.mode_id);
+        subscription.value = await Subscription.from(baseCOT.origin.mode_id, localStorage.token);
     }
 
     if (baseCOT) {
@@ -1052,6 +1065,10 @@ function updatePropertyIcon(event: string | null) {
 
 function updatePropertyType(type: string): void {
     if (!cot.value) return;
+
+    if (type.startsWith('a-') && cot.value.properties.type.startsWith('u-')) {
+        cot.value.properties["marker-color"] = '#FFFFFF';
+    }
 
     cot.value.properties.type = type;
 

@@ -22,11 +22,12 @@ export default class ServerManager {
             new Promise((resolve) => {
                 this.server.close(resolve);
             }),
-            this.config.cacher.end(),
             new Promise((resolve) => {
                 this.wss.close(resolve);
             }),
+            this.config.conns.close()
         ]);
+
 
         this.config.pg.end();
     }

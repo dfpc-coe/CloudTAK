@@ -96,29 +96,18 @@
                         v-else-if='error'
                         :err='error'
                     />
-                    <template v-else>
-                        <div
+                    <div
+                        v-else
+                        class='col-12 d-flex flex-column gap-2'
+                    >
+                        <MenuItemCard
                             v-for='connection in connections.videoConnections'
                             :key='connection.uuid'
-                            class='d-flex align-items-center px-3 py-2 hover cursor-pointer'
-                            @click='floatStore.addConnection(connection)'
+                            :icon='IconVideo'
+                            :label='connection.alias'
+                            @select='floatStore.addConnection(connection)'
                         >
-                            <span class='me-1'>
-                                <IconVideo
-                                    :size='20'
-                                    stroke='1'
-                                />
-                            </span>
-
-                            <span
-                                class='text-truncate'
-                                style='
-                                    width: calc(100% - 100px);
-                                '
-                                v-text='connection.alias'
-                            />
-
-                            <div class='ms-auto btn-list'>
+                            <div class='d-flex btn-list'>
                                 <TablerIconButton
                                     title='Edit Lease'
                                     @click.stop='router.push(`/menu/videos/remote/${connection.uuid}`)'
@@ -129,14 +118,15 @@
                                     />
                                 </TablerIconButton>
                             </div>
-                        </div>
-                        <Feature
+                        </MenuItemCard>
+                        <MenuItemCard
                             v-for='video in videos'
                             :key='video.id'
-                            :feature='video'
-                            @click='router.push(`/cot/${video.id}`)'
+                            :icon='IconVideo'
+                            :label='String(video.properties.callsign || video.properties.name || "Unnamed")'
+                            @select='router.push(`/cot/${video.id}`)'
                         />
-                    </template>
+                    </div>
                 </div>
             </template>
             <template v-else-if='mode === "lease"'>
@@ -160,47 +150,25 @@
                     :err='error'
                 />
                 <div
-                    v-for='l in leases.items'
                     v-else
-                    :key='l.id'
-                    class='col-12 py-2 px-3 d-flex align-items-center hover cursor-pointer'
-                    @click='lease = l'
+                    class='col-12 d-flex flex-column gap-2 p-3'
                 >
-                    <div class='row g-0 w-100'>
-                        <div class='d-flex align-items-center w-100'>
-                            <VideoLeaseSourceType :source-type='l.source_type' />
-
-                            <span
-                                class='mx-2'
-                                v-text='l.name'
-                            />
-
-                            <div class='ms-auto'>
-                                <TablerDelete
-                                    displaytype='icon'
-                                    @delete='deleteLease(l)'
-                                />
-                            </div>
-                        </div>
-                        <div class='col-12 my-0 py-0'>
-                            <span
-                                v-if='expired(l.expiration)'
-                                style='margin-left: 42px;'
-                                class='subheader text-red'
-                            >Expired Lease</span>
-                            <span
-                                v-else-if='l.expiration === null'
-                                style='margin-left: 42px;'
-                                class='subheader text-blue'
-                            >Permanent</span>
-                            <span
-                                v-else
-                                style='margin-left: 42px;'
-                                class='subheader'
-                                v-text='l.expiration'
+                    <MenuItemCard
+                        v-for='l in leases.items'
+                        :key='l.id'
+                        :icon='getLeaseIcon(l.source_type)'
+                        :label='l.name'
+                        :description='getLeaseDescription(l)'
+                        :description-class='getLeaseDescriptionClass(l)'
+                        @select='lease = l'
+                    >
+                        <div class='d-flex btn-list'>
+                            <TablerDelete
+                                displaytype='icon'
+                                @delete='deleteLease(l)'
                             />
                         </div>
-                    </div>
+                    </MenuItemCard>
                 </div>
                 <div class='col-12 d-flex justify-content-center pt-3'>
                     <TablerPager
@@ -228,11 +196,11 @@
 import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
-import Feature from '../util/FeatureRow.vue';
+import MenuItemCard from './MenuItemCard.vue';
 import { std, server } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
-import VideoLeaseSourceType from '../util/VideoLeaseSourceType.vue';
 import type { VideoLease, VideoLeaseList, VideoConnectionList } from '../../../types.ts';
+
 import { useMapStore } from '../../../stores/map.ts';
 import { useFloatStore } from '../../../stores/float.ts';
 import {
@@ -251,6 +219,12 @@ import {
     IconPencil,
     IconServer2,
     IconVideoPlus,
+    IconCar,
+    IconWalk,
+    IconDrone,
+    IconHelicopter,
+    IconPlane,
+    IconDeviceDesktop,
 } from '@tabler/icons-vue';
 
 import { ref, watch, onMounted } from 'vue'
@@ -355,10 +329,37 @@ async function deleteLease(lease: VideoLease): Promise<void> {
         });
 
         await fetchLeases();
+
+        loading.value.main = false;
     } catch (err) {
         loading.value.main = false;
         throw err;
     }
+}
+
+function getLeaseIcon(sourceType: string) {
+    switch (sourceType) {
+        case 'vehicle': return IconCar;
+        case 'personal': return IconWalk;
+        case 'uas-rotor': return IconDrone;
+        case 'rotor': return IconHelicopter;
+        case 'fixedwing': return IconPlane;
+        case 'uas-fixedwing': return IconPlane;
+        case 'screenshare': return IconDeviceDesktop;
+        default: return IconVideo;
+    }
+}
+
+function getLeaseDescription(lease: VideoLease): string {
+    if (expired(lease.expiration)) return 'Expired Lease';
+    if (lease.expiration === null) return 'Permanent';
+    return lease.expiration;
+}
+
+function getLeaseDescriptionClass(lease: VideoLease): string {
+    if (expired(lease.expiration)) return 'text-red';
+    if (lease.expiration === null) return 'text-blue';
+    return '';
 }
 
 </script>

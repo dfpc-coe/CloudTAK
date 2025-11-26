@@ -2,12 +2,12 @@
 
 <h1 align=center>CloudTAK</h1>
 
-<p align=center>Full Featured in-browser TAK Client powered by AWS</p>
+<p align=center>Full Featured in-browser TAK Client</p>
 <p align=center>&</p>
 <p align=center>Facilitate ETL operations to bring non-TAK data sources into a TAK Server</p>
 
 <p align='center'>
-    <a href="https://codecov.io/gh/dfpc-coe/node-CoT" >
+    <a href="https://codecov.io/gh/dfpc-coe/CloudTAK" >
         <img src="https://codecov.io/github/dfpc-coe/CloudTAK/graph/badge.svg?token=O9PK0XT9Z2"/>
     </a>
 </p>
@@ -17,17 +17,33 @@
 ## Installation
 
 Testing locally can be done either running the server directly (recommended for development) or
-by running the provided Docker Compose services (recommended for limited testing)
+by running the provided Docker Compose services
 
-Note that for full functionality, CloudTAK needs to be deployed into an AWS environment and that
-many of the services it provides will initiate AWS API calls with no graceful fallback.
+> [!NOTE]
+> While all map functionality is available when running locally or via Docker Compose,
+> an AWS install is required to fully utilize the optional Extract Transform Load (ETL) functionality.
 
 ### Docker Compose
 
+> [!WARNING]
+> For detailed install instructions please visit https://cloudtak.io/deploy/
+
+If running on Ubuntu this will install the necessary dependencies
+
 ```
-git clone git@github.com:dfpc-coe/CloudTAK.git
-cd CloudTAK
-docker compose up --build
+./cloudtak.sh install
+```
+
+Create a new Env Var file
+
+```
+cp .env.example .env
+```
+
+Start CloudTAK Locally
+
+```
+./cloudtak.sh start
 ```
 
 Once the database and API service have built, the server will start on port 5000.
@@ -214,20 +230,5 @@ npx deploy info --help
 | Name                  | Notes |
 | --------------------- | ----- |
 | `coe-media-<name>`   | Task Definitions for Media Server Support - [repo](ttps://github.com/dfoc-coe/media-infra) |
-
-
-### S3 Bucket Contents
-
-An S3 bucket will be created as part of the CloudFormatiom stack that contains geospatial assets
-related to user files, missions, CoTs, etc. The following table is an overview of the prefixes
-in the bucket and their purpose
-
-| Prefix | Description |
-| ------ | ----------- |
-| `attachment/{sha256}/{file.ext}`  | CoT Attachments by Data Package reported SHA |
-| `data/{data sync id}/{file.ext}`  | CloudTAK managed Data Sync file contents |
-| `import/{UUID}/{file.ext}`        | User Imports |
-| `profile/{email}/{file.ext}`      | User Files |
-| `public/{name}.pmtiles`           | Public Tile Pyramids |
 
 

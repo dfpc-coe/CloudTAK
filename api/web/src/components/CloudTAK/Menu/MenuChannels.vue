@@ -53,70 +53,40 @@
                 v-else-if='!Object.keys(processChannels).length'
                 :create='false'
             />
-            <template v-else>
-                <div
+            <div
+                v-else
+                class='col-12 d-flex flex-column gap-2 p-3'
+            >
+                <MenuItemCard
                     v-for='ch in processChannels'
                     :key='ch.name'
-                    class='col-lg-12 hover'
+                    :icon='ch.active ? IconEye : IconEyeOff'
+                    :label='ch.name'
+                    :description='ch.description || "No Description"'
+                    @select='setStatus(ch, !ch.active)'
                 >
-                    <div class='hover'>
-                        <div class='px-2'>
-                            <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                                <IconEye
-                                    v-if='ch.active'
-                                    v-tooltip='"Disable"'
-                                    :size='32'
-                                    stroke='1'
-                                    class='cursor-pointer'
-                                    @click='setStatus(ch, false)'
-                                />
-                                <IconEyeOff
-                                    v-else
-                                    v-tooltip='"Enable"'
-                                    :size='32'
-                                    stroke='1'
-                                    class='cursor-pointer'
-                                    @click='setStatus(ch, true)'
-                                />
-                                <span
-                                    v-tooltip='"Show Details"'
-                                    class='mx-2 cursor-pointer'
-                                    @click='shown.has(ch.name) ? shown.delete(ch.name) : shown.add(ch.name)'
-                                    v-text='ch.name'
-                                />
-
-                                <div class='ms-auto'>
-                                    <IconLocation
-                                        v-if='ch.direction.length === 2'
-                                        v-tooltip='"Bi-Directional"'
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                    <IconLocation
-                                        v-else-if='ch.direction.includes("IN")'
-                                        v-tooltip='"Location Sharing"'
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                    <IconLocationOff
-                                        v-else-if='ch.direction.includes("OUT")'
-                                        v-tooltip='"No Location Sharing"'
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </div>
-                            </div>
-                            <div
-                                v-if='shown.has(ch.name)'
-                                class='col-12 pb-2 user-select-none'
-                                style='margin-left: 40px;'
-                            >
-                                <span v-text='ch.description || "No Description"' />
-                            </div>
-                        </div>
+                    <div class='ms-auto'>
+                        <IconLocation
+                            v-if='ch.direction.length === 2'
+                            v-tooltip='"Bi-Directional"'
+                            :size='32'
+                            stroke='1'
+                        />
+                        <IconLocation
+                            v-else-if='ch.direction.includes("IN")'
+                            v-tooltip='"Location Sharing"'
+                            :size='32'
+                            stroke='1'
+                        />
+                        <IconLocationOff
+                            v-else-if='ch.direction.includes("OUT")'
+                            v-tooltip='"No Location Sharing"'
+                            :size='32'
+                            stroke='1'
+                        />
                     </div>
-                </div>
-            </template>
+                </MenuItemCard>
+            </div>
         </template>
     </MenuTemplate>
 </template>
@@ -133,6 +103,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import MenuItemCard from './MenuItemCard.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import {
     IconLocation,
@@ -147,7 +118,6 @@ const mapStore = useMapStore();
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
-const shown = ref<Set<string>>(new Set());
 const paging = ref({
     filter: ''
 });

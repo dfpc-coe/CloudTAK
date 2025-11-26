@@ -46,7 +46,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import type { Mission, MissionRole, MissionSubscriptions } from '../../../../../src/types.ts';
+import type { MissionSubscriptions } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';
 import {
     IconUserBolt,
@@ -56,9 +56,7 @@ import {
 import MenuTemplate from '../../util/MenuTemplate.vue';
 
 const props = defineProps<{
-    mission: Mission,
-    token?: string,
-    role?: MissionRole
+    subscription: Subscription
 }>();
 
 const loading = ref(false);
@@ -70,9 +68,7 @@ onMounted(async () => {
 
 async function fetchSubscriptions() {
     loading.value = true;
-    subscriptions.value = await Subscription.subscriptions(props.mission.guid, {
-        missionToken: props.token
-    });
+    subscriptions.value = await props.subscription.subscriptions();
     loading.value = false;
 }
 </script>

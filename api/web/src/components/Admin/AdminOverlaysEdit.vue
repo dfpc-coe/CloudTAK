@@ -28,13 +28,18 @@
             <TablerLoading v-if='loading' />
             <div
                 v-else
-                class='row'
+                class='row g-2'
             >
                 <div class='col-12'>
                     <TablerInput
                         v-model='overlay.name'
                         label='Name'
-                    />
+                    >
+                        <TablerToggle
+                            v-model='overlay.sharing_enabled'
+                            label='Enable Sharing'
+                        />
+                    </TablerInput>
                 </div>
                 <div class='col-12'>
                     <label class='mx-2 my-1'>Ownership</label>
@@ -107,18 +112,26 @@
                     </TablerInput>
                 </div>
 
-                <div class='col-12 col-md-6'>
+                <div class='col-12 col-md-3'>
                     <TablerInput
                         v-model='overlay.minzoom'
                         :disabled='mode !== "manual"'
-                        label='MinZoom'
+                        type='number'
+                        label='Minzoom'
+                    />
+                </div>
+                <div class='col-12 col-md-3'>
+                    <TablerInput
+                        v-model='overlay.maxzoom'
+                        :disabled='mode !== "manual"'
+                        type='number'
+                        label='Maxzoom'
                     />
                 </div>
                 <div class='col-12 col-md-6'>
                     <TablerInput
-                        v-model='overlay.maxzoom'
-                        :disabled='mode !== "manual"'
-                        label='MaxZoom'
+                        v-model='overlay.frequency'
+                        label='Update Frequency (Seconds)'
                     />
                 </div>
                 <div class='col-12 col-md-6'>
@@ -211,6 +224,9 @@ const overlay = ref({
     styles: [],
     minzoom: 0,
     maxzoom: 16,
+    frequency: 0,
+    sharing_enabled: true,
+    sharing_token: null,
     bounds: '-180, -90, 180, 90',
     center: '0, 0',
 });
@@ -277,6 +293,12 @@ async function saveOverlay() {
         body.scope = 'user'
     } else {
         body.scope = 'server'
+    }
+
+    if (body.frequency) {
+        body.frequency = Number(body.frequency);
+    } else {
+        body.frequency = null;
     }
 
     loading.value = true;

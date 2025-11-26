@@ -59,6 +59,8 @@
 
 <script setup lang='ts'>
 import type { SearchForward, SearchSuggest } from '../../../types.ts';
+import { convert } from 'geo-coordinates-parser'
+import { v4 as randomUUID } from 'uuid';
 import Feature from './FeatureRow.vue';
 import { std, stdurl } from '../../../std.ts'
 import { useMapStore } from '../../../stores/map.ts';
@@ -135,6 +137,27 @@ async function fetchSearch(
     queryText?: string,
     magicKey?: string
 ) {
+    if (!queryText) {
+        results.value = [];
+    }
+
+    if (!magicKey) {
+        try {
+            const c = convert(query.value.filter);
+
+            results.value = [{
+                text: `${c.decimalLatitude.toFixed(5)}, ${c.decimalLongitude.toFixed(5)}`,
+                magicKey: 'coordinate'
+            }]
+
+            return;
+        } catch (e) {
+            if (e instanceof Error && !e.message.includes('coordinate')) {
+                console.error('Error parsing coordinates:', e);
+            }
+        }
+    }
+
     if (!magicKey || !queryText) {
         partialLoading.value = true;
 
@@ -157,68 +180,114 @@ async function fetchSearch(
    } else {
         selected.value = true;
 
-        const url = stdurl('/api/search/forward');
-        url.searchParams.append('query', queryText);
-        url.searchParams.append('magicKey', magicKey);
-        const center = mapStore.map.getCenter();
-        url.searchParams.append('longitude', String(center.lng));
-        url.searchParams.append('latitude', String(center.lat));
-        const items = ((await std(url)) as SearchForward).items;
+        if (magicKey === 'coordinate') {
+            const parts = queryText.split(',');
+            const lat = parseFloat(parts[0].trim());
+            const lon = parseFloat(parts[1].trim());
 
-        if (!items.length) return;
+            mapStore.map.flyTo({
+                center: [lon, lat],
+                zoom: 15
+            });
 
-        results.value = [];
-
-        query.value.filter = items[0].address;
-
-        mapStore.map.fitBounds([
-            [items[0].extent.xmin, items[0].extent.ymin],
-            [items[0].extent.xmax, items[0].extent.ymax],
-        ], {
-            duration: 0,
-            padding: {
-                top: 25,
-                bottom: 25,
-                left: 25,
-                right: 25
-            }
-        });
-
-        // Create a draw point on the map
-        const pointName = items[0].address.split(',')[0].trim();
-        const now = new Date().toISOString();
-        const featureId = crypto.randomUUID();
-        const feature = {
-            id: featureId,
-            type: 'Feature' as const,
-            path: '/',
-            properties: {
+            // Create a draw point on the map
+            const now = new Date().toISOString();
+            const featureId = randomUUID();
+            const feature = {
                 id: featureId,
-                callsign: pointName,
-                type: 'u-d-p',
-                how: 'h-g-i-g-o',
-                archived: true,
-                time: now,
-                start: now,
-                stale: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-                center: [items[0].location.x, items[0].location.y],
-                "marker-opacity": 1,
-                "marker-color": "#FF0000",
-                creator: await mapStore.worker.profile.creator(),
-                remarks: 'Created from search result'
-            },
-            geometry: {
-                type: 'Point' as const,
-                coordinates: [items[0].location.x, items[0].location.y]
-            }
-        };
-        
-        await mapStore.worker.db.add(feature);
+                type: 'Feature' as const,
+                path: '/',
+                properties: {
+                    id: featureId,
+                    callsign: 'Search Feature',
+                    type: 'u-d-p',
+                    how: 'h-g-i-g-o',
+                    archived: true,
+                    time: now,
+                    start: now,
+                    stale: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                    center: [lon, lat],
+                    "marker-opacity": 1,
+                    "marker-color": "#FF0000",
+                    creator: await mapStore.worker.profile.creator(),
+                    remarks: 'Created from search result'
+                },
+                geometry: {
+                    type: 'Point' as const,
+                    coordinates: [lon, lat]
+                }
+            };
 
-        emit('select', {
-            name: items[0].address,
-            coordinates: [ items[0].location.x, items[0].location.y ]
-        });
+            await mapStore.worker.db.add(feature);
+
+            emit('select', {
+                name: `${lat.toFixed(5)}, ${lon.toFixed(5)}`,
+                coordinates: [ lon, lat ]
+            });
+        } else {
+            const url = stdurl('/api/search/forward');
+            url.searchParams.append('query', queryText);
+            url.searchParams.append('magicKey', magicKey);
+            const center = mapStore.map.getCenter();
+            url.searchParams.append('longitude', String(center.lng));
+            url.searchParams.append('latitude', String(center.lat));
+            const items = ((await std(url)) as SearchForward).items;
+
+            if (!items.length) return;
+
+            results.value = [];
+
+            query.value.filter = items[0].address;
+
+            mapStore.map.fitBounds([
+                [items[0].extent.xmin, items[0].extent.ymin],
+                [items[0].extent.xmax, items[0].extent.ymax],
+            ], {
+                duration: 0,
+                padding: {
+                    top: 25,
+                    bottom: 25,
+                    left: 25,
+                    right: 25
+                }
+            });
+
+            // Create a draw point on the map
+            const pointName = items[0].address.split(',')[0].trim();
+            const now = new Date().toISOString();
+            const featureId = randomUUID();
+            const feature = {
+                id: featureId,
+                type: 'Feature' as const,
+                path: '/',
+                properties: {
+                    id: featureId,
+                    callsign: pointName,
+                    type: 'u-d-p',
+                    how: 'h-g-i-g-o',
+                    archived: true,
+                    time: now,
+                    start: now,
+                    stale: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                    center: [items[0].location.x, items[0].location.y],
+                    "marker-opacity": 1,
+                    "marker-color": "#FF0000",
+                    creator: await mapStore.worker.profile.creator(),
+                    remarks: 'Created from search result'
+                },
+                geometry: {
+                    type: 'Point' as const,
+                    coordinates: [items[0].location.x, items[0].location.y]
+                }
+            };
+
+            await mapStore.worker.db.add(feature);
+
+            emit('select', {
+                name: items[0].address,
+                coordinates: [ items[0].location.x, items[0].location.y ]
+            });
+        }
     }
 }
 

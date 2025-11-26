@@ -1,4 +1,5 @@
 import Err from '@openaddresses/batch-error';
+import { ms2525e } from 'milstandard-e';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
@@ -11,8 +12,8 @@ export default async function router(schema: Schema, config: Config) {
     const types = await CoTTypes.default.load();
 
     await schema.get('/type/cot', {
-        name: 'List Types',
-        group: 'COTTypes',
+        name: '2525B/ CoT Types',
+        group: 'Symbology',
         description: 'Get Type',
         query: Type.Object({
             filter: Type.String({
@@ -46,8 +47,8 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/type/cot/:type', {
-        name: 'Get Type',
-        group: 'COTTypes',
+        name: '2525B/ CoT Type',
+        group: 'Symbology',
         description: 'Get Type',
         params: Type.Object({
             type: Type.String()
@@ -86,6 +87,23 @@ export default async function router(schema: Schema, config: Config) {
                     res.json(info);
                 }
             }
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/type/2525e', {
+        name: '2525E Types',
+        group: 'Symbology',
+        description: 'Get Type',
+        res: Type.Any()
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            console.error(ms2525e);
+
+            res.json({});
         } catch (err) {
              Err.respond(err, res);
         }

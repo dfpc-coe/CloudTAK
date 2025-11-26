@@ -49,7 +49,7 @@
                 style='height: 70vh'
                 :basemaps='share'
                 @done='share = undefined'
-                @cancel='share = undefined'
+                @close='share = undefined'
             />
             <TablerNone
                 v-else-if='!list.items.length && !list.collections.length'
@@ -57,51 +57,31 @@
                 @create='editModal = {}'
             />
             <template v-else>
-                <MenuItem
-                    v-for='collection in list.collections'
-                    :key='collection.name'
-                    @click='setCollection(collection.name)'
-                    @keyup.enter='setCollection(collection.name)'
-                >
-                    <div class='d-flex align-items-center my-2'>
-                        <IconFolder
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            class='mx-2 text-truncate user-select-none'
-                            style='font-size: 18px; width: 240px;'
-                            v-text='collection.name'
-                        />
-                    </div>
-                </MenuItem>
-                <MenuItem
-                    v-for='basemap in list.items'
-                    :key='basemap.id'
-                    :class='{ "bg-blue text-white": isCurrentBasemap(basemap.id) }'
-                    @click='setBasemap(basemap)'
-                    @keyup.enter='setBasemap(basemap)'
-                >
-                    <div class='d-flex align-items-center my-2'>
-                        <IconMap
-                            :size='32'
-                            stroke='1'
-                        />
-                        <span
-                            class='mx-2 text-truncate user-select-none'
-                            style='font-size: 18px; width: 220px;'
-                            v-text='basemap.name'
-                        />
-
-                        <div class='ms-auto d-flex align-items-center'>
+                <div class='col-12 d-flex flex-column gap-2 p-3'>
+                    <MenuItemCard
+                        v-for='collection in list.collections'
+                        :key='collection.name'
+                        :icon='IconFolder'
+                        :label='collection.name'
+                        @select='setCollection(collection.name)'
+                    />
+                    <MenuItemCard
+                        v-for='basemap in list.items'
+                        :key='basemap.id'
+                        :icon='IconMap'
+                        :label='basemap.name'
+                        :class='{ "bg-blue text-white": isCurrentBasemap(basemap.id) }'
+                        @select='setBasemap(basemap)'
+                    >
+                        <div class='d-flex align-items-center'>
                             <span
                                 v-if='!basemap.username'
-                                class='mx-3 ms-auto badge border'
+                                class='mx-3 badge border'
                                 :class='isCurrentBasemap(basemap.id) ? "bg-white text-blue" : "bg-blue text-white"'
                             >Public</span>
                             <span
                                 v-else
-                                class='mx-3 ms-auto badge border bg-red text-white'
+                                class='mx-3 badge border bg-red text-white'
                             >Private</span>
 
                             <TablerDropdown>
@@ -130,6 +110,18 @@
                                         </div>
                                         <div
                                             class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                                            @click.stop.prevent='addOverlay(basemap)'
+                                        >
+                                            <IconBoxMultiple
+                                                v-tooltip='"Add Overlay"'
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                            <span class='mx-2'>Add as Overlay</span>
+                                        </div>
+                                        <div
+                                            v-if='basemap.sharing_enabled'
+                                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
                                             @click.stop.prevent='download(basemap)'
                                         >
                                             <IconDownload
@@ -139,8 +131,9 @@
                                             <span class='mx-2'>Download XML</span>
                                         </div>
                                         <div
+                                            v-if='basemap.sharing_enabled'
                                             class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
-                                            @click.stop.prevent='share = [basemap.id]'
+                                            @click.stop.prevent='basemap.sharing_enabled ? share = [basemap.id] : null'
                                         >
                                             <IconShare2
                                                 :size='32'
@@ -152,8 +145,8 @@
                                 </template>
                             </TablerDropdown>
                         </div>
-                    </div>
-                </MenuItem>
+                    </MenuItemCard>
+                </div>
 
                 <div class='col-lg-12 d-flex'>
                     <div class='ms-auto'>
@@ -180,7 +173,7 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, watch } from 'vue';
-import MenuItem from '../util/MenuItem.vue';
+import MenuItemCard from './MenuItemCard.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import { server, stdurl } from '../../../std.ts';
 import Overlay from '../../../base/overlay.ts';
@@ -202,15 +195,18 @@ import {
     IconPlus,
     IconFolder,
     IconShare2,
-    IconSettings,
     IconDownload,
+    IconSettings,
+    IconBoxMultiple,
     IconDotsVertical,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 import type { LayerSpecification } from 'maplibre-gl'
+import { useRouter } from 'vue-router';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
+const router = useRouter();
 const isSystemAdmin = ref<boolean>(false);
 
 const error = ref<Error | undefined>();
@@ -280,10 +276,11 @@ async function setBasemap(basemap: Basemap) {
     } else {
         const before = String(mapStore.overlays[0].styles[0].id);
 
-        mapStore.overlays.unshift(await Overlay.create(mapStore.map, {
+        mapStore.overlays.unshift(await Overlay.create({
             name: basemap.name,
             pos: -1,
             type: basemap.type,
+            frequency: basemap.frequency,
             url: `/api/basemap/${basemap.id}/tiles`,
             mode: 'basemap',
             mode_id: String(basemap.id),
@@ -302,10 +299,34 @@ function setCollection(name: string) {
 }
 
 function isCurrentBasemap(basemapId: number): boolean {
-    const currentBasemap = mapStore.overlays.find(overlay => 
+    const currentBasemap = mapStore.overlays.find(overlay =>
         overlay.mode === 'basemap' && overlay.mode_id === String(basemapId)
     );
     return !!currentBasemap;
+}
+
+async function addOverlay(basemap: Basemap) {
+    try {
+        // Insert in 1st position after basemap where mapStore.overlays[0] is the basemap
+        mapStore.overlays.splice(1, 0, await Overlay.create({
+            url: String(stdurl(`/api/basemap/${basemap.id}/tiles`)),
+            name: basemap.name,
+            mode: 'overlay',
+            mode_id: String(basemap.id),
+            frequency: basemap.frequency,
+            type: basemap.type,
+            styles: basemap.styles
+        }, {
+            before: String(mapStore.overlays[1].styles[0].id)
+        }));
+
+        loading.value = false;
+
+        router.push('/menu/overlays');
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
 }
 
 async function fetchList() {

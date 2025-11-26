@@ -34,7 +34,7 @@
         </div>
         <div
             v-if='mode === "router"'
-            class='col-12'
+            class='col-12 py-2'
         >
             <PropertyType
                 v-model='profile.tak_type'
@@ -113,6 +113,7 @@ onMounted(async () => {
     const p = await mapStore.worker.profile.load();
 
     if (config.value.groups[p.tak_group]) {
+        // @ts-expect-error We expect an enum of Colors
         p.tak_group = `${p.tak_group} - ${config.value.groups[p.tak_group]}`;
     }
 

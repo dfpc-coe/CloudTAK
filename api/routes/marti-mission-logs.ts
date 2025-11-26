@@ -59,6 +59,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to add a log to a mission',
         body: Type.Object({
+            dtg: Type.Optional(Type.String({ format: 'date-time' })),
             content: Type.String(),
             keywords: Type.Optional(Type.Array(Type.String()))
         }),
@@ -75,17 +76,18 @@ export default async function router(schema: Schema, config: Config) {
                 ? { token: String(req.headers['missionauthorization']) }
                 : await config.conns.subscription(user.email, req.params.name)
 
-            const mission = await api.MissionLog.create(
+            const log = await api.MissionLog.create(
                 req.params.name,
                 {
                     creatorUid: creatorUid,
+                    dtg: req.body.dtg ?? new Date().toISOString(),
                     content: req.body.content,
                     keywords: req.body.keywords
                 },
                 opts
             );
 
-            res.json(mission);
+            res.json(log);
         } catch (err) {
              Err.respond(err, res);
         }
@@ -100,6 +102,9 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to update a log on a mission',
         body: Type.Object({
+            dtg: Type.String({
+                format: 'date-time'
+            }),
             content: Type.String(),
             keywords: Type.Optional(Type.Array(Type.String()))
         }),
@@ -120,6 +125,7 @@ export default async function router(schema: Schema, config: Config) {
                 req.params.name,
                 {
                     id: req.params.logid,
+                    dtg: req.body.dtg,
                     creatorUid: creatorUid,
                     content: req.body.content,
                     keywords: req.body.keywords

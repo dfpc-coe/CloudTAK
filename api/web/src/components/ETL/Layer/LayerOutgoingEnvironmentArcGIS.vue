@@ -109,6 +109,15 @@
         </template>
 
         <div class='col-12 pb-4'>
+            <TablerToggle
+                v-model='environment.PRESERVE_HISTORY'
+                label='Preserve History'
+                description='If enabled, new features will be appended to existing features (Insert) in the layer instead of replacing them (Upsert)'
+                :disabled='disabled'
+            />
+        </div>
+
+        <div class='col-12 pb-4'>
             <div class='d-flex justify-content-center'>
                 <div class='btn-list'>
                     <div
@@ -193,7 +202,7 @@
                     :key='mode'
                     :disabled='disabled'
                     :url='environment.ARCGIS_PORTAL'
-                    :readonly='true'
+                    :readonly='disabled'
                     :pane='false'
                     :username='environment.ARCGIS_USERNAME'
                     :password='environment.ARCGIS_PASSWORD'
@@ -210,6 +219,7 @@
 import { ref, watch } from 'vue';
 import {
     TablerInput,
+    TablerToggle,
 } from '@tak-ps/vue-tabler';
 import EsriPortal from '../../util/EsriPortal.vue';
 import {
@@ -244,6 +254,7 @@ const esriView = ref(false);
 const environment = ref(props.modelValue);
 
 if (!environment.value.ARCGIS_URL) environment.value.ARCGIS_URL = '';
+if (!environment.value.PRESERVE_HISTORY) environment.value.PRESERVE_HISTORY = false;
 if (!environment.value.ARCGIS_POINTS_URL) environment.value.ARCGIS_POINTS_URL = '';
 if (!environment.value.ARCGIS_LINES_URL) environment.value.ARCGIS_LINES_URL = '';
 if (!environment.value.ARCGIS_POLYS_URL) environment.value.ARCGIS_POLYS_URL = '';

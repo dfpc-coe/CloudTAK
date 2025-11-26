@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox'
 import sleep from '../lib/sleep.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Cacher from '../lib/cacher.js';
+import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
 import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
@@ -74,7 +74,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'List layers',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 })
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 })
+            ])
         }),
         query: Type.Object({
             alarms: Type.Boolean({
@@ -103,11 +106,14 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            }, req.params.connectionid);
+            const resources = [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            if (req.params.connectionid === 'template') {
+                await Auth.is_auth(config, req, { resources });
+            } else {
+                const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            }
 
             const list = await config.models.Layer.augmented_list({
                 limit: req.query.limit,
@@ -116,7 +122,7 @@ export default async function router(schema: Schema, config: Config) {
                 sort: req.query.sort,
                 where: sql`
                     layers.name ~* ${req.query.filter}
-                    AND connection = ${req.params.connectionid}
+                    AND connection = ${Param(req.params.connectionid === 'template' ? null : req.params.connectionid)}
                     AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers_incoming.data)
                 `
             });
@@ -228,6 +234,7 @@ export default async function router(schema: Schema, config: Config) {
             cron: Type.Optional(Type.String()),
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Integer()),
+            groups: Type.Optional(Type.Array(Type.String())),
             enabled_styles: Type.Optional(Type.Boolean()),
             styles: Type.Optional(StyleContainer),
             config: Type.Optional(Layer_Config),
@@ -242,12 +249,21 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            let layer = await layerControl.from(connection, req.params.layerid);
 
-            let layer = await config.models.Layer.augmented_from(req.params.layerid);
+            if (req.body.data && req.body.groups && req.body.groups.length) {
+                throw new Err(400, null, 'Layer cannot have both Data and Groups set');
+            } else if (req.body.groups) {
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
+                const list = await api.Group.list({ useCache: true });
 
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
+                for (const group of req.body.groups) {
+                    if (!list.data.find((g) => {
+                        return g.name === group && g.direction === 'IN';
+                    })) {
+                        throw new Err(400, null, `Group "${group}" does not exist on TAK Server`);
+                    }
+                }
             }
 
             if (req.body.styles) {
@@ -276,7 +292,7 @@ export default async function router(schema: Schema, config: Config) {
                 ...req.body
             });
 
-            layer = await config.models.Layer.augmented_from(layer.id);
+            layer = await layerControl.from(connection, req.params.layerid);
 
             if (config.events) {
                 if (incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled) {
@@ -330,6 +346,7 @@ export default async function router(schema: Schema, config: Config) {
             styles: Type.Optional(StyleContainer),
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
+            groups: Type.Optional(Type.Array(Type.String())),
             environment: Type.Optional(Type.Any()),
             config: Type.Optional(Layer_Config),
         }),
@@ -343,14 +360,27 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            const layer = await config.models.Layer.augmented_from(req.params.layerid);
+            const layer = await layerControl.from(connection, req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             } else if (!layer.incoming) {
                 throw new Err(400, null, 'Layer does not have incoming config');
+            }
+
+            if (req.body.data && req.body.groups && req.body.groups.length) {
+                throw new Err(400, null, 'Layer cannot have both Data and Groups set');
+            } else if (req.body.groups) {
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
+                const list = await api.Group.list({ useCache: true });
+
+                for (const group of req.body.groups) {
+                    if (!list.data.find((g) => {
+                        return g.name === group && g.direction === 'IN';
+                    })) {
+                        throw new Err(400, null, `Group "${group}" does not exist on TAK Server`);
+                    }
+                }
             }
 
             if (req.body.data) {
@@ -443,8 +473,6 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            await config.cacher.del(`layer-${req.params.layerid}`);
-
             if (req.body.environment) {
                 await Lambda.invoke(config, layer.id, 'environment:incoming')
             }
@@ -473,13 +501,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            let layer = await config.models.Layer.augmented_from(req.params.layerid);
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
+            let layer = await layerControl.from(connection, req.params.layerid);
 
             if (!layer.incoming) {
                 throw new Err(400, null, 'Layer does not have an incoming configuration');
@@ -490,7 +512,7 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.LayerIncoming.delete(layer.id);
 
-            layer = await config.models.Layer.augmented_from(req.params.layerid);
+            layer = await layerControl.from(connection, req.params.layerid);
 
             try {
                 const stack = await Lambda.generate(config, layer);
@@ -533,13 +555,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            let layer = await config.models.Layer.augmented_from(req.params.layerid);
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
+            let layer = await layerControl.from(connection, req.params.layerid);
 
             if (req.body.filters) {
                 await Filter.validate(req.body.filters);
@@ -550,7 +566,7 @@ export default async function router(schema: Schema, config: Config) {
                 ...req.body
             });
 
-            layer = await config.models.Layer.augmented_from(layer.id);
+            layer = await layerControl.from(connection, req.params.layerid);
 
             try {
                 const stack = await Lambda.generate(config, layer);
@@ -591,13 +607,9 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            const layer = await layerControl.from(connection, req.params.layerid);
 
-            const layer = await config.models.Layer.augmented_from(req.params.layerid);
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            } else if (!layer.outgoing) {
+            if (!layer.outgoing) {
                 throw new Err(400, null, 'Layer does not have outgoing config');
             }
 
@@ -617,8 +629,6 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const outgoing = await config.models.LayerOutgoing.commit(layer.id, updated);
-
-            await config.cacher.del(`layer-${req.params.layerid}`);
 
             if (req.body.environment) {
                 await Lambda.invoke(config, layer.id, 'environment:outgoing')
@@ -648,13 +658,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            let layer = await config.models.Layer.augmented_from(req.params.layerid);
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
+            let layer = await layerControl.from(connection, req.params.layerid);
 
             if (!layer.outgoing) {
                 throw new Err(400, null, 'Layer does not have an outgoing configuration');
@@ -665,7 +669,7 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.LayerOutgoing.delete(layer.id);
 
-            layer = await config.models.Layer.augmented_from(req.params.layerid);
+            layer = await layerControl.from(connection, req.params.layerid);
 
             try {
                 const stack = await Lambda.generate(config, layer);
@@ -733,13 +737,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            let layer = await config.models.Layer.augmented_from(req.params.layerid);
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
+            let layer = await layerControl.from(connection, req.params.layerid);
 
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
@@ -760,7 +758,7 @@ export default async function router(schema: Schema, config: Config) {
                 ...req.body
             });
 
-            layer = await config.models.Layer.augmented_from(req.params.layerid);
+            layer = await layerControl.from(connection, req.params.layerid);
 
             if (changed) {
                 try {
@@ -775,9 +773,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            await config.cacher.del(`layer-${req.params.layerid}`);
-
-            layer = await config.models.Layer.augmented_from(layer.id);
+            layer = await layerControl.from(connection, req.params.layerid);
 
             if (layer.incoming && config.events) {
                 if (layer.incoming.cron && !Schedule.is_aws(layer.incoming.cron) && layer.enabled) {
@@ -821,28 +817,35 @@ export default async function router(schema: Schema, config: Config) {
             })
         }),
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 })
+            ]),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: LayerResponse
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                token: true,
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
-                ]
-            }, req.params.connectionid);
+            const resources = [
+                { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+            ];
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.is_auth(config, req, {
+                    token: true, resources
+                });
 
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.augmented_from(req.params.layerid);
-            });
+                layer = await layerControl.from(null, req.params.layerid);
+            } else {
+                const { connection } = await Auth.is_connection(config, req, {
+                    token: true, resources
+                }, req.params.connectionid);
 
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
+                if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
+                layer = await layerControl.from(connection, req.params.layerid);
             }
 
             let status = 'unknown';
@@ -857,7 +860,7 @@ export default async function router(schema: Schema, config: Config) {
             const hydrated = { status, ...layer };
 
             if (req.query.download) {
-                res.setHeader('Content-Disposition', `attachment; filename="connection-${connection.id}-layer-${layer.id}.json"`);
+                res.setHeader('Content-Disposition', `attachment; filename="connection-${req.params.connectionid}-layer-${layer.id}.json"`);
                 res.setHeader('Content-Type', 'application/json');
                 res.write(JSON.stringify(hydrated, null, 4));
                 res.end();
@@ -877,24 +880,28 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Redeploy a specific Layer with latest CloudFormation output',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 })
+            ]),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
-                ]
-            }, req.params.connectionid);
+            const resources = [
+                { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
+            ];
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.is_auth(config, req, { resources });
 
-            const layer = await config.models.Layer.augmented_from(req.params.layerid);
+                layer = await layerControl.from(null, req.params.layerid);
+            } else {
+                const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
 
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
+                layer = await layerControl.from(connection, req.params.layerid);
             }
 
             const status = (await CloudFormation.status(config, req.params.layerid)).status;
@@ -925,24 +932,26 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Delete a layer',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 })
+            ]),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
-                ]
-            }, req.params.connectionid);
+            const resources = [
+                { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
+            ]
 
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            const layer = await config.models.Layer.augmented_from(req.params.layerid);
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.is_auth(config, req, { resources });
+                layer = await layerControl.from(null, req.params.layerid);
+            } else {
+                const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+                layer = await layerControl.from(connection, req.params.layerid);
             }
 
             const status = (await CloudFormation.status(config, req.params.layerid)).status;
@@ -961,8 +970,6 @@ export default async function router(schema: Schema, config: Config) {
             config.events.delete(layer.id);
 
             await config.models.Layer.delete(req.params.layerid);
-
-            await config.cacher.del(`layer-${req.params.layerid}`);
 
             res.json({
                 status: 200,

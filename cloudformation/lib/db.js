@@ -4,11 +4,10 @@ export default {
     Parameters: {
         DatabaseType: {
             Type: 'String',
-            Default: 'db.t4g.micro',
+            Default: 'db.t4g.medium',
             Description: 'Database size to create',
             AllowedValues: [
-                'db.t4g.micro',
-                'db.m6g.large'
+                'db.t4g.medium'
             ]
         }
     },
@@ -25,14 +24,6 @@ export default {
                 },
                 Name: cf.join([cf.stackName, '/rds/secret']),
                 KmsKeyId: cf.ref('KMS')
-            }
-        },
-        DBMasterSecretAttachment: {
-            Type: 'AWS::SecretsManager::SecretTargetAttachment',
-            Properties: {
-                SecretId: cf.ref('DBMasterSecret'),
-                TargetId: cf.ref('DBInstance'),
-                TargetType: 'AWS::RDS::DBInstance'
             }
         },
         DBMonitoringRole: {
@@ -55,36 +46,36 @@ export default {
                 Path: '/'
             }
         },
-        DBInstance: {
-            Type: 'AWS::RDS::DBInstance',
-            DependsOn: ['DBMasterSecret'],
+        DBCluster: {
+            Type: 'AWS::RDS::DBCluster',
             Properties: {
-                Engine: 'postgres',
-                EngineVersion: '17.2',
-                AllowMajorVersionUpgrade: false,
-                DBName: 'tak_ps_etl',
-                CopyTagsToSnapshot: true,
-                DBInstanceIdentifier: cf.stackName,
-                MonitoringInterval: 60,
-                MonitoringRoleArn: cf.getAtt('DBMonitoringRole', 'Arn'),
-                KmsKeyId: cf.ref('KMS'),
-                StorageEncrypted: true,
+                Engine: 'aurora-postgresql',
+                EngineVersion: '17.5',
+                EngineMode: 'provisioned',
+                DatabaseName: 'tak_ps_etl',
+                Port: 5432,
+                NetworkType: 'DUAL',
+                DBClusterIdentifier: cf.stackName,
                 MasterUsername: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
                 MasterUserPassword: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
+                DBSubnetGroupName: cf.ref('DBSubnet'),
                 PreferredMaintenanceWindow: 'Sun:23:00-Sun:23:30',
                 PreferredBackupWindow: '22:00-23:00',
-                EnablePerformanceInsights: true,
-                PerformanceInsightsKMSKeyId: cf.ref('KMS'),
+                PerformanceInsightsEnabled: true,
+                PerformanceInsightsKmsKeyId: cf.ref('KMS'),
                 PerformanceInsightsRetentionPeriod: 7,
-                AllocatedStorage: 200,
-                MaxAllocatedStorage: 200,
-                BackupRetentionPeriod: 10,
-                StorageType: 'gp2',
+                VpcSecurityGroupIds: [cf.ref('DBVPCSecurityGroup')],
+                StorageEncrypted: true,
+                DeletionProtection: true,
+                CopyTagsToSnapshot: true
+            }
+        },
+        DBClusterInstanceA: {
+            Type: 'AWS::RDS::DBInstance',
+            Properties: {
+                DBClusterIdentifier: cf.ref('DBCluster'),
                 DBInstanceClass: cf.ref('DatabaseType'),
-                VPCSecurityGroups: [cf.ref('DBVPCSecurityGroup')],
-                DBSubnetGroupName: cf.ref('DBSubnet'),
-                PubliclyAccessible: false,
-                DeletionProtection: true
+                Engine: 'aurora-postgresql'
             }
         },
         DBSubnet: {
@@ -125,14 +116,14 @@ export default {
     },
     Outputs: {
         DB: {
-            Description: 'Postgres Connection String',
+            Description: 'Postgres Aurora Connection String',
             Value: cf.join([
                 'postgresql://',
                 cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
                 ':',
                 cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
                 '@',
-                cf.getAtt('DBInstance', 'Endpoint.Address'),
+                cf.getAtt('DBCluster', 'Endpoint.Address'),
                 ':5432/tak_ps_etl'
             ])
         }

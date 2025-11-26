@@ -1,9 +1,9 @@
 import path from 'node:path';
+import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import { bbox } from '@turf/bbox';
 import TileJSON, { TileJSONType, TileJSONActions } from '../lib/control/tilejson.js';
-import Auth, { AuthUserAccess, ResourceCreationScope } from '../lib/auth.js';
-import Cacher from '../lib/cacher.js';
+import Auth, { AuthUserAccess, AuthUser, AuthResource, ResourceCreationScope, AuthResourceAccess } from '../lib/auth.js';
 import busboy from 'busboy';
 import Config from '../lib/config.js';
 import { Response } from 'express';
@@ -300,12 +300,17 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Default.NameField,
+            sharing_enabled: Type.Boolean({
+                default: true,
+                description: 'Allow CloudTAK users to share this layer with other users'
+            }),
             collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
             overlay: Type.Boolean({ default: false }),
             tilesize: Type.Integer({ default: 256, minimum: 256, maximum: 512 }),
             attribution: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            frequency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.Enum(Basemap_Format)),
@@ -343,12 +348,18 @@ export default async function router(schema: Schema, config: Config) {
                 username = user.email;
             }
 
-            const basemap = await config.models.Basemap.generate({
+            let basemap = await config.models.Basemap.generate({
                 ...req.body,
                 bounds,
                 center,
                 username
             });
+
+            if (req.body.sharing_enabled) {
+                basemap = await config.models.Basemap.commit(basemap.id, {
+                    sharing_token: `etl.${jwt.sign({ id: basemap.id, access: 'basemap', internal: true, t: +new Date() }, config.SigningSecret)}`
+                })
+            }
 
             res.json({
                 ...basemap,
@@ -373,12 +384,14 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Default.NameField),
+            sharing_enabled: Type.Optional(Type.Boolean()),
             collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             overlay: Type.Optional(Type.Boolean()),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.Optional(Type.String()),
             tilesize: Type.Optional(Type.Integer({ default: 256, minimum: 256, maximum: 512 })),
             attribution: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            frequency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.Enum(Basemap_Format)),
@@ -401,9 +414,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.center) center = { type: 'Point', coordinates: req.body.center };
             if (req.body.url) TileJSON.isValidURL(req.body.url);
 
-            const existing = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
-                return await config.models.Basemap.from(Number(req.params.basemapid))
-            });
+            const existing = await config.models.Basemap.from(req.params.basemapid);
 
             if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -424,14 +435,24 @@ export default async function router(schema: Schema, config: Config) {
                 username = user.email;
             }
 
-            const basemap = await config.models.Basemap.commit(Number(req.params.basemapid), {
+            let basemap = await config.models.Basemap.commit(req.params.basemapid, {
                 username,
                 updated: sql`Now()`,
                 ...req.body,
                 bounds, center,
             });
 
-            await config.cacher.del(`basemap-${req.params.basemapid}`);
+            if (req.body.sharing_enabled !== undefined) {
+                if (req.body.sharing_enabled) {
+                    basemap = await config.models.Basemap.commit(basemap.id, {
+                        sharing_token: basemap.sharing_token || `etl.${jwt.sign({ id: basemap.id, access: 'basemap', internal: true, t: +new Date() }, config.SigningSecret)}`
+                    });
+                } else {
+                    basemap = await config.models.Basemap.commit(basemap.id, {
+                        sharing_token: null
+                    });
+                }
+            }
 
             res.json({
                 ...basemap,
@@ -461,9 +482,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
 
-            const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
-                return await config.models.Basemap.from(Number(req.params.basemapid))
-            });
+            const basemap = await config.models.Basemap.from(req.params.basemapid);
 
             if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -483,7 +502,7 @@ export default async function router(schema: Schema, config: Config) {
                         maxZoom: { _text: basemap.maxzoom },
                         tileType: { _text: basemap.format },
                         tileUpdate: { _text: 'None' },
-                        url: { _text: basemap.url },
+                        url: { _text: TileJSON.proxyShare(config, basemap) },
                         backgroundColor: { _text: '#000000' },
                     }
                 })).to_xml();
@@ -515,14 +534,25 @@ export default async function router(schema: Schema, config: Config) {
         res: AugmentedTileJSONType
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
-
-            const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
-                return await config.models.Basemap.from(Number(req.params.basemapid));
+            const auth = await Auth.is_auth(config, req, {
+                token: true,
+                resources: [
+                    { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid }
+                ]
             });
 
-            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
-                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            const basemap = await config.models.Basemap.from(req.params.basemapid);
+
+            if (auth instanceof AuthUser) {
+                if (basemap.username && basemap.username !== auth.email && auth.access === AuthUserAccess.USER) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
+            } else if (auth instanceof AuthResource) {
+                if (basemap.sharing_enabled === false) {
+                    throw new Err(400, null, `Sharing for ${basemap.name} is disabled`);
+                } else if (basemap.sharing_token !== auth.token) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
             }
 
             let url: string;
@@ -565,14 +595,25 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
-
-            const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
-                return await config.models.Basemap.from(Number(req.params.basemapid));
+            const auth = await Auth.is_auth(config, req, {
+                token: true,
+                resources: [
+                    { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid }
+                ]
             });
 
-            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
-                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            const basemap = await config.models.Basemap.from(req.params.basemapid);
+
+            if (auth instanceof AuthUser) {
+                if (basemap.username && basemap.username !== auth.email && auth.access === AuthUserAccess.USER) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
+            } else if (auth instanceof AuthResource) {
+                if (basemap.sharing_enabled === false) {
+                    throw new Err(400, null, `Sharing for ${basemap.name} is disabled`);
+                } else if (basemap.sharing_token !== auth.token) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
             }
 
             return await TileJSON.tile(
@@ -610,9 +651,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
 
-            const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
-                return await config.models.Basemap.from(Number(req.params.basemapid))
-            });
+            const basemap = await config.models.Basemap.from(req.params.basemapid);
 
             if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -642,9 +681,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
 
-            const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
-                return await config.models.Basemap.from(Number(req.params.basemapid))
-            });
+            const basemap = await config.models.Basemap.from(req.params.basemapid);
 
             if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -668,9 +705,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
-                return await config.models.Basemap.from(Number(req.params.basemapid));
-            });
+            const basemap = await config.models.Basemap.from(req.params.basemapid);
 
             if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -678,9 +713,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
-            await config.models.Basemap.delete(Number(req.params.basemapid));
-
-            await config.cacher.del(`basemap-${req.params.basemapid}`);
+            await config.models.Basemap.delete(req.params.basemapid);
 
             res.json({
                 status: 200,

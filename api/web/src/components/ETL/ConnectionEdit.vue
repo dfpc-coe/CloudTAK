@@ -121,8 +121,8 @@
                                             <AgencySelect
                                                 v-if='!agencyDisabled'
                                                 v-model='connection.agency'
-                                                @disabled='disableAgency'
                                                 label='Agency Owner'
+                                                @disabled='disableAgency'
                                             />
                                         </div>
                                     </div>
@@ -147,7 +147,7 @@
                                                     <div class='ms-auto'>
                                                         <TablerIconButton
                                                             title='Remove Certificate'
-                                                            @click='marti({ key: "", cert: ""})'
+                                                            @click='certificateAttachment({ ca: [], key: "", cert: ""})'
                                                         >
                                                             <IconTrash
                                                                 :size='32'
@@ -228,28 +228,28 @@
                                                 </div>
                                                 <template v-if='type === "raw"'>
                                                     <CertificateRaw
-                                                        @certs='marti($event)'
+                                                        @certs='certificateAttachment($event)'
                                                         @err='err = $event'
                                                     />
                                                 </template>
                                                 <template v-else-if='type === "p12"'>
                                                     <CertificateP12
                                                         class='mx-2'
-                                                        @certs='p12upload($event)'
+                                                        @certs='certificateAttachment($event)'
                                                         @err='err = $event'
                                                     />
                                                 </template>
                                                 <template v-else-if='type === "login"'>
                                                     <CertificateLogin
-                                                        @certs='marti($event)'
+                                                        @certs='certificateAttachment($event)'
                                                         @err='err = $event'
                                                     />
                                                 </template>
                                                 <template v-else-if='!agencyDisabled && type === "creation"'>
                                                     <CertificateMachineUser
                                                         :connection='connection'
-                                                        @certs='p12upload($event)'
-                                                        @integration='creation($event)'
+                                                        @certs='certificateAttachment($event)'
+                                                        @integration='integrationAttachment($event)'
                                                         @err='err = $event'
                                                     />
                                                 </template>
@@ -358,7 +358,11 @@ const connection = ref({
     description: '',
     enabled: true,
     integrationId: undefined,
-    auth: { cert: '', key: '' }
+    auth: {
+        ca: [],
+        cert: '',
+        key: ''
+    }
 });
 
 const isNextReady = computed(() => {
@@ -388,25 +392,21 @@ function disableAgency() {
 async function fetch() {
     loading.value = true;
     connection.value = await std(`/api/connection/${route.params.connectionid}`);
-    connection.value.auth = { cert: '', key: '' }
+    connection.value.auth = {
+        ca: [],
+        cert: '',
+        key: ''
+    }
     loading.value = false;
 }
 
-function creation(integration) {
-    connection.value.integrationId = integration.integrationId;
-    connection.value.auth.cert = integration.certs.cert;
-    connection.value.auth.key = integration.certs.key;
+function integrationAttachment(integration) {
+    connection.value.integrationId = integration;
 }
 
-function marti(certs) {
-    connection.value.integrationId = null;
-    connection.value.auth.cert = certs.cert;
-    connection.value.auth.key = certs.key;
-}
-
-async function p12upload(certs) {
+function certificateAttachment(certs) {
     modal.value.upload = false;
-    connection.value.integrationId = null;
+    connection.value.auth.ca = certs.ca;
     connection.value.auth.cert = certs.cert;
     connection.value.auth.key = certs.key;
 }

@@ -1,7 +1,11 @@
 import type Atlas from './atlas.ts';
 import { std, stdurl } from '../std.ts';
 import type COT from '../base/cot.ts';
-import { WorkerMessageType } from '../base/events.ts';
+import TAKNotification, { NotificationType } from '../base/notification.ts';
+import {
+    WorkerMessageType
+} from '../base/events.ts';
+
 import type { ContactList, Contact } from '../types.ts';
 
 export default class AtlasTeam {
@@ -45,15 +49,13 @@ export default class AtlasTeam {
             });
 
             if (this.atlas.profile.uid() !== cot.id) {
-                this.atlas.postMessage({
-                    type: WorkerMessageType.Notification,
-                    body: {
-                        type: 'Contact',
-                        name: `${cot.properties.callsign} Online`,
-                        body: '',
-                        url: `/cot/${cot.id}`
-                    }
-                });
+                await TAKNotification.create(
+                    NotificationType.Contact,
+                    'Online Contact',
+                    `${cot.properties.callsign} is now Online`,
+                    `/cot/${cot.id}`,
+                    false
+                );
             }
 
             return contact;

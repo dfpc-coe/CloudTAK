@@ -2,6 +2,10 @@ import test from 'tape';
 import Flight from './flight.js';
 import Sinon from 'sinon';
 import {
+    ECRClient,
+    BatchGetImageCommand,
+} from '@aws-sdk/client-ecr';
+import {
     DescribeStacksCommand,
     CloudFormationClient
 } from '@aws-sdk/client-cloudformation';
@@ -64,6 +68,27 @@ test('POST: api/connection/1/layer', async (t) => {
                 });
 
                 return Promise.resolve({});
+            } else {
+                throw new Error('Unexpected command');
+            }
+        });
+
+        Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
+            if (command instanceof BatchGetImageCommand) {
+                t.deepEquals(command.input, {
+                    repositoryName: 'coe-ecr-etl-tasks',
+                    imageIds: [{ imageTag: 'etl-test-v1.0.0' }]
+                });
+
+                return Promise.resolve({
+                    images: [{
+                        imageId: {
+                            imageTag: 'etl-test-v1.0.0',
+                            imageDigest: 'sha256:abcdef1234567890'
+                        },
+                        imageManifest: '{}'
+                    }]
+                });
             } else {
                 throw new Error('Unexpected command');
             }

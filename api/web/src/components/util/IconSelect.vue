@@ -35,13 +35,19 @@
             v-if='loading.iconset'
             desc='Loading Iconsets'
         />
+        <TablerNone
+            v-else-if='sets.length === 0'
+            label='Iconsets Loaded'
+            :compact='true'
+            :create='false'
+        />
         <template v-else>
             <div class='d-flex align-items-center'>
                 <template v-if='selected.name'>
                     <div class='d-flex align-items-center'>
                         <div>
                             <img
-                                :src='iconurl(selected)'
+                                :src='selected.data'
                                 style='width: 25px; height: auto; margin-right: 5px;'
                             >
                         </div>
@@ -125,7 +131,7 @@
                                         >
                                             <img
                                                 v-tooltip='icon.name'
-                                                :src='iconurl(icon)'
+                                                :src='icon.data'
                                                 style='width: 25px; height: 25px; margin-right: 5px;'
                                             >
                                         </div>
@@ -152,6 +158,7 @@ import {
 import {
     TablerHelp,
     TablerEnum,
+    TablerNone,
     TablerInput,
     TablerDropdown,
     TablerLoading
@@ -214,7 +221,12 @@ const setsName = computed(() => {
 });
 
 watch(selected, () => {
-    emit('update:modelValue', selected.value.path);
+    if (selected.value.path.endsWith('.png')) {
+        emit('update:modelValue', selected.value.path);
+    } else {
+        // Replace any extension with PNG for sprites
+        emit('update:modelValue', selected.value.path.replace(/\.[^/.]+$/, ".png"));
+    }
 }, { deep: true })
 
 watch(params.value, async () => {
@@ -237,14 +249,8 @@ function removeIcon() {
     selected.value.name = '';
 }
 
-function iconurl(icon) {
-    const url = stdurl(`/api/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}/raw`);
-    url.searchParams.append('token', localStorage.token);
-    return String(url);
-}
-
 async function fetch() {
-    // This is unfortuantely but the CloudTAK Map uses the MapLibre Icon format
+    // This is unfortuante but the CloudTAK Map uses the MapLibre Icon format
     // While the backend uses the TAK Icon Format
     if (
         props.modelValue
@@ -256,7 +262,7 @@ async function fetch() {
     ) {
         let path = props.modelValue;
 
-        // MapLibre needs the palette name seperated by a ":" isntead of a "/"
+        // MapLibre needs the palette name seperated by a ":" instead of a "/"
         if (path.includes(':')) path = path.split(':').join('/') + '.png';
 
         const iconset = path.split('/')[0];
@@ -271,7 +277,9 @@ async function Iconlistsets() {
     const url = stdurl('/api/iconset');
     url.searchParams.append('limit', 50);
     sets.value = (await std(url)).items;
-    params.value.iconset = sets.value[0].name;
+    if (sets.value.length) {
+        params.value.iconset = sets.value[0].name;
+    }
     loading.value.iconsets = false;
 }
 

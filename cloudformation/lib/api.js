@@ -181,6 +181,7 @@ export default {
                                 'ecr:Describe*',
                                 'ecr:Get*',
                                 'ecr:BatchDeleteImage',
+                                'ecr:BatchGetImage',
                                 'ecr:List*'
                             ],
                             Resource: [
@@ -193,6 +194,7 @@ export default {
                                 'sqs:SendMessage',
                                 'sqs:SendMessageBatch',
                                 'sqs:ChangeMessageVisibility',
+                                'sqs:UntagQueue',
                                 'sqs:GetQueueUrl',
                                 'sqs:GetQueueAttributes',
                                 'sqs:DeleteMessage'
@@ -268,6 +270,7 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'cloudwatch:UntagResource',
                                 'cloudwatch:Describe*'
                             ],
                             Resource: [
@@ -315,6 +318,7 @@ export default {
                                 'logs:CreateLogGroup',
                                 'logs:DeleteLogGroup',
                                 'logs:PutRetentionPolicy',
+                                'logs:UntagResource',
                                 'logs:List*',
                                 'logs:Describe*',
                                 'logs:Get*'
@@ -398,7 +402,7 @@ export default {
         },
         TaskDefinition: {
             Type: 'AWS::ECS::TaskDefinition',
-            DependsOn: ['SigningSecret', 'MediaSecret'],
+            DependsOn: ['SigningSecret'],
             Properties: {
                 Family: cf.stackName,
                 Cpu: cf.ref('ComputeCpu'),
@@ -426,7 +430,7 @@ export default {
                                 ':',
                                 cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
                                 '@',
-                                cf.getAtt('DBInstance', 'Endpoint.Address'),
+                                cf.getAtt('DBCluster', 'Endpoint.Address'),
                                 ':5432/tak_ps_etl?sslmode=require'
                             ])
                         },

@@ -1,5 +1,5 @@
 /*
-* ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
+* AtlasConnection - Maintain the WebSocket connection with CloudTAK Server
 */
 
 import { std } from '../std.ts';
@@ -14,7 +14,6 @@ import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import type { Polygon } from 'geojson';
 import type { InputFeature, Feature, APIList } from '../types.ts';
-import type { Mission, MissionRole } from '../types.ts';
 
 type NestedArray = {
     path: string;
@@ -27,12 +26,7 @@ export default class AtlasDatabase {
     cots: Map<string, COT>;
 
     // Stores Active Mission if present
-    mission?: Subscription;
-
-    hidden: Set<string>;
-
-    // Store ImageIDs currently loaded in MapLibre
-    images: Set<string>;
+    mission?: string;
 
     pendingCreate: Map<string, COT>;
     pendingUpdate: Map<string, COT>;
@@ -40,7 +34,6 @@ export default class AtlasDatabase {
     pendingUnhide: Set<string>;
     pendingDelete: Set<string>;
 
-    subscriptions: Map<string, Subscription>;
     subscriptionPending: Map<string, string>;
 
     constructor(atlas: Atlas) {
@@ -48,106 +41,39 @@ export default class AtlasDatabase {
 
         this.cots = new Map();
 
-        this.hidden = new Set();
-
-        this.images = new Set();
-
         this.pendingCreate = new Map();
         this.pendingUpdate = new Map();
         this.pendingUnhide = new Set();
         this.pendingHidden = new Set();
         this.pendingDelete = new Set();
 
-        this.subscriptions = new Map();
         this.subscriptionPending = new Map(); // UID, Mission Guid
-
     }
 
     async makeActiveMission(guid? : string): Promise<void> {
         if (guid) {
-            this.mission = await this.subscriptionGet(guid);
+            this.mission = guid;
         } else {
             this.mission = undefined;
         }
     }
 
+    /**
+     * Only Called by non-Mission CoTs, caller is responsible for creating Filters
+     */
     async hide(id: string): Promise<void> {
         this.pendingHidden.add(id);
     }
 
+    /**
+     * Only Called by non-Mission CoTs, caller is responsible for removing Filters
+     */
     async unhide(id: string): Promise<void> {
-        this.hidden.delete(id);
         this.pendingUnhide.add(id);
-    }
-
-    async hasIcon(icon: string): Promise<boolean> {
-        return this.images.has(icon);
     }
 
     async init(): Promise<void> {
         await this.loadArchive()
-    }
-
-    /**
-     * Return a list of Subscription GUIDs
-     * @param opts - Options
-     * @param opts.dirty - If true return only subscriptions that have changed
-     */
-    async subscriptionListUid(opts?: {
-        dirty: boolean
-    }): Promise<Set<string>> {
-        if (!opts) opts = { dirty: false };
-
-        return new Set(Array.from(this.subscriptions.values())
-            .filter((sub) => {
-                if (!opts.dirty) return true;
-                return sub._dirty;
-            })
-           .map((sub) => {
-                return sub.meta.guid
-            }));
-    }
-
-    async subscriptionClean(guid: string): Promise<boolean> {
-        const sub = this.subscriptions.get(guid);
-        if (!sub) return false;
-
-        sub._dirty = false;
-
-        return true;
-    }
-
-    async subscriptionList(): Promise<Array<{
-        meta: Mission
-        role: MissionRole
-    }>> {
-
-        return Array.from(this.subscriptions.values()).map((sub) => {
-            return {
-                meta: sub.meta,
-                role: sub.role
-            }
-        });
-    }
-
-    async subscriptionLoad(guid: string, token?: string): Promise<Subscription> {
-        const sub = await Subscription.load(this.atlas, guid, token);
-        this.subscriptions.set(guid, sub);
-        return sub;
-    }
-
-    async subscriptionGet(id: string): Promise<Subscription | undefined> {
-        return this.subscriptions.get(id);
-    }
-
-    async subscriptionDelete(id: string): Promise<void> {
-        this.subscriptions.delete(id);
-    }
-
-    updateImages(images: Array<string>): void {
-        for (const image of images) {
-            this.images.add(image);
-        }
     }
 
     /**
@@ -194,7 +120,6 @@ export default class AtlasDatabase {
             const stale = new Date(cot.properties.stale).getTime();
 
             if (this.pendingHidden.has(String(cot.id))) {
-                this.hidden.add(cot.id);
                 diff.remove.push(cot.vectorId())
                 this.pendingHidden.delete(cot.id);
             } else if (
@@ -271,7 +196,7 @@ export default class AtlasDatabase {
         this.pendingCreate.clear();
 
         for (const id of this.pendingDelete) {
-            const cot = this.get(id);
+            const cot = await this.get(id);
             if (!cot) continue;
 
             diff.remove.push(cot.vectorId());
@@ -329,13 +254,21 @@ export default class AtlasDatabase {
         }
 
         if (opts.mission) {
-            for (const sub of this.subscriptions.keys()) {
-                const store = this.subscriptions.get(sub);
+            for (const sub of await Subscription.localList({
+                subscribed: true
+            })) {
+                const store = await Subscription.from(sub.guid, this.atlas.token, {
+                    subscribed: true
+                });
+
                 if (!store) continue;
 
-                for (const cot of store.cots.values()) {
-                    if (await expression.evaluate(cot.as_feature()) === true) {
-                        cots.add(cot);
+                for (const feat of await store.feature.list()) {
+                    if (await expression.evaluate(feat) === true) {
+                        cots.add(await COT.load(this.atlas, feat, {
+                            mode: OriginMode.MISSION,
+                            mode_id: sub.guid
+                        }));
                     }
                 }
             }
@@ -443,7 +376,7 @@ export default class AtlasDatabase {
             skipNetwork: false
         }
     ): Promise<void> {
-        const cot = this.get(id, {
+        const cot = await this.get(id, {
             mission: opts.mission
         });
 
@@ -469,10 +402,12 @@ export default class AtlasDatabase {
                 }
             }
         } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-            const subscription = await this.subscriptionGet(cot.origin.mode_id);
+            const subscription = await Subscription.from(cot.origin.mode_id, this.atlas.token, {
+                subscribed: true
+            });
             if (!subscription) throw new Error('Could not delete as Mission Subscription does not exist');
 
-            await subscription.deleteFeature(cot.id, {
+            await subscription.feature.delete(this.atlas, cot.id, {
                 skipNetwork: opts.skipNetwork
             });
         }
@@ -518,13 +453,16 @@ export default class AtlasDatabase {
                 if (change.type === 'ADD_CONTENT') {
                     this.subscriptionPending.set(change.contentUid, task.properties.mission.guid);
                 } else if (change.type === 'REMOVE_CONTENT') {
-                    const sub = this.subscriptions.get(task.properties.mission.guid);
+                    const sub = await Subscription.from(task.properties.mission.guid, this.atlas.token, {
+                        subscribed: true
+                    });
                     if (!sub) {
                         console.error(`Cannot remove ${change.contentUid} from ${task.properties.mission.guid} as it's not in memory`);
                         continue;
                     }
 
-                    await sub.deleteFeature(change.contentUid, {
+                    await sub.feature.delete(this.atlas, change.contentUid, {
+                        // This is critical to ensure a recursive loop of doesn't occur
                         skipNetwork: true
                     });
 
@@ -541,13 +479,16 @@ export default class AtlasDatabase {
                 });
             }
         } else if (task.properties.type === 't-x-m-c-l' && task.properties.mission && task.properties.mission.guid) {
-            const sub = this.subscriptions.get(task.properties.mission.guid);
+            const sub = await Subscription.from(task.properties.mission.guid, this.atlas.token, {
+                subscribed: true
+            });
+
             if (!sub) {
                 console.error(`Cannot refresh ${task.properties.mission.guid} logs as it is not subscribed`);
                 return;
             }
 
-            await sub.updateLogs();
+            await sub.log.refresh();
         } else {
             console.warn('Unknown Mission Task', JSON.stringify(task));
         }
@@ -561,7 +502,7 @@ export default class AtlasDatabase {
      * @param opts - Optional Options
      * @param opts.skipSave - Don't save the COT to the Profile Feature Database
      * @param opts.skipBroadcast - Don't broadcast the COT on the internal message bus to the UI
-     * @param opts.authored - If the COT is new, append creator information & potentially add it to a mission
+     * @param opts.authored - If the COT is authored, append creator information if the CoT is new & potentially add it to a mission
      */
     async add(
         feature: InputFeature,
@@ -577,26 +518,35 @@ export default class AtlasDatabase {
 
         const feat = feature as Feature;
 
-        if (opts.authored) {
-            feat.properties.creator = await this.atlas.profile.creator();
-        }
-
         // Check if CoT exists
-        let exists = this.get(feat.properties.id, {
+        let exists = await this.get(feat.properties.id, {
             mission: true
         });
 
+        if (opts.authored && !exists) {
+            feat.properties.creator = await this.atlas.profile.creator();
+        }
+
         // New CoT destined for a Mission
-        if (!exists && (
-            (this.mission && opts.authored) // New CoT and we have an active Mission
-            || (feat.origin && feat.origin.mode === "Mission" && feat.origin.mode_id)
-            || this.subscriptionPending.get(feat.id)
-       )) {
+        if (
+            !exists && (
+                (this.mission && opts.authored) // Authored CoT and we have an active Mission
+                || (
+                    feat.origin && feat.origin.mode === "Mission"
+                    && feat.origin.mode_id
+                )
+                || this.subscriptionPending.get(feat.id)
+            )
+            || exists && (
+                exists.origin.mode === OriginMode.MISSION
+                && exists.origin.mode_id
+            )
+        ) {
             const pendingGuid = this.subscriptionPending.get(feat.id);
             this.subscriptionPending.delete(feat.id);
 
             const mission_guid =
-                this.mission?.meta.guid // An Active Mission
+                this.mission // An Active Mission
                 || pendingGuid
                 || feat.origin?.mode_id; // The feature has a Mission Origin
 
@@ -604,19 +554,29 @@ export default class AtlasDatabase {
                 throw new Error(`Cannot add ${feat.id} to a mission as no mission GUID was found - Please report this error`);
             }
 
-            const sub = this.subscriptions.get(mission_guid);
+            const sub = await Subscription.from(mission_guid, this.atlas.token, {
+                subscribed: true
+            });
 
             if (!sub) {
                 throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
             }
 
-            const cot = new COT(this.atlas, feat, {
-                mode: OriginMode.MISSION,
-                mode_id: mission_guid
-            }, opts);
+            if (!exists) {
+                exists = await COT.load(this.atlas, feat, {
+                    mode: OriginMode.MISSION,
+                    mode_id: mission_guid
+                }, opts);
+            } else {
+                await exists.update({
+                    path: feat.path,
+                    properties: feat.properties,
+                    geometry: feat.geometry
+                }, { skipSave: opts.skipSave })
+            }
 
-            await sub.updateFeature(cot, {
-                skipNetwork: !!pendingGuid
+            await sub.feature.update(this.atlas, exists, {
+                skipNetwork: !opts.authored
             });
 
             this.atlas.postMessage({
@@ -626,27 +586,16 @@ export default class AtlasDatabase {
                 }
             });
 
-            return cot;
-        } else if (exists && exists.origin.mode === OriginMode.MISSION && exists.origin.mode_id) {
-            // Existing CoT that belongs to a Mission
-            const sub = this.subscriptions.get(exists.origin.mode_id || '');
-
-            if (!sub) {
-                throw new Error(`Cannot update ${feat.properties.id} in mission ${exists.origin.mode_id} as it is not loaded`)
-            }
-
-            await exists.update(feat)
-            await sub.updateFeature(exists);
             return exists;
         } else {
             if (exists) {
-                exists.update({
+                await exists.update({
                     path: feat.path,
                     properties: feat.properties,
                     geometry: feat.geometry
                 }, { skipSave: opts.skipSave })
             } else {
-                exists = new COT(this.atlas, feat, {
+                exists = await COT.load(this.atlas, feat, {
                     mode: OriginMode.CONNECTION
                 }, opts);
 
@@ -672,14 +621,16 @@ export default class AtlasDatabase {
      * @param opts - Options
      * @param opts.mission - If true, search Mission Stores for the CoT
      */
-    get(
+    async get(
         id: string,
         opts: {
             mission?: boolean,
         } = {
             mission: false
         }
-    ): COT | undefined {
+    ): Promise<COT | undefined> {
+        if (!id) throw new Error('Cannot get marker without an ID');
+
         if (!opts) opts = {};
 
         let cot = this.cots.get(id);
@@ -687,14 +638,25 @@ export default class AtlasDatabase {
         if (cot) {
             return cot;
         } else if (opts.mission) {
-            for (const sub of this.subscriptions.keys()) {
-                const store = this.subscriptions.get(sub);
-                if (!store) continue;
-                cot = store.cots.get(id);
+            for (const sub of await Subscription.localList({
+                subscribed: true
+            })) {
+                const store = await Subscription.from(sub.guid, this.atlas.token, {
+                    subscribed: true
+                });
 
-                if (cot) {
-                    return cot;
-                }
+                if (!store) continue;
+
+                const feat = await store.feature.from(id);
+
+                if (!feat) continue;
+
+                cot = await COT.load(this.atlas, feat, {
+                    mode: OriginMode.MISSION,
+                    mode_id: sub.guid
+                });
+
+                return cot;
             }
         }
 

@@ -18,6 +18,7 @@
             <StyleTemplate
                 v-if='enabled.id'
                 v-model='filters.id'
+                placeholder='Global ID Field'
                 :rows='1'
                 :disabled='disabled'
                 :schema='props.schema'
@@ -25,7 +26,7 @@
         </div>
 
         <div class='col-md-12 hover rounded px-2 py-2'>
-            <div class='col-12 d-flex align-items-center'> 
+            <div class='col-12 d-flex align-items-center'>
                 <label class='user-select-none subheader'><IconBlockquote
                     :size='20'
                     stroke='1'
@@ -42,7 +43,87 @@
             <StyleTemplate
                 v-if='enabled.callsign'
                 v-model='filters.callsign'
+                placeholder='Global Callsign Field'
                 :rows='1'
+                :disabled='disabled'
+                :schema='props.schema'
+            />
+        </div>
+
+        <div class='col-md-12 hover rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label class='user-select-none subheader'><IconClock
+                    :size='20'
+                    stroke='1'
+                /> Global Stale Value</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='enabled.stale'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='enabled.stale'
+                v-model='filters.stale'
+                placeholder='Stale Value (Seconds or ISO Date)'
+                :rows='1'
+                :disabled='disabled'
+                :schema='props.schema'
+            />
+            <label
+                v-if='enabled.stale && typeof filters.stale === "number"'
+                v-text='humanSeconds(filters.stale)'
+            />
+        </div>
+
+        <div class='col-md-12 hover rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label class='user-select-none subheader'><IconEye
+                    :size='20'
+                    stroke='1'
+                /> Global Min Zoom</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='enabled.minzoom'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='enabled.minzoom'
+                v-model='filters.minzoom'
+                :rows='1'
+                placeholder='Min Zoom (0-24)'
+                :disabled='disabled'
+                :schema='props.schema'
+            />
+        </div>
+
+        <div class='col-md-12 hover rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label class='user-select-none subheader'><IconEye
+                    :size='20'
+                    stroke='1'
+                /> Global Max Zoom</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='enabled.maxzoom'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='enabled.maxzoom'
+                v-model='filters.maxzoom'
+                :rows='1'
+                placeholder='Max Zoom (0-24)'
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -199,6 +280,86 @@
                 :schema='props.schema'
             />
         </div>
+
+        <div class='col-md-12 hover rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label class='user-select-none subheader'><IconClock
+                    :size='20'
+                    stroke='1'
+                /> Stale Value</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='filters[mode].enabled.stale'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='filters[mode].enabled.stale'
+                v-model='filters[mode].properties.stale'
+                placeholder='Stale Value (Seconds or ISO Date)'
+                :rows='1'
+                :disabled='disabled'
+                :schema='props.schema'
+            />
+            <label
+                v-if='filters[mode].enabled.stale && typeof filters[mode].properties.stale === "number"'
+                v-text='humanSeconds(filters[mode].enabled.stale)'
+            />
+        </div>
+
+        <div class='col-md-12 hover rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label class='user-select-none subheader'><IconEye
+                    :size='20'
+                    stroke='1'
+                /> Min Zoom</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='filters[mode].enabled.minzoom'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='filters[mode].enabled.minzoom'
+                v-model='filters[mode].properties.minzoom'
+                :rows='1'
+                placeholder='Min Zoom (0-24)'
+                :disabled='disabled'
+                :schema='props.schema'
+            />
+        </div>
+
+        <div class='col-md-12 hover rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label class='user-select-none subheader'><IconEye
+                    :size='20'
+                    stroke='1'
+                /> Max Zoom</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model=' filters[mode].enabled.minzoom'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='filters[mode].enabled.minzoom'
+                v-model='filters[mode].properties.minzoom'
+                :rows='1'
+                placeholder='Max Zoom (0-24)'
+                :disabled='disabled'
+                :schema='props.schema'
+            />
+        </div>
+
 
         <div class='col-md-12 hover rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
@@ -505,6 +666,7 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue';
+import { humanSeconds } from '../../../../std.js';
 import StyleTemplate from './StyleTemplate.vue';
 import {
     IconLink,
@@ -513,6 +675,8 @@ import {
     IconPoint,
     IconPhoto,
     IconLine,
+    IconClock,
+    IconEye,
     IconPolygon,
     IconCategory,
     IconBorderStyle2,
@@ -553,6 +717,9 @@ const mode = ref('point');
 
 const enabled = ref({
     id: false,
+    stale: false,
+    minzoom: false,
+    maxzoom: false,
     remarks: false,
     callsign: false,
     links: false,
@@ -562,12 +729,18 @@ const filters = ref({
     id: '',
     callsign: '',
     remarks: '',
+    stale: '20',
+    minzoom: 0,
+    maxzoom: 24,
     links: [],
     point: {
         enabled: {
             id: false,
             icon: false,
             links: false,
+            stale: false,
+            minzoom: false,
+            maxzoom: false,
             'marker-color': false,
             'marker-opacity': false,
             remarks: false,
@@ -576,6 +749,9 @@ const filters = ref({
         properties: {
             id: '',
             icon: '',
+            stale: '20',
+            minzoom: 0,
+            maxzoom: 24,
             'marker-color': '#d63939',
             'marker-opacity': 1,
             remarks: '',
@@ -590,6 +766,9 @@ const filters = ref({
             'stroke-style': false,
             'stroke-opacity': false,
             'stroke-width': false,
+            stale: false,
+            minzoom: false,
+            maxzoom: false,
             links: false,
             remarks: false,
             callsign: false
@@ -600,6 +779,9 @@ const filters = ref({
             'stroke-style': 'solid',
             'stroke-opacity': 1,
             'stroke-width': 3,
+            stale: '20',
+            minzoom: 0,
+            maxzoom: 24,
             remarks: '',
             callsign: '',
             links: []
@@ -612,6 +794,9 @@ const filters = ref({
             'stroke-style': false,
             'stroke-opacity': false,
             'stroke-width': false,
+            stale: false,
+            minzoom: false,
+            maxzoom: false,
             fill: false,
             links: false,
             'fill-opacity': false,
@@ -626,6 +811,9 @@ const filters = ref({
             'stroke-width': 3,
             'fill': '#d63939',
             'fill-opacity': 1,
+            stale: '20',
+            minzoom: 0,
+            maxzoom: 24,
             remarks: '',
             callsign: '',
             links: []
@@ -637,8 +825,8 @@ watch(enabled.value, format);
 watch(filters.value, format);
 
 onMounted(() => {
-    for (const prop of ['id', 'remarks', 'callsign', 'links']) {
-        if (!props.modelValue[prop] || (Array.isArray(props.modelValue[prop]) && props.modelValue[prop].length === 0)) {
+    for (const prop of ['id', 'remarks', 'callsign', 'links', 'minzoom', 'maxzoom', 'stale']) {
+        if (props.modelValue[prop] === undefined || (Array.isArray(props.modelValue[prop]) && props.modelValue[prop].length === 0)) {
             continue;
         }
 
@@ -666,9 +854,14 @@ function format() {
 
     const res = {};
 
-    for (const prop of ['id', 'remarks', 'callsign', 'links']) {
+    for (const prop of ['id', 'remarks', 'callsign', 'links', 'minzoom', 'maxzoom', 'stale']) {
         if (!enabled.value[prop]) continue;
-        res[prop] = styles[prop];
+
+        if (['minzoom', 'maxzoom', 'stale'].includes(prop) && !isNaN(Number(styles[prop]))) {
+            res[prop] = Number(styles[prop]);
+        } else {
+            res[prop] = styles[prop];
+        }
     }
 
     for (const geom of ['point', 'line', 'polygon']) {
@@ -676,7 +869,9 @@ function format() {
         for (const key in styles[geom].enabled) {
             if (!styles[geom].enabled[key]) continue;
 
-            if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
+            if (['minzoom', 'maxzoom', 'stale'].includes(key) && !isNaN(Number(styles[geom][key]))) {
+                styles[geom][key] = Number(styles[geom][key]);
+            } else if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
                 if (styles[geom].properties[key] !== undefined) res[geom][key] = Number(styles[geom].properties[key])
             } else if (['remarks', 'callsign'].includes(key)) {
                 if (styles[geom].properties[key]) res[geom][key] = styles[geom].properties[key];

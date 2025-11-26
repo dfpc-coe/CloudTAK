@@ -25,7 +25,7 @@
                     v-if='backType === "back"'
                     title='Close Menu'
                     icon='IconCircleArrowLeft'
-                    @click='router.back()'
+                    @click='routerBack'
                 >
                     <IconCircleArrowLeft
                         :size='32'
@@ -35,7 +35,7 @@
                 <div v-else />
 
                 <div
-                    class='modal-title d-flex mx-auto user-select-none'
+                    class='strong d-flex mx-auto user-select-none'
                     v-text='name'
                 />
                 <div class='col-auto btn-list align-items-center'>
@@ -45,7 +45,7 @@
         </div>
 
         <div
-            class='col-12 overflow-auto'
+            class='row mx-0 d-flex flex-row overflow-y-auto overflow-x-hidden align-content-start'
             style='height: calc(100vh - 114px)'
         >
             <TablerLoading
@@ -106,6 +106,14 @@ const props = defineProps({
         default: false,
     }
 });
+
+function routerBack() {
+    if (!router.options.history.state.back || String(router.options.history.state.back).startsWith('/login')) {
+        router.push("/")
+    } else {
+        router.back();
+    }
+}
 
 const backType = computed(() => {
     if (!props.back) return "none";

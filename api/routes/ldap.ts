@@ -4,6 +4,7 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
+import { ConnectionAuth } from '../lib/connection-config.js';
 import { Channel, ChannelAccess } from '../lib/external.js';
 import { TAKAPI, APIAuthPassword, } from '@tak-ps/node-tak';
 
@@ -55,10 +56,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             integrationId: Type.Optional(Type.Integer()),
-            auth: Type.Object({
-                cert: Type.String(),
-                key: Type.String()
-            })
+            auth: ConnectionAuth
         })
     }, async (req, res) => {
         try {
@@ -119,10 +117,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             integrationId: Type.Optional(Type.Integer()),
-            auth: Type.Object({
-                cert: Type.String(),
-                key: Type.String()
-            })
+            auth: ConnectionAuth
         })
     }, async (req, res) => {
         try {

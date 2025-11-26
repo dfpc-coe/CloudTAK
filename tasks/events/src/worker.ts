@@ -49,7 +49,7 @@ export default class Worker extends EventEmitter {
                 fs.createWriteStream(local.raw)
             );
 
-            if (await isZipFile(local.raw) && !local.raw.endsWith('.kmz')) {
+            if (await isZipFile(local.raw)) {
                 await this.processArchive(local);
             } else {
                 await this.processFile(local)
@@ -76,8 +76,21 @@ export default class Worker extends EventEmitter {
      */
     async processArchive(local: LocalMessage): Promise<void> {
         const pkg = await DataPackage.parse(local.raw, {
+            cleanup: false,
             strict: false
         });
+
+        // If a .kml is present at the root level, assume an actual KMZ and process as a single file upload
+        if (pkg.contents.some((content) => {
+            const p = path.parse(content._attributes.zipEntry);
+            return !p.dir && p.ext.toLowerCase() === '.kml'
+        })) {
+            return await this.processFile(local)
+        }
+
+        // We disable cleanup in the parser just in case we choose to
+        // treat it as a single file upload above
+        fs.unlinkSync(local.raw);
 
         const s3 = s3client();
 
@@ -255,6 +268,18 @@ export default class Worker extends EventEmitter {
             }
 
             for (const icon of iconset.icons()) {
+                const ext = path.parse(icon.name).ext;
+
+                let prefix = 'data:';
+                if (ext === '.png') {
+                    prefix += 'image/png;base64,';
+                } else if (ext === '.svg') {
+                    prefix += 'image/svg+xml;base64,';
+                } else {
+                    console.warn(`Iconset ${iconset.name} (${iconset.uid}) - Unsupported icon type for ${icon.name}: ${ext}`);
+                    continue;
+                }
+
                 const icon_req = await fetch(new URL(`/api/iconset/${iconset.uid}/icon`, this.msg.api), {
                     method: 'POST',
                     headers: {
@@ -265,7 +290,7 @@ export default class Worker extends EventEmitter {
                         name: lookup.get(icon.name),
                         path: `${iconset.uid}/${lookup.get(icon.name)}`,
                         type2525b: icon.type2525b || null,
-                        data: (await pkg.getFileBuffer(lookup.get(icon.name))).toString('base64')
+                        data: `${prefix}${(await pkg.getFileBuffer(lookup.get(icon.name))).toString('base64')}`
                     })
                 });
 

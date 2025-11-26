@@ -62,21 +62,33 @@
                                                     :status='imp.status'
                                                 />
 
-                                                <span
-                                                    class='ms-2'
-                                                    v-text='imp[h.name]'
-                                                />
+                                                <div>
+                                                    <div v-text='imp[h.name]' />
+                                                    <div
+                                                        class='subheader'
+                                                        v-text='imp.updated'
+                                                    />
+                                                </div>
                                             </template>
                                             <template v-else-if='h.name == "name"'>
-                                                <div class='row'>
-                                                    <div class='col-12'>
-                                                        <span v-text='imp[h.name]' />
-                                                    </div>
-                                                    <div class='col-12'>
-                                                        <span
-                                                            class='subheader'
-                                                            v-text='imp.id'
-                                                        />
+                                                <div class='col-10'>
+                                                    <div v-text='imp[h.name]' />
+                                                    <div
+                                                        class='subheader'
+                                                        v-text='imp.id'
+                                                    />
+                                                </div>
+                                                <div class='col-2 d-flex'>
+                                                    <div class='ms-auto btn-list'>
+                                                        <TablerIconButton
+                                                            title='Download File'
+                                                            @click='downloadImport(imp.id)'
+                                                        >
+                                                            <IconDownload
+                                                                :size='32'
+                                                                stroke='1'
+                                                            />
+                                                        </TablerIconButton>
                                                     </div>
                                                 </div>
                                             </template>
@@ -107,7 +119,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, server } from '../../std.ts';
+import { std, stdurl, server } from '../../std.ts';
 import type { Import, ImportList } from '../../types.ts';
 import StatusDot from '../util/StatusDot.vue';
 import TableHeader from '../util/TableHeader.vue'
@@ -116,9 +128,13 @@ import {
     TablerNone,
     TablerInput,
     TablerAlert,
+    TablerIconButton,
     TablerRefreshButton,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import {
+    IconDownload
+} from '@tabler/icons-vue';
 
 type Header = { name: keyof Import, display: boolean };
 
@@ -151,7 +167,7 @@ onMounted(async () => {
 async function listImportSchema() {
     const schema = await std('/api/schema?method=GET&url=/import');
 
-    const defaults: Array<keyof Import> = ['username', 'updated', 'name'];
+    const defaults: Array<keyof Import> = ['username', 'name'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
@@ -168,6 +184,15 @@ async function listImportSchema() {
         }
         return true;
     }));
+}
+
+async function downloadImport(id: string) {
+    const url = stdurl(`/api/import/${id}/raw`)
+    url.searchParams.append('token', localStorage.token);
+    url.searchParams.append('download', String(true));
+    await std(url, {
+        download: true
+    })
 }
 
 async function fetchList() {

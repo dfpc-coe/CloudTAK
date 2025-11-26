@@ -2,16 +2,16 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
-        MediaSecret: {
+        GeofenceSecret: {
             Type: 'AWS::SecretsManager::Secret',
             DeletionPolicy: 'Retain',
             Properties: {
-                Description: cf.join([cf.stackName, ' Media Secret']),
+                Description: cf.join([cf.stackName, ' Geofence Secret']),
                 GenerateSecretString: {
                     ExcludePunctuation: true,
-                    PasswordLength: 16
+                    PasswordLength: 32
                 },
-                Name: cf.join([cf.stackName, '/api/media']),
+                Name: cf.join([cf.stackName, '/api/geofence']),
                 KmsKeyId: cf.ref('KMS')
             }
         },

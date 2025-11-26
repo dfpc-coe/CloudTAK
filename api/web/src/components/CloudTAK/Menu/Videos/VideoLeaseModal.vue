@@ -285,13 +285,15 @@
                     </template>
                 </template>
 
-                <div class='col-12 pt-4'>
+                <div
+                    v-if='editLease.proxy'
+                    class='col-12 pt-4'
+                >
                     <div class='subheader user-select-none'>
                         External Stream Config
                     </div>
                     <div class='pt-2'>
                         <CopyField
-                            v-if='editLease.proxy'
                             label='External Stream URL'
                             :model-value='editLease.proxy'
                         />
@@ -503,7 +505,7 @@
                 <button
                     v-if='!disabled'
                     class='btn btn-secondary'
-                    @click='fetchLease'
+                    @click='emit("close")'
                 >
                     Cancel
                 </button>
@@ -544,8 +546,8 @@
 import { std } from '../../../../std.ts';
 import { validateURL } from '../../../../base/validators.ts';
 import CopyField from '../../util/CopyField.vue';
-import { ref, watch, onMounted, withDefaults } from 'vue';
-import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
+import { ref, watch, onMounted } from 'vue';
+import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols, VideoLeaseMetadata } from '../../../../types.ts';
 import VideoLeaseSourceType from '../../util/VideoLeaseSourceType.vue'
 import GroupSelect from '../../../util/GroupSelect.vue';
 import {
@@ -573,7 +575,7 @@ import {
 
 const props = withDefaults(defineProps<{
     lease: VideoLease,
-    isSystemAdmin: boolean
+    isSystemAdmin?: boolean
 }>(), {
     isSystemAdmin: false
 });
@@ -662,8 +664,8 @@ async function fetchLease() {
     }) as VideoLeaseResponse;
 
     editLease.value = {
-        ...res.lease,
-        duration: res.lease.expiration ? '16 Hours' : 'Permanent'
+        ...res,
+        duration: res.expiration ? '16 Hours' : 'Permanent'
     }
 
     if (editLease.value.stream_user && editLease.value.read_user) {
@@ -678,13 +680,17 @@ async function fetchLease() {
         channels.value = [];
     }
 
-    if (res.lease.channel) {
+    if (res.channel) {
         shared.value = true;
     } else {
         shared.value = false;
     }
 
-    protocols.value = res.protocols;
+    const resMetadata = await std(`/api/video/lease/${editLease.value.id}/metadata`, {
+        method: 'GET',
+    }) as VideoLeaseMetadata;
+
+    protocols.value = resMetadata.protocols;
 
     disabled.value = true;
     loading.value = false;
@@ -742,7 +748,7 @@ async function saveLease() {
                     source_type: editLease.value.source_type,
                     source_model: editLease.value.source_model,
                 }
-            })) as VideoLeaseResponse).lease.id;
+            })) as VideoLeaseResponse).id;
         }
 
         await fetchLease();
