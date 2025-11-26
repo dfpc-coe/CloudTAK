@@ -104,7 +104,9 @@ export default class SpriteBuilder {
             const buff = Buffer.from(icon.data.split(',')[1], 'base64');
 
             const contents = await Sharp(buff)
-                .resize(32, 32, {
+                .resize({
+                    width: 32,
+                    height: 48,
                     fit: 'contain',
                     background: {
                         r: 0,
