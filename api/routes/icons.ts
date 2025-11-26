@@ -312,7 +312,10 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only Server Admins can create Server scoped icons');
             }
 
-            if (path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
+            await Sprites.validate({
+                name: req.body.name,
+                data: req.body.data,
+            });
 
             const icon = await config.models.Icon.generate({
                 ...req.body,
@@ -380,7 +383,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         params: Type.Object({
             iconset: Type.String(),
-            icon: Type.String()
+            icon: Type.Union([Type.Integer(), Type.String()])
         }),
         description: 'Icon Metadata',
         res: IconResponse
@@ -393,8 +396,14 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
-            const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
-            res.json(icon);
+            if (isNaN(Number(req.params.icon))) {
+                const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND name = ${req.params.icon}`);
+                return res.json(icon);
+            } else {
+                const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
+
+                res.json(icon);
+            }
         } catch (err) {
             Err.respond(err, res);
         }
@@ -405,7 +414,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         params: Type.Object({
             iconset: Type.String(),
-            icon: Type.String()
+            icon: Type.Integer()
         }),
         description: 'Update Icon in Iconset',
         body: Type.Object({
@@ -426,13 +435,20 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
-            let icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
+            let icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
 
-            if (req.body.name && path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
+            await Sprites.validate({
+                name: req.body.name,
+                data: req.body.data,
+            });
+
             if (req.body.name) {
                 await config.models.Icon.commit(icon.id, { path: `${icon.iconset}/${req.body.name}` });
             }
-            if (req.body.type2525b === '') delete req.body.type2525b;
+
+            if (req.body.type2525b === '') {
+                req.body.type2525b = null;
+            }
 
             icon = await config.models.Icon.commit(icon.id, req.body);
 
@@ -449,7 +465,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         params: Type.Object({
             iconset: Type.String(),
-            icon: Type.String()
+            icon: Type.Integer()
         }),
         description: 'Remove Icon from Iconset',
         res: StandardResponse
@@ -465,7 +481,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
-            await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
+            await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
 
             res.json({
                 status: 200,
@@ -473,36 +489,6 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             await Sprites.regen(config, iconset.uid);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/iconset/:iconset/icon/:icon/raw', {
-        name: 'Get Raw',
-        group: 'Icons',
-        params: Type.Object({
-            iconset: Type.String(),
-            icon: Type.String()
-        }),
-        query: Type.Object({
-            token: Type.Optional(Type.String()),
-        }),
-        description: 'Icon Data',
-    }, async (req, res) => {
-        try {
-            const user = await Auth.as_user(config, req, { token: true });
-
-            const iconset = await config.models.Iconset.from(req.params.iconset);
-            if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
-                throw new Err(400, null, 'You don\'t have permission to access this resource');
-            }
-
-            const icon = await config.models.Icon.from(sql`
-                (${req.params.iconset} = iconset AND ${req.params.icon} = name)
-            `);
-
-            res.status(200).send(Buffer.from(icon.data, 'base64'));
         } catch (err) {
             Err.respond(err, res);
         }

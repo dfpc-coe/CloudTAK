@@ -27,7 +27,7 @@
                         v-for='icon in list.items'
                         :key='icon.name'
                         class='col-sm-2'
-                        @click='router.push(`/menu/iconset/${icon.iconset}/${encodeURIComponent(icon.name)}`)'
+                        @click='router.push(`/menu/iconset/${icon.iconset}/${icon.id}`)'
                     >
                         <div class='card card-sm hover cursor-pointer'>
                             <div class='col-12'>
@@ -39,7 +39,7 @@
                                     }'
                                 >
                                     <img
-                                        :src='iconurl(icon)'
+                                        :src='icon.data'
                                         height='32'
                                         width='32'
                                     >
@@ -125,12 +125,6 @@ watch(paging.value, async () => {
 onMounted(async () => {
     await fetchList();
 });
-
-function iconurl(icon) {
-    const url = stdurl(`/api/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}/raw`);
-    url.searchParams.append('token', localStorage.token);
-    return String(url);
-}
 
 async function fetchList() {
     loading.value = true;
