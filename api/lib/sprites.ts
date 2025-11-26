@@ -106,16 +106,23 @@ export default class SpriteBuilder {
             const contents = await Sharp(buff)
                 .resize(32, 32, {
                     fit: 'contain',
-                    background: {r: 0, g: 0, b: 0, alpha: 0}
+                    background: {
+                        r: 0,
+                        g: 0,
+                        b: 0,
+                        alpha: 0
+                    }
                 })
                 .png()
                 .toBuffer();
 
-            src.push(new Vinyl({
-                // @ts-expect-error Deal with indexing issue on icon
-                path: spriteConfig.name ? icon[spriteConfig.name] + '.png' : icon.path.replace(/.*?\//, ''),
-                contents
-            }))
+            // @ts-expect-error Deal with indexing issue on icon
+            let path = spriteConfig.name ? icon[spriteConfig.name] + '.png' : icon.path.replace(/.*?\//, '');
+            if (!path.endsWith('.png')) {
+                path = path.replace(/\..*?$/, '.png');
+            }
+
+            src.push(new Vinyl({ path, contents }))
         }
 
         const doc = await SpriteSmith({ src });
