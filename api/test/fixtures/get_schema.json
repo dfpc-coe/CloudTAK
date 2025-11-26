@@ -574,11 +574,6 @@
         "query": false,
         "res": true
     },
-    "GET /iconset/:iconset/icon/:icon/raw": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
     "GET /iconset/:iconset/sprite{:size}.json": {
         "body": false,
         "query": true,
@@ -1157,6 +1152,11 @@
     "DELETE /server/repeater/:uid": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "GET /server/video": {
+        "body": false,
+        "query": true,
         "res": true
     },
     "GET /server": {

@@ -91,6 +91,24 @@
                                 class='mx-3'
                             >Packages</span>
                         </span>
+                        <span
+                            tabindex='0'
+                            role='menuitem'
+                            class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                            :class='{
+                                "active": String(route.name) === "admin-server-videos",
+                                "cursor-pointer": String(route.name) !== "admin-server-videos"
+                            }'
+                            @click='router.push(`/admin/server/videos`)'
+                        >
+                            <IconVideo
+                                :size='32'
+                                stroke='1'
+                            />
+                            <span
+                                class='mx-3'
+                            >Videos</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -117,6 +135,7 @@ import {
     IconPackages,
     IconVaccine,
     IconServer,
+    IconVideo,
 } from '@tabler/icons-vue'
 
 const route = useRoute()

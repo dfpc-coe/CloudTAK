@@ -953,6 +953,13 @@
       "when": 1762198551062,
       "tag": "0135_cold_colonel_america",
       "breakpoints": true
+    },
+    {
+      "idx": 136,
+      "version": "7",
+      "when": 1764167125391,
+      "tag": "0136_natural_prowler",
+      "breakpoints": true
     }
   ]
 }

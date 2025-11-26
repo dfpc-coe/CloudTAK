@@ -3,17 +3,17 @@
         <template #buttons>
             <div class='d-flex align-items-center gap-2'>
                 <TablerDelete
-                    v-if='iconset.username || isSystemAdmin'
+                    v-if='(iconset.username || isSystemAdmin) && disabled'
                     displaytype='icon'
                     @delete='deleteIcon'
                 />
 
                 <TablerIconButton
-                    v-if='iconset.username || isSystemAdmin'
+                    v-if='(iconset.username || isSystemAdmin) && disabled'
                     title='Edit'
-                    @click='editModal = icon'
+                    @click='disabled = false'
                 >
-                    <IconSettings
+                    <IconPencil
                         :size='32'
                         stroke='1'
                     />
@@ -23,7 +23,54 @@
         <template #default>
             <TablerLoading v-if='loading' />
             <template v-else>
-                <div class='container-fluid px-2 px-sm-3 py-4'>
+                <div
+                    v-if='disabled === false'
+                    class='row mx-0 gap-4'
+                >
+                    <div class='col-12'>
+                        <TablerInput
+                            label='Name'
+                            v-model='icon.name'
+                        />
+                    </div>
+
+                    <div class='col-12'>
+                        <UploadLogo
+                            label='Icon Data'
+                            v-model='icon.data'
+                            @fileName='updateName'
+                        />
+                    </div>
+
+                    <div class='col-12'>
+                        <TablerInput
+                            label='2525B Type'
+                            v-model='icon.type2525b'
+                        />
+                    </div>
+
+                    <div class='d-flex'>
+                        <div class='ms-auto d-flex gap-2'>
+                            <div
+                                v-if='icon.id'
+                                class='btn btn-secondary'
+                                @click='refresh'
+                            >
+                                Cancel
+                            </div>
+                            <div
+                                class='btn btn-primary'
+                                @click='submit'
+                            >
+                                Submit
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div
+                    v-else
+                    class='container-fluid px-2 px-sm-3 py-4'
+                >
                     <div class='row gy-3 gx-0 gx-lg-3'>
                         <div class='col-12'>
                             <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
@@ -31,7 +78,7 @@
                                     <div class='d-flex align-items-center gap-3'>
                                         <div class='rounded bg-white p-1 d-flex align-items-center justify-content-center'>
                                             <img
-                                                :src='iconurl(icon)'
+                                                :src='icon.data'
                                                 width='32'
                                                 height='32'
                                                 style='object-fit: contain;'
@@ -74,12 +121,6 @@
             </template>
         </template>
     </MenuTemplate>
-
-    <IconEditModal
-        v-if='editModal'
-        :icon='editModal'
-        @close='refresh'
-    />
 </template>
 
 <script setup>
@@ -91,13 +132,14 @@ import IconManager from '../../../stores/modules/icons.ts';
 import {
     TablerDelete,
     TablerLoading,
-    TablerIconButton
+    TablerIconButton,
+    TablerInput
 } from '@tak-ps/vue-tabler';
 import {
-    IconSettings,
+    IconPencil,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import IconEditModal from './Icon/EditModal.vue';
+import UploadLogo from '../../util/UploadLogo.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -105,9 +147,10 @@ const router = useRouter();
 const mapStore = useMapStore();
 
 const loading = ref(true);
-const editModal = ref(false);
 const isSystemAdmin = ref(false);
-    
+
+const disabled = ref(true);
+
 const iconset = ref({});
 const icon = ref({
     id: false
@@ -119,22 +162,54 @@ onMounted(async () => {
 });
 
 async function refresh() {
-    editModal.value = false;
     loading.value = true;
+
     await fetchIconset();
-    await fetch();
+
+    if (route.params.icon !== 'new') {
+        disabled.value = true;
+        await fetch();
+    } else {
+        disabled.value = false;
+    }
+
     loading.value = false;
 }
 
-function iconurl() {
-    const url = stdurl(`/api/iconset/${icon.value.iconset}/icon/${encodeURIComponent(icon.value.name)}/raw`);
-    url.searchParams.append('token', localStorage.token);
-    return String(url);
+async function submit() {
+    if (icon.value.id) {
+        const url = await stdurl(`/api/iconset/${route.params.iconset}/icon/${icon.value.id}`);
+
+        icon.value = await std(url, {
+            method: 'PATCH',
+            body: icon.value
+        });
+    } else {
+        const url = await stdurl(`/api/iconset/${route.params.iconset}/icon`);
+
+        icon.value = await std(url, {
+            method: 'POST',
+            body: icon.value
+        });
+
+        router.push(`/menu/iconset/${route.params.iconset}/${icon.value.id}`);
+    }
+
+    disabled.value = true;
+    await refresh();
 }
 
 async function fetch() {
-    const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${encodeURIComponent(route.params.icon)}`);
-    icon.value = await std(url);
+    const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${route.params.icon}`);
+    const res = await std(url);
+
+    if (res.name.endsWith('.svg') && !res.data.startsWith('data:image/svg+xml;base64,')) {
+        res.data = `data:image/svg+xml;base64,${res.data}`;
+    } else if (res.name.endsWith('.png') && !res.data.startsWith('data:image/png;base64,')) {
+        res.data = `data:image/png;base64,${res.data}`;
+    }
+
+    icon.value = res;
 }
 
 async function fetchIconset() {
@@ -149,10 +224,14 @@ async function fetchIconset() {
 
 async function deleteIcon() {
     loading.value = true;
-    const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${encodeURIComponent(route.params.icon)}`);
+    const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${route.params.icon}`);
     iconset.value = await std(url, {
         method: 'DELETE'
     });
-    router.push(`/iconset/${route.params.iconset}`);
+    router.push(`/menu/iconset/${route.params.iconset}`);
+}
+
+function updateName(name) {
+    icon.value.name = name;
 }
 </script>
