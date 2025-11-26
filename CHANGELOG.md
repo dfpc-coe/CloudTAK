@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.12.1 - 2025-11-26
+
+- :rocket: Additional permissions checks for viewing Leased Streams:
+
 ### v12.12.0 - 2025-11-26
 
 - :rocket: Merge Icon editing into single sidebar component
