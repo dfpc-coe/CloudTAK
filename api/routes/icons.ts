@@ -383,7 +383,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         params: Type.Object({
             iconset: Type.String(),
-            icon: Type.Integer()
+            icon: Type.Union([Type.Integer(), Type.String()])
         }),
         description: 'Icon Metadata',
         res: IconResponse
@@ -396,9 +396,14 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
-            const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
+            if (isNaN(Number(req.params.icon))) {
+                const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND name = ${req.params.icon}`);
+                return res.json(icon);
+            } else {
+                const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
 
-            res.json(icon);
+                res.json(icon);
+            }
         } catch (err) {
             Err.respond(err, res);
         }

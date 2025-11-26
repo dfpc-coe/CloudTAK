@@ -221,7 +221,12 @@ const setsName = computed(() => {
 });
 
 watch(selected, () => {
-    emit('update:modelValue', selected.value.path);
+    if (selected.value.path.endsWith('.png')) {
+        emit('update:modelValue', selected.value.path);
+    } else {
+        // Replace any extension with PNG for sprites
+        emit('update:modelValue', selected.value.path.replace(/\.[^/.]+$/, ".png"));
+    }
 }, { deep: true })
 
 watch(params.value, async () => {
@@ -245,7 +250,7 @@ function removeIcon() {
 }
 
 async function fetch() {
-    // This is unfortuantely but the CloudTAK Map uses the MapLibre Icon format
+    // This is unfortuante but the CloudTAK Map uses the MapLibre Icon format
     // While the backend uses the TAK Icon Format
     if (
         props.modelValue
@@ -257,7 +262,7 @@ async function fetch() {
     ) {
         let path = props.modelValue;
 
-        // MapLibre needs the palette name seperated by a ":" isntead of a "/"
+        // MapLibre needs the palette name seperated by a ":" instead of a "/"
         if (path.includes(':')) path = path.split(':').join('/') + '.png';
 
         const iconset = path.split('/')[0];
