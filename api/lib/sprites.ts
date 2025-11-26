@@ -13,7 +13,37 @@ type SpriteConfig = {
     name?: string;
 };
 
+const SUPPORTED = [
+    'image/png',
+    'image/svg+xml',
+]
+
 export default class SpriteBuilder {
+    static async validate(config: Config, icon: Static<typeof IconResponse>): Promise<void> {
+        if (!icon.data.startsWith('data:')) {
+            throw new Error('Icon data is not valid base64 data URL (mission data: prefix)');
+        }
+
+        const supported = SUPPORTED.some((type) => {
+            if (icon.data.startsWith(`data:${type};base64,`)) {
+                return true;
+            }
+        });
+
+        if (!supported) {
+            throw new Error('Icon data is not a supported media type');
+        }
+
+        try {
+            const img = Buffer.from(icon.data.split(',')[1] , 'base64');
+
+            await Sharp(img)
+                .metadata();
+        } catch (err) {
+            throw new Err(400, err, 'Failed to parse valid image');
+        }
+    }
+
     /**
      * Given an Iconset UID, generate and save a spritesheet to the database
      * Note: Permissions checks are not performed here, this is expected to be handled upstream
