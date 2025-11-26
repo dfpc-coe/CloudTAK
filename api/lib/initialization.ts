@@ -69,7 +69,7 @@ export default class Bulldozer {
                             iconset: iconset.uid,
                             name: file,
                             type2525b: icon.type2525b,
-                            data: iconBuff.toString('base64'),
+                            data: `data:image/png;base64,${iconBuff.toString('base64')}`,
                             path: `${iconset.uid}/${file}`
                         })
                     }
