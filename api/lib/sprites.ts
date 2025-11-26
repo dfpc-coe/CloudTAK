@@ -1,5 +1,7 @@
 import spritesmith from 'spritesmith';
+import path from 'node:path'
 import Vinyl from 'vinyl';
+import Err from '@openaddresses/batch-error';
 import { promisify } from 'node:util'
 import { Static } from '@sinclair/typebox';
 import Config from './config.js';
@@ -13,18 +15,29 @@ type SpriteConfig = {
     name?: string;
 };
 
-const SUPPORTED = [
+const SUPPORTED_EXT = [
+    '.svg',
+    '.png'
+];
+
+const SUPPORTED_MIME = [
     'image/png',
     'image/svg+xml',
 ]
 
 export default class SpriteBuilder {
-    static async validate(config: Config, icon: Static<typeof IconResponse>): Promise<void> {
+    static async validate(icon: Static<typeof IconResponse>): Promise<void> {
+        const name = path.parse(icon.name)
+
+        if (!SUPPORTED_EXT.includes(name.ext.toLowerCase())) {
+            throw new Error('Icon file extension is not supported');
+        }
+
         if (!icon.data.startsWith('data:')) {
             throw new Error('Icon data is not valid base64 data URL (mission data: prefix)');
         }
 
-        const supported = SUPPORTED.some((type) => {
+        const supported = SUPPORTED_MIME.some((type) => {
             if (icon.data.startsWith(`data:${type};base64,`)) {
                 return true;
             }
@@ -40,7 +53,7 @@ export default class SpriteBuilder {
             await Sharp(img)
                 .metadata();
         } catch (err) {
-            throw new Err(400, err, 'Failed to parse valid image');
+            throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to parse valid image');
         }
     }
 
@@ -79,7 +92,9 @@ export default class SpriteBuilder {
     static async from_icons(icons: Array<Static<typeof IconResponse>>, spriteConfig: SpriteConfig = {}) {
         const src = [];
         for (const icon of icons) {
-            const contents = await Sharp(Buffer.from(icon.data, 'base64'))
+            const buff = Buffer.from(icon.data.split(',')[1], 'base64');
+
+            const contents = await Sharp(buff)
                 .resize(32, 32, {
                     fit: 'contain',
                     background: {r: 0, g: 0, b: 0, alpha: 0}

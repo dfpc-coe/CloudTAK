@@ -320,9 +320,7 @@ export default async function router(schema: Schema, config: Config) {
                 iconset: iconset.uid
             });
 
-            if (!icon.data.startsWith('data:')) {
-                icon.data = `data:image/png;base64,${icon.data}`;
-            }
+            await Sprites.validate(icon);
 
             res.json(icon);
 
@@ -372,12 +370,6 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            for (const icon of list.items) {
-                if (!icon.data.startsWith('data:')) {
-                    icon.data = `data:image/png;base64,${icon.data}`;
-                }
-            }
-
             res.json(list)
 
         } catch (err) {
@@ -404,10 +396,6 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
-
-            if (!icon.data.startsWith('data:')) {
-                icon.data = `data:image/png;base64,${icon.data}`;
-            }
 
             res.json(icon);
         } catch (err) {
@@ -443,7 +431,9 @@ export default async function router(schema: Schema, config: Config) {
 
             let icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
 
-            if (req.body.name && path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
+            Object.assign(icon, req.body);
+
+            await Sprites.validate(icon);
 
             if (req.body.name) {
                 await config.models.Icon.commit(icon.id, { path: `${icon.iconset}/${req.body.name}` });
@@ -454,10 +444,6 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             icon = await config.models.Icon.commit(icon.id, req.body);
-
-            if (!icon.data.startsWith('data:')) {
-                icon.data = `data:image/png;base64,${icon.data}`;
-            }
 
             res.json(icon);
 
