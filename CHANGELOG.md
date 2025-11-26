@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v12.12.0 - 2025-11-26
+
+- :rocket: Merge Icon editing into single sidebar component
+- :rocket: Migrate API from using name as primary key to icon ID to allow renaming icons
+- :rocket: Stronger Validation checks on Icon POST/PATCH
+- :rocket: Store Icon Buffers as Base64 encoded Data URL
+- :tada: Allow uploading SVG icons
+
 ### v12.11.5 - 2025-11-25
 
 - :rocket: Update MediaInfra Container
