@@ -26,34 +26,43 @@ const SUPPORTED_MIME = [
 ]
 
 export default class SpriteBuilder {
-    static async validate(icon: Static<typeof IconResponse>): Promise<void> {
-        const name = path.parse(icon.name)
-
-        if (!SUPPORTED_EXT.includes(name.ext.toLowerCase())) {
-            throw new Error('Icon file extension is not supported');
+    static async validate(
+        icon: {
+            name?: string;
+            data?: string;
         }
+    ): Promise<void> {
+        if (icon.name) {
+            const name = path.parse(icon.name)
 
-        if (!icon.data.startsWith('data:')) {
-            throw new Error('Icon data is not valid base64 data URL (mission data: prefix)');
-        }
-
-        const supported = SUPPORTED_MIME.some((type) => {
-            if (icon.data.startsWith(`data:${type};base64,`)) {
-                return true;
+            if (!SUPPORTED_EXT.includes(name.ext.toLowerCase())) {
+                throw new Error('Icon file extension is not supported');
             }
-        });
-
-        if (!supported) {
-            throw new Error('Icon data is not a supported media type');
         }
 
-        try {
-            const img = Buffer.from(icon.data.split(',')[1] , 'base64');
+        if (icon.data) {
+            if (!icon.data.startsWith('data:')) {
+                throw new Error('Icon data is not valid base64 data URL (mission data: prefix)');
+            }
 
-            await Sharp(img)
-                .metadata();
-        } catch (err) {
-            throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to parse valid image');
+            const supported = SUPPORTED_MIME.some((type) => {
+                if (icon.data.startsWith(`data:${type};base64,`)) {
+                    return true;
+                }
+            });
+
+            if (!supported) {
+                throw new Error('Icon data is not a supported media type');
+            }
+
+            try {
+                const img = Buffer.from(icon.data.split(',')[1] , 'base64');
+
+                await Sharp(img)
+                    .metadata();
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to parse valid image');
+            }
         }
     }
 

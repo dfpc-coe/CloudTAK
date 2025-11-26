@@ -312,15 +312,16 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only Server Admins can create Server scoped icons');
             }
 
-            if (path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
+            await Sprites.validate({
+                name: req.body.name,
+                data: req.body.data,
+            });
 
             const icon = await config.models.Icon.generate({
                 ...req.body,
                 path: `${iconset.uid}/${req.body.name}`,
                 iconset: iconset.uid
             });
-
-            await Sprites.validate(icon);
 
             res.json(icon);
 
@@ -431,9 +432,10 @@ export default async function router(schema: Schema, config: Config) {
 
             let icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
 
-            Object.assign(icon, req.body);
-
-            await Sprites.validate(icon);
+            await Sprites.validate({
+                name: req.body.name,
+                data: req.body.data,
+            });
 
             if (req.body.name) {
                 await config.models.Icon.commit(icon.id, { path: `${icon.iconset}/${req.body.name}` });
