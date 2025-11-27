@@ -95,6 +95,7 @@ const supportedIcon = computed<string | null>(() => {
         return props.feature.properties.type;
     } else {
         const icon = mapStore.map.getImage(props.feature.properties.icon)
+
         if (icon) {
             return props.feature.properties.icon;
         } else {
