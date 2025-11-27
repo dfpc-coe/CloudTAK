@@ -83,6 +83,8 @@ services:
             - POSTGRES_DB=gis
             - POSTGRES_USER=docker
             - POSTGRES_PASSWORD=docker
+        volumes:
+            - .docker-postgis:/var/lib/postgresql/data
 
     store:
         platform: linux/amd64
