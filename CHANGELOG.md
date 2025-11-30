@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.13.0 - 2025-11-29
+
+- :bug: Fix service worker install due to caching unnecessary files
+
 ### v12.12.1 - 2025-11-26
 
 - :rocket: Additional permissions checks for viewing Leased Streams:
