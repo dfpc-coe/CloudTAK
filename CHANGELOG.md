@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.14.0 - 2025-11-29
+
+- :tada: Allow editing Mission Log DTG values after posting
+- :rocket: Migrate MissionLog to it's own component for encapsulation
+
 ### v12.13.0 - 2025-11-29
 
 - :bug: Fix service worker install due to caching unnecessary files
