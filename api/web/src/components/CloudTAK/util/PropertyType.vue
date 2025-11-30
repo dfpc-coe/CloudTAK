@@ -54,59 +54,131 @@
                     </div>
                 </template>
                 <template v-else>
-                    <div class='row g-2'>
-                        <div
-                            :class='{
-                                "col-12": !config.type.startsWith("a-"),
-                                "col-8": config.type.startsWith("a-")
-                            }'
-                        >
-                            <TablerInput
-                                v-model='paging.filter'
-                                icon='search'
-                                placeholder='Filter'
-                                :autofocus='true'
-                            />
-                        </div>
-                        <div
-                            v-if='config.type.startsWith("a-")'
-                            class='col-4'
-                        >
-                            <TablerEnum
-                                :model-value='StandardAffiliationInverse[config.affiliation]'
-                                :default='StandardAffiliation.Friendly'
-                                :options='Object.keys(StandardAffiliation)'
-                                @update:model-value='updateAffiliation($event)'
-                            />
+                    <div class='row g-2 mb-2'>
+                        <div class='col-12'>
+                            <div class='btn-group w-100'>
+                                <button
+                                    type='button'
+                                    class='btn btn-sm'
+                                    :class='{ "btn-primary": standard === "2525B", "btn-outline-secondary": standard !== "2525B" }'
+                                    @click='standard = "2525B"'
+                                >
+                                    2525B
+                                </button>
+                                <button
+                                    type='button'
+                                    class='btn btn-sm'
+                                    :class='{ "btn-primary": standard === "2525C", "btn-outline-secondary": standard !== "2525C" }'
+                                    @click='standard = "2525C"'
+                                >
+                                    2525C
+                                </button>
+                                <button
+                                    type='button'
+                                    class='btn btn-sm'
+                                    :class='{ "btn-primary": standard === "2525E", "btn-outline-secondary": standard !== "2525E" }'
+                                    @click='standard = "2525E"'
+                                >
+                                    2525E
+                                </button>
+                            </div>
                         </div>
                     </div>
-
-                    <TablerLoading
-                        v-if='loading'
-                    />
-                    <TablerNone
-                        v-else-if='list.total === 0'
-                        label='Types Found'
-                        :create='false'
-                    />
-                    <template v-else>
-                        <template
-                            v-for='item of list.items'
-                        >
+                    <template v-if='standard === "2525B"'>
+                        <div class='row g-2'>
                             <div
-                                class='d-flex align-items-center px-2 py-2 hover cursor-pointer rounded'
-                                @click='updateType(item)'
+                                :class='{
+                                    "col-12": !config.type.startsWith("a-"),
+                                    "col-8": config.type.startsWith("a-")
+                                }'
                             >
-                                <FeatureIcon
-                                    :key='item.cot'
-                                    :feature='{ properties: { icon: item.cot } }'
-                                />
-
-                                <div
-                                    class='mx-2'
-                                    v-text='item.full'
+                                <TablerInput
+                                    v-model='paging.filter'
+                                    icon='search'
+                                    placeholder='Filter'
+                                    :autofocus='true'
                                 />
                             </div>
+                            <div
+                                v-if='config.type.startsWith("a-")'
+                                class='col-4'
+                            >
+                                <TablerEnum
+                                    :model-value='StandardAffiliationInverse[config.affiliation]'
+                                    :default='StandardAffiliation.Friendly'
+                                    :options='Object.keys(StandardAffiliation)'
+                                    @update:model-value='updateAffiliation($event)'
+                                />
+                            </div>
+                        </div>
+
+                        <TablerLoading
+                            v-if='loading'
+                        />
+                        <TablerNone
+                            v-else-if='list2525B.total === 0'
+                            label='Types Found'
+                            :create='false'
+                        />
+                        <template v-else>
+                            <template
+                                v-for='item of list2525B.items'
+                            >
+                                <div
+                                    class='d-flex align-items-center px-2 py-2 hover cursor-pointer rounded'
+                                    @click='updateType(item)'
+                                >
+                                    <FeatureIcon
+                                        :key='item.cot'
+                                        :feature='{ properties: { icon: item.cot } }'
+                                    />
+
+                                    <div
+                                        class='mx-2'
+                                        v-text='item.full'
+                                    />
+                                </div>
+                            </template>
+                        </template>
+                    </template>
+                    <template v-else-if='standard === "2525E"'>
+                        <div class='row g-2'>
+                            <div class='col-12'>
+                                <TablerInput
+                                    v-model='paging.filter'
+                                    icon='search'
+                                    placeholder='Filter'
+                                    :autofocus='true'
+                                />
+                            </div>
+                        </div>
+
+                        <TablerLoading
+                            v-if='loading'
+                        />
+                        <TablerNone
+                            v-else-if='list2525E.total === 0'
+                            label='Types Found'
+                            :create='false'
+                        />
+                        <template v-else>
+                            <template
+                                v-for='item of list2525E.items'
+                            >
+                                <div
+                                    class='d-flex align-items-center px-2 py-2 hover cursor-pointer rounded'
+                                >
+                                    <FeatureIcon
+                                        :key='item.cot'
+                                        :feature='{ properties: { icon: `2525E:10-0-3-40-0-0-00-110114-00-00` } }'
+                                    />
+
+                                    <div
+                                        class='mx-2'
+                                        v-text='item.name'
+                                    />
+                                </div>
+                            </template>
                         </template>
                     </template>
                 </template>
@@ -179,7 +251,14 @@ const paging = ref({
     filter: '',
 });
 
-const list = ref<COTTypeList>({
+const standard = ref('2525B');
+
+const list2525B = ref<COTTypeList>({
+    total: 0,
+    items: []
+});
+
+const list2525E = ref({
     total: 0,
     items: []
 });
@@ -206,6 +285,10 @@ watch(props, async () => {
 });
 
 watch(paging.value, async () => {
+    await fetchList();
+});
+
+watch(standard, async () => {
     await fetchList();
 });
 
@@ -260,15 +343,27 @@ async function fetchType() {
 async function fetchList() {
     loading.value = true;
 
-    const url = stdurl('/api/type/cot');
-    url.searchParams.append('filter', paging.value.filter);
+    if (standard.value === '2525E') {
+        const url = stdurl('/api/type/2525e');
+        url.searchParams.append('filter', paging.value.filter);
+        url.searchParams.append('standard', standard.value);
 
-    url.searchParams.append('identity', config.value.affiliation);
-    url.searchParams.append('domain', 'a');
+        list2525E.value = await std(url);
 
-    list.value = await std(url) as COTTypeList;
+        loading.value = false;
+        return;
+    } else {
+        const url = stdurl('/api/type/cot');
+        url.searchParams.append('filter', paging.value.filter);
+        url.searchParams.append('standard', standard.value);
 
-    loading.value = false;
+        url.searchParams.append('identity', config.value.affiliation);
+        url.searchParams.append('domain', 'a');
+
+        list2525B.value = await std(url) as COTTypeList;
+
+        loading.value = false;
+    }
 }
 
 </script>

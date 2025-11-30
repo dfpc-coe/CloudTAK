@@ -51,8 +51,8 @@ export default class IconManager {
     }
 
     public async onStyleImageMissing(e: { id: string }): Promise<void> {
-        if (e.id.startsWith('2525D:')) {
-            const sidc = e.id.replace('2525D:', '');
+        if (e.id.startsWith('2525C:') || e.id.startsWith('2525D:') || e.id.startsWith('2525E:')) {
+            const sidc = e.id.replace(/2525[CDE]:/, '');
             const size = 24;
             const data = new ms.Symbol(sidc, { size }).asCanvas();
 

@@ -1,4 +1,5 @@
 import Err from '@openaddresses/batch-error';
+import { ms2525e } from 'milstandard-e';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
@@ -7,12 +8,57 @@ import { CoTTypes } from '@tak-ps/node-cot';
 import { MilSymType } from '@tak-ps/node-cot';
 import * as Default from '../lib/limits.js';
 
+// 2525E Symbols
+// <version>-<context>-<standard identity>-<symbol set>-<status>-<hq/task force/dummy>-<modifier>-<6: entity>-<2: mod1>-<2: mod2>
+// Context:
+// 0: Reality
+// 1: Exercise
+// 2: Simulation
+
+const symbolsets: Array<{
+    id: string;
+    name: string;
+}> = [];
+
+const symbols: Array<{
+    id: string,
+    name: string,
+    remarks: string,
+    symbolset: string,
+}> = [];
+
+
+for (const symbolset of Object.keys(ms2525e)) {
+    symbolsets.push({
+        id: symbolset,
+        name: ms2525e[symbolset].name
+    });
+
+    for (const mainIcon of ms2525e[symbolset].mainIcon) {
+        let name = mainIcon.Entity
+        if (mainIcon["Entity Type"]) {
+            name += ` - ${mainIcon["Entity Type"]}`;
+        }
+
+        if (mainIcon["Entity Subtype"]) {
+            name += ` - ${mainIcon["Entity Subtype"]}`;
+        }
+
+        symbols.push({
+            id: mainIcon.Code,
+            name,
+            remarks: mainIcon.Remarks || '',
+            symbolset
+        });
+    }
+}
+
 export default async function router(schema: Schema, config: Config) {
     const types = await CoTTypes.default.load();
 
     await schema.get('/type/cot', {
-        name: 'List Types',
-        group: 'COTTypes',
+        name: '2525B/ CoT Types',
+        group: 'Symbology',
         description: 'Get Type',
         query: Type.Object({
             filter: Type.String({
@@ -46,8 +92,8 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/type/cot/:type', {
-        name: 'Get Type',
-        group: 'COTTypes',
+        name: '2525B/ CoT Type',
+        group: 'Symbology',
         description: 'Get Type',
         params: Type.Object({
             type: Type.String()
@@ -86,6 +132,42 @@ export default async function router(schema: Schema, config: Config) {
                     res.json(info);
                 }
             }
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/type/2525e', {
+        name: '2525E Types',
+        group: 'Symbology',
+        description: 'Get Type',
+        query: Type.Object({
+            filter: Type.String({
+                default: '',
+            }),
+        }),
+        res: Type.Object({
+            symbolsets: Type.Array(Type.Object({
+                id: Type.String(),
+                name: Type.String(),
+            })),
+            items: Type.Array(Type.Object({
+                id: Type.String(),
+                name: Type.String(),
+                remarks: Type.String(),
+                symbolset: Type.String(),
+            })),
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            res.json({
+                symbolsets,
+                items: symbols.filter((symbol) => {
+                    return symbol.name.toLowerCase().includes(req.query.filter.toLowerCase())
+                })
+            });
         } catch (err) {
              Err.respond(err, res);
         }
