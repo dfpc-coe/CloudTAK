@@ -12,7 +12,11 @@
 
 ### Pending Release
 
-### v12.14.0 - 2025-11-29
+### v12.15.0 - 2025-11-30
+
+- :tada: Allow exporting Mission Logs as CSV
+
+### v12.14.0 - 2025-11-30
 
 - :tada: Allow editing Mission Log DTG values after posting
 - :rocket: Migrate MissionLog to it's own component for encapsulation
