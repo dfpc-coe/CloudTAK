@@ -23,55 +23,12 @@
             v-else
             class='rows px-2 d-flex flex-column gap-3'
         >
-            <div
+            <MissionLogItem
                 v-for='log in filteredLogs'
                 :key='log.id'
-                class='col-12'
-            >
-                <TablerLoading
-                    v-if='loading.ids.has(log.id)'
-                    desc='Updating Log'
-                />
-                <template v-else>
-                    <div
-                        class='card bg-dark bg-opacity-50 border border-white border-opacity-25 rounded text-white w-100 p-2 d-flex gap-3 align-items-start flex-row shadow-sm'
-                        role='menuitem'
-                        tabindex='0'
-                    >
-                        <div class='d-flex flex-column w-100'>
-                            <div class='d-flex align-items-center flex-wrap w-100 gap-2'>
-                                <div class='fw-semibold'>
-                                    {{ log.creatorUid || 'Unknown Author' }}
-                                </div>
-                                <span class='ms-auto text-white-50 small text-nowrap'>{{ formatDtg(log.dtg) }}</span>
-                            </div>
-                            <CopyField
-                                class='w-100'
-                                mode='text'
-                                :edit='props.subscription.role.permissions.includes("MISSION_WRITE")'
-                                :deletable='props.subscription.role.permissions.includes("MISSION_WRITE")'
-                                :hover='props.subscription.role.permissions.includes("MISSION_WRITE")'
-                                :rows='Math.max(4, log.content.split("\n").length)'
-                                :model-value='log.content || ""'
-                                @submit='updateLog(log.id, $event)'
-                                @delete='props.subscription.log.delete(log.id)'
-                            />
-
-                            <div
-                                v-if='log.keywords.length'
-                                class='d-flex flex-wrap gap-2'
-                            >
-                                <span
-                                    v-for='keyword in log.keywords'
-                                    :key='keyword'
-                                    class='badge text-bg-primary text-uppercase rounded-pill px-3 py-1 small'
-                                    v-text='keyword'
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
+                :log='log'
+                :subscription='props.subscription'
+            />
         </div>
         <template v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'>
             <div
@@ -140,7 +97,7 @@ import { from } from 'rxjs';
 import type { Ref, ComputedRef } from 'vue';
 import type { MissionLog } from '../../../../types.ts';
 import TagEntry from '../../util/TagEntry.vue';
-import CopyField from '../../util/CopyField.vue';
+import MissionLogItem from './MissionLog.vue';
 import {
     TablerNone,
     TablerInput,
@@ -178,11 +135,9 @@ const createLog = ref({
 const loading = ref<{
     logs: boolean,
     create: boolean,
-    ids: Set<string>
 }> ({
     logs: false,
     create: false,
-    ids: new Set()
 });
 
 const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
@@ -198,36 +153,6 @@ const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
         })
     }
 });
-
-function formatDtg(dtg?: string) {
-    if (!dtg) return 'No DTG';
-
-    const parsed = new Date(dtg);
-
-    if (Number.isNaN(parsed.getTime())) {
-        return dtg;
-    }
-
-    return parsed.toLocaleString(undefined, {
-        dateStyle: 'medium',
-        timeStyle: 'short'
-    });
-}
-
-async function updateLog(logid: string, content: string) {
-    loading.value.ids.add(logid);
-
-    await props.subscription.log.update(
-        logid,
-        {
-            content,
-            dtg: logs.value.find(l => l.id === logid)?.dtg || new Date().toISOString(),
-            keywords: logs.value.find(l => l.id === logid)?.keywords || []
-        }
-    );
-
-    loading.value.ids.delete(logid);
-}
 
 async function submitLog() {
     if (loading.value.create || !createLog.value.content.trim()) return;
