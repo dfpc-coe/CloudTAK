@@ -35,8 +35,7 @@
                                 <span v-text='video.alias' />
                             </div>
                         </div>
-                        <div class='ms-auto'>
-                        </div>
+                        <div class='ms-auto' />
                     </div>
                 </template>
             </template>
