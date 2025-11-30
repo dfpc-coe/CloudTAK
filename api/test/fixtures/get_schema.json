@@ -691,7 +691,7 @@
     },
     "GET /marti/missions/:name/log": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "POST /marti/missions/:name/log": {
