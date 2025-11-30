@@ -79,7 +79,7 @@
             <div class='mx-2 my-2'>
                 <TablerSlidedown
                     :arrow='true'
-                    :clickAnywhereExpand='true'
+                    :click-anywhere-expand='true'
                 >
                     <div class='d-flex align-items-center w-100'>
                         <span>Style Options</span>
