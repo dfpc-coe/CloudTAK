@@ -6,87 +6,99 @@
         :border='false'
         :loading='!logs'
     >
-        <div class='col-12 pb-2 px-2'>
-            <TablerInput
-                v-model='paging.filter'
-                icon='search'
-                placeholder='Filter'
-            />
-        </div>
-
-        <TablerNone
-            v-if='!filteredLogs.length'
-            :create='false'
-            label='Logs'
-        />
-        <div
-            v-else
-            class='rows px-2 d-flex flex-column gap-3'
-        >
-            <MissionLogItem
-                v-for='log in filteredLogs'
-                :key='log.id'
-                :log='log'
-                :subscription='props.subscription'
-            />
-        </div>
-        <template v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'>
-            <div
-                class='px-2 position-relative'
-                :aria-busy='loading.create'
+        <template #buttons>
+            <TablerIconButton
             >
-                <div
-                    v-if='loading.create'
-                    class='position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-75 rounded-4 z-3'
-                >
-                    <TablerLoading
-                        desc='Creating Log'
-                        :compact='true'
-                    />
-                </div>
-                <TablerInput
-                    v-model='createLog.content'
-                    label='Create Log'
-                    :rows='4'
-                    @keyup.enter='submitOnEnter ? submitLog() : undefined'
-                >
-                    <TablerDropdown>
-                        <template #default>
-                            <TablerIconButton
-                                title='Options'
-                            >
-                                <IconSettings
-                                    :size='24'
-                                    stroke='1'
-                                />
-                            </TablerIconButton>
-                        </template>
-                        <template #dropdown>
-                            <TablerToggle
-                                v-model='submitOnEnter'
-                                label='Submit on Enter'
-                            />
-                        </template>
-                    </TablerDropdown>
-                </TablerInput>
-
-                <TagEntry
-                    placeholder='Keyword Entry'
-                    @tags='createLog.keywords = $event'
+                <IconDownload
+                    :size='24'
+                    stroke='1'
+                    @click='exportLogs("csv")'
                 />
+            </TablerIconButton>
+        </template>
+        <template #default>
+            <div class='col-12 pb-2 px-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Filter'
+                />
+            </div>
 
-                <div class='d-flex my-2'>
-                    <div class='ms-auto'>
-                        <button
-                            class='btn btn-primary'
-                            :disabled='loading.create'
-                            @click='submitLog'
-                        >
-                            Save Log
-                        </button>
+            <TablerNone
+                v-if='!filteredLogs.length'
+                :create='false'
+                label='Logs'
+            />
+            <div
+                v-else
+                class='rows px-2 d-flex flex-column gap-3'
+            >
+                <MissionLogItem
+                    v-for='log in filteredLogs'
+                    :key='log.id'
+                    :log='log'
+                    :subscription='props.subscription'
+                />
+            </div>
+            <template v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'>
+                <div
+                    class='px-2 position-relative'
+                    :aria-busy='loading.create'
+                >
+                    <div
+                        v-if='loading.create'
+                        class='position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-75 rounded-4 z-3'
+                    >
+                        <TablerLoading
+                            desc='Creating Log'
+                            :compact='true'
+                        />
+                    </div>
+                    <TablerInput
+                        v-model='createLog.content'
+                        label='Create Log'
+                        :rows='4'
+                        @keyup.enter='submitOnEnter ? submitLog() : undefined'
+                    >
+                        <TablerDropdown>
+                            <template #default>
+                                <TablerIconButton
+                                    title='Options'
+                                >
+                                    <IconSettings
+                                        :size='24'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
+                            </template>
+                            <template #dropdown>
+                                <TablerToggle
+                                    v-model='submitOnEnter'
+                                    label='Submit on Enter'
+                                />
+                            </template>
+                        </TablerDropdown>
+                    </TablerInput>
+
+                    <TagEntry
+                        placeholder='Keyword Entry'
+                        @tags='createLog.keywords = $event'
+                    />
+
+                    <div class='d-flex my-2'>
+                        <div class='ms-auto'>
+                            <button
+                                class='btn btn-primary'
+                                :disabled='loading.create'
+                                @click='submitLog'
+                            >
+                                Save Log
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </template>
         </template>
     </MenuTemplate>
 </template>
@@ -96,6 +108,7 @@ import { ref, computed } from 'vue'
 import { from } from 'rxjs';
 import type { Ref, ComputedRef } from 'vue';
 import type { MissionLog } from '../../../../types.ts';
+import { std } from '../../../../std.ts';
 import TagEntry from '../../util/TagEntry.vue';
 import MissionLogItem from './MissionLog.vue';
 import {
@@ -108,6 +121,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconSettings,
+    IconDownload,
 } from '@tabler/icons-vue';
 import { liveQuery } from "dexie";
 import MenuTemplate from '../../util/MenuTemplate.vue';
@@ -153,6 +167,12 @@ const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
         })
     }
 });
+
+async function exportLogs(format: string): Promise<void> {
+    await std(`/api/marti/missions/${encodeURIComponent(props.subscription.guid)}/log?download=true&format=${format}`, {
+        download: true
+    })
+}
 
 async function submitLog() {
     if (loading.value.create || !createLog.value.content.trim()) return;

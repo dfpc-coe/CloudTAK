@@ -46,7 +46,7 @@ export default class SpriteBuilder {
             }
 
             const supported = SUPPORTED_MIME.some((type) => {
-                if (icon.data.startsWith(`data:${type};base64,`)) {
+                if (icon.data!.startsWith(`data:${type};base64,`)) {
                     return true;
                 }
             });

@@ -18,7 +18,18 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             name: Type.String(),
         }),
-        description: 'Helper API to add a log to a mission',
+        query: Type.Object({
+            format: Type.String({
+                default: 'json',
+                enum: ['json', 'csv'],
+                description: 'The response format to return'
+            }),
+            download: Type.Boolean({
+                default: false,
+                description: 'If set, the response will include a Content-Disposition Header'
+            })
+        }),
+        description: 'Helper API to list Mission Logs',
         res: Type.Object({
             total: Type.Integer(),
             items: Type.Array(MissionLog)
@@ -42,10 +53,38 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            res.json({
-                total: (mission.logs || []).length,
-                items: mission.logs || []
-            });
+            if (req.query.format === 'csv') {
+                res.setHeader('Content-Type', 'text/csv');
+                if (req.query.download) {
+                    res.setHeader('Content-Disposition', `attachment; filename="mission-${req.params.name}-logs.csv"`);
+                }
+
+                const headers = ['id', 'dtg', 'creatorUid', 'content', 'keywords'];
+                res.write(headers.join(',') + '\n');
+
+                for (const log of (mission.logs || [])) {
+                    const row = [
+                        `"${log.id}"`,
+                        `"${log.dtg}"`,
+                        `"${log.creatorUid}"`,
+                        `"${log.content.replace(/"/g, '""')}"`,
+                        `"${(log.keywords || []).join(';').replace(/"/g, '""')}"`
+                    ];
+
+                    res.write(row.join(',') + '\n');
+                }
+
+                res.end();
+            } else {
+                if (req.query.download) {
+                    res.setHeader('Content-Disposition', `attachment; filename="mission-${req.params.name}-logs.json"`);
+                }
+
+                res.json({
+                    total: (mission.logs || []).length,
+                    items: mission.logs || []
+                });
+            }
         } catch (err) {
              Err.respond(err, res);
         }
