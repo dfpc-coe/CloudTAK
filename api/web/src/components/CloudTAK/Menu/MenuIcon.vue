@@ -29,23 +29,23 @@
                 >
                     <div class='col-12'>
                         <TablerInput
-                            label='Name'
                             v-model='icon.name'
+                            label='Name'
                         />
                     </div>
 
                     <div class='col-12'>
                         <UploadLogo
-                            label='Icon Data'
                             v-model='icon.data'
-                            @fileName='updateName'
+                            label='Icon Data'
+                            @file-name='updateName'
                         />
                     </div>
 
                     <div class='col-12'>
                         <TablerInput
-                            label='2525B Type'
                             v-model='icon.type2525b'
+                            label='2525B Type'
                         />
                     </div>
 
@@ -100,8 +100,8 @@
                                         <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Iconset</small>
                                             <p
-                                                @click='router.push(`/menu/iconset/${icon.iconset}`)'
                                                 class='text-start text-blue fw-semibold cursor-pointer p-0 text-decoration-none'
+                                                @click='router.push(`/menu/iconset/${icon.iconset}`)'
                                                 v-text='iconset.name'
                                             />
                                         </div>

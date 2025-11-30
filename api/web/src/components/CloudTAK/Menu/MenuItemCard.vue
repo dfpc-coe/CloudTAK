@@ -61,7 +61,10 @@
                     v-if='badge'
                     class='menu-item-card__badge menu-item-card__badge--admin ms-auto'
                 >{{ badge }}</span>
-                <div v-if='$slots.default' class='ms-auto'>
+                <div
+                    v-if='$slots.default'
+                    class='ms-auto'
+                >
                     <slot />
                 </div>
             </template>

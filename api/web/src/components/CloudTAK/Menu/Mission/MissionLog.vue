@@ -15,26 +15,43 @@
                         <div class='fw-semibold'>
                             {{ log.creatorUid || 'Unknown Author' }}
                         </div>
-                        <TablerDropdown v-if='canWrite' class="ms-auto">
+                        <TablerDropdown
+                            v-if='canWrite'
+                            class='ms-auto'
+                        >
                             <template #default>
                                 <span class='text-white-50 small text-nowrap cursor-pointer'>{{ formatDtg(log.dtg) }}</span>
                             </template>
                             <template #dropdown>
-                                <div class="p-2" style="min-width: 300px;">
+                                <div
+                                    class='p-2'
+                                    style='min-width: 300px;'
+                                >
                                     <TablerInput
-                                        label="Log Time"
-                                        type="datetime-local"
-                                        :model-value="dtgEdit ?? toDatetimeLocal(log.dtg)"
-                                        @update:model-value="dtgEdit = $event"
+                                        label='Log Time'
+                                        type='datetime-local'
+                                        :model-value='dtgEdit ?? toDatetimeLocal(log.dtg)'
+                                        @update:model-value='dtgEdit = $event'
                                     />
-                                    <div class="d-flex justify-content-end gap-2 mt-2">
-                                        <button class="btn btn-sm btn-secondary" @click="cancelEdit">Cancel</button>
-                                        <button class="btn btn-sm btn-primary" @click="saveDtg">Save</button>
+                                    <div class='d-flex justify-content-end gap-2 mt-2'>
+                                        <button
+                                            class='btn btn-sm btn-secondary'
+                                            @click='cancelEdit'
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            class='btn btn-sm btn-primary'
+                                            @click='saveDtg'
+                                        >
+                                            Save
+                                        </button>
                                     </div>
                                 </div>
                             </template>
                         </TablerDropdown>
-                        <span v-else
+                        <span
+                            v-else
                             class='text-white-50 small text-nowrap'
                         >{{ formatDtg(log.dtg) }}</span>
                     </div>
