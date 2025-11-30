@@ -168,7 +168,11 @@ export default class Overlay {
         if (this.frequency) {
             this._timer = setInterval(async () => {
                 const mapStore = useMapStore();
-                mapStore.map.refreshTiles(String(this.id));
+                try {
+                    mapStore.map.refreshTiles(String(this.id));
+                } catch (err) {
+                    console.error('Error refreshing tiles for overlay', this.id, err);
+                }
             }, this.frequency * 1000);
         } else {
             this._timer = null;

@@ -16,7 +16,8 @@ self.addEventListener('install', (event) => {
 
                 Object.values(manifest).forEach((entry) => {
                     if (entry.file.endsWith('.html')) {
-                        assets.add(`./${entry.file}`);
+                        // HTML files are not cached except those explicitly added
+                        return;
                     }
 
                     assets.add(`./${entry.src}`);
