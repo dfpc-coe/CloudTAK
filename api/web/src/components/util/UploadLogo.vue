@@ -29,7 +29,7 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler'
 
-const emit = defineEmits(['update:modelValue', 'fileName']);
+const emit = defineEmits(['update:modelValue', 'file-name']);
 
 const props = defineProps<{
     modelValue?: string;
@@ -57,7 +57,7 @@ function onFileChange(event: Event) {
     const file = target.files[0];
     if (!file) return;
 
-    emit('fileName', file.name);
+    emit('file-name', file.name);
 
     if (!['image/png', 'image/svg+xml'].includes(file.type)) {
         error.value = 'Please upload a PNG or SVG file.';
