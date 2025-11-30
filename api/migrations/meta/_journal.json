@@ -960,6 +960,13 @@
       "when": 1764167125391,
       "tag": "0136_natural_prowler",
       "breakpoints": true
+    },
+    {
+      "idx": 137,
+      "version": "7",
+      "when": 1764544176401,
+      "tag": "0137_fixed_quasimodo",
+      "breakpoints": true
     }
   ]
 }
