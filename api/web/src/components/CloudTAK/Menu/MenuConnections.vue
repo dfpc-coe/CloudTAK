@@ -7,7 +7,7 @@
             />
             <TablerIconButton
                 title='Create Connection'
-                @click='window.location.href = "/connection/new"'
+                @click='external("/connection/new")'
             >
                 <IconPlus
                     :size='32'
@@ -43,7 +43,7 @@
                         :key='conn.id'
                         tabindex='0'
                         role='menuitem'
-                        @click='window.location.href = `/connection/${conn.id}`'
+                        @click='external(`/connection/${conn.id}`)'
                     >
                         <div class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'>
                             <div class='col-auto'>
@@ -159,5 +159,9 @@ async function fetchList() {
     }
 
     loading.value = false;
+}
+
+function external(url: string) {
+    window.location.href = url;
 }
 </script>
