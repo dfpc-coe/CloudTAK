@@ -17,11 +17,7 @@ self.addEventListener('install', (event) => {
 
                 Object.values(manifest).forEach((entry) => {
                     if (entry.file && !entry.file.endsWith('.html')) {
-                        assets.add(`./${entry.file}`);
-                    }
-
-                    if (entry.src && !entry.src.endsWith('.html')) {
-                        assets.add(`./${entry.src}`);
+                        assets.add(entry.file);
                     }
 
                     for (const imported of entry.imports || []) {
