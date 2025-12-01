@@ -170,10 +170,10 @@ export default class AtlasConnection {
                     this.version = status.version;
                 } else if (this.version !== status.version) {
                     console.log(`Version change detected: ${this.version} -> ${status.version}`);
-                    await navigator.serviceWorker.ready.then(registration => {
-                        registration.update();
-                        this.version = status.version;
-                    });
+                    const registration = await self.navigator.serviceWorker.ready;
+
+                    registration.update();
+                    this.version = status.version;
                 }
             } else {
                 console.log('UNKNOWN', body.data);
