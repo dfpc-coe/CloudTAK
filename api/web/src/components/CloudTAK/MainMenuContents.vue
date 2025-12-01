@@ -318,6 +318,7 @@ type MenuItemConfig = {
     key: string;
     label: string;
     route: string;
+    routeExternal?: boolean;
     tooltip: string;
     description?: string;
     icon: Component;

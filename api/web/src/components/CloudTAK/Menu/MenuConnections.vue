@@ -94,7 +94,6 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import type { ETLConnectionList } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import {
@@ -114,8 +113,6 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import ConnectionStatus from './../../ETL/Connection/StatusDot.vue';
 import AgencyBadge from './../../ETL/Connection/AgencyBadge.vue';
 import timeDiff from '../../../timediff.ts';
-
-const router = useRouter();
 
 const error = ref<Error | undefined>();
 const loading = ref(true);

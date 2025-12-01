@@ -102,8 +102,7 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router';
-import { server, std, stdclick } from '../../std.ts';
+import { server, std } from '../../std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import Status from '../ETL/Connection/StatusDot.vue';
@@ -119,7 +118,6 @@ import {
     IconPlus,
 } from '@tabler/icons-vue'
 
-const router = useRouter();
 const error = ref(false);
 const loading = ref(true);
 const header = ref([]);
