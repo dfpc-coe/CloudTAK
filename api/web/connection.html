@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html
+    class='h-full'
+    lang="en"
+    style='overflow: hidden;'
+    data-bs-theme='dark'
+    data-bs-theme-base='neutral'
+    data-bs-theme-primary='blue'
+>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+
+
+        <!-- iOS PWA Settings: ref: https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html?ref=frontendchecklist -->
+        <meta name="format-detection" content="telephone=no">
+        <link rel="apple-touch-icon" href="./public/logos/512.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="/logos/152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/logos/180.png">
+        <link rel="apple-touch-icon" sizes="167x167" href="/logos/167.png">
+
+        <title>CloudTAK Connection</title>
+    </head>
+    <body class='h-full'>
+        <noscript>
+            <strong>We're sorry but this site doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+        </noscript>
+        <div id="app" class='h-full'></div>
+        <script type="module" src="/src/pages/connection/main.ts"></script>
+    </body>
+</html>
