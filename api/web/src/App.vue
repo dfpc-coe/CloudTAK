@@ -14,7 +14,7 @@
                         draggable='false'
                         height='50'
                         width='50'
-                        @click='externalHome'
+                        @click='external("/")'
                     >
                 </div>
                 <div class='col mx-2'>
@@ -36,7 +36,7 @@
                             class='btn btn-dark'
                             target='_blank'
                             rel='noreferrer'
-                            @click='externalDocs'
+                            @click='external("/docs")'
                         >
                             <IconCode
                                 size='32'
@@ -72,7 +72,7 @@
                                 </div>
                                 <div
                                     class='d-flex dropdown-item cursor-pointer hover'
-                                    @click='openAdmin'
+                                    @click='external("/admin")'
                                 >
                                     <IconSettings
                                         size='32'
@@ -221,16 +221,8 @@ function logout() {
     router.push("/login");
 }
 
-function externalHome() {
-    window.location.href = '/';
-}
-
-function externalDocs() {
-    window.location.href = '/docs';
-}
-
-function openAdmin() {
-    window.location.href = '/admin';
+function external(url: string) {
+    window.location.href = url;
 }
 
 function routeLogin() {
