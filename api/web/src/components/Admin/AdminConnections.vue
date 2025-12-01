@@ -8,7 +8,7 @@
             <div class='ms-auto btn-list'>
                 <TablerIconButton
                     title='Create Connection'
-                    @click='window.location.href = "/connection/new"'
+                    @click='external("/connection/new")'
                 >
                     <IconPlus
                         :size='32'
@@ -62,8 +62,8 @@
                             class='cursor-pointer'
                             role='menuitem'
                             tabindex='0'
-                            @keyup.enter='window.location.href = `/connection/${connection.id}`'
-                            @click='window.location.href = `/connection/${connection.id}`'
+                            @keyup.enter='external(`/connection/${connection.id}`)'
+                            @click='external(`/connection/${connection.id}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display && h.name === "name"'>
@@ -189,5 +189,9 @@ async function fetchList() {
         loading.value = false;
         error.value = err instanceof Error ? err : new Error(String(err));
     }
+}
+
+function external(url) {
+    window.location.href = url;
 }
 </script>

@@ -89,8 +89,8 @@
                             class='cursor-pointer'
                             role='menuitem'
                             tabindex='0'
-                            @keyup.enter='window.location.href = `/connection/${layer.connection || "template"}/layer/${layer.id}`'
-                            @click='window.location.href = `/connection/${layer.connection || "template"}/layer/${layer.id}`'
+                            @keyup.enter='external(`/connection/${layer.connection || "template"}/layer/${layer.id}`)'
+                            @click='external(`/connection/${layer.connection || "template"}/layer/${layer.id}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display && h.name === "name"'>
@@ -240,6 +240,10 @@ async function redeploy() {
     });
 
     loading.value = false;
+}
+
+function external(url: string) {
+    window.location.href = url;
 }
 
 async function listLayerSchema() {
