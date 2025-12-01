@@ -16,11 +16,11 @@ self.addEventListener('install', (event) => {
                 const assets = new Set(['/']);
 
                 Object.values(manifest).forEach((entry) => {
-                    if (!entry.file.endsWith('.html')) {
+                    if (entry.file && !entry.file.endsWith('.html')) {
                         assets.add(`./${entry.file}`);
                     }
 
-                    if (!entry.src.endsWith('.html')) {
+                    if (entry.src && !entry.src.endsWith('.html')) {
                         assets.add(`./${entry.src}`);
                     }
 
