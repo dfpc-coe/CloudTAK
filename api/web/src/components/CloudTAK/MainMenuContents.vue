@@ -106,7 +106,7 @@
                     :badge='item.adminBadge'
                     :layout='menuLayout'
                     :compact='false'
-                    @select='router.push(item.route)'
+                    @select='item.routeExternal ? external(item.route) : router.push(item.route)'
                 />
             </div>
             <TablerNone
@@ -130,7 +130,7 @@
                 :badge='item.adminBadge'
                 :layout='"list"'
                 :compact='true'
-                @select='router.push(item.route)'
+                @select='item.routeExternal ? external(item.route) : router.push(item.route)'
             />
         </div>
     </template>
@@ -318,6 +318,7 @@ type MenuItemConfig = {
     key: string;
     label: string;
     route: string;
+    routeExternal?: boolean;
     tooltip: string;
     description?: string;
     icon: Component;
@@ -455,6 +456,7 @@ const baseMenuItems: MenuItemConfig[] = [
         key: 'server',
         label: 'Server',
         route: '/admin',
+        routeExternal: true,
         tooltip: 'Server Settings (Admin)',
         description: 'Configure CloudTAK server settings.',
         icon: IconServerCog,

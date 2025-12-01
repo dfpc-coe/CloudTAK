@@ -8,7 +8,7 @@
             <div class='ms-auto btn-list'>
                 <TablerIconButton
                     title='Create Connection'
-                    @click='router.push("/connection/new")'
+                    @click='external("/connection/new")'
                 >
                     <IconPlus
                         :size='32'
@@ -62,8 +62,8 @@
                             class='cursor-pointer'
                             role='menuitem'
                             tabindex='0'
-                            @keyup.enter='stdclick(router, $event, `/connection/${connection.id}`)'
-                            @click='stdclick(router, $event, `/connection/${connection.id}`)'
+                            @keyup.enter='external(`/connection/${connection.id}`)'
+                            @click='external(`/connection/${connection.id}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display && h.name === "name"'>
@@ -102,8 +102,7 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router';
-import { server, std, stdclick } from '../../std.ts';
+import { server, std } from '../../std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import Status from '../ETL/Connection/StatusDot.vue';
@@ -119,7 +118,6 @@ import {
     IconPlus,
 } from '@tabler/icons-vue'
 
-const router = useRouter();
 const error = ref(false);
 const loading = ref(true);
 const header = ref([]);
@@ -189,5 +187,9 @@ async function fetchList() {
         loading.value = false;
         error.value = err instanceof Error ? err : new Error(String(err));
     }
+}
+
+function external(url) {
+    window.location.href = url;
 }
 </script>
