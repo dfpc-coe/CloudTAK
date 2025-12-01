@@ -47,7 +47,7 @@
                             v-for='data in list.items'
                             :key='data.id'
                             class='cursor-pointer'
-                            @click='stdclick($router, $event, `/connection/${data.connection}/data/${data.id}`)'
+                            @click='external(`/connection/${data.connection}/data/${data.id}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
@@ -156,6 +156,9 @@ export default {
             url.searchParams.append('page', this.paging.page);
             this.list = await std(url);
             this.loading = false;
+        },
+        external(url) {
+            window.location.href = url;
         }
     }
 }

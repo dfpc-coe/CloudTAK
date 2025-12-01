@@ -376,7 +376,7 @@ async function saveIncoming() {
             incoming.value.groups = [];
         }
 
-        await server.PATCH(`/api/connection/{:connectionid}/layer/{:layerid}/incoming`, {
+        const res = await server.PATCH(`/api/connection/{:connectionid}/layer/{:layerid}/incoming`, {
             params: {
                 path: {
                     ':connectionid': Number(String(route.params.connectionid)),
@@ -386,8 +386,9 @@ async function saveIncoming() {
             body: incoming.value
         });
 
-        disabled.value = true;
+        if (res.error) throw new Error(res.error.message);
 
+        disabled.value = true;
         loading.value.save = false;
 
         emit('refresh');
