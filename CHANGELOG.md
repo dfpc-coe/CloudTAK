@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.15.5 - 2025-11-30
+
+- :bug: Ensure file/src exists in SW
+
 ### v12.15.4 - 2025-11-30
 
 - :bug: Update Self Invocation
