@@ -168,16 +168,25 @@ export default class AtlasConnection {
 
                 if (this.version !== status.version) {
                     console.log(`Version change detected: ${this.version} -> ${status.version}`);
-                    const registration = await self.navigator.serviceWorker.ready;
-                    registration.update();
-                    this.version = status.version;
-                } else {
-                    const regs = await self.navigator.serviceWorker.getRegistrations()
-
-                    if (!regs.some(reg => reg.active?.scriptURL.includes(`version=${status.version}`))) {
-                        console.log(`Service Worker out of date, updating to version ${status.version}`);
+                    if (self.navigator.serviceWorker) {
                         const registration = await self.navigator.serviceWorker.ready;
                         registration.update();
+
+                        this.version = status.version;
+                    } else {
+                        console.log('No Service Worker available');
+                    }
+                } else {
+                    if (self.navigator.serviceWorker) {
+                        const regs = await self.navigator.serviceWorker.getRegistrations()
+
+                        if (!regs.some(reg => reg.active?.scriptURL.includes(`version=${status.version}`))) {
+                            console.log(`Service Worker out of date, updating to version ${status.version}`);
+                            const registration = await self.navigator.serviceWorker.ready;
+                            registration.update();
+                        }
+                    } else {
+                        console.log('No Service Worker available');
                     }
                 }
             } else {
