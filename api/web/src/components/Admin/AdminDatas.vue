@@ -47,7 +47,7 @@
                             v-for='data in list.items'
                             :key='data.id'
                             class='cursor-pointer'
-                            @click='stdclick($router, $event, `/connection/${data.connection}/data/${data.id}`)'
+                            @click='window.location.href = `/connection/${data.connection}/data/${data.id}`'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display'>

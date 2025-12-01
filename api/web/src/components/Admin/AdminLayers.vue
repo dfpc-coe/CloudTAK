@@ -89,8 +89,8 @@
                             class='cursor-pointer'
                             role='menuitem'
                             tabindex='0'
-                            @keyup.enter='stdclick(router, $event, `/connection/${layer.connection || "template"}/layer/${layer.id}`)'
-                            @click='stdclick(router, $event, `/connection/${layer.connection || "template"}/layer/${layer.id}`)'
+                            @keyup.enter='window.location.href = `/connection/${layer.connection || "template"}/layer/${layer.id}`'
+                            @click='window.location.href = `/connection/${layer.connection || "template"}/layer/${layer.id}`'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display && h.name === "name"'>

@@ -8,7 +8,7 @@
             <div class='ms-auto btn-list'>
                 <TablerIconButton
                     title='Create Connection'
-                    @click='router.push("/connection/new")'
+                    @click='window.location.href = "/connection/new"'
                 >
                     <IconPlus
                         :size='32'
@@ -62,8 +62,8 @@
                             class='cursor-pointer'
                             role='menuitem'
                             tabindex='0'
-                            @keyup.enter='stdclick(router, $event, `/connection/${connection.id}`)'
-                            @click='stdclick(router, $event, `/connection/${connection.id}`)'
+                            @keyup.enter='window.location.href = `/connection/${connection.id}`'
+                            @click='window.location.href = `/connection/${connection.id}`'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display && h.name === "name"'>

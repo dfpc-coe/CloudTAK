@@ -7,7 +7,7 @@
             />
             <TablerIconButton
                 title='Create Connection'
-                @click='router.push("/connection/new")'
+                @click='window.location.href = "/connection/new"'
             >
                 <IconPlus
                     :size='32'
@@ -43,7 +43,7 @@
                         :key='conn.id'
                         tabindex='0'
                         role='menuitem'
-                        @click='router.push(`/connection/${conn.id}`)'
+                        @click='window.location.href = `/connection/${conn.id}`'
                     >
                         <div class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'>
                             <div class='col-auto'>
