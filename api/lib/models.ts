@@ -32,6 +32,8 @@ export default class Models {
     ProfileFile: Modeler<typeof pgtypes.ProfileFile>;
     ProfileVideo: Modeler<typeof pgtypes.ProfileVideo>;
 
+    MissionTemplate: Modeler<typeof pgtypes.MissionTemplate>;
+
     VideoLease: Modeler<typeof pgtypes.VideoLease>;
 
     Task: Modeler<typeof pgtypes.Task>;
@@ -56,6 +58,8 @@ export default class Models {
 
         this.Palette = new Palette(pg);
         this.PaletteFeature = new Modeler(pg, pgtypes.PaletteFeature);
+
+        this.MissionTemplate = new Modeler(pg, pgtypes.MissionTemplate);
 
         this.Profile = new Modeler(pg, pgtypes.Profile);
         this.ProfileToken = new Modeler(pg, pgtypes.ProfileToken);

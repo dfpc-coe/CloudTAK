@@ -170,6 +170,27 @@
                                                     class='mx-3'
                                                 >Draw Palette</span>
                                             </span>
+                                            <span
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
+                                                    "active": String(route.name).startsWith("admin-mission-templates"),
+                                                    "cursor-pointer": !String(route.name).startsWith("admin-mission-templates")
+                                                }'
+                                                @keyup.enter='router.push(`/admin/mission-templates`)'
+                                                @click='router.push(`/admin/mission-templates`)'
+                                            >
+                                                <IconTemplate
+                                                    v-tooltip='nest ? "Mission Templates" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Mission Templates</span>
+                                            </span>
                                         </div>
                                         <h4
                                             v-if='!nest'
@@ -355,6 +376,7 @@ import {
 import {
     IconBrush,
     IconNetwork,
+    IconTemplate,
     IconVideo,
     IconUsers,
     IconFileImport,

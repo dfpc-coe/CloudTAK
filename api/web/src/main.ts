@@ -381,6 +381,10 @@ const router = VueRouter.createRouter({
                 name: 'admin-palette',
                 component: () => import('./components/Admin/AdminPalette.vue')
             },{
+                path: 'mission-templates',
+                name: 'admin-mission-templates',
+                component: () => import('./components/Admin/AdminMissionTemplates.vue')
+            },{
                 path: 'import',
                 name: 'admin-imports',
                 component: () => import('./components/Admin/AdminImports.vue')
