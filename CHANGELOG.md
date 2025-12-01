@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.15.1 - 2025-11-30
+
+- :bug: Stronger avoidance of bad HTML caching in SW
+
 ### v12.15.0 - 2025-11-30
 
 - :tada: Allow exporting Mission Logs as CSV
