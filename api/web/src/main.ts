@@ -28,6 +28,10 @@ import FloatingVue from 'floating-vue'
 
 import App from './App.vue'
 
+// Intentially not dynamic import to ensure it's included in the build
+// It contains a utility to hard reload the app
+import MenuSettings from './components/CloudTAK/Menu/MenuSettings.vue'
+
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHistory(),
     routes: [
@@ -49,7 +53,7 @@ const router = VueRouter.createRouter({
                 children: [{
                     path: 'settings',
                     name: 'home-menu-settings',
-                    component: () => import('./components/CloudTAK/Menu/MenuSettings.vue')
+                    component: MenuSettings
                 },{
                     path: 'settings/tokens',
                     name: 'home-menu-settings-tokens',
