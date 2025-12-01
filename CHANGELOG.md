@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.15.2 - 2025-11-30
+
+- :bug: Force a refresh on service worker update to avoid caching issues
+
 ### v12.15.1 - 2025-11-30
 
 - :bug: Stronger avoidance of bad HTML caching in SW
