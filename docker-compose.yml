@@ -1,6 +1,5 @@
 services:
     api:
-        platform: linux/amd64
         build:
           context: ./api/
           dockerfile: Dockerfile
@@ -24,7 +23,6 @@ services:
             - PMTILES_URL=${PMTILES_URL}
 
     tiles:
-        platform: linux/amd64
         build:
           context: ./tasks/pmtiles/
           dockerfile: Dockerfile.compose
@@ -40,7 +38,6 @@ services:
             - AWS_S3_SecretAccessKey=${AWS_S3_SecretAccessKey}
 
     events:
-        platform: linux/amd64
         build:
           context: ./tasks/events/
           dockerfile: Dockerfile
@@ -74,7 +71,6 @@ services:
             - "${MEDIA_PORT_SRT:-8890}:8890"
 
     postgis:
-        platform: linux/amd64
         image: postgis/postgis:17-3.4-alpine
         restart: 'always'
         ports:
@@ -85,7 +81,6 @@ services:
             - POSTGRES_PASSWORD=docker
 
     store:
-        platform: linux/amd64
         image: minio/minio:RELEASE.2024-08-17T01-24-54Z
         entrypoint: sh
         command: -c 'mkdir -p /data/cloudtak && /usr/bin/minio server /data --console-address ":9002"'
