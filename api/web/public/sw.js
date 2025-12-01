@@ -12,15 +12,17 @@ self.addEventListener('install', (event) => {
             const res = await fetch('./.vite/manifest.json');
             if (res.ok) {
                 const manifest = await res.json();
-                const assets = new Set(['./index.html']);
+
+                const assets = new Set(['/']);
 
                 Object.values(manifest).forEach((entry) => {
-                    if (entry.file.endsWith('.html')) {
-                        // HTML files are not cached except those explicitly added
-                        return;
+                    if (!entry.file.endsWith('.html')) {
+                        assets.add(`./${entry.file}`);
                     }
 
-                    assets.add(`./${entry.src}`);
+                    if (!entry.src.endsWith('.html')) {
+                        assets.add(`./${entry.src}`);
+                    }
 
                     for (const imported of entry.imports || []) {
                         assets.add(imported);
