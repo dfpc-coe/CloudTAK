@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.15.4 - 2025-11-30
+
+- :bug: Update Self Invocation
+
 ### v12.15.3 - 2025-11-30
 
 - :bug: Update Self Invocation
