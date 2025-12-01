@@ -43,15 +43,6 @@ self.addEventListener('install', (event) => {
     })());
 });
 
-let refreshing = false;
-
-self.addEventListener('controllerchange', () => {
-    if (!refreshing) {
-        window.location.reload()
-        refreshing = true
-    }
-})
-
 self.addEventListener('activate', (event) => {
     event.waitUntil((async () => {
         const keys = await caches.keys();
