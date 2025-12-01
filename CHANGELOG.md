@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.17.1 - 2025-12-01
+
+- :rocket: Continue to iterate on automated Service Worker Updates
+
 ### v12.17.0 - 2025-12-01
 
 - :rocket: To reduce the chunk sizes and flow complexity, this PR moves the following route sets to their own SPAs
