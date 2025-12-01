@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v12.17.0 - 2025-12-01
+
+- :rocket: To reduce the chunk sizes and flow complexity, this PR moves the following route sets to their own SPAs
+    - All routes prefixed with `/admin`
+    - All routes prefixed with `/connection`
+- :bug: Ensure 4xx error from PATCH Layer Incoming Config is thrown -- @adrienhoff 
+
 ### v12.16.0 - 2025-12-01
 
 - :rocket: Remove fixed platform tag
