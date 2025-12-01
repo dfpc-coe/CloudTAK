@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.15.3 - 2025-11-30
+
+- :bug: Update Self Invocation
+
 ### v12.15.2 - 2025-11-30
 
 - :bug: Force a refresh on service worker update to avoid caching issues

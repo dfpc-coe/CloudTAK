@@ -45,7 +45,7 @@ self.addEventListener('install', (event) => {
 
 let refreshing = false;
 
-navigator.serviceWorker.addEventListener('controllerchange', () => {
+self.addEventListener('controllerchange', () => {
     if (!refreshing) {
         window.location.reload()
         refreshing = true
