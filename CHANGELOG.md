@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.16.0 - 2025-12-01
+
+- :rocket: Remove fixed platform tag
+
 ### v12.15.5 - 2025-11-30
 
 - :bug: Ensure file/src exists in SW
