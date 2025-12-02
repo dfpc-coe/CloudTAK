@@ -2,13 +2,13 @@
     <div>
         <div class='card-header'>
             <h1 class='card-title'>
-                Draw Palettes
+                Mission Templates
             </h1>
 
             <div class='ms-auto btn-list'>
                 <TablerIconButton
-                    title='Create Overlay'
-                    @click='router.push("/admin/palette/new")'
+                    title='Create Template'
+                    @click='router.push("/admin/template/new")'
                 >
                     <IconPlus
                         :size='32'
