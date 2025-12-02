@@ -56,23 +56,21 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
+    url.hash = '';
 
     if (event.request.method !== 'GET') return;
 
     // Only handle same-origin requests
     if (url.origin !== self.location.origin) return;
 
-    if (
-        event.request.url.includes('/api')
-        && !event.request.url.includes('/api/iconset/')
-    ) return;
+    if (event.request.url.includes('/api')) return;
 
     event.respondWith(
         (async () => {
             const cache = await caches.open(CACHE_NAME);
 
             // Cache First Strategy
-            const cachedResponse = await cache.match(event.request);
+            const cachedResponse = await cache.match(url.toString());
             if (cachedResponse) {
                 return cachedResponse;
             }
@@ -82,7 +80,7 @@ self.addEventListener('fetch', (event) => {
 
                 // Cache valid responses
                 if (networkResponse && networkResponse.status === 200) {
-                    cache.put(event.request, networkResponse.clone());
+                    cache.put(url.toString(), networkResponse.clone());
                 }
 
                 return networkResponse;
