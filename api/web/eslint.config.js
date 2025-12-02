@@ -31,5 +31,19 @@ export default ts.config(
         rules: {
             "@typescript-eslint/no-explicit-any": "off"
         }
+    },
+    {
+        files: ["public/sw.js"],
+        languageOptions: {
+            globals: {
+                self: "readonly",
+                clients: "readonly",
+                caches: "readonly",
+                fetch: "readonly",
+                URL: "readonly",
+                console: "readonly",
+                location: "readonly"
+            }
+        }
     }
 )
