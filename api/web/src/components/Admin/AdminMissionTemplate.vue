@@ -83,6 +83,24 @@
                 </div>
             </template>
             <template v-else>
+                <div class='d-flex'>
+                    <div
+                        v-if='template.icon'
+                        class='me-4'
+                    >
+                        <img
+                            :src='template.icon'
+                            class='rounded border p-2 bg-white shadow-sm'
+                            style='width: 128px; height: 128px; object-fit: contain;'
+                        >
+                    </div>
+                    <div class='flex-fill'>
+                        <label class='form-label'>Description</label>
+                        <div class='text-muted'>
+                            {{ template.description || 'No description provided.' }}
+                        </div>
+                    </div>
+                </div>
             </template>
         </div>
     </div>
@@ -143,7 +161,7 @@ async function saveTemplate() {
             }) as MissionTemplate 
 
             disabled.value = true;
-            router.push(`/admin/template/mission/${template.value.id}`);
+            router.push(`/admin/template/${template.value.id}`);
         } else {
             template.value = await std(`/api/template/mission/${route.params.template}`, {
                 method: 'PATCH',

@@ -30,6 +30,7 @@ import App from './App.vue'
 
 // Intentially not dynamic import to ensure it's included in the build
 // It contains a utility to hard reload the app
+import Login from './components/Login.vue'
 import MenuSettings from './components/CloudTAK/Menu/MenuSettings.vue'
 
 const router = VueRouter.createRouter({
@@ -201,126 +202,7 @@ const router = VueRouter.createRouter({
             }]
         },
 
-        { path: '/connection/:connectionid/layer/new', name: 'connection-layer-new', component: () => import('./components/ETL/LayerEdit.vue') },
-        { path: '/connection/:connectionid/data/:dataid/layer/new', name: 'connection-data-layer-new', component: () => import('./components/ETL/LayerEdit.vue') },
-
-        {
-            path: '/connection/:connectionid/layer/:layerid',
-            name: 'layer',
-            component: () => import('./components/ETL/Layer.vue'),
-            children: [{
-                path: '',
-                name: `layer-default`,
-                redirect: () => {
-                    return { name: `layer-deployment` };
-                }
-            },{
-                path: 'deployment',
-                name: `layer-deployment`,
-                component: () => import('./components/ETL/Layer/LayerDeployment.vue')
-            },{
-                path: 'alarm',
-                name: `layer-alarm`,
-                component: () => import('./components/ETL/Layer/LayerAlarm.vue')
-            },{
-                path: 'incoming/config',
-                name: `layer-incoming-config`,
-                component: () => import('./components/ETL/Layer/LayerIncomingConfig.vue')
-            },{
-                path: 'incoming/environment',
-                name: `layer-incoming-environment`,
-                component: () => import('./components/ETL/Layer/LayerEnvironment.vue')
-            },{
-                path: 'incoming/schema',
-                name: `layer-incoming-schema`,
-                component: () => import('./components/ETL/Layer/LayerIncomingSchema.vue')
-            },{
-                path: 'incoming/styles',
-                name: `layer-incoming-styles`,
-                component: () => import('./components/ETL/Layer/LayerIncomingStyles.vue')
-            },{
-                path: 'outgoing/environment',
-                name: `layer-outgoing-environment`,
-                component: () => import('./components/ETL/Layer/LayerEnvironment.vue')
-            },{
-                path: 'outgoing/config',
-                name: `layer-outgoing-config`,
-                component: () => import('./components/ETL/Layer/LayerOutgoingConfig.vue')
-            }]
-        },
-
-        { path: '/connection/:connectionid/layer/:layerid/edit', name: 'layer-edit', component: () => import('./components/ETL/LayerEdit.vue') },
-
-        { path: '/connection/:connectionid/data/new', name: 'data-new', component: () => import('./components/ETL/DataEdit.vue') },
-        {
-            path: '/connection/:connectionid/data/:dataid',
-            name: 'data',
-            component: () => import('./components/ETL/Data.vue'),
-            children: [{
-                path: '',
-                name: 'data-default',
-                redirect: () => {
-                    return { name: 'data-files' };
-                }
-            },{
-                path: 'groups',
-                name: 'data-groups',
-                component: () => import('./components/ETL/Data/DataGroups.vue')
-            },{
-                path: 'files',
-                name: 'data-files',
-                component: () => import('./components/ETL/Data/DataFiles.vue')
-            },{
-                path: 'layer',
-                name: 'data-layer',
-                component: () => import('./components/ETL/Data/DataLayer.vue')
-            }]
-        },
-        { path: '/connection/:connectionid/data/:dataid/edit', name: 'data-edit', component: () => import('./components/ETL/DataEdit.vue') },
-
-        { path: '/connection', name: 'connections', component: () => import('./components/ETL/Connections.vue') },
-        { path: '/connection/new', name: 'connection-new', component: () => import('./components/ETL/ConnectionEdit.vue') },
-
-        {
-            path: '/connection/:connectionid',
-            name: 'connection',
-            component: () => import('./components/ETL/Connection.vue'),
-            children: [{
-                path: '',
-                name: 'connection-default',
-                redirect: () => {
-                    return { name: 'connection-layers' };
-                }
-            },{
-                path: 'groups',
-                name: 'connection-groups',
-                component: () => import('./components/ETL/Connection/ConnectionGroups.vue')
-            },{
-                path: 'layer',
-                name: 'connection-layers',
-                component: () => import('./components/ETL/Connection/ConnectionLayer.vue')
-            },{
-                path: 'files',
-                name: 'connection-files',
-                component: () => import('./components/ETL/Connection/ConnectionFiles.vue')
-            },{
-                path: 'data',
-                name: 'connection-datas',
-                component: () => import('./components/ETL/Connection/ConnectionData.vue')
-            },{
-                path: 'video',
-                name: 'connection-videos',
-                component: () => import('./components/ETL/Connection/ConnectionVideos.vue')
-            },{
-                path: 'tokens',
-                name: 'connection-tokens',
-                component: () => import('./components/ETL/Connection/ConnectionTokens.vue')
-            }]
-        },
-
-        { path: '/connection/:connectionid/edit', name: 'connection-edit', component: () => import('./components/ETL/ConnectionEdit.vue') },
-
-        { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
+        { path: '/login', name: 'login', component: Login },
 
         { path: '/configure', name: 'configure', component: () => import('./components/Configure.vue') },
 
