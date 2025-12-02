@@ -40,7 +40,7 @@
 
             <TablerLoading
                 v-if='loading'
-                desc='Loading Palettes'
+                desc='Loading Templates'
             />
             <TablerAlert
                 v-else-if='error'
@@ -48,7 +48,7 @@
             />
             <TablerNone
                 v-else-if='!list.items.length'
-                label='Palettes'
+                label='Templates'
                 :create='false'
             />
             <div
@@ -101,7 +101,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl, stdclick } from '../../../src/std.ts';
-import type { PaletteList, Palette } from '../../../src/types.ts';
+import type { MissionTemplateList, MissionTemplate } from '../../../src/types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import {
@@ -116,7 +116,7 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue'
 
-type Header = { name: keyof Palette, display: boolean };
+type Header = { name: keyof MissionTemplate, display: boolean };
 
 const router = useRouter();
 
@@ -132,7 +132,7 @@ const paging = ref({
     page: 0
 });
 
-const list = ref<PaletteList>({
+const list = ref<MissionTemplateList>({
     total: 0,
     items: []
 });
@@ -142,14 +142,14 @@ watch(paging.value, async () => {
 });
 
 onMounted(async () => {
-    await listPaletteSchema();
+    await listMissionTemplateSchema();
     await fetchList();
 });
 
-async function listPaletteSchema() {
-    const schema = await std('/api/schema?method=GET&url=/palette');
+async function listMissionTemplateSchema() {
+    const schema = await std('/api/schema?method=GET&url=/template/mission');
 
-    const defaults: Array<keyof Palette> = ['name'];
+    const defaults: Array<keyof MissionTemplate> = ['name'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
@@ -173,13 +173,13 @@ async function fetchList() {
     error.value = undefined;
 
     try {
-        const url = stdurl('/api/palette');
+        const url = stdurl('/api/template/mission');
 
         url.searchParams.append('filter', paging.value.filter);
         url.searchParams.append('limit', String(paging.value.limit));
         url.searchParams.append('page', String(paging.value.page));
         url.searchParams.append('sort', paging.value.sort);
-        list.value = await std(url) as PaletteList;
+        list.value = await std(url) as MissionTemplateList;
      } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
      } finally {
