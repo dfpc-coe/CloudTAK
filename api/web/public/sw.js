@@ -10,12 +10,13 @@ self.addEventListener('install', (event) => {
     event.waitUntil((async () => {
         const cache = await caches.open(CACHE_NAME);
 
+        const assets = new Set(['/']);
+
         try {
             const res = await fetch('./.vite/manifest.json');
+
             if (res.ok) {
                 const manifest = await res.json();
-
-                const assets = new Set(['/']);
 
                 Object.values(manifest).forEach((entry) => {
                     if (entry.file && !entry.file.endsWith('.html')) {
@@ -30,11 +31,25 @@ self.addEventListener('install', (event) => {
                         assets.add(cssFile);
                     }
                 });
-
-                await cache.addAll(Array.from(assets));
             }
         } catch (err) {
-            console.warn('Failed to pre-cache Vite chunks:', err);
+            console.warn('Failed to obtain Vite Manifest:', err);
+        }
+
+        const urls = Array.from(assets);
+
+        const results = await Promise.allSettled(
+            urls.map(url => cache.add(url))
+        );
+
+        onst failedUrls = results
+            .filter(result => result.status === 'rejected')
+            .map((result, index) => urls[index]);
+
+        if (failedUrls.length > 0) {
+            console.error('Failed to cache the following URLs:', failedUrls);
+        } else {
+            console.log('All resources cached successfully.');
         }
     })());
 });
