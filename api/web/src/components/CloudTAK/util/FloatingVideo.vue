@@ -137,7 +137,7 @@
 <script setup lang='ts'>
 /**
  * FloatingVideo Component
- * 
+ *
  * A draggable, resizable video player component for HLS live streaming.
  * Features resilient error handling, automatic retry logic, and MediaMTX muxer restart recovery.
  */
@@ -443,7 +443,10 @@ async function createPlayer(): Promise<void> {
                     break;
                 case Hls.ErrorTypes.MEDIA_ERROR:
                     console.log("Fatal media error:", data);
-                    if (player.value) {
+
+                    if (data.details === 'bufferAddCodecError' && data.error instanceof Error && data.error.name === 'NotSupportedError') {
+                        error.value = new Error(`Your browser does not support the required video codec for this stream (${data.mimeType}`);
+                    } else if (player.value) {
                         try {
                             player.value.recoverMediaError();
                         } catch {
@@ -493,9 +496,9 @@ function handleStreamError(streamError: Error): void {
         // Calculate exponential backoff delay
         const delay = 1000 * Math.pow(2, retryCount.value); // 1s, 2s, 4s
         console.log(`Retrying stream in ${delay}ms (attempt ${retryCount.value + 1}/${maxRetries.value})`);
-        
+
         retryCount.value++;
-        
+
         // Retry after delay
         setTimeout(() => {
             if (player.value) {

@@ -12,6 +12,45 @@
 
 ### Pending Release
 
+### v12.18.0 - 2025-12-01
+
+- :rocket: Catch and display codec errors in Video Player
+
+### v12.17.1 - 2025-12-01
+
+- :rocket: Continue to iterate on automated Service Worker Updates
+
+### v12.17.0 - 2025-12-01
+
+- :rocket: To reduce the chunk sizes and flow complexity, this PR moves the following route sets to their own SPAs
+    - All routes prefixed with `/admin`
+    - All routes prefixed with `/connection`
+- :bug: Ensure 4xx error from PATCH Layer Incoming Config is thrown -- @adrienhoff 
+
+### v12.16.0 - 2025-12-01
+
+- :rocket: Remove fixed platform tag
+
+### v12.15.5 - 2025-11-30
+
+- :bug: Ensure file/src exists in SW
+
+### v12.15.4 - 2025-11-30
+
+- :bug: Update Self Invocation
+
+### v12.15.3 - 2025-11-30
+
+- :bug: Update Self Invocation
+
+### v12.15.2 - 2025-11-30
+
+- :bug: Force a refresh on service worker update to avoid caching issues
+
+### v12.15.1 - 2025-11-30
+
+- :bug: Stronger avoidance of bad HTML caching in SW
+
 ### v12.15.0 - 2025-11-30
 
 - :tada: Allow exporting Mission Logs as CSV

@@ -7,7 +7,7 @@
             />
             <TablerIconButton
                 title='Create Connection'
-                @click='router.push("/connection/new")'
+                @click='external("/connection/new")'
             >
                 <IconPlus
                     :size='32'
@@ -43,7 +43,7 @@
                         :key='conn.id'
                         tabindex='0'
                         role='menuitem'
-                        @click='router.push(`/connection/${conn.id}`)'
+                        @click='external(`/connection/${conn.id}`)'
                     >
                         <div class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'>
                             <div class='col-auto'>
@@ -94,7 +94,6 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import type { ETLConnectionList } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import {
@@ -114,8 +113,6 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import ConnectionStatus from './../../ETL/Connection/StatusDot.vue';
 import AgencyBadge from './../../ETL/Connection/AgencyBadge.vue';
 import timeDiff from '../../../timediff.ts';
-
-const router = useRouter();
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
@@ -159,5 +156,9 @@ async function fetchList() {
     }
 
     loading.value = false;
+}
+
+function external(url: string) {
+    window.location.href = url;
 }
 </script>

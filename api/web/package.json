@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK.web",
     "type": "module",
-    "version": "12.15.0",
+    "version": "12.18.0",
     "private": true,
     "engines": {
         "node": ">= 22"
@@ -11,7 +11,7 @@
         "typegen": "openapi-typescript http://localhost:5001/api/swagger --output src/derived-types.d.ts",
         "check": "vue-tsc",
         "build": "vite build",
-        "lint": "eslint ./src/",
+        "lint": "eslint ./src/ ./public/",
         "test": "exit 0"
     },
     "dependencies": {

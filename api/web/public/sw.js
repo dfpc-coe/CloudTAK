@@ -12,15 +12,13 @@ self.addEventListener('install', (event) => {
             const res = await fetch('./.vite/manifest.json');
             if (res.ok) {
                 const manifest = await res.json();
-                const assets = new Set(['./index.html']);
+
+                const assets = new Set(['/']);
 
                 Object.values(manifest).forEach((entry) => {
-                    if (entry.file.endsWith('.html')) {
-                        // HTML files are not cached except those explicitly added
-                        return;
+                    if (entry.file && !entry.file.endsWith('.html')) {
+                        assets.add(entry.file);
                     }
-
-                    assets.add(`./${entry.src}`);
 
                     for (const imported of entry.imports || []) {
                         assets.add(imported);
@@ -51,29 +49,28 @@ self.addEventListener('activate', (event) => {
                 }
             })
         );
+
         await clients.claim();
     })());
 });
 
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
+    url.hash = '';
 
     if (event.request.method !== 'GET') return;
 
     // Only handle same-origin requests
     if (url.origin !== self.location.origin) return;
 
-    if (
-        event.request.url.includes('/api')
-        && !event.request.url.includes('/api/iconset/')
-    ) return;
+    if (event.request.url.includes('/api')) return;
 
     event.respondWith(
         (async () => {
             const cache = await caches.open(CACHE_NAME);
 
             // Cache First Strategy
-            const cachedResponse = await cache.match(event.request);
+            const cachedResponse = await cache.match(url.toString());
             if (cachedResponse) {
                 return cachedResponse;
             }
@@ -83,7 +80,7 @@ self.addEventListener('fetch', (event) => {
 
                 // Cache valid responses
                 if (networkResponse && networkResponse.status === 200) {
-                    cache.put(event.request, networkResponse.clone());
+                    cache.put(url.toString(), networkResponse.clone());
                 }
 
                 return networkResponse;

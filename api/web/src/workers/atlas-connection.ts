@@ -166,14 +166,28 @@ export default class AtlasConnection {
             } else if (body.type === 'status') {
                 const status = body.data as { version: string };
 
-                if (!this.version) {
-                    this.version = status.version;
-                } else if (this.version !== status.version) {
+                if (this.version !== status.version) {
                     console.log(`Version change detected: ${this.version} -> ${status.version}`);
-                    await navigator.serviceWorker.ready.then(registration => {
+                    if (self.navigator.serviceWorker) {
+                        const registration = await self.navigator.serviceWorker.ready;
                         registration.update();
+
                         this.version = status.version;
-                    });
+                    } else {
+                        console.log('No Service Worker available');
+                    }
+                } else {
+                    if (self.navigator.serviceWorker) {
+                        const regs = await self.navigator.serviceWorker.getRegistrations()
+
+                        if (!regs.some(reg => reg.active?.scriptURL.includes(`version=${status.version}`))) {
+                            console.log(`Service Worker out of date, updating to version ${status.version}`);
+                            const registration = await self.navigator.serviceWorker.ready;
+                            registration.update();
+                        }
+                    } else {
+                        console.log('No Service Worker available');
+                    }
                 }
             } else {
                 console.log('UNKNOWN', body.data);
