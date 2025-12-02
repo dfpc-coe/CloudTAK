@@ -4,7 +4,7 @@ import Auth from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
-import { Mission } from '../lib/schema.js';
+import { MissionTemplate } from '../lib/schema.js';
 import { MissionTemplateResponse, StandardResponse } from '../lib/types.js';
 import * as Default from '../lib/limits.js';
 
@@ -74,7 +74,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.String({
                 description: 'A human friendly name for the Template'
-            })
+            }),
             icon: Type.String({
                 description: 'Base64 encoded icon image for the Template'
             }),
