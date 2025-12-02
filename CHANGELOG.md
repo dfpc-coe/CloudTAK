@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.19.0 - 2025-12-02
+
+- :tada: Introduce MissionTemplate Admin UI for creating Data Sync Templates
+- :bug: Fix nginx loading of admin.html & connection.html in single page app mode
+- :rocket: Remove Service Worker in Admin and Connection UIs to avoid caching issues
+
 ### v12.18.0 - 2025-12-01
 
 - :rocket: Catch and display codec errors in Video Player
