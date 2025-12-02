@@ -114,6 +114,46 @@ http {
             try_files /index.html =404;
         }
 
+        location /admin {
+            if ($request_uri ~ ^/(.*)\.html) {
+                return 302 /$1;
+            }
+
+            add_header 'X-Content-Type-Options' 'nosniff' always;
+            add_header 'X-Frame-Options' 'DENY' always;
+            add_header 'Referrer-Policy' 'strict-origin-when-cross-origin' always;
+            add_header 'Permissions-Policy' 'fullscreen=(self), geolocation=(self), clipboard-read=(self), clipboard-write=(self)' always;
+            ${cspstr}
+            ${sts}
+
+            add_header 'Cache-Control' 'no-store, no-cache, must-revalidate' always;
+            add_header 'Expires' 0 always;
+            add_header 'Pragma' 'no-cache' always;
+
+            alias /home/etl/api/web/dist/;
+            try_files /admin.html =404;
+        }
+
+        location /connection {
+            if ($request_uri ~ ^/(.*)\.html) {
+                return 302 /$1;
+            }
+
+            add_header 'X-Content-Type-Options' 'nosniff' always;
+            add_header 'X-Frame-Options' 'DENY' always;
+            add_header 'Referrer-Policy' 'strict-origin-when-cross-origin' always;
+            add_header 'Permissions-Policy' 'fullscreen=(self), geolocation=(self), clipboard-read=(self), clipboard-write=(self)' always;
+            ${cspstr}
+            ${sts}
+
+            add_header 'Cache-Control' 'no-store, no-cache, must-revalidate' always;
+            add_header 'Expires' 0 always;
+            add_header 'Pragma' 'no-cache' always;
+
+            alias /home/etl/api/web/dist/;
+            try_files /connection.html =404;
+        }
+
         location / {
             if ($request_uri ~ ^/(.*)\.html) {
                 return 302 /$1;

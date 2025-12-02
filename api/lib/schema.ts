@@ -45,6 +45,15 @@ export const PaletteFeature = pgTable('palette_feature', {
     style: json().$type<Static<typeof PaletteFeatureStyle>>().notNull().default({})
 });
 
+export const MissionTemplate = pgTable('mission_template', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    name: text().notNull(),
+    icon: text().notNull().default(''),
+    description: text().notNull().default(''),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+});
+
 /** ==== END ==== */
 
 export const Profile = pgTable('profile', {

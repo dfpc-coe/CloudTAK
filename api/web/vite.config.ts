@@ -1,7 +1,8 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type ViteDevServer } from 'vite'
 import path from 'node:path';
 import vue from '@vitejs/plugin-vue'
 import icons from './public/logos/icons.ts';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 
 export default defineConfig(({ mode }) => {
     const res = {
@@ -9,7 +10,20 @@ export default defineConfig(({ mode }) => {
             'import.meta.env.HASH': JSON.stringify(Math.random().toString(36).substring(2, 15)),
         },
         plugins: [
-            vue()
+            vue(),
+            {
+                name: 'configure-server',
+                configureServer(server: ViteDevServer) {
+                    server.middlewares.use((req: IncomingMessage, res: ServerResponse, next: (err?: any) => void) => {
+                        if (req.url?.startsWith('/admin') && !path.extname(req.url)) {
+                            req.url = '/admin.html';
+                        } else if (req.url?.startsWith('/connection') && !path.extname(req.url)) {
+                            req.url = '/connection.html';
+                        }
+                        next();
+                    });
+                }
+            }
         ],
         optimizeDeps: {
             include: ["showdown", "@tak-ps/vue-tabler"],
