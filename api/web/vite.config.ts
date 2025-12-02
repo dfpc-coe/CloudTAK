@@ -9,7 +9,20 @@ export default defineConfig(({ mode }) => {
             'import.meta.env.HASH': JSON.stringify(Math.random().toString(36).substring(2, 15)),
         },
         plugins: [
-            vue()
+            vue(),
+            {
+                name: 'configure-server',
+                configureServer(server) {
+                    server.middlewares.use((req, res, next) => {
+                        if (req.url?.startsWith('/admin') && !path.extname(req.url)) {
+                            req.url = '/admin.html';
+                        } else if (req.url?.startsWith('/connection') && !path.extname(req.url)) {
+                            req.url = '/connection.html';
+                        }
+                        next();
+                    });
+                }
+            }
         ],
         optimizeDeps: {
             include: ["showdown", "@tak-ps/vue-tabler"],
