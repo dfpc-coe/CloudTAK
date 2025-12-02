@@ -42,7 +42,7 @@ self.addEventListener('install', (event) => {
             urls.map(url => cache.add(url))
         );
 
-        onst failedUrls = results
+        const failedUrls = results
             .filter(result => result.status === 'rejected')
             .map((result, index) => urls[index]);
 
