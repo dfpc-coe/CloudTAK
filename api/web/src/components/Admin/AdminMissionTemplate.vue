@@ -8,7 +8,7 @@
             <h1 class='card-title d-flex align-items-center'>
                 <TablerIconButton
                     title='Back to List'
-                    @click='router.push(`/admin/palette`)'
+                    @click='router.push(`/admin/templates`)'
                 >
                     <IconCircleArrowLeft
                         :size='32'
@@ -19,28 +19,18 @@
 
                 <span
                     class='ms-2'
-                    v-text='route.params.palette === "new" ? "New Palette": palette.name'
+                    v-text='route.params.template === "new" ? "New Template": template.name'
                 />
             </h1>
 
             <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    v-if='disabled'
-                    title='Add Palette Feature'
-                    @click='router.push(`/admin/palette/${route.params.palette}/feature/new`)'
-                >
-                    <IconPlus
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
                 <TablerDelete
                     displaytype='icon'
-                    @delete='deletePalette'
+                    @delete='deleteTemplate'
                 />
                 <TablerIconButton
                     v-if='disabled'
-                    title='Edit Palette'
+                    title='Edit Template'
                     @click='disabled = false'
                 >
                     <IconPencil
@@ -53,7 +43,7 @@
         <div class='card-body'>
             <TablerLoading
                 v-if='loading'
-                desc='Loading Palette'
+                desc='Loading Template'
             />
             <TablerAlert
                 v-else-if='error'
@@ -63,7 +53,7 @@
                 <div class='row g-2'>
                     <div class='col-12'>
                         <TablerInput
-                            v-model='palette.name'
+                            v-model='template.name'
                             label='Name'
                         />
                     </div>
@@ -71,7 +61,7 @@
                         <div class='ms-auto'>
                             <button
                                 class='btn btn-primary'
-                                @click='savePalette'
+                                @click='saveTemplate'
                             >
                                 Save
                             </button>
@@ -80,33 +70,6 @@
                 </div>
             </template>
             <template v-else>
-                <TablerNone
-                    v-if='!palette.features.length'
-                    label='Palette Features'
-                    :create='false'
-                />
-                <template v-else>
-                    <div
-                        v-for='feature of palette.features'
-                        :key='feature.uuid'
-                        class='hover px-2 py-2 cursor-pointer d-flex align-items-center rounded'
-                        @click='router.push(`/admin/palette/${route.params.palette}/feature/${feature.uuid}`)'
-                    >
-                        <IconPoint
-                            v-if='feature.type === "Point"'
-                        />
-                        <IconLine
-                            v-else-if='feature.type === "LineString"'
-                        />
-                        <IconPolygon
-                            v-else-if='feature.type === "Polygon"'
-                        />
-                        <span
-                            class='mx-2'
-                            v-text='feature.name'
-                        />
-                    </div>
-                </template>
             </template>
         </div>
     </div>
@@ -117,7 +80,7 @@ import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { std } from '../../../src/std.ts';
-import type { Palette } from '../../../src/types.ts';
+import type { MissionTemplate } from '../../../src/types.ts';
 import {
     TablerNone,
     TablerInput,
@@ -142,40 +105,41 @@ const error = ref<Error | undefined>();
 const disabled = ref(true);
 const loading = ref(true);
 
-const palette = ref<Palette>({
+const template = ref<MissionTemplate>({
     uuid: randomUUID(),
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
     name: '',
-    features: []
+    icon: '',
+    description: '',
 });
 
 onMounted(async () => {
-    if (route.params.palette !== "new") {
-        await fetchPalette();
+    if (route.params.template !== "new") {
+        await fetchTemplate();
     } else {
         disabled.value = false
         loading.value = false;
     }
 });
 
-async function savePalette() {
+async function saveTemplate() {
     loading.value = true;
 
     try {
-        if (route.params.palette === "new") {
-            palette.value = await std(`/api/palette`, {
+        if (route.params.mission === "new") {
+            mission.value = await std(`/api/template/mission`, {
                 method: 'POST',
-                body: palette.value
-            }) as Palette
+                body: template.value
+            }) as MissionTemplate 
 
             disabled.value = true;
-            router.push(`/admin/palette/${palette.value.uuid}`);
+            router.push(`/admin/template/mission/${template.value.uuid}`);
         } else {
-            palette.value = await std(`/api/palette/${route.params.palette}`, {
+            template.value = await std(`/api/template/mission/${route.params.mission}`, {
                 method: 'PATCH',
-                body: palette.value
-            }) as Palette
+                body: template.value
+            }) as MissionTemplate
 
             disabled.value = true;
         }
@@ -186,25 +150,25 @@ async function savePalette() {
     }
 }
 
-async function deletePalette() {
+async function deleteTemplate() {
     loading.value = true;
 
     try {
-        await std(`/api/palette/${route.params.palette}`, {
+        await std(`/api/template/mission/${route.params.mission}`, {
             method: 'DELETE'
         })
 
-        router.push('/admin/palette');
+        router.push('/admin/templates');
     } catch (err) {
         loading.value = false;
         throw err;
     }
 }
 
-async function fetchPalette() {
+async function fetchTemplate() {
     loading.value = true;
     try {
-        palette.value = await std(`/api/palette/${route.params.palette}`) as Palette;
+        template.value = await std(`/api/template/mission/${route.params.mission}`) as MissionTemplate;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
