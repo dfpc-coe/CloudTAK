@@ -23,6 +23,8 @@ export default class Models {
     Palette: Palette;
     PaletteFeature: Modeler<typeof pgtypes.PaletteFeature>;
 
+    MissionTemplate: Modeler<typeof pgtypes.MissionTemplate>;
+
     Profile: Modeler<typeof pgtypes.Profile>;
     ProfileChat: ProfileChat;
     ProfileToken: Modeler<typeof pgtypes.ProfileToken>;
@@ -56,6 +58,8 @@ export default class Models {
 
         this.Palette = new Palette(pg);
         this.PaletteFeature = new Modeler(pg, pgtypes.PaletteFeature);
+
+        this.MissionTemplate = new Modeler(pg, pgtypes.MissionTemplate);
 
         this.Profile = new Modeler(pg, pgtypes.Profile);
         this.ProfileToken = new Modeler(pg, pgtypes.ProfileToken);
