@@ -1,7 +1,8 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type ViteDevServer } from 'vite'
 import path from 'node:path';
 import vue from '@vitejs/plugin-vue'
 import icons from './public/logos/icons.ts';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 
 export default defineConfig(({ mode }) => {
     const res = {
@@ -12,8 +13,8 @@ export default defineConfig(({ mode }) => {
             vue(),
             {
                 name: 'configure-server',
-                configureServer(server) {
-                    server.middlewares.use((req, res, next) => {
+                configureServer(server: ViteDevServer) {
+                    server.middlewares.use((req: IncomingMessage, res: ServerResponse, next: (err?: any) => void) => {
                         if (req.url?.startsWith('/admin') && !path.extname(req.url)) {
                             req.url = '/admin.html';
                         } else if (req.url?.startsWith('/connection') && !path.extname(req.url)) {
