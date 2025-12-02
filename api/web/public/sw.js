@@ -5,6 +5,8 @@ const BUILD  = params.get('build') || Math.random().toString(36).substring(2, 8)
 const CACHE_NAME = `cloudtak-cache-${VERSION}-${BUILD}`;
 
 self.addEventListener('install', (event) => {
+    self.skipWaiting();
+
     event.waitUntil((async () => {
         const cache = await caches.open(CACHE_NAME);
 
@@ -34,14 +36,13 @@ self.addEventListener('install', (event) => {
         } catch (err) {
             console.warn('Failed to pre-cache Vite chunks:', err);
         }
-
-        self.skipWaiting();
     })());
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', async (event) => {
     event.waitUntil((async () => {
         const keys = await caches.keys();
+
         await Promise.all(
             keys.map((key) => {
                 if (key !== CACHE_NAME) {
@@ -49,9 +50,9 @@ self.addEventListener('activate', (event) => {
                 }
             })
         );
-
-        await clients.claim();
     })());
+
+    await clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
@@ -62,7 +63,6 @@ self.addEventListener('fetch', (event) => {
 
     // Only handle same-origin requests
     if (url.origin !== self.location.origin) return;
-
     if (event.request.url.includes('/api')) return;
 
     event.respondWith(
