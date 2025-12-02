@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.18.0 - 2025-12-01
+
+- :rocket: Catch and display codec errors in Video Player
+
 ### v12.17.1 - 2025-12-01
 
 - :rocket: Continue to iterate on automated Service Worker Updates
