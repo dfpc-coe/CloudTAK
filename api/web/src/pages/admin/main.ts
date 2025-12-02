@@ -92,6 +92,18 @@ const router = VueRouter.createRouter({
                 name: 'admin-user',
                 component: () => import('../../components/Admin/AdminUser.vue')
             },{
+                path: 'import',
+                name: 'admin-imports',
+                component: () => import('../../components/Admin/AdminImports.vue')
+            },{
+                path: 'templates',
+                name: 'admin-mission-templates',
+                component: () => import('../../components/Admin/AdminMissionTemplates.vue')
+            },{
+                path: 'template/:template',
+                name: 'admin-mission-template',
+                component: () => import('../../components/Admin/AdminMissionTemplate.vue')
+            },{
                 path: 'palette',
                 name: 'admin-palettes',
                 component: () => import('../../components/Admin/AdminPalettes.vue')
@@ -99,10 +111,6 @@ const router = VueRouter.createRouter({
                 path: 'palette/:palette',
                 name: 'admin-palette',
                 component: () => import('../../components/Admin/AdminPalette.vue')
-            },{
-                path: 'import',
-                name: 'admin-imports',
-                component: () => import('../../components/Admin/AdminImports.vue')
             },{
                 path: 'palette/:palette/feature/:feature',
                 name: 'admin-palette-feature',

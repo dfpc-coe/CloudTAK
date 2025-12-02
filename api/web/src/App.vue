@@ -62,7 +62,7 @@
                             >
                                 <div
                                     class='d-flex dropdown-item cursor-pointer hover'
-                                    @click='router.push("/connection")'
+                                    @click='external("/connection")'
                                 >
                                     <IconNetwork
                                         size='32'

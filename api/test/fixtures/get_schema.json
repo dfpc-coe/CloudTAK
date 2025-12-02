@@ -869,6 +869,31 @@
         "query": false,
         "res": true
     },
+    "GET /template/mission": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /template/mission/:mission": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /template/mission": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /template/mission/:mission": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /template/mission/:mission": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /palette": {
         "body": false,
         "query": true,
