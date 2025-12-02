@@ -178,7 +178,7 @@ async function createLogin() {
         emit('login');
 
         if (route.query.redirect && !String(route.query.redirect).includes('/login')) {
-            router.push(String(route.query.redirect));
+            window.location.href = String(route.query.redirect));
         } else {
             router.push("/");
         }
