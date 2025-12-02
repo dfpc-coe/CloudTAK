@@ -63,18 +63,18 @@
                     />
                     <tbody>
                         <tr
-                            v-for='p in list.items'
-                            :key='p.uuid'
+                            v-for='template in list.items'
+                            :key='template.id'
                             tabindex='0'
                             class='cursor-pointer'
-                            @keyup.enter='stdclick(router, $event, `/admin/palette/${p.uuid}`)'
-                            @click='stdclick(router, $event, `/admin/palette/${p.uuid}`)'
+                            @keyup.enter='stdclick(router, $event, `/admin/template/${template.id}`)'
+                            @click='stdclick(router, $event, `/admin/template/${template.id}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
                                     <td>
                                         <div class='d-flex align-items-center'>
-                                            <span v-text='p[h.name]' />
+                                            <span v-text='template[h.name]' />
                                         </div>
                                     </td>
                                 </template>
