@@ -3,6 +3,7 @@ import Config from '../lib/config.js';
 import Auth from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
+import Sprites from '../lib/sprites.js';
 import { Type } from '@sinclair/typebox'
 import { MissionTemplate } from '../lib/schema.js';
 import { MissionTemplateResponse, StandardResponse } from '../lib/types.js';
@@ -89,6 +90,10 @@ export default async function router(schema: Schema, config: Config) {
                 admin: true
             });
 
+            await Sprites.validate({
+                data: req.body.icon,
+            });
+
             const template = await config.models.MissionTemplate.generate(req.body);
 
             res.json(template);
@@ -115,6 +120,12 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.as_user(config, req, {
                 admin: true
             });
+
+            if (req.body.icon) {
+                await Sprites.validate({
+                    data: req.body.icon,
+                });
+            }
 
             const template = await config.models.MissionTemplate.commit(req.params.mission, req.body);
 
