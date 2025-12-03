@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.20.0 - 2025-12-03
+
+- :bug: Fix group selection bug in underlying node-tak library
+- :tada: Implement MissionTemplate selection in Data Sync creation flow
+- :rocket: Standardize use of Keywords Array
+
 ### v12.19.0 - 2025-12-02
 
 - :tada: Introduce MissionTemplate Admin UI for creating Data Sync Templates
