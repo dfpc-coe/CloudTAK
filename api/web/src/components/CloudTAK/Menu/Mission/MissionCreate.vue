@@ -35,6 +35,92 @@
                     />
                 </div>
 
+                <div
+                    v-if='templates.length || templatesLoading'
+                    class='col-12'
+                >
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='subheader my-0'>Templates</label>
+                        <div class='ms-auto'>
+                            <TablerIconButton
+                                v-if='!showSearch'
+                                title='Search Templates'
+                                @click='showSearch = true'
+                            >
+                                <IconSearch
+                                    :size='20'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                            <TablerIconButton
+                                v-else
+                                title='Close Search'
+                                @click='showSearch = false; templatesPaging.filter = "";'
+                            >
+                                <IconX
+                                    :size='20'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                        </div>
+                    </div>
+
+                    <div
+                        v-if='showSearch'
+                        class='mb-2'
+                    >
+                        <TablerInput
+                            v-model='templatesPaging.filter'
+                            placeholder='Search Templates...'
+                            :autofocus='true'
+                        />
+                    </div>
+
+                    <TablerLoading
+                        v-if='templatesLoading'
+                        desc='Loading Templates'
+                    />
+                    <div
+                        v-else-if='templates.length'
+                        class='row g-2'
+                    >
+                        <div
+                            v-for='template in templates'
+                            :key='template.id'
+                            class='col-3'
+                            @click='selectedTemplate = template.id'
+                        >
+                            <div
+                                class='card p-2 text-center cursor-pointer h-100 d-flex flex-column align-items-center justify-content-center'
+                                :class='{ "bg-primary-lt": selectedTemplate === template.id }'
+                            >
+                                <img
+                                    v-if='template.icon'
+                                    :src='template.icon'
+                                    class='mb-2'
+                                    style='height: 32px; width: 32px; object-fit: contain;'
+                                    :style='template.icon.includes("image/svg+xml") ? "filter: brightness(0) invert(1);" : ""'
+                                >
+                                <IconLayout
+                                    v-else
+                                    :size='32'
+                                    stroke='1'
+                                    class='mb-2'
+                                />
+                                <div class='small lh-1'>
+                                    {{ template.name }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        v-else
+                        class='text-center fst-italic text-muted'
+                    >
+                        No Templates Found
+                    </div>
+                </div>
+
                 <div class='col-12'>
                     <TablerInput
                         v-model='mission.description'
@@ -75,6 +161,14 @@
                 >
                     <div class='row g-2'>
                         <div class='col-12'>
+                            <label class='px-2 w-100'>Keywords</label>
+                            <TagEntry
+                                placeholder='Enter Keywords'
+                                @tags='mission.keywords = $event'
+                            />
+                        </div>
+
+                        <div class='col-12'>
                             <TablerToggle
                                 v-model='mission.passwordProtected'
                                 label='Password Protected'
@@ -114,23 +208,28 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
-import { server } from '../../../../std.ts';
-import type { Mission_Create } from '../../../../types.ts';
+import { ref, computed, watch, onMounted } from 'vue';
+import { server, std } from '../../../../std.ts';
+import type { Mission_Create, MissionTemplate } from '../../../../types.ts';
 import { useMapStore } from '../../../../stores/map.ts'
 import {
     IconLock,
     IconLockOpen,
     IconSquareChevronRight,
     IconChevronDown,
+    IconSearch,
+    IconX,
+    IconLayout
 } from '@tabler/icons-vue';
 import GroupSelect from '../../util/GroupSelect.vue';
+import TagEntry from '../../util/TagEntry.vue';
 import Overlay from '../../../../base/overlay.ts';
 import {
     TablerInput,
     TablerEnum,
     TablerToggle,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 
 const mapStore = useMapStore();
@@ -140,6 +239,16 @@ const attempted = ref(false);
 const loading = ref(false);
 const advanced = ref(false);
 
+const templates = ref<MissionTemplate[]>([]);
+const templatesLoading = ref(false);
+const showSearch = ref(false);
+
+const templatesPaging = ref({
+    filter: ''
+});
+
+const selectedTemplate = ref<string | null>(null);
+
 const mission = ref({
     name: '',
     password: '',
@@ -147,8 +256,37 @@ const mission = ref({
     role: 'Subscriber',
     description: '',
     groups: [],
+    keywords: [],
     hashtags: ''
 });
+
+watch(templatesPaging, async () => {
+    await listTemplates();
+}, { deep: true });
+
+onMounted(async () => {
+    await listTemplates();
+});
+
+async function listTemplates() {
+    templatesLoading.value = true;
+    const url = new URL('/api/template/mission', window.location.origin);
+    if (templatesPaging.value.filter) url.searchParams.append('filter', templatesPaging.value.filter);
+
+    const res = await std(url.toString());
+
+    if (!res.items.length && !templatesPaging.value.filter) {
+        templates.value = [];
+    } else {
+        templates.value = [{
+            id: 'default',
+            name: 'Default'
+        }, ...res.items];
+
+        if (!selectedTemplate.value) selectedTemplate.value = 'default';
+    }
+    templatesLoading.value = false;
+}
 
 const missionNameValidity = computed<string>(() => {
     // eslint-disable-next-line no-useless-escape
@@ -175,7 +313,8 @@ async function createMission() {
         const body: Mission_Create = {
             name: mission.value.name,
             group: mission.value.groups,
-            description: mission.value.description || ''
+            description: mission.value.description || '',
+            keywords: mission.value.keywords
         };
 
         if (mission.value.role === 'Subscriber') body.defaultRole = 'MISSION_SUBSCRIBER';
@@ -183,6 +322,10 @@ async function createMission() {
         if (mission.value.role === 'Owner') body.defaultRole = 'MISSION_OWNER';
 
         if (mission.value.passwordProtected) body.password = mission.value.password;
+
+        if (selectedTemplate.value !== 'default') {
+            body.keywords.push(`template:${selectedTemplate.value}`);
+        }
 
         const res = await server.POST('/api/marti/missions', { body });
 
