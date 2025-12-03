@@ -739,7 +739,12 @@
         "query": true,
         "res": true
     },
-    "POST /marti/missions": {
+    "POST /marti/mission": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /marti/mission/:name": {
         "body": true,
         "query": false,
         "res": true
