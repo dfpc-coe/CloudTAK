@@ -489,6 +489,10 @@ export default class AtlasDatabase {
             }
 
             await sub.log.refresh();
+        } else if (task.properties.type === 't-x-m-c-m' && task.properties.mission && task.properties.mission.guid) {
+            await Subscription.load(task.properties.mission.guid, this.atlas.token, {
+                refresh: true
+            })
         } else {
             console.warn('Unknown Mission Task', JSON.stringify(task));
         }

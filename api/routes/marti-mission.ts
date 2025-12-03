@@ -256,7 +256,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.patch('/marti/mission/:name', {
+    await schema.patch('/marti/missions/:name', {
         name: 'Update Mission',
         group: 'MartiMissions',
         description: 'Helper API to create a mission',
