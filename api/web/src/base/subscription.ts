@@ -247,7 +247,7 @@ export default class Subscription {
             });
 
             await db.subscription.update(this.guid, {
-                meta: this.meta,
+                meta: JSON.parse(JSON.stringify(this.meta)),
             });
         }
 
