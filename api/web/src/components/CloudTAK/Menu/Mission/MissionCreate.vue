@@ -210,7 +210,7 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { server, std } from '../../../../std.ts';
-import type { Mission_Create, MissionTemplate } from '../../../../types.ts';
+import type { Mission_Create, MissionTemplate, MissionTemplateList } from '../../../../types.ts';
 import { useMapStore } from '../../../../stores/map.ts'
 import {
     IconLock,
@@ -273,14 +273,18 @@ async function listTemplates() {
     const url = new URL('/api/template/mission', window.location.origin);
     if (templatesPaging.value.filter) url.searchParams.append('filter', templatesPaging.value.filter);
 
-    const res = await std(url.toString());
+    const res = await std(url.toString()) as MissionTemplateList;
 
     if (!res.items.length && !templatesPaging.value.filter) {
         templates.value = [];
     } else {
         templates.value = [{
             id: 'default',
-            name: 'Default'
+            name: 'Default',
+            icon: '',
+            description: '',
+            created: '',
+            updated: ''
         }, ...res.items];
 
         if (!selectedTemplate.value) selectedTemplate.value = 'default';
@@ -314,7 +318,7 @@ async function createMission() {
             name: mission.value.name,
             group: mission.value.groups,
             description: mission.value.description || '',
-            keywords: mission.value.keywords
+            keywords: mission.value.keywords || []
         };
 
         if (mission.value.role === 'Subscriber') body.defaultRole = 'MISSION_SUBSCRIBER';
@@ -324,6 +328,7 @@ async function createMission() {
         if (mission.value.passwordProtected) body.password = mission.value.password;
 
         if (selectedTemplate.value !== 'default') {
+            if (!body.keywords) body.keywords = [];
             body.keywords.push(`template:${selectedTemplate.value}`);
         }
 

@@ -232,6 +232,7 @@ const props = defineProps({
 
 const emit = defineEmits([
     'stack',
+    'refresh'
 ]);
 
 const route = useRoute();
