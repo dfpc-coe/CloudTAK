@@ -109,19 +109,9 @@
                                         </div>
                                         <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-2'>Hashtags</small>
-                                            <div
-                                                v-if='(pkg.keywords || []).length'
-                                                class='d-flex flex-wrap gap-2'
-                                            >
-                                                <span
-                                                    v-for='keyword in pkg.keywords'
-                                                    :key='keyword'
-                                                    class='badge rounded-pill text-bg-primary text-uppercase fw-semibold'
-                                                    v-text='keyword'
-                                                />
-                                            </div>
+                                            <Keywords :keywords='pkg.keywords' />
                                             <p
-                                                v-else
+                                                v-if='!pkg.keywords || !pkg.keywords.length'
                                                 class='text-white-50 mb-0'
                                             >
                                                 No hashtags provided
@@ -174,6 +164,7 @@ import { useRouter, useRoute } from 'vue-router';
 import type { Profile, Server, Package, Feature } from '../../../../src/types.ts';
 import { server, stdurl, std } from '../../../std.ts';
 import Share from '../util/Share.vue';
+import Keywords from '../util/Keywords.vue';
 import timeDiff from '../../../timediff.ts';
 import {
     TablerAlert,

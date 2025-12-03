@@ -82,25 +82,11 @@
                                 />
                             </div>
 
+                            <Keywords
+                                :keywords='pkg.keywords.filter((k) => k && k.trim() !== "missionpackage")'
+                            />
                             <div
-                                v-if='
-                                    pkg.keywords
-                                        .filter((k) => k && k.trim() !== "missionpackage")
-                                        .length > 0'
-                                class='d-flex flex-wrap align-items-center gap-2'
-                            >
-                                <template
-                                    v-for='keyword in pkg.keywords'
-                                    :key='keyword'
-                                >
-                                    <span
-                                        class='badge rounded-pill text-bg-info text-uppercase small fw-semibold'
-                                        v-text='keyword'
-                                    />
-                                </template>
-                            </div>
-                            <div
-                                v-else
+                                v-if='!pkg.keywords.filter((k) => k && k.trim() !== "missionpackage").length'
                                 class='text-secondary small'
                             >
                                 No keywords
@@ -124,6 +110,7 @@ import type { PackageList } from '../../../../src/types.ts';
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import Keywords from '../util/Keywords.vue';
 import { server } from '../../../std.ts';
 
 import {

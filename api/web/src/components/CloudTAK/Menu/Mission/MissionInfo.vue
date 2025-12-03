@@ -77,19 +77,9 @@
                                 </div>
                                 <div class='col-12'>
                                     <small class='text-uppercase text-white-50 d-block mb-2'>Keywords</small>
-                                    <div
-                                        v-if='props.subscription.meta.keywords.length'
-                                        class='d-flex flex-wrap gap-2'
-                                    >
-                                        <span
-                                            v-for='keyword of props.subscription.meta.keywords'
-                                            :key='String(keyword)'
-                                            class='badge rounded-pill text-bg-primary text-uppercase fw-semibold'
-                                            v-text='keyword'
-                                        />
-                                    </div>
+                                    <Keywords :keywords='props.subscription.meta.keywords' />
                                     <p
-                                        v-else
+                                        v-if='!props.subscription.meta.keywords.length'
                                         class='text-white-50 mb-0'
                                     >
                                         None
@@ -228,6 +218,7 @@ import { ref, onMounted, computed } from 'vue';
 import type { MissionSubscriptions } from '../../../../types.ts';
 import { stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
+import Keywords from '../../util/Keywords.vue';
 import {
     IconQrcode,
     IconBroadcast,

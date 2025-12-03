@@ -82,19 +82,9 @@
                                         />
                                     </div>
 
+                                    <Keywords :keywords='missionKeywords(mission)' />
                                     <div
-                                        v-if='missionKeywords(mission).length'
-                                        class='d-flex flex-wrap align-items-center gap-2'
-                                    >
-                                        <span
-                                            v-for='keyword in missionKeywords(mission)'
-                                            :key='`${mission.guid}-${keyword}`'
-                                            class='badge rounded-pill text-bg-info text-uppercase small fw-semibold'
-                                            v-text='keyword'
-                                        />
-                                    </div>
-                                    <div
-                                        v-else
+                                        v-if='!missionKeywords(mission).length'
                                         class='text-secondary small'
                                     >
                                         No keywords
@@ -175,6 +165,7 @@
 import { ref, onMounted, watch } from 'vue';
 import MissionCreate from './Mission/MissionCreate.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import Keywords from '../util/Keywords.vue';
 import { useRouter } from 'vue-router';
 import {
     TablerIconButton,

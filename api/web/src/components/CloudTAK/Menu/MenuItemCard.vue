@@ -76,6 +76,8 @@
 import { computed } from 'vue';
 import type { Component, PropType } from 'vue';
 
+defineEmits(['select']);
+
 type LayoutVariant = 'list' | 'tiles';
 
 const props = defineProps({

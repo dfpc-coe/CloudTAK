@@ -19284,7 +19284,7 @@ export interface paths {
                             path?: string;
                             classification?: string;
                             tool: string;
-                            keywords: unknown[];
+                            keywords: string[];
                             creatorUid?: string;
                             createTime: string;
                             externalData: unknown[];
@@ -20211,6 +20211,7 @@ export interface paths {
                     "application/json": {
                         name: string;
                         group?: string[] | string;
+                        keywords?: string[];
                         /** @default  */
                         description?: string;
                         chatRoom?: string;
@@ -20247,7 +20248,7 @@ export interface paths {
                             path?: string;
                             classification?: string;
                             tool: string;
-                            keywords: unknown[];
+                            keywords: string[];
                             creatorUid?: string;
                             createTime: string;
                             externalData: unknown[];
@@ -20405,7 +20406,7 @@ export interface paths {
                                 path?: string;
                                 classification?: string;
                                 tool: string;
-                                keywords: unknown[];
+                                keywords: string[];
                                 creatorUid?: string;
                                 createTime: string;
                                 externalData: unknown[];
