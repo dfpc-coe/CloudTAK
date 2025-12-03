@@ -20189,14 +20189,161 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/marti/missions": {
+    "/api/marti/mission": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Helper API to list missions */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    passwordProtected?: boolean;
+                    /** @description No Description */
+                    defaultRole?: boolean;
+                    /** @description No Description */
+                    tool?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: {
+                                name: string;
+                                description?: string;
+                                chatRoom?: string;
+                                baseLayer?: string;
+                                bbox?: string;
+                                path?: string;
+                                classification?: string;
+                                tool: string;
+                                keywords: string[];
+                                creatorUid?: string;
+                                createTime: string;
+                                externalData: unknown[];
+                                feeds: unknown[];
+                                mapLayers: unknown[];
+                                ownerRole?: {
+                                    permissions: string[];
+                                    type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
+                                };
+                                inviteOnly: boolean;
+                                expiration: number;
+                                guid: string;
+                                uids: unknown[];
+                                logs?: {
+                                    id: string;
+                                    content: string;
+                                    creatorUid: string;
+                                    missionNames: string[];
+                                    servertime: string;
+                                    dtg?: string;
+                                    created: string;
+                                    contentHashes: unknown[];
+                                    keywords: string[];
+                                }[];
+                                contents: {
+                                    timestamp: string;
+                                    creatorUid?: string;
+                                    data: {
+                                        keywords: string[];
+                                        name: string;
+                                        hash: string;
+                                        submissionTime: string;
+                                        uid: string;
+                                        size: number;
+                                        creatorUid?: string;
+                                        mimeType?: string;
+                                        submitter?: string;
+                                        expiration: number;
+                                    };
+                                }[];
+                                passwordProtected: boolean;
+                                token?: string;
+                                groups?: string | string[];
+                                missionChanges?: unknown[];
+                            }[];
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         put?: never;
         /** Helper API to create a mission */
         post: {
@@ -20364,29 +20511,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/marti/mission": {
+    "/api/marti/mission/{:name}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Helper API to list missions */
-        get: {
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Helper API to create a mission */
+        patch: {
             parameters: {
-                query?: {
-                    /** @description No Description */
-                    passwordProtected?: boolean;
-                    /** @description No Description */
-                    defaultRole?: boolean;
-                    /** @description No Description */
-                    tool?: string;
-                };
+                query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    /** @description No Description */
+                    ":name": string;
+                };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": {
+                        description?: string;
+                        keywords?: string[];
+                    };
+                };
+            };
             responses: {
                 /** @description Successful Response */
                 200: {
@@ -20395,65 +20551,59 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            version: string;
-                            type: string;
-                            data: {
-                                name: string;
-                                description?: string;
-                                chatRoom?: string;
-                                baseLayer?: string;
-                                bbox?: string;
-                                path?: string;
-                                classification?: string;
-                                tool: string;
+                            name: string;
+                            description?: string;
+                            chatRoom?: string;
+                            baseLayer?: string;
+                            bbox?: string;
+                            path?: string;
+                            classification?: string;
+                            tool: string;
+                            keywords: string[];
+                            creatorUid?: string;
+                            createTime: string;
+                            externalData: unknown[];
+                            feeds: unknown[];
+                            mapLayers: unknown[];
+                            ownerRole?: {
+                                permissions: string[];
+                                type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
+                            };
+                            inviteOnly: boolean;
+                            expiration: number;
+                            guid: string;
+                            uids: unknown[];
+                            logs?: {
+                                id: string;
+                                content: string;
+                                creatorUid: string;
+                                missionNames: string[];
+                                servertime: string;
+                                dtg?: string;
+                                created: string;
+                                contentHashes: unknown[];
                                 keywords: string[];
-                                creatorUid?: string;
-                                createTime: string;
-                                externalData: unknown[];
-                                feeds: unknown[];
-                                mapLayers: unknown[];
-                                ownerRole?: {
-                                    permissions: string[];
-                                    type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
-                                };
-                                inviteOnly: boolean;
-                                expiration: number;
-                                guid: string;
-                                uids: unknown[];
-                                logs?: {
-                                    id: string;
-                                    content: string;
-                                    creatorUid: string;
-                                    missionNames: string[];
-                                    servertime: string;
-                                    dtg?: string;
-                                    created: string;
-                                    contentHashes: unknown[];
-                                    keywords: string[];
-                                }[];
-                                contents: {
-                                    timestamp: string;
-                                    creatorUid?: string;
-                                    data: {
-                                        keywords: string[];
-                                        name: string;
-                                        hash: string;
-                                        submissionTime: string;
-                                        uid: string;
-                                        size: number;
-                                        creatorUid?: string;
-                                        mimeType?: string;
-                                        submitter?: string;
-                                        expiration: number;
-                                    };
-                                }[];
-                                passwordProtected: boolean;
-                                token?: string;
-                                groups?: string | string[];
-                                missionChanges?: unknown[];
                             }[];
-                            messages?: string[];
-                            nodeId?: string;
+                            contents: {
+                                timestamp: string;
+                                creatorUid?: string;
+                                data: {
+                                    keywords: string[];
+                                    name: string;
+                                    hash: string;
+                                    submissionTime: string;
+                                    uid: string;
+                                    size: number;
+                                    creatorUid?: string;
+                                    mimeType?: string;
+                                    submitter?: string;
+                                    expiration: number;
+                                };
+                            }[];
+                            passwordProtected: boolean;
+                            token?: string;
+                            groups?: string | string[];
+                            missionChanges?: unknown[];
                         };
                     };
                 };
@@ -20519,12 +20669,6 @@ export interface paths {
                 };
             };
         };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/api/marti/missions/{:name}/archive": {
