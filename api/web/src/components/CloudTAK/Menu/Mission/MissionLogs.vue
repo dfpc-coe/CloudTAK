@@ -7,8 +7,7 @@
         :loading='!logs'
     >
         <template #buttons>
-            <TablerIconButton
-            >
+            <TablerIconButton>
                 <IconDownload
                     :size='24'
                     stroke='1'
