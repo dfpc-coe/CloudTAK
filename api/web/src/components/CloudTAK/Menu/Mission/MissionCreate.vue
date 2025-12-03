@@ -280,7 +280,11 @@ async function listTemplates() {
     } else {
         templates.value = [{
             id: 'default',
-            name: 'Default'
+            name: 'Default',
+            icon: '',
+            description: '',
+            created: '',
+            updated: ''
         }, ...res.items];
 
         if (!selectedTemplate.value) selectedTemplate.value = 'default';
@@ -314,7 +318,7 @@ async function createMission() {
             name: mission.value.name,
             group: mission.value.groups,
             description: mission.value.description || '',
-            keywords: mission.value.keywords
+            keywords: mission.value.keywords || []
         };
 
         if (mission.value.role === 'Subscriber') body.defaultRole = 'MISSION_SUBSCRIBER';
