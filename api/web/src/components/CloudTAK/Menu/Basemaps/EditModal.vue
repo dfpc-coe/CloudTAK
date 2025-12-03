@@ -265,7 +265,8 @@ const emit = defineEmits(['close']);
 
 const props = defineProps({
     basemap: {
-        type: Object
+        type: Object,
+        default: () => ({})
     }
 });
 
