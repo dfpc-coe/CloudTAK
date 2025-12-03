@@ -91,7 +91,7 @@
                                         :modelValue='props.subscription.meta.description'
                                         :edit='props.subscription.role.permissions.includes("MISSION_WRITE")'
                                         :rows='5'
-                                        @submit='props.subscription.update({ description: $event })'
+                                        @submit='updateDescription($event)'
                                     >
                                         <span
                                             v-if='!props.subscription.meta.description'
@@ -273,6 +273,14 @@ async function fetchSubscriptions() {
     loading.value.users = true;
     subscriptions.value = await props.subscription.subscriptions();
     loading.value.users = false;
+}
+
+async function updateDescription(description: string) {
+    try {
+        await props.subscription.update({ description });
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 async function subscribe(subscribe: boolean) {
