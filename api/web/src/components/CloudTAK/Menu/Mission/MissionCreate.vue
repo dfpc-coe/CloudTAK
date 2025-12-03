@@ -210,7 +210,7 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { server, std } from '../../../../std.ts';
-import type { Mission_Create, MissionTemplate } from '../../../../types.ts';
+import type { Mission_Create, MissionTemplate, MissionTemplateList } from '../../../../types.ts';
 import { useMapStore } from '../../../../stores/map.ts'
 import {
     IconLock,
@@ -273,7 +273,7 @@ async function listTemplates() {
     const url = new URL('/api/template/mission', window.location.origin);
     if (templatesPaging.value.filter) url.searchParams.append('filter', templatesPaging.value.filter);
 
-    const res = await std(url.toString());
+    const res = await std(url.toString()) as MissionTemplateList;
 
     if (!res.items.length && !templatesPaging.value.filter) {
         templates.value = [];
