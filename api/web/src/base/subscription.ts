@@ -236,7 +236,6 @@ export default class Subscription {
         });
 
         if (body.description !== undefined) {
-            console.error(body.description);
             const url = stdurl(`/api/marti/missions/${this.guid}`);
             this.meta = await std(url, {
                 method: 'PATCH',
