@@ -315,7 +315,10 @@ import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
 
 const props = defineProps({
-    element: Object
+    element: {
+        type: Object,
+        default: () => ({})
+    }
 });
 
 const loading = ref(true);

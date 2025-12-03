@@ -328,6 +328,7 @@ async function createMission() {
         if (mission.value.passwordProtected) body.password = mission.value.password;
 
         if (selectedTemplate.value !== 'default') {
+            if (!body.keywords) body.keywords = [];
             body.keywords.push(`template:${selectedTemplate.value}`);
         }
 
