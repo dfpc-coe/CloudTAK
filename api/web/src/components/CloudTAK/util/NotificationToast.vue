@@ -110,7 +110,7 @@ function navigateTo() {
     width: 100%;
 
     background-color: var(--bs-primary, #0d6efd);
-    animation: shrink 3s linear forwards;
+    animation: shrink 5s linear forwards;
 }
 
 @keyframes shrink {
