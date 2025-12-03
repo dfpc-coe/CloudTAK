@@ -490,9 +490,16 @@ export default class AtlasDatabase {
 
             await sub.log.refresh();
         } else if (task.properties.type === 't-x-m-c-m' && task.properties.mission && task.properties.mission.guid) {
-            await Subscription.load(task.properties.mission.guid, this.atlas.token, {
-                refresh: true
-            })
+            const sub = await Subscription.from(task.properties.mission.guid, this.atlas.token, {
+                subscribed: true
+            });
+
+            if (!sub) {
+                console.error(`Cannot refresh ${task.properties.mission.guid} logs as it is not subscribed`);
+                return;
+            }
+
+            await sub.fetch();
         } else {
             console.warn('Unknown Mission Task', JSON.stringify(task));
         }
