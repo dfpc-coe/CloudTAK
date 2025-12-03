@@ -111,7 +111,7 @@ export default class Subscription {
         }
     ): Promise<Subscription | undefined> {
         const exists = await db.subscription
-        .get(guid)
+            .get(guid)
 
         if (!exists || (opts?.subscribed !== undefined && exists.subscribed !== opts.subscribed)) {
             return;
@@ -209,7 +209,8 @@ export default class Subscription {
         body: {
             dirty?: boolean,
             subscribed?: boolean,
-            token?: string
+            token?: string,
+            description?: string
         }
     ): Promise<void> {
         if (body.subscribed !== undefined) {
@@ -224,11 +225,32 @@ export default class Subscription {
             this.token = body.token;
         }
 
+        if (body.description !== undefined) {
+            this.meta.description = body.description;
+        }
+
         await db.subscription.update(this.guid, {
             dirty: this.dirty,
             subscribed: this.subscribed,
             token: this.token
         });
+
+        if (body.description !== undefined) {
+            console.error(body.description);
+            const url = stdurl(`/api/marti/missions/${this.guid}`);
+            this.meta = await std(url, {
+                method: 'PATCH',
+                headers: Subscription.headers(this.missiontoken),
+                token: this.token,
+                body: {
+                    description: body.description
+                }
+            });
+
+            await db.subscription.update(this.guid, {
+                meta: this.meta,
+            });
+        }
 
         this._sync.postMessage({
             guid: this.guid,
@@ -271,7 +293,7 @@ export default class Subscription {
      */
     async reload(): Promise<void> {
         const exists = await db.subscription
-        .get(this.guid)
+            .get(this.guid)
 
         if (exists) {
             this.meta = exists.meta;
