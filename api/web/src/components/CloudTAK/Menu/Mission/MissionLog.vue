@@ -67,17 +67,7 @@
                         @delete='deleteLog()'
                     />
 
-                    <div
-                        v-if='log.keywords.length'
-                        class='d-flex flex-wrap gap-2 mt-1'
-                    >
-                        <span
-                            v-for='keyword in log.keywords'
-                            :key='keyword'
-                            class='badge text-bg-secondary text-uppercase rounded-pill px-3 py-1 small'
-                            v-text='keyword'
-                        />
-                    </div>
+                    <Keywords :keywords='log.keywords' />
                 </div>
             </div>
         </template>
@@ -89,6 +79,7 @@ import { ref, computed } from 'vue';
 import type { MissionLog } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';
 import CopyField from '../../util/CopyField.vue';
+import Keywords from '../../util/Keywords.vue';
 import {
     TablerLoading,
     TablerDropdown,
