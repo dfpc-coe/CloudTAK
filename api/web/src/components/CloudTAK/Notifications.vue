@@ -34,6 +34,22 @@
             </div>
         </div>
         <div
+            v-if='availableTypes.length > 1'
+            class='d-flex flex-wrap justify-content-center gap-2 p-2 border-bottom'
+        >
+            <div
+                v-for='type in availableTypes'
+                :key='type'
+                class='d-flex flex-column align-items-center justify-content-center p-2 rounded cursor-pointer border'
+                :class='selectedTypes.includes(type) ? "border-primary" : "border-transparent"'
+                style='width: 60px; height: 60px;'
+                @click.stop.prevent='toggleType(type)'
+            >
+                <NotificationIcon :type='type' :size='24' />
+                <div style='font-size: 0.65rem;' class='mt-1'>{{ type }}</div>
+            </div>
+        </div>
+        <div
             v-if='paging.shown'
             class='col-12 px-2'
         >
@@ -80,6 +96,17 @@
                             v-text='timeDiff(n.created)'
                         />
                     </div>
+                    <div class='ms-auto'>
+                        <TablerIconButton
+                            title='Delete'
+                            @click.stop.prevent='TAKNotification.delete(n.id)'
+                        >
+                            <IconTrash
+                                :size='20'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                    </div>
                 </div>
             </div>
         </div>
@@ -99,7 +126,7 @@ import { ref, computed } from 'vue';
 import { liveQuery } from 'dexie';
 import { useRouter } from 'vue-router';
 import { useObservable } from '@vueuse/rxjs';
-import TAKNotification from '../../base/notification.ts';
+import TAKNotification, { NotificationType } from '../../base/notification.ts';
 import NotificationToast from './util/NotificationToast.vue';
 import NotificationIcon from './util/NotificationIcon.vue';
 import timeDiff from '../../timediff.ts';
@@ -115,6 +142,22 @@ import {
 
 const router = useRouter();
 
+const selectedTypes = ref<NotificationType[]>(Object.values(NotificationType));
+
+const availableTypes = computed(() => {
+    if (!list.value) return [];
+    const present = new Set(list.value.map(n => n.type));
+    return Object.values(NotificationType).filter(t => present.has(t));
+});
+
+const toggleType = (type: NotificationType) => {
+    if (selectedTypes.value.includes(type)) {
+        selectedTypes.value = selectedTypes.value.filter(t => t !== type);
+    } else {
+        selectedTypes.value.push(type);
+    }
+}
+
 const paging = ref({
     shown: false,
     filter: ''
@@ -123,6 +166,7 @@ const paging = ref({
 const filteredList = computed(() => {
     if (!list.value) return [];
     return list.value.filter((n) => {
+        if (!selectedTypes.value.includes(n.type)) return false;
         return n.name.toLowerCase().includes(paging.value.filter.toLowerCase())
             || n.body.toLowerCase().includes(paging.value.filter.toLowerCase());
     })
