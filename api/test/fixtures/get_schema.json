@@ -744,7 +744,7 @@
         "query": false,
         "res": true
     },
-    "PATCH /marti/mission/:name": {
+    "PATCH /marti/missions/:name": {
         "body": true,
         "query": false,
         "res": true
