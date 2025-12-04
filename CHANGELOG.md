@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.21.0 - 2025-12-04
+
+- :rocket: Check for SW updates on Login Page
+- :tada: Allow editing Missions
+
 ### v12.20.0 - 2025-12-03
 
 - :bug: Fix group selection bug in underlying node-tak library
