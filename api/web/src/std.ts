@@ -4,7 +4,6 @@ import type { paths } from './derived-types.js'
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
 
-
 export const server = createClient<paths>({
     baseUrl: self.location.origin
 });
