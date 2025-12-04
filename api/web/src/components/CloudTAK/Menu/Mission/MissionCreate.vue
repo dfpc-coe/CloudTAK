@@ -274,6 +274,10 @@ async function listTemplates() {
     const res = await server.GET('/api/template/mission', {
         params: {
             query: {
+                limit: 10,
+                sort: 'created',
+                page: 0,
+                order: 'desc',
                 filter: templatesPaging.value.filter || ''
             }
         }
