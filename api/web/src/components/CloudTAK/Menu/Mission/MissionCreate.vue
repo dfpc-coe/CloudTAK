@@ -209,8 +209,8 @@
 
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
-import { server, std } from '../../../../std.ts';
-import type { Mission_Create, MissionTemplate, MissionTemplateList } from '../../../../types.ts';
+import { server } from '../../../../std.ts';
+import type { Mission_Create, MissionTemplate } from '../../../../types.ts';
 import { useMapStore } from '../../../../stores/map.ts'
 import {
     IconLock,
@@ -270,12 +270,22 @@ onMounted(async () => {
 
 async function listTemplates() {
     templatesLoading.value = true;
-    const url = new URL('/api/template/mission', window.location.origin);
-    if (templatesPaging.value.filter) url.searchParams.append('filter', templatesPaging.value.filter);
 
-    const res = await std(url.toString()) as MissionTemplateList;
+    const res = await server.GET('/api/template/mission', {
+        params: {
+            query: {
+                limit: 10,
+                sort: 'created',
+                page: 0,
+                order: 'desc',
+                filter: templatesPaging.value.filter || ''
+            }
+        }
+    })
 
-    if (!res.items.length && !templatesPaging.value.filter) {
+    if (res.error) throw new Error(res.error.message);
+
+    if (!res.data.items.length && !templatesPaging.value.filter) {
         templates.value = [];
     } else {
         templates.value = [{
@@ -285,7 +295,7 @@ async function listTemplates() {
             description: '',
             created: '',
             updated: ''
-        }, ...res.items];
+        }, ...res.data.items];
 
         if (!selectedTemplate.value) selectedTemplate.value = 'default';
     }
@@ -332,7 +342,9 @@ async function createMission() {
             body.keywords.push(`template:${selectedTemplate.value}`);
         }
 
-        const res = await server.POST('/api/marti/missions', { body });
+        const res = await server.POST('/api/marti/mission', {
+            body
+        });
 
         if (res.error) throw new Error(res.error.message);
 
