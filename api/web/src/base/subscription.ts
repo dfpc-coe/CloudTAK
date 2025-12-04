@@ -244,7 +244,7 @@ export default class Subscription {
                 body: {
                     description: body.description
                 }
-            });
+            }) as Mission;
 
             await db.subscription.update(this.guid, {
                 meta: JSON.parse(JSON.stringify(this.meta)),
