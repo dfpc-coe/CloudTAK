@@ -233,7 +233,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/marti/missions', {
+    await schema.post('/marti/mission', {
         name: 'Create Mission',
         group: 'MartiMissions',
         description: 'Helper API to create a mission',
@@ -249,6 +249,40 @@ export default async function router(schema: Schema, config: Config) {
                 ...req.body,
                 creatorUid: `ANDROID-CloudTAK-${user.email}`
             });
+
+            res.json(mission);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/marti/missions/:name', {
+        name: 'Update Mission',
+        group: 'MartiMissions',
+        description: 'Helper API to create a mission',
+        params: Type.Object({
+            name: Type.String(),
+        }),
+        body: Type.Object({
+            description: Type.Optional(Type.String()),
+            keywords: Type.Optional(Type.Array(Type.String())),
+        }),
+        res: Mission
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
+            const mission = await api.Mission.update(
+                req.params.name,
+                req.body,
+                opts
+            );
 
             res.json(mission);
         } catch (err) {

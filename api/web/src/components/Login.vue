@@ -154,6 +154,14 @@ const body = ref<Login_Create>({
 onMounted(async () => {
     await brandStore.init();
 
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (const registration of registrations) {
+                registration.update();
+            }
+        });
+    }
+
     const deleteDB = indexedDB.deleteDatabase('CloudTAK');
 
     deleteDB.onerror = (event) => {

@@ -122,8 +122,6 @@ export default class AtlasConnection {
                 const task = body.data as Feature;
 
                 if (task.properties.type.startsWith('t-x-m-c')) {
-                    console.error('TASK', task.properties);
-
                     if (task.properties.type === 't-x-m-c-l' && task.properties.mission) {
                         await TAKNotification.create(
                             NotificationType.Mission,

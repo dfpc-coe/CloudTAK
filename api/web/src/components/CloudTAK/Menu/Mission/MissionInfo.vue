@@ -87,10 +87,17 @@
                                 </div>
                                 <div class='col-12'>
                                     <small class='text-uppercase text-white-50 d-block mb-1'>Description</small>
-                                    <p
-                                        class='text-white mb-0'
-                                        v-text='props.subscription.meta.description || "No Feed Description"'
-                                    />
+                                    <CopyField
+                                        :modelValue='props.subscription.meta.description'
+                                        :edit='props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                        :rows='5'
+                                        @submit='updateDescription($event)'
+                                    >
+                                        <span
+                                            v-if='!props.subscription.meta.description'
+                                            class='text-white-50 fst-italic'
+                                        >No Feed Description</span>
+                                    </CopyField>
                                 </div>
                             </div>
                         </div>
@@ -219,6 +226,7 @@ import type { MissionSubscriptions } from '../../../../types.ts';
 import { stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
 import Keywords from '../../util/Keywords.vue';
+import CopyField from '../../util/CopyField.vue';
 import {
     IconQrcode,
     IconBroadcast,
@@ -265,6 +273,14 @@ async function fetchSubscriptions() {
     loading.value.users = true;
     subscriptions.value = await props.subscription.subscriptions();
     loading.value.users = false;
+}
+
+async function updateDescription(description: string) {
+    try {
+        await props.subscription.update({ description });
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 async function subscribe(subscribe: boolean) {
