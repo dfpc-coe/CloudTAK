@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.22.0 - 2025-12-05
+
+- :rocket: Improvments to NGINX config to ensure JS files are returned with the proper MIME type
+- :rocket: Improvments to Service Worker to log caching issues
+- :bug: Fix redirect on HTML files to invalid port
+
 ### v12.21.0 - 2025-12-05
 
 - :tada: introduce placeholder Robots.txt
