@@ -100,6 +100,8 @@ self.addEventListener('fetch', (event) => {
 
                 return networkResponse;
             } catch (error) {
+                console.error(`[SW] Fetch failed for ${url.toString()}`, error);
+
                 // Fallback for navigation (SPA)
                 if (event.request.mode === 'navigate') {
                     const cachedIndex = await cache.match('/index.html');
