@@ -139,6 +139,10 @@ export default class TAKNotification {
         await db.notification.clear();
     }
 
+    static async delete(id: string): Promise<void> {
+        await db.notification.delete(id);
+    }
+
     async delete(): Promise<void> {
         await db.notification.delete(this.id);
     }
