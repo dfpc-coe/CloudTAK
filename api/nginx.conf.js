@@ -82,6 +82,7 @@ http {
     server {
         listen 5000;
         listen [::]:5000;
+        absolute_redirect off;
 
         client_max_body_size 512M;
 
@@ -152,6 +153,21 @@ http {
 
             alias /home/etl/api/web/dist/;
             try_files /connection.html =404;
+        }
+
+        location /assets/ {
+            alias /home/etl/api/web/dist/assets/;
+
+            add_header 'X-Content-Type-Options' 'nosniff' always;
+            add_header 'X-Frame-Options' 'DENY' always;
+            add_header 'Referrer-Policy' 'strict-origin-when-cross-origin' always;
+            add_header 'Permissions-Policy' 'fullscreen=(self), geolocation=(self), clipboard-read=(self), clipboard-write=(self)' always;
+            ${cspstr}
+            ${sts}
+
+            add_header 'Cache-Control' 'public, max-age=31536000, immutable' always;
+
+            try_files $uri =404;
         }
 
         location / {
