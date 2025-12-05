@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.21.0 - 2025-12-05
+
+- :tada: introduce placeholder Robots.txt
+
 ### v12.22.0 - 2025-12-04
 
 - :tada: Introduce Notification Filtering of active notifications by type
