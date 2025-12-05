@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.22.0 - 2025-12-04
+
+- :tada: Introduce Notification Filtering of active notifications by type
+
 ### v12.21.0 - 2025-12-04
 
 - :rocket: Check for SW updates on Login Page
@@ -42,7 +46,7 @@
 - :rocket: To reduce the chunk sizes and flow complexity, this PR moves the following route sets to their own SPAs
     - All routes prefixed with `/admin`
     - All routes prefixed with `/connection`
-- :bug: Ensure 4xx error from PATCH Layer Incoming Config is thrown -- @adrienhoff 
+- :bug: Ensure 4xx error from PATCH Layer Incoming Config is thrown -- @adrienhoff
 
 ### v12.16.0 - 2025-12-01
 
