@@ -92,6 +92,62 @@ elif [[ "$SUBCOMMAND" == "backup" ]]; then
     BACKUP_FILE=~/cloudtak-backups/cloudtak-$(date +%Y%m%d_%H%M%S).sql
     echo "Backing up PostgreSQL database to ${BACKUP_FILE}"
     docker exec cloudtak-postgis-1 pg_dump -d $(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/') > $BACKUP_FILE
+elif [[ "$SUBCOMMAND" == "restore" ]]; then
+    if [ ! -f .env ]; then
+        echo ".env file not found. Please run 'install' first."
+        exit 1
+    fi
+
+    BACKUP_DIR=~/cloudtak-backups
+    if [ ! -d "$BACKUP_DIR" ]; then
+        echo "Backup directory $BACKUP_DIR does not exist."
+        exit 1
+    fi
+
+    shopt -s nullglob
+    FILES=("$BACKUP_DIR"/*.sql)
+    shopt -u nullglob
+
+    if [ ${#FILES[@]} -eq 0 ]; then
+        echo "No backup files found in $BACKUP_DIR"
+        exit 1
+    fi
+
+    echo "Available backups:"
+    PS3="Select a backup number to restore (or 'q' to quit): "
+    select BACKUP_FILE in "${FILES[@]}"; do
+        if [[ -n "$BACKUP_FILE" ]]; then
+            break
+        fi
+        if [[ "$REPLY" == "q" || "$REPLY" == "quit" ]]; then
+            echo "Cancelled."
+            exit 0
+        fi
+        echo "Invalid selection. Please try again."
+    done
+
+    echo "You selected: $BACKUP_FILE"
+    read -p "WARNING: This will OVERWRITE the current database. Are you sure? (y/n): " CONFIRM
+    if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
+        echo "Restore cancelled."
+        exit 0
+    fi
+
+    if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
+        echo "PostgreSQL container is not running. Starting it..."
+        docker compose up -d postgis
+        sleep 5
+    fi
+
+    DB_URL=$(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/')
+
+    echo "Dropping existing public schema..."
+    docker exec cloudtak-postgis-1 psql -d "$DB_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+    echo "Restoring database from $BACKUP_FILE..."
+    cat "$BACKUP_FILE" | docker exec -i cloudtak-postgis-1 psql -d "$DB_URL"
+
+    echo "Restore complete."
 elif [[ "$SUBCOMMAND" == "start" ]]; then
     if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
         docker compose up -d postgis
@@ -129,6 +185,6 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
 
     $0 start
 else
-    echo "Usage: $0 install|start|update|stop|backup"
+    echo "Usage: $0 install|start|update|stop|backup|restore"
     exit 0
 fi
