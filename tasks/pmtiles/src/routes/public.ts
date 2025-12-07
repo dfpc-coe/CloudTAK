@@ -91,9 +91,9 @@ export default async function router(schema: Schema) {
     })
 
     schema.get('/tiles/public/:name/query', {
-        name: 'Get TileJSON',
+        name: 'Query',
         group: 'PublicTiles',
-        description: 'Return TileJSON for a given file',
+        description: 'Return features for a given query',
         params: Type.Object({
             name: Type.String()
         }),

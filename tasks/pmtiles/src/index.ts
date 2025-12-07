@@ -11,7 +11,7 @@ if (!process.env.AWS_REGION) {
     process.env.AWS_REGION = 'us-east-1';
 }
 
-const app = express();
+export const app = express();
 const config = {};
 
 const schema = new Schema(express.Router(), {
