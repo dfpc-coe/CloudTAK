@@ -8,6 +8,7 @@ import zlib from "zlib";
 import { VectorTile } from '@mapbox/vector-tile';
 import Pbf from 'pbf';
 import tileCover from '@mapbox/tile-cover';
+import { PromisePool } from '@supercharge/promise-pool';
 // @ts-expect-error No Type Defs
 import vtquery from '@mapbox/vtquery';
 import { pointToTile } from '@mapbox/tilebelt';
@@ -293,14 +294,18 @@ export class FileTiles {
             max_zoom: zoom
         });
 
-        const features: any[] = [];
-
-        // TODO: Parallelize this?
-        for (const [x, y, z] of tiles) {
-            const tileFeatures = await this.features(z, x, y, {
-                layer: opts.layer
+        const { results } = await PromisePool
+            .withConcurrency(10)
+            .for(tiles)
+            .process(async ([x, y, z]) => {
+                return this.features(z, x, y, {
+                    layer: opts.layer
+                });
             });
-            features.push(...tileFeatures.features);
+
+        const features: any[] = [];
+        for (const result of results) {
+            features.push(...result.features);
         }
 
         return {
