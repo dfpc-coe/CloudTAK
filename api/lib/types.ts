@@ -147,6 +147,7 @@ export const IconsetResponse = Type.Object({
     version: Type.Integer(),
     name: Type.String(),
     username: Type.Union([Type.Null(), Type.String()]),
+    internal: Type.Boolean(),
     default_group: Type.Union([Type.Null(), Type.String()]),
     default_friendly: Type.Union([Type.Null(), Type.String()]),
     default_hostile: Type.Union([Type.Null(), Type.String()]),

@@ -247,6 +247,9 @@ export const Iconset = pgTable('iconsets', {
     version: integer().notNull(),
     name: text().notNull(),
     username: text().references(() => Profile.username),
+
+    internal: boolean().notNull().default(false),
+
     default_group: text(),
     default_friendly: text(),
     default_hostile: text(),
