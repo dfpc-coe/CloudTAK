@@ -5,6 +5,10 @@ import { Static, Type } from '@sinclair/typebox'
 import { S3Source, nativeDecompress, CACHE } from '../lib/pmtiles.js';
 import * as pmtiles from 'pmtiles';
 import zlib from "zlib";
+import { VectorTile } from '@mapbox/vector-tile';
+import Pbf from 'pbf';
+import tileCover from '@mapbox/tile-cover';
+import { PromisePool } from '@supercharge/promise-pool';
 // @ts-expect-error No Type Defs
 import vtquery from '@mapbox/vtquery';
 import { pointToTile } from '@mapbox/tilebelt';
@@ -51,6 +55,18 @@ export const QueryResponse = Type.Object({
     }))
 });
 
+export const FeaturesResponse = Type.Object({
+    type: Type.Literal('FeatureCollection'),
+    features: Type.Array(Type.Object({
+        type: Type.Literal('Feature'),
+        properties: Type.Record(Type.String(), Type.Unknown()),
+        geometry: Type.Object({
+            type: Type.String(),
+            coordinates: Type.Array(Type.Unknown())
+        })
+    }))
+});
+
 export class FileTiles {
     path: string;
 
@@ -58,6 +74,11 @@ export class FileTiles {
         this.path = path;
     }
 
+    /**
+     * Return the TileJSON for the given PMTiles archive
+     *
+     * @param token - The token to use for the tile URL
+     */
     async tilejson(
         token: string
     ): Promise<Static<typeof TileJSON>> {
@@ -92,6 +113,14 @@ export class FileTiles {
         };
     }
 
+    /**
+     * Query the PMTiles archive for features at a given point
+     *
+     * @param rawQuery - The query string (lng,lat)
+     * @param opts - Options for the query
+     * @param opts.zoom - The zoom level to query at
+     * @param opts.limit - The number of features to return
+     */
     async query(
         rawQuery: string,
         opts: {
@@ -160,6 +189,140 @@ export class FileTiles {
         }
     }
 
+    /**
+     * Return all features in a given tile
+     *
+     * @param z - The Z coordinate
+     * @param x - The X coordinate
+     * @param y - The Y coordinate
+     * @param opts - Options for the query
+     * @param opts.layer - The layer to return features for
+     */
+    /**
+     * Return all features in a given tile
+     *
+     * @param z - The Z coordinate
+     * @param x - The X coordinate
+     * @param y - The Y coordinate
+     * @param opts - Options for the query
+     * @param opts.layer - The layer to return features for
+     */
+    async features(
+        z: number,
+        x: number,
+        y: number,
+        opts: {
+            layer?: string
+        } = {}
+    ): Promise<Static<typeof FeaturesResponse>> {
+        const p = new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
+        const header = await p.getHeader();
+
+        if (z < header.minZoom || z > header.maxZoom) {
+            throw new Err(404, null, 'Tile Not Found');
+        }
+
+        const tile_result = await p.getZxy(z, x, y);
+        if (!tile_result) {
+            return {
+                type: 'FeatureCollection',
+                features: []
+            };
+        }
+
+        const features: any[] = [];
+
+        if (header.tileType === pmtiles.TileType.Mvt) {
+            const tile = new VectorTile(new Pbf(tile_result.data));
+
+            const layers = opts.layer ? [opts.layer] : Object.keys(tile.layers);
+
+            for (const layerName of layers) {
+                if (!tile.layers[layerName]) continue;
+                const layer = tile.layers[layerName];
+
+                for (let i = 0; i < layer.length; i++) {
+                    const feature = layer.feature(i);
+                    features.push(feature.toGeoJSON(x, y, z));
+                }
+            }
+        } else {
+            throw new Err(400, null, 'Tile is not MVT');
+        }
+
+        return {
+            type: 'FeatureCollection',
+            features: features
+        };
+    }
+
+    /**
+     * Return all features in a given bbox
+     *
+     * @param bbox - The BBOX to query
+     * @param opts - Options for the query
+     * @param opts.layer - The layer to return features for
+     * @param opts.zoom - The zoom level to query at (default: maxzoom)
+     */
+    async featuresByBounds(
+        bbox: number[],
+        opts: {
+            layer?: string,
+            zoom?: number
+        } = {}
+    ): Promise<Static<typeof FeaturesResponse>> {
+        const p = new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
+        const header = await p.getHeader();
+
+        const zoom = opts.zoom || header.maxZoom;
+        if (zoom > header.maxZoom) throw new Err(400, null, "Above Layer MaxZoom");
+        if (zoom < header.minZoom) throw new Err(400, null, "Below Layer MinZoom");
+
+        const geom: GeoJSON.Geometry = {
+            type: 'Polygon',
+            coordinates: [[
+                [bbox[0], bbox[1]],
+                [bbox[2], bbox[1]],
+                [bbox[2], bbox[3]],
+                [bbox[0], bbox[3]],
+                [bbox[0], bbox[1]]
+            ]]
+        };
+
+        const tiles = tileCover.tiles(geom, {
+            min_zoom: zoom,
+            max_zoom: zoom
+        });
+
+        const { results } = await PromisePool
+            .withConcurrency(10)
+            .for(tiles)
+            .process(async ([x, y, z]) => {
+                return this.features(z, x, y, {
+                    layer: opts.layer
+                });
+            });
+
+        const features: any[] = [];
+        for (const result of results) {
+            features.push(...result.features);
+        }
+
+        return {
+            type: 'FeatureCollection',
+            features: features
+        };
+    }
+
+    /**
+     * Return a tile for the given ZXY coordinates
+     *
+     * @param res - The Express response object
+     * @param z - The Z coordinate
+     * @param x - The X coordinate
+     * @param y - The Y coordinate
+     * @param ext - The extension of the tile
+     */
     async tile(
         res: Response,
         z: number,
