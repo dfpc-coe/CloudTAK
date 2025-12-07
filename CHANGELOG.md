@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.23.1 - 2025-12-06
+
+- :rocket: Improve FeatureCollection extraction performance on PMTiles API
+
 ### v12.23.0 - 2025-12-06
 
 - :tada: Introduce FeatureCollection extration on PMTiles API
