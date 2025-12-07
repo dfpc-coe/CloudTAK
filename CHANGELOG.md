@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.23.0 - 2025-12-06
+
+- :tada: Introduce FeatureCollection extration on PMTiles API
+
 ### v12.22.0 - 2025-12-05
 
 - :rocket: Improvments to NGINX config to ensure JS files are returned with the proper MIME type
