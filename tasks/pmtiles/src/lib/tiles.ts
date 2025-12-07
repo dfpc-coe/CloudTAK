@@ -294,18 +294,39 @@ export class FileTiles {
             max_zoom: zoom
         });
 
+        if (header.tileType !== pmtiles.TileType.Mvt) {
+             throw new Err(400, null, 'Tile is not MVT');
+        }
+
         const { results } = await PromisePool
             .withConcurrency(10)
             .for(tiles)
             .process(async ([x, y, z]) => {
-                return this.features(z, x, y, {
-                    layer: opts.layer
-                });
+                const tile_result = await p.getZxy(z, x, y);
+                if (!tile_result) return [];
+
+                const features: any[] = [];
+
+                const tile = new VectorTile(new Pbf(tile_result.data));
+
+                const layers = opts.layer ? [opts.layer] : Object.keys(tile.layers);
+
+                for (const layerName of layers) {
+                    if (!tile.layers[layerName]) continue;
+                    const layer = tile.layers[layerName];
+
+                    for (let i = 0; i < layer.length; i++) {
+                        const feature = layer.feature(i);
+                        features.push(feature.toGeoJSON(x, y, z));
+                    }
+                }
+
+                return features;
             });
 
         const features: any[] = [];
         for (const result of results) {
-            features.push(...result.features);
+            features.push(...result);
         }
 
         return {
