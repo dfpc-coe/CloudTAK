@@ -77,7 +77,7 @@
             </div>
         </div>
         <div
-            v-else-if='mapStore.draw.mode === DrawToolMode.LINESTRING'
+            v-else-if='mapStore.draw.mode === DrawToolMode.LINESTRING || mapStore.draw.mode === DrawToolMode.SNAPPING'
             class='card user-select-none'
         >
             <div class='card-header'>
