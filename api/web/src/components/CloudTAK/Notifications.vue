@@ -126,10 +126,12 @@ import { ref, computed } from 'vue';
 import { liveQuery } from 'dexie';
 import { useRouter } from 'vue-router';
 import { useObservable } from '@vueuse/rxjs';
-import TAKNotification, { NotificationType } from '../../base/notification.ts';
+import TAKNotification_, { NotificationType } from '../../base/notification.ts';
+const TAKNotification = TAKNotification_;
 import NotificationToast from './util/NotificationToast.vue';
 import NotificationIcon from './util/NotificationIcon.vue';
-import timeDiff from '../../timediff.ts';
+import timeDiff_ from '../../timediff.ts';
+const timeDiff = timeDiff_;
 import {
     TablerNone,
     TablerInput,

@@ -125,7 +125,8 @@ import {
     IconPlus,
     IconPackage,
 } from '@tabler/icons-vue';
-import timeDiff from '../../../timediff.ts';
+import timeDiff_ from '../../../timediff.ts';
+const timeDiff = timeDiff_;
 import ChannelInfo from '../util/ChannelInfo.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import ShareToPackage from '../util/ShareToPackage.vue';

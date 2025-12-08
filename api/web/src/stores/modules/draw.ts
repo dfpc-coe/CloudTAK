@@ -41,6 +41,8 @@ export default class DrawTool {
 
     public mode: DrawToolMode;
 
+    private graph: TerraRoute;
+
     private mapStore: ReturnType<typeof useMapStore>;
 
     // Contains coordinates to allow snapping to
@@ -86,19 +88,17 @@ export default class DrawTool {
             }
         }
 
-        const terraRoute = new TerraRoute();
+        this.graph = new TerraRoute();
 
         const network = {
-            type: 'FeatureCollection',
+            type: 'FeatureCollection' as const,
             features: []
         }
-
-        terraRoute.buildRouteGraph(network)
 
         const routing = new Routing({
             network,
             useCache: true,
-            routeFinder: terraRoute
+            routeFinder: this.graph
         })
 
         this.draw = new terraDraw.TerraDraw({
@@ -130,6 +130,7 @@ export default class DrawTool {
                     showCoordinatePoints: true,
                     snapping: { toCustom }
                 }),
+                // @ts-expect-error Library mismatch
                 new TerraDrawRouteSnapMode({
                    routing,
                    maxPoints: 5,
@@ -349,16 +350,38 @@ export default class DrawTool {
 
     async start(mode: DrawToolMode): Promise<void> {
         this.mode = mode;
-        this.draw.start();
-        this.draw.setMode(mode)
 
         if (mode === DrawToolMode.SNAPPING) {
-            await std('https://tiles.map.cotak.gov/api');
-        }
+            const url = new URL('https://tiles.map.cotak.gov/tiles/public/snapping/features')
+            url.searchParams.set('token', localStorage.token);
+            url.searchParams.set('bbox', this.mapStore.map.getBounds().toArray().join(','));
 
-        this.snapping = await this.mapStore.worker.db.snapping(
-            this.mapStore.map.getBounds().toArray()
-        );
+            const network = await std(url);
+
+            this.graph.buildRouteGraph(network);
+
+            const routing = new Routing({
+                network,
+                useCache: true,
+                routeFinder: this.graph
+            })
+
+            this.draw.start();
+
+            this.draw.updateModeOptions(DrawToolMode.SNAPPING, {
+                routing,
+                maxPoints: 5,
+            });
+
+            this.draw.setMode(mode)
+        } else {
+            this.draw.start();
+            this.draw.setMode(mode)
+
+            this.snapping = await this.mapStore.worker.db.snapping(
+                this.mapStore.map.getBounds().toArray()
+            );
+        }
     }
 
     async stop(refresh = true): Promise<void> {

@@ -325,7 +325,8 @@ import InitialAuthor from '../util/InitialAuthor.vue';
 import { std, stdurl } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
 import ConnectionStatus from './Connection/StatusDot.vue';
-import timeDiff from '../../timediff.ts';
+import timeDiff_ from '../../timediff.ts';
+const timeDiff = timeDiff_;
 import {
     IconFiles,
     IconRobot,
