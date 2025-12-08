@@ -200,7 +200,8 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { std } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
-import timeDiff from '../../timediff.ts';
+import timeDiff_ from '../../timediff.ts';
+const timeDiff = timeDiff_;
 import InitialAuthor from '../util/InitialAuthor.vue';
 import {
     TablerLoading,

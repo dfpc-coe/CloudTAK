@@ -106,7 +106,8 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../std.ts';
-import timeDiff from '../../timediff.ts';
+import _timeDiff from '../../timediff.ts';
+const timeDiff = _timeDiff;
 import type { User, UserList } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
