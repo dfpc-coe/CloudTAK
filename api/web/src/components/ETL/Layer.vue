@@ -401,7 +401,8 @@ import { useRoute, useRouter } from 'vue-router';
 import PageFooter from '../PageFooter.vue';
 import LayerStatus from './Layer/utils/StatusDot.vue';
 import InitialAuthor from '../util/InitialAuthor.vue';
-import timeDiff from '../../timediff.ts';
+import timeDiff_ from '../../timediff.ts';
+const timeDiff = timeDiff_;
 import {
     TablerNone,
     TablerDelete,

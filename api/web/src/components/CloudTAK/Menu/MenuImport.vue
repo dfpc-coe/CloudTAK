@@ -110,7 +110,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../src/std.ts';
 import type { Import } from '../../../../src/types.ts';
 import Status from '../../util/StatusDot.vue';
-import timeDiff from '../../../timediff.ts';
+import timeDiff_ from '../../../timediff.ts';
+const timeDiff = timeDiff_;
 import {
     TablerNone,
     TablerAlert,

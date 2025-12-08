@@ -30,7 +30,8 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import timediff from '../../../timediff.ts';
+import timediff_ from '../../../timediff.ts';
+const timediff = timediff_;
 import ContactRow from './Contact.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import type { Contact, FeaturePropertyCreator } from '../../../types.ts';

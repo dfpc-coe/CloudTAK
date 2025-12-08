@@ -52,7 +52,8 @@ import { useRouter } from 'vue-router';
 import TAKNotification from '../../../base/notification.ts';
 import NotificationIcon from './NotificationIcon.vue';
 import { useMapStore } from '../../../stores/map.ts';
-import timediff from '../../../timediff.ts';
+import _timediff from '../../../timediff.ts';
+const timediff = _timediff;
 
 const router = useRouter();
 const timer = ref<ReturnType<typeof setTimeout> | null>(null);

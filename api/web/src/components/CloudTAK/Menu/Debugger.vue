@@ -77,7 +77,8 @@
 import { ref } from 'vue';
 import type { FeatureCollection } from '../../../../src/types.ts';
 import CopyField from '../util/CopyField.vue';
-import timeDiff from '../../../timediff.ts';
+import timeDiff_ from '../../../timediff.ts';
+const timeDiff = timeDiff_;
 import { std, stdurl } from '../../../../src/std.ts';
 import {
     TablerNone,

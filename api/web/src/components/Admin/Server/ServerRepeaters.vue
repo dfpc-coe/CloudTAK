@@ -59,7 +59,8 @@
 import { ref, onMounted } from 'vue';
 import { std } from '../../../std.ts';
 import type { RepeaterList, Repeater } from '../../../types.ts';
-import timeDiff from '../../../timediff.ts';
+import timeDiff_ from '../../../timediff.ts';
+const timeDiff = timeDiff_;
 import {
     TablerRefreshButton,
     TablerLoading,
