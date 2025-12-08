@@ -65,7 +65,7 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                        @click='mapStore.draw.start(DrawToolMode.LINESTRING)'
+                        @click='mapStore.draw.start(DrawToolMode.SNAPPING)'
                     >
                         <IconLine
                             :size='25'
