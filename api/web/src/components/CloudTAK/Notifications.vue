@@ -45,8 +45,16 @@
                 style='width: 60px; height: 60px;'
                 @click.stop.prevent='toggleType(type)'
             >
-                <NotificationIcon :type='type' :size='24' />
-                <div style='font-size: 0.65rem;' class='mt-1'>{{ type }}</div>
+                <NotificationIcon
+                    :type='type'
+                    :size='24'
+                />
+                <div
+                    style='font-size: 0.65rem;'
+                    class='mt-1'
+                >
+                    {{ type }}
+                </div>
             </div>
         </div>
         <div
