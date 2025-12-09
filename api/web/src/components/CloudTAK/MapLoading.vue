@@ -1,5 +1,7 @@
 <template>
-    <TablerModal>
+    <TablerModal
+        :fade='false'
+    >
         <div
             class='modal-body rounded user-select-none'
         >
