@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.23.2 - 2025-12-06
+
+- :arrow_up: Add Support for Links in NodeCoT
+
 ### v12.23.1 - 2025-12-06
 
 - :rocket: Improve FeatureCollection extraction performance on PMTiles API
