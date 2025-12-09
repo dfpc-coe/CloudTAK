@@ -103,7 +103,7 @@
                     :label='item.label'
                     :description='item.description'
                     :tooltip='item.tooltip'
-                    :badge='item.adminBadge'
+                    :badge='item.badge'
                     :layout='menuLayout'
                     :compact='false'
                     @select='item.routeExternal ? external(item.route) : router.push(item.route)'
@@ -127,7 +127,7 @@
                 :icon='item.icon'
                 :label='item.label'
                 :tooltip='item.tooltip'
-                :badge='item.adminBadge'
+                :badge='item.badge'
                 :layout='"list"'
                 :compact='true'
                 @select='item.routeExternal ? external(item.route) : router.push(item.route)'
@@ -336,7 +336,7 @@ type MenuItemConfig = {
     tooltip: string;
     description?: string;
     icon: Component;
-    adminBadge?: string;
+    badge?: string;
     requiresSystemAdmin?: boolean;
     requiresAgencyAdmin?: boolean;
 };
@@ -453,7 +453,7 @@ const baseMenuItems: MenuItemConfig[] = [
         tooltip: 'Connections (Admin)',
         description: 'Manage Integrations',
         icon: IconNetwork,
-        adminBadge: 'Admin',
+        badge: 'A',
         requiresAgencyAdmin: true,
     },
     {
@@ -463,7 +463,7 @@ const baseMenuItems: MenuItemConfig[] = [
         tooltip: 'Debugger (Admin)',
         description: 'Inspect and debug COT traffic',
         icon: IconBug,
-        adminBadge: 'Admin',
+        badge: 'A',
         requiresSystemAdmin: true,
     },
     {
@@ -474,7 +474,7 @@ const baseMenuItems: MenuItemConfig[] = [
         tooltip: 'Server Settings (Admin)',
         description: 'Configure CloudTAK server settings.',
         icon: IconServerCog,
-        adminBadge: 'Admin',
+        badge: 'A',
         requiresSystemAdmin: true,
     },
     {
@@ -506,7 +506,7 @@ const menuItems = computed(() => {
         if (item.key === 'contacts' && onlineContactsCount.value > 0) {
             return {
                 ...item,
-                adminBadge: String(onlineContactsCount.value)
+                badge: onlineContactsCount.value > 99 ? '99+' : String(onlineContactsCount.value)
             }
         }
         return item;
