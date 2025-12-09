@@ -3,7 +3,7 @@
         <template #buttons>
             <TablerRefreshButton
                 :loading='loading || refresh'
-                @click='fetchList(refresh); updateContacts()'
+                @click='refreshList'
             />
         </template>
         <template #default>
@@ -268,5 +268,10 @@ async function fetchList(loading: Ref<boolean>) {
     }
 
     loading.value = false;
+}
+
+async function refreshList() {
+    await fetchList(refresh);
+    await updateContacts();
 }
 </script>
