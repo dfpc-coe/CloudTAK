@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.24.0 - 2025-12-09
+
+- :bug: Don't allow editing Mission Description unless subscribed
+- :rocket: Avoid reloading MenuContacts on refresh message (@CoryFoy)
+- :rocket: Avoid clearing MenuContacts on refresh as it flashes a TablerNone component (@CoryFoy)
+
 ### v12.23.2 - 2025-12-06
 
 - :arrow_up: Add Support for Links in NodeCoT
