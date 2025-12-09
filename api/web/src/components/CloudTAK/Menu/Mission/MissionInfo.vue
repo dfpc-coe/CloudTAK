@@ -89,7 +89,7 @@
                                     <small class='text-uppercase text-white-50 d-block mb-1'>Description</small>
                                     <CopyField
                                         :modelValue='props.subscription.meta.description'
-                                        :edit='props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                        :edit='props.subscription.subscribed && props.subscription.role.permissions.includes("MISSION_WRITE")'
                                         :rows='5'
                                         @submit='updateDescription($event)'
                                     >
