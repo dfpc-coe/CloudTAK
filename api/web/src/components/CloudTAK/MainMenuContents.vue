@@ -103,7 +103,7 @@
                     :label='item.label'
                     :description='item.description'
                     :tooltip='item.tooltip'
-                    :badge='item.adminBadge'
+                    :badge='item.badge'
                     :layout='menuLayout'
                     :compact='false'
                     @select='item.routeExternal ? external(item.route) : router.push(item.route)'
@@ -127,7 +127,7 @@
                 :icon='item.icon'
                 :label='item.label'
                 :tooltip='item.tooltip'
-                :badge='item.adminBadge'
+                :badge='item.badge'
                 :layout='"list"'
                 :compact='true'
                 @select='item.routeExternal ? external(item.route) : router.push(item.route)'
@@ -259,7 +259,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import type { Component } from 'vue';
 import {
     IconX,
@@ -297,6 +297,8 @@ import { useMapStore } from '../../stores/map.ts';
 import { useBrandStore } from '../../stores/brand.ts';
 import { useRouter, useRoute } from 'vue-router';
 import MenuItemCard from './Menu/MenuItemCard.vue';
+import type { WorkerMessage } from '../../base/events.ts';
+import { WorkerMessageType } from '../../base/events.ts';
 
 const route = useRoute();
 const router = useRouter();
@@ -313,6 +315,18 @@ const username = ref<string>('Username')
 const isSystemAdmin = ref<boolean>(false)
 const isAgencyAdmin = ref<boolean>(false)
 const menuFilter = ref('');
+const onlineContactsCount = ref(0);
+
+const channel = new BroadcastChannel("cloudtak");
+
+channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
+    const msg = event.data;
+    if (!msg || !msg.type) return;
+
+    if (msg.type === WorkerMessageType.Contact_Change) {
+        await updateContactsCount();
+    }
+}
 
 type MenuItemConfig = {
     key: string;
@@ -322,7 +336,7 @@ type MenuItemConfig = {
     tooltip: string;
     description?: string;
     icon: Component;
-    adminBadge?: string;
+    badge?: string;
     requiresSystemAdmin?: boolean;
     requiresAgencyAdmin?: boolean;
 };
@@ -439,7 +453,7 @@ const baseMenuItems: MenuItemConfig[] = [
         tooltip: 'Connections (Admin)',
         description: 'Manage Integrations',
         icon: IconNetwork,
-        adminBadge: 'Admin',
+        badge: 'A',
         requiresAgencyAdmin: true,
     },
     {
@@ -449,7 +463,7 @@ const baseMenuItems: MenuItemConfig[] = [
         tooltip: 'Debugger (Admin)',
         description: 'Inspect and debug COT traffic',
         icon: IconBug,
-        adminBadge: 'Admin',
+        badge: 'A',
         requiresSystemAdmin: true,
     },
     {
@@ -460,7 +474,7 @@ const baseMenuItems: MenuItemConfig[] = [
         tooltip: 'Server Settings (Admin)',
         description: 'Configure CloudTAK server settings.',
         icon: IconServerCog,
-        adminBadge: 'Admin',
+        badge: 'A',
         requiresSystemAdmin: true,
     },
     {
@@ -488,6 +502,14 @@ const menuItems = computed(() => {
         if (item.requiresSystemAdmin && !isSystemAdmin.value) return false;
         if (item.requiresAgencyAdmin && !(isAgencyAdmin.value || isSystemAdmin.value)) return false;
         return true;
+    }).map((item) => {
+        if (item.key === 'contacts' && onlineContactsCount.value > 0) {
+            return {
+                ...item,
+                badge: onlineContactsCount.value > 99 ? '99+' : String(onlineContactsCount.value)
+            }
+        }
+        return item;
     });
 });
 
@@ -521,7 +543,27 @@ onMounted(async () => {
     username.value = await mapStore.worker.profile.username();
     isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
     isAgencyAdmin.value = await mapStore.worker.profile.isAgencyAdmin();
+    await updateContactsCount();
 })
+
+onBeforeUnmount(() => {
+    if (channel) {
+        channel.close();
+    }
+})
+
+async function updateContactsCount() {
+    const team = await mapStore.worker.team.load();
+    const self = await mapStore.worker.profile.uid();
+    let count = 0;
+    for (const contact of team.values()) {
+        if (contact.uid === self) continue;
+        if (await mapStore.worker.db.has(contact.uid)) {
+            count++;
+        }
+    }
+    onlineContactsCount.value = count;
+}
 
 function external(url: string) {
     window.open(String(new URL(url, window.location.origin)));
