@@ -20,7 +20,7 @@
         <span
             v-if='compact && badge'
             class='menu-item-card__badge menu-item-card__badge--compact'
-        >{{ badgeInitial }}</span>
+        >{{ badge }}</span>
 
         <template v-if='!compact'>
             <template v-if='layout === "tiles"'>
@@ -126,7 +126,6 @@ const classes = computed(() => ({
 }));
 
 const iconSize = computed(() => props.layout === 'tiles' ? 36 : 32);
-const badgeInitial = computed(() => props.badge ? props.badge[0] : '');
 const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, placement: 'left' } : undefined);
 </script>
 
@@ -230,11 +229,12 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
     position: absolute;
     top: 5px;
     right: 5px;
-    width: 14px;
+    min-width: 14px;
     height: 14px;
-    border-radius: 50%;
+    border-radius: 14px;
     font-size: 10px;
     background: #228be6;
     color: white;
+    padding: 0 3px;
 }
 </style>
