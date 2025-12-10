@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.24.1 - 2025-12-10
+
+- :arrow_up: Update MediaInfra Container
+
 ### v12.24.0 - 2025-12-09
 
 - :bug: Don't allow editing Mission Description unless subscribed
