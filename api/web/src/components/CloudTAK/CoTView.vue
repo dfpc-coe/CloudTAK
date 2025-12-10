@@ -512,36 +512,10 @@
                 </div>
             </div>
 
-            <div
+            <PropertyLinks
                 v-if='cot.properties.links'
-                class='col-12 py-2'
-            >
-                <div class='table-responsive rounded mx-2 py-2 px-2'>
-                    <table class='table card-table table-hover table-vcenter datatable'>
-                        <thead>
-                            <tr>
-                                <th>Key</th>
-                                <th>Value</th>
-                            </tr>
-                        </thead>
-                        <tbody class='bg-accent'>
-                            <tr
-                                v-for='(link, link_it) of cot.properties.links'
-                                :key='link_it'
-                            >
-                                <td v-text='link.remarks' />
-                                <td>
-                                    <a
-                                        :href='link.url'
-                                        target='_blank'
-                                        v-text='link.url'
-                                    />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                :links='cot.properties.links'
+            />
 
 
             <div
@@ -860,6 +834,7 @@ import PropertySpeed from './util/PropertySpeed.vue';
 import Breadcrumb from './util/Breadcrumb.vue';
 import PropertyElevation from './util/PropertyElevation.vue';
 import PropertyAttachments from './util/PropertyAttachments.vue';
+import PropertyLinks from './util/PropertyLinks.vue';
 import {
     IconPencil,
     IconFence,
