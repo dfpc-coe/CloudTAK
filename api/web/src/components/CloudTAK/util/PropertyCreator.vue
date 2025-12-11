@@ -1,5 +1,5 @@
 <template>
-    <div class='col-12 py-2'>
+    <div class='col-12 pb-2'>
         <div
             class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
             :class='{ "bg-accent": expanded, "hover": !expanded }'

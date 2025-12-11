@@ -25,8 +25,10 @@
                         />
                     </div>
                     <div
-                        class='col mx-2'
-                        style='min-width: 0;'
+                        class='col-auto mx-2'
+                        :style='`
+                            width: calc(100% - 50px);
+                        `'
                     >
                         <CopyField
                             :model-value='cot.properties.callsign'
@@ -543,7 +545,6 @@
                 v-if='cot.properties.sensor !== undefined'
                 :key='cot.properties.id'
                 :model-value='cot.properties.sensor'
-                class='my-2 mx-2'
                 @update:model-value='updateProperty("sensor", $event)'
             />
 
