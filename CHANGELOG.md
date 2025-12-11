@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.26.0 - 2025-12-10
+
+- :rocket: Version Fix
+
 ### v12.25.0 - 2025-12-10
 
 - :tada: Show assigned personnel in CoT section
