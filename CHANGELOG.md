@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.25.0 - 2025-12-10
+
+- :tada: Show assigned personnel in CoT section
+
 ### v12.24.1 - 2025-12-10
 
 - :arrow_up: Update MediaInfra Container
