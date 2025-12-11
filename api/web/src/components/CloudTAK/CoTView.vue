@@ -445,23 +445,42 @@
                 v-if='cot.properties.remarks !== undefined'
                 class='col-12 py-2'
             >
-                <div class='col-12'>
+                <div
+                    class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
+                    :class='{ "bg-accent": remarksExpanded, "hover": !remarksExpanded }'
+                    @click='remarksExpanded = !remarksExpanded'
+                >
                     <IconBlockquote
                         :size='18'
                         stroke='1'
                         color='#6b7990'
                         class='ms-2 me-1'
                     />
-                    <label class='subheader user-select-none'>Remarks</label>
+                    <label class='subheader cursor-pointer m-0'>Remarks</label>
+                    <div class='ms-auto d-flex align-items-center'>
+                        <IconChevronDown
+                            class='transition-transform'
+                            :class='{ "rotate-180": !remarksExpanded }'
+                            :size='18'
+                        />
+                    </div>
                 </div>
-                <div class='px-2'>
-                    <CopyField
-                        :model-value='cot.properties.remarks'
-                        :rows='10'
-                        :edit='is_editable'
-                        :hover='is_editable'
-                        @submit='updateProperty("remarks", $event)'
-                    />
+
+                <div
+                    class='grid-transition'
+                    :class='{ expanded: remarksExpanded }'
+                >
+                    <div class='overflow-hidden'>
+                        <div class='px-2 pt-2'>
+                            <CopyField
+                                :model-value='cot.properties.remarks'
+                                :rows='10'
+                                :edit='is_editable'
+                                :hover='is_editable'
+                                @submit='updateProperty("remarks", $event)'
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -517,46 +536,10 @@
                 :links='cot.properties.links'
             />
 
-
-            <div
+            <PropertyTimes
                 v-if='!cot.properties.archived'
-                class='col-12 pb-2'
-            >
-                <div class='d-flex mx-3'>
-                    <label class='subheader user-select-none'>Times</label>
-                    <div class='ms-auto cursor-pointer text-blue subheader'>
-                        <span
-                            v-if='time === "relative"'
-                            @click='time = "absolute"'
-                        >Absolute</span>
-                        <span
-                            v-if='time === "absolute"'
-                            @click='time = "relative"'
-                        >Relative</span>
-                    </div>
-                </div>
-                <div class='table-responsive rounded mx-2 py-2 px-2'>
-                    <table class='table card-table table-hover table-vcenter datatable'>
-                        <thead>
-                            <tr>
-                                <th>Key</th>
-                                <th>Value</th>
-                            </tr>
-                        </thead>
-                        <tbody class='bg-accent'>
-                            <tr>
-                                <td>Time</td><td v-text='timeProp' />
-                            </tr>
-                            <tr>
-                                <td>Start</td><td v-text='startProp' />
-                            </tr>
-                            <tr>
-                                <td>Stale</td><td v-text='staleProp' />
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                :cot='cot'
+            />
 
             <PropertySensor
                 v-if='cot.properties.sensor !== undefined'
@@ -573,127 +556,10 @@
                 :model-value='cot.properties.milsym.id'
             />
 
-            <div
+            <PropertyStyle
                 v-if='is_editable && !cot.is_self'
-                class='pb-2 col-12'
-            >
-                <div class='col-12'>
-                    <IconPaint
-                        :size='18'
-                        stroke='1'
-                        color='#6b7990'
-                        class='ms-2 me-1'
-                    />
-                    <label class='subheader user-select-none'>Style</label>
-                </div>
-                <div class='px-2 py-3'>
-                    <div class='row g-2 rounded px-2 bg-accent pb-2'>
-                        <template v-if='cot.geometry.type === "Point"'>
-                            <div class='col-12'>
-                                <IconSelect
-                                    :model-value='cot.properties.icon'
-                                    label='Point Icon'
-                                    :size='32'
-                                    stroke='1'
-                                    @update:model-value='updatePropertyIcon($event)'
-                                />
-                            </div>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Point Color</label>
-                                <TablerInput
-                                    :model-value='cot.properties["marker-color"]'
-                                    label=''
-                                    default='#FFFFFF'
-                                    type='color'
-                                    class='pb-2'
-                                    @update:model-value='updateProperty("marker-color", $event)'
-                                />
-                            </div>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Point Opacity</label>
-                                <TablerRange
-                                    :model-value='cot.properties["marker-opacity"]'
-                                    label=''
-                                    :default='1'
-                                    :min='0'
-                                    :max='1'
-                                    :step='0.01'
-                                    @update:model-value='updateProperty("marker-opacity", $event)'
-                                />
-                            </div>
-                        </template>
-                        <template v-else>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Line Colour</label>
-                                <TablerInput
-                                    :model-value='cot.properties["stroke"]'
-                                    label=''
-                                    type='color'
-                                    @update:model-value='updateProperty("stroke", $event)'
-                                />
-                            </div>
-
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Line Style</label>
-                                <TablerEnum
-                                    :model-value='cot.properties["stroke-style"]'
-                                    label=''
-                                    :options='["solid", "dashed", "dotted", "outlined"]'
-                                    default='solid'
-                                    @update:model-value='updateProperty("stroke-style", $event)'
-                                />
-                            </div>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Line Thickness</label>
-                                <TablerRange
-                                    :model-value='cot.properties["stroke-width"]'
-                                    label=''
-                                    :default='1'
-                                    :min='1'
-                                    :max='6'
-                                    :step='1'
-                                    @update:model-value='updateProperty("stroke-width", $event)'
-                                />
-                            </div>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Line Opacity</label>
-                                <TablerRange
-                                    :model-value='cot.properties["stroke-opacity"]'
-                                    label=''
-                                    :default='1'
-                                    :min='0'
-                                    :max='1'
-                                    :step='0.01'
-                                    @update:model-value='updateProperty("stroke-opacity", $event)'
-                                />
-                            </div>
-                        </template>
-                        <template v-if='cot.geometry.type === "Polygon"'>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Fill Colour</label>
-                                <TablerInput
-                                    :model-value='cot.properties["fill"]'
-                                    label=''
-                                    type='color'
-                                    @update:model-value='updateProperty("fill", $event)'
-                                />
-                            </div>
-                            <div class='col-12 round'>
-                                <label class='subheader user-select-none'>Fill Opacity</label>
-                                <TablerRange
-                                    :model-value='cot.properties["fill-opacity"]'
-                                    label=''
-                                    :default='1'
-                                    :min='0'
-                                    :max='1'
-                                    :step='0.01'
-                                    @update:model-value='updateProperty("fill-opacity", $event)'
-                                />
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </div>
+                :cot='cot'
+            />
 
             <div
                 v-if='cot.properties.creator && cot.properties.creator'
@@ -806,17 +672,13 @@ import { OriginMode } from '../../base/cot.ts'
 import Subscription from '../../base/subscription.ts'
 import {
     TablerNone,
-    TablerInput,
     TablerDelete,
     TablerToggle,
-    TablerEnum,
-    TablerRange,
     TablerDropdown,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
 import CopyField from './util/CopyField.vue';
-import IconSelect from '../util/IconSelect.vue';
 import Share from './util/Share.vue';
 import LineLength from './util/LineLength.vue';
 import PolygonArea from './util/PolygonArea.vue';
@@ -835,6 +697,8 @@ import Breadcrumb from './util/Breadcrumb.vue';
 import PropertyElevation from './util/PropertyElevation.vue';
 import PropertyAttachments from './util/PropertyAttachments.vue';
 import PropertyLinks from './util/PropertyLinks.vue';
+import PropertyTimes from './util/PropertyTimes.vue';
+import PropertyStyle from './util/PropertyStyle.vue';
 import {
     IconPencil,
     IconFence,
@@ -855,13 +719,11 @@ import {
     IconShare2,
     IconZoomPan,
     IconCode,
-    IconPaint,
     IconAffiliate,
     IconInfoCircle,
     IconPaperclip,
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
-import timediff from '../../timediff.ts';
 import { std } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useFloatStore } from '../../stores/float.ts';
@@ -887,10 +749,10 @@ const chevrons = ref<Set<string>>(new Set());
 const username = ref<string | undefined>();
 const type = ref<COTType | undefined>();
 const mode = ref('default');
+const remarksExpanded = ref(true);
 
 const currentTime = ref(new Date());
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
-const time = ref('relative');
 
 watch(cot, async () => {
     if (cot.value) {
@@ -977,21 +839,6 @@ async function load_cot() {
     }
 }
 
-const staleProp = computed(() => {
-    if (!cot.value) return '';
-    return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.stale) : cot.value.properties.stale;
-});
-
-const startProp = computed(() => {
-    if (!cot.value) return '';
-    return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.start) : cot.value.properties.start;
-});
-
-const timeProp = computed(() => {
-    if (!cot.value) return '';
-    return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.time) : cot.value.properties.time;
-});
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateProperty(key: string, event: any) {
     if (!cot.value) return;
@@ -1004,37 +851,6 @@ function updateProperty(key: string, event: any) {
     } else {
         cot.value.properties[key] = event;
         cot.value.update({})
-    }
-}
-
-function updatePropertyIcon(event: string | null) {
-    if (!cot.value) return;
-
-    if (event) {
-        event = event.replace(/\.png$/g, '').replace(':', '/');
-    }
-
-    if (
-        event
-        && (
-            !cot.value.properties.icon
-            || (
-                cot.value.properties.icon
-                && event !== cot.value.properties.icon
-            )
-        )
-    ) {
-        cot.value.properties.icon = event;
-        cot.value.properties["marker-color"] = '#FFFFFF';
-        cot.value.update({});
-    } else if (cot.value.properties.icon && !event) {
-        if (cot.value.properties.type !== 'u-d-p') {
-            cot.value.properties.icon = cot.value.properties.type;
-        } else {
-            cot.value.properties.icon = undefined;
-        }
-
-        cot.value.update({});
     }
 }
 
@@ -1096,3 +912,23 @@ async function deleteCOT() {
     router.push('/');
 }
 </script>
+
+<style scoped>
+.grid-transition {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease-out;
+}
+
+.grid-transition.expanded {
+    grid-template-rows: 1fr;
+}
+
+.rotate-180 {
+    transform: rotate(-90deg);
+}
+
+.transition-transform {
+    transition: transform 0.3s ease-out;
+}
+</style>
