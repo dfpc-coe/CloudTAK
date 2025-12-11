@@ -111,7 +111,7 @@ export default async function server(config: Config): Promise<ServerManager> {
 
     app.disable('x-powered-by');
     app.use(cors({
-        origin: '*',
+        origin: config.API_URL,
         exposedHeaders: [
             'Content-Disposition'
         ],
