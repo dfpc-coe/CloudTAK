@@ -430,16 +430,15 @@
                 />
             </div>
 
-            <div
-                v-if='!cot.properties.contact && cot.properties.attachments !== undefined'
-                class='col-12 py-2'
+            <template
+                v-if='!cot.properties.contact'
             >
                 <PropertyAttachments
                     :key='cot.properties.id'
-                    :model-value='cot.properties.attachments'
+                    :model-value='cot.properties.attachments || []'
                     @update:model-value='updatePropertyAttachment($event)'
                 />
-            </div>
+            </template>
 
             <div
                 v-if='cot.properties.remarks !== undefined'
