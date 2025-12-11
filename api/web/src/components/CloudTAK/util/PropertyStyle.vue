@@ -1,5 +1,8 @@
 <template>
-    <div class='col-12 pb-2'>
+    <div
+        class='col-12 pb-2'
+        :style='{ zIndex: expanded ? 10 : "auto", position: "relative" }'
+    >
         <div
             class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
             :class='{ "bg-accent": expanded, "hover": !expanded }'
@@ -25,19 +28,23 @@
             class='grid-transition'
             :class='{ expanded: expanded }'
         >
-            <div class='overflow-hidden'>
-                <div class='px-2 py-3'>
-                    <div class='row g-2 rounded px-2 bg-accent pb-2'>
-                        <template v-if='cot.geometry.type === "Point"'>
-                            <div class='col-12'>
-                                <IconSelect
-                                    :model-value='cot.properties.icon'
-                                    label='Point Icon'
-                                    :size='32'
-                                    stroke='1'
-                                    @update:model-value='updatePropertyIcon($event)'
-                                />
-                            </div>
+            <div
+                :style='{ overflow: overflow }'
+                style='min-height: 0;'
+            >
+                <div class='mx-2 py-2'>
+                    <div class='rounded bg-accent px-2 py-2'>
+                        <div class='row g-2'>
+                            <template v-if='cot.geometry.type === "Point"'>
+                                <div class='col-12'>
+                                    <IconSelect
+                                        :model-value='cot.properties.icon'
+                                        label='Point Icon'
+                                        :size='32'
+                                        stroke='1'
+                                        @update:model-value='updatePropertyIcon($event)'
+                                    />
+                                </div>
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Point Color</label>
                                 <TablerInput
@@ -108,7 +115,7 @@
                                 />
                             </div>
                         </template>
-                        <template v-if='cot.geometry.type === "Polygon"'>
+                        <template v-if='cot.geometry.type === "Polygon" || cot.geometry.type === "MultiPolygon"'>
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Fill Colour</label>
                                 <TablerInput
@@ -131,6 +138,7 @@
                                 />
                             </div>
                         </template>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -139,7 +147,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { IconPaint, IconChevronDown } from '@tabler/icons-vue';
 import {
     TablerInput,
@@ -154,6 +162,20 @@ const props = defineProps<{
 }>();
 
 const expanded = ref(false);
+const overflow = ref('hidden');
+let timeout: ReturnType<typeof setTimeout> | undefined;
+
+watch(expanded, (val) => {
+    if (timeout) clearTimeout(timeout);
+
+    if (val) {
+        timeout = setTimeout(() => {
+            overflow.value = 'visible';
+        }, 300);
+    } else {
+        overflow.value = 'hidden';
+    }
+});
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateProperty(key: string, event: any) {
