@@ -25,10 +25,8 @@
                         />
                     </div>
                     <div
-                        class='col-auto mx-2'
-                        :style='`
-                            width: calc(100% - 50px);
-                        `'
+                        class='col mx-2'
+                        style='min-width: 0;'
                     >
                         <CopyField
                             :model-value='cot.properties.callsign'
@@ -561,15 +559,11 @@
                 :cot='cot'
             />
 
-            <div
-                v-if='cot.properties.creator && cot.properties.creator'
-                class='pt-2'
-            >
-                <PropertyCreator
-                    :key='cot.properties.id'
-                    :creator='cot.properties.creator'
-                />
-            </div>
+            <PropertyCreator
+                v-if='cot.properties.creator'
+                :key='cot.properties.id'
+                :creator='cot.properties.creator'
+            />
 
             <div
                 v-if='
