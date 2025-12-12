@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.27.1 - 2025-12-12
+
+- :rocket: Add ability to recover from Buffer Error
+
 ### v12.27.0 - 2025-12-12
 
 - :rocket: UI Improvements to CoT View
