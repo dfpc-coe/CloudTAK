@@ -1,5 +1,6 @@
 import type { paths } from './derived-types.js';
 import type { Origin } from './base/cot.ts'
+import type { Geometry } from 'geojson';
 
 /*
  * This file exports more human managable types from the
@@ -115,7 +116,7 @@ export type ProfileVideo = paths["/api/profile/video/{:id}"]["get"]["responses"]
 export type ProfileFileList = paths["/api/profile/asset"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ProfileFile = ProfileFileList["items"][0];
 
-export type Feature = paths["/api/profile/feature/{:id}"]["get"]["responses"]["200"]["content"]["application/json"] & {
+export type Feature = Omit<paths["/api/profile/feature/{:id}"]["get"]["responses"]["200"]["content"]["application/json"], "geometry"> & {
     origin?: Origin
     properties: {
         'id': string;
@@ -124,9 +125,10 @@ export type Feature = paths["/api/profile/feature/{:id}"]["get"]["responses"]["2
 
         [index: string]: unknown
     }
+    geometry: Geometry
 }
 
-export type InputFeature = paths["/api/profile/feature/{:id}"]["get"]["responses"]["200"]["content"]["application/json"] & {
+export type InputFeature = Omit<paths["/api/profile/feature/{:id}"]["get"]["responses"]["200"]["content"]["application/json"], "geometry"> & {
     origin?: Origin
     properties: {
         'id'?: string;
@@ -135,6 +137,7 @@ export type InputFeature = paths["/api/profile/feature/{:id}"]["get"]["responses
 
         [index: string]: unknown
     }
+    geometry: Geometry
 }
 
 export type FeaturePropertyCreator = Exclude<Feature["properties"]["creator"], undefined>

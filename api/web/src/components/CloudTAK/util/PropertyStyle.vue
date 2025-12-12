@@ -45,99 +45,99 @@
                                         @update:model-value='updatePropertyIcon($event)'
                                     />
                                 </div>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Point Color</label>
-                                <TablerInput
-                                    :model-value='cot.properties["marker-color"]'
-                                    label=''
-                                    default='#FFFFFF'
-                                    type='color'
-                                    class='pb-2'
-                                    @update:model-value='updateProperty("marker-color", $event)'
-                                />
-                            </div>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Point Opacity</label>
-                                <TablerRange
-                                    :model-value='cot.properties["marker-opacity"]'
-                                    label=''
-                                    :default='1'
-                                    :min='0'
-                                    :max='1'
-                                    :step='0.01'
-                                    @update:model-value='updateProperty("marker-opacity", $event)'
-                                />
-                            </div>
-                        </template>
-                        <template v-else>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Line Colour</label>
-                                <TablerInput
-                                    :model-value='cot.properties["stroke"]'
-                                    label=''
-                                    type='color'
-                                    @update:model-value='updateProperty("stroke", $event)'
-                                />
-                            </div>
+                                <div class='col-12'>
+                                    <label class='subheader user-select-none'>Point Color</label>
+                                    <TablerInput
+                                        :model-value='cot.properties["marker-color"]'
+                                        label=''
+                                        default='#FFFFFF'
+                                        type='color'
+                                        class='pb-2'
+                                        @update:model-value='updateProperty("marker-color", $event)'
+                                    />
+                                </div>
+                                <div class='col-12'>
+                                    <label class='subheader user-select-none'>Point Opacity</label>
+                                    <TablerRange
+                                        :model-value='cot.properties["marker-opacity"]'
+                                        label=''
+                                        :default='1'
+                                        :min='0'
+                                        :max='1'
+                                        :step='0.01'
+                                        @update:model-value='updateProperty("marker-opacity", $event)'
+                                    />
+                                </div>
+                            </template>
+                            <template v-else>
+                                <div class='col-12'>
+                                    <label class='subheader user-select-none'>Line Colour</label>
+                                    <TablerInput
+                                        :model-value='cot.properties["stroke"]'
+                                        label=''
+                                        type='color'
+                                        @update:model-value='updateProperty("stroke", $event)'
+                                    />
+                                </div>
 
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Line Style</label>
-                                <TablerEnum
-                                    :model-value='cot.properties["stroke-style"]'
-                                    label=''
-                                    :options='["solid", "dashed", "dotted", "outlined"]'
-                                    default='solid'
-                                    @update:model-value='updateProperty("stroke-style", $event)'
-                                />
-                            </div>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Line Thickness</label>
-                                <TablerRange
-                                    :model-value='cot.properties["stroke-width"]'
-                                    label=''
-                                    :default='1'
-                                    :min='1'
-                                    :max='6'
-                                    :step='1'
-                                    @update:model-value='updateProperty("stroke-width", $event)'
-                                />
-                            </div>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Line Opacity</label>
-                                <TablerRange
-                                    :model-value='cot.properties["stroke-opacity"]'
-                                    label=''
-                                    :default='1'
-                                    :min='0'
-                                    :max='1'
-                                    :step='0.01'
-                                    @update:model-value='updateProperty("stroke-opacity", $event)'
-                                />
-                            </div>
-                        </template>
-                        <template v-if='cot.geometry.type === "Polygon" || cot.geometry.type === "MultiPolygon"'>
-                            <div class='col-12'>
-                                <label class='subheader user-select-none'>Fill Colour</label>
-                                <TablerInput
-                                    :model-value='cot.properties["fill"]'
-                                    label=''
-                                    type='color'
-                                    @update:model-value='updateProperty("fill", $event)'
-                                />
-                            </div>
-                            <div class='col-12 round'>
-                                <label class='subheader user-select-none'>Fill Opacity</label>
-                                <TablerRange
-                                    :model-value='cot.properties["fill-opacity"]'
-                                    label=''
-                                    :default='1'
-                                    :min='0'
-                                    :max='1'
-                                    :step='0.01'
-                                    @update:model-value='updateProperty("fill-opacity", $event)'
-                                />
-                            </div>
-                        </template>
+                                <div class='col-12'>
+                                    <label class='subheader user-select-none'>Line Style</label>
+                                    <TablerEnum
+                                        :model-value='cot.properties["stroke-style"]'
+                                        label=''
+                                        :options='["solid", "dashed", "dotted", "outlined"]'
+                                        default='solid'
+                                        @update:model-value='updateProperty("stroke-style", $event)'
+                                    />
+                                </div>
+                                <div class='col-12'>
+                                    <label class='subheader user-select-none'>Line Thickness</label>
+                                    <TablerRange
+                                        :model-value='cot.properties["stroke-width"]'
+                                        label=''
+                                        :default='1'
+                                        :min='1'
+                                        :max='6'
+                                        :step='1'
+                                        @update:model-value='updateProperty("stroke-width", $event)'
+                                    />
+                                </div>
+                                <div class='col-12'>
+                                    <label class='subheader user-select-none'>Line Opacity</label>
+                                    <TablerRange
+                                        :model-value='cot.properties["stroke-opacity"]'
+                                        label=''
+                                        :default='1'
+                                        :min='0'
+                                        :max='1'
+                                        :step='0.01'
+                                        @update:model-value='updateProperty("stroke-opacity", $event)'
+                                    />
+                                </div>
+                            </template>
+                            <template v-if='cot.geometry.type === "Polygon" || cot.geometry.type === "MultiPolygon"'>
+                                <div class='col-12'>
+                                    <label class='subheader user-select-none'>Fill Colour</label>
+                                    <TablerInput
+                                        :model-value='cot.properties["fill"]'
+                                        label=''
+                                        type='color'
+                                        @update:model-value='updateProperty("fill", $event)'
+                                    />
+                                </div>
+                                <div class='col-12 round'>
+                                    <label class='subheader user-select-none'>Fill Opacity</label>
+                                    <TablerRange
+                                        :model-value='cot.properties["fill-opacity"]'
+                                        label=''
+                                        :default='1'
+                                        :min='0'
+                                        :max='1'
+                                        :step='0.01'
+                                        @update:model-value='updateProperty("fill-opacity", $event)'
+                                    />
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -181,14 +181,16 @@ watch(expanded, (val) => {
 function updateProperty(key: string, event: any) {
     if (!props.cot) return;
 
+    const properties = { ...props.cot.properties };
+
     if (typeof event === 'string' || typeof event === 'number') {
-        if (props.cot.properties[key] !== event) {
-            props.cot.properties[key] = event;
-            props.cot.update({})
+        if (properties[key] !== event) {
+            properties[key] = event;
+            props.cot.update({ properties });
         }
     } else {
-        props.cot.properties[key] = event;
-        props.cot.update({})
+        properties[key] = event;
+        props.cot.update({ properties });
     }
 }
 
@@ -199,27 +201,29 @@ function updatePropertyIcon(event: string | null) {
         event = event.replace(/\.png$/g, '').replace(':', '/');
     }
 
+    const properties = { ...props.cot.properties };
+
     if (
         event
         && (
-            !props.cot.properties.icon
+            !properties.icon
             || (
-                props.cot.properties.icon
-                && event !== props.cot.properties.icon
+                properties.icon
+                && event !== properties.icon
             )
         )
     ) {
-        props.cot.properties.icon = event;
-        props.cot.properties["marker-color"] = '#FFFFFF';
-        props.cot.update({});
-    } else if (props.cot.properties.icon && !event) {
-        if (props.cot.properties.type !== 'u-d-p') {
-            props.cot.properties.icon = props.cot.properties.type;
+        properties.icon = event;
+        properties["marker-color"] = '#FFFFFF';
+        props.cot.update({ properties });
+    } else if (properties.icon && !event) {
+        if (properties.type !== 'u-d-p') {
+            properties.icon = properties.type;
         } else {
-            props.cot.properties.icon = undefined;
+            properties.icon = undefined;
         }
 
-        props.cot.update({});
+        props.cot.update({ properties });
     }
 }
 </script>
