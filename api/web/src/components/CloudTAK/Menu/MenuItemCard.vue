@@ -6,16 +6,22 @@
         @click='$emit("select")'
         @keyup.enter='$emit("select")'
     >
-        <component
-            :is='icon'
-            v-if='icon'
-            v-tooltip='tooltipBinding'
-            :title='tooltip'
-            :size='iconSize'
-            :color='iconColor'
-            stroke='1'
-            class='menu-item-card__icon'
-        />
+        <div class='menu-item-card__icon-wrapper'>
+            <component
+                :is='icon'
+                v-if='icon'
+                v-tooltip='tooltipBinding'
+                :title='tooltip'
+                :size='iconSize'
+                :color='iconColor'
+                stroke='1'
+                class='menu-item-card__icon'
+            />
+            <span
+                v-if='layout === "tiles" && badge'
+                class='menu-item-card__badge menu-item-card__badge--tile-icon'
+            >{{ badge }}</span>
+        </div>
 
         <span
             v-if='compact && badge'
@@ -35,10 +41,7 @@
                     >
                         {{ description }}
                     </div>
-                    <span
-                        v-if='badge'
-                        class='menu-item-card__badge menu-item-card__badge--tile'
-                    >{{ badge }}</span>
+
                 </div>
             </template>
             <template v-else-if='compact'>
@@ -175,6 +178,29 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
     padding: 0.5rem 0.75rem;
 }
 
+.menu-item-card__icon-wrapper {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+}
+
+.menu-item-card__badge--tile-icon {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    font-size: 10px;
+    background: #228be6;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .menu-item-card__icon {
     flex-shrink: 0;
 }
@@ -212,12 +238,7 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
     border-radius: 999px;
 }
 
-.menu-item-card__badge--tile {
-    border: 1px solid rgba(99, 137, 255, 0.9);
-    background-color: rgba(99, 137, 255, 0.25);
-    color: #fff;
-    margin-top: 0.5rem;
-}
+
 
 .menu-item-card__badge--admin {
     border: 1px solid rgba(99, 137, 255, 0.9);
