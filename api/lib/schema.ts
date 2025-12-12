@@ -266,7 +266,10 @@ export const Icon = pgTable('icons', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
     name: text().notNull(),
+    format: text().notNull(), // Extension (.png, .svg, etc)
+
     iconset: text().notNull().references(() => Iconset.uid),
     type2525b: text(),
     data: text().notNull(),
