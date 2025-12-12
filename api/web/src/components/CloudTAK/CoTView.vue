@@ -430,19 +430,11 @@
                 />
             </div>
 
-            <template
-                v-if='!cot.properties.contact'
-            >
-                <PropertyAttachments
-                    :key='cot.properties.id'
-                    :model-value='cot.properties.attachments || []'
-                    @update:model-value='updatePropertyAttachment($event)'
-                />
-            </template>
+
 
             <div
                 v-if='cot.properties.remarks !== undefined'
-                class='col-12 py-2'
+                class='col-12 pt-2'
             >
                 <div
                     class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
@@ -482,6 +474,16 @@
                     </div>
                 </div>
             </div>
+
+            <template
+                v-if='!cot.properties.contact'
+            >
+                <PropertyAttachments
+                    :key='cot.properties.id'
+                    :model-value='cot.properties.attachments || []'
+                    @update:model-value='updatePropertyAttachment($event)'
+                />
+            </template>
 
             <div
                 v-if='cot.properties.geofence'

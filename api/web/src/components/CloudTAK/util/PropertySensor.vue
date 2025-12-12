@@ -22,7 +22,7 @@
         </div>
 
         <div
-            class='grid-transition'
+            class='grid-transition pt-2'
             :class='{ expanded: expanded }'
         >
             <div class='overflow-hidden'>

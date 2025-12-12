@@ -37,7 +37,8 @@
         >
             <div class='overflow-hidden'>
                 <div class='col-12'>
-                    <div class='mx-2'>
+                    <div class='mx-2 py-2'>
+                        <div class='rounded bg-accent px-2 py-2'>
                         <TablerLoading
                             v-if='loading'
                             :inline='true'
@@ -119,6 +120,7 @@
                                 </template>
                             </div>
                         </template>
+                        </div>
                     </div>
                 </div>
             </div>
