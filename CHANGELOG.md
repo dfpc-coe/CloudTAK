@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.27.0 - 2025-12-12
+
+- :rocket: UI Improvements to CoT View
+
 ### v12.26.0 - 2025-12-10
 
 - :rocket: Version Fix
