@@ -39,59 +39,59 @@
                                 <div v-text='sensor.model || "Unknown"' />
                             </div>
 
-                        <TablerRange
-                            v-if='sensor.range !== undefined'
-                            v-model='sensor.range'
-                            label='Sensor Range Length'
-                            :min='0'
-                            :max='60000'
-                        >
-                            <div class='d-flex align-items-center'>
-                                <TablerInput
-                                    v-model='sensor.range'
-                                    style='width: 82px'
-                                />
-                                <div class='ms-1'>
-                                    m
+                            <TablerRange
+                                v-if='sensor.range !== undefined'
+                                v-model='sensor.range'
+                                label='Sensor Range Length'
+                                :min='0'
+                                :max='60000'
+                            >
+                                <div class='d-flex align-items-center'>
+                                    <TablerInput
+                                        v-model='sensor.range'
+                                        style='width: 82px'
+                                    />
+                                    <div class='ms-1'>
+                                        m
+                                    </div>
                                 </div>
-                            </div>
-                        </TablerRange>
+                            </TablerRange>
 
-                        <TablerRange
-                            v-if='sensor.azimuth !== undefined'
-                            v-model='sensor.azimuth'
-                            label='Sensor Direction'
-                            :min='0'
-                            :max='360'
-                        >
-                            <div class='d-flex align-items-center'>
-                                <TablerInput
-                                    v-model='sensor.azimuth'
-                                    style='width: 82px'
-                                />
-                                <div class='ms-1'>
-                                    deg
+                            <TablerRange
+                                v-if='sensor.azimuth !== undefined'
+                                v-model='sensor.azimuth'
+                                label='Sensor Direction'
+                                :min='0'
+                                :max='360'
+                            >
+                                <div class='d-flex align-items-center'>
+                                    <TablerInput
+                                        v-model='sensor.azimuth'
+                                        style='width: 82px'
+                                    />
+                                    <div class='ms-1'>
+                                        deg
+                                    </div>
                                 </div>
-                            </div>
-                        </TablerRange>
+                            </TablerRange>
 
-                        <TablerRange
-                            v-if='sensor.fov !== undefined'
-                            v-model='sensor.fov'
-                            label='Sensor FOV'
-                            :min='0'
-                            :max='360'
-                        >
-                            <div class='d-flex align-items-center'>
-                                <TablerInput
-                                    v-model='sensor.fov'
-                                    style='width: 82px'
-                                />
-                                <div class='ms-1'>
-                                    deg
+                            <TablerRange
+                                v-if='sensor.fov !== undefined'
+                                v-model='sensor.fov'
+                                label='Sensor FOV'
+                                :min='0'
+                                :max='360'
+                            >
+                                <div class='d-flex align-items-center'>
+                                    <TablerInput
+                                        v-model='sensor.fov'
+                                        style='width: 82px'
+                                    />
+                                    <div class='ms-1'>
+                                        deg
+                                    </div>
                                 </div>
-                            </div>
-                        </TablerRange>
+                            </TablerRange>
                         </div>
                     </div>
                 </div>
