@@ -65,9 +65,13 @@ export default class Bulldozer {
                             continue;
                         }
 
+                        const name = path.parse(file).name;
+                        const format = path.parse(file).ext.toLowerCase();
+
                         this.config.models.Icon.generate({
                             iconset: iconset.uid,
-                            name: file,
+                            name,
+                            format,
                             type2525b: icon.type2525b,
                             data: `data:image/png;base64,${iconBuff.toString('base64')}`,
                             path: `${iconset.uid}/${file}`

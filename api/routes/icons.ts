@@ -317,8 +317,13 @@ export default async function router(schema: Schema, config: Config) {
                 data: req.body.data,
             });
 
+            const name = path.parse(req.body.name).name;
+            const format = path.parse(req.body.name).ext.toLowerCase();
+
             const icon = await config.models.Icon.generate({
                 ...req.body,
+                name: name,
+                format: format,
                 path: `${iconset.uid}/${req.body.name}`,
                 iconset: iconset.uid
             });
