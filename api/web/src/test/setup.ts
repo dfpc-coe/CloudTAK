@@ -35,7 +35,7 @@ globalThis.process = {
   env: {
     API_URL: 'http://localhost:5001',
   },
-}
+} as any
 
 // Mock self for workers
 if (typeof self === 'undefined') {
