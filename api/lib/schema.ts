@@ -188,6 +188,7 @@ export const Basemap = pgTable('basemaps', {
     tilesize: integer().notNull().default(256),
     frequency: integer(),
     attribution: text(),
+    iconset: text().references(() => Iconset.uid),
     center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
     minzoom: integer().notNull().default(0),
     maxzoom: integer().notNull().default(16),
@@ -246,6 +247,9 @@ export const Iconset = pgTable('iconsets', {
     version: integer().notNull(),
     name: text().notNull(),
     username: text().references(() => Profile.username),
+
+    internal: boolean().notNull().default(false),
+
     default_group: text(),
     default_friendly: text(),
     default_hostile: text(),
@@ -442,6 +446,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     pos: integer().notNull().default(5),
     type: text().notNull().default('vector'),
     frequency: integer(),
+    iconset: text().references(() => Iconset.uid),
     opacity: numeric().notNull().default('1'),
     visible: boolean().notNull().default(true),
     token: text(),
