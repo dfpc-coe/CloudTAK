@@ -1,6 +1,6 @@
 <template>
     <div
-        class='col-12 pb-2'
+        class='col-12'
         :style='{ zIndex: expanded ? 10 : "auto", position: "relative" }'
     >
         <div
