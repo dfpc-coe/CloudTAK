@@ -430,7 +430,7 @@ async function createPlayer(): Promise<void> {
 
             // Handle non-fatal errors gracefully (common with MediaMTX restarts)
             if (!data.fatal) {
-                if (data.details === 'manifestLoadError' || data.details === 'levelLoadError') {
+                if (data.details === 'manifestLoadError' || data.details === 'levelLoadError' || data.details === 'bufferStalledError') {
                     handleStreamRestart(); // Handle muxer restart scenario
                 }
                 return;
