@@ -8,6 +8,7 @@ export type Icon = {
     created: string;
     updated: string;
     name: string;
+    format: string;
     iconset: string;
     type2525b: string;
     data: string;
@@ -37,6 +38,7 @@ export default class IconModel extends Modeler<typeof pgschema.Icon> {
             created: pgschema.Icon.created,
             updated: pgschema.Icon.updated,
             name: pgschema.Icon.name,
+            format: pgschema.Icon.format,
             iconset: pgschema.Icon.iconset,
             type2525b: pgschema.Icon.type2525b,
             data: pgschema.Icon.data,
