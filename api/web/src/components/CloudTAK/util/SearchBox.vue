@@ -31,28 +31,31 @@
                     :feature='cot'
                     @click='selectFeature(cot)'
                 />
-                <div
+                <StandardItem
                     v-for='item of results'
                     :key='item.magicKey'
-                    class='search-card text-white d-flex flex-row gap-3 position-relative mb-2 align-items-center cursor-pointer'
+                    class='d-flex flex-row gap-3 mb-2 align-items-center cursor-pointer'
                     @click='fetchSearch(item.text, item.magicKey)'
                 >
-                    <div class='search-card__icon-wrapper ms-2 d-flex align-items-center justify-content-center rounded-circle'>
+                    <div class='icon-wrapper ms-2 d-flex align-items-center justify-content-center rounded-circle'>
                         <IconMapPin
                             :size='24'
                             stroke='1'
                         />
                     </div>
 
-                    <div class='flex-grow-1 d-flex flex-column gap-1 py-2'>
-                        <div class='d-flex flex-wrap align-items-center gap-2'>
+                    <div
+                        class='flex-grow-1 d-flex flex-column gap-1 py-2'
+                        style='min-width: 0'
+                    >
+                        <div class='d-flex align-items-center gap-2'>
                             <span
                                 class='fw-semibold text-truncate'
                                 v-text='item.text'
                             />
                         </div>
                     </div>
-                </div>
+                </StandardItem>
 
                 <TablerLoading
                     v-if='partialLoading'
@@ -68,6 +71,7 @@ import type { SearchForward, SearchSuggest } from '../../../types.ts';
 import { convert } from 'geo-coordinates-parser'
 import { v4 as randomUUID } from 'uuid';
 import Feature from './FeatureRow.vue';
+import StandardItem from './StandardItem.vue';
 import { std, stdurl } from '../../../std.ts'
 import { useMapStore } from '../../../stores/map.ts';
 import COT from '../../../base/cot.ts';
@@ -300,26 +304,11 @@ async function fetchSearch(
 </script>
 
 <style scoped>
-.search-card__icon-wrapper {
+.icon-wrapper {
     width: 3rem;
     height: 3rem;
     min-width: 3rem;
     min-height: 3rem;
     flex-shrink: 0;
-}
-
-.search-card {
-    height: 50px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 14px;
-    background-color: rgba(0, 0, 0, 0.35);
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.search-card:hover,
-.search-card:focus-within {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 </style>

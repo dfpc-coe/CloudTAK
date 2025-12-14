@@ -1,15 +1,16 @@
 <template>
-    <article
-        class='contact-card text-white d-flex flex-row gap-3 position-relative mb-2 align-items-center'
+    <StandardItem
+        class='d-flex flex-row gap-3 mb-2 align-items-center'
         :class='{
             "cursor-pointer": isZoomable(contact),
             "cursor-default": !isZoomable(contact),
             "hover": hover,
             "contact-card--no-notes": !contact.notes || !contact.notes.trim()
         }'
+        :hover='hover'
         @click='flyTo(contact)'
     >
-        <div class='contact-card__icon-wrapper ms-2 d-flex align-items-center justify-content-center rounded-circle'>
+        <div class='icon-wrapper ms-2 d-flex align-items-center justify-content-center rounded-circle'>
             <IconCheck
                 v-if='selected'
                 :size='compact ? 20 : 32'
@@ -55,7 +56,7 @@
                 @click.stop='emit("chat", contact)'
             />
         </div>
-    </article>
+    </StandardItem>
 </template>
 
 <script setup>
@@ -64,6 +65,7 @@ import {
     IconMessage,
 } from '@tabler/icons-vue';
 import ContactPuck from './ContactPuck.vue';
+import StandardItem from './StandardItem.vue';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
@@ -115,26 +117,12 @@ async function flyTo(contact) {
 </script>
 
 <style scoped>
-.contact-card__icon-wrapper {
+.icon-wrapper {
     width: 3rem;
     height: 3rem;
     min-width: 3rem;
     min-height: 3rem;
     flex-shrink: 0;
-}
-
-.contact-card {
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 14px;
-    background-color: rgba(0, 0, 0, 0.35);
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.contact-card:hover,
-.contact-card:focus-within {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 .contact-card--no-notes {
