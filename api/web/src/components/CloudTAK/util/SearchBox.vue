@@ -1,6 +1,6 @@
 <template>
     <div
-        class='text-white bg-dark rounded'
+        class='text-white bg-dark rounded position-relative'
     >
         <TablerInput
             ref='searchBoxRef'
@@ -14,7 +14,7 @@
         />
 
         <div
-            class='dropdown-menu w-100 mt-2'
+            class='dropdown-menu w-100 mt-2 p-2'
             :class='{
                 "show": shown,
             }'
@@ -34,18 +34,24 @@
                 <div
                     v-for='item of results'
                     :key='item.magicKey'
-                    class='col-12 px-3 py-2 hover-button cursor-pointer user-select-none text-truncate'
+                    class='search-card text-white d-flex flex-row gap-3 position-relative mb-2 align-items-center cursor-pointer'
                     @click='fetchSearch(item.text, item.magicKey)'
                 >
-                    <IconMapPin
-                        :size='24'
-                        stroke='1'
-                    />
+                    <div class='search-card__icon-wrapper ms-2 d-flex align-items-center justify-content-center rounded-circle'>
+                        <IconMapPin
+                            :size='24'
+                            stroke='1'
+                        />
+                    </div>
 
-                    <span
-                        class='ms-2'
-                        v-text='item.text'
-                    />
+                    <div class='flex-grow-1 d-flex flex-column gap-1 py-2'>
+                        <div class='d-flex flex-wrap align-items-center gap-2'>
+                            <span
+                                class='fw-semibold text-truncate'
+                                v-text='item.text'
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 <TablerLoading
@@ -292,3 +298,28 @@ async function fetchSearch(
 }
 
 </script>
+
+<style scoped>
+.search-card__icon-wrapper {
+    width: 3rem;
+    height: 3rem;
+    min-width: 3rem;
+    min-height: 3rem;
+    flex-shrink: 0;
+}
+
+.search-card {
+    height: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    background-color: rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-card:hover,
+.search-card:focus-within {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+</style>

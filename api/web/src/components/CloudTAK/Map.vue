@@ -326,18 +326,23 @@
                 </div>
             </div>
 
-            <SearchBox
+            <TablerModal
                 v-if='searchBoxShown'
-                class='position-absolute'
-                style='
-                    z-index: 1;
-                    top: 40px;
-                    left: 40px;
-                    width: 300px;
-                '
-                :autofocus='true'
-                @select='searchBoxShown = false'
-            />
+                size='lg'
+            >
+                <button
+                    type='button'
+                    class='btn-close'
+                    aria-label='Close'
+                    @click='searchBoxShown = false'
+                />
+                <div class='modal-body'>
+                    <SearchBox
+                        :autofocus='true'
+                        @select='searchBoxShown = false'
+                    />
+                </div>
+            </TablerModal>
 
             <div
                 v-if='mapStore.isLoaded && mode === "Default"'
