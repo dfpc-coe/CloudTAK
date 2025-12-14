@@ -4,7 +4,8 @@
         :class='{
             "cursor-pointer": isZoomable(contact),
             "cursor-default": !isZoomable(contact),
-            "hover": hover
+            "hover": hover,
+            "contact-card--no-notes": !contact.notes || !contact.notes.trim()
         }'
         @click='flyTo(contact)'
     >
@@ -134,5 +135,9 @@ async function flyTo(contact) {
     transform: translateY(-1px);
     border-color: rgba(255, 255, 255, 0.4);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.contact-card--no-notes {
+    height: 50px;
 }
 </style>

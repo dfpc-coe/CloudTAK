@@ -66,6 +66,7 @@
                     ref='select'
                     role='menu'
                     :disabled='false'
+                    :hover='false'
                     :items='filteredList'
                 >
                     <template #buttons='{disabled}'>

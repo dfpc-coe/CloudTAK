@@ -1,8 +1,11 @@
 <template>
-    <div v-if='!isDeleted'>
+    <div
+        v-if='!isDeleted'
+        class='w-100'
+    >
         <Contact
             v-if='feature.properties.group'
-            class='px-2 py-2'
+            class='px-2 py-2 w-100'
             :button-chat='false'
             :compact='compact'
             :contact='{
@@ -14,12 +17,11 @@
         />
         <div
             v-else
-            class='d-flex align-items-center px-3 py-2'
+            class='search-card w-100 text-white d-flex flex-row gap-3 position-relative mb-2 align-items-center'
             :class='{
                 "cursor-pointer": isZoomable && props.hover,
                 "cursor-default": !isZoomable || props.hover === false,
-                "hover-button": hover,
-                "py-2": !compact
+                "hover": hover
             }'
             @click.exact='flyToClick'
             @click.ctrl='selectClick'
@@ -27,7 +29,7 @@
             <div
                 v-if='props.gripHandle'
                 :id='feature.id'
-                class='d-flex me-2 drag-handle cursor-grab'
+                class='d-flex drag-handle cursor-grab ms-2 align-items-center'
             >
                 <IconGripVertical
                     :size='18'
@@ -35,18 +37,27 @@
                 />
             </div>
 
-            <span class='me-2'>
+            <div
+                class='search-card__icon-wrapper d-flex align-items-center justify-content-center rounded-circle'
+                :class='{
+                    "ms-2": !props.gripHandle
+                }'
+            >
                 <FeatureIcon
                     :feature='feature'
                 />
-            </span>
-            <div
-                class='text-truncate user-select-none'
-                :style='`width: ${textWidth};`'
-                v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
-            />
+            </div>
 
-            <div class='ms-auto btn-list hover-button-hidden'>
+            <div class='flex-grow-1 d-flex flex-column gap-1 py-2'>
+                <div class='d-flex flex-wrap align-items-center gap-2'>
+                    <span
+                        class='fw-semibold text-truncate'
+                        v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
+                    />
+                </div>
+            </div>
+
+            <div class='align-self-center me-2 btn-list hover-button-hidden'>
                 <TablerIconButton
                     v-if='infoButton'
                     title='View Info'
@@ -187,3 +198,28 @@ async function flyToClick() {
     cot.flyTo();
 }
 </script>
+
+<style scoped>
+.search-card__icon-wrapper {
+    width: 3rem;
+    height: 3rem;
+    min-width: 3rem;
+    min-height: 3rem;
+    flex-shrink: 0;
+}
+
+.search-card {
+    height: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    background-color: rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-card:hover,
+.search-card:focus-within {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+</style>
