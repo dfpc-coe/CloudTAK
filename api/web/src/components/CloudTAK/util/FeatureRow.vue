@@ -15,14 +15,15 @@
                 "notes": ""
             }'
         />
-        <div
+        <StandardItem
             v-else
-            class='search-card w-100 text-white d-flex flex-row gap-3 position-relative mb-2 align-items-center'
+            class='w-100 d-flex flex-row gap-3 mb-2 align-items-center'
             :class='{
                 "cursor-pointer": isZoomable && props.hover,
                 "cursor-default": !isZoomable || props.hover === false,
                 "hover": hover
             }'
+            :hover='hover'
             @click.exact='flyToClick'
             @click.ctrl='selectClick'
         >
@@ -38,7 +39,7 @@
             </div>
 
             <div
-                class='search-card__icon-wrapper d-flex align-items-center justify-content-center rounded-circle'
+                class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle'
                 :class='{
                     "ms-2": !props.gripHandle
                 }'
@@ -86,7 +87,7 @@
                     />
                 </TablerIconButton>
             </div>
-        </div>
+        </StandardItem>
     </div>
 </template>
 
@@ -96,6 +97,7 @@ import { ref, onMounted, computed } from 'vue';
 import COT from '../../../base/cot.ts';
 import FeatureIcon from './FeatureIcon.vue';
 import Contact from './Contact.vue';
+import StandardItem from './StandardItem.vue';
 import {
     TablerDelete,
     TablerIconButton
@@ -200,26 +202,11 @@ async function flyToClick() {
 </script>
 
 <style scoped>
-.search-card__icon-wrapper {
+.icon-wrapper {
     width: 3rem;
     height: 3rem;
     min-width: 3rem;
     min-height: 3rem;
     flex-shrink: 0;
-}
-
-.search-card {
-    height: 50px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 14px;
-    background-color: rgba(0, 0, 0, 0.35);
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.search-card:hover,
-.search-card:focus-within {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 </style>
