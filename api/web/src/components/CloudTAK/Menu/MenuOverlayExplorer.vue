@@ -19,8 +19,8 @@
 
                 <TablerLoading v-if='loading' />
                 <template v-else>
-                    <article
-                        class='menu-overlays__card menu-overlay-explorer__card menu-overlay-explorer__card--files mx-2 cursor-pointer'
+                    <StandardItem
+                        class='menu-overlay-explorer__card menu-overlay-explorer__card--files mx-2 cursor-pointer p-3'
                         role='button'
                         tabindex='0'
                         @click='goToFiles'
@@ -59,20 +59,21 @@
                                 </TablerIconButton>
                             </div>
                         </div>
-                    </article>
+                    </StandardItem>
 
                     <div
                         v-if='explorerCards.length'
                         class='menu-overlays__list mx-2 d-flex flex-column'
                     >
-                        <article
+                        <StandardItem
                             v-for='card in explorerCards'
                             :key='card.basemap.id'
                             :class='[
-                                "menu-overlays__card",
                                 "menu-overlay-explorer__card",
-                                card.exists || loading ? "opacity-50 pe-none" : "cursor-pointer"
+                                card.exists || loading ? "opacity-50 pe-none" : "cursor-pointer",
+                                "p-3"
                             ]'
+                            :hover='!card.exists && !loading'
                             role='button'
                             :tabindex='card.exists ? -1 : 0'
                             :aria-disabled='loading || card.exists'
@@ -145,7 +146,7 @@
                                     </TablerIconButton>
                                 </div>
                             </div>
-                        </article>
+                        </StandardItem>
                     </div>
 
                     <TablerNone
@@ -181,6 +182,7 @@ import {
     IconPlus,
     IconFolder
 } from '@tabler/icons-vue';
+import StandardItem from '../util/StandardItem.vue';
 import Overlay from '../../../base/overlay.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
@@ -357,21 +359,6 @@ async function fetchList() {
 
 .menu-overlays__list {
     gap: 0.75rem;
-}
-
-.menu-overlays__card {
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 14px;
-    background-color: rgba(0, 0, 0, 0.35);
-    padding: 0.85rem 1rem;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.menu-overlays__card:hover,
-.menu-overlays__card:focus-within {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 .menu-overlays__card-main {
