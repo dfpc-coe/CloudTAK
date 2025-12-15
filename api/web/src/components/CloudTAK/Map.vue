@@ -736,7 +736,9 @@ onMounted(async () => {
 
     window.addEventListener('keyup', (e) => {
         if (e.key == 'Escape') {
-            if (mapStore.radial.mode) {
+            if (searchBoxShown.value) {
+                searchBoxShown.value = false;
+            } else if (mapStore.radial.mode) {
                 closeRadial()
             } else if (mapStore.select.feats) {
                 mapStore.select.feats = [];
