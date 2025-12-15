@@ -456,6 +456,7 @@ async function createPlayer(): Promise<void> {
                         } else {
                             handleStreamError(data.error);
                         }
+
                         break;
                     }
                 default:
@@ -479,10 +480,8 @@ function handleStreamRestart(): void {
     console.log('Handling HLS stream restart (muxer restart detected)');
     if (player.value && videoProtocols.value?.hls) {
         try {
-            // Gracefully handle sequence mismatches by reloading from current position
-            const currentTime = videoTag.value?.currentTime || 0;
             player.value.stopLoad();
-            player.value.startLoad(currentTime);
+            player.value.startLoad();
         } catch (err) {
             console.error('Error handling stream restart:', err);
             // Fall back to full retry if restart handling fails
@@ -515,6 +514,7 @@ function handleStreamError(streamError: Error): void {
     } else {
         // Max retries reached - give up and show error to user
         console.error('Max retries reached, giving up');
+
         if (player.value) {
             player.value.destroy();
             player.value = undefined;
