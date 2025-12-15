@@ -330,12 +330,17 @@
                 v-if='searchBoxShown'
                 size='lg'
             >
-                <button
-                    type='button'
-                    class='btn-close'
-                    aria-label='Close'
-                    @click='searchBoxShown = false'
-                />
+                <div class='modal-header'>
+                    <div class='modal-title'>
+                        Search
+                    </div>
+                    <button
+                        type='button'
+                        class='btn-close'
+                        aria-label='Close'
+                        @click='searchBoxShown = false'
+                    />
+                </div>
                 <div class='modal-body'>
                     <SearchBox
                         :autofocus='true'
