@@ -1,21 +1,28 @@
 <template>
-    <div
+    <component
+        :is='compact ? &apos;div&apos; : StandardItem'
         :class='classes'
         role='menuitem'
         tabindex='0'
         @click='$emit("select")'
         @keyup.enter='$emit("select")'
     >
-        <component
-            :is='icon'
-            v-if='icon'
-            v-tooltip='tooltipBinding'
-            :title='tooltip'
-            :size='iconSize'
-            :color='iconColor'
-            stroke='1'
-            class='menu-item-card__icon'
-        />
+        <div class='menu-item-card__icon-wrapper'>
+            <component
+                :is='icon'
+                v-if='icon'
+                v-tooltip='tooltipBinding'
+                :title='tooltip'
+                :size='iconSize'
+                :color='iconColor'
+                stroke='1'
+                class='menu-item-card__icon'
+            />
+            <span
+                v-if='layout === "tiles" && badge'
+                class='menu-item-card__badge menu-item-card__badge--tile-icon'
+            >{{ badge }}</span>
+        </div>
 
         <span
             v-if='compact && badge'
@@ -35,10 +42,6 @@
                     >
                         {{ description }}
                     </div>
-                    <span
-                        v-if='badge'
-                        class='menu-item-card__badge menu-item-card__badge--tile'
-                    >{{ badge }}</span>
                 </div>
             </template>
             <template v-else-if='compact'>
@@ -69,12 +72,13 @@
                 </div>
             </template>
         </template>
-    </div>
+    </component>
 </template>
 
 <script setup lang='ts'>
 import { computed } from 'vue';
 import type { Component, PropType } from 'vue';
+import StandardItem from '../util/StandardItem.vue';
 
 defineEmits(['select']);
 
@@ -140,39 +144,40 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
 }
 
 .menu-item-card--list:not(.menu-item-card--compact) {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    background-color: rgba(0, 0, 0, 0.35);
     padding: 0.85rem 1rem;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.menu-item-card--list:not(.menu-item-card--compact):hover,
-.menu-item-card--list:not(.menu-item-card--compact):focus-within {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 .menu-item-card--tiles {
     flex-direction: column;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    background-color: rgba(0, 0, 0, 0.35);
     padding: 1rem;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.menu-item-card--tiles:hover,
-.menu-item-card--tiles:focus-within {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .menu-item-card--compact {
     padding: 0.5rem 0.75rem;
+}
+
+.menu-item-card__icon-wrapper {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+}
+
+.menu-item-card__badge--tile-icon {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    font-size: 10px;
+    background: #228be6;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .menu-item-card__icon {
@@ -212,12 +217,7 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
     border-radius: 999px;
 }
 
-.menu-item-card__badge--tile {
-    border: 1px solid rgba(99, 137, 255, 0.9);
-    background-color: rgba(99, 137, 255, 0.25);
-    color: #fff;
-    margin-top: 0.5rem;
-}
+
 
 .menu-item-card__badge--admin {
     border: 1px solid rgba(99, 137, 255, 0.9);

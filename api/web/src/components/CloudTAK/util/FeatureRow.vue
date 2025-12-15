@@ -1,8 +1,11 @@
 <template>
-    <div v-if='!isDeleted'>
+    <div
+        v-if='!isDeleted'
+        class='w-100'
+    >
         <Contact
             v-if='feature.properties.group'
-            class='px-2 py-2'
+            class='px-2 py-2 w-100'
             :button-chat='false'
             :compact='compact'
             :contact='{
@@ -12,22 +15,22 @@
                 "notes": ""
             }'
         />
-        <div
+        <StandardItem
             v-else
-            class='d-flex align-items-center px-3 py-2'
+            class='w-100 d-flex flex-row gap-3 mb-2 align-items-center'
             :class='{
                 "cursor-pointer": isZoomable && props.hover,
                 "cursor-default": !isZoomable || props.hover === false,
-                "hover-button": hover,
-                "py-2": !compact
+                "hover": hover
             }'
+            :hover='hover'
             @click.exact='flyToClick'
             @click.ctrl='selectClick'
         >
             <div
                 v-if='props.gripHandle'
                 :id='feature.id'
-                class='d-flex me-2 drag-handle cursor-grab'
+                class='d-flex drag-handle cursor-grab ms-2 align-items-center'
             >
                 <IconGripVertical
                     :size='18'
@@ -35,18 +38,27 @@
                 />
             </div>
 
-            <span class='me-2'>
+            <div
+                class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle'
+                :class='{
+                    "ms-2": !props.gripHandle
+                }'
+            >
                 <FeatureIcon
                     :feature='feature'
                 />
-            </span>
-            <div
-                class='text-truncate user-select-none'
-                :style='`width: ${textWidth};`'
-                v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
-            />
+            </div>
 
-            <div class='ms-auto btn-list hover-button-hidden'>
+            <div class='flex-grow-1 d-flex flex-column gap-1 py-2'>
+                <div class='d-flex flex-wrap align-items-center gap-2'>
+                    <span
+                        class='fw-semibold text-truncate'
+                        v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
+                    />
+                </div>
+            </div>
+
+            <div class='align-self-center me-2 btn-list hover-button-hidden'>
                 <TablerIconButton
                     v-if='infoButton'
                     title='View Info'
@@ -75,16 +87,17 @@
                     />
                 </TablerIconButton>
             </div>
-        </div>
+        </StandardItem>
     </div>
 </template>
 
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import COT from '../../../base/cot.ts';
 import FeatureIcon from './FeatureIcon.vue';
 import Contact from './Contact.vue';
+import StandardItem from './StandardItem.vue';
 import {
     TablerDelete,
     TablerIconButton
@@ -147,15 +160,6 @@ onMounted(async () => {
     isZoomable.value = cot ? true : false;
 })
 
-const textWidth = computed(() => {
-    let width = `calc(100%`;
-
-    if (props.deleteButton) width = width + '- 60px';
-    if (props.infoButton) width = width + '- 60px';
-
-    return width + ')'
-});
-
 async function deleteCOT() {
     if (props.deleteAction === 'delete') {
         isDeleting.value = true;
@@ -187,3 +191,13 @@ async function flyToClick() {
     cot.flyTo();
 }
 </script>
+
+<style scoped>
+.icon-wrapper {
+    width: 3rem;
+    height: 3rem;
+    min-width: 3rem;
+    min-height: 3rem;
+    flex-shrink: 0;
+}
+</style>

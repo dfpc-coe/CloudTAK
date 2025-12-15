@@ -39,22 +39,42 @@
             />
             <template v-else>
                 <div class='col-12 d-flex flex-column gap-2 p-3'>
-                    <MenuItemCard
+                    <StandardItem
                         v-for='cot of routes.values()'
                         :key='cot.id'
-                        :icon='IconRoute'
-                        :icon-color='cot.properties["stroke"] || "#ffffff"'
-                        :label='cot.properties.callsign'
-                        :description='cot.geometry.type === "LineString" ? Math.round(cot.length() * 1000) / 1000 + " km" : ""'
-                        @select='clickRoute(cot)'
+                        class='d-flex align-items-center gap-3 p-2'
+                        @click='clickRoute(cot)'
                     >
-                        <div class='d-flex btn-list'>
+                        <div
+                            class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                            style='width: 3rem; height: 3rem; min-width: 3rem;'
+                        >
+                            <IconRoute
+                                :size='24'
+                                :color='cot.properties["stroke"] || "#ffffff"'
+                                stroke='1'
+                            />
+                        </div>
+
+                        <div class='d-flex flex-column'>
+                            <div class='fw-bold'>
+                                {{ cot.properties.callsign }}
+                            </div>
+                            <div
+                                v-if='cot.geometry.type === "LineString"'
+                                class='text-secondary small'
+                            >
+                                {{ Math.round(cot.length() * 1000) / 1000 + " km" }}
+                            </div>
+                        </div>
+
+                        <div class='d-flex btn-list ms-auto'>
                             <TablerDelete
                                 displaytype='icon'
                                 @delete='deleteRoute(cot.id)'
                             />
                         </div>
-                    </MenuItemCard>
+                    </StandardItem>
                 </div>
             </template>
         </template>
@@ -67,7 +87,7 @@ import { useRouter } from 'vue-router';
 import COT from '../../../base/cot.ts';
 import { server } from '../../../std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import MenuItemCard from './MenuItemCard.vue';
+import StandardItem from '../util/StandardItem.vue';
 import {
     TablerNone,
     TablerInput,

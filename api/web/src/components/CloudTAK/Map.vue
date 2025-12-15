@@ -326,18 +326,28 @@
                 </div>
             </div>
 
-            <SearchBox
+            <TablerModal
                 v-if='searchBoxShown'
-                class='position-absolute'
-                style='
-                    z-index: 1;
-                    top: 40px;
-                    left: 40px;
-                    width: 300px;
-                '
-                :autofocus='true'
-                @select='searchBoxShown = false'
-            />
+                size='lg'
+            >
+                <div class='modal-header'>
+                    <div class='modal-title'>
+                        Search
+                    </div>
+                    <button
+                        type='button'
+                        class='btn-close'
+                        aria-label='Close'
+                        @click='searchBoxShown = false'
+                    />
+                </div>
+                <div class='modal-body'>
+                    <SearchBox
+                        :autofocus='true'
+                        @select='searchBoxShown = false'
+                    />
+                </div>
+            </TablerModal>
 
             <div
                 v-if='mapStore.isLoaded && mode === "Default"'
@@ -726,7 +736,9 @@ onMounted(async () => {
 
     window.addEventListener('keyup', (e) => {
         if (e.key == 'Escape') {
-            if (mapStore.radial.mode) {
+            if (searchBoxShown.value) {
+                searchBoxShown.value = false;
+            } else if (mapStore.radial.mode) {
                 closeRadial()
             } else if (mapStore.select.feats) {
                 mapStore.select.feats = [];

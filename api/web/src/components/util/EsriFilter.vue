@@ -80,10 +80,12 @@ const props = defineProps({
         default: ''
     },
     layer: {
-        type: String
+        type: String,
+        default: undefined
     },
     token: {
-        type: String
+        type: String,
+        default: undefined
     }
 });
 

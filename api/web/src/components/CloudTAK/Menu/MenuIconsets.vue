@@ -83,7 +83,7 @@
                 </div>
 
                 <template v-if='mode === "iconsets"'>
-                    <div class='mx-2 my-2'>
+                    <div class='px-3 pt-3'>
                         <TablerInput
                             v-model='paging.filter'
                             icon='search'
@@ -105,33 +105,41 @@
                         :create='false'
                     />
                     <div class='col-12 d-flex flex-column gap-2 p-3'>
-                        <MenuItemCard
+                        <StandardItem
                             v-for='iconset in list.items'
                             :key='iconset.uid'
-                            :icon='IconAlbum'
-                            :label='iconset.name'
-                            @select='router.push(`/menu/iconset/${iconset.uid}`)'
+                            @click='router.push(`/menu/iconset/${iconset.uid}`)'
                         >
-                            <div class='d-flex align-items-center'>
-                                <span
-                                    v-if='!iconset.username'
-                                    class='mx-3 badge border bg-blue text-white'
-                                >Public</span>
-                                <span
-                                    v-else
-                                    class='mx-3 badge border bg-red text-white'
-                                >Private</span>
-                                <TablerIconButton
-                                    title='Download TAK Zip'
-                                    @click.stop='download(iconset)'
-                                >
-                                    <IconDownload
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
+                            <div class='d-flex align-items-center px-2 py-2'>
+                                <IconAlbum
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <div class='ms-2 flex-grow-1 fw-bold'>
+                                    {{ iconset.name }}
+                                </div>
+
+                                <div class='d-flex align-items-center'>
+                                    <span
+                                        v-if='!iconset.username'
+                                        class='mx-3 badge border bg-blue text-white'
+                                    >Public</span>
+                                    <span
+                                        v-else
+                                        class='mx-3 badge border bg-red text-white'
+                                    >Private</span>
+                                    <TablerIconButton
+                                        title='Download TAK Zip'
+                                        @click.stop='download(iconset)'
+                                    >
+                                        <IconDownload
+                                            :size='32'
+                                            stroke='1'
+                                        />
+                                    </TablerIconButton>
+                                </div>
                             </div>
-                        </MenuItemCard>
+                        </StandardItem>
                     </div>
                     <div class='col-lg-12 d-flex'>
                         <div class='ms-auto'>
@@ -167,7 +175,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import MenuItemCard from './MenuItemCard.vue';
+import StandardItem from '../util/StandardItem.vue';
 import { std, stdurl } from '../../../std.ts';
 import Upload from '../../util/Upload.vue';
 import IconCombineds from '../util/Icons.vue'

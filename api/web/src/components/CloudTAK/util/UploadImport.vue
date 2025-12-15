@@ -72,7 +72,8 @@ const props = defineProps({
         default: 'Unknown'
     },
     modeid: {
-        type: String
+        type: String,
+        default: undefined
     },
     dragging: {
         type: Boolean,

@@ -41,11 +41,12 @@
                     <div
                         v-for='conn in list.items'
                         :key='conn.id'
-                        tabindex='0'
-                        role='menuitem'
-                        @click='external(`/connection/${conn.id}`)'
+                        class='col-12 px-2 py-1'
                     >
-                        <div class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'>
+                        <StandardItem
+                            class='d-flex align-items-center py-2 px-3'
+                            @click='external(`/connection/${conn.id}`)'
+                        >
                             <div class='col-auto'>
                                 <ConnectionStatus :connection='conn' />
                             </div>
@@ -72,7 +73,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </StandardItem>
                     </div>
                 </div>
             </template>
@@ -110,6 +111,7 @@ import {
 } from '@tabler/icons-vue';
 
 import MenuTemplate from '../util/MenuTemplate.vue';
+import StandardItem from '../util/StandardItem.vue';
 import ConnectionStatus from './../../ETL/Connection/StatusDot.vue';
 import AgencyBadge from './../../ETL/Connection/AgencyBadge.vue';
 import timeDiff from '../../../timediff.ts';

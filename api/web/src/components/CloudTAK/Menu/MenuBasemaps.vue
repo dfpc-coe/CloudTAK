@@ -19,21 +19,40 @@
         <template #default>
             <div
                 v-if='!share'
-                class='col-12 px-2 py-2 d-flex align-items-center'
+                class='col-12 px-2 py-2 d-flex flex-column gap-2'
             >
-                <TablerIconButton
+                <div
                     v-if='paging.collection'
-                    title='Back'
-                    @click='paging.collection = ""'
+                    class='d-flex align-items-center gap-2'
                 >
-                    <IconCircleArrowLeft
-                        :size='32'
+                    <div
+                        class='d-flex align-items-center gap-2 cursor-pointer hover-opacity'
+                    >
+                        <TablerIconButton
+                            title='Home'
+                            @click='paging.collection = ""'
+                        >
+                            <IconFolder
+                                :size='20'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                    </div>
+
+                    <IconChevronRight
+                        :size='20'
                         stroke='1'
+                        class='text-white-50'
                     />
-                </TablerIconButton>
+
+                    <div class='d-flex align-items-center gap-2'>
+                        <span class='h3 mb-0'>{{ paging.collection }}</span>
+                    </div>
+                </div>
+
                 <TablerInput
                     v-model='paging.filter'
-                    :style='paging.collection ? "width: calc(100% - 32px);" : "width: 100%;"'
+                    class='w-100'
                     icon='search'
                     placeholder='Filter'
                 />
@@ -58,22 +77,37 @@
             />
             <template v-else>
                 <div class='col-12 d-flex flex-column gap-2 p-3'>
-                    <MenuItemCard
+                    <StandardItem
                         v-for='collection in list.collections'
                         :key='collection.name'
-                        :icon='IconFolder'
-                        :label='collection.name'
-                        @select='setCollection(collection.name)'
-                    />
-                    <MenuItemCard
+                        class='d-flex align-items-center'
+                        @click='setCollection(collection.name)'
+                    >
+                        <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 my-2'>
+                            <IconFolder
+                                :size='24'
+                                stroke='1'
+                            />
+                        </div>
+                        <span class='fw-semibold ms-3'>{{ collection.name }}</span>
+                    </StandardItem>
+
+                    <StandardItem
                         v-for='basemap in list.items'
                         :key='basemap.id'
-                        :icon='IconMap'
-                        :label='basemap.name'
+                        class='d-flex align-items-center'
                         :class='{ "bg-blue text-white": isCurrentBasemap(basemap.id) }'
-                        @select='setBasemap(basemap)'
+                        @click='setBasemap(basemap)'
                     >
-                        <div class='d-flex align-items-center'>
+                        <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 my-2'>
+                            <IconMap
+                                :size='24'
+                                stroke='1'
+                            />
+                        </div>
+                        <span class='fw-semibold ms-3 flex-grow-1'>{{ basemap.name }}</span>
+
+                        <div class='d-flex align-items-center me-2'>
                             <span
                                 v-if='!basemap.username'
                                 class='mx-3 badge border'
@@ -145,7 +179,7 @@
                                 </template>
                             </TablerDropdown>
                         </div>
-                    </MenuItemCard>
+                    </StandardItem>
                 </div>
 
                 <div class='col-lg-12 d-flex'>
@@ -173,7 +207,7 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, watch } from 'vue';
-import MenuItemCard from './MenuItemCard.vue';
+import StandardItem from '../util/StandardItem.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import { server, stdurl } from '../../../std.ts';
 import Overlay from '../../../base/overlay.ts';
@@ -199,7 +233,7 @@ import {
     IconSettings,
     IconBoxMultiple,
     IconDotsVertical,
-    IconCircleArrowLeft,
+    IconChevronRight
 } from '@tabler/icons-vue'
 import type { LayerSpecification } from 'maplibre-gl'
 import { useRouter } from 'vue-router';
@@ -360,3 +394,17 @@ async function fetchList() {
     loading.value = false;
 }
 </script>
+
+<style scoped>
+.icon-wrapper {
+    width: 3rem;
+    height: 3rem;
+    min-width: 3rem;
+    min-height: 3rem;
+    flex-shrink: 0;
+}
+
+.text-decoration-underline-hover:hover {
+    text-decoration: underline;
+}
+</style>

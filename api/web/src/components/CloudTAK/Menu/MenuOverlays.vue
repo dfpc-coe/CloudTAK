@@ -59,26 +59,22 @@
                         ref='sortableRef'
                         class='menu-overlays__list d-flex flex-column gap-3 mx-2'
                     >
-                        <article
+                        <StandardItem
                             v-for='card in overlayCards'
                             :id='String(card.overlay.id)'
                             :key='card.overlay.id'
-                            class='menu-overlays__card border border-white border-opacity-25 rounded-4 bg-black bg-opacity-25 p-3 shadow-sm'
+                            class='menu-overlays__card p-3'
                             :class='{
-                                "menu-overlays__card--dragging": isDraggable,
-                                "cursor-pointer": !isDraggable && card.overlay.id !== 0
+                                "menu-overlays__card--dragging": isDraggable
                             }'
+                            :hover='!isDraggable && card.overlay.id !== 0'
                             @click='handleCardClick(card.overlay.id)'
-                            @keydown.enter.prevent='handleCardKeydown(card.overlay.id)'
-                            @keydown.space.prevent='handleCardKeydown(card.overlay.id)'
                         >
                             <div
                                 class='d-flex justify-content-between gap-3'
                             >
                                 <div
                                     class='d-flex align-items-center gap-2 flex-grow-1 w-100 overflow-hidden'
-                                    role='button'
-                                    :tabindex='!isDraggable && card.overlay.id !== 0 ? 0 : -1'
                                     :aria-disabled='isDraggable || card.overlay.id === 0'
                                 >
                                     <IconGripVertical
@@ -247,7 +243,7 @@
                                     />
                                 </div>
                             </transition>
-                        </article>
+                        </StandardItem>
                     </div>
 
                     <TablerNone
@@ -289,6 +285,7 @@ import {
     IconEye,
     IconMap
 } from '@tabler/icons-vue';
+import StandardItem from '../util/StandardItem.vue';
 import Sortable from 'sortablejs';
 import type { SortableEvent } from 'sortablejs';
 import { useMapStore } from '../../../../src/stores/map.ts';
@@ -435,10 +432,6 @@ function handleCardClick(id: number) {
     toggleOverlay(id);
 }
 
-function handleCardKeydown(id: number) {
-    handleCardClick(id);
-}
-
 function resolveOverlayStatus(overlay: Overlay): OverlayStatus {
     if (!overlay.healthy()) {
         return {
@@ -543,13 +536,6 @@ async function removeOverlay(id: number) {
 .menu-overlays__card--dragging {
     border-color: rgba(99, 137, 255, 0.6) !important;
     box-shadow: 0 0 0 1px rgba(99, 137, 255, 0.5);
-}
-
-.menu-overlays__card:hover,
-.menu-overlays__card:focus-within {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 .menu-overlays__name {

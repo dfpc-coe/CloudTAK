@@ -95,7 +95,8 @@ import {
 
 const props = defineProps({
     iconset: {
-        type: String
+        type: String,
+        default: undefined
     },
     labels: {
         type: Boolean,

@@ -57,14 +57,32 @@
                 v-else
                 class='col-12 d-flex flex-column gap-2 p-3'
             >
-                <MenuItemCard
+                <StandardItem
                     v-for='ch in processChannels'
                     :key='ch.name'
-                    :icon='ch.active ? IconEye : IconEyeOff'
-                    :label='ch.name'
-                    :description='ch.description || "No Description"'
-                    @select='setStatus(ch, !ch.active)'
+                    class='d-flex align-items-center gap-3 p-2'
+                    @click='setStatus(ch, !ch.active)'
                 >
+                    <div
+                        class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                        style='width: 3rem; height: 3rem; min-width: 3rem;'
+                    >
+                        <component
+                            :is='ch.active ? IconEye : IconEyeOff'
+                            :size='24'
+                            stroke='1'
+                        />
+                    </div>
+
+                    <div class='d-flex flex-column'>
+                        <div class='fw-bold'>
+                            {{ ch.name }}
+                        </div>
+                        <div class='text-secondary small'>
+                            {{ ch.description || "No Description" }}
+                        </div>
+                    </div>
+
                     <div class='ms-auto'>
                         <IconLocation
                             v-if='ch.direction.length === 2'
@@ -85,7 +103,7 @@
                             stroke='1'
                         />
                     </div>
-                </MenuItemCard>
+                </StandardItem>
             </div>
         </template>
     </MenuTemplate>
@@ -103,7 +121,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import MenuItemCard from './MenuItemCard.vue';
+import StandardItem from '../util/StandardItem.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import {
     IconLocation,

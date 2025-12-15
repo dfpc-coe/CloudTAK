@@ -50,17 +50,13 @@
                             v-else
                             class='d-flex flex-column gap-3 mx-2'
                         >
-                            <article
+                            <StandardItem
                                 v-for='(mission, mission_it) in filteredList'
                                 :key='mission_it'
-                                class='menu-missions__card text-white d-flex flex-row gap-3 position-relative'
-                                role='button'
-                                tabindex='0'
+                                class='d-flex flex-row gap-3 position-relative'
                                 @click='openMission(mission, false)'
-                                @keydown.enter.prevent='openMission(mission, false)'
-                                @keydown.space.prevent='openMission(mission, false)'
                             >
-                                <div class='menu-missions__icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 mt-2'>
+                                <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 mt-2'>
                                     <IconLock
                                         v-if='mission.passwordProtected'
                                         :size='24'
@@ -134,7 +130,7 @@
                                         stroke='1'
                                     />
                                 </div>
-                            </article>
+                            </StandardItem>
                         </div>
                     </template>
                 </template>
@@ -165,6 +161,7 @@
 import { ref, onMounted, watch } from 'vue';
 import MissionCreate from './Mission/MissionCreate.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import StandardItem from '../util/StandardItem.vue';
 import Keywords from '../util/Keywords.vue';
 import { useRouter } from 'vue-router';
 import {
@@ -298,25 +295,11 @@ async function fetchMissions() {
 </script>
 
 <style scoped>
-.menu-missions__icon-wrapper {
+.icon-wrapper {
     width: 3rem;
     height: 3rem;
     min-width: 3rem;
     min-height: 3rem;
     flex-shrink: 0;
-}
-
-.menu-missions__card {
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 14px;
-    background-color: rgba(0, 0, 0, 0.35);
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.menu-missions__card:hover,
-.menu-missions__card:focus-within {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 </style>
