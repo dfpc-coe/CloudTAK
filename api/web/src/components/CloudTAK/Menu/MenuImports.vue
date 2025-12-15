@@ -181,6 +181,7 @@ function uploadComplete(event: unknown) {
 
 async function fetchList() {
     loading.value = true;
+    error.value = undefined;
 
     try {
         const url = stdurl('/api/import');
