@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### v12.27.2 - 2025-12-12
+
+- :rocket: Merge Video Error Handling into single block
+- :rocket: Avoid requesting the same time in the stream that caused an error
+
+### v12.27.1 - 2025-12-12
+
+- :rocket: Add ability to recover from Buffer Error
+
 ### v12.27.0 - 2025-12-12
 
 - :rocket: UI Improvements to CoT View
