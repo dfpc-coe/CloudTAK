@@ -1,6 +1,6 @@
 <template>
     <component
-        :is="compact ? 'div' : StandardItem"
+        :is='compact ? &apos;div&apos; : StandardItem'
         :class='classes'
         role='menuitem'
         tabindex='0'
@@ -42,7 +42,6 @@
                     >
                         {{ description }}
                     </div>
-
                 </div>
             </template>
             <template v-else-if='compact'>
