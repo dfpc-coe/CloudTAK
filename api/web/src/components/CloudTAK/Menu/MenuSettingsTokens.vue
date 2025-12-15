@@ -31,7 +31,7 @@
                             :size='32'
                             stroke='1'
                         />
-                        <div class='ms-2 flex-grow-1 font-weight-bold'>
+                        <div class='ms-2 flex-grow-1 fw-bold'>
                             {{ t.name }}
                         </div>
                     </div>
