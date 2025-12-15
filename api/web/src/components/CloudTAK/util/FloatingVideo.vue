@@ -428,35 +428,39 @@ async function createPlayer(): Promise<void> {
         player.value.on(Hls.Events.ERROR, (event, data) => {
             console.log("HLS Error:", data);
 
-            // Handle non-fatal errors gracefully (common with MediaMTX restarts)
-            if (!data.fatal) {
-                if (data.details === 'manifestLoadError' || data.details === 'levelLoadError' || data.details === 'bufferStalledError') {
-                    handleStreamRestart(); // Handle muxer restart scenario
-                }
-                return;
-            }
-
             switch (data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
-                    console.log("Fatal network error:", data);
-                    handleStreamError(data.error);
-                    break;
+                    if (!data.fatal) {
+                        handleStreamRestart(); // Handle muxer restart scenario
+                        break;
+                    } else {
+                        console.log("Fatal network error:", data);
+                        handleStreamError(data.error);
+                        break;
+                    }
                 case Hls.ErrorTypes.MEDIA_ERROR:
-                    console.log("Fatal media error:", data);
+                    if (!data.fatal) {
+                        handleStreamRestart(); // Handle muxer restart scenario
+                        break;
+                    } else {
+                        console.log("Fatal media error:", data);
 
-                    if (data.details === 'bufferAddCodecError' && data.error instanceof Error && data.error.name === 'NotSupportedError') {
-                        error.value = new Error(`Your browser does not support the required video codec for this stream (${data.mimeType}`);
-                    } else if (player.value) {
-                        try {
-                            player.value.recoverMediaError();
-                        } catch {
+                        if (data.details === 'bufferAddCodecError' && data.error instanceof Error && data.error.name === 'NotSupportedError') {
+                            error.value = new Error(`Your browser does not support the required video codec for this stream (${data.mimeType}`);
+                        } else if (player.value) {
+                            try {
+                                player.value.recoverMediaError();
+                            } catch {
+                                handleStreamError(data.error);
+                            }
+                        } else {
                             handleStreamError(data.error);
                         }
-                    } else {
-                        handleStreamError(data.error);
+                        break;
                     }
-                    break;
                 default:
+                    if (!data.fatal) return;
+
                     // Handle other fatal errors with retry logic
                     handleStreamError(data.error);
                     break;
