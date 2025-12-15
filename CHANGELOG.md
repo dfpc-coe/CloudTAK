@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.29.0 - 2025-12-15
+
+- :arrow_up: Update Dockerfiles to use Alpine@23
+- :arrow_up: Update NodeJS requirements to use NodeJS@24
+
 ### v12.28.0 - 2025-12-15
 
 - :rocket: Migrate UI Items to use StandardItem Component
