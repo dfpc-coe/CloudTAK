@@ -20,7 +20,7 @@
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js"
     },
     "engines": {
-        "node": ">= 22"
+        "node": ">= 24"
     },
     "repository": {
         "type": "git",

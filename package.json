@@ -10,7 +10,7 @@
         "postversion": "node bin/version.js && git commit -am \"Sync Versions\" && git push"
     },
     "engines": {
-        "node": ">= 22"
+        "node": ">= 24"
     },
     "repository": {
         "type": "git",
