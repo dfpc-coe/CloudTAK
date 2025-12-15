@@ -403,7 +403,8 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (isNaN(Number(req.params.icon))) {
-                const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND name = ${req.params.icon}`);
+                const name = path.parse(String(req.params.icon)).name;
+                const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND name = ${name}`);
                 return res.json(icon);
             } else {
                 const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
