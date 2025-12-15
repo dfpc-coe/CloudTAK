@@ -63,7 +63,10 @@
                     class='d-flex align-items-center gap-3 p-2'
                     @click='setStatus(ch, !ch.active)'
                 >
-                    <div class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25' style='width: 3rem; height: 3rem; min-width: 3rem;'>
+                    <div
+                        class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                        style='width: 3rem; height: 3rem; min-width: 3rem;'
+                    >
                         <component
                             :is='ch.active ? IconEye : IconEyeOff'
                             :size='24'
@@ -72,8 +75,12 @@
                     </div>
 
                     <div class='d-flex flex-column'>
-                        <div class='fw-bold'>{{ ch.name }}</div>
-                        <div class='text-secondary small'>{{ ch.description || "No Description" }}</div>
+                        <div class='fw-bold'>
+                            {{ ch.name }}
+                        </div>
+                        <div class='text-secondary small'>
+                            {{ ch.description || "No Description" }}
+                        </div>
                     </div>
 
                     <div class='ms-auto'>

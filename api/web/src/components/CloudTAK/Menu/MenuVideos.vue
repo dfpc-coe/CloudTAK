@@ -106,7 +106,10 @@
                             class='d-flex align-items-center gap-3 p-2'
                             @click='floatStore.addConnection(connection)'
                         >
-                            <div class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25' style='width: 3rem; height: 3rem; min-width: 3rem;'>
+                            <div
+                                class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                                style='width: 3rem; height: 3rem; min-width: 3rem;'
+                            >
                                 <IconVideo
                                     :size='24'
                                     stroke='1'
@@ -141,7 +144,10 @@
                             class='d-flex align-items-center gap-3 p-2 cursor-pointer'
                             @click='router.push(`/cot/${video.id}`)'
                         >
-                            <div class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25' style='width: 3rem; height: 3rem; min-width: 3rem;'>
+                            <div
+                                class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                                style='width: 3rem; height: 3rem; min-width: 3rem;'
+                            >
                                 <IconVideo
                                     :size='24'
                                     stroke='1'
@@ -191,7 +197,10 @@
                         class='d-flex align-items-center gap-3 p-2 cursor-pointer'
                         @click='lease = l'
                     >
-                        <div class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25' style='width: 3rem; height: 3rem; min-width: 3rem;'>
+                        <div
+                            class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                            style='width: 3rem; height: 3rem; min-width: 3rem;'
+                        >
                             <component
                                 :is='getLeaseIcon(l.source_type)'
                                 :size='24'

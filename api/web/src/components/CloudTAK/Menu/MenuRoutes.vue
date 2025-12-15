@@ -45,7 +45,10 @@
                         class='d-flex align-items-center gap-3 p-2'
                         @click='clickRoute(cot)'
                     >
-                        <div class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25' style='width: 3rem; height: 3rem; min-width: 3rem;'>
+                        <div
+                            class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                            style='width: 3rem; height: 3rem; min-width: 3rem;'
+                        >
                             <IconRoute
                                 :size='24'
                                 :color='cot.properties["stroke"] || "#ffffff"'
@@ -54,7 +57,9 @@
                         </div>
 
                         <div class='d-flex flex-column'>
-                            <div class='fw-bold'>{{ cot.properties.callsign }}</div>
+                            <div class='fw-bold'>
+                                {{ cot.properties.callsign }}
+                            </div>
                             <div
                                 v-if='cot.geometry.type === "LineString"'
                                 class='text-secondary small'
