@@ -443,6 +443,7 @@ export default class VideoServiceControl {
         recording: boolean;
         publish: boolean;
         secure: boolean;
+        share: boolean;
         channel?: string | null;
         proxy?: string | null;
     }): Promise<Static<typeof VideoLeaseResponse>> {
@@ -468,6 +469,7 @@ export default class VideoServiceControl {
             username: opts.username,
             connection: opts.connection,
             layer: opts.layer,
+            share: opts.share,
             channel: opts.channel,
             proxy: opts.proxy
         });
@@ -574,7 +576,7 @@ export default class VideoServiceControl {
                 const groups = (await api.Group.list({ useCache: true }))
                     .data.map((group) => group.name);
 
-                if (lease.username !== opts.username && (!lease.channel || !groups.includes(lease.channel))) {
+                if (lease.username !== opts.username && (!lease.share || !lease.channel || !groups.includes(lease.channel))) {
                     throw new Err(400, null, 'You can only access a lease you created or that is assigned to a channel you are in');
                 }
 
@@ -590,6 +592,7 @@ export default class VideoServiceControl {
         body: {
             name?: string,
             channel?: string | null,
+            share?: boolean,
             secure?: boolean,
             secure_rotate?: boolean
             expiration?: string | null,

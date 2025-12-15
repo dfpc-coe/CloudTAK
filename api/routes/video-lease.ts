@@ -398,6 +398,10 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Publish stream URL to TAK Server Video Manager'
             }),
+            share: Type.Boolean({
+                default: false,
+                description: 'Allow other users to manage lease if they are also members of the channel'
+            }),
             secure: Type.Boolean({
                 default: false,
                 description: 'Increase stream security by enforcing a seperate read and write username/password'
@@ -460,16 +464,18 @@ export default async function router(schema: Schema, config: Config) {
             source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             secure: Type.Optional(Type.Boolean()),
-            recording: Type.Boolean({
+            recording: Type.Optional(Type.Boolean({
                 description: 'Record streams to disk'
-            }),
-            publish: Type.Boolean({
+            })),
+            publish: Type.Optional(Type.Boolean({
                 description: 'Publish stream URL to TAK Server Video Manager'
-            }),
-            permanent: Type.Boolean({
-                default: false,
+            })),
+            share: Type.Optional(Type.Boolean({
+                description: 'Allow other users to manage lease if they are also members of the channel'
+            })),
+            permanent: Type.Optional(Type.Boolean({
                 description: 'System Admins can create non-expiring leases'
-            }),
+            })),
             proxy: Type.Optional(Type.String())
         }),
         res: VideoLeaseResponse
@@ -486,6 +492,7 @@ export default async function router(schema: Schema, config: Config) {
             const lease = await videoControl.commit(req.params.lease, {
                 name: req.body.name,
                 channel: req.body.channel ? req.body.channel : null,
+                share: req.body.share,
                 secure: req.body.secure,
                 recording: req.body.recording,
                 publish: req.body.publish,
