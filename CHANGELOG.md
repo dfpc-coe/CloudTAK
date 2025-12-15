@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v12.28.0 - 2025-12-15
+
+- :rocket: Migrate UI Items to use StandardItem Component
+- :rocket: Use MapLibre-GL-JS Popups for MultipleSelect to allow map actions without losing context
+- :rocket: Store `format` seperately from name for Icons to allow the map layer to consistently request `png` regardless of original upload format
+- :rocket: Add Breadcrumb support to BaseMap Menu
+- :tada: Significant improvements to UI For Global Search
+
 ### v12.27.2 - 2025-12-12
 
 - :rocket: Merge Video Error Handling into single block
