@@ -87,7 +87,7 @@ watch(menuWidth, () => {
     mapStore.toastOffset.x = menuWidth.value + 10;
 });
 
-watch(resize, () => {
+watch(resize, (newVal, oldVal, onCleanup) => {
     if (resize.value && container.value && menu.value) {
         resizing.value = false;
 
@@ -95,42 +95,69 @@ watch(resize, () => {
         let beginX = resize.value.getBoundingClientRect().x;
         let deltaX = 0;
 
-        resize.value.addEventListener("mousedown", () => {
+        const onStart = () => {
             if (!resize.value) return;
             beginWidth = menuWidth.value;
             beginX = resize.value.getBoundingClientRect().x;
             deltaX = 0;
             resizing.value = true;
-        });
+        };
 
-        menu.value.addEventListener("mousemove", (e) => {
-            deltaX = beginX - e.x;
-
-            if (resizing.value) {
-                menuWidth.value = beginWidth + deltaX;
-                e.preventDefault();
-            }
-        });
-
-        container.value.addEventListener("mousemove", (e) => {
-            deltaX = beginX - e.x;
+        const onMove = (clientX: number, e: Event) => {
+            deltaX = beginX - clientX;
 
             if (resizing.value) {
                 menuWidth.value = beginWidth + deltaX;
                 e.preventDefault();
             }
-        });
+        };
 
-        resize.value.addEventListener("mouseup", () => {
+        const onEnd = () => {
             resizing.value = false;
-        });
+        };
 
-        menu.value.addEventListener("mouseup", () => {
-            resizing.value = false;
-        });
+        const onMouseDown = () => onStart();
+        const onMouseMove = (e: MouseEvent) => onMove(e.clientX, e);
+        const onMouseUp = () => onEnd();
 
-        container.value.addEventListener("mouseup", () => {
-            resizing.value = false;
+        const onTouchStart = () => onStart();
+        const onTouchMove = (e: TouchEvent) => onMove(e.touches[0].clientX, e);
+        const onTouchEnd = () => onEnd();
+
+        const resizeEl = resize.value;
+        const menuEl = menu.value;
+        const containerEl = container.value;
+
+        resizeEl.addEventListener("mousedown", onMouseDown);
+        resizeEl.addEventListener("touchstart", onTouchStart);
+        resizeEl.addEventListener("mouseup", onMouseUp);
+        resizeEl.addEventListener("touchend", onTouchEnd);
+
+        menuEl.addEventListener("mousemove", onMouseMove);
+        menuEl.addEventListener("touchmove", onTouchMove);
+        menuEl.addEventListener("mouseup", onMouseUp);
+        menuEl.addEventListener("touchend", onTouchEnd);
+
+        containerEl.addEventListener("mousemove", onMouseMove);
+        containerEl.addEventListener("touchmove", onTouchMove);
+        containerEl.addEventListener("mouseup", onMouseUp);
+        containerEl.addEventListener("touchend", onTouchEnd);
+
+        onCleanup(() => {
+            resizeEl.removeEventListener("mousedown", onMouseDown);
+            resizeEl.removeEventListener("touchstart", onTouchStart);
+            resizeEl.removeEventListener("mouseup", onMouseUp);
+            resizeEl.removeEventListener("touchend", onTouchEnd);
+
+            menuEl.removeEventListener("mousemove", onMouseMove);
+            menuEl.removeEventListener("touchmove", onTouchMove);
+            menuEl.removeEventListener("mouseup", onMouseUp);
+            menuEl.removeEventListener("touchend", onTouchEnd);
+
+            containerEl.removeEventListener("mousemove", onMouseMove);
+            containerEl.removeEventListener("touchmove", onTouchMove);
+            containerEl.removeEventListener("mouseup", onMouseUp);
+            containerEl.removeEventListener("touchend", onTouchEnd);
         });
     }
 })

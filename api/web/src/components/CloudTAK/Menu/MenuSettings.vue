@@ -1,26 +1,58 @@
 <template>
     <MenuTemplate name='Settings'>
         <div class='col-12 d-flex flex-column gap-2 p-3'>
-            <MenuItemCard
-                :icon='IconUserCog'
-                label='Callsign & Device Preferences'
-                @select='router.push("/menu/settings/callsign")'
-            />
-            <MenuItemCard
-                :icon='IconAdjustments'
-                label='Display Preferences'
-                @select='router.push("/menu/settings/display")'
-            />
-            <MenuItemCard
-                :icon='IconRobot'
-                label='API Tokens'
-                @select='router.push("/menu/settings/tokens")'
-            />
-            <MenuItemCard
-                :icon='IconRefresh'
-                label='Refresh App'
-                @select='refreshApp()'
-            />
+            <StandardItem
+                @click='router.push("/menu/settings/callsign")'
+            >
+                <div class='d-flex align-items-center px-2 py-2'>
+                    <IconUserCog
+                        :size='32'
+                        stroke='1'
+                    />
+                    <div class='ms-2 flex-grow-1 font-weight-bold'>
+                        Callsign & Device Preferences
+                    </div>
+                </div>
+            </StandardItem>
+            <StandardItem
+                @click='router.push("/menu/settings/display")'
+            >
+                <div class='d-flex align-items-center px-2 py-2'>
+                    <IconAdjustments
+                        :size='32'
+                        stroke='1'
+                    />
+                    <div class='ms-2 flex-grow-1 font-weight-bold'>
+                        Display Preferences
+                    </div>
+                </div>
+            </StandardItem>
+            <StandardItem
+                @click='router.push("/menu/settings/tokens")'
+            >
+                <div class='d-flex align-items-center px-2 py-2'>
+                    <IconRobot
+                        :size='32'
+                        stroke='1'
+                    />
+                    <div class='ms-2 flex-grow-1 font-weight-bold'>
+                        API Tokens
+                    </div>
+                </div>
+            </StandardItem>
+            <StandardItem
+                @click='refreshApp()'
+            >
+                <div class='d-flex align-items-center px-2 py-2'>
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                    <div class='ms-2 flex-grow-1 font-weight-bold'>
+                        Refresh App
+                    </div>
+                </div>
+            </StandardItem>
         </div>
     </MenuTemplate>
 </template>
@@ -28,7 +60,7 @@
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import MenuItemCard from './MenuItemCard.vue';
+import StandardItem from '../util/StandardItem.vue';
 import {
     IconRefresh,
     IconRobot,

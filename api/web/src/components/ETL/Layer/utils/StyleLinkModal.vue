@@ -52,6 +52,7 @@ import {
 const props = defineProps({
     edit: {
         type: Object,
+        default: undefined
     },
     schema: {
         type: Object,

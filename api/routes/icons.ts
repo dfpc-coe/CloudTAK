@@ -317,8 +317,14 @@ export default async function router(schema: Schema, config: Config) {
                 data: req.body.data,
             });
 
+            const parsedName = path.parse(req.body.name);
+            const name = parsedName.name;
+            const format = parsedName.ext.toLowerCase();
+
             const icon = await config.models.Icon.generate({
                 ...req.body,
+                name: name,
+                format: format,
                 path: `${iconset.uid}/${req.body.name}`,
                 iconset: iconset.uid
             });
@@ -397,7 +403,8 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (isNaN(Number(req.params.icon))) {
-                const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND name = ${req.params.icon}`);
+                const name = path.parse(String(req.params.icon)).name;
+                const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND name = ${name}`);
                 return res.json(icon);
             } else {
                 const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);

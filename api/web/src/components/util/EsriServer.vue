@@ -207,9 +207,11 @@ const props = defineProps({
     },
     portal: {
         type: String,
+        default: undefined
     },
     token: {
         type: Object,
+        default: undefined
     },
     server: {
         type: String,

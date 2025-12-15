@@ -237,17 +237,21 @@ const props = defineProps({
     },
     url: {
         type: [URL, String],
-        description: 'ArcGIS Portal URL to authenticate against'
+        description: 'ArcGIS Portal URL to authenticate against',
+        default: undefined
     },
     layer: {
         type: [URL, String],
-        description: 'ArcGIS Server/Layer URL'
+        description: 'ArcGIS Server/Layer URL',
+        default: undefined
     },
     username: {
         type: String,
+        default: undefined
     },
     password: {
         type: String,
+        default: undefined
     },
     pane: {
         type: Boolean,

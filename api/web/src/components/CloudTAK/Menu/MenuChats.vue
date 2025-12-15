@@ -58,12 +58,26 @@
                         />
                     </template>
                     <template #item='{item}'>
-                        <MenuItemCard
-                            :icon='IconUser'
-                            :label='item.chatroom'
-                            class='w-100'
-                            @select='multiselect ? undefined : router.push(`/menu/chats/${item.chatroom}`)'
-                        />
+                        <StandardItem
+                            class='d-flex align-items-center gap-3 p-2 w-100'
+                            @click='multiselect ? undefined : router.push(`/menu/chats/${item.chatroom}`)'
+                        >
+                            <div
+                                class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                                style='width: 3rem; height: 3rem; min-width: 3rem;'
+                            >
+                                <IconUser
+                                    :size='24'
+                                    stroke='1'
+                                />
+                            </div>
+
+                            <div class='d-flex flex-column'>
+                                <div class='fw-bold'>
+                                    {{ item.chatroom }}
+                                </div>
+                            </div>
+                        </StandardItem>
                     </template>
                 </GenericSelect>
             </template>
@@ -77,7 +91,7 @@ import type { ComponentExposed } from 'vue-component-type-helpers'
 import { server } from '../../../std.ts';
 import type { ProfileChatroomList } from '../../../types.ts';
 import GenericSelect from '../util/GenericSelect.vue';
-import MenuItemCard from './MenuItemCard.vue';
+import StandardItem from '../util/StandardItem.vue';
 import {
     TablerNone,
     TablerAlert,

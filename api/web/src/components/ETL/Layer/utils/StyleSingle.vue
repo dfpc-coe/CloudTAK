@@ -698,8 +698,7 @@ const props = defineProps({
         type: Object,
         default: function() {
             return {};
-        },
-        required: true
+        }
     },
     schema: {
         type: Object,

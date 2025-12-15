@@ -86,15 +86,17 @@
                 label='Archived Features'
             />
             <template v-else>
-                <div
-                    class='d-flex align-items-center px-3 py-2 me-2 hover-button cursor-pointer user-select-none'
-                    @click='router.push("/menu/features/deleted")'
-                >
-                    <IconTrash
-                        :size='20'
-                        stroke='1'
-                        class='me-2'
-                    /> Recently Deleted
+                <div class='px-2 pb-2'>
+                    <StandardItem
+                        class='d-flex align-items-center px-3 py-3 user-select-none'
+                        @click='router.push("/menu/features/deleted")'
+                    >
+                        <IconTrash
+                            :size='20'
+                            stroke='1'
+                            class='me-2'
+                        /> Recently Deleted
+                    </StandardItem>
                 </div>
 
                 <template
@@ -185,6 +187,7 @@ import COT from '../../../base/cot.ts';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Feature from '../util/FeatureRow.vue';
+import StandardItem from '../util/StandardItem.vue';
 import {
     TablerNone,
     TablerInput,

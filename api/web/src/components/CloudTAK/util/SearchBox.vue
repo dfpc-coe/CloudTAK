@@ -1,6 +1,6 @@
 <template>
     <div
-        class='text-white bg-dark rounded'
+        class='text-white bg-dark rounded position-relative'
     >
         <TablerInput
             ref='searchBoxRef'
@@ -14,7 +14,7 @@
         />
 
         <div
-            class='dropdown-menu w-100 mt-2'
+            class='dropdown-menu w-100 mt-2 p-2'
             :class='{
                 "show": shown,
             }'
@@ -31,22 +31,31 @@
                     :feature='cot'
                     @click='selectFeature(cot)'
                 />
-                <div
+                <StandardItem
                     v-for='item of results'
                     :key='item.magicKey'
-                    class='col-12 px-3 py-2 hover-button cursor-pointer user-select-none text-truncate'
+                    class='d-flex flex-row gap-3 mb-2 align-items-center'
                     @click='fetchSearch(item.text, item.magicKey)'
                 >
-                    <IconMapPin
-                        :size='24'
-                        stroke='1'
-                    />
+                    <div class='icon-wrapper ms-2 d-flex align-items-center justify-content-center rounded-circle'>
+                        <IconMapPin
+                            :size='24'
+                            stroke='1'
+                        />
+                    </div>
 
-                    <span
-                        class='ms-2'
-                        v-text='item.text'
-                    />
-                </div>
+                    <div
+                        class='flex-grow-1 d-flex flex-column gap-1 py-2'
+                        style='min-width: 0'
+                    >
+                        <div class='d-flex align-items-center gap-2'>
+                            <span
+                                class='fw-semibold text-truncate'
+                                v-text='item.text'
+                            />
+                        </div>
+                    </div>
+                </StandardItem>
 
                 <TablerLoading
                     v-if='partialLoading'
@@ -62,6 +71,7 @@ import type { SearchForward, SearchSuggest } from '../../../types.ts';
 import { convert } from 'geo-coordinates-parser'
 import { v4 as randomUUID } from 'uuid';
 import Feature from './FeatureRow.vue';
+import StandardItem from './StandardItem.vue';
 import { std, stdurl } from '../../../std.ts'
 import { useMapStore } from '../../../stores/map.ts';
 import COT from '../../../base/cot.ts';
@@ -292,3 +302,13 @@ async function fetchSearch(
 }
 
 </script>
+
+<style scoped>
+.icon-wrapper {
+    width: 3rem;
+    height: 3rem;
+    min-width: 3rem;
+    min-height: 3rem;
+    flex-shrink: 0;
+}
+</style>

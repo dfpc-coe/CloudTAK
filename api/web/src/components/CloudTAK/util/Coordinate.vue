@@ -101,7 +101,8 @@ const props = defineProps({
     },
     truncate: {
         type: Number,
-        description: 'Truncate DD coordinates to a given precision'
+        description: 'Truncate DD coordinates to a given precision',
+        default: undefined
     },
     modes: {
         type: Array,
