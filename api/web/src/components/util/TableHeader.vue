@@ -94,7 +94,8 @@ const props = defineProps({
     sort: {
         type: String,
         required: false,
-        description: 'Field to sort by'
+        description: 'Field to sort by',
+        default: undefined
     },
 });
 

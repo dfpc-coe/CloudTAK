@@ -233,8 +233,6 @@ import {
     IconSettings,
     IconBoxMultiple,
     IconDotsVertical,
-    IconCircleArrowLeft,
-    IconHome,
     IconChevronRight
 } from '@tabler/icons-vue'
 import type { LayerSpecification } from 'maplibre-gl'
