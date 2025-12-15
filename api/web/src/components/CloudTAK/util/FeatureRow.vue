@@ -93,7 +93,7 @@
 
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import COT from '../../../base/cot.ts';
 import FeatureIcon from './FeatureIcon.vue';
 import Contact from './Contact.vue';
@@ -159,15 +159,6 @@ onMounted(async () => {
 
     isZoomable.value = cot ? true : false;
 })
-
-const textWidth = computed(() => {
-    let width = `calc(100%`;
-
-    if (props.deleteButton) width = width + '- 60px';
-    if (props.infoButton) width = width + '- 60px';
-
-    return width + ')'
-});
 
 async function deleteCOT() {
     if (props.deleteAction === 'delete') {

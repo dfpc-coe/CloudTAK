@@ -432,10 +432,6 @@ function handleCardClick(id: number) {
     toggleOverlay(id);
 }
 
-function handleCardKeydown(id: number) {
-    handleCardClick(id);
-}
-
 function resolveOverlayStatus(overlay: Overlay): OverlayStatus {
     if (!overlay.healthy()) {
         return {

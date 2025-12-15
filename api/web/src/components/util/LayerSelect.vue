@@ -96,7 +96,10 @@ import {
 } from '@tak-ps/vue-tabler';
 
 const props = defineProps({
-    modelValue: Number,
+    modelValue: {
+        type: Number,
+        default: undefined
+    },
 });
 
 const emit = defineEmits([

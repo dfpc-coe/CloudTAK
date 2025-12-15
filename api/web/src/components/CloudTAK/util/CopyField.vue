@@ -190,7 +190,8 @@ const props = defineProps({
     },
     validate: {
         // (text: string | number) => false | string
-        type: Function
+        type: Function,
+        default: undefined
     },
     hover: {
         type: Boolean,

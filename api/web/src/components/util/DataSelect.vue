@@ -84,8 +84,14 @@ import {
 } from '@tak-ps/vue-tabler';
 
 const props = defineProps({
-    connection: Number,
-    modelValue: Number,
+    connection: {
+        type: Number,
+        default: undefined
+    },
+    modelValue: {
+        type: Number,
+        default: undefined
+    },
     disabled: {
         type: Boolean,
         default: false

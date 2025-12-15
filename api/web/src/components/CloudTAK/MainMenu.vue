@@ -95,7 +95,7 @@ watch(resize, (newVal, oldVal, onCleanup) => {
         let beginX = resize.value.getBoundingClientRect().x;
         let deltaX = 0;
 
-        const onStart = (clientX: number) => {
+        const onStart = () => {
             if (!resize.value) return;
             beginWidth = menuWidth.value;
             beginX = resize.value.getBoundingClientRect().x;
