@@ -57,10 +57,10 @@
                     v-else
                     class='d-flex flex-column gap-3 mx-2'
                 >
-                    <article
+                    <StandardItem
                         v-for='pkg in list.items'
                         :key='pkg.uid'
-                        class='menu-packages__card text-white d-flex flex-row gap-3 position-relative'
+                        class='d-flex flex-row gap-3'
                         role='button'
                         tabindex='0'
                         @click='router.push(`/menu/packages/${pkg.uid}`)'
@@ -98,7 +98,7 @@
                                 <div v-text='pkg.username' />
                             </div>
                         </div>
-                    </article>
+                    </StandardItem>
                 </div>
             </div>
         </template>
@@ -111,6 +111,7 @@ import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Keywords from '../util/Keywords.vue';
+import StandardItem from '../util/StandardItem.vue';
 import { server } from '../../../std.ts';
 
 import {
@@ -192,19 +193,5 @@ async function fetchList() {
     min-width: 3rem;
     min-height: 3rem;
     flex-shrink: 0;
-}
-
-.menu-packages__card {
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 14px;
-    background-color: rgba(0, 0, 0, 0.35);
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.menu-packages__card:hover,
-.menu-packages__card:focus-within {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 </style>
