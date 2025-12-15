@@ -1,0 +1,1 @@
+ALTER TABLE "video_lease" ADD COLUMN "share" boolean DEFAULT false NOT NULL;
