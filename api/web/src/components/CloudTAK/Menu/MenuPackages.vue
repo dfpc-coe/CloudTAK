@@ -61,10 +61,7 @@
                         v-for='pkg in list.items'
                         :key='pkg.uid'
                         class='d-flex flex-row gap-3'
-                        role='button'
-                        tabindex='0'
                         @click='router.push(`/menu/packages/${pkg.uid}`)'
-                        @keyup.enter='router.push(`/menu/packages/${pkg.uid}`)'
                     >
                         <div class='menu-packages__icon-wrapper ms-2 mt-2 d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'>
                             <IconPackage

@@ -34,7 +34,7 @@
                 <StandardItem
                     v-for='item of results'
                     :key='item.magicKey'
-                    class='d-flex flex-row gap-3 mb-2 align-items-center cursor-pointer'
+                    class='d-flex flex-row gap-3 mb-2 align-items-center'
                     @click='fetchSearch(item.text, item.magicKey)'
                 >
                     <div class='icon-wrapper ms-2 d-flex align-items-center justify-content-center rounded-circle'>

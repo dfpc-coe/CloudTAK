@@ -56,7 +56,7 @@
                     class='col-12 px-2 py-1'
                 >
                     <StandardItem
-                        class='cursor-pointer d-flex align-items-center py-2 px-3'
+                        class='d-flex align-items-center py-2 px-3'
                         @click='router.push(`/menu/imports/${imported.id}`)'
                     >
                         <div class='col-auto'>

@@ -103,7 +103,7 @@
                         <StandardItem
                             v-for='connection in connections.videoConnections'
                             :key='connection.uuid'
-                            class='d-flex align-items-center gap-3 p-2 cursor-pointer'
+                            class='d-flex align-items-center gap-3 p-2'
                             @click='floatStore.addConnection(connection)'
                         >
                             <div class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25' style='width: 3rem; height: 3rem; min-width: 3rem;'>

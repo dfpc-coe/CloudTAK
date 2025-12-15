@@ -65,21 +65,16 @@
                             :key='card.overlay.id'
                             class='menu-overlays__card p-3'
                             :class='{
-                                "menu-overlays__card--dragging": isDraggable,
-                                "cursor-pointer": !isDraggable && card.overlay.id !== 0
+                                "menu-overlays__card--dragging": isDraggable
                             }'
                             :hover='!isDraggable && card.overlay.id !== 0'
                             @click='handleCardClick(card.overlay.id)'
-                            @keydown.enter.prevent='handleCardKeydown(card.overlay.id)'
-                            @keydown.space.prevent='handleCardKeydown(card.overlay.id)'
                         >
                             <div
                                 class='d-flex justify-content-between gap-3'
                             >
                                 <div
                                     class='d-flex align-items-center gap-2 flex-grow-1 w-100 overflow-hidden'
-                                    role='button'
-                                    :tabindex='!isDraggable && card.overlay.id !== 0 ? 0 : -1'
                                     :aria-disabled='isDraggable || card.overlay.id === 0'
                                 >
                                     <IconGripVertical

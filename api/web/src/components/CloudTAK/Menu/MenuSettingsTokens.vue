@@ -24,7 +24,6 @@
                 <StandardItem
                     v-for='t in tokens.items'
                     :key='t.id'
-                    class='cursor-pointer'
                     @click='token = t'
                 >
                     <div class='d-flex align-items-center px-2 py-2'>

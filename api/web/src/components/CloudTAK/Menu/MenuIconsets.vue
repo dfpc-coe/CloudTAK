@@ -108,7 +108,6 @@
                         <StandardItem
                             v-for='iconset in list.items'
                             :key='iconset.uid'
-                            class='cursor-pointer'
                             @click='router.push(`/menu/iconset/${iconset.uid}`)'
                         >
                             <div class='d-flex align-items-center px-2 py-2'>
