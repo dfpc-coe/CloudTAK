@@ -116,11 +116,11 @@ watch(resize, (newVal, oldVal, onCleanup) => {
             resizing.value = false;
         };
 
-        const onMouseDown = (e: MouseEvent) => onStart();
+        const onMouseDown = () => onStart();
         const onMouseMove = (e: MouseEvent) => onMove(e.clientX, e);
         const onMouseUp = () => onEnd();
 
-        const onTouchStart = (e: TouchEvent) => onStart();
+        const onTouchStart = () => onStart();
         const onTouchMove = (e: TouchEvent) => onMove(e.touches[0].clientX, e);
         const onTouchEnd = () => onEnd();
 
