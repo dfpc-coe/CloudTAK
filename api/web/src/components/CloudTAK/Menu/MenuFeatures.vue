@@ -88,7 +88,7 @@
             <template v-else>
                 <div class='px-2 pb-2'>
                     <StandardItem
-                        class='d-flex align-items-center px-3 py-3 cursor-pointer user-select-none'
+                        class='d-flex align-items-center px-3 py-3 user-select-none'
                         @click='router.push("/menu/features/deleted")'
                     >
                         <IconTrash

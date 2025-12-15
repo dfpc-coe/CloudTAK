@@ -44,9 +44,7 @@
                         class='col-12 px-2 py-1'
                     >
                         <StandardItem
-                            tabindex='0'
-                            role='menuitem'
-                            class='cursor-pointer d-flex align-items-center py-2 px-3'
+                            class='d-flex align-items-center py-2 px-3'
                             @click='external(`/connection/${conn.id}`)'
                         >
                             <div class='col-auto'>

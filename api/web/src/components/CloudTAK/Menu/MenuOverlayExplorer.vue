@@ -20,12 +20,8 @@
                 <TablerLoading v-if='loading' />
                 <template v-else>
                     <StandardItem
-                        class='menu-overlay-explorer__card menu-overlay-explorer__card--files mx-2 cursor-pointer p-3'
-                        role='button'
-                        tabindex='0'
+                        class='menu-overlay-explorer__card menu-overlay-explorer__card--files mx-2 p-3'
                         @click='goToFiles'
-                        @keydown.enter.prevent='goToFiles'
-                        @keydown.space.prevent='goToFiles'
                     >
                         <div class='menu-overlays__card-main d-flex justify-content-between gap-3'>
                             <div class='menu-overlays__card-info d-flex align-items-center gap-2 flex-grow-1'>
@@ -70,16 +66,12 @@
                             :key='card.basemap.id'
                             :class='[
                                 "menu-overlay-explorer__card",
-                                card.exists || loading ? "opacity-50 pe-none" : "cursor-pointer",
+                                card.exists || loading ? "opacity-50 pe-none" : "",
                                 "p-3"
                             ]'
                             :hover='!card.exists && !loading'
-                            role='button'
-                            :tabindex='card.exists ? -1 : 0'
                             :aria-disabled='loading || card.exists'
                             @click='handleExplorerSelect(card.basemap)'
-                            @keydown.enter.prevent='handleExplorerSelect(card.basemap)'
-                            @keydown.space.prevent='handleExplorerSelect(card.basemap)'
                         >
                             <div class='menu-overlays__card-main d-flex justify-content-between gap-3'>
                                 <div class='menu-overlays__card-info d-flex align-items-center gap-2 flex-grow-1'>

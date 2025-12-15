@@ -80,7 +80,7 @@
                     <StandardItem
                         v-for='collection in list.collections'
                         :key='collection.name'
-                        class='d-flex align-items-center cursor-pointer'
+                        class='d-flex align-items-center'
                         @click='setCollection(collection.name)'
                     >
                         <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 my-2'>
@@ -95,7 +95,7 @@
                     <StandardItem
                         v-for='basemap in list.items'
                         :key='basemap.id'
-                        class='d-flex align-items-center cursor-pointer'
+                        class='d-flex align-items-center'
                         :class='{ "bg-blue text-white": isCurrentBasemap(basemap.id) }'
                         @click='setBasemap(basemap)'
                     >

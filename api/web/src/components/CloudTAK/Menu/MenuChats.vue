@@ -59,7 +59,7 @@
                     </template>
                     <template #item='{item}'>
                         <StandardItem
-                            class='d-flex align-items-center gap-3 p-2 cursor-pointer w-100'
+                            class='d-flex align-items-center gap-3 p-2 w-100'
                             @click='multiselect ? undefined : router.push(`/menu/chats/${item.chatroom}`)'
                         >
                             <div class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25' style='width: 3rem; height: 3rem; min-width: 3rem;'>

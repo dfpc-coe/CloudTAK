@@ -2,6 +2,10 @@
     <div
         class='standard-item text-white position-relative'
         :class='{ "standard-item--hover": hover }'
+        :tabindex='hover ? 0 : undefined'
+        :role='hover ? "menuitem" : undefined'
+        @keydown.enter.prevent='hover ? $el.click() : undefined'
+        @keydown.space.prevent='hover ? $el.click() : undefined'
     >
         <slot />
     </div>
@@ -28,5 +32,6 @@ withDefaults(defineProps<{
     transform: translateY(-1px);
     border-color: rgba(255, 255, 255, 0.4);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
 }
 </style>

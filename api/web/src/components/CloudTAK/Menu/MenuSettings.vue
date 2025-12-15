@@ -2,7 +2,6 @@
     <MenuTemplate name='Settings'>
         <div class='col-12 d-flex flex-column gap-2 p-3'>
             <StandardItem
-                class='cursor-pointer'
                 @click='router.push("/menu/settings/callsign")'
             >
                 <div class='d-flex align-items-center px-2 py-2'>
@@ -16,7 +15,6 @@
                 </div>
             </StandardItem>
             <StandardItem
-                class='cursor-pointer'
                 @click='router.push("/menu/settings/display")'
             >
                 <div class='d-flex align-items-center px-2 py-2'>
@@ -30,7 +28,6 @@
                 </div>
             </StandardItem>
             <StandardItem
-                class='cursor-pointer'
                 @click='router.push("/menu/settings/tokens")'
             >
                 <div class='d-flex align-items-center px-2 py-2'>
@@ -44,7 +41,6 @@
                 </div>
             </StandardItem>
             <StandardItem
-                class='cursor-pointer'
                 @click='refreshApp()'
             >
                 <div class='d-flex align-items-center px-2 py-2'>
