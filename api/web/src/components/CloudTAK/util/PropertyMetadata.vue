@@ -36,7 +36,7 @@
                         </thead>
                         <tbody class='bg-accent'>
                             <tr
-                                v-for='prop of Object.keys(cot.properties.takv)'
+                                v-for='prop of Object.keys(cot.properties.takv || {})'
                                 :key='prop'
                             >
                                 <td v-text='prop' />
