@@ -317,8 +317,9 @@ export default async function router(schema: Schema, config: Config) {
                 data: req.body.data,
             });
 
-            const name = path.parse(req.body.name).name;
-            const format = path.parse(req.body.name).ext.toLowerCase();
+            const parsedName = path.parse(req.body.name);
+            const name = parsedName.name;
+            const format = parsedName.ext.toLowerCase();
 
             const icon = await config.models.Icon.generate({
                 ...req.body,
