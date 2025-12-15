@@ -1,5 +1,6 @@
 <template>
-    <div
+    <component
+        :is="compact ? 'div' : StandardItem"
         :class='classes'
         role='menuitem'
         tabindex='0'
@@ -72,12 +73,13 @@
                 </div>
             </template>
         </template>
-    </div>
+    </component>
 </template>
 
 <script setup lang='ts'>
 import { computed } from 'vue';
 import type { Component, PropType } from 'vue';
+import StandardItem from '../util/StandardItem.vue';
 
 defineEmits(['select']);
 
@@ -143,35 +145,13 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
 }
 
 .menu-item-card--list:not(.menu-item-card--compact) {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    background-color: rgba(0, 0, 0, 0.35);
     padding: 0.85rem 1rem;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.menu-item-card--list:not(.menu-item-card--compact):hover,
-.menu-item-card--list:not(.menu-item-card--compact):focus-within {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 .menu-item-card--tiles {
     flex-direction: column;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    background-color: rgba(0, 0, 0, 0.35);
     padding: 1rem;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.menu-item-card--tiles:hover,
-.menu-item-card--tiles:focus-within {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .menu-item-card--compact {
