@@ -1,0 +1,1 @@
+ALTER TABLE "icons" ADD COLUMN "format" text NOT NULL;
