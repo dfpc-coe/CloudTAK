@@ -83,7 +83,7 @@
                 </div>
 
                 <template v-if='mode === "iconsets"'>
-                    <div class='mx-2 my-2'>
+                    <div class='px-3 pt-3'>
                         <TablerInput
                             v-model='paging.filter'
                             icon='search'
