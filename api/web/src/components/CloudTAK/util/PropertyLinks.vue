@@ -1,31 +1,56 @@
 <template>
     <div
         v-if='url_links.length || responder_links.length'
-        class='col-12 py-2'
+        class='col-12'
     >
         <div
             v-if='url_links.length'
-            class='col-12 mb-3'
+            class='col-12'
         >
-            <div class='col-12 mb-2'>
+            <div
+                class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
+                :class='{ "bg-accent": expandedLinks, "hover": !expandedLinks }'
+                @click='expandedLinks = !expandedLinks'
+            >
                 <IconLink
                     :size='18'
                     stroke='1'
                     color='#6b7990'
                     class='ms-2 me-1'
                 />
-                <label class='subheader user-select-none'>Links</label>
+                <label class='subheader cursor-pointer m-0'>Links</label>
+                <div class='ms-auto d-flex align-items-center'>
+                    <span class='badge bg-blue-lt me-2'>{{ url_links.length }}</span>
+                    <IconChevronDown
+                        class='transition-transform'
+                        :class='{ "rotate-180": !expandedLinks }'
+                        :size='18'
+                    />
+                </div>
             </div>
-            <div class='list-group list-group-flush bg-accent rounded mx-2'>
-                <a
-                    v-for='(link, link_it) of url_links'
-                    :key='link_it'
-                    :href='link.url'
-                    target='_blank'
-                    class='list-group-item list-group-item-action d-flex align-items-center bg-transparent border-0'
-                >
-                    <span class='text-truncate'>{{ link.remarks || link.url }}</span>
-                </a>
+
+            <div
+                class='grid-transition'
+                :class='{ expanded: expandedLinks }'
+            >
+                <div class='overflow-hidden mb-2'>
+                    <div class='list-group list-group-flush bg-accent rounded mx-2 mt-2'>
+                        <a
+                            v-for='(link, link_it) of url_links'
+                            :key='link_it'
+                            :href='link.url'
+                            target='_blank'
+                            class='list-group-item list-group-item-action d-flex align-items-center bg-transparent border-0'
+                        >
+                            <IconExternalLink
+                                :size='18'
+                                stroke='1'
+                                class='me-2'
+                            />
+                            <span class='text-truncate'>{{ link.remarks || link.url }}</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -35,8 +60,8 @@
         >
             <div
                 class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
-                :class='{ "bg-accent": expanded, "hover": !expanded }'
-                @click='expanded = !expanded'
+                :class='{ "bg-accent": expandedResponders, "hover": !expandedResponders }'
+                @click='expandedResponders = !expandedResponders'
             >
                 <IconUsers
                     :size='18'
@@ -49,7 +74,7 @@
                     <span class='badge bg-blue-lt me-2'>{{ responder_links.length }}</span>
                     <IconChevronDown
                         class='transition-transform'
-                        :class='{ "rotate-180": !expanded }'
+                        :class='{ "rotate-180": !expandedResponders }'
                         :size='18'
                     />
                 </div>
@@ -57,7 +82,7 @@
 
             <div
                 class='grid-transition'
-                :class='{ expanded: expanded }'
+                :class='{ expanded: expandedResponders }'
             >
                 <div class='overflow-hidden'>
                     <div class='row row-cards mx-2 pt-2'>
@@ -102,10 +127,11 @@
 
 <script setup lang='ts'>
 import { computed, ref } from 'vue';
-import { IconUsers, IconLink, IconChevronDown } from '@tabler/icons-vue';
+import { IconUsers, IconLink, IconChevronDown, IconExternalLink } from '@tabler/icons-vue';
 import timediff from '../../../timediff';
 
-const expanded = ref(false);
+const expandedResponders = ref(false);
+const expandedLinks = ref(false);
 
 const props = defineProps<{
     links: Array<{
@@ -149,5 +175,9 @@ const responder_links = computed(() => {
 
 .transition-transform {
     transition: transform 0.3s ease-out;
+}
+
+.list-group-item-action:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
 }
 </style>
