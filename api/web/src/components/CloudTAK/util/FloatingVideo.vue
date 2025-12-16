@@ -482,7 +482,7 @@ async function createPlayer(): Promise<void> {
     try {
         hls.recoverMediaError();
         hls.stopLoad();
-        hls.loadSource(hls.url); 
+        hls.loadSource(hls.url!); 
 
         const videoElement = hls.media;
         if (videoElement) {
