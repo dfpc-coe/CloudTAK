@@ -391,9 +391,13 @@ async function createPlayer(): Promise<void> {
 
         player.value = new Hls({
             enableWorker: true,
-            lowLatencyMode: true,
-            debug: localStorage.getItem('debug') === 'true',
-            backBufferLength: 90,
+            lowLatencyMode: false, // More forgiving for stream restarts
+            debug: false,
+            backBufferLength: 90, // Keep more buffer for smoother playback
+            maxBufferLength: 30, // Larger buffer for resilience
+            maxMaxBufferLength: 600,
+            liveSyncDurationCount: 3, // More tolerant of discontinuities
+            liveMaxLatencyDurationCount: 10,
             xhrSetup: (xhr: XMLHttpRequest) => {
                 // Add authentication if stream requires it
                 if (url.username && url.password) {
@@ -424,7 +428,7 @@ async function createPlayer(): Promise<void> {
             switch (data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
                     if (!data.fatal) {
-                        player.value!.recoverMediaError();
+                        handleStreamRestart(); // Handle muxer restart scenario
                         break;
                     } else {
                         console.log("Fatal network error:", data);
@@ -433,7 +437,7 @@ async function createPlayer(): Promise<void> {
                     }
                 case Hls.ErrorTypes.MEDIA_ERROR:
                     if (!data.fatal) {
-                        player.value!.recoverMediaError();
+                        handleStreamRestart(); // Handle muxer restart scenario
                         break;
                     } else {
                         console.log("Fatal media error:", data);
@@ -462,6 +466,36 @@ async function createPlayer(): Promise<void> {
         })
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+/**
+ * Handle MediaMTX muxer restarts gracefully
+ * This occurs when MediaMTX creates new segment naming due to source hiccups
+ */
+ function handleStreamRestart(): void {
+    const hls = player.value;
+    if (!hls || !videoProtocols.value?.hls) return;
+
+    console.log('Handling HLS stream restart (muxer restart detected)');
+
+    try {
+        hls.recoverMediaError();
+        hls.stopLoad();
+        hls.loadSource(hls.url!); 
+
+        const videoElement = hls.media;
+        if (videoElement) {
+            hls.once(Hls.Events.LEVEL_LOADED, () => {
+                // Seek to the end (live edge) to bypass the stalled gap
+                videoElement.currentTime = videoElement.duration;
+                hls.startLoad();
+                videoElement.play().catch(e => console.error("Play failed", e));
+            });
+        }
+    } catch (err) {
+        console.error('Error handling stream restart:', err);
+        handleStreamError(err instanceof Error ? err : new Error(String(err)));
     }
 }
 
