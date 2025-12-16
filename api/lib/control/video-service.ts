@@ -454,6 +454,8 @@ export default class VideoServiceControl {
 
         if (opts.username && opts.connection) {
             throw new Err(400, null, 'Either username or connection must be set but not both');
+        } else if (opts.share && !opts.channel) {
+            throw new Err(400, null, 'Channel must be set when share is true');
         }
 
         const lease = await this.config.models.VideoLease.generate({
@@ -618,6 +620,12 @@ export default class VideoServiceControl {
             throw new Err(400, null, 'Lease must be edited in the context of a Connection');
         } else if (lease.username && !opts.username) {
             throw new Err(400, null, 'Lease must be edited in the context of the CloudTAK Map');
+        } else if (
+            (body.share && body.channel === undefined && !lease.channel)
+            || (body.share && body.channel === null)
+            || (lease.share && body.channel === null)
+        ) {
+            throw new Err(400, null, 'Channel must be set when share is true');
         }
 
         if (body.secure !== undefined) {
