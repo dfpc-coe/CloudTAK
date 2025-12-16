@@ -483,6 +483,37 @@ export default class VideoServiceControl {
 
         headers.append('Content-Type', 'application/json');
 
+        if (lease.share) {
+            const auth = this.config.serverCert();
+            const api = await TAKAPI.init(
+                new URL(String(this.config.server.api)),
+                new APIAuthCertificate(auth.cert, auth.key)
+            );
+
+            try {
+                const protocols = await this.protocols(lease, ProtocolPopulation.READ)
+
+                if (protocols.hls) {
+                    await api.Video.create({
+                        uuid: lease.path,
+                        active: true,
+                        alias: lease.name,
+                        groups: [ lease.channel! ],
+                        feeds: [{
+                            uuid: lease.path,
+                            active: true,
+                            alias: lease.name,
+                            url: protocols.hls.url,
+                        }]
+                    })
+                } else {
+                    throw new Err(400, null, 'Only HLS shared video streams are supported at this time');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
         if (lease.proxy) {
             try {
                 const proxy = new URL(lease.proxy);
@@ -635,6 +666,42 @@ export default class VideoServiceControl {
 
         lease = await this.config.models.VideoLease.commit(leaseid, body);
 
+        const auth = this.config.serverCert();
+        const api = await TAKAPI.init(
+            new URL(String(this.config.server.api)),
+            new APIAuthCertificate(auth.cert, auth.key)
+        );
+
+        try {
+            await api.Video.delete(lease.path);
+        } catch (err) {
+            console.error(err);
+        }
+
+        // We can't change channels so just delete and recreate
+        try {
+            const protocols = await this.protocols(lease, ProtocolPopulation.READ)
+
+            if (protocols.hls) {
+                await api.Video.create({
+                    uuid: lease.path,
+                    active: true,
+                    alias: lease.name,
+                    groups: [ lease.channel! ],
+                    feeds: [{
+                        uuid: lease.path,
+                        active: true,
+                        alias: lease.name,
+                        url: protocols.hls.url,
+                    }]
+                })
+            } else {
+                throw new Err(400, null, 'Only HLS shared video streams are supported at this time');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+
         try {
             await this.path(lease.path);
 
@@ -764,6 +831,18 @@ export default class VideoServiceControl {
             method: 'DELETE',
             headers,
         })
+
+        try {
+            const auth = this.config.serverCert();
+            const api = await TAKAPI.init(
+                new URL(String(this.config.server.api)),
+                new APIAuthCertificate(auth.cert, auth.key)
+            );
+
+            await api.Video.delete(lease.path);
+        } catch (err) {
+            console.error(err);
+        }
 
         return;
     }
