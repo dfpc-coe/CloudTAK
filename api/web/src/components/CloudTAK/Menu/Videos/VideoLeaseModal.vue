@@ -455,14 +455,18 @@
                     />
                 </div>
                 <div
-                    v-if='shared'
+                    v-if='editLease.shared || editLease.publish'
                     class='col-12'
                 >
-                    <GroupSelect
+                    <div
                         v-if='!disabled'
-                        v-model='channels'
-                        :limit='1'
-                    />
+                        style='max-height: 20vh; min-height: 200px; overflow-y: auto;'
+                    >
+                        <GroupSelect
+                            v-model='channels'
+                            :limit='1'
+                        />
+                    </div>
                     <div
                         v-else
                         class='border border-white rounded px-2 py-2'
@@ -593,18 +597,17 @@ const channels = ref<string[]>([]);
 
 const durations = ref<Array<string>>(["16 Hours", "12 Hours", "6 Hours", "1 Hour"]);
 
-const shared = ref(false);
-
 const editLease = ref<{
     id?: number
     name: string
     duration: string
     recording: boolean
     publish: boolean
+    shared: boolean
     channel: string | null
     source_type: string
     source_model: string
-    proxy?: string | null 
+    proxy?: string | null
     expiration?: string | null
     stream_user: string | null
     stream_pass: string | null
@@ -616,6 +619,7 @@ const editLease = ref<{
     channel: null,
     recording: false,
     publish: false,
+    shared: true,
     source_type: 'unknown',
     source_model: '',
     stream_user: '',
@@ -641,12 +645,6 @@ onMounted(async () => {
     }
 
     loading.value = false
-});
-
-watch(shared, () => {
-    if (!shared.value) {
-        channels.value = [];
-    }
 });
 
 function expired(expiration?: string | null) {
@@ -678,12 +676,6 @@ async function fetchLease() {
         channels.value = [ editLease.value.channel ];
     } else {
         channels.value = [];
-    }
-
-    if (res.channel) {
-        shared.value = true;
-    } else {
-        shared.value = false;
     }
 
     const resMetadata = await std(`/api/video/lease/${editLease.value.id}/metadata`, {
