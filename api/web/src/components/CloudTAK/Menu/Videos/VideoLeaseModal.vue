@@ -474,14 +474,14 @@
                 </div>
                 <div class='col-12 col-md-6'>
                     <TablerToggle
-                        v-model='editLease.shared'
+                        v-model='editLease.share'
                         description='By default only the user that created a Lease can manage it. If you are operating as part of an agency, turn on Lease Sharing to allow all users in your Channel to manage the lease'
                         :disabled='disabled'
                         label='Shared Lease'
                     />
                 </div>
                 <div
-                    v-if='editLease.shared || editLease.publish'
+                    v-if='editLease.share || editLease.publish'
                     class='col-12'
                 >
                     <div
@@ -602,7 +602,7 @@ const editLease = ref<{
     duration: string
     recording: boolean
     publish: boolean
-    shared: boolean
+    share: boolean
     channel: string | null
     source_type: string
     source_model: string
@@ -618,7 +618,7 @@ const editLease = ref<{
     channel: null,
     recording: false,
     publish: false,
-    shared: true,
+    share: true,
     source_type: 'unknown',
     source_model: '',
     stream_user: '',
@@ -720,6 +720,7 @@ async function saveLease() {
                     permanent: editLease.value.duration === 'Permanent' ? true : false,
                     recording: editLease.value.recording,
                     publish: editLease.value.publish,
+                    share: editLease.value.share,
                     source_type: editLease.value.source_type,
                     source_model: editLease.value.source_model,
                 }
@@ -736,6 +737,7 @@ async function saveLease() {
                     permanent: editLease.value.duration === 'Permanent' ? true : false,
                     recording: editLease.value.recording,
                     publish: editLease.value.publish,
+                    share: editLease.value.share,
                     source_type: editLease.value.source_type,
                     source_model: editLease.value.source_model,
                 }
