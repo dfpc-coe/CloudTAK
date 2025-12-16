@@ -474,7 +474,7 @@
                 </div>
                 <div class='col-12 col-md-6'>
                     <TablerToggle
-                        v-model='shared'
+                        v-model='editLease.shared'
                         description='By default only the user that created a Lease can manage it. If you are operating as part of an agency, turn on Lease Sharing to allow all users in your Channel to manage the lease'
                         :disabled='disabled'
                         label='Shared Lease'
@@ -549,7 +549,7 @@
 import { std } from '../../../../std.ts';
 import { validateURL } from '../../../../base/validators.ts';
 import CopyField from '../../util/CopyField.vue';
-import { ref, watch, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols, VideoLeaseMetadata } from '../../../../types.ts';
 import VideoLeaseSourceType from '../../util/VideoLeaseSourceType.vue'
 import GroupSelect from '../../../util/GroupSelect.vue';

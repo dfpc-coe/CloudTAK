@@ -10468,7 +10468,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "name" | "created" | "updated" | "username" | "connection" | "layer" | "source_id" | "source_type" | "source_model" | "publish" | "recording" | "ephemeral" | "channel" | "expiration" | "path" | "stream_user" | "stream_pass" | "read_user" | "read_pass" | "proxy" | "enableRLS";
+                    sort: "id" | "name" | "created" | "updated" | "username" | "connection" | "layer" | "source_id" | "source_type" | "source_model" | "publish" | "recording" | "share" | "ephemeral" | "channel" | "expiration" | "path" | "stream_user" | "stream_pass" | "read_user" | "read_pass" | "proxy" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -10502,6 +10502,7 @@ export interface paths {
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
+                                share: boolean;
                                 ephemeral: boolean;
                                 channel: null | string;
                                 expiration: null | string;
@@ -10615,6 +10616,11 @@ export interface paths {
                          */
                         publish: boolean;
                         /**
+                         * @description Allow other users to manage lease if they are also members of the channel
+                         * @default false
+                         */
+                        share: boolean;
+                        /**
                          * @description Increase stream security by enforcing a seperate read and write username/password
                          * @default false
                          */
@@ -10648,6 +10654,7 @@ export interface paths {
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
+                                share: boolean;
                                 ephemeral: boolean;
                                 channel: null | string;
                                 expiration: null | string;
@@ -10879,6 +10886,7 @@ export interface paths {
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
+                                share: boolean;
                                 ephemeral: boolean;
                                 channel: null | string;
                                 expiration: null | string;
@@ -11093,6 +11101,8 @@ export interface paths {
                         source_model?: string;
                         channel?: string | null;
                         secure?: boolean;
+                        /** @description Allow other users to manage lease if they are also members of the channel */
+                        share?: boolean;
                         /**
                          * @description Rotate Read-User Credentials if using seperate read/write user - infers secure: true
                          * @default false
@@ -11129,6 +11139,7 @@ export interface paths {
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
+                                share: boolean;
                                 ephemeral: boolean;
                                 channel: null | string;
                                 expiration: null | string;
@@ -32705,7 +32716,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "name" | "created" | "updated" | "username" | "connection" | "layer" | "source_id" | "source_type" | "source_model" | "publish" | "recording" | "ephemeral" | "channel" | "expiration" | "path" | "stream_user" | "stream_pass" | "read_user" | "read_pass" | "proxy" | "enableRLS";
+                    sort: "id" | "name" | "created" | "updated" | "username" | "connection" | "layer" | "source_id" | "source_type" | "source_model" | "publish" | "recording" | "share" | "ephemeral" | "channel" | "expiration" | "path" | "stream_user" | "stream_pass" | "read_user" | "read_pass" | "proxy" | "enableRLS";
                     /** @description No Description */
                     expired: "true" | "false" | "all";
                     /** @description No Description */
@@ -32740,6 +32751,7 @@ export interface paths {
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
+                                share: boolean;
                                 ephemeral: boolean;
                                 channel: null | string;
                                 expiration: null | string;
@@ -32855,6 +32867,11 @@ export interface paths {
                          */
                         publish: boolean;
                         /**
+                         * @description Allow other users to manage lease if they are also members of the channel
+                         * @default false
+                         */
+                        share: boolean;
+                        /**
                          * @description Increase stream security by enforcing a seperate read and write username/password
                          * @default false
                          */
@@ -32887,6 +32904,7 @@ export interface paths {
                             source_model: string;
                             publish: boolean;
                             recording: boolean;
+                            share: boolean;
                             ephemeral: boolean;
                             channel: null | string;
                             expiration: null | string;
@@ -33006,6 +33024,7 @@ export interface paths {
                             source_model: string;
                             publish: boolean;
                             recording: boolean;
+                            share: boolean;
                             ephemeral: boolean;
                             channel: null | string;
                             expiration: null | string;
@@ -33197,14 +33216,13 @@ export interface paths {
                         channel?: string | null;
                         secure?: boolean;
                         /** @description Record streams to disk */
-                        recording: boolean;
+                        recording?: boolean;
                         /** @description Publish stream URL to TAK Server Video Manager */
-                        publish: boolean;
-                        /**
-                         * @description System Admins can create non-expiring leases
-                         * @default false
-                         */
-                        permanent: boolean;
+                        publish?: boolean;
+                        /** @description Allow other users to manage lease if they are also members of the channel */
+                        share?: boolean;
+                        /** @description System Admins can create non-expiring leases */
+                        permanent?: boolean;
                         proxy?: string;
                     };
                 };
@@ -33229,6 +33247,7 @@ export interface paths {
                             source_model: string;
                             publish: boolean;
                             recording: boolean;
+                            share: boolean;
                             ephemeral: boolean;
                             channel: null | string;
                             expiration: null | string;

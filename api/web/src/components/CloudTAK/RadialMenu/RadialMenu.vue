@@ -1,7 +1,7 @@
 <template>
     <svg
-        ref='icons'
         id='icons'
+        ref='icons'
         class='d-none'
     >
         <symbol
