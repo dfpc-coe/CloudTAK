@@ -140,7 +140,8 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import Status from '../../util/StatusDot.vue';
-import timeDiff from '../../../timediff.ts';
+import timeDiff_ from '../../../timediff.ts';
+const timeDiff = timeDiff_;
 import Upload from '../../util/Upload.vue';
 
 const router = useRouter();

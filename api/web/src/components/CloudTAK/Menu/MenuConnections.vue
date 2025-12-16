@@ -114,7 +114,8 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import ConnectionStatus from './../../ETL/Connection/StatusDot.vue';
 import AgencyBadge from './../../ETL/Connection/AgencyBadge.vue';
-import timeDiff from '../../../timediff.ts';
+import timeDiff_ from '../../../timediff.ts';
+const timeDiff = timeDiff_;
 
 const error = ref<Error | undefined>();
 const loading = ref(true);

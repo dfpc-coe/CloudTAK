@@ -1,9 +1,16 @@
 import * as terraDraw from 'terra-draw';
+import {
+    TerraDrawMapLibreGLAdapter
+} from 'terra-draw-maplibre-gl-adapter';
+import { TerraRoute } from 'terra-route'
+import {
+    Routing,
+    TerraDrawRouteSnapMode
+} from 'terra-draw-route-snap-mode'
 import { v4 as randomUUID } from 'uuid';
 import mapgl from 'maplibre-gl'
 import pointOnFeature from '@turf/point-on-feature';
 import { coordEach } from '@turf/meta';
-import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { distance } from '@turf/distance';
 import type { GeoJSONFeatureId } from 'maplibre-gl'
 import type COT from '../../base/cot.ts';
@@ -21,6 +28,7 @@ export enum DrawToolMode {
 
     POINT = 'point',
     LINESTRING = 'linestring',
+    SNAPPING = 'routesnap',
     POLYGON = 'polygon',
     RECTANGLE = 'angled-rectangle',
     CIRCLE = 'circle',
@@ -32,6 +40,8 @@ export default class DrawTool {
     public editing: COT | null;
 
     public mode: DrawToolMode;
+
+    private graph: TerraRoute;
 
     private mapStore: ReturnType<typeof useMapStore>;
 
@@ -78,6 +88,19 @@ export default class DrawTool {
             }
         }
 
+        this.graph = new TerraRoute();
+
+        const network = {
+            type: 'FeatureCollection' as const,
+            features: []
+        }
+
+        const routing = new Routing({
+            network,
+            useCache: true,
+            routeFinder: this.graph
+        })
+
         this.draw = new terraDraw.TerraDraw({
             adapter: new TerraDrawMapLibreGLAdapter({
                 map: this.mapStore.map,
@@ -106,6 +129,21 @@ export default class DrawTool {
                     editable: true,
                     showCoordinatePoints: true,
                     snapping: { toCustom }
+                }),
+                // @ts-expect-error Library mismatch
+                new TerraDrawRouteSnapMode({
+                   routing,
+                   maxPoints: 5,
+                   styles: {
+                       lineStringColor: () => {
+                           // RED
+                           return '#990000';
+                       },
+                       routePointColor: () => {
+                            // RED
+                            return '#990000';
+                       }
+                   }
                 }),
                 new terraDraw.TerraDrawAngledRectangleMode(),
                 new terraDraw.TerraDrawFreehandMode(),
@@ -312,12 +350,38 @@ export default class DrawTool {
 
     async start(mode: DrawToolMode): Promise<void> {
         this.mode = mode;
-        this.draw.start();
-        this.draw.setMode(mode)
 
-        this.snapping = await this.mapStore.worker.db.snapping(
-            this.mapStore.map.getBounds().toArray()
-        );
+        if (mode === DrawToolMode.SNAPPING) {
+            const url = new URL('https://tiles.map.cotak.gov/tiles/public/snapping/features')
+            url.searchParams.set('token', localStorage.token);
+            url.searchParams.set('bbox', this.mapStore.map.getBounds().toArray().join(','));
+
+            const network = await std(url);
+
+            this.graph.buildRouteGraph(network);
+
+            const routing = new Routing({
+                network,
+                useCache: true,
+                routeFinder: this.graph
+            })
+
+            this.draw.start();
+
+            this.draw.updateModeOptions(DrawToolMode.SNAPPING, {
+                routing,
+                maxPoints: 5,
+            });
+
+            this.draw.setMode(mode)
+        } else {
+            this.draw.start();
+            this.draw.setMode(mode)
+
+            this.snapping = await this.mapStore.worker.db.snapping(
+                this.mapStore.map.getBounds().toArray()
+            );
+        }
     }
 
     async stop(refresh = true): Promise<void> {

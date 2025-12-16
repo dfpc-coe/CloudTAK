@@ -165,7 +165,8 @@ import type { Profile, Server, Package, Feature } from '../../../../src/types.ts
 import { server, stdurl, std } from '../../../std.ts';
 import Share from '../util/Share.vue';
 import Keywords from '../util/Keywords.vue';
-import timeDiff from '../../../timediff.ts';
+import timeDiff_ from '../../../timediff.ts';
+const timeDiff = timeDiff_;
 import {
     TablerAlert,
     TablerDelete,

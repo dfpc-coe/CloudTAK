@@ -57,6 +57,8 @@
         "swagger-ui-dist": "^5.30.2",
         "terra-draw": "^1.7.0",
         "terra-draw-maplibre-gl-adapter": "^1.1.1",
+        "terra-draw-route-snap-mode": "^0.0.1",
+        "terra-route": "^0.0.12",
         "uuid": "^13.0.0",
         "vue": "^3.2.31",
         "vue-component-type-helpers": "^3.0.7",
