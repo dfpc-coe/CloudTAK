@@ -49,6 +49,13 @@ onMounted(() => {
         .setLngLat(lngLat)
         .setDOMContent(selectMenu.value)
         .addTo(mapStore.map);
+
+    popup.on('close', () => {
+        if (mapStore.select.feats) {
+            mapStore.select.feats = [];
+            popup.remove();
+        }
+    });
 });
 
 watch(() => [mapStore.select.x, mapStore.select.y], ([x, y]) => {
@@ -66,9 +73,14 @@ onUnmounted(() => {
 </script>
 
 <style>
+.multiple-select-popup {
+    pointer-events: none;
+}
+
 .multiple-select-popup .maplibregl-popup-content {
     background: transparent;
     padding: 0;
+    pointer-events: auto;
 }
 
 .multiple-select-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip {
