@@ -427,6 +427,7 @@ export default async function router(schema: Schema, config: Config) {
                 name: req.body.name,
                 ephemeral: req.body.ephemeral,
                 channel: req.body.channel,
+                share: req.body.share,
                 expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
                 source_id: req.body.source_id,
                 source_type: req.body.source_type,
