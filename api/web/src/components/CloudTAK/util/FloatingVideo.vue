@@ -389,16 +389,11 @@ async function createPlayer(): Promise<void> {
     try {
         const url = new URL(videoProtocols.value!.hls!.url);
 
-        // Configure HLS.js with settings optimized for MediaMTX live streaming
         player.value = new Hls({
             enableWorker: true,
-            lowLatencyMode: false, // More forgiving for stream restarts
-            debug: false,
-            backBufferLength: 90, // Keep more buffer for smoother playback
-            maxBufferLength: 30, // Larger buffer for resilience
-            maxMaxBufferLength: 600,
-            liveSyncDurationCount: 3, // More tolerant of discontinuities
-            liveMaxLatencyDurationCount: 10,
+            lowLatencyMode: true,
+            debug: localStorage.getItem('debug') === 'true',
+            backBufferLength: 90,
             xhrSetup: (xhr: XMLHttpRequest) => {
                 // Add authentication if stream requires it
                 if (url.username && url.password) {
@@ -407,10 +402,8 @@ async function createPlayer(): Promise<void> {
             }
         });
 
-        // Attach HLS player to video element
         player.value.attachMedia(videoTag.value!);
 
-        // Load HLS source when media is attached
         player.value.on(Hls.Events.MEDIA_ATTACHED, async () => {
             if (player.value) player.value.loadSource(url.toString());
         });
@@ -431,7 +424,7 @@ async function createPlayer(): Promise<void> {
             switch (data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
                     if (!data.fatal) {
-                        handleStreamRestart(); // Handle muxer restart scenario
+                        player.value!.recoverMediaError();
                         break;
                     } else {
                         console.log("Fatal network error:", data);
@@ -440,7 +433,7 @@ async function createPlayer(): Promise<void> {
                     }
                 case Hls.ErrorTypes.MEDIA_ERROR:
                     if (!data.fatal) {
-                        handleStreamRestart(); // Handle muxer restart scenario
+                        player.value!.recoverMediaError();
                         break;
                     } else {
                         console.log("Fatal media error:", data);
@@ -469,24 +462,6 @@ async function createPlayer(): Promise<void> {
         })
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
-    }
-}
-
-/**
- * Handle MediaMTX muxer restarts gracefully
- * This occurs when MediaMTX creates new segment naming due to source hiccups
- */
-function handleStreamRestart(): void {
-    console.log('Handling HLS stream restart (muxer restart detected)');
-    if (player.value && videoProtocols.value?.hls) {
-        try {
-            player.value.stopLoad();
-            player.value.startLoad();
-        } catch (err) {
-            console.error('Error handling stream restart:', err);
-            // Fall back to full retry if restart handling fails
-            handleStreamError(err instanceof Error ? err : new Error(String(err)));
-        }
     }
 }
 
