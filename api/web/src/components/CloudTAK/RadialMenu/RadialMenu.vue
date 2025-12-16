@@ -1,5 +1,6 @@
 <template>
     <svg
+        ref='icons'
         id='icons'
         class='d-none'
     >
@@ -115,7 +116,7 @@
 </template>
 
 <script setup>
-import { ref, shallowRef, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, shallowRef, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue';
 import { OriginMode } from '../../../base/cot.ts';
 import Subscription from '../../../base/subscription.ts';
 import RadialMenu from './RadialMenu.js';
@@ -134,6 +135,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'click']);
 
+const iconsRef = useTemplateRef('icons');
 const menuItems = ref([]);
 const menu = shallowRef();
 const popup = shallowRef();
@@ -154,6 +156,10 @@ onMounted(async () => {
         const container = document.createElement('div');
         container.style.width = `${props.size}px`;
         container.style.height = `${props.size}px`;
+
+        if (iconsRef.value) {
+            container.appendChild(iconsRef.value.cloneNode(true));
+        }
 
         menu.value = new RadialMenu({
             parent: container,
