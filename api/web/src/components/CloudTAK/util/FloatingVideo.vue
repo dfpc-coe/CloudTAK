@@ -389,7 +389,6 @@ async function createPlayer(): Promise<void> {
     try {
         const url = new URL(videoProtocols.value!.hls!.url);
 
-        // Configure HLS.js with settings optimized for MediaMTX live streaming
         player.value = new Hls({
             enableWorker: true,
             lowLatencyMode: false, // More forgiving for stream restarts
@@ -407,10 +406,8 @@ async function createPlayer(): Promise<void> {
             }
         });
 
-        // Attach HLS player to video element
         player.value.attachMedia(videoTag.value!);
 
-        // Load HLS source when media is attached
         player.value.on(Hls.Events.MEDIA_ATTACHED, async () => {
             if (player.value) player.value.loadSource(url.toString());
         });
@@ -476,17 +473,29 @@ async function createPlayer(): Promise<void> {
  * Handle MediaMTX muxer restarts gracefully
  * This occurs when MediaMTX creates new segment naming due to source hiccups
  */
-function handleStreamRestart(): void {
+ function handleStreamRestart(): void {
+    const hls = player.value;
+    if (!hls || !videoProtocols.value?.hls) return;
+
     console.log('Handling HLS stream restart (muxer restart detected)');
-    if (player.value && videoProtocols.value?.hls) {
-        try {
-            player.value.stopLoad();
-            player.value.startLoad();
-        } catch (err) {
-            console.error('Error handling stream restart:', err);
-            // Fall back to full retry if restart handling fails
-            handleStreamError(err instanceof Error ? err : new Error(String(err)));
+
+    try {
+        hls.recoverMediaError();
+        hls.stopLoad();
+        hls.loadSource(hls.url!); 
+
+        const videoElement = hls.media;
+        if (videoElement) {
+            hls.once(Hls.Events.LEVEL_LOADED, () => {
+                // Seek to the end (live edge) to bypass the stalled gap
+                videoElement.currentTime = videoElement.duration;
+                hls.startLoad();
+                videoElement.play().catch(e => console.error("Play failed", e));
+            });
         }
+    } catch (err) {
+        console.error('Error handling stream restart:', err);
+        handleStreamError(err instanceof Error ? err : new Error(String(err)));
     }
 }
 

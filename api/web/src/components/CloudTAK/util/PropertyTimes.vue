@@ -13,6 +13,12 @@
             />
             <label class='subheader cursor-pointer m-0'>Times</label>
             <div class='ms-auto d-flex align-items-center'>
+                <span
+                    v-if='props.cot.properties.start'
+                    class='cursor-pointer me-2 text-muted small'
+                    @click.stop='mode = mode === "relative" ? "absolute" : "relative"'
+                    v-text='`Start: ${startProp}`'
+                />
                 <IconChevronDown
                     class='transition-transform'
                     :class='{ "rotate-180": !expanded }'
