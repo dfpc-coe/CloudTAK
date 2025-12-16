@@ -2,7 +2,7 @@
     <div
         ref='radial-menu'
         class='position-absolute'
-        style='pointer-events: none;'
+        style='pointer-events: none; z-index: 1000;'
         :style='{
             top: `${mapStore.radial.y - (size / 2)}px`,
             left: `${mapStore.radial.x - (size / 2)}px`,
