@@ -676,25 +676,7 @@ const noMenuShown = computed<boolean>(() => {
         && (!route.name || !String(route.name).startsWith('home-menu'))
 });
 
-watch(mapStore.radial, () => {
-    if (mapStore.radial.cot) {
-        mapStore.map.scrollZoom.disable();
-        mapStore.map.touchZoomRotate.disableRotation();
-        mapStore.map.dragRotate.disable();
-        mapStore.map.dragPan.disable();
 
-        const id = mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id;
-        if (!mapStore.locked.includes(id)) {
-            mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
-        }
-    } else {
-        mapStore.map.scrollZoom.enable();
-        mapStore.map.touchZoomRotate.enableRotation();
-        mapStore.map.dragRotate.enable();
-        mapStore.map.dragPan.enable();
-        mapStore.locked.pop();
-    }
-})
 
 onMounted(async () => {
     // ensure uncaught errors in the stack are captured into vue context

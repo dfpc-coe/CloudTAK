@@ -73,3 +73,13 @@ svg.menu > g.center > use {
     cursor: pointer;
     fill: white;
 }
+
+.radial-menu-popup .maplibregl-popup-content {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+}
+
+.radial-menu-popup .maplibregl-popup-tip {
+    display: none;
+}

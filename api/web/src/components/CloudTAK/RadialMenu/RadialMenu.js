@@ -327,6 +327,7 @@ RadialMenu.prototype.createUseTag = function (x, y, link) {
     use.setAttribute('height', '10');
     use.setAttribute('fill', 'white');
     use.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', link);
+    use.setAttribute('href', link);
     return use;
 };
 
