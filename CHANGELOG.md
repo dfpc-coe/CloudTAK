@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.32.0 - 2025-12-16
+
+- :rocket: Initial Implementation of TAK Server Sharing
+
 ### v12.31.0 - 2025-12-15
 
 - :bug: RadialMenu could error when using a VectorTile encoded GeoJSON Centroid
