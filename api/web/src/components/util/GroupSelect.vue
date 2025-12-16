@@ -1,6 +1,9 @@
 <template>
     <div>
-        <div class='sticky-top py-2 border-bottom'>
+        <div
+            class='sticky-top py-2 border-bottom'
+            style='background-color: var(--tblr-bg-surface, #fff)'
+        >
             <TablerInput
                 v-model='filter'
                 icon='search'
