@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch, markRaw } from 'vue';
 import Feature from './FeatureRow.vue'
 import { useMapStore } from '../../../stores/map.ts';
 import mapgl from 'maplibre-gl';
@@ -33,40 +33,43 @@ const emit = defineEmits([ 'selected' ]);
 
 const mapStore = useMapStore();
 const selectMenu = ref<HTMLElement | null>(null);
-let popup: mapgl.Popup | undefined;
 
 onMounted(() => {
     if (!selectMenu.value) return;
 
+    if (!mapStore.select.popup) {
+        mapStore.select.popup = markRaw(new mapgl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            maxWidth: 'none',
+            className: 'multiple-select-popup'
+        }));
+
+        mapStore.select.popup.on('close', () => {
+            if (mapStore.select.feats.length) {
+                mapStore.select.feats = [];
+            }
+        });
+    }
+
     const lngLat = mapStore.map.unproject([mapStore.select.x, mapStore.select.y]);
 
-    popup = new mapgl.Popup({
-        closeButton: false,
-        closeOnClick: false,
-        maxWidth: 'none',
-        className: 'multiple-select-popup'
-    })
+    mapStore.select.popup
         .setLngLat(lngLat)
         .setDOMContent(selectMenu.value)
         .addTo(mapStore.map);
-
-    popup.on('close', () => {
-        if (mapStore.select.feats.length) {
-            mapStore.select.feats = [];
-        }
-    });
 });
 
 watch(() => [mapStore.select.x, mapStore.select.y], ([x, y]) => {
-    if (popup) {
+    if (mapStore.select.popup) {
         const lngLat = mapStore.map.unproject([x, y]);
-        popup.setLngLat(lngLat);
+        mapStore.select.popup.setLngLat(lngLat);
     }
 });
 
 onUnmounted(() => {
-    if (popup) {
-        popup.remove();
+    if (mapStore.select.popup) {
+        mapStore.select.popup.remove();
     }
 });
 </script>
