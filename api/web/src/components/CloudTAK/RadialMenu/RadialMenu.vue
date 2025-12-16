@@ -1,14 +1,4 @@
 <template>
-    <div
-        ref='radial-menu'
-        class='position-absolute'
-        style='pointer-events: none; z-index: 1000;'
-        :style='{
-            top: `${mapStore.radial.y - (size / 2)}px`,
-            left: `${mapStore.radial.x - (size / 2)}px`,
-        }'
-    />
-
     <svg
         id='icons'
         class='d-none'
@@ -125,12 +115,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, useTemplateRef } from 'vue';
+import { ref, shallowRef, onMounted, onUnmounted, nextTick } from 'vue';
 import { OriginMode } from '../../../base/cot.ts';
 import Subscription from '../../../base/subscription.ts';
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
 import { useMapStore } from '../../../stores/map.ts';
+import mapgl from 'maplibre-gl';
 
 const mapStore = useMapStore();
 
@@ -143,29 +134,59 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'click']);
 
-const menuRef = useTemplateRef('radial-menu');
 const menuItems = ref([]);
-const menu = ref();
+const menu = shallowRef();
+const popup = shallowRef();
+
+onUnmounted(() => {
+    if (menu.value) {
+        menu.value.close();
+    }
+    if (popup.value) {
+        popup.value.remove();
+    }
+});
 
 onMounted(async () => {
     await genMenuItems();
 
     nextTick(() => {
-        if (!menuRef.value) {
-            console.warn('Warning: Could not mount Menu. menuRef is null.');
-            return; // Skip menu initialization
-        }
+        const container = document.createElement('div');
+        container.style.width = `${props.size}px`;
+        container.style.height = `${props.size}px`;
 
         menu.value = new RadialMenu({
-            parent: menuRef.value,
+            parent: container,
             size: props.size,
             closeOnClick: true,
             menuItems: menuItems.value,
             onClick: (item) => {
                 emit('click', `${mapStore.radial.mode}:${item.id}`);
             },
+            onClose: () => {
+                emit('close');
+            }
         });
         menu.value.open();
+
+        if (mapStore.radial.lngLat) {
+             popup.value = new mapgl.Popup({
+                closeButton: false,
+                closeOnClick: true,
+                maxWidth: 'none',
+                anchor: 'center',
+                className: 'radial-menu-popup'
+            })
+            .setLngLat(mapStore.radial.lngLat)
+            .setDOMContent(container)
+            .addTo(mapStore.map);
+
+            popup.value.on('close', () => {
+                emit('close');
+            });
+        } else {
+            emit('close');
+        }
     })
 });
 
