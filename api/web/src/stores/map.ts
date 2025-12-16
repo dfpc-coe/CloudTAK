@@ -892,7 +892,12 @@ export const useMapStore = defineStore('cloudtak', {
             this.radial.mode = opts.mode;
 
             if (feat.properties && feat.properties.center) {
-                this.radial.lngLat = mapgl.LngLat.convert(feat.properties.center as LngLatLike);
+                if (typeof feat.properties.center === 'string') {
+                    const parts = JSON.parse(feat.properties.center);
+                    this.radial.lngLat = new mapgl.LngLat(parts[0], parts[1]);
+                } else {
+                    this.radial.lngLat = mapgl.LngLat.convert(feat.properties.center as LngLatLike);
+                }
             } else {
                 this.radial.lngLat = opts.lngLat;
             }
