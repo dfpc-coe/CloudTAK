@@ -967,6 +967,13 @@
       "when": 1764544176401,
       "tag": "0137_fixed_quasimodo",
       "breakpoints": true
+    },
+    {
+      "idx": 138,
+      "version": "7",
+      "when": 1765830173974,
+      "tag": "0138_pink_lockjaw",
+      "breakpoints": true
     }
   ]
 }

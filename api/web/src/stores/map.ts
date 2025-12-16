@@ -80,12 +80,14 @@ export const useMapStore = defineStore('cloudtak', {
             feats: Array<COT | MapGeoJSONFeature>;
             x: number;
             y: number;
+            popup?: mapgl.Popup;
         },
         radial: {
             mode: string | undefined;
             cot: Feature | MapGeoJSONFeature | undefined;
             x: number;
             y: number;
+            lngLat?: LngLat;
         },
         overlays: Array<Overlay>
     } => {
@@ -140,6 +142,7 @@ export const useMapStore = defineStore('cloudtak', {
                 mode: undefined,
                 cot: undefined,
                 x: 0, y: 0,
+                lngLat: undefined
             },
             overlays: [],
 
@@ -332,10 +335,6 @@ export const useMapStore = defineStore('cloudtak', {
                             };
                             this.map.flyTo(flyTo);
 
-                            if (this.radial.mode) {
-                                this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
-                                this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
-                            }
                         }
                     }
                 }
@@ -594,6 +593,7 @@ export const useMapStore = defineStore('cloudtak', {
                 if (this.radial.mode) {
                     // Clicking away closes the radial menu
                     this.radial.mode = undefined;
+                    this.radial.cot = undefined;
                     return;
                 }
 
@@ -888,24 +888,19 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!opts.mode) opts.mode = this.featureSource(feat) || 'feat';
 
-            if (opts.point.x < 150 || opts.point.y < 150) {
-                const flyTo: mapgl.FlyToOptions = {
-                    speed: Infinity,
-                    center: [opts.lngLat.lng, opts.lngLat.lat]
-                };
-
-                if (this.map.getZoom() < 3) flyTo.zoom = 4;
-                this.map.flyTo(flyTo)
-
-                this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
-                this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
-            } else {
-                this.radial.x = opts.point.x;
-                this.radial.y = opts.point.y;
-            }
-
             this.radial.cot = feat;
             this.radial.mode = opts.mode;
+
+            if (feat.properties && feat.properties.center) {
+                if (typeof feat.properties.center === 'string') {
+                    const parts = JSON.parse(feat.properties.center);
+                    this.radial.lngLat = new mapgl.LngLat(parts[0], parts[1]);
+                } else {
+                    this.radial.lngLat = mapgl.LngLat.convert(feat.properties.center as LngLatLike);
+                }
+            } else {
+                this.radial.lngLat = opts.lngLat;
+            }
         }
     }
 })

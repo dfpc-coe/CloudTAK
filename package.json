@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK",
     "type": "module",
-    "version": "12.24.1",
+    "version": "12.31.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "scripts": {
         "lint": "eslint bin/ cloudformation/",
@@ -10,7 +10,7 @@
         "postversion": "node bin/version.js && git commit -am \"Sync Versions\" && git push"
     },
     "engines": {
-        "node": ">= 22"
+        "node": ">= 24"
     },
     "repository": {
         "type": "git",

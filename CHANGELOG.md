@@ -12,6 +12,63 @@
 
 ### Pending Release
 
+### v12.31.0 - 2025-12-15
+
+- :bug: RadialMenu could error when using a VectorTile encoded GeoJSON Centroid
+- :bug: Continue to improve Video Player error handling
+
+### v12.30.0 - 2025-12-15
+
+- :rocket: Migrate RadialMenu to Popup
+
+### v12.29.0 - 2025-12-15
+
+- :arrow_up: Update Dockerfiles to use Alpine@23
+- :arrow_up: Update NodeJS requirements to use NodeJS@24
+
+### v12.28.0 - 2025-12-15
+
+- :rocket: Migrate UI Items to use StandardItem Component
+- :rocket: Use MapLibre-GL-JS Popups for MultipleSelect to allow map actions without losing context
+- :rocket: Store `format` seperately from name for Icons to allow the map layer to consistently request `png` regardless of original upload format
+- :rocket: Add Breadcrumb support to BaseMap Menu
+- :tada: Significant improvements to UI For Global Search
+
+### v12.27.2 - 2025-12-12
+
+- :rocket: Merge Video Error Handling into single block
+- :rocket: Avoid requesting the same time in the stream that caused an error
+
+### v12.27.1 - 2025-12-12
+
+- :rocket: Add ability to recover from Buffer Error
+
+### v12.27.0 - 2025-12-12
+
+- :rocket: UI Improvements to CoT View
+
+### v12.26.0 - 2025-12-10
+
+- :rocket: Version Fix
+
+### v12.25.0 - 2025-12-10
+
+- :tada: Show assigned personnel in CoT section
+
+### v12.24.1 - 2025-12-10
+
+- :arrow_up: Update MediaInfra Container
+
+### v12.24.0 - 2025-12-09
+
+- :bug: Don't allow editing Mission Description unless subscribed
+- :rocket: Avoid reloading MenuContacts on refresh message (@CoryFoy)
+- :rocket: Avoid clearing MenuContacts on refresh as it flashes a TablerNone component (@CoryFoy)
+
+### v12.23.2 - 2025-12-06
+
+- :arrow_up: Add Support for Links in NodeCoT
+
 ### v12.23.1 - 2025-12-06
 
 - :rocket: Improve FeatureCollection extraction performance on PMTiles API

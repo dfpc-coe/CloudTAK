@@ -3,7 +3,7 @@
         <template #buttons>
             <TablerRefreshButton
                 :loading='loading || refresh'
-                @click='fetchList'
+                @click='refreshList'
             />
         </template>
         <template #default>
@@ -230,10 +230,10 @@ async function fetchConfig() {
 }
 
 async function updateContacts() {
-    opened.value.clear();
-    teams.value.clear();
-    visibleActiveContacts.value = [];
-    visibleOfflineContacts.value = [];
+    const newOpened = new Set<string>();
+    const newTeams = new Set<string>();
+    const newVisibleActive: ContactList = [];
+    const newVisibleOffline: ContactList = [];
 
     for (const contact of contacts.value) {
         if (!contact.callsign.toLowerCase().includes(paging.value.filter.toLowerCase())) continue;
@@ -241,15 +241,20 @@ async function updateContacts() {
 
         if (await mapStore.worker.db.has(contact.uid)) {
             if (contact.team) {
-                teams.value.add(contact.team);
-                opened.value.add(contact.team);
+                newTeams.add(contact.team);
+                newOpened.add(contact.team);
             }
 
-            visibleActiveContacts.value.push(contact);
+            newVisibleActive.push(contact);
         } else {
-            visibleOfflineContacts.value.push(contact);
+            newVisibleOffline.push(contact);
         }
     }
+
+    opened.value = newOpened;
+    teams.value = newTeams;
+    visibleActiveContacts.value = newVisibleActive;
+    visibleOfflineContacts.value = newVisibleOffline;
 }
 
 async function fetchList(loading: Ref<boolean>) {
@@ -263,5 +268,10 @@ async function fetchList(loading: Ref<boolean>) {
     }
 
     loading.value = false;
+}
+
+async function refreshList() {
+    await fetchList(refresh);
+    await updateContacts();
 }
 </script>
