@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.30.0 - 2025-12-15
+
+- :rocket: Migrate RadialMenu to Popup
+
 ### v12.29.0 - 2025-12-15
 
 - :arrow_up: Update Dockerfiles to use Alpine@23
