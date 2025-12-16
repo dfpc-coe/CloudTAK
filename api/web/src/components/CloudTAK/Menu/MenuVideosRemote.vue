@@ -24,6 +24,20 @@
                         />
                     </TablerInput>
                 </div>
+                <div
+                    v-if='route.params.connectionid === "new"'
+                    class='col-12'
+                >
+                    <label class='px-2 w-100'>Channels</label>
+
+                    <div style='max-height: 20vh; min-height: 200px; overflow-y: auto;'>
+                        <GroupSelect
+                            v-model='groups'
+                            :active='true'
+                            direction='IN'
+                        />
+                    </div>
+                </div>
                 <div class='col-12 d-flex'>
                     <label>Feeds</label>
 
@@ -80,6 +94,7 @@ import type { VideoConnection, VideoConnectionFeed } from '../../../types.ts';
 import VideosRemoteFeed from './Videos/VideosRemoteFeed.vue';
 import { std } from '../../../std.ts';
 import { useRoute, useRouter } from 'vue-router';
+import GroupSelect from '../../util/GroupSelect.vue';
 import {
     TablerInput,
     TablerDelete,
@@ -98,6 +113,9 @@ const route = useRoute();
 const router = useRouter();
 const loading = ref(String(route.params.connectionid) !== "new");
 const err = ref<Error | undefined>(undefined);
+
+const groups = ref<string[]>([]);
+
 const connection = ref<VideoConnection>({
     uuid: randomUUID(),
     active: true,
@@ -151,7 +169,10 @@ async function saveConnection() {
         } else {
             await std('/api/marti/video', {
                 method: 'POST',
-                body: connection.value
+                body: {
+                    groups: groups.value,
+                    ...connection.value
+                }
             });
         }
 
