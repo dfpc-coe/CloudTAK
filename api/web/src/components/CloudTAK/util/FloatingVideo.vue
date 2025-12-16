@@ -424,7 +424,7 @@ async function createPlayer(): Promise<void> {
             switch (data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
                     if (!data.fatal) {
-                        player.value.recoverMediaError();
+                        player.value!.recoverMediaError();
                         break;
                     } else {
                         console.log("Fatal network error:", data);
@@ -433,7 +433,7 @@ async function createPlayer(): Promise<void> {
                     }
                 case Hls.ErrorTypes.MEDIA_ERROR:
                     if (!data.fatal) {
-                        player.value.recoverMediaError();
+                        player.value!.recoverMediaError();
                         break;
                     } else {
                         console.log("Fatal media error:", data);
