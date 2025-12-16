@@ -100,14 +100,33 @@
                         v-else
                         class='col-12 d-flex flex-column gap-2'
                     >
-                        <MenuItemCard
+                        <StandardItem
                             v-for='connection in connections.videoConnections'
                             :key='connection.uuid'
-                            :icon='IconVideo'
-                            :label='connection.alias'
-                            @select='floatStore.addConnection(connection)'
+                            class='d-flex align-items-center gap-3 p-2'
+                            @click='floatStore.addConnection(connection)'
                         >
-                            <div class='d-flex btn-list'>
+                            <div
+                                class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                                style='width: 3rem; height: 3rem; min-width: 3rem;'
+                            >
+                                <IconVideo
+                                    :size='24'
+                                    stroke='1'
+                                />
+                            </div>
+
+                            <div class='d-flex flex-column'>
+                                <div class='fw-bold'>
+                                    <span v-if='connection.alias'>{{ connection.alias }}</span>
+                                    <span
+                                        v-else
+                                        class='fst-italic text-secondary'
+                                    >Unnamed</span>
+                                </div>
+                            </div>
+
+                            <div class='d-flex btn-list ms-auto'>
                                 <TablerIconButton
                                     title='Edit Lease'
                                     @click.stop='router.push(`/menu/videos/remote/${connection.uuid}`)'
@@ -118,14 +137,33 @@
                                     />
                                 </TablerIconButton>
                             </div>
-                        </MenuItemCard>
-                        <MenuItemCard
+                        </StandardItem>
+                        <StandardItem
                             v-for='video in videos'
                             :key='video.id'
-                            :icon='IconVideo'
-                            :label='String(video.properties.callsign || video.properties.name || "Unnamed")'
-                            @select='router.push(`/cot/${video.id}`)'
-                        />
+                            class='d-flex align-items-center gap-3 p-2 cursor-pointer'
+                            @click='router.push(`/cot/${video.id}`)'
+                        >
+                            <div
+                                class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                                style='width: 3rem; height: 3rem; min-width: 3rem;'
+                            >
+                                <IconVideo
+                                    :size='24'
+                                    stroke='1'
+                                />
+                            </div>
+
+                            <div class='d-flex flex-column'>
+                                <div class='fw-bold'>
+                                    <span v-if='video.properties.callsign || video.properties.name'>{{ video.properties.callsign || video.properties.name }}</span>
+                                    <span
+                                        v-else
+                                        class='fst-italic text-secondary'
+                                    >Unnamed</span>
+                                </div>
+                            </div>
+                        </StandardItem>
                     </div>
                 </div>
             </template>
@@ -153,22 +191,47 @@
                     v-else
                     class='col-12 d-flex flex-column gap-2 p-3'
                 >
-                    <MenuItemCard
+                    <StandardItem
                         v-for='l in leases.items'
                         :key='l.id'
-                        :icon='getLeaseIcon(l.source_type)'
-                        :label='l.name'
-                        :description='getLeaseDescription(l)'
-                        :description-class='getLeaseDescriptionClass(l)'
-                        @select='lease = l'
+                        class='d-flex align-items-center gap-3 p-2 cursor-pointer'
+                        @click='lease = l'
                     >
-                        <div class='d-flex btn-list'>
+                        <div
+                            class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                            style='width: 3rem; height: 3rem; min-width: 3rem;'
+                        >
+                            <component
+                                :is='getLeaseIcon(l.source_type)'
+                                :size='24'
+                                stroke='1'
+                            />
+                        </div>
+
+                        <div class='d-flex flex-column'>
+                            <div class='fw-bold'>
+                                <span v-if='l.name'>{{ l.name }}</span>
+                                <span
+                                    v-else
+                                    class='fst-italic text-secondary'
+                                >Unnamed</span>
+                            </div>
+                            <div
+                                v-if='getLeaseDescription(l)'
+                                class='text-secondary small'
+                                :class='getLeaseDescriptionClass(l)'
+                            >
+                                {{ getLeaseDescription(l) }}
+                            </div>
+                        </div>
+
+                        <div class='d-flex btn-list ms-auto'>
                             <TablerDelete
                                 displaytype='icon'
                                 @delete='deleteLease(l)'
                             />
                         </div>
-                    </MenuItemCard>
+                    </StandardItem>
                 </div>
                 <div class='col-12 d-flex justify-content-center pt-3'>
                     <TablerPager
@@ -196,7 +259,7 @@
 import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
-import MenuItemCard from './MenuItemCard.vue';
+import StandardItem from '../util/StandardItem.vue';
 import { std, server } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import type { VideoLease, VideoLeaseList, VideoConnectionList } from '../../../types.ts';

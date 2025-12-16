@@ -19,13 +19,9 @@
 
                 <TablerLoading v-if='loading' />
                 <template v-else>
-                    <article
-                        class='menu-overlays__card menu-overlay-explorer__card menu-overlay-explorer__card--files mx-2 cursor-pointer'
-                        role='button'
-                        tabindex='0'
+                    <StandardItem
+                        class='menu-overlay-explorer__card menu-overlay-explorer__card--files mx-2 p-3'
                         @click='goToFiles'
-                        @keydown.enter.prevent='goToFiles'
-                        @keydown.space.prevent='goToFiles'
                     >
                         <div class='menu-overlays__card-main d-flex justify-content-between gap-3'>
                             <div class='menu-overlays__card-info d-flex align-items-center gap-2 flex-grow-1'>
@@ -59,26 +55,23 @@
                                 </TablerIconButton>
                             </div>
                         </div>
-                    </article>
+                    </StandardItem>
 
                     <div
                         v-if='explorerCards.length'
                         class='menu-overlays__list mx-2 d-flex flex-column'
                     >
-                        <article
+                        <StandardItem
                             v-for='card in explorerCards'
                             :key='card.basemap.id'
                             :class='[
-                                "menu-overlays__card",
                                 "menu-overlay-explorer__card",
-                                card.exists || loading ? "opacity-50 pe-none" : "cursor-pointer"
+                                card.exists || loading ? "opacity-50 pe-none" : "",
+                                "p-3"
                             ]'
-                            role='button'
-                            :tabindex='card.exists ? -1 : 0'
+                            :hover='!card.exists && !loading'
                             :aria-disabled='loading || card.exists'
                             @click='handleExplorerSelect(card.basemap)'
-                            @keydown.enter.prevent='handleExplorerSelect(card.basemap)'
-                            @keydown.space.prevent='handleExplorerSelect(card.basemap)'
                         >
                             <div class='menu-overlays__card-main d-flex justify-content-between gap-3'>
                                 <div class='menu-overlays__card-info d-flex align-items-center gap-2 flex-grow-1'>
@@ -145,7 +138,7 @@
                                     </TablerIconButton>
                                 </div>
                             </div>
-                        </article>
+                        </StandardItem>
                     </div>
 
                     <TablerNone
@@ -181,6 +174,7 @@ import {
     IconPlus,
     IconFolder
 } from '@tabler/icons-vue';
+import StandardItem from '../util/StandardItem.vue';
 import Overlay from '../../../base/overlay.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
@@ -357,21 +351,6 @@ async function fetchList() {
 
 .menu-overlays__list {
     gap: 0.75rem;
-}
-
-.menu-overlays__card {
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 14px;
-    background-color: rgba(0, 0, 0, 0.35);
-    padding: 0.85rem 1rem;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.menu-overlays__card:hover,
-.menu-overlays__card:focus-within {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 .menu-overlays__card-main {

@@ -95,7 +95,10 @@ import {
 } from '@tak-ps/vue-tabler';
 
 const props = defineProps({
-    modelValue: Object,
+    modelValue: {
+        type: Object,
+        default: undefined
+    },
     disabled: {
         type: Boolean,
         default: false

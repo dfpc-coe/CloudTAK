@@ -21,13 +21,21 @@
         </template>
         <template #default>
             <div class='col-12 d-flex flex-column gap-2 p-3'>
-                <MenuItemCard
+                <StandardItem
                     v-for='t in tokens.items'
                     :key='t.id'
-                    :icon='IconRobot'
-                    :label='t.name'
-                    @select='token = t'
-                />
+                    @click='token = t'
+                >
+                    <div class='d-flex align-items-center px-2 py-2'>
+                        <IconRobot
+                            :size='32'
+                            stroke='1'
+                        />
+                        <div class='ms-2 flex-grow-1 fw-bold'>
+                            {{ t.name }}
+                        </div>
+                    </div>
+                </StandardItem>
             </div>
         </template>
     </MenuTemplate>
@@ -43,7 +51,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import MenuTemplate from '../util/MenuTemplate.vue';
-import MenuItemCard from './MenuItemCard.vue';
+import StandardItem from '../util/StandardItem.vue';
 import { std } from '../../../std.ts';
 import TokenModal from './Settings/TokenModal.vue';
 import {

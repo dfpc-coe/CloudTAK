@@ -1,5 +1,5 @@
 # https://hub.docker.com/_/nginx
-FROM nginx:alpine3.22
+FROM nginx:alpine3.23
 
 EXPOSE 5000
 

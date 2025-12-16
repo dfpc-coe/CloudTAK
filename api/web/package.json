@@ -1,10 +1,10 @@
 {
     "name": "@tak-ps/CloudTAK.web",
     "type": "module",
-    "version": "12.24.1",
+    "version": "12.31.0",
     "private": true,
     "engines": {
-        "node": ">= 22"
+        "node": ">= 24"
     },
     "scripts": {
         "serve": "DEV=true vite serve --port 8080",
@@ -19,7 +19,7 @@
         "@tabler/core": "^1.4.0",
         "@tabler/icons-vue": "^3.0.0",
         "@tak-ps/node-cot": "^14.0.0",
-        "@tak-ps/vue-tabler": "^3.83.1",
+        "@tak-ps/vue-tabler": "^3.87.0",
         "@turf/area": "^7.2.0",
         "@turf/bbox": "^7.1.0",
         "@turf/boolean-point-in-polygon": "^7.1.0",

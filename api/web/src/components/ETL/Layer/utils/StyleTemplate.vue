@@ -48,15 +48,19 @@ const props = defineProps({
     },
     label: {
         type: String,
+        default: undefined
     },
     placeholder: {
         type: String,
+        default: undefined
     },
     description: {
         type: String,
+        default: undefined
     },
     rows: {
-        type: Number
+        type: Number,
+        default: undefined
     }
 });
 

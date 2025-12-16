@@ -1,61 +1,62 @@
 <template>
-    <div
-        class='col-12'
+    <StandardItem
+        class='d-flex flex-row gap-3 mb-2 align-items-center'
         :class='{
             "cursor-pointer": isZoomable(contact),
             "cursor-default": !isZoomable(contact),
             "hover": hover,
-            "py-2": !compact
+            "contact-card--no-notes": !contact.notes || !contact.notes.trim()
         }'
+        :hover='hover'
         @click='flyTo(contact)'
     >
-        <div class='row col-12 align-items-center'>
-            <div class='col-auto'>
-                <IconCheck
-                    v-if='selected'
-                    :size='compact ? 20 : 32'
-                    stroke='1'
-                    style='
-                        margin-left: 8px
-                    '
-                />
-                <ContactPuck
-                    v-else
-                    style='margin-left: 8px;'
-                    :team='contact.team'
-                    :size='compact ? 20 : 32'
-                />
-            </div>
-            <div
-                :class='{
-                    "col-7": props.buttonChat,
-                    "col-9": !props.buttonChat
-                }'
-            >
-                <div
-                    class='text-truncate user-select-none'
+        <div class='icon-wrapper ms-2 d-flex align-items-center justify-content-center rounded-circle'>
+            <IconCheck
+                v-if='selected'
+                :size='compact ? 20 : 32'
+                stroke='1'
+            />
+            <ContactPuck
+                v-else
+                :team='contact.team'
+                :size='compact ? 20 : 32'
+            />
+        </div>
+
+        <div
+            class='flex-grow-1 d-flex flex-column gap-1'
+            :class='{
+                "py-2": !compact,
+                "justify-content-center": !contact.notes || !contact.notes.trim()
+            }'
+        >
+            <div class='d-flex flex-wrap align-items-center gap-2'>
+                <span
+                    class='fw-semibold text-truncate'
                     v-text='contact.callsign'
                 />
-                <div
-                    class='text-truncate subheader user-select-none'
-                    v-text='contact.notes ? contact.notes.trim() : ""'
-                />
             </div>
             <div
-                v-if='props.buttonChat'
-                class='col-auto ms-auto btn-list'
-            >
-                <IconMessage
-                    v-if='props.buttonChat && isChatable(contact)'
-                    v-tooltip='"Start Chat"'
-                    :size='compact ? 20 : 32'
-                    stroke='1'
-                    class='cursor-pointer'
-                    @click='emit("chat", contact)'
-                />
-            </div>
+                v-if='contact.notes && contact.notes.trim()'
+                class='text-truncate subheader user-select-none'
+                v-text='contact.notes.trim()'
+            />
         </div>
-    </div>
+
+        <div
+            v-if='props.buttonChat'
+            class='align-self-center me-2'
+        >
+            <IconMessage
+                v-if='props.buttonChat && isChatable(contact)'
+                v-tooltip='"Start Chat"'
+                :size='compact ? 20 : 32'
+                stroke='1'
+                class='cursor-pointer'
+                @click.stop='emit("chat", contact)'
+            />
+        </div>
+    </StandardItem>
 </template>
 
 <script setup>
@@ -64,6 +65,7 @@ import {
     IconMessage,
 } from '@tabler/icons-vue';
 import ContactPuck from './ContactPuck.vue';
+import StandardItem from './StandardItem.vue';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
@@ -113,3 +115,17 @@ async function flyTo(contact) {
     cot.flyTo();
 }
 </script>
+
+<style scoped>
+.icon-wrapper {
+    width: 3rem;
+    height: 3rem;
+    min-width: 3rem;
+    min-height: 3rem;
+    flex-shrink: 0;
+}
+
+.contact-card--no-notes {
+    height: 50px;
+}
+</style>

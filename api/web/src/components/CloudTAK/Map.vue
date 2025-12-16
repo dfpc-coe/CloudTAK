@@ -326,18 +326,28 @@
                 </div>
             </div>
 
-            <SearchBox
+            <TablerModal
                 v-if='searchBoxShown'
-                class='position-absolute'
-                style='
-                    z-index: 1;
-                    top: 40px;
-                    left: 40px;
-                    width: 300px;
-                '
-                :autofocus='true'
-                @select='searchBoxShown = false'
-            />
+                size='lg'
+            >
+                <div class='modal-header'>
+                    <div class='modal-title'>
+                        Search
+                    </div>
+                    <button
+                        type='button'
+                        class='btn-close'
+                        aria-label='Close'
+                        @click='searchBoxShown = false'
+                    />
+                </div>
+                <div class='modal-body'>
+                    <SearchBox
+                        :autofocus='true'
+                        @select='searchBoxShown = false'
+                    />
+                </div>
+            </TablerModal>
 
             <div
                 v-if='mapStore.isLoaded && mode === "Default"'
@@ -666,25 +676,7 @@ const noMenuShown = computed<boolean>(() => {
         && (!route.name || !String(route.name).startsWith('home-menu'))
 });
 
-watch(mapStore.radial, () => {
-    if (mapStore.radial.cot) {
-        mapStore.map.scrollZoom.disable();
-        mapStore.map.touchZoomRotate.disableRotation();
-        mapStore.map.dragRotate.disable();
-        mapStore.map.dragPan.disable();
 
-        const id = mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id;
-        if (!mapStore.locked.includes(id)) {
-            mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
-        }
-    } else {
-        mapStore.map.scrollZoom.enable();
-        mapStore.map.touchZoomRotate.enableRotation();
-        mapStore.map.dragRotate.enable();
-        mapStore.map.dragPan.enable();
-        mapStore.locked.pop();
-    }
-})
 
 onMounted(async () => {
     // ensure uncaught errors in the stack are captured into vue context
@@ -726,7 +718,9 @@ onMounted(async () => {
 
     window.addEventListener('keyup', (e) => {
         if (e.key == 'Escape') {
-            if (mapStore.radial.mode) {
+            if (searchBoxShown.value) {
+                searchBoxShown.value = false;
+            } else if (mapStore.radial.mode) {
                 closeRadial()
             } else if (mapStore.select.feats) {
                 mapStore.select.feats = [];

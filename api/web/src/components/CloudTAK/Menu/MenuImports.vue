@@ -53,9 +53,12 @@
                 <div
                     v-for='imported in list.items'
                     :key='imported.id'
-                    @click='router.push(`/menu/imports/${imported.id}`)'
+                    class='col-12 px-2 py-1'
                 >
-                    <div class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'>
+                    <StandardItem
+                        class='d-flex align-items-center py-2 px-3'
+                        @click='router.push(`/menu/imports/${imported.id}`)'
+                    >
                         <div class='col-auto'>
                             <Status
                                 :dark='true'
@@ -95,7 +98,7 @@
                                 v-text='timeDiff(imported.created)'
                             />
                         </div>
-                    </div>
+                    </StandardItem>
                 </div>
             </template>
 
@@ -135,6 +138,7 @@ import {
     IconPackages,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import StandardItem from '../util/StandardItem.vue';
 import Status from '../../util/StatusDot.vue';
 import timeDiff_ from '../../../timediff.ts';
 const timeDiff = timeDiff_;
@@ -178,6 +182,7 @@ function uploadComplete(event: unknown) {
 
 async function fetchList() {
     loading.value = true;
+    error.value = undefined;
 
     try {
         const url = stdurl('/api/import');
