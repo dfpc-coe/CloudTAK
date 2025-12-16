@@ -49,7 +49,10 @@
                 />
             </div>
 
-            <div class='flex-grow-1 d-flex flex-column gap-1 py-2' style='min-width: 0;'>
+            <div
+                class='flex-grow-1 d-flex flex-column gap-1 py-2'
+                style='min-width: 0;'
+            >
                 <div class='d-flex align-items-center gap-2'>
                     <span
                         class='fw-semibold text-truncate'

@@ -320,6 +320,14 @@ watch(leasePaging.value, async () => {
     await fetchLeases();
 });
 
+watch(mode, async () => {
+    if (mode.value === 'connections') {
+        await fetchConnections();
+    } else if (mode.value === 'lease') {
+        await fetchLeases();
+    }
+});
+
 onMounted(async () => {
     if (await mapStore.worker.profile.isSystemAdmin()) {
         isSystemAdmin.value = true;

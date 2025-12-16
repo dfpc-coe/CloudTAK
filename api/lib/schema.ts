@@ -128,6 +128,7 @@ export const VideoLease = pgTable('video_lease', {
     // Publish to the TAK Server Video Config API
     publish: boolean().notNull().default(false),
     recording: boolean().notNull().default(false),
+    share: boolean().notNull().default(false),
 
     ephemeral: boolean().notNull().default(false),
     channel: text().default(sql`null`),
