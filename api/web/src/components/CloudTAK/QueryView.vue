@@ -49,6 +49,11 @@
                 :weather='query.weather'
                 class='py-2'
             />
+
+            <QuerySun
+                :sun='query.sun'
+                class='py-2'
+            />
         </template>
     </div>
 </template>
@@ -63,6 +68,7 @@ import {
 import { std, stdurl } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import QueryWeather from './Query/Weather.vue';
+import QuerySun from './Query/Sun.vue';
 import QueryReverse from './Query/Reverse.vue';
 import {
     TablerAlert,
