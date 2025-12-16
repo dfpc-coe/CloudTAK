@@ -2,10 +2,10 @@
     <div
         class='rounded mx-2 my-2'
         style='
-        border-style: solid;
-        border-color: #3E5E84;
-        border-width: 1px;
-    '
+            border-style: solid;
+            border-color: #3E5E84;
+            border-width: 1px;
+        '
     >
         <div class='d-flex mt-2 mx-2'>
             <div>
