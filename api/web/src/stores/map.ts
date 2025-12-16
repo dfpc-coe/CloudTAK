@@ -594,6 +594,7 @@ export const useMapStore = defineStore('cloudtak', {
                 if (this.radial.mode) {
                     // Clicking away closes the radial menu
                     this.radial.mode = undefined;
+                    this.radial.cot = undefined;
                     return;
                 }
 

@@ -51,9 +51,8 @@ onMounted(() => {
         .addTo(mapStore.map);
 
     popup.on('close', () => {
-        if (mapStore.select.feats) {
+        if (mapStore.select.feats.length) {
             mapStore.select.feats = [];
-            popup.remove();
         }
     });
 });

@@ -125,7 +125,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue';
+import { ref, onMounted, nextTick, useTemplateRef } from 'vue';
 import { OriginMode } from '../../../base/cot.ts';
 import Subscription from '../../../base/subscription.ts';
 import RadialMenu from './RadialMenu.js';
@@ -146,10 +146,6 @@ const emit = defineEmits(['close', 'click']);
 const menuRef = useTemplateRef('radial-menu');
 const menuItems = ref([]);
 const menu = ref();
-
-onUnmounted(() => {
-    emit('close')
-});
 
 onMounted(async () => {
     await genMenuItems();
