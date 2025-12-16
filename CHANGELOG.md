@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.31.0 - 2025-12-15
+
+- :bug: RadialMenu could error when using a VectorTile encoded GeoJSON Centroid
+- :bug: Continue to improve Video Player error handling
+
 ### v12.30.0 - 2025-12-15
 
 - :rocket: Migrate RadialMenu to Popup
