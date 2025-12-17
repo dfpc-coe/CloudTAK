@@ -87,37 +87,47 @@
 
                 <template #expanded>
                     <div class='col-12 border-top pt-2'>
-                        <div
-                            v-for='(period, i) in props.weather.properties.periods.slice(1)'
+                        <template
+                            v-for='(period, i) in forecastPeriods'
                             :key='period.number'
-                            class='d-flex align-items-center px-2 py-1'
-                            :class='{ "border-top": i > 0 }'
                         >
                             <div
-                                style='width: 80px;'
-                                class='small font-weight-bold'
+                                v-if='i === 0 || !isSameDay(period.startTime, forecastPeriods[i-1].startTime)'
+                                class='px-2 py-1 font-weight-bold small text-muted border-bottom'
+                                :class='{ "mt-2": i > 0 }'
                             >
-                                <div v-text='period.name' />
-                                <div
-                                    class='text-muted'
-                                    style='font-size: 0.7rem'
-                                    v-text='moment(period.startTime).format("h A")'
-                                />
+                                {{ moment(period.startTime).format('dddd, MMM Do') }}
                             </div>
-                            <component
-                                :is='getIcon(period.shortForecast)'
-                                :size='24'
-                                stroke='1'
-                                class='mx-2'
-                            />
                             <div
-                                class='flex-grow-1 small'
-                                v-text='period.shortForecast'
-                            />
-                            <div class='ms-auto font-weight-bold'>
-                                {{ period.temperature }}°
+                                class='d-flex align-items-center px-2 py-1'
+                                :class='{ "border-top": i > 0 && isSameDay(period.startTime, forecastPeriods[i-1].startTime) }'
+                            >
+                                <div
+                                    style='width: 80px;'
+                                    class='small font-weight-bold'
+                                >
+                                    <div v-text='period.name' />
+                                    <div
+                                        class='text-muted'
+                                        style='font-size: 0.7rem'
+                                        v-text='moment(period.startTime).format("h A")'
+                                    />
+                                </div>
+                                <component
+                                    :is='getIcon(period.shortForecast)'
+                                    :size='24'
+                                    stroke='1'
+                                    class='mx-2'
+                                />
+                                <div
+                                    class='flex-grow-1 small'
+                                    v-text='period.shortForecast'
+                                />
+                                <div class='ms-auto font-weight-bold'>
+                                    {{ period.temperature }}°
+                                </div>
                             </div>
-                        </div>
+                        </template>
                     </div>
                 </template>
             </TablerSlidedown>
@@ -137,6 +147,7 @@
 </template>
 
 <script setup lang='ts'>
+import { computed } from 'vue';
 import type { SearchReverse } from '../../../types.ts';
 import moment from 'moment';
 import {
@@ -159,6 +170,15 @@ import {
 const props = defineProps<{
     weather: SearchReverse["weather"]
 }>();
+
+const forecastPeriods = computed(() => {
+    if (!props.weather) return [];
+    return props.weather.properties.periods.slice(1);
+});
+
+function isSameDay(d1: string, d2: string) {
+    return moment(d1).isSame(d2, 'day');
+}
 
 function getIcon(forecast: string) {
     const f = forecast.toLowerCase();
