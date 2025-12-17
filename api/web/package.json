@@ -42,6 +42,7 @@
         "dropzone": "^6.0.0-beta.2",
         "floating-vue": "^2.0.0-beta.17",
         "geo-coordinates-parser": "^1.7.4",
+        "geomagnetism": "^0.2.0",
         "hls.js": "^1.6.5",
         "imask": "^6.0.0",
         "jsonata": "^2.0.4",
