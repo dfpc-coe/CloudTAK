@@ -24,14 +24,20 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
 
     const mockPool = mockAgent.get('http://localhost:5001');
 
+    const expectedNames = new Set(['Base-FAB.kmz', 'Mapa Base FAB.kmz']);
+
     for (let i = 0; i < 2; i++) {
         mockPool.intercept({
             path: /profile\/asset/,
             method: 'POST'
         }).reply((req) => {
             const body = JSON.parse(req.body) as {
-                id: string
+                id: string,
+                name: string
             };
+
+            t.ok(expectedNames.has(body.name), `Name ${body.name} should be in expected list`);
+            expectedNames.delete(body.name);
 
             id = body.id;
 
@@ -203,7 +209,7 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
 
         const validator = ExternalOperations.pop();
         if (!validator) throw new Error(`Unexpected command: ${command.constructor.name}`);
-
+        
         return validator(command);
     });
 
