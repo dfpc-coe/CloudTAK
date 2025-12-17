@@ -1,5 +1,6 @@
 import { Type, Static } from '@sinclair/typebox'
 import SunCalc from 'suncalc'
+import geomagnetism from 'geomagnetism';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -30,6 +31,10 @@ export default async function router(schema: Schema, config: Config) {
             nightEnd: Type.String({ description: 'night ends (morning astronomical twilight starts)' }),
             nauticalDawn: Type.String({ description: 'nautical dawn (morning nautical twilight starts)' }),
             dawn: Type.String({ description: 'dawn (morning nautical twilight ends, morning civil twilight starts)' }),
+        }),
+        magnetic: Type.Object({
+            declination: Type.Number(),
+            inclination: Type.Number()
         }),
         weather: Type.Union([FetchHourly, Type.Null()]),
         reverse: Type.Union([FetchReverse, Type.Null()]),
@@ -85,6 +90,7 @@ export default async function router(schema: Schema, config: Config) {
             const elevationUnit = await config.models.Profile.from(user.email).then(p => p.display_elevation).catch(() => 'feet');
 
             const sun = SunCalc.getTimes(new Date(), req.params.latitude, req.params.longitude, req.query.altitude);
+            const magnetic = geomagnetism.model().point([req.params.latitude, req.params.longitude]);
 
             const response: Static<typeof ReverseResponse> = {
                 sun: {
@@ -102,6 +108,10 @@ export default async function router(schema: Schema, config: Config) {
                     nightEnd: sun.nightEnd.toISOString(),
                     nauticalDawn: sun.nauticalDawn.toISOString(),
                     dawn: sun.dawn.toISOString(),
+                },
+                magnetic: {
+                    declination: magnetic.decl,
+                    inclination: magnetic.incl
                 },
                 weather: null,
                 reverse: null,
@@ -135,6 +145,7 @@ export default async function router(schema: Schema, config: Config) {
             // Handle elevation from query parameter (from MapLibre terrain)
             const finalResponse = {
                 sun: response.sun,
+                magnetic: response.magnetic,
                 weather: response.weather,
                 reverse: response.reverse,
                 elevation: req.query.elevation !== undefined
