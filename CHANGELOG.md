@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.33.0 - 2025-12-16
+
+- :tada: Significant Revamp of the Query Endpoints
+
 ### v12.32.0 - 2025-12-16
 
 - :rocket: Initial Implementation of TAK Server Sharing
