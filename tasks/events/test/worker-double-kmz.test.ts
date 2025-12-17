@@ -6,6 +6,9 @@ import {
     S3Client,
     GetObjectCommand,
     PutObjectCommand,
+    CreateMultipartUploadCommand,
+    UploadPartCommand,
+    CompleteMultipartUploadCommand
 } from '@aws-sdk/client-s3';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
@@ -21,47 +24,74 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
 
     const mockPool = mockAgent.get('http://localhost:5001');
 
-    mockPool.intercept({
-        path: /profile\/asset/,
-        method: 'POST'
-    }).reply((req) => {
-        const body = JSON.parse(req.body) as {
-            id: string
-        };
+    for (let i = 0; i < 2; i++) {
+        mockPool.intercept({
+            path: /profile\/asset/,
+            method: 'POST'
+        }).reply((req) => {
+            const body = JSON.parse(req.body) as {
+                id: string
+            };
 
-        id = body.id;
+            id = body.id;
 
-        return {
-            statusCode: 200,
-            data: JSON.stringify({
-                id: body.id,
-                artifacts: []
-            })
-        };
-    });
-
-    mockPool.intercept({
-        path: /profile\/asset\//,
-        method: 'PATCH'
-    }).reply((req) => {
-        const body = JSON.parse(req.body) as {
-            artifacts: Array<{ ext: string }>
-        };
-
-        t.deepEquals(body, {
-            artifacts: [ { ext: '.pmtiles' } ]
+            return {
+                statusCode: 200,
+                data: JSON.stringify({
+                    id: body.id,
+                    artifacts: []
+                })
+            };
         });
 
-        return {
-            statusCode: 200,
-            data: JSON.stringify({
-                id: id,
-                artifacts: [{
-                    ext: '.pmtiles'
-                }]
-            })
-        };
-    });
+        mockPool.intercept({
+            path: /profile\/asset\//,
+            method: 'PATCH'
+        }).reply((req) => {
+            const body = JSON.parse(req.body) as {
+                artifacts: Array<{ ext: string }>
+            };
+
+            t.deepEquals(body, {
+                artifacts: [ { ext: '.geojsonld' } ]
+            });
+
+            return {
+                statusCode: 200,
+                data: JSON.stringify({
+                    id: id,
+                    artifacts: [{
+                        ext: '.geojsonld'
+                    }]
+                })
+            };
+        });
+
+        mockPool.intercept({
+            path: /profile\/asset\//,
+            method: 'PATCH'
+        }).reply((req) => {
+            const body = JSON.parse(req.body) as {
+                artifacts: Array<{ ext: string }>
+            };
+
+            t.deepEquals(body, {
+                artifacts: [ { ext: '.geojsonld' }, { ext: '.pmtiles' } ]
+            });
+
+            return {
+                statusCode: 200,
+                data: JSON.stringify({
+                    id: id,
+                    artifacts: [{
+                        ext: '.geojsonld'
+                    }, {
+                        ext: '.pmtiles'
+                    }]
+                })
+            };
+        });
+    }
 
     const ExternalOperations = [
             (command) => {
@@ -75,26 +105,106 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
                     Body: fs.createReadStream(new URL(`./fixtures/package/DP-KMZDouble.zip`, import.meta.url))
                 })
             },
+            // File 1
             (command) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    t.equals(command.input.Bucket, 'test-bucket');
+                    t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                    t.ok(command.input.Key.endsWith('.kmz'))
+                    return Promise.resolve({ UploadId: '123' });
+                }
                 t.ok(command instanceof PutObjectCommand);
                 t.equals(command.input.Bucket, 'test-bucket');
                 t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
                 t.ok(command.input.Key.endsWith('.kmz'))
 
-                return Promise.resolve({})
+                return Promise.resolve({ ETag: '"123"' })
             },
             (command) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    t.equals(command.input.Bucket, 'test-bucket');
+                    t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                    t.ok(command.input.Key.endsWith('.geojsonld'))
+                    return Promise.resolve({ UploadId: '123' });
+                }
+                t.ok(command instanceof PutObjectCommand);
+                t.equals(command.input.Bucket, 'test-bucket');
+                t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                t.ok(command.input.Key.endsWith('.geojsonld'))
+
+                return Promise.resolve({ ETag: '"123"' })
+            },
+            (command) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    t.equals(command.input.Bucket, 'test-bucket');
+                    t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                    t.ok(command.input.Key.endsWith('.pmtiles'))
+                    return Promise.resolve({ UploadId: '123' });
+                }
                 t.ok(command instanceof PutObjectCommand);
                 t.equals(command.input.Bucket, 'test-bucket');
                 t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
                 t.ok(command.input.Key.endsWith('.pmtiles'))
 
-                return Promise.resolve({})
+                return Promise.resolve({ ETag: '"123"' })
+            },
+            // File 2
+            (command) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    t.equals(command.input.Bucket, 'test-bucket');
+                    t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                    t.ok(command.input.Key.endsWith('.kmz'))
+                    return Promise.resolve({ UploadId: '123' });
+                }
+                t.ok(command instanceof PutObjectCommand);
+                t.equals(command.input.Bucket, 'test-bucket');
+                t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                t.ok(command.input.Key.endsWith('.kmz'))
+
+                return Promise.resolve({ ETag: '"123"' })
+            },
+            (command) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    t.equals(command.input.Bucket, 'test-bucket');
+                    t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                    t.ok(command.input.Key.endsWith('.geojsonld'))
+                    return Promise.resolve({ UploadId: '123' });
+                }
+                t.ok(command instanceof PutObjectCommand);
+                t.equals(command.input.Bucket, 'test-bucket');
+                t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                t.ok(command.input.Key.endsWith('.geojsonld'))
+
+                return Promise.resolve({ ETag: '"123"' })
+            },
+            (command) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    t.equals(command.input.Bucket, 'test-bucket');
+                    t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                    t.ok(command.input.Key.endsWith('.pmtiles'))
+                    return Promise.resolve({ UploadId: '123' });
+                }
+                t.ok(command instanceof PutObjectCommand);
+                t.equals(command.input.Bucket, 'test-bucket');
+                t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                t.ok(command.input.Key.endsWith('.pmtiles'))
+
+                return Promise.resolve({ ETag: '"123"' })
             },
     ].reverse();
 
-    Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
-        return ExternalOperations.pop()(command);
+    Sinon.stub(S3Client.prototype, 'send').callsFake(async (command) => {
+        if (command instanceof UploadPartCommand) {
+             return { ETag: '"123"' };
+        }
+        if (command instanceof CompleteMultipartUploadCommand) {
+             return { Location: '...' };
+        }
+
+        const validator = ExternalOperations.pop();
+        if (!validator) throw new Error(`Unexpected command: ${command.constructor.name}`);
+        
+        return validator(command);
     });
 
     const worker = new Worker({
