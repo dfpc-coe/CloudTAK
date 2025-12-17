@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.33.1 - 2025-12-17
+
+- :bug: Fix a bug where a DataPackage would fail to import due to mismatched extensions
+
 ### v12.33.0 - 2025-12-16
 
 - :tada: Significant Revamp of the Query Endpoints
