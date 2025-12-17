@@ -203,7 +203,7 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
 
         const validator = ExternalOperations.pop();
         if (!validator) throw new Error(`Unexpected command: ${command.constructor.name}`);
-        
+
         return validator(command);
     });
 
