@@ -1,31 +1,40 @@
 <template>
-    <div class='col-12 row g-0 hover'>
+    <div class='col-12 row g-0'>
         <div class='col-12'>
-            <label class='subheader mx-2'>ArcGIS Reverse Geocode</label>
+            <label class='subheader mx-2'>Location</label>
         </div>
         <div
             v-if='props.reverse'
-            class='col-12 d-flex py-2 px-2'
+            class='col-12 d-flex align-items-center py-2 px-2 rounded'
+            style='border: 1px solid var(--tblr-border-color);'
         >
             <IconMapPin
-                size='40'
+                size='32'
                 stroke='1'
             />
 
             <div class='mx-2'>
                 <div
-                    style='font-size: 30px;'
+                    class='h3 mb-0'
                     v-text='props.reverse.ShortLabel'
                 />
                 <div
-                    class='mx-1 my-1'
+                    class='text-muted small'
                     v-text='props.reverse.LongLabel.replace(new RegExp(`^.*${props.reverse.ShortLabel}, `), "")'
                 />
-                <div
-                    v-if='props.elevation'
-                    class='mx-1 my-1 text-muted'
-                    v-text='`Elevation: ${props.elevation}`'
-                />            
+            </div>
+            <div
+                v-if='props.elevation'
+                class='ms-auto text-end'
+            >
+                <div class='d-flex align-items-center text-muted'>
+                    <IconMountain
+                        size='16'
+                        stroke='1'
+                        class='me-1'
+                    />
+                    <span class='small'>{{ props.elevation }}m</span>
+                </div>
             </div>
         </div>
         <div
@@ -46,6 +55,7 @@
 import type { SearchReverse } from '../../../types.ts';
 import {
     IconMapPin,
+    IconMountain
 } from '@tabler/icons-vue';
 
 const props = defineProps<{
