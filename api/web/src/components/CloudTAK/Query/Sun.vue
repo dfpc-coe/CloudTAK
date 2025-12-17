@@ -1,9 +1,12 @@
 <template>
-    <div class='col-12 row g-0 hover'>
+    <div class='col-12 row g-0'>
         <div class='col-12'>
             <label class='subheader mx-2'>Sun Phase</label>
         </div>
-        <div class='col-12 px-2 py-2'>
+        <div
+            class='col-12 px-2 py-2 rounded'
+            style='border: 1px solid var(--tblr-border-color);'
+        >
             <div
                 v-for='event in timeline'
                 :key='event.time'
