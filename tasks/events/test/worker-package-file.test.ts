@@ -72,7 +72,7 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
                 });
 
                 return Promise.resolve({
-                    Body: fs.createReadStream(new URL(`./fixtures/package/FilePackaged.zip`, import.meta.url))
+                    Body: fs.createReadStream(new URL(`./fixtures/package/DP-TiffFile.zip`, import.meta.url))
                 })
             },
             (command) => {
