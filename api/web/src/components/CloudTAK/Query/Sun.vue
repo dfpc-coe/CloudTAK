@@ -7,40 +7,90 @@
             class='col-12 px-2 py-2 rounded'
             style='border: 1px solid var(--tblr-border-color);'
         >
-            <div
+            <template
                 v-for='event in timeline'
                 :key='event.time'
-                class='d-flex align-items-center mb-2'
             >
-                <template v-if='event.type === "now"'>
-                    <div class='w-100 d-flex align-items-center text-red'>
-                        <div class='flex-grow-1 border-top border-red' />
-                        <span class='mx-2 small font-weight-bold'>Current Time</span>
-                        <div class='flex-grow-1 border-top border-red' />
-                    </div>
-                </template>
-                <template v-else>
+                <div
+                    v-if='event.name === "Nadir"'
+                    class='d-flex align-items-center mb-2'
+                >
                     <div
                         class='text-muted small text-end'
                         style='width: 60px;'
-                        v-text='formatTime(event.time)'
-                    />
+                    >
+                        Prev Night
+                    </div>
                     <div class='mx-3 d-flex flex-column align-items-center'>
-                        <component
-                            :is='event.icon'
+                        <IconMoonStars
                             :size='24'
                             stroke='1'
-                            :class='event.color'
+                            class='text-muted'
                         />
                     </div>
                     <div>
-                        <div v-text='event.name' />
+                        <div v-text='prevMoon.phase' />
                         <div
                             class='small text-muted'
-                            v-text='fromNow(event.time)'
+                            v-text='prevMoon.illumination + "% Illuminated"'
                         />
                     </div>
-                </template>
+                </div>
+
+                <div class='d-flex align-items-center mb-2'>
+                    <template v-if='event.type === "now"'>
+                        <div class='w-100 d-flex align-items-center text-red'>
+                            <div class='flex-grow-1 border-top border-red' />
+                            <span class='mx-2 small font-weight-bold'>Current Time</span>
+                            <div class='flex-grow-1 border-top border-red' />
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div
+                            class='text-muted small text-end'
+                            style='width: 60px;'
+                            v-text='formatTime(event.time)'
+                        />
+                        <div class='mx-3 d-flex flex-column align-items-center'>
+                            <component
+                                :is='event.icon'
+                                :size='24'
+                                stroke='1'
+                                :class='event.color'
+                            />
+                        </div>
+                        <div>
+                            <div v-text='event.name' />
+                            <div
+                                class='small text-muted'
+                                v-text='fromNow(event.time)'
+                            />
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <div class='d-flex align-items-center border-top pt-2 mt-2'>
+                <div
+                    class='text-muted small text-end'
+                    style='width: 60px;'
+                >
+                    Moon
+                </div>
+                <div class='mx-3 d-flex flex-column align-items-center'>
+                    <IconMoonStars
+                        :size='24'
+                        stroke='1'
+                        class='text-muted'
+                    />
+                </div>
+                <div>
+                    <div v-text='moon.phase' />
+                    <div
+                        class='small text-muted'
+                        v-text='moon.illumination + "% Illuminated"'
+                    />
+                </div>
             </div>
         </div>
     </div>
@@ -86,6 +136,37 @@ const timeline = computed(() => {
         return new Date(a.time).getTime() - new Date(b.time).getTime();
     });
 });
+
+function getMoonPhase(date: Date) {
+    const cycles = 29.5305882;
+    const knownNewMoon = new Date('2000-01-06T18:14:00Z').getTime();
+    const diff = date.getTime() - knownNewMoon;
+    const days = diff / (1000 * 60 * 60 * 24);
+    const lunations = days / cycles;
+    const currentLunation = lunations - Math.floor(lunations);
+
+    const phase = currentLunation * 8;
+    const index = Math.round(phase) % 8;
+
+    const phases = [
+        'New Moon',
+        'Waxing Crescent',
+        'First Quarter',
+        'Waxing Gibbous',
+        'Full Moon',
+        'Waning Gibbous',
+        'Last Quarter',
+        'Waning Crescent'
+    ];
+
+    return {
+        phase: phases[index],
+        illumination: Math.round((1 - Math.cos(currentLunation * 2 * Math.PI)) / 2 * 100)
+    };
+}
+
+const moon = computed(() => getMoonPhase(new Date()));
+const prevMoon = computed(() => getMoonPhase(new Date(Date.now() - 86400000)));
 
 function formatTime(time: string) {
     return moment(time).format('HH:mm');
