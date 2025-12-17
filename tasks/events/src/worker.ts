@@ -201,8 +201,10 @@ export default class Worker extends EventEmitter {
             },
             body: JSON.stringify({
                 id,
-                name: this.msg.job.name,
-                path: '/', // TODO Use Data Package Prefix
+                // It is important that the ext of the name is the same as the uploaded file
+                name: local.name,
+                // TODO Use Data Package Prefix
+                path: '/',
             })
         });
 
