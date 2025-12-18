@@ -91,6 +91,7 @@ export const ProfileFile = pgTable('profile_files', {
     username: text().notNull().references(() => Profile.username),
     path: text().notNull().default('/'),
     name: text().notNull(),
+    iconset: text().references(() => Iconset.uid),
     size: integer().notNull(),
     artifacts: json().$type<Array<{
         ext: string;
@@ -184,6 +185,7 @@ export const Basemap = pgTable('basemaps', {
     title: text().notNull().default('callsign'), // Title of features within the layer
     url: text().notNull(),
     overlay: boolean().notNull().default(false),
+    iconset: text().references(() => Iconset.uid),
     username: text().references(() => Profile.username),
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
     tilesize: integer().notNull().default(256),
