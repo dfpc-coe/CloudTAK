@@ -1,7 +1,7 @@
 import path from 'node:path';
-import type { Message, LocalMessage } from '../types.ts';
+import type { Message, LocalMessage, Transform, ConvertResponse } from '../types.ts';
 
-export default class GeoJSON {
+export default class GeoJSON implements Transform {
     static register() {
         return {
             inputs: ['.geojsonld']
@@ -19,8 +19,11 @@ export default class GeoJSON {
         this.local = local;
     }
 
-    async convert() {
+    async convert(): Promise<ConvertResponse> {
         console.error('ok - converted to GeoJSON');
-        return path.resolve(this.local.tmpdir, this.local.name);
+        
+        return {
+            asset: path.resolve(this.local.tmpdir, this.local.name)
+        }
     }
 }
