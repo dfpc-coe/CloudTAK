@@ -981,6 +981,13 @@
       "when": 1765841295112,
       "tag": "0139_square_lionheart",
       "breakpoints": true
+    },
+    {
+      "idx": 140,
+      "version": "7",
+      "when": 1766094248027,
+      "tag": "0140_young_deathbird",
+      "breakpoints": true
     }
   ]
 }
