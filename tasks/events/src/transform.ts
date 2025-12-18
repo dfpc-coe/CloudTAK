@@ -122,6 +122,12 @@ export default class DataTransform {
 
         await pmuploader.done();
 
+        if (conversion.icons) {
+            console.error('ok - Creating Iconset');
+
+            await fetch(new URL(`/api/iconset`, this.msg.api), {
+        }
+
         artifacts.push({ ext: '.pmtiles' });
         const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
             method: 'PATCH',
