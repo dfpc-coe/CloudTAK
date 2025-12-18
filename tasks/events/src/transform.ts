@@ -6,7 +6,7 @@ import { Upload } from '@aws-sdk/lib-storage';
 import path from 'node:path';
 import cp from 'node:child_process';
 
-import Tippecanoe from './transforms/tippecanoe.ts';
+import Tippecanoe from './tippecanoe.ts';
 
 // Formats
 import KML from './transforms/kml.ts';
