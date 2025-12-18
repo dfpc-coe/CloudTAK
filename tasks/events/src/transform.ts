@@ -49,17 +49,17 @@ export default class DataTransform {
 
         const convert = new (formats.get(this.local.ext))(this.msg, this.local);
 
-        const asset = await convert.convert();
+        const conversion = await convert.convert();
 
         const artifacts: Array<{ ext: string }> = this.asset.artifacts.map(a => ({ ext: a.ext }));
 
-        if (path.parse(asset).ext === '.geojsonld') {
+        if (path.parse(conversion.asset).ext === '.geojsonld') {
             const geouploader = new Upload({
                 client: s3,
                 params: {
                     Bucket: this.msg.bucket,
                     Key: `profile/${this.msg.job.username}/${this.asset.id}.geojsonld`,
-                    Body: fs.createReadStream(asset)
+                    Body: fs.createReadStream(conversion.asset)
                 }
             });
             await geouploader.done();
@@ -82,10 +82,10 @@ export default class DataTransform {
 
             const tp = new Tippecanoe();
 
-            console.log(`ok - tiling ${asset}`);
+            console.log(`ok - tiling ${conversion.asset}`);
             await tp.tile(
-                fs.createReadStream(asset),
-                path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles'), {
+                fs.createReadStream(conversion.asset),
+                path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles'), {
                     std: true,
                     quiet: false,
                     name: this.msg.job.name,
@@ -104,11 +104,11 @@ export default class DataTransform {
                 }
             );
         } else {
-            console.log(`ok - converting ${asset}`);
-            const pmout = cp.execFileSync('pmtiles', ['convert', asset, path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles')]);
+            console.log(`ok - converting ${conversion.asset}`);
+            const pmout = cp.execFileSync('pmtiles', ['convert', conversion.asset, path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')]);
             console.log(String(pmout));
 
-            console.log(`ok - converted: ${path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles')}`);
+            console.log(`ok - converted: ${path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')}`);
         }
 
         const pmuploader = new Upload({
@@ -116,7 +116,7 @@ export default class DataTransform {
             params: {
                 Bucket: this.msg.bucket,
                 Key: `profile/${this.msg.job.username}/${this.asset.id}.pmtiles`,
-                Body: fs.createReadStream(path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles'))
+                Body: fs.createReadStream(path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles'))
             }
         });
 
