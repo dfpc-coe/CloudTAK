@@ -118,6 +118,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const iconset = await config.models.Iconset.generate({
                 ...req.body,
+                username_internal: req.body.internal,
                 username
             });
 
