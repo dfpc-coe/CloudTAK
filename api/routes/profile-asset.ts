@@ -87,6 +87,15 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.ProfileFile.delete(req.params.asset);
 
+            if (file.iconset) {
+                const iconset = await config.models.Iconset.from(file.iconset);
+
+                if (iconset.username && iconset.username === user.email) {
+                    await config.models.Icon.delete(sql`iconset = ${file.iconset}`);
+                    await config.models.Iconset.delete(String(file.iconset));
+                }
+            }
+
             await S3.del(`profile/${user.email}/${req.params.asset}`, {
                 recurse: true
             });
@@ -112,6 +121,7 @@ export default async function router(schema: Schema, config: Config) {
             path: Type.String({
                 default: '/'
             }),
+            iconset: Type.Optional(Type.String()),
             artifacts: Type.Array(Type.Object({
                 ext: Type.String()
             }), {
@@ -131,6 +141,14 @@ export default async function router(schema: Schema, config: Config) {
                     ext: artifact.ext,
                     size: (await S3.head(`profile/${user.email}/${req.body.id}${artifact.ext}`)).ContentLength || 0
                 });
+            }
+
+            if (req.body.iconset) {
+                const iconset = await config.models.Iconset.from(req.body.iconset);
+
+                if (iconset.username !== user.email) {
+                    throw new Err(403, null, 'You do not have permission to associate this iconset');
+                }
             }
 
             const file = await config.models.ProfileFile.generate({
