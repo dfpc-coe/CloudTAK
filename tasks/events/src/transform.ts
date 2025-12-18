@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import jwt from 'jsonwebtoken';
+import { randomUUID } from 'node:crypto';
 import type { Message, LocalMessage, Asset } from './types.ts';
 import s3client from './s3.ts'
 import { Upload } from '@aws-sdk/lib-storage';
@@ -125,7 +126,53 @@ export default class DataTransform {
         if (conversion.icons) {
             console.error('ok - Creating Iconset');
 
-            await fetch(new URL(`/api/iconset`, this.msg.api), {
+            const iconset = randomUUID();
+
+            const iconsetRes = await fetch(new URL(`/api/iconset`, this.msg.api), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                },
+                body: JSON.stringify({
+                    uid: iconset,
+                    version: 1,
+                    name: `${this.msg.job.name} Icons`,
+                    internal: true,
+                    scope: 'user'
+
+                })
+            })
+
+            if (!iconsetRes.ok) {
+                console.error(`err - Failed to create iconset: ${await iconsetRes.text()}`);
+            } else {
+                for (const icon of conversion.icons) {
+                    console.error(`ok - Uploading Icon: ${icon.name}`);
+
+                    const url = new URL(`/api/iconset/${iconset}/icon`, this.msg.api);
+                    url.searchParams.append('regen', 'false');
+
+                    await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                        },
+                        body: JSON.stringify({
+                            name: icon.name,
+                            data: icon.data.toString('base64')
+                        })
+                    })
+                }
+
+                await fetch(new URL(`/api/iconset/${iconset}/regen`, this.msg.api), {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                    }
+                });
+            }
         }
 
         artifacts.push({ ext: '.pmtiles' });
