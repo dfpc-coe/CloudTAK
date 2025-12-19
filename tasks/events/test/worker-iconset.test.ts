@@ -75,6 +75,14 @@ test(`Worker DataPackage Import: Iconset`, async (t) => {
             },
     ].reverse();
 
+    const logStub = Sinon.stub(console, 'log');
+    logStub.callThrough();
+    logStub.withArgs(Sinon.match(/is not a Basemap/)).returns();
+
+    const warnStub = Sinon.stub(console, 'warn');
+    warnStub.callThrough();
+    warnStub.withArgs(Sinon.match(/must have required property 'customMapSource'/)).returns();
+
     Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
         return ExternalOperations.pop()(command);
     });
