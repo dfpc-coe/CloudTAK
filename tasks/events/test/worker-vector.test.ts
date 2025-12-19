@@ -80,6 +80,28 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
             };
         });
 
+        mockPool.intercept({
+            path: '/api/iconset',
+            method: 'POST'
+        }).reply(() => {
+            t.pass('Creating Iconset');
+            return {
+                statusCode: 200,
+                data: JSON.stringify({})
+            };
+        }).persist();
+
+        mockPool.intercept({
+            path: /\/api\/iconset\/.*\/regen/,
+            method: 'POST'
+        }).reply(() => {
+            t.pass('Regenerating Iconset');
+            return {
+                statusCode: 200,
+                data: JSON.stringify({})
+            };
+        }).persist();
+
         const ExternalOperations = [
                 (command) => {
                     t.ok(command instanceof GetObjectCommand, 'S3.GetObjectCommand Call');
@@ -145,6 +167,10 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
 
         worker.on('error', (err) => {
             t.error(err, 'No Error');
+            Sinon.restore();
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+            t.end();
         });
 
         worker.on('success', () => {

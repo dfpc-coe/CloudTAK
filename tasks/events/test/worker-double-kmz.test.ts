@@ -24,6 +24,39 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
 
     const mockPool = mockAgent.get('http://localhost:5001');
 
+    mockPool.intercept({
+        path: '/api/iconset',
+        method: 'POST'
+    }).reply(() => {
+        t.pass('Creating Iconset');
+        return {
+            statusCode: 200,
+            data: JSON.stringify({})
+        };
+    }).persist();
+
+    mockPool.intercept({
+        path: /\/api\/iconset\/.*\/icon/,
+        method: 'POST'
+    }).reply(() => {
+        t.pass('Uploading Icon');
+        return {
+            statusCode: 200,
+            data: JSON.stringify({})
+        };
+    }).persist();
+
+    mockPool.intercept({
+        path: /\/api\/iconset\/.*\/regen/,
+        method: 'POST'
+    }).reply(() => {
+        t.pass('Regenerating Iconset');
+        return {
+            statusCode: 200,
+            data: JSON.stringify({})
+        };
+    }).persist();
+
     const expectedNames = new Set(['Base-FAB.kmz', 'Mapa Base FAB.kmz']);
 
     for (let i = 0; i < 2; i++) {
