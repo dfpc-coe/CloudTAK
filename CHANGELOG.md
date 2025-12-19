@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.33.2 - 2025-12-19
+
+- :rocket: Add a cleanup section to remove danging Docker Images after an update
+
 ### v12.33.1 - 2025-12-17
 
 - :bug: Fix a bug where a DataPackage would fail to import due to mismatched extensions
