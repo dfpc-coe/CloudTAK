@@ -160,6 +160,16 @@ elif [[ "$SUBCOMMAND" == "start" ]]; then
     docker compose up -d api events tiles media
 elif [[ "$SUBCOMMAND" == "stop" ]]; then
     docker compose down
+elif [[ "$SUBCOMMAND" == "clean" ]]; then
+    if ! command -v jq &> /dev/null; then
+        echo "jq could not be found, please install jq first."
+        echo "On Ubuntu: sudo apt-get install jq"
+        exit 1
+    fi
+
+    PROJECT_NAME=$(docker compose config --format json | jq -r .name)
+    echo "Cleaning up unused Docker images for project: $PROJECT_NAME..."
+    docker image prune --filter label=com.docker.compose.project=$PROJECT_NAME
 elif [[ "$SUBCOMMAND" == "update" ]]; then
     if ! command -v git &> /dev/null; then
         echo "git could not be found, please install git first."
@@ -184,7 +194,12 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
     docker compose build events tiles media
 
     $0 start
+
+    read -p "Cleanup unused docker images? (y/n): " CLEAN_CHOICE
+    if [[ "$CLEAN_CHOICE" == "y" || "$CLEAN_CHOICE" == "Y" ]]; then
+        $0 clean
+    fi
 else
-    echo "Usage: $0 install|start|update|stop|backup|restore"
+    echo "Usage: $0 install|start|update|stop|backup|restore|clean"
     exit 0
 fi
