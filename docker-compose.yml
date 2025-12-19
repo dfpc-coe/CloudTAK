@@ -79,6 +79,8 @@ services:
             - POSTGRES_DB=gis
             - POSTGRES_USER=docker
             - POSTGRES_PASSWORD=docker
+        volumes:
+            - .docker-postgis:/var/lib/postgresql/data
 
     store:
         image: minio/minio:RELEASE.2024-08-17T01-24-54Z
