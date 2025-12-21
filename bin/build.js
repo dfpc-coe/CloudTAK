@@ -23,7 +23,7 @@ if (!process.argv[2]) {
 
     await cloudtak_api();
 
-    for (const dir of await fs.readdir(new URL('./tasks/', import.meta.url))) {
+    for (const dir of await fs.readdir(new URL('../tasks/', import.meta.url))) {
         await cloudtak_task(dir);
     }
 } else {
@@ -58,8 +58,8 @@ function cloudtak_api() {
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
             docker compose build api \
-            && docker tag cloudtak-api:latest "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-etl:$\{GITSHA\}" \
-            && docker push "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-etl:$\{GITSHA\}"
+            && docker tag cloudtak-api:latest "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{GITSHA\}" \
+            && docker push "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{GITSHA\}"
         `, (err) => {
             if (err) return reject(err);
             return resolve();
