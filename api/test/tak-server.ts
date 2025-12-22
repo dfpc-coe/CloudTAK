@@ -58,7 +58,7 @@ export default class MockTAKServer {
             this.mockWebtakDefaultResponses();
         }
 
-        CP.execSync(`openssl req -x509 -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -keyout ${this.keys.key} -out ${this.keys.cert}`);
+        CP.execSync(`openssl req -x509 -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -keyout ${this.keys.key} -out ${this.keys.cert} 2> /dev/null`);
 
         this.streaming = tls.createServer({
             cert: fs.readFileSync(this.keys.cert),
