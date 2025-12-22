@@ -247,7 +247,7 @@ export default class Flight {
 
             Object.assign(this.config, custom);
 
-            this.config.server = await this.config.models.Server.generate({
+            this.config.server = await this.config.models.Server.commit(this.config.server.id, {
                 name: 'Test Runner',
                 url: 'ssl://localhost:8089',
                 auth: {
@@ -341,7 +341,7 @@ export default class Flight {
             }, true);
 
             // Refresh config to pick up new server details
-            this.config!.server = await this.config!.models.Server.from(1);
+            this.config!.server = await this.config!.models.Server.from(this.config!.server.id);
 
             t.end();
         })
