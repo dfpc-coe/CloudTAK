@@ -191,7 +191,7 @@ export default class MockTAKServer {
                 const csr = crypto.randomUUID();
                 fs.writeFileSync(`/tmp/${csr}.csr`, String(await stream2buffer(request)));
 
-                CP.execSync(`openssl x509 -req -in /tmp/${csr}.csr -CA ${this.keys.cert} -CAkey ${this.keys.key} -CAcreateserial -out /tmp/${csr}.pem -days 365 -sha256`)
+                CP.execSync(`openssl x509 -req -in /tmp/${csr}.csr -CA ${this.keys.cert} -CAkey ${this.keys.key} -CAcreateserial -out /tmp/${csr}.pem -days 365 -sha256 2> /dev/null`)
 
                 const signedCertArr = String(fs.readFileSync(`/tmp/${csr}.pem`))
                     .split('\n')
