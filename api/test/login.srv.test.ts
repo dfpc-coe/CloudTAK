@@ -5,6 +5,7 @@ const flight = new Flight();
 
 flight.init();
 flight.takeoff();
+flight.user();
 
 test('POST: api/login', async (t) => {
     try {

@@ -81,7 +81,7 @@ test('GET: api/marti/package - impersonate user', async (t) => {
 
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
-                    resultCount: 2,
+                    resultCount: 1,
                     results: [{
                         UID: 'uid1',
                         Name: 'Pkg1',
@@ -91,15 +91,6 @@ test('GET: api/marti/package - impersonate user', async (t) => {
                         EXPIRATION: new Date().toISOString(),
                         Size: 123,
                         PrimaryKey: 'pk1'
-                    }, {
-                        UID: 'uid2',
-                        Name: 'Pkg2',
-                        Hash: 'hash2',
-                        SubmissionUser: 'user2',
-                        SubmissionDateTime: new Date().toISOString(),
-                        EXPIRATION: new Date().toISOString(),
-                        Size: 456,
-                        PrimaryKey: 'pk2'
                     }]
                 }));
                 response.end();
@@ -118,7 +109,8 @@ test('GET: api/marti/package - impersonate user', async (t) => {
             }
         }, true);
 
-        t.equals(res.body.items.length, 2);
+        t.equals(res.body.items.length, 1);
+        t.equals(res.body.items[0].username, 'user1');
     } catch (err) {
         t.error(err, 'no error');
     }
