@@ -72,7 +72,6 @@
 import { ref, onMounted, watch } from 'vue';
 import { server, std, stdurl } from '../../../std.ts';
 import type { PackageList } from '../../../types.ts';
-import { IconDownload } from '@tabler/icons-vue';
 import {
     TablerRefreshButton,
     TablerLoading,
@@ -83,7 +82,6 @@ import {
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import {
-    IconSearch,
     IconDownload
 } from '@tabler/icons-vue';
 
