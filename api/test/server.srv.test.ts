@@ -8,6 +8,21 @@ flight.takeoff();
 flight.user();
 flight.user({ admin: false });
 
+test('Reset Server to Unconfigured', async (t) => {
+    try {
+        flight.config!.server = await flight.config!.models.Server.commit(1, {
+            name: 'Default Server',
+            url: '',
+            api: '',
+            webtak: '',
+            auth: {}
+        });
+    } catch (err) {
+        t.error(err);
+    }
+    t.end();
+});
+
 test('GET: api/server - Unconfigured - Admin', async (t) => {
     try {
         const res = await flight.fetch('/api/server', {
