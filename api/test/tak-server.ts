@@ -202,6 +202,7 @@ export default class MockTAKServer {
     async close(): Promise<void> {
         await Promise.all([
             new Promise<void>((resolve) => {
+                this.streaming.closeAllConnections();
                 this.streaming.close(() => {
                     return resolve();
                 });
@@ -213,11 +214,13 @@ export default class MockTAKServer {
                 this.sockets.clear();
             }),
             new Promise<void>((resolve) => {
+                this.webtak.closeAllConnections();
                 this.webtak.close(() => {
                     return resolve();
                 });
             }),
             new Promise<void>((resolve) => {
+                this.marti.closeAllConnections();
                 this.marti.close(() => {
                     return resolve();
                 });

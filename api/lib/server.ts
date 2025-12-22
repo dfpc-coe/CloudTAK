@@ -20,6 +20,7 @@ export default class ServerManager {
     async close() {
         await Promise.allSettled([
             new Promise((resolve) => {
+                this.server.closeAllConnections();
                 this.server.close(resolve);
             }),
             new Promise((resolve) => {
