@@ -14,7 +14,6 @@ test('GET: api/marti/package - impersonate', async (t) => {
             if (!request.method || !request.url) {
                 return false;
             } else if (request.method === 'GET' && request.url === '/Marti/sync/search') {
-                // Expecting NO tool=public
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     resultCount: 2,
@@ -71,7 +70,6 @@ test('GET: api/marti/package - impersonate user', async (t) => {
             if (!request.method || !request.url) {
                 return false;
             } else if (request.method === 'GET' && request.url === '/Marti/sync/search') {
-                // Expecting NO tool=public
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     resultCount: 2,
