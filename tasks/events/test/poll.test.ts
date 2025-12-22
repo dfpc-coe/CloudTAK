@@ -1,9 +1,10 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import type { ImportList } from '../src/types.js';
 import WorkerPool from '../index.js';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
-test('Ensure Poll Triggers Job', async (t) => {
+test('Ensure Poll Triggers Job', async () => {
     const mockAgent = new MockAgent();
     const originalDispatcher = getGlobalDispatcher();
 
@@ -73,7 +74,7 @@ test('Ensure Poll Triggers Job', async (t) => {
 
     return new Promise((resolve) => {
         pool.on('job', async (job) => {
-            t.deepEquals(job, {
+            assert.deepEqual(job, {
                 id: 'ba58a298-a3fe-46b4-a29a-9dd33fbb2139',
                 created: '2025-08-25T18:08:21.563Z',
                 updated: '2025-08-25T18:08:21.563Z',

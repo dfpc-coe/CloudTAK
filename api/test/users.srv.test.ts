@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -9,7 +10,7 @@ flight.user();
 
 const time = new Date('2025-03-04T22:54:15.447Z').toISOString()
 
-test('GET: api/user', async (t) => {
+test('GET: api/user', async () => {
     try {
         const res = await flight.fetch('/api/user', {
             method: 'GET',
@@ -28,7 +29,7 @@ test('GET: api/user', async (t) => {
             i.updated = time;
         })
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
              total: 1,
              items: [{
                  active: false,
@@ -57,13 +58,11 @@ test('GET: api/user', async (t) => {
              }]
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PATCH: api/user/admin@example.com', async (t) => {
+test('PATCH: api/user/admin@example.com', async () => {
     try {
         const res = await flight.fetch('/api/user/admin@example.com', {
             method: 'PATCH',
@@ -79,7 +78,7 @@ test('PATCH: api/user/admin@example.com', async (t) => {
         res.body.created = time;
         res.body.updated = time;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
              active: false,
              username: 'admin@example.com',
              last_login: time,
@@ -105,13 +104,11 @@ test('PATCH: api/user/admin@example.com', async (t) => {
              agency_admin: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/user/admin@example.com', async (t) => {
+test('GET: api/user/admin@example.com', async () => {
     try {
         const res = await flight.fetch('/api/user/admin@example.com', {
             method: 'GET',
@@ -124,7 +121,7 @@ test('GET: api/user/admin@example.com', async (t) => {
         res.body.created = time;
         res.body.updated = time;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
              active: false,
              username: 'admin@example.com',
              last_login: time,
@@ -150,10 +147,8 @@ test('GET: api/user/admin@example.com', async (t) => {
              agency_admin: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

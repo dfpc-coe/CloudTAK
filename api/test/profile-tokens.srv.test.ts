@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -9,7 +10,7 @@ flight.takeoff();
 flight.user({ username: 'first' });
 flight.user({ username: 'second' });
 
-test('GET: api/profile/token', async (t) => {
+test('GET: api/profile/token', async () => {
     try {
         const res = await flight.fetch('/api/profile/token', {
             method: 'GET',
@@ -18,18 +19,16 @@ test('GET: api/profile/token', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('POST: api/profile/token', async (t) => {
+test('POST: api/profile/token', async () => {
     try {
         const res = await flight.fetch('/api/profile/token', {
             method: 'POST',
@@ -42,16 +41,16 @@ test('POST: api/profile/token', async (t) => {
         }, true);
 
         const token = res.body.token;
-        t.ok(res.body.token);
+        assert.ok(res.body.token);
         delete res.body.token;
 
-        t.ok(res.body.created);
+        assert.ok(res.body.created);
         delete res.body.created;
 
-        t.ok(res.body.updated);
+        assert.ok(res.body.updated);
         delete res.body.updated;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             username: 'first@example.com',
             name: 'Test Token'
@@ -65,17 +64,16 @@ test('POST: api/profile/token', async (t) => {
             },
         }, true);
 
-        t.deepEquals(features.body, {
+        assert.deepEqual(features.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-    t.end();
 });
 
-test('GET: api/profile/token - Ensure ACL is respected', async (t) => {
+test('GET: api/profile/token - Ensure ACL is respected', async () => {
     try {
         const res = await flight.fetch('/api/profile/token', {
             method: 'GET',
@@ -84,18 +82,16 @@ test('GET: api/profile/token - Ensure ACL is respected', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/profile/token', async (t) => {
+test('GET: api/profile/token', async () => {
     try {
         const res = await flight.fetch('/api/profile/token', {
             method: 'GET',
@@ -104,13 +100,13 @@ test('GET: api/profile/token', async (t) => {
             }
         }, true);
 
-        t.ok(res.body.items[0].created);
+        assert.ok(res.body.items[0].created);
         delete res.body.items[0].created;
 
-        t.ok(res.body.items[0].updated);
+        assert.ok(res.body.items[0].updated);
         delete res.body.items[0].updated;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 1,
             items: [{
                 id: 1,
@@ -119,13 +115,11 @@ test('GET: api/profile/token', async (t) => {
             }]
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PATCH: api/profile/token/1 - Ensure ACL is respected', async (t) => {
+test('PATCH: api/profile/token/1 - Ensure ACL is respected', async () => {
     try {
         const res = await flight.fetch('/api/profile/token/1', {
             method: 'PATCH',
@@ -137,20 +131,18 @@ test('PATCH: api/profile/token/1 - Ensure ACL is respected', async (t) => {
             }
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 403,
             message: 'You can only modify your own tokens',
             messages: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 
-test('PATCH: api/profile/token/1', async (t) => {
+test('PATCH: api/profile/token/1', async () => {
     try {
         const res = await flight.fetch('/api/profile/token/1', {
             method: 'PATCH',
@@ -162,18 +154,16 @@ test('PATCH: api/profile/token/1', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 200,
             message: 'Token Updated'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('DELETE: api/profile/token/1 - Ensure ACL is respected', async (t) => {
+test('DELETE: api/profile/token/1 - Ensure ACL is respected', async () => {
     try {
         const res = await flight.fetch('/api/profile/token/1', {
             method: 'DELETE',
@@ -182,19 +172,17 @@ test('DELETE: api/profile/token/1 - Ensure ACL is respected', async (t) => {
             },
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 403,
             message: 'You can only modify your own tokens',
             messages: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('DELETE: api/profile/token/1', async (t) => {
+test('DELETE: api/profile/token/1', async () => {
     try {
         const res = await flight.fetch('/api/profile/token/1', {
             method: 'DELETE',
@@ -203,15 +191,13 @@ test('DELETE: api/profile/token/1', async (t) => {
             },
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 200,
             message: 'Token Deleted'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();
