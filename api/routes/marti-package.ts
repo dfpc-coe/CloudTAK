@@ -384,11 +384,14 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiPackages',
         description: 'Helper API to list packages',
         query: Type.Object({
-            filter: Type.Optional(Type.String({
+            filter: Type.String({
                 description: 'Filter packages by name',
                 default: ''
-            })),
-            impersonate: Type.Optional(Type.Union([Type.Boolean(), Type.String()]))
+            }),
+            impersonate: Type.Optional(Type.Union([
+                Type.Boolean({ description: 'List all of the given resource, regardless of ACL' }),
+                Type.String({ description: 'Filter the given resource by a given username' }),
+            ])),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -424,6 +427,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.query.impersonate) {
                 await Auth.as_user(config, req, { admin: true });
+                auth = config.serverCert();
 
                 if (typeof req.query.impersonate === 'string' && req.query.impersonate !== 'true') {
                     const profile = await config.models.Profile.from(req.query.impersonate);
@@ -580,6 +584,9 @@ export default async function router(schema: Schema, config: Config) {
             const pkg = pkgs.results[pkgs.results.length - 1];
 
             if (req.query.impersonate) {
+                await Auth.as_user(config, req, { admin: true });
+            } else if (pkg.SubmissionUser !== user.email) {
+                throw new Err(403, null, 'Insufficient Acces to delete Package');
                 if (user.access !== AuthUserAccess.ADMIN) {
                     throw new Err(403, null, 'Insufficient Access to delete Package');
                 }

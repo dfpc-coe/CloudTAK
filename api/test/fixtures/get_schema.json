@@ -1149,6 +1149,11 @@
         "query": false,
         "res": true
     },
+    "GET /server/video": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /search": {
         "body": false,
         "query": false,
@@ -1170,11 +1175,6 @@
         "res": true
     },
     "GET /search/suggest": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /server/video": {
         "body": false,
         "query": true,
         "res": true
