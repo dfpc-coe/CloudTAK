@@ -151,33 +151,45 @@ export default class MockTAKServer {
     }
 
     async start(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            let started = 0;
-            const check = () => {
-                if (++started === 3) resolve();
+        await Promise.all([
+            this.listen(this.streaming, 8089, 'TCP streaming'),
+            this.listen(this.marti, 8443, 'MARTI API'),
+            this.listen(this.webtak, 8444, 'WEBTAK API')
+        ]);
+    }
+
+    async listen(server: any, port: number, name: string, retries = 5): Promise<void> {
+        for (let i = 0; i < retries; i++) {
+            try {
+                await new Promise<void>((resolve, reject) => {
+                    const onError = (e: any) => {
+                        server.removeListener('listening', onListening);
+                        reject(e);
+                    };
+                    const onListening = () => {
+                        server.removeListener('error', onError);
+                        console.log(`opened ${name} on`, server.address());
+                        resolve();
+                    };
+
+                    server.once('error', onError);
+                    server.once('listening', onListening);
+                    server.listen(port, '127.0.0.1');
+                });
+                return;
+            } catch (err: any) {
+                if (err.code === 'EADDRINUSE') {
+                    if (i < retries - 1) {
+                        console.log(`Port ${port} in use, retrying (${i + 1}/${retries})...`);
+                        await new Promise(r => setTimeout(r, 1000));
+                        try { server.close(); } catch (e) {}
+                        continue;
+                    }
+                }
+                throw err;
             }
-
-            this.streaming.once('error', reject);
-            this.streaming.listen(8089, '127.0.0.1', () => {
-                console.log('opened TCP streaming on', this.streaming.address());
-                this.streaming.removeListener('error', reject);
-                check();
-            });
-
-            this.marti.once('error', reject);
-            this.marti.listen(8443, '127.0.0.1', () => {
-                console.log('opened MARTI API on', this.marti.address());
-                this.marti.removeListener('error', reject);
-                check();
-            });
-
-            this.webtak.once('error', reject);
-            this.webtak.listen(8444, '127.0.0.1', () => {
-                console.log('opened WEBTAK API on', this.webtak.address());
-                this.webtak.removeListener('error', reject);
-                check();
-            });
-        });
+        }
+        throw new Error(`Failed to bind port ${port} after ${retries} retries`);
     }
 
     mockWebtakDefaultResponses(): void {
