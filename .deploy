@@ -12,9 +12,9 @@
     ],
     "artifacts": {
         "docker": [
-            "coe-ecr-etl:{{gitsha}}",
-            "coe-ecr-etl:pmtiles-{{gitsha}}",
-            "coe-ecr-etl:events-{{gitsha}}"
+            "tak-vpc-{{stack}}:{{gitsha}}",
+            "tak-vpc-{{stack}}:pmtiles-{{gitsha}}",
+            "tak-vpc-{{stack}}:events-{{gitsha}}"
         ]
     }
 }
