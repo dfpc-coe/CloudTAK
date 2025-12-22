@@ -18,7 +18,7 @@ export default class MockTAKServer {
     webtak: ReturnType<typeof http.createServer>;
     marti: ReturnType<typeof https.createServer>;
 
-    sockets: Set<tls.TLSSocket>
+    sockets: Set<tls.TLSSocket | import('net').Socket>
 
     defaultMartiResponses: boolean;
     defaultWebtakResponses: boolean;
@@ -68,15 +68,12 @@ export default class MockTAKServer {
             ca: fs.readFileSync(this.keys.cert)
         }, (socket) => {
             this.sockets.add(socket);
+            socket.on('close', () => this.sockets.delete(socket));
         });
 
         this.streaming.on('error', (e) => {
             console.error('Server Error', e);
         });
-
-        this.streaming.listen(8089, 'localhost', () => {
-            console.log('opened TCP streaming on', this.streaming.address())
-        })
 
         this.marti = https.createServer({
             cert: fs.readFileSync(this.keys.cert),
@@ -100,9 +97,10 @@ export default class MockTAKServer {
             }
         });
 
-        this.marti.listen(8443, 'localhost', () => {
-            console.log('opened MARTI API on', this.marti.address())
-        })
+        this.marti.on('secureConnection', (socket) => {
+            this.sockets.add(socket);
+            socket.on('close', () => this.sockets.delete(socket));
+        });
 
         this.webtak = http.createServer({}, async (request, response) => {
             console.log(`ok - Mock TAK (WebTAK) Request: ${request.method} ${request.url || ''}`);
@@ -120,9 +118,40 @@ export default class MockTAKServer {
             }
         });
 
-        this.webtak.listen(8444, 'localhost', () => {
-            console.log('opened WEBTAK API on', this.webtak.address())
-        })
+        this.webtak.on('connection', (socket) => {
+            this.sockets.add(socket);
+            socket.on('close', () => this.sockets.delete(socket));
+        });
+    }
+
+    async start(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            let started = 0;
+            const check = () => {
+                if (++started === 3) resolve();
+            }
+
+            this.streaming.once('error', reject);
+            this.streaming.listen(8089, 'localhost', () => {
+                console.log('opened TCP streaming on', this.streaming.address());
+                this.streaming.removeListener('error', reject);
+                check();
+            });
+
+            this.marti.once('error', reject);
+            this.marti.listen(8443, 'localhost', () => {
+                console.log('opened MARTI API on', this.marti.address());
+                this.marti.removeListener('error', reject);
+                check();
+            });
+
+            this.webtak.once('error', reject);
+            this.webtak.listen(8444, 'localhost', () => {
+                console.log('opened WEBTAK API on', this.webtak.address());
+                this.webtak.removeListener('error', reject);
+                check();
+            });
+        });
     }
 
     mockWebtakDefaultResponses(): void {
@@ -200,27 +229,26 @@ export default class MockTAKServer {
     }
 
     async close(): Promise<void> {
+        for (const socket of this.sockets.values()) {
+            socket.destroy();
+        }
+        this.sockets.clear();
+
         await Promise.all([
             new Promise<void>((resolve) => {
-                this.streaming.closeAllConnections();
+                if ('closeAllConnections' in this.streaming) this.streaming.closeAllConnections();
                 this.streaming.close(() => {
                     return resolve();
                 });
-
-                for (const socket of this.sockets.values()) {
-                    socket.destroy();
-                }
-
-                this.sockets.clear();
             }),
             new Promise<void>((resolve) => {
-                this.webtak.closeAllConnections();
+                if ('closeAllConnections' in this.webtak) this.webtak.closeAllConnections();
                 this.webtak.close(() => {
                     return resolve();
                 });
             }),
             new Promise<void>((resolve) => {
-                this.marti.closeAllConnections();
+                if ('closeAllConnections' in this.marti) this.marti.closeAllConnections();
                 this.marti.close(() => {
                     return resolve();
                 });

@@ -91,6 +91,7 @@ export default class Flight {
             }
 
             this._tak = new MockTAKServer();
+            await this._tak.start();
 
             process.env.ASSET_BUCKET = 'fake-asset-bucket';
 
@@ -338,6 +339,9 @@ export default class Flight {
                     }
                 }
             }, true);
+
+            // Refresh config to pick up new server details
+            this.config!.server = await this.config!.models.Server.from(1);
 
             t.end();
         })
