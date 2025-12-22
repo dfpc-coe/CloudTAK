@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -7,7 +8,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: api/profile', async (t) => {
+test('GET: api/profile', async () => {
     try {
         const res = await flight.fetch('/api/profile', {
             method: 'GET',
@@ -16,14 +17,14 @@ test('GET: api/profile', async (t) => {
             }
         }, true);
 
-        t.ok(res.body.last_login);
+        assert.ok(res.body.last_login);
         delete res.body.last_login;
-        t.ok(res.body.created);
+        assert.ok(res.body.created);
         delete res.body.created;
-        t.ok(res.body.updated);
+        assert.ok(res.body.updated);
         delete res.body.updated;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             active: false,
             username: 'admin@example.com',
             phone: '',
@@ -46,13 +47,11 @@ test('GET: api/profile', async (t) => {
             agency_admin: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PATCH: api/profile', async (t) => {
+test('PATCH: api/profile', async () => {
     try {
         const res = await flight.fetch('/api/profile', {
             method: 'PATCH',
@@ -64,14 +63,14 @@ test('PATCH: api/profile', async (t) => {
             }
         }, true);
 
-        t.ok(res.body.last_login);
+        assert.ok(res.body.last_login);
         delete res.body.last_login;
-        t.ok(res.body.created);
+        assert.ok(res.body.created);
         delete res.body.created;
-        t.ok(res.body.updated);
+        assert.ok(res.body.updated);
         delete res.body.updated;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             active: false,
             username: 'admin@example.com',
             phone: '',
@@ -94,10 +93,8 @@ test('PATCH: api/profile', async (t) => {
             agency_admin: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import busboy from 'busboy';
 import { FormData } from 'undici';
 import os from 'node:os';
@@ -16,7 +17,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: api/marti/package - empty', async (t) => {
+test('GET: api/marti/package - empty', async () => {
     try {
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
@@ -42,20 +43,18 @@ test('GET: api/marti/package - empty', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     flight.tak.reset();
-
-    t.end();
 });
 
-test('POST api/marti/package - create', async (t) => {
+test('POST api/marti/package - create', async () => {
     const outputPath = path.resolve(os.tmpdir(), randomUUID() + '.zip');
 
     try {
@@ -94,9 +93,9 @@ test('POST api/marti/package - create', async (t) => {
 
                 const dp = await DataPackage.parse(outputPath);
 
-                t.equals(dp.settings.name, 'SingleFeaturePackage');
-                t.equals(dp.contents.length, 1);
-                t.ok(dp.contents[0]._attributes.zipEntry.endsWith('.cot'));
+                assert.equal(dp.settings.name, 'SingleFeaturePackage');
+                assert.equal(dp.contents.length, 1);
+                assert.ok(dp.contents[0]._attributes.zipEntry.endsWith('.cot'));
 
                 await dp.destroy();
 
@@ -157,12 +156,10 @@ test('POST api/marti/package - create', async (t) => {
             body
         }, true);
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     flight.tak.reset();
-
-    t.end();
 });
 
 flight.landing();
