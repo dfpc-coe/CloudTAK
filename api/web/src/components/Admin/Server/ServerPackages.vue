@@ -82,6 +82,10 @@ import {
     TablerInput,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
+import {
+    IconSearch,
+    IconDownload
+} from '@tabler/icons-vue';
 
 const filter = ref('');
 const loading = ref(true);
@@ -136,10 +140,11 @@ async function deletePackage(pkg: PackageList["items"][0]) {
                     impersonate: true
                 }
             }
-        })
+        });
 
         await fetchList();
     } catch (err) {
+        loading.value = false;
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
