@@ -420,9 +420,8 @@ export default class Flight {
      */
     landing() {
         test('test server landing - api', async (t) => {
-            await this.tak.close();
-
-            await this.srv.close();
+            if (this.srv) await this.srv.close();
+            if (this.tak) await this.tak.close();
             t.end();
         });
     }
