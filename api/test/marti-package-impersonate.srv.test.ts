@@ -16,7 +16,7 @@ test('GET: api/marti/package - impersonate', async (t) => {
                 return false;
             } else if (request.method === 'GET' && request.url.startsWith('/Marti/sync/search')) {
                 response.setHeader('Content-Type', 'application/json');
-                response.write(JSON.stringify({
+                response.end(JSON.stringify({
                     resultCount: 2,
                     results: [{
                         UID: 'uid1',
@@ -38,7 +38,6 @@ test('GET: api/marti/package - impersonate', async (t) => {
                         PrimaryKey: 'pk2'
                     }]
                 }));
-                response.end();
 
                 return true;
             } else {
@@ -72,7 +71,7 @@ test('GET: api/marti/package - impersonate user', async (t) => {
                 return false;
             } else if (request.method === 'GET' && request.url.startsWith('/Marti/sync/search')) {
                 response.setHeader('Content-Type', 'application/json');
-                response.write(JSON.stringify({
+                response.end(JSON.stringify({
                     resultCount: 1,
                     results: [{
                         UID: 'uid1',
@@ -85,7 +84,6 @@ test('GET: api/marti/package - impersonate user', async (t) => {
                         PrimaryKey: 'pk1'
                     }]
                 }));
-                response.end();
 
                 return true;
             } else {

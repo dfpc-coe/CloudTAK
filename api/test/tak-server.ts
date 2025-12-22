@@ -84,16 +84,24 @@ export default class MockTAKServer {
         }, async (request, response) => {
             console.log(`ok - Mock TAK Request: ${request.method} ${request.url}`);
 
-            let handled = false;
-            for (const handler of this.mockMarti) {
-                if (await handler(request, response)) {
-                    handled = true;
-                    break;
+            try {
+                let handled = false;
+                for (const handler of this.mockMarti) {
+                    if (await handler(request, response)) {
+                        handled = true;
+                        break;
+                    }
                 }
-            }
 
-            if (!handled) {
-                throw new Error(`Unhandled TAK API Operation: ${request.method} ${request.url}`);
+                if (!handled) {
+                    throw new Error(`Unhandled TAK API Operation: ${request.method} ${request.url}`);
+                }
+            } catch (err) {
+                console.error(err);
+                if (!response.headersSent) {
+                    response.statusCode = 500;
+                    response.end();
+                }
             }
         });
 
@@ -105,16 +113,24 @@ export default class MockTAKServer {
         this.webtak = http.createServer({}, async (request, response) => {
             console.log(`ok - Mock TAK (WebTAK) Request: ${request.method} ${request.url || ''}`);
 
-            let handled = false;
-            for (const handler of this.mockWebtak) {
-                if (await handler(request, response)) {
-                    handled = true;
-                    break;
+            try {
+                let handled = false;
+                for (const handler of this.mockWebtak) {
+                    if (await handler(request, response)) {
+                        handled = true;
+                        break;
+                    }
                 }
-            }
 
-            if (!handled) {
-                throw new Error(`Unhandled TAK (WebTAK) API Operation: ${request.method} ${request.url}`);
+                if (!handled) {
+                    throw new Error(`Unhandled TAK (WebTAK) API Operation: ${request.method} ${request.url}`);
+                }
+            } catch (err) {
+                console.error(err);
+                if (!response.headersSent) {
+                    response.statusCode = 500;
+                    response.end();
+                }
             }
         });
 
