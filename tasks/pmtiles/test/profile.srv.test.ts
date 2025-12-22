@@ -27,7 +27,6 @@ test('Setup', async () => {
                 resolve();
             });
         });
-        // assert.pass('Server started');
     } catch (err) {
         assert.ifError(err);
     }
@@ -107,7 +106,6 @@ test('Teardown', async () => {
                 resolve();
             });
         });
-        // assert.pass('Server stopped');
     }
     process.exit(0);
 });
