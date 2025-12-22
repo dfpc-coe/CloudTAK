@@ -91,6 +91,7 @@ export default class Flight {
             }
 
             this._tak = new MockTAKServer();
+            await this._tak.start();
 
             process.env.ASSET_BUCKET = 'fake-asset-bucket';
 
@@ -246,11 +247,15 @@ export default class Flight {
 
             Object.assign(this.config, custom);
 
-            this.config.server.auth = {
-                cert: fs.readFileSync(this.tak.keys.cert, 'utf8'),
-                key: fs.readFileSync(this.tak.keys.key, 'utf8')
-            };
-            this.config.server.api = 'https://localhost:8443';
+            this.config.server = await this.config.models.Server.commit(this.config.server.id, {
+                name: 'Test Runner',
+                url: 'ssl://localhost:8089',
+                auth: {
+                    cert: String(fs.readFileSync(this.tak.keys.cert)),
+                    key: String(fs.readFileSync(this.tak.keys.key))
+                },
+                api: 'https://localhost:8443'
+            });
 
             this.srv = await api(this.config);
 
@@ -277,29 +282,31 @@ export default class Flight {
             CP.execSync(`
                 openssl req \
                     -newkey rsa:4096 \
-                    -keyout /tmp/cloudtak-test-${opts.username}.key \
-                    -out /tmp/cloudtak-test-${opts.username}.csr \
+                    -keyout /tmp/cloudtak-test-${username}.key \
+                    -out /tmp/cloudtak-test-${username}.csr \
                     -nodes \
-                    -subj "/CN=${opts.username}"
+                    -subj "/CN=${username}" \
+                    2> /dev/null
             `);
 
             CP.execSync(`
                openssl x509 \
                     -req \
-                    -in /tmp/cloudtak-test-${opts.username}.csr \
+                    -in /tmp/cloudtak-test-${username}.csr \
                     -CA ${this.tak.keys.cert} \
                     -CAkey ${this.tak.keys.key} \
-                    -out /tmp/cloudtak-test-${opts.username}.cert \
+                    -out /tmp/cloudtak-test-${username}.cert \
                     -set_serial 01 \
-                    -days 365
+                    -days 365 \
+                    2> /dev/null
             `);
 
            await profileControl.generate({
                 username: username + '@example.com',
                 system_admin: opts.admin,
                 auth: {
-                    key: String(fs.readFileSync(`/tmp/cloudtak-test-${opts.username}.key`)),
-                    cert: String(fs.readFileSync(`/tmp/cloudtak-test-${opts.username}.cert`))
+                    key: String(fs.readFileSync(`/tmp/cloudtak-test-${username}.key`)),
+                    cert: String(fs.readFileSync(`/tmp/cloudtak-test-${username}.cert`))
                 }
             });
 
@@ -335,6 +342,9 @@ export default class Flight {
                 }
             }, true);
 
+            // Refresh config to pick up new server details
+            this.config!.server = await this.config!.models.Server.from(this.config!.server.id);
+
             t.end();
         })
     }
@@ -347,7 +357,8 @@ export default class Flight {
                     -keyout /tmp/cloudtak-test-alice.key \
                     -out /tmp/cloudtak-test-alice.csr \
                     -nodes \
-                    -subj "/CN=Alice"
+                    -subj "/CN=Alice" \
+                    2> /dev/null
             `);
 
             CP.execSync(`
@@ -358,7 +369,8 @@ export default class Flight {
                     -CAkey ${this.tak.keys.key} \
                     -out /tmp/cloudtak-test-alice.cert \
                     -set_serial 01 \
-                    -days 365
+                    -days 365 \
+                    2> /dev/null
             `);
 
             const conn = await this.fetch('/api/connection', {
@@ -408,9 +420,8 @@ export default class Flight {
      */
     landing() {
         test('test server landing - api', async (t) => {
-            await this.tak.close();
-
-            await this.srv.close();
+            if (this.srv) await this.srv.close();
+            if (this.tak) await this.tak.close();
             t.end();
         });
     }
