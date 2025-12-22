@@ -282,19 +282,19 @@ export default class Flight {
             CP.execSync(`
                 openssl req \
                     -newkey rsa:4096 \
-                    -keyout /tmp/cloudtak-test-${opts.username}.key \
-                    -out /tmp/cloudtak-test-${opts.username}.csr \
+                    -keyout /tmp/cloudtak-test-${username}.key \
+                    -out /tmp/cloudtak-test-${username}.csr \
                     -nodes \
-                    -subj "/CN=${opts.username}"
+                    -subj "/CN=${username}"
             `);
 
             CP.execSync(`
                openssl x509 \
                     -req \
-                    -in /tmp/cloudtak-test-${opts.username}.csr \
+                    -in /tmp/cloudtak-test-${username}.csr \
                     -CA ${this.tak.keys.cert} \
                     -CAkey ${this.tak.keys.key} \
-                    -out /tmp/cloudtak-test-${opts.username}.cert \
+                    -out /tmp/cloudtak-test-${username}.cert \
                     -set_serial 01 \
                     -days 365
             `);
@@ -303,8 +303,8 @@ export default class Flight {
                 username: username + '@example.com',
                 system_admin: opts.admin,
                 auth: {
-                    key: String(fs.readFileSync(`/tmp/cloudtak-test-${opts.username}.key`)),
-                    cert: String(fs.readFileSync(`/tmp/cloudtak-test-${opts.username}.cert`))
+                    key: String(fs.readFileSync(`/tmp/cloudtak-test-${username}.key`)),
+                    cert: String(fs.readFileSync(`/tmp/cloudtak-test-${username}.cert`))
                 }
             });
 
