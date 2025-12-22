@@ -285,7 +285,8 @@ export default class Flight {
                     -keyout /tmp/cloudtak-test-${username}.key \
                     -out /tmp/cloudtak-test-${username}.csr \
                     -nodes \
-                    -subj "/CN=${username}"
+                    -subj "/CN=${username}" \
+                    2> /dev/null
             `);
 
             CP.execSync(`
@@ -296,7 +297,8 @@ export default class Flight {
                     -CAkey ${this.tak.keys.key} \
                     -out /tmp/cloudtak-test-${username}.cert \
                     -set_serial 01 \
-                    -days 365
+                    -days 365 \
+                    2> /dev/null
             `);
 
            await profileControl.generate({
@@ -355,7 +357,8 @@ export default class Flight {
                     -keyout /tmp/cloudtak-test-alice.key \
                     -out /tmp/cloudtak-test-alice.csr \
                     -nodes \
-                    -subj "/CN=Alice"
+                    -subj "/CN=Alice" \
+                    2> /dev/null
             `);
 
             CP.execSync(`
@@ -366,7 +369,8 @@ export default class Flight {
                     -CAkey ${this.tak.keys.key} \
                     -out /tmp/cloudtak-test-alice.cert \
                     -set_serial 01 \
-                    -days 365
+                    -days 365 \
+                    2> /dev/null
             `);
 
             const conn = await this.fetch('/api/connection', {
