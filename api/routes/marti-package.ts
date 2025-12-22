@@ -384,7 +384,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiPackages',
         description: 'Helper API to list packages',
         query: Type.Object({
-            filter: Type.String({
+            filter: Type.Optional(Type.String({
                 description: 'Filter packages by name',
                 default: ''
             }),
@@ -428,6 +428,13 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.impersonate) {
                 await Auth.as_user(config, req, { admin: true });
                 auth = config.serverCert();
+
+                if (typeof req.query.impersonate === 'string' && req.query.impersonate !== 'true') {
+                    const profile = await config.models.Profile.from(req.query.impersonate);
+                    auth = profile.auth;
+                } else {
+                    auth = config.serverCert();
+                }
             } else {
                 const user = await Auth.as_user(config, req);
                 auth = (await config.models.Profile.from(user.email)).auth;
@@ -548,7 +555,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         query: Type.Object({
             hash: Type.Optional(Type.String()),
-            impersonate: Type.Optional(Type.Boolean())
+            impersonate: Type.Optional(Type.Union([Type.Boolean(), Type.String()]))
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -580,6 +587,14 @@ export default async function router(schema: Schema, config: Config) {
                 await Auth.as_user(config, req, { admin: true });
             } else if (pkg.SubmissionUser !== user.email) {
                 throw new Err(403, null, 'Insufficient Acces to delete Package');
+                if (user.access !== AuthUserAccess.ADMIN) {
+                    throw new Err(403, null, 'Insufficient Access to delete Package');
+                }
+            } else if (
+                user.access !== AuthUserAccess.ADMIN
+                || pkg.SubmissionUser !== user.email
+            ) {
+                throw new Err(403, null, 'Insufficient Access to delete Package');
             }
 
             await api.Files.adminDelete(pkg.Hash);
