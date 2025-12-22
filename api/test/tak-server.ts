@@ -182,7 +182,11 @@ export default class MockTAKServer {
                     if (i < retries - 1) {
                         console.log(`Port ${port} in use, retrying (${i + 1}/${retries})...`);
                         await new Promise(r => setTimeout(r, 1000));
-                        try { server.close(); } catch (e) {}
+                        try {
+                            server.close();
+                        } catch (e) {
+                            console.error('Error closing server:', e);
+                        }
                         continue;
                     }
                 }
