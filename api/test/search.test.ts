@@ -96,7 +96,7 @@ test('AGOL - route method handles empty features', async () => {
         assert.equal(processedRoute.features.length, 0, 'Empty features array');
         assert.ok(geocodeInstance.tokenManager, 'AGOL instance has tokenManager');
     } catch {
-        // assert.pass('Expected error for empty route');
+        // Expected error for empty route
     }
 
     config.pg.end();
