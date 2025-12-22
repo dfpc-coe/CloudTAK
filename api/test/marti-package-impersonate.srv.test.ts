@@ -7,13 +7,14 @@ const flight = new Flight();
 flight.init();
 flight.takeoff();
 flight.user();
+flight.user({ username: 'user1', admin: false });
 
 test('GET: api/marti/package - impersonate', async (t) => {
     try {
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            } else if (request.method === 'GET' && request.url === '/Marti/sync/search') {
+            } else if (request.method === 'GET' && request.url.startsWith('/Marti/sync/search')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
                     resultCount: 2,
@@ -69,10 +70,10 @@ test('GET: api/marti/package - impersonate user', async (t) => {
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
-            } else if (request.method === 'GET' && request.url === '/Marti/sync/search') {
+            } else if (request.method === 'GET' && request.url.startsWith('/Marti/sync/search')) {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({
-                    resultCount: 2,
+                    resultCount: 1,
                     results: [{
                         UID: 'uid1',
                         Name: 'Pkg1',
@@ -82,15 +83,6 @@ test('GET: api/marti/package - impersonate user', async (t) => {
                         EXPIRATION: new Date().toISOString(),
                         Size: 123,
                         PrimaryKey: 'pk1'
-                    }, {
-                        UID: 'uid2',
-                        Name: 'Pkg2',
-                        Hash: 'hash2',
-                        SubmissionUser: 'user2',
-                        SubmissionDateTime: new Date().toISOString(),
-                        EXPIRATION: new Date().toISOString(),
-                        Size: 456,
-                        PrimaryKey: 'pk2'
                     }]
                 }));
                 response.end();
@@ -102,7 +94,7 @@ test('GET: api/marti/package - impersonate user', async (t) => {
         });
 
         // Test impersonate=user1
-        const res = await flight.fetch('/api/marti/package?impersonate=user1', {
+        const res = await flight.fetch('/api/marti/package?impersonate=user1@example.com', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin

@@ -236,19 +236,19 @@ export default class MockTAKServer {
 
         await Promise.all([
             new Promise<void>((resolve) => {
-                if ('closeAllConnections' in this.streaming) this.streaming.closeAllConnections();
+                if ('closeAllConnections' in this.streaming) (this.streaming as any).closeAllConnections();
                 this.streaming.close(() => {
                     return resolve();
                 });
             }),
             new Promise<void>((resolve) => {
-                if ('closeAllConnections' in this.webtak) this.webtak.closeAllConnections();
+                if ('closeAllConnections' in this.webtak) (this.webtak as any).closeAllConnections();
                 this.webtak.close(() => {
                     return resolve();
                 });
             }),
             new Promise<void>((resolve) => {
-                if ('closeAllConnections' in this.marti) this.marti.closeAllConnections();
+                if ('closeAllConnections' in this.marti) (this.marti as any).closeAllConnections();
                 this.marti.close(() => {
                     return resolve();
                 });
