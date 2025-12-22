@@ -50,10 +50,27 @@ test('Mock Media Server Start', async (t) => {
         path: '/v3/config/global/get',
         method: 'GET'
     }).reply(200, {
+        api: true,
+        apiAddress: ':9997',
+        metrics: true,
+        metricsAddress: ':9998',
+        pprof: false,
+        pprofAddress: '',
+        playback: false,
+        playbackAddress: '',
         rtsp: true,
-        rtspAddress: '8554',
+        rtspAddress: ':8554',
+        rtspsAddress: '',
+        rtspAuthMethods: [],
         rtmp: true,
-        rtmpAddress: '1935'
+        rtmpAddress: ':1935',
+        rtmpsAddress: '',
+        hls: true,
+        hlsAddress: ':8888',
+        webrtc: false,
+        webrtcAddress: '',
+        srt: false,
+        srtAddress: ''
     }).persist();
 
     mediaClient.intercept({
@@ -125,6 +142,16 @@ test('GET: api/video/lease/:lease - Get Lease', async (t) => {
 test('PATCH: api/video/lease/:lease - Update Lease', async (t) => {
     flight.tak.mockMarti.push(async (request, response) => {
         if (request.method === 'DELETE' && request.url.startsWith('/Marti/api/video/')) {
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({}));
+            response.end();
+            return true;
+        } else if (request.method === 'POST' && request.url.startsWith('/Marti/api/video')) {
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({}));
+            response.end();
+            return true;
+        } else if (request.method === 'GET' && request.url.startsWith('/Marti/api/video/')) {
             response.setHeader('Content-Type', 'application/json');
             response.write(JSON.stringify({}));
             response.end();
