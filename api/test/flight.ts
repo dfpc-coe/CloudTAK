@@ -246,15 +246,11 @@ export default class Flight {
 
             Object.assign(this.config, custom);
 
-            this.config.models.Server.generate({
-                name: 'Test Runner',
-                url: 'ssl://localhost',
-                auth: {
-                    cert: 'cert-123',
-                    key: 'key-123'
-                },
-                api: 'https://localhost'
-            });
+            this.config.server.auth = {
+                cert: fs.readFileSync(this.tak.keys.cert, 'utf8'),
+                key: fs.readFileSync(this.tak.keys.key, 'utf8')
+            };
+            this.config.server.api = 'https://localhost:8443';
 
             this.srv = await api(this.config);
 
