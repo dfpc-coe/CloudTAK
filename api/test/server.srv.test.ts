@@ -10,7 +10,7 @@ flight.user({ admin: false });
 
 test('Reset Server to Unconfigured', async (t) => {
     try {
-        flight.config.server = await flight.config.models.Server.commit(1, {
+        flight.config!.server = await flight.config!.models.Server.commit(1, {
             name: 'Default Server',
             url: '',
             api: '',

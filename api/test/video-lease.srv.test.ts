@@ -141,17 +141,17 @@ test('GET: api/video/lease/:lease - Get Lease', async (t) => {
 
 test('PATCH: api/video/lease/:lease - Update Lease', async (t) => {
     flight.tak.mockMarti.push(async (request, response) => {
-        if (request.method === 'DELETE' && request.url.startsWith('/Marti/api/video/')) {
+        if (request.method === 'DELETE' && request.url && request.url.startsWith('/Marti/api/video/')) {
             response.setHeader('Content-Type', 'application/json');
             response.write(JSON.stringify({}));
             response.end();
             return true;
-        } else if (request.method === 'POST' && request.url.startsWith('/Marti/api/video')) {
+        } else if (request.method === 'POST' && request.url && request.url.startsWith('/Marti/api/video')) {
             response.setHeader('Content-Type', 'application/json');
             response.write(JSON.stringify({}));
             response.end();
             return true;
-        } else if (request.method === 'GET' && request.url.startsWith('/Marti/api/video/')) {
+        } else if (request.method === 'GET' && request.url && request.url.startsWith('/Marti/api/video/')) {
             response.setHeader('Content-Type', 'application/json');
             response.write(JSON.stringify({}));
             response.end();
