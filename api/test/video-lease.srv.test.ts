@@ -46,6 +46,26 @@ test('Mock Media Server Start', async (t) => {
         method: 'POST'
     }).reply(200, {});
 
+    mediaClient.intercept({
+        path: '/v3/config/global/get',
+        method: 'GET'
+    }).reply(200, {
+        rtsp: true,
+        rtspAddress: '8554',
+        rtmp: true,
+        rtmpAddress: '1935'
+    }).persist();
+
+    mediaClient.intercept({
+        path: '/path',
+        method: 'GET'
+    }).reply(200, {
+        pageCount: 0,
+        itemCount: 0,
+        items: []
+    }).persist();
+
+
     try {
         await flight.config!.models.Setting.generate({
             key: 'media::url',
@@ -103,6 +123,16 @@ test('GET: api/video/lease/:lease - Get Lease', async (t) => {
 });
 
 test('PATCH: api/video/lease/:lease - Update Lease', async (t) => {
+    flight.tak.mockMarti.push(async (request, response) => {
+        if (request.method === 'DELETE' && request.url.startsWith('/Marti/api/video/')) {
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({}));
+            response.end();
+            return true;
+        }
+        return false;
+    });
+
     const mediaClient = agent.get('http://media-server:9997');
 
     mediaClient.intercept({
