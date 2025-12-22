@@ -71,6 +71,11 @@ export default class MockTAKServer {
             socket.on('close', () => this.sockets.delete(socket));
         });
 
+        this.streaming.on('connection', (socket) => {
+            this.sockets.add(socket);
+            socket.on('close', () => this.sockets.delete(socket));
+        });
+
         this.streaming.on('error', (e) => {
             console.error('Server Error', e);
         });
@@ -106,6 +111,11 @@ export default class MockTAKServer {
         });
 
         this.marti.on('secureConnection', (socket) => {
+            this.sockets.add(socket);
+            socket.on('close', () => this.sockets.delete(socket));
+        });
+
+        this.marti.on('connection', (socket) => {
             this.sockets.add(socket);
             socket.on('close', () => this.sockets.delete(socket));
         });
@@ -148,21 +158,21 @@ export default class MockTAKServer {
             }
 
             this.streaming.once('error', reject);
-            this.streaming.listen(8089, 'localhost', () => {
+            this.streaming.listen(8089, '127.0.0.1', () => {
                 console.log('opened TCP streaming on', this.streaming.address());
                 this.streaming.removeListener('error', reject);
                 check();
             });
 
             this.marti.once('error', reject);
-            this.marti.listen(8443, 'localhost', () => {
+            this.marti.listen(8443, '127.0.0.1', () => {
                 console.log('opened MARTI API on', this.marti.address());
                 this.marti.removeListener('error', reject);
                 check();
             });
 
             this.webtak.once('error', reject);
-            this.webtak.listen(8444, 'localhost', () => {
+            this.webtak.listen(8444, '127.0.0.1', () => {
                 console.log('opened WEBTAK API on', this.webtak.address());
                 this.webtak.removeListener('error', reject);
                 check();
