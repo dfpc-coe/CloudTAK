@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v12.34.0 - 2025-12-22
+
+- :rocket: Migrate to unified Package Listing Endpoint
+- :rocket: Allow use of Server Certificate via `impersonate` query param
+- :rocket: Update ServerPackage UI to allow filtering
+- :rocket: Update ServerPackage UI to allow downloading packages
+
 ### v12.33.2 - 2025-12-19
 
 - :rocket: Add a cleanup section to remove danging Docker Images after an update
