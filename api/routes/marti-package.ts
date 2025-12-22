@@ -384,7 +384,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiPackages',
         description: 'Helper API to list packages',
         query: Type.Object({
-            filter: Type.Optional(Type.String({
+            filter: Type.String({
                 description: 'Filter packages by name',
                 default: ''
             }),
