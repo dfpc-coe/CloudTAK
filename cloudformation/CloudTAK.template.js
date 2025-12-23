@@ -32,10 +32,6 @@ export default cf.merge(
                 Type: 'String',
                 AllowedValues: ['true', 'false'],
                 Default: 'false'
-            },
-            SSLCertificateIdentifier: {
-                Description: 'ACM SSL Certificate for top level wildcard: *.example.com and second level *.map.example.com',
-                Type: 'String'
             }
         }
     },

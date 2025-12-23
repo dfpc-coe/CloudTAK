@@ -112,7 +112,7 @@ export default {
             Type: 'AWS::ApiGateway::DomainName',
             Properties: {
                 DomainName: cf.join(['tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
-                RegionalCertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('SSLCertificateIdentifier')]),
+                RegionalCertificateArn: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-acm'])),
                 EndpointConfiguration: {
                     Types: ['REGIONAL']
                 }

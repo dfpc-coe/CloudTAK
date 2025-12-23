@@ -12,9 +12,9 @@
     ],
     "artifacts": {
         "docker": [
-            "tak-vpc-{{stack}}:{{gitsha}}",
-            "tak-vpc-{{stack}}:pmtiles-{{gitsha}}",
-            "tak-vpc-{{stack}}:events-{{gitsha}}"
+            "tak-vpc-{{stack}}-cloudtak-api:{{gitsha}}",
+            "tak-vpc-{{stack}}-cloudtak-api:pmtiles-{{gitsha}}",
+            "tak-vpc-{{stack}}-cloudtak-api:events-{{gitsha}}"
         ]
     }
 }
