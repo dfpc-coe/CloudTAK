@@ -7,7 +7,7 @@ export default {
             Properties: {
                 HostedZoneId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-id'])),
                 Type : 'A',
-                Name: cf.join(['tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                Name: cf.join(['tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                 Comment: cf.join(' ', [cf.stackName, 'PMTiles API DNS Entry']),
                 AliasTarget: {
                     DNSName: cf.getAtt('PMTilesApiDomain', 'RegionalDomainName'),
@@ -29,7 +29,7 @@ export default {
                     Variables: {
                         StackName: cf.stackName,
                         ASSET_BUCKET: cf.ref('AssetBucket'),
-                        PMTILES_URL: cf.join(['https://tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                        PMTILES_URL: cf.join(['https://tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                         SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
                     }
                 },
@@ -111,7 +111,7 @@ export default {
         PMTilesApiDomain: {
             Type: 'AWS::ApiGateway::DomainName',
             Properties: {
-                DomainName: cf.join(['tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                DomainName: cf.join(['tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                 RegionalCertificateArn: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-acm'])),
                 EndpointConfiguration: {
                     Types: ['REGIONAL']
@@ -209,7 +209,7 @@ export default {
     Outputs: {
         PMTilesAPI: {
             Description: 'PMTiles API',
-            Value: cf.join(['https://tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+            Value: cf.join(['https://tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
             Export: {
                 Name: cf.join([cf.stackName, '-pmtiles-api'])
             }
