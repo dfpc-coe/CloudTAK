@@ -152,7 +152,6 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
             Sinon.restore();
             setGlobalDispatcher(originalDispatcher);
             mockAgent.close();
-            t.end()
         });
 
         await worker.process()
