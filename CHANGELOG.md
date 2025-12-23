@@ -12,6 +12,16 @@
 
 ### Pending Release
 
+### v12.36.0 - 2025-12-23
+
+> [!WARNING]
+> This Version of CloudTAK requires updating to `vpc@2.9.0` or above if using the provided CloudFormation templates.
+> Docker Compose or custom deployments do not require any action.
+>
+
+- :rocket: Update to use per-environment ECR repositories for improved security and isolation
+- :rocket: Update to use CloudFormation managed ACM Certificates for improved security and easier management
+
 ### v12.35.0 - 2025-12-22
 
 - :white_check_mark: Remove `tape` in favour of `node:test`
