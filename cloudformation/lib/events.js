@@ -80,7 +80,7 @@ export default {
                 TaskRoleArn: cf.getAtt('EventsTaskRole', 'Arn'),
                 ContainerDefinitions: [{
                     Name: 'api',
-                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:events-', cf.ref('GitSha')]),
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-vpc-', cf.ref('Environment'), '-cloudtak-api:events-', cf.ref('GitSha')]),
                     PortMappings: [{
                         ContainerPort: 5000
                     }],
@@ -89,7 +89,7 @@ export default {
                         { Name: 'AWS_REGION', Value: cf.region },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
-                        { Name: 'API_URL', Value: cf.join(['https://', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]) }
+                        { Name: 'API_URL', Value: cf.join(['https://map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]) }
                     ],
                     RestartPolicy: {
                         Enabled: true,

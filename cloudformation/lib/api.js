@@ -2,10 +2,6 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Parameters: {
-        SubdomainPrefix: {
-            Description: 'Prefix of domain: ie "map" of map.example.com',
-            Type: 'String'
-        },
         ComputeCpu: {
             Description: 'The number of CPU units used by the task',
             Type: 'Number',
@@ -23,7 +19,7 @@ export default {
             Properties: {
                 HostedZoneId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-id'])),
                 Type : 'A',
-                Name: cf.join([cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                Name: cf.join(['map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                 Comment: cf.join(' ', [cf.stackName, 'UI/API DNS Entry']),
                 AliasTarget: {
                     DNSName: cf.getAtt('ELB', 'DNSName'),
@@ -100,7 +96,7 @@ export default {
             Type: 'AWS::ElasticLoadBalancingV2::Listener',
             Properties: {
                 Certificates: [{
-                    CertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('SSLCertificateIdentifier')])
+                    CertificateArn: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-acm']))
                 }],
                 DefaultActions: [{
                     Type: 'forward',
@@ -417,7 +413,7 @@ export default {
                 TaskRoleArn: cf.getAtt('TaskRole', 'Arn'),
                 ContainerDefinitions: [{
                     Name: 'api',
-                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:', cf.ref('GitSha')]),
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-vpc-', cf.ref('Environment'), '-cloudtak-api:', cf.ref('GitSha')]),
                     PortMappings: [{
                         ContainerPort: 5000
                     }],
@@ -438,7 +434,7 @@ export default {
                         { Name: 'CLOUDTAK_Mode', Value: 'AWS' },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
-                        { Name: 'API_URL', Value: cf.join(['https://', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]) },
+                        { Name: 'API_URL', Value: cf.join(['https://map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]) },
                         { Name: 'VpcId', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])) },
                         { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
                         { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },
@@ -559,7 +555,7 @@ export default {
             Export: {
                 Name: cf.join([cf.stackName, '-hosted'])
             },
-            Value: cf.join(['https://', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))])
+            Value: cf.join(['https://map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))])
         },
         ETLRole: {
             Description: 'ETL Lambda Role',
