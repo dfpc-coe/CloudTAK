@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import { Type } from '@sinclair/typebox';
 import { fetch } from '@tak-ps/etl';
 import Flight from './flight.js';
@@ -9,7 +10,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: Ensure DFPC AGOL Portal is up and running', async (t) => {
+test('GET: Ensure DFPC AGOL Portal is up and running', async () => {
     try {
         const res = await fetch('https://co-dfpc.maps.arcgis.com/sharing/rest?f=json');
 
@@ -17,13 +18,11 @@ test('GET: Ensure DFPC AGOL Portal is up and running', async (t) => {
             currentVersion: Type.String()
         }));
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
-test('PATCH: api/esri/portal/content', async (t) => {
+test('PATCH: api/esri/portal/content', async () => {
     try {
         const res = await flight.fetch('/api/esri/portal/content?portal=https://co-dfpc.maps.arcgis.com/sharing/rest', {
             method: 'GET',
@@ -32,12 +31,10 @@ test('PATCH: api/esri/portal/content', async (t) => {
             }
         }, false);
 
-        t.ok(res.body.total)
+        assert.ok(res.body.total)
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
 flight.landing();

@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -9,7 +10,7 @@ flight.user();
 
 const time = new Date('2025-03-04T22:54:15.447Z').toISOString()
 
-test('GET: api/profile/feature', async (t) => {
+test('GET: api/profile/feature', async () => {
     try {
         const res = await flight.fetch('/api/profile/feature', {
             method: 'GET',
@@ -18,18 +19,16 @@ test('GET: api/profile/feature', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PUT: api/profile/feature', async (t) => {
+test('PUT: api/profile/feature', async () => {
     try {
         const res = await flight.fetch('/api/profile/feature', {
             method: 'PUT',
@@ -61,7 +60,7 @@ test('PUT: api/profile/feature', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: '123',
             type: 'Feature',
             path: '/Test Features/',
@@ -81,13 +80,11 @@ test('PUT: api/profile/feature', async (t) => {
             }
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/profile/feature', async (t) => {
+test('GET: api/profile/feature', async () => {
     try {
         const res = await flight.fetch('/api/profile/feature', {
             method: 'GET',
@@ -96,7 +93,7 @@ test('GET: api/profile/feature', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 1,
             items: [{
                 id: '123',
@@ -119,13 +116,11 @@ test('GET: api/profile/feature', async (t) => {
             }]
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PUT: api/profile/feature - UPSERT', async (t) => {
+test('PUT: api/profile/feature - UPSERT', async () => {
     try {
         const res = await flight.fetch('/api/profile/feature', {
             method: 'PUT',
@@ -157,7 +152,7 @@ test('PUT: api/profile/feature - UPSERT', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: '123',
             type: 'Feature',
             path: '/',
@@ -177,13 +172,11 @@ test('PUT: api/profile/feature - UPSERT', async (t) => {
             }
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/profile/feature', async (t) => {
+test('GET: api/profile/feature', async () => {
     try {
         const res = await flight.fetch('/api/profile/feature', {
             method: 'GET',
@@ -192,7 +185,7 @@ test('GET: api/profile/feature', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 1,
             items: [{
                 id: '123',
@@ -215,13 +208,11 @@ test('GET: api/profile/feature', async (t) => {
             }]
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/profile/feature/123', async (t) => {
+test('GET: api/profile/feature/123', async () => {
     try {
         const res = await flight.fetch('/api/profile/feature/123', {
             method: 'GET',
@@ -230,7 +221,7 @@ test('GET: api/profile/feature/123', async (t) => {
             },
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: '123',
             type: 'Feature',
             path: '/',
@@ -250,13 +241,11 @@ test('GET: api/profile/feature/123', async (t) => {
             }
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('DELETE: api/profile/feature/123', async (t) => {
+test('DELETE: api/profile/feature/123', async () => {
     try {
         const res = await flight.fetch('/api/profile/feature/123', {
             method: 'DELETE',
@@ -265,15 +254,13 @@ test('DELETE: api/profile/feature/123', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 200,
             message: 'Feature Deleted'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();
