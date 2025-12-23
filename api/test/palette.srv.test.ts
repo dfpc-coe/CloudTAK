@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -7,7 +8,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: api/palette', async (t) => {
+test('GET: api/palette', async () => {
     try {
         const res = await flight.fetch('/api/palette', {
             method: 'GET',
@@ -16,15 +17,13 @@ test('GET: api/palette', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

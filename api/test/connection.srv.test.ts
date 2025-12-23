@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -7,7 +8,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: api/connection', async (t) => {
+test('GET: api/connection', async () => {
     try {
         const res = await flight.fetch('/api/connection', {
             method: 'GET',
@@ -16,7 +17,7 @@ test('GET: api/connection', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: [],
             status: {
@@ -26,13 +27,11 @@ test('GET: api/connection', async (t) => {
             }
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/connection/1', async (t) => {
+test('GET: api/connection/1', async () => {
     try {
         const res = await flight.fetch('/api/connection/1', {
             method: 'GET',
@@ -41,16 +40,14 @@ test('GET: api/connection/1', async (t) => {
             }
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 404,
             message: 'Item Not Found',
             messages: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.connection();

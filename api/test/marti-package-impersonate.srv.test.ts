@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
@@ -9,7 +10,7 @@ flight.takeoff();
 flight.user();
 flight.user({ username: 'user1', admin: false });
 
-test('GET: api/marti/package - impersonate', async (t) => {
+test('GET: api/marti/package - impersonate', async () => {
     try {
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
@@ -58,18 +59,16 @@ test('GET: api/marti/package - impersonate', async (t) => {
             }
         }, true);
 
-        t.equals(res.body.total, 2);
-        t.equals(res.body.items.length, 2);
+        assert.equal(res.body.total, 2);
+        assert.equal(res.body.items.length, 2);
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     flight.tak.reset();
-
-    t.end();
 });
 
-test('GET: api/marti/package - impersonate user', async (t) => {
+test('GET: api/marti/package - impersonate user', async () => {
     try {
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
@@ -109,14 +108,12 @@ test('GET: api/marti/package - impersonate user', async (t) => {
             }
         }, true);
 
-        t.equals(res.body.items.length, 1);
-        t.equals(res.body.items[0].username, 'user1');
+        assert.equal(res.body.items.length, 1);
+        assert.equal(res.body.items[0].username, 'user1');
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     flight.tak.reset();
     flight.landing();
-
-    t.end();
 });

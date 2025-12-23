@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -9,7 +10,7 @@ flight.user();
 
 const validIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
-test('GET: /template/mission - empty', async (t) => {
+test('GET: /template/mission - empty', async () => {
     try {
         const res = await flight.fetch('/api/template/mission', {
             method: 'GET',
@@ -18,20 +19,18 @@ test('GET: /template/mission - empty', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 let templateId: string;
 
-test('POST: /template/mission - create', async (t) => {
+test('POST: /template/mission - create', async () => {
     try {
         const res = await flight.fetch('/api/template/mission', {
             method: 'POST',
@@ -45,22 +44,20 @@ test('POST: /template/mission - create', async (t) => {
             }
         }, true);
 
-        t.ok(res.body.id, 'returned an id');
-        t.equals(res.body.name, 'Test Template');
-        t.equals(res.body.description, 'A test mission template');
-        t.equals(res.body.icon, validIcon);
-        t.ok(res.body.created, 'returned a created date');
-        t.ok(res.body.updated, 'returned an updated date');
+        assert.ok(res.body.id, 'returned an id');
+        assert.equal(res.body.name, 'Test Template');
+        assert.equal(res.body.description, 'A test mission template');
+        assert.equal(res.body.icon, validIcon);
+        assert.ok(res.body.created, 'returned a created date');
+        assert.ok(res.body.updated, 'returned an updated date');
 
         templateId = res.body.id;
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: /template/mission - list', async (t) => {
+test('GET: /template/mission - list', async () => {
     try {
         const res = await flight.fetch('/api/template/mission', {
             method: 'GET',
@@ -69,18 +66,16 @@ test('GET: /template/mission - list', async (t) => {
             }
         }, true);
 
-        t.equals(res.body.total, 1);
-        t.equals(res.body.items.length, 1);
-        t.equals(res.body.items[0].id, templateId);
-        t.equals(res.body.items[0].name, 'Test Template');
+        assert.equal(res.body.total, 1);
+        assert.equal(res.body.items.length, 1);
+        assert.equal(res.body.items[0].id, templateId);
+        assert.equal(res.body.items[0].name, 'Test Template');
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: /template/mission/:mission - get', async (t) => {
+test('GET: /template/mission/:mission - get', async () => {
     try {
         const res = await flight.fetch(`/api/template/mission/${templateId}`, {
             method: 'GET',
@@ -89,18 +84,16 @@ test('GET: /template/mission/:mission - get', async (t) => {
             }
         }, true);
 
-        t.equals(res.body.id, templateId);
-        t.equals(res.body.name, 'Test Template');
-        t.equals(res.body.description, 'A test mission template');
-        t.equals(res.body.icon, validIcon);
+        assert.equal(res.body.id, templateId);
+        assert.equal(res.body.name, 'Test Template');
+        assert.equal(res.body.description, 'A test mission template');
+        assert.equal(res.body.icon, validIcon);
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PATCH: /template/mission/:mission - update', async (t) => {
+test('PATCH: /template/mission/:mission - update', async () => {
     try {
         const res = await flight.fetch(`/api/template/mission/${templateId}`, {
             method: 'PATCH',
@@ -113,18 +106,16 @@ test('PATCH: /template/mission/:mission - update', async (t) => {
             }
         }, true);
 
-        t.equals(res.body.id, templateId);
-        t.equals(res.body.name, 'Updated Template');
-        t.equals(res.body.description, 'An updated description');
-        t.equals(res.body.icon, validIcon);
+        assert.equal(res.body.id, templateId);
+        assert.equal(res.body.name, 'Updated Template');
+        assert.equal(res.body.description, 'An updated description');
+        assert.equal(res.body.icon, validIcon);
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('DELETE: /template/mission/:mission - delete', async (t) => {
+test('DELETE: /template/mission/:mission - delete', async () => {
     try {
         const res = await flight.fetch(`/api/template/mission/${templateId}`, {
             method: 'DELETE',
@@ -133,16 +124,14 @@ test('DELETE: /template/mission/:mission - delete', async (t) => {
             }
         }, true);
 
-        t.equals(res.body.status, 200);
-        t.equals(res.body.message, 'Mission Template Deleted');
+        assert.equal(res.body.status, 200);
+        assert.equal(res.body.message, 'Mission Template Deleted');
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: /template/mission/:mission - not found', async (t) => {
+test('GET: /template/mission/:mission - not found', async () => {
     try {
         const res = await flight.fetch(`/api/template/mission/${templateId}`, {
             method: 'GET',
@@ -151,12 +140,10 @@ test('GET: /template/mission/:mission - not found', async (t) => {
             }
         }, false);
 
-        t.equals(res.status, 404);
+        assert.equal(res.status, 404);
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

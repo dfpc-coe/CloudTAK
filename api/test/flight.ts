@@ -1,6 +1,5 @@
 process.env.StackName = 'test';
 
-import assert from 'assert';
 import { fetch, FormData } from 'undici';
 import type { Response, Headers } from 'undici';
 import CP from 'node:child_process';
@@ -11,7 +10,8 @@ import api from '../index.js';
 import Config from '../lib/config.js';
 import drop from './drop.js';
 import { pathToRegexp } from 'path-to-regexp';
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import ProfileControl from '../lib/control/profile.js';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
@@ -63,7 +63,7 @@ export default class Flight {
      * @param {boolean} dropdb Should the database be dropped
      */
     init(dropdb = true) {
-        test('start: database', async (t) => {
+        test('start: database', async () => {
             try {
                 if (dropdb) {
                     const connstr = process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test';
@@ -72,11 +72,10 @@ export default class Flight {
                     const pool = await Pool.connect(connstr, pgtypes, {
                         migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
                     });
-                    // @ts-expect-error Not present in type def
-                    pool.session.client.end();
+                    await pool.end();
                 }
             } catch (err) {
-                t.error(err);
+                assert.ifError(err);
             }
 
             this.schema = JSON.parse(String(fs.readFileSync(new URL('./fixtures/get_schema.json', import.meta.url))));
@@ -86,7 +85,7 @@ export default class Flight {
                     const regexp = pathToRegexp(route.split(' ').join(' /api'));
                     this.routes[route] = new RegExp(regexp.regexp);
                 } catch (err) {
-                    t.fail(`Could not parse ${route} as RegExp: ` + err);
+                    assert.fail(`Could not parse ${route} as RegExp: ` + err);
                 }
             }
 
@@ -94,8 +93,6 @@ export default class Flight {
             await this._tak.start();
 
             process.env.ASSET_BUCKET = 'fake-asset-bucket';
-
-            t.end();
         });
     }
 
@@ -111,7 +108,7 @@ export default class Flight {
      * @param {String} auth Name of the token that will be used to make the fetch
      */
     fixture(name: string, auth: string) {
-        test(`Fixture: ${name}`, async (t) => {
+        test(`Fixture: ${name}`, async () => {
             const req = JSON.parse(String(fs.readFileSync(new URL('./fixtures/' + name, import.meta.url))));
             if (auth) req.auth = {
                 bearer: this.token[auth]
@@ -120,10 +117,8 @@ export default class Flight {
             try {
                 await this.fetch(req.url, req, true);
             } catch (err) {
-                t.error(err, 'no errors');
+                assert.ifError(err);
             }
-
-            t.end();
         });
     }
 
@@ -236,7 +231,7 @@ export default class Flight {
      * @param {Object} custom custom config options
      */
     takeoff(custom = {}) {
-        test('test server takeoff', async (t) => {
+        test('test server takeoff', async () => {
             this.config = await Config.env({
                 postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
                 silent: true,
@@ -258,8 +253,6 @@ export default class Flight {
             });
 
             this.srv = await api(this.config);
-
-            t.end();
         });
     }
 
@@ -272,7 +265,7 @@ export default class Flight {
     } = {}) {
         if (opts.admin === undefined) opts.admin = true;
 
-        test('Create User', async (t) => {
+        test('Create User', async () => {
             const username = opts.username || (opts.admin ? 'admin' : 'user');
 
            if (!this.config) throw new Error('TakeOff not completed');
@@ -315,12 +308,11 @@ export default class Flight {
             } else {
                 this.token[username] = jwt.sign({ access: 'user', email: username + '@example.com' }, 'coe-wildland-fire')
             }
-            t.end();
         });
     }
 
     server(username: string, password: string) {
-        test('Creating Server', async (t) => {
+        test('Creating Server', async () => {
             await this.fetch('/api/server', {
                 method: 'PATCH',
                 auth: {
@@ -344,13 +336,11 @@ export default class Flight {
 
             // Refresh config to pick up new server details
             this.config!.server = await this.config!.models.Server.from(this.config!.server.id);
-
-            t.end();
         })
     }
 
     connection() {
-        test(`Creating Connection`, async (t) => {
+        test(`Creating Connection`, async () => {
             CP.execSync(`
                 openssl req \
                     -newkey rsa:4096 \
@@ -393,7 +383,7 @@ export default class Flight {
             delete conn.body.created;
             delete conn.body.updated;
 
-            t.deepEquals(conn.body, {
+            assert.deepEqual(conn.body, {
                 status: 'dead',
                 certificate: {
                     subject: 'CN=Alice'
@@ -410,8 +400,6 @@ export default class Flight {
             await new Promise((resolve) => {
                 setTimeout(resolve, 1000);
             })
-
-            t.end();
        })
     }
 
@@ -419,10 +407,9 @@ export default class Flight {
      * Shutdown an existing server test instance
      */
     landing() {
-        test('test server landing - api', async (t) => {
+        test('test server landing - api', async () => {
             if (this.srv) await this.srv.close();
             if (this.tak) await this.tak.close();
-            t.end();
         });
     }
 }
