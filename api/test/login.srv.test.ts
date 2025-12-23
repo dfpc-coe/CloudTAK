@@ -1,12 +1,14 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
 
 flight.init();
 flight.takeoff();
+flight.user();
 
-test('POST: api/login', async (t) => {
+test('POST: api/login', async () => {
     try {
         const res = await flight.fetch('/api/login', {
             method: 'POST',
@@ -19,21 +21,19 @@ test('POST: api/login', async (t) => {
             }
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 400,
             message: 'Server has not been configured',
             messages: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.server('admin@example.com', 'password123');
 
-test('POST: api/login', async (t) => {
+test('POST: api/login', async () => {
     try {
         const res = await flight.fetch('/api/login', {
             method: 'POST',
@@ -46,18 +46,16 @@ test('POST: api/login', async (t) => {
             }
         }, false);
         
-        t.ok(res.body.token);
+        assert.ok(res.body.token);
         delete res.body.token;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             access: 'admin',
             email: 'admin@example.com',
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();
