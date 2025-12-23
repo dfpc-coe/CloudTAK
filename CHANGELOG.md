@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.35.0 - 2025-12-22
+
+- :white_check_mark: Remove `tape` in favour of `node:test`
+
 ### v12.34.0 - 2025-12-22
 
 - :rocket: Migrate to unified Package Listing Endpoint
