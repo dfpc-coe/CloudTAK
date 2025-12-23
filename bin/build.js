@@ -9,7 +9,7 @@ for (const env of [
     'GITSHA',
     'AWS_REGION',
     'AWS_ACCOUNT_ID',
-    'Environment',
+    'Environment'
 ]) {
     if (!process.env[env]) {
         throw new Error(`${env} Env Var must be set`);
