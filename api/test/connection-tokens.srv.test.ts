@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -12,7 +13,7 @@ flight.connection();
 const time = new Date('2025-03-04T22:54:15.447Z').toISOString()
 let token: string;
 
-test('GET: api/connection/1/token', async (t) => {
+test('GET: api/connection/1/token', async () => {
     try {
         const res = await flight.fetch('/api/connection/1/token', {
             method: 'GET',
@@ -21,18 +22,16 @@ test('GET: api/connection/1/token', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('POST: api/connection/1/token', async (t) => {
+test('POST: api/connection/1/token', async () => {
     try {
         const res = await flight.fetch('/api/connection/1/token', {
             method: 'POST',
@@ -45,19 +44,19 @@ test('POST: api/connection/1/token', async (t) => {
         }, true);
 
 
-        t.ok(res.body.created, 'has created');
+        assert.ok(res.body.created, 'has created');
         res.body.created = time
 
-        t.ok(res.body.created, 'has updated');
+        assert.ok(res.body.created, 'has updated');
         res.body.updated = time
 
-        t.ok(res.body.token, 'has token');
-        t.ok(res.body.token.startsWith('etl.ey'), 'valid token');
+        assert.ok(res.body.token, 'has token');
+        assert.ok(res.body.token.startsWith('etl.ey'), 'valid token');
 
         token = res.body.token;
         res.body.token = 'etl.123'
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             connection: 1,
             name: 'Test Token',
@@ -66,13 +65,11 @@ test('POST: api/connection/1/token', async (t) => {
             updated: time
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/connection/1 - Use Token', async (t) => {
+test('GET: api/connection/1 - Use Token', async () => {
     try {
         const res = await flight.fetch('/api/connection/1', {
             method: 'GET',
@@ -81,19 +78,19 @@ test('GET: api/connection/1 - Use Token', async (t) => {
             },
         }, true);
 
-        t.ok(res.body.created, 'has created');
+        assert.ok(res.body.created, 'has created');
         res.body.created = time
 
-        t.ok(res.body.created, 'has updated');
+        assert.ok(res.body.created, 'has updated');
         res.body.updated = time
 
-        t.ok(res.body.certificate.validFrom, 'has certificate.validFrom');
+        assert.ok(res.body.certificate.validFrom, 'has certificate.validFrom');
         res.body.certificate.validFrom = time
 
-        t.ok(res.body.certificate.validTo, 'has certificate.validTo');
+        assert.ok(res.body.certificate.validTo, 'has certificate.validTo');
         res.body.certificate.validTo = time
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 'dead',
             certificate: {
                 validFrom: time,
@@ -111,13 +108,11 @@ test('GET: api/connection/1 - Use Token', async (t) => {
             enabled: true
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PATCH: api/connection/1/token/1', async (t) => {
+test('PATCH: api/connection/1/token/1', async () => {
     try {
         const res = await flight.fetch('/api/connection/1/token/1', {
             method: 'PATCH',
@@ -129,18 +124,16 @@ test('PATCH: api/connection/1/token/1', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 200,
             message: 'Connection Token Updated',
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('DELETE: api/connection/1/token/1', async (t) => {
+test('DELETE: api/connection/1/token/1', async () => {
     try {
         const res = await flight.fetch('/api/connection/1/token/1', {
             method: 'DELETE',
@@ -149,18 +142,16 @@ test('DELETE: api/connection/1/token/1', async (t) => {
             },
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 200,
             message: 'Connection Token Deleted'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/connection/1 - Use Token, Access Revoked', async (t) => {
+test('GET: api/connection/1 - Use Token, Access Revoked', async () => {
     try {
         const res = await flight.fetch('/api/connection/1', {
             method: 'GET',
@@ -169,16 +160,14 @@ test('GET: api/connection/1 - Use Token, Access Revoked', async (t) => {
             },
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 403,
             message: 'Token does not exist',
             messages: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

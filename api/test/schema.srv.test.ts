@@ -1,5 +1,6 @@
 import fs from 'fs';
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import assert from 'assert';
 import Flight from './flight.js';
 

@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
@@ -10,7 +11,7 @@ flight.user();
 
 flight.connection();
 
-test('GET: api/connection/1/channel', async (t) => {
+test('GET: api/connection/1/channel', async () => {
     try {
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
@@ -45,7 +46,7 @@ test('GET: api/connection/1/channel', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             version: '3',
             type: 'com.bbn.marti.remote.groups.Group',
             data: [{
@@ -59,15 +60,13 @@ test('GET: api/connection/1/channel', async (t) => {
             }]
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     flight.tak.reset();
-
-    t.end();
 });
 
-test('GET: api/connection/1/channel - Failure', async (t) => {
+test('GET: api/connection/1/channel - Failure', async () => {
     try {
         flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
@@ -91,14 +90,12 @@ test('GET: api/connection/1/channel - Failure', async (t) => {
             }
         }, false);
 
-        t.deepEquals(res.status, 500);
+        assert.deepEqual(res.status, 500);
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     flight.tak.reset();
-
-    t.end();
 });
 
 flight.landing();
