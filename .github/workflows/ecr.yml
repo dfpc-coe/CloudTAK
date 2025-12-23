@@ -35,9 +35,17 @@ jobs:
           role-session-name: GithubECRBuilder
           aws-region: ${{secrets.AWS_REGION}}
 
-      - name: Docker Build Task
+      - name: Docker Build Task (COTAK Production)
         run: npm run build -- ${{matrix.task}}
         env:
+          Environment: 'cotak-prod'
+          AWS_ACCOUNT_ID: ${{secrets.AWS_ACCOUNT_ID}}
+          AWS_REGION: ${{secrets.AWS_REGION}}
+
+      - name: Docker Build Task (WFTAK Production)
+        run: npm run build -- ${{matrix.task}}
+        env:
+          Environment: 'wftak-prod'
           AWS_ACCOUNT_ID: ${{secrets.AWS_ACCOUNT_ID}}
           AWS_REGION: ${{secrets.AWS_REGION}}
 
@@ -48,9 +56,16 @@ jobs:
           role-session-name: GithubECRBuilder
           aws-region: ${{secrets.AWS_STAGING_REGION}}
 
-      - name: Docker Build Task (STAGING)
+      - name: Docker Build Task (COTAK Staging)
         run: npm run build -- ${{matrix.task}}
         env:
+          Environment: 'cotak-staging'
           AWS_ACCOUNT_ID: ${{secrets.AWS_STAGING_ACCOUNT_ID}}
           AWS_REGION: ${{secrets.AWS_STAGING_REGION}}
 
+      - name: Docker Build Task (WFTAK Staging)
+        run: npm run build -- ${{matrix.task}}
+        env:
+          Environment: 'wftak-staging'
+          AWS_ACCOUNT_ID: ${{secrets.AWS_STAGING_ACCOUNT_ID}}
+          AWS_REGION: ${{secrets.AWS_STAGING_REGION}}
