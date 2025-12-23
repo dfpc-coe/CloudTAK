@@ -115,7 +115,6 @@ test(`Worker DataPackage Import: Iconset`, async () => {
         Sinon.restore();
         setGlobalDispatcher(originalDispatcher);
         mockAgent.close();
-        t.end()
     });
 
     await worker.process()

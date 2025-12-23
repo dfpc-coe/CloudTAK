@@ -125,7 +125,6 @@ test(`Worker DataPackage Import: Packaged File`, async () => {
         Sinon.restore();
         setGlobalDispatcher(originalDispatcher);
         mockAgent.close();
-        t.end()
     });
 
     await worker.process()
