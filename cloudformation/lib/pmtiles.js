@@ -35,7 +35,7 @@ export default {
                 },
                 Role: cf.getAtt('PMTilesLambdaRole', 'Arn'),
                 Code: {
-                    ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:pmtiles-', cf.ref('GitSha')])
+                    ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-vpc-', cf.ref('Environment'), '-cloudtak-api:pmtiles-', cf.ref('GitSha')])
                 }
             }
         },

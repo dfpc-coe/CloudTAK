@@ -80,7 +80,7 @@ export default {
                 TaskRoleArn: cf.getAtt('EventsTaskRole', 'Arn'),
                 ContainerDefinitions: [{
                     Name: 'api',
-                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:events-', cf.ref('GitSha')]),
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-vpc-', cf.ref('Environment'), '-cloudtak-api:events-', cf.ref('GitSha')]),
                     PortMappings: [{
                         ContainerPort: 5000
                     }],
