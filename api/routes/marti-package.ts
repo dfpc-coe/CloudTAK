@@ -91,7 +91,7 @@ export default async function router(schema: Schema, config: Config) {
                             const pkg = new DataPackage(id, id);
 
                             pkg.settings.name = req.query.name || meta.filename;
-                            await pkg.addFile(filePath, {
+                            await pkg.addFile(fs.createReadStream(filePath), {
                                 name: meta.filename,
                             });
 
