@@ -20,32 +20,32 @@
                     v-text='`Start: ${startProp}`'
                 />
             </template>
-                <div class='d-flex mx-3 pt-2 pb-2'>
-                    <div class='ms-auto cursor-pointer text-blue subheader'>
-                        <span
-                            v-if='mode === "relative"'
-                            @click='mode = "absolute"'
-                        >Absolute</span>
-                        <span
-                            v-if='mode === "absolute"'
-                            @click='mode = "relative"'
-                        >Relative</span>
-                    </div>
+            <div class='d-flex mx-3 pt-2 pb-2'>
+                <div class='ms-auto cursor-pointer text-blue subheader'>
+                    <span
+                        v-if='mode === "relative"'
+                        @click='mode = "absolute"'
+                    >Absolute</span>
+                    <span
+                        v-if='mode === "absolute"'
+                        @click='mode = "relative"'
+                    >Relative</span>
                 </div>
-                <div class='list-group list-group-flush bg-accent rounded mx-2 mb-2'>
-                    <div class='list-group-item bg-transparent d-flex justify-content-between align-items-center border-0'>
-                        <span class='text-muted'>Time</span>
-                        <span class='font-weight-medium'>{{ timeProp }}</span>
-                    </div>
-                    <div class='list-group-item bg-transparent d-flex justify-content-between align-items-center border-0'>
-                        <span class='text-muted'>Start</span>
-                        <span class='font-weight-medium'>{{ startProp }}</span>
-                    </div>
-                    <div class='list-group-item bg-transparent d-flex justify-content-between align-items-center border-0'>
-                        <span class='text-muted'>Stale</span>
-                        <span class='font-weight-medium'>{{ staleProp }}</span>
-                    </div>
+            </div>
+            <div class='list-group list-group-flush bg-accent rounded mx-2 mb-2'>
+                <div class='list-group-item bg-transparent d-flex justify-content-between align-items-center border-0'>
+                    <span class='text-muted'>Time</span>
+                    <span class='font-weight-medium'>{{ timeProp }}</span>
                 </div>
+                <div class='list-group-item bg-transparent d-flex justify-content-between align-items-center border-0'>
+                    <span class='text-muted'>Start</span>
+                    <span class='font-weight-medium'>{{ startProp }}</span>
+                </div>
+                <div class='list-group-item bg-transparent d-flex justify-content-between align-items-center border-0'>
+                    <span class='text-muted'>Stale</span>
+                    <span class='font-weight-medium'>{{ staleProp }}</span>
+                </div>
+            </div>
         </SlideDownHeader>
     </div>
 </template>

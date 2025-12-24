@@ -14,74 +14,74 @@
             </template>
 
             <div class='mx-2 py-2 mt-2'>
-                    <div class='rounded px-2 bg-accent pb-2'>
-                        <div class='row g-2'>
-                            <div class='col-6'>
-                                <label class='subheader user-select-none'>Type</label>
+                <div class='rounded px-2 bg-accent pb-2'>
+                    <div class='row g-2'>
+                        <div class='col-6'>
+                            <label class='subheader user-select-none'>Type</label>
 
-                                <div v-text='sensor.type || "Unknown"' />
-                            </div>
-                            <div class='col-6'>
-                                <label class='subheader user-select-none'>Model</label>
-                                <div v-text='sensor.model || "Unknown"' />
-                            </div>
-
-                            <TablerRange
-                                v-if='sensor.range !== undefined'
-                                v-model='sensor.range'
-                                label='Sensor Range Length'
-                                :min='0'
-                                :max='60000'
-                            >
-                                <div class='d-flex align-items-center'>
-                                    <TablerInput
-                                        v-model='sensor.range'
-                                        style='width: 82px'
-                                    />
-                                    <div class='ms-1'>
-                                        m
-                                    </div>
-                                </div>
-                            </TablerRange>
-
-                            <TablerRange
-                                v-if='sensor.azimuth !== undefined'
-                                v-model='sensor.azimuth'
-                                label='Sensor Direction'
-                                :min='0'
-                                :max='360'
-                            >
-                                <div class='d-flex align-items-center'>
-                                    <TablerInput
-                                        v-model='sensor.azimuth'
-                                        style='width: 82px'
-                                    />
-                                    <div class='ms-1'>
-                                        deg
-                                    </div>
-                                </div>
-                            </TablerRange>
-
-                            <TablerRange
-                                v-if='sensor.fov !== undefined'
-                                v-model='sensor.fov'
-                                label='Sensor FOV'
-                                :min='0'
-                                :max='360'
-                            >
-                                <div class='d-flex align-items-center'>
-                                    <TablerInput
-                                        v-model='sensor.fov'
-                                        style='width: 82px'
-                                    />
-                                    <div class='ms-1'>
-                                        deg
-                                    </div>
-                                </div>
-                            </TablerRange>
+                            <div v-text='sensor.type || "Unknown"' />
                         </div>
+                        <div class='col-6'>
+                            <label class='subheader user-select-none'>Model</label>
+                            <div v-text='sensor.model || "Unknown"' />
+                        </div>
+
+                        <TablerRange
+                            v-if='sensor.range !== undefined'
+                            v-model='sensor.range'
+                            label='Sensor Range Length'
+                            :min='0'
+                            :max='60000'
+                        >
+                            <div class='d-flex align-items-center'>
+                                <TablerInput
+                                    v-model='sensor.range'
+                                    style='width: 82px'
+                                />
+                                <div class='ms-1'>
+                                    m
+                                </div>
+                            </div>
+                        </TablerRange>
+
+                        <TablerRange
+                            v-if='sensor.azimuth !== undefined'
+                            v-model='sensor.azimuth'
+                            label='Sensor Direction'
+                            :min='0'
+                            :max='360'
+                        >
+                            <div class='d-flex align-items-center'>
+                                <TablerInput
+                                    v-model='sensor.azimuth'
+                                    style='width: 82px'
+                                />
+                                <div class='ms-1'>
+                                    deg
+                                </div>
+                            </div>
+                        </TablerRange>
+
+                        <TablerRange
+                            v-if='sensor.fov !== undefined'
+                            v-model='sensor.fov'
+                            label='Sensor FOV'
+                            :min='0'
+                            :max='360'
+                        >
+                            <div class='d-flex align-items-center'>
+                                <TablerInput
+                                    v-model='sensor.fov'
+                                    style='width: 82px'
+                                />
+                                <div class='ms-1'>
+                                    deg
+                                </div>
+                            </div>
+                        </TablerRange>
                     </div>
                 </div>
+            </div>
         </SlideDownHeader>
     </div>
 </template>
