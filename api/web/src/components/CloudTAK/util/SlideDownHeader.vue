@@ -21,7 +21,7 @@
         class='grid-transition'
         :class='{ expanded: expanded }'
     >
-        <div :style="{ overflow: overflow }">
+        <div :style='{ overflow: overflow }'>
             <slot />
         </div>
     </div>

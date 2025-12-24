@@ -20,12 +20,12 @@
                     v-text='relative ? timediff(props.creator.time) : props.creator.time'
                 />
             </template>
-                <div class='mx-2 pt-2'>
-                    <ContactRow
-                        :contact='contact || props.creator'
-                        @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
-                    />
-                </div>
+            <div class='mx-2 pt-2'>
+                <ContactRow
+                    :contact='contact || props.creator'
+                    @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
+                />
+            </div>
         </SlideDownHeader>
     </div>
 </template>
