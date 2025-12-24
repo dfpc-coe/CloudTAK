@@ -339,23 +339,30 @@ export async function tokenParser(
             return new AuthResource(`etl.${token}`, access, decoded.id, decoded.internal);
         }
     } else {
-        const decoded = jwt.verify(token, secret);
-        if (typeof decoded === 'string') throw new Err(400, null, 'Decoded JWT Should be Object');
-        if (!decoded.email || typeof decoded.email !== 'string') throw new Err(401, null, 'Invalid Token');
-        if (!decoded.access || typeof decoded.access !== 'string') throw new Err(401, null, 'Invalid Token');
+        try {
+            const decoded = jwt.verify(token, secret);
+            if (typeof decoded === 'string') throw new Err(400, null, 'Decoded JWT Should be Object');
+            if (!decoded.email || typeof decoded.email !== 'string') throw new Err(401, null, 'Invalid Token');
+            if (!decoded.access || typeof decoded.access !== 'string') throw new Err(401, null, 'Invalid Token');
 
-        const access = castUserAccessEnum(decoded.access);
-        if (!access) throw new Err(400, null, 'Invalid User Access Value');
+            const access = castUserAccessEnum(decoded.access);
+            if (!access) throw new Err(400, null, 'Invalid User Access Value');
 
-        const auth: {
-            access: AuthUserAccess;
-            email: string;
-        } = {
-            email: decoded.email,
-            access
-        };
+            const auth: {
+                access: AuthUserAccess;
+                email: string;
+            } = {
+                email: decoded.email,
+                access
+            };
 
-        return new AuthUser(auth.access, auth.email);
+            return new AuthUser(auth.access, auth.email);
+        } catch (err) {
+            console.error('JWT Verify Error:', err);
+            console.error('Secret used:', secret);
+            console.error('Token:', token);
+            throw err;
+        }
     }
 }
 
