@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.37.0 - 2025-12-23
+
+- :bug: Ensure Readable Stream is passed to Data Package and not File Path
+- :white_check_mark: Add Unit Tests
+
 ### v12.36.0 - 2025-12-23
 
 > [!WARNING]
