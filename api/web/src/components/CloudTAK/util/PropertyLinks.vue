@@ -7,32 +7,22 @@
             v-if='url_links.length'
             class='col-12'
         >
-            <div
-                class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
-                :class='{ "bg-accent": expandedLinks, "hover": !expandedLinks }'
-                @click='expandedLinks = !expandedLinks'
+            <SlideDownHeader
+                v-model='expandedLinks'
+                label='Links'
             >
-                <IconLink
-                    :size='18'
-                    stroke='1'
-                    color='#6b7990'
-                    class='ms-2 me-1'
-                />
-                <label class='subheader cursor-pointer m-0'>Links</label>
-                <div class='ms-auto d-flex align-items-center'>
-                    <span class='badge bg-blue-lt me-2'>{{ url_links.length }}</span>
-                    <IconChevronDown
-                        class='transition-transform'
-                        :class='{ "rotate-180": !expandedLinks }'
+                <template #icon>
+                    <IconLink
                         :size='18'
+                        stroke='1'
+                        color='#6b7990'
+                        class='ms-2 me-1'
                     />
-                </div>
-            </div>
+                </template>
+                <template #right>
+                    <span class='badge bg-blue-lt me-2'>{{ url_links.length }}</span>
+                </template>
 
-            <div
-                class='grid-transition'
-                :class='{ expanded: expandedLinks }'
-            >
                 <div class='overflow-hidden mb-2'>
                     <div class='list-group list-group-flush bg-accent rounded mx-2 mt-2'>
                         <a
@@ -51,39 +41,29 @@
                         </a>
                     </div>
                 </div>
-            </div>
+            </SlideDownHeader>
         </div>
 
         <div
             v-if='responder_links.length'
             class='col-12'
         >
-            <div
-                class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
-                :class='{ "bg-accent": expandedResponders, "hover": !expandedResponders }'
-                @click='expandedResponders = !expandedResponders'
+            <SlideDownHeader
+                v-model='expandedResponders'
+                label='Tasked Personnel'
             >
-                <IconUsers
-                    :size='18'
-                    stroke='1'
-                    color='#6b7990'
-                    class='ms-2 me-1'
-                />
-                <label class='subheader cursor-pointer m-0'>Tasked Personnel</label>
-                <div class='ms-auto d-flex align-items-center'>
-                    <span class='badge bg-blue-lt me-2'>{{ responder_links.length }}</span>
-                    <IconChevronDown
-                        class='transition-transform'
-                        :class='{ "rotate-180": !expandedResponders }'
+                <template #icon>
+                    <IconUsers
                         :size='18'
+                        stroke='1'
+                        color='#6b7990'
+                        class='ms-2 me-1'
                     />
-                </div>
-            </div>
+                </template>
+                <template #right>
+                    <span class='badge bg-blue-lt me-2'>{{ responder_links.length }}</span>
+                </template>
 
-            <div
-                class='grid-transition'
-                :class='{ expanded: expandedResponders }'
-            >
                 <div class='overflow-hidden'>
                     <div class='row row-cards mx-2 pt-2'>
                         <div
@@ -120,14 +100,15 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </SlideDownHeader>
         </div>
     </div>
 </template>
 
 <script setup lang='ts'>
 import { computed, ref } from 'vue';
-import { IconUsers, IconLink, IconChevronDown, IconExternalLink } from '@tabler/icons-vue';
+import SlideDownHeader from './SlideDownHeader.vue';
+import { IconUsers, IconLink, IconExternalLink } from '@tabler/icons-vue';
 import timediff from '../../../timediff';
 
 const expandedResponders = ref(false);
@@ -159,23 +140,7 @@ const responder_links = computed(() => {
 </script>
 
 <style scoped>
-.grid-transition {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.3s ease-out;
-}
 
-.grid-transition.expanded {
-    grid-template-rows: 1fr;
-}
-
-.rotate-180 {
-    transform: rotate(-90deg);
-}
-
-.transition-transform {
-    transition: transform 0.3s ease-out;
-}
 
 .list-group-item-action:hover {
     background-color: rgba(255, 255, 255, 0.05) !important;

@@ -1,37 +1,25 @@
 <template>
     <div class='col-12 pt-2'>
-        <div
-            class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
-            :class='{ "bg-accent": expanded, "hover": !expanded }'
-            @click='expanded = !expanded'
+        <SlideDownHeader
+            v-model='expanded'
+            label='Times'
         >
-            <IconClock
-                :size='18'
-                stroke='1'
-                color='#6b7990'
-                class='ms-2 me-1'
-            />
-            <label class='subheader cursor-pointer m-0'>Times</label>
-            <div class='ms-auto d-flex align-items-center'>
+            <template #icon>
+                <IconClock
+                    :size='18'
+                    stroke='1'
+                    color='#6b7990'
+                    class='ms-2 me-1'
+                />
+            </template>
+            <template #right>
                 <span
                     v-if='props.cot.properties.start'
                     class='cursor-pointer me-2 text-muted small'
                     @click.stop='mode = mode === "relative" ? "absolute" : "relative"'
                     v-text='`Start: ${startProp}`'
                 />
-                <IconChevronDown
-                    class='transition-transform'
-                    :class='{ "rotate-180": !expanded }'
-                    :size='18'
-                />
-            </div>
-        </div>
-
-        <div
-            class='grid-transition'
-            :class='{ expanded: expanded }'
-        >
-            <div class='overflow-hidden'>
+            </template>
                 <div class='d-flex mx-3 pt-2 pb-2'>
                     <div class='ms-auto cursor-pointer text-blue subheader'>
                         <span
@@ -58,14 +46,14 @@
                         <span class='font-weight-medium'>{{ staleProp }}</span>
                     </div>
                 </div>
-            </div>
-        </div>
+        </SlideDownHeader>
     </div>
 </template>
 
 <script setup lang='ts'>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { IconClock, IconChevronDown } from '@tabler/icons-vue';
+import SlideDownHeader from './SlideDownHeader.vue';
+import { IconClock } from '@tabler/icons-vue';
 import timediff from '../../../timediff';
 import type COT from '../../../base/cot';
 
@@ -104,22 +92,4 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped>
-.grid-transition {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.3s ease-out;
-}
 
-.grid-transition.expanded {
-    grid-template-rows: 1fr;
-}
-
-.rotate-180 {
-    transform: rotate(-90deg);
-}
-
-.transition-transform {
-    transition: transform 0.3s ease-out;
-}
-</style>
