@@ -68,6 +68,23 @@
                             />
                         </TablerIconButton>
 
+                        <TablerIconButton
+                            v-if='cot.geometry.type === "Point"'
+                            :title='isLocked ? "Unlock" : "Lock On"'
+                            @click='toggleLock'
+                        >
+                            <IconLock
+                                v-if='isLocked'
+                                :size='32'
+                                stroke='1'
+                            />
+                            <IconLockOpen
+                                v-else
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+
 
                         <TablerIconButton
                             v-if='cot.properties.video && cot.properties.video.url'
@@ -669,6 +686,8 @@ import {
     IconAffiliate,
     IconInfoCircle,
     IconPaperclip,
+    IconLock,
+    IconLockOpen,
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
 import { std } from '../../std.ts';
@@ -758,6 +777,23 @@ const center = computed(() => {
 
     return arr;
 })
+
+const isLocked = computed(() => {
+    if (!cot.value) return false;
+    const id = cot.value.properties.id || cot.value.id;
+    return mapStore.locked.length > 0 && mapStore.locked[mapStore.locked.length - 1] === id;
+});
+
+function toggleLock() {
+    if (!cot.value) return;
+    const id = cot.value.properties.id || cot.value.id;
+
+    if (isLocked.value) {
+        mapStore.locked = mapStore.locked.filter(l => l !== id);
+    } else {
+        mapStore.locked.push(id);
+    }
+}
 
 async function load_cot() {
     username.value = undefined;
