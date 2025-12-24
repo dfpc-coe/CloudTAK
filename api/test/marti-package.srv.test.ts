@@ -204,6 +204,10 @@ test('POST api/marti/package - Upload KML', async () => {
                 assert.equal(dp.contents.length, 1);
                 assert.ok(dp.contents[0]._attributes.zipEntry.endsWith('.kml'));
 
+                const kmlContent = (await dp.getFileBuffer(dp.contents[0]._attributes.zipEntry)).toString();
+                const originalKml = await fsp.readFile(new URL('./data/point.kml', import.meta.url), 'utf8');
+                assert.equal(kmlContent, originalKml);
+
                 await dp.destroy();
 
                 response.setHeader('Content-Type', 'application/json');
@@ -217,6 +221,28 @@ test('POST api/marti/package - Upload KML', async () => {
                     Hash: 'abc123',
                     CreatorUid: 'creator123',
                     Name: 'Test Package',
+                }));
+                response.end();
+
+                return true;
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    resultCount: 1,
+                    results: [{
+                        UID: 'test',
+                        SubmissionDateTime: new Date().toISOString(),
+                        Keywords: ['test'],
+                        Tool: 'public',
+                        Size: 123,
+                        MIMEType: 'application/zip',
+                        EXPIRATION: -1,
+                        SubmissionUser: 'testuser',
+                        PrimaryKey: '123',
+                        Hash: 'abc123',
+                        CreatorUid: 'creator123',
+                        Name: 'Test Package',
+                    }]
                 }));
                 response.end();
 
