@@ -3,36 +3,20 @@
         class='col-12'
         :style='{ zIndex: expanded ? 10 : "auto", position: "relative" }'
     >
-        <div
-            class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
-            :class='{ "bg-accent": expanded, "hover": !expanded }'
-            @click='expanded = !expanded'
+        <SlideDownHeader
+            v-model='expanded'
+            label='Style'
         >
-            <IconPaint
-                :size='18'
-                stroke='1'
-                color='#6b7990'
-                class='ms-2 me-1'
-            />
-            <label class='subheader cursor-pointer m-0'>Style</label>
-            <div class='ms-auto d-flex align-items-center'>
-                <IconChevronDown
-                    class='transition-transform'
-                    :class='{ "rotate-180": !expanded }'
+            <template #icon>
+                <IconPaint
                     :size='18'
+                    stroke='1'
+                    color='#6b7990'
+                    class='ms-2 me-1'
                 />
-            </div>
-        </div>
+            </template>
 
-        <div
-            class='grid-transition'
-            :class='{ expanded: expanded }'
-        >
-            <div
-                :style='{ overflow: overflow }'
-                style='min-height: 0;'
-            >
-                <div class='mx-2 py-2'>
+            <div class='mx-2 py-2'>
                     <div class='rounded bg-accent px-2 py-2'>
                         <div class='row g-2'>
                             <template v-if='cot.geometry.type === "Point"'>
@@ -141,14 +125,14 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+        </SlideDownHeader>
     </div>
 </template>
 
 <script setup lang='ts'>
 import { ref, watch } from 'vue';
-import { IconPaint, IconChevronDown } from '@tabler/icons-vue';
+import SlideDownHeader from './SlideDownHeader.vue';
+import { IconPaint } from '@tabler/icons-vue';
 import {
     TablerInput,
     TablerRange,
@@ -162,20 +146,7 @@ const props = defineProps<{
 }>();
 
 const expanded = ref(false);
-const overflow = ref('hidden');
-let timeout: ReturnType<typeof setTimeout> | undefined;
 
-watch(expanded, (val) => {
-    if (timeout) clearTimeout(timeout);
-
-    if (val) {
-        timeout = setTimeout(() => {
-            overflow.value = 'visible';
-        }, 300);
-    } else {
-        overflow.value = 'hidden';
-    }
-});
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateProperty(key: string, event: any) {
@@ -228,22 +199,4 @@ function updatePropertyIcon(event: string | null) {
 }
 </script>
 
-<style scoped>
-.grid-transition {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.3s ease-out;
-}
 
-.grid-transition.expanded {
-    grid-template-rows: 1fr;
-}
-
-.rotate-180 {
-    transform: rotate(-90deg);
-}
-
-.transition-transform {
-    transition: transform 0.3s ease-out;
-}
-</style>
