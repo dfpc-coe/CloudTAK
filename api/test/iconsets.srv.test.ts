@@ -128,6 +128,42 @@ test('POST: /api/iconset/:iconset/icon - SVG without folder', async () => {
 
         assert.equal(res.body.name, 'car');
         assert.equal(res.body.path, 'test-iconset/car');
+
+        // Allow time for background sprite generation to complete before test teardown
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: /api/icon', async () => {
+    try {
+        const res = await flight.fetch('/api/icon?iconset=test-iconset', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        assert.equal(res.body.total, 4);
+        assert.equal(res.body.items.length, 4);
+
+        const cameraPng = res.body.items.find((i: any) => i.name === 'camera' && i.format === '.png');
+        assert.ok(cameraPng);
+        assert.equal(cameraPng.path, 'test-iconset/google/camera');
+
+        const carPng = res.body.items.find((i: any) => i.name === 'car' && i.format === '.png');
+        assert.ok(carPng);
+        assert.equal(carPng.path, 'test-iconset/car');
+
+        const cameraSvg = res.body.items.find((i: any) => i.name === 'camera' && i.format === '.svg');
+        assert.ok(cameraSvg);
+        assert.equal(cameraSvg.path, 'test-iconset/google/camera');
+
+        const carSvg = res.body.items.find((i: any) => i.name === 'car' && i.format === '.svg');
+        assert.ok(carSvg);
+        assert.equal(carSvg.path, 'test-iconset/car');
+
     } catch (err) {
         assert.ifError(err);
     }
