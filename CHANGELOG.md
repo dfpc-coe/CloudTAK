@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.38.0 - 2025-12-24
+
+- :bug: Fix issue where icons with Folders would fail to be fetched
+- :rocket: Implement LockOn functionality from CoTView - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1136
+
 ### v12.37.0 - 2025-12-23
 
 - :bug: Ensure Readable Stream is passed to Data Package and not File Path
