@@ -102,6 +102,7 @@ import {
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import { liveQuery } from "dexie";
 import {
     IconListCheck,
     IconUser,
@@ -114,6 +115,12 @@ const router = useRouter();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 const multiselect = ref(false)
+
+const rooms: Ref<Array<MissionLog>> = useObservable(
+    from(liveQuery(async () => {
+        return await props.subscription.log.list()
+    }))
+)
 
 const chats = ref<ProfileChatroomList>({
     total: 0,
