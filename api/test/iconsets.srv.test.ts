@@ -66,7 +66,7 @@ test('POST: /api/iconset/:iconset/icon - PNG with folder', async () => {
             }
         }, true);
 
-        assert.equal(res.body.name, 'camera');
+        assert.equal(res.body.name, 'google/camera');
         assert.equal(res.body.path, 'test-iconset/google/camera');
     } catch (err) {
         assert.ifError(err);
@@ -106,7 +106,7 @@ test('POST: /api/iconset/:iconset/icon - SVG with folder', async () => {
             }
         }, true);
 
-        assert.equal(res.body.name, 'camera');
+        assert.equal(res.body.name, 'google/camera');
         assert.equal(res.body.path, 'test-iconset/google/camera');
     } catch (err) {
         assert.ifError(err);
@@ -148,7 +148,7 @@ test('GET: /api/icon', async () => {
         assert.equal(res.body.total, 4);
         assert.equal(res.body.items.length, 4);
 
-        const cameraPng = res.body.items.find((i: any) => i.name === 'camera' && i.format === '.png');
+        const cameraPng = res.body.items.find((i: any) => i.name === 'google/camera' && i.format === '.png');
         assert.ok(cameraPng);
         assert.equal(cameraPng.path, 'test-iconset/google/camera');
 
@@ -156,7 +156,7 @@ test('GET: /api/icon', async () => {
         assert.ok(carPng);
         assert.equal(carPng.path, 'test-iconset/car');
 
-        const cameraSvg = res.body.items.find((i: any) => i.name === 'camera' && i.format === '.svg');
+        const cameraSvg = res.body.items.find((i: any) => i.name === 'google/camera' && i.format === '.svg');
         assert.ok(cameraSvg);
         assert.equal(cameraSvg.path, 'test-iconset/google/camera');
 
@@ -164,6 +164,83 @@ test('GET: /api/icon', async () => {
         assert.ok(carSvg);
         assert.equal(carSvg.path, 'test-iconset/car');
 
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: /api/iconset/:iconset/icon/:icon', async () => {
+    try {
+        // List icons to get IDs
+        const list = await flight.fetch('/api/icon?iconset=test-iconset', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        for (const icon of list.body.items) {
+            const res = await flight.fetch(`/api/iconset/test-iconset/icon/${icon.id}`, {
+                method: 'GET',
+                auth: {
+                    bearer: flight.token.admin
+                }
+            }, true);
+
+            assert.equal(res.body.id, icon.id);
+            assert.equal(res.body.name, icon.name);
+            assert.equal(res.body.path, icon.path);
+            assert.equal(res.body.iconset, 'test-iconset');
+        }
+
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: /api/iconset/:iconset/icon/:name', async () => {
+    try {
+        // Delete SVGs to avoid path collision for name lookup test
+        const listAll = await flight.fetch('/api/icon?iconset=test-iconset', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        for (const icon of listAll.body.items) {
+            if (icon.format === '.svg') {
+                await flight.fetch(`/api/iconset/test-iconset/icon/${icon.id}`, {
+                    method: 'DELETE',
+                    auth: {
+                        bearer: flight.token.admin
+                    }
+                }, false);
+            }
+        }
+
+        const list = await flight.fetch('/api/icon?iconset=test-iconset', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        for (const icon of list.body.items) {
+            const relativePath = icon.path.replace(`${icon.iconset}/`, '');
+            const nameWithExt = `${relativePath}${icon.format}`;
+            const encodedName = encodeURIComponent(nameWithExt);
+
+            const res = await flight.fetch(`/api/iconset/test-iconset/icon/${encodedName}`, {
+                method: 'GET',
+                auth: {
+                    bearer: flight.token.admin
+                }
+            }, true);
+
+            assert.equal(res.body.id, icon.id);
+            assert.equal(res.body.name, icon.name);
+        }
     } catch (err) {
         assert.ifError(err);
     }

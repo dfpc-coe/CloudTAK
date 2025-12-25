@@ -327,7 +327,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const icon = await config.models.Icon.generate({
                 ...req.body,
-                name: name,
+                name: full,
                 format: format,
                 path: `${iconset.uid}/${full}`,
                 iconset: iconset.uid
