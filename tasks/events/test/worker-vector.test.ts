@@ -24,6 +24,12 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
         setGlobalDispatcher(mockAgent);
         const mockPool = mockAgent.get('http://localhost:5001');
 
+        t.after(() => {
+            Sinon.restore();
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+        });
+
         mockPool.intercept({
             path: /profile\/asset/,
             method: 'POST'
@@ -85,7 +91,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
             path: '/api/iconset',
             method: 'POST'
         }).reply(() => {
-            t.pass('Creating Iconset');
+            assert.ok(true, 'Creating Iconset');
             return {
                 statusCode: 200,
                 data: JSON.stringify({})
@@ -96,7 +102,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
             path: /\/api\/iconset\/.*\/regen/,
             method: 'POST'
         }).reply(() => {
-            t.pass('Regenerating Iconset');
+            assert.ok(true, 'Regenerating Iconset');
             return {
                 statusCode: 200,
                 data: JSON.stringify({})
@@ -167,16 +173,10 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
         });
 
         worker.on('error', (err) => {
-            t.error(err, 'No Error');
-            Sinon.restore();
-            setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            assert.ifError(err);
         });
 
         worker.on('success', () => {
-            Sinon.restore();
-            setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
         });
 
         await worker.process()
