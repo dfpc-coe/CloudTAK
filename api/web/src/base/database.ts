@@ -21,6 +21,7 @@ export interface DBChatroomChat {
     id: string;
     chatroom: string;
     sender: string;
+    sender_uid: string;
     message: string;
     created: string;
 }

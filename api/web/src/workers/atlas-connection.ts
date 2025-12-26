@@ -6,6 +6,7 @@ import { stdurl } from '../std.ts';
 import type Atlas from './atlas.ts';
 import { version } from '../../package.json'
 import Chatroom from '../base/chatroom.ts';
+import { db } from '../base/database.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../base/events.ts';
 import type { Feature, Import } from '../types.ts';
@@ -150,9 +151,20 @@ export default class AtlasConnection {
                     console.warn('Unknown Task', JSON.stringify(task));
                 }
             } else if (body.type === 'chat') {
-                const chat = (body.data as Feature).properties;
+                const feat = body.data as Feature;
+                const chat = feat.properties;
                 if (chat.chat) {
                     await Chatroom.load(chat.chat.chatroom, { reload: false });
+
+                    await db.chatroom_chats.put({
+                        id: feat.id,
+                        chatroom: chat.chat.chatroom,
+                        sender: chat.chat.senderCallsign,
+                        // @ts-expect-error - senderUid might not be in type definition
+                        sender_uid: chat.chat.senderUid || chat.chat.senderCallsign,
+                        message: chat.remarks || '',
+                        created: chat.time || new Date().toISOString()
+                    });
 
                     await TAKNotification.create(
                         NotificationType.Chat,

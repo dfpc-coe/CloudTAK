@@ -19,11 +19,13 @@
             />
         </template>
         <template #default>
+            <TablerLoading v-if='loading' />
             <GenericSelect
+                v-else
                 ref='select'
                 role='menu'
                 :disabled='!multiselect'
-                :items='chats.items'
+                :items='chats'
             >
                 <template #buttons='{disabled}'>
                     <TablerDelete
@@ -81,6 +83,10 @@ import { useRoute } from 'vue-router';
 import { server } from '../../../std.ts';
 import Chatroom from '../../../base/chatroom.ts';
 import GenericSelect from '../util/GenericSelect.vue';
+import { useObservable } from '@vueuse/rxjs';
+import { liveQuery } from 'dexie';
+import { from } from 'rxjs';
+import { db } from '../../../base/database.ts';
 import {
     IconListCheck,
     IconSend,
@@ -90,6 +96,7 @@ import {
     TablerDelete,
     TablerIconButton,
     TablerInput,
+    TablerLoading,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
@@ -103,10 +110,14 @@ const loading = ref(true);
 const select = ref(null);
 const multiselect = ref(false);
 const name = ref(route.params.chatroom === 'new' ? route.query.callsign : route.params.chatroom);
-const chats = ref({
-    total: 0,
-    items: []
-});
+const chats = useObservable(
+    from(liveQuery(async () => {
+        if (route.params.chatroom === 'new') return [];
+        const room = await Chatroom.load(name.value, { reload: false });
+        return await room.chats.list();
+    })),
+    { initialValue: [] }
+);
 
 const message = ref('');
 
@@ -120,11 +131,18 @@ onMounted(async () => {
 
 async function sendMessage() {
     if (!message.value.trim().length) return;
-    const chat = {
+
+    const msg = message.value;
+
+    await db.chatroom_chats.put({
+        id: crypto.randomUUID(),
+        chatroom: name.value,
+        sender: callsign.value,
         sender_uid: id.value,
-        message: message.value
-    };
-    chats.value.items.push(chat)
+        message: msg,
+        created: new Date().toISOString()
+    });
+
     message.value = ''
 
     let single;
@@ -134,7 +152,7 @@ async function sendMessage() {
             sender_callsign: route.query.callsign
         }
     } else {
-        single = chats.value.items.filter((chat) => {
+        single = chats.value.filter((chat) => {
             return chat.sender_uid !== id.value
         })[0];
 
@@ -151,6 +169,12 @@ async function sendMessage() {
                     sender_callsign: name.value
                 }
             }
+        } else {
+            // Ensure single has sender_callsign (DBChatroomChat has sender)
+            single = {
+                sender_uid: single.sender_uid,
+                sender_callsign: single.sender
+            }
         }
     }
 
@@ -166,7 +190,7 @@ async function sendMessage() {
             uid: id.value,
             callsign: callsign.value
         },
-        message: chat.message
+        message: msg
     }, 'chat');
 }
 
@@ -193,7 +217,7 @@ async function fetchChats() {
     if (route.params.chatroom !== 'new') {
         try {
             const room = new Chatroom(route.params.chatroom);
-            chats.value = await room.getChats();
+            await room.chats.refresh();
         } catch (err) {
             console.error(err);
         }

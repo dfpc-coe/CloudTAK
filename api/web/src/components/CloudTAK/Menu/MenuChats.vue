@@ -37,7 +37,7 @@
                 v-if='error'
                 :err='error'
             />
-            <TablerLoading v-else-if='loading' />
+            <TablerLoading v-else-if='loading || !chats' />
             <TablerNone
                 v-else-if='!chats.length'
                 :create='false'
@@ -122,7 +122,7 @@ const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 const multiselect = ref(false)
 
-const chats: Ref<Array<DBChatroom>> = useObservable(
+const chats: Ref<Array<DBChatroom> | undefined> = useObservable(
     from(liveQuery(async () => {
         return await Chatroom.list(paging.value.filter);
     }))
