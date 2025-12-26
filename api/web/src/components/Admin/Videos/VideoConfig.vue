@@ -68,7 +68,7 @@
                     v-if='(service.paths || []).length === 0'
                     :create='false'
                     :compact='true'
-                    label='Server Paths'
+                    label='No Server Paths'
                 />
                 <template v-else>
                     <div
