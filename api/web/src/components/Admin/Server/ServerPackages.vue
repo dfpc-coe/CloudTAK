@@ -30,7 +30,7 @@
                 <template v-else>
                     <TablerNone
                         v-if='list.total === 0'
-                        label='Packages'
+                        label='No Packages'
                         :create='false'
                     />
                     <template v-else>

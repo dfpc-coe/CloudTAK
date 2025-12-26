@@ -24,7 +24,7 @@
         >
             <TablerNone
                 v-if='list.videoConnections.length === 0'
-                label='Videos'
+                label='No Videos'
                 :create='false'
             />
             <template v-else>

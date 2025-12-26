@@ -245,7 +245,7 @@
                                                 />
                                                 <TablerNone
                                                     v-else-if='!layer.incoming'
-                                                    label='Incoming Config'
+                                                    label='No Incoming Config'
                                                     :create='capabilities && capabilities.incoming !== undefined'
                                                     @create='createIncoming'
                                                 />

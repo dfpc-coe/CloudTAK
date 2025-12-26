@@ -19,11 +19,13 @@
             />
         </template>
         <template #default>
+            <TablerLoading v-if='loading' />
             <GenericSelect
+                v-else
                 ref='select'
                 role='menu'
                 :disabled='!multiselect'
-                :items='chats.items'
+                :items='chats'
             >
                 <template #buttons='{disabled}'>
                     <TablerDelete
@@ -50,21 +52,24 @@
                 </template>
             </GenericSelect>
 
-            <div class='border-top border-blue position-absolute start-0 bottom-0 end-0'>
-                <div class='row mx-2 mt-2'>
-                    <div class='col-12'>
+            <div class='border-top position-absolute start-0 bottom-0 end-0'>
+                <div class='d-flex align-items-center mx-2 my-2'>
+                    <div class='flex-grow-1 me-2'>
                         <TablerInput
                             v-model='message'
                             @keyup.enter='sendMessage'
                         />
                     </div>
-                    <div class='col-12 my-2'>
-                        <button
-                            class='w-100 btn btn-primary'
+                    <div>
+                        <TablerIconButton
+                            title='Send Message'
                             @click='sendMessage'
                         >
-                            Send
-                        </button>
+                            <IconSend
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                 </div>
             </div>
@@ -73,24 +78,28 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { server } from '../../../std.ts';
+import { ref, onMounted, shallowRef, watch, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import Chatroom from '../../../base/chatroom.ts';
 import GenericSelect from '../util/GenericSelect.vue';
+import { liveQuery } from 'dexie';
 import {
     IconListCheck,
+    IconSend,
 } from '@tabler/icons-vue';
 import {
     TablerRefreshButton,
     TablerDelete,
     TablerIconButton,
     TablerInput,
+    TablerLoading,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
 const route = useRoute();
+const router = useRouter();
 
 const id = ref('')
 const callsign = ref('');
@@ -98,9 +107,34 @@ const loading = ref(true);
 const select = ref(null);
 const multiselect = ref(false);
 const name = ref(route.params.chatroom === 'new' ? route.query.callsign : route.params.chatroom);
-const chats = ref({
-    total: 0,
-    items: []
+const room = shallowRef();
+
+const chats = ref([]);
+let subscription;
+
+watch([room, () => route.params.chatroom], ([newRoom, chatroom]) => {
+    if (subscription) {
+        subscription.unsubscribe();
+        subscription = null;
+    }
+
+    if (newRoom && chatroom !== 'new') {
+        const obs = liveQuery(() => newRoom.chats.list());
+        subscription = obs.subscribe({
+            next: (val) => {
+                chats.value = val;
+            },
+            error: (err) => {
+                console.error(err);
+            }
+        });
+    } else {
+        chats.value = [];
+    }
+}, { immediate: true });
+
+onUnmounted(() => {
+    if (subscription) subscription.unsubscribe();
 });
 
 const message = ref('');
@@ -110,63 +144,62 @@ onMounted(async () => {
     id.value = `ANDROID-CloudTAK-${profile.username}`
     callsign.value = profile.tak_callsign;
 
+    room.value = new Chatroom(name.value);
+
+    await fetchChats();
+});
+
+watch(() => route.params.chatroom, async (newChatroom) => {
+    if (newChatroom === 'new') {
+        name.value = route.query.callsign;
+    } else {
+        name.value = newChatroom;
+    }
+    room.value = new Chatroom(name.value);
     await fetchChats();
 });
 
 async function sendMessage() {
     if (!message.value.trim().length) return;
-    const chat = {
-        sender_uid: id.value,
-        message: message.value
-    };
-    chats.value.items.push(chat)
-    message.value = ''
+    if (!room.value) return;
 
-    let single;
+    let recipient;
     if (route.query.uid && route.query.callsign) {
-        single = {
-            sender_uid: route.query.uid,
-            sender_callsign: route.query.callsign
+        recipient = {
+            uid: String(route.query.uid),
+            callsign: String(route.query.callsign)
         }
-    } else {
-        single = chats.value.items.filter((chat) => {
-            return chat.sender_uid !== id.value
-        })[0];
     }
 
-    if (!single) throw new Error('Error sending Chat - Contact is not defined');
+    await room.value.chats.send(
+        message.value,
+        { uid: id.value, callsign: callsign.value },
+        mapStore.worker,
+        recipient
+    );
 
-    await mapStore.worker.conn.sendCOT({
-        chatroom: single.sender_callsign,
-        to: {
-            uid: single.sender_uid,
-            callsign: single.sender_callsign
-        },
-        from: {
-            uid: id.value,
-            callsign: callsign.value
-        },
-        message: chat.message
-    }, 'chat');
+    message.value = ''
+
+    if (route.params.chatroom === 'new') {
+        await router.push({
+            name: 'home-menu-chat',
+            params: { chatroom: name.value }
+        });
+    }
 }
 
 async function deleteChats() {
     if (!select.value) return;
+    if (!room.value) return;
     const selected = select.value.selected;
 
     loading.value = true;
 
-    const res = await server.DELETE('/api/profile/chatroom/{:chatroom}/chat', {
-        params: {
-            query: {
-                chat: Array.from(selected.values())
-            }
-        }
-    });
-
-    if (res.error) {
+    try {
+        await room.value.deleteChats(Array.from(selected.values()));
+    } catch (err) {
         loading.value = false;
-        throw new Error(res.error.message);
+        throw new Error(err.message);
     }
 
     await fetchChats();
@@ -175,16 +208,13 @@ async function deleteChats() {
 async function fetchChats() {
     loading.value = true;
 
-    if (route.params.chatroom !== 'new') {
-        const res = await server.GET(`/api/profile/chatroom/{:chatroom}/chat`, {
-            params: {
-                path: {
-                    ':chatroom': route.params.chatroom
-                }
-            }
-        });
-
-        chats.value = res.data;
+    if (route.params.chatroom !== 'new' && room.value) {
+        try {
+            await Chatroom.load(room.value.name, { reload: false });
+            await room.value.chats.refresh();
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     loading.value = false;

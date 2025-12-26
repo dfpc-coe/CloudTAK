@@ -34,7 +34,7 @@
             />
             <TablerNone
                 v-else-if='!list.items.length'
-                label='Imports'
+                label='No Imports'
                 :create='false'
             />
             <div
