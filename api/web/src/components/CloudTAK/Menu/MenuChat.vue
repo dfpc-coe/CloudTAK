@@ -50,8 +50,8 @@
                 </template>
             </GenericSelect>
 
-            <div class='border-top border-blue position-absolute start-0 bottom-0 end-0'>
-                <div class='d-flex mx-2 my-2'>
+            <div class='border-top position-absolute start-0 bottom-0 end-0'>
+                <div class='d-flex align-items-center mx-2 my-2'>
                     <div class='flex-grow-1 me-2'>
                         <TablerInput
                             v-model='message'
@@ -59,12 +59,15 @@
                         />
                     </div>
                     <div>
-                        <button
-                            class='btn btn-primary'
+                        <TablerIconButton
+                            title='Send Message'
                             @click='sendMessage'
                         >
-                            Send
-                        </button>
+                            <IconSend
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                 </div>
             </div>
@@ -80,6 +83,7 @@ import Chatroom from '../../../base/chatroom.ts';
 import GenericSelect from '../util/GenericSelect.vue';
 import {
     IconListCheck,
+    IconSend,
 } from '@tabler/icons-vue';
 import {
     TablerRefreshButton,
@@ -133,12 +137,27 @@ async function sendMessage() {
         single = chats.value.items.filter((chat) => {
             return chat.sender_uid !== id.value
         })[0];
+
+        if (!single) {
+            const contact = await mapStore.worker.team.getByCallsign(name.value);
+            if (contact) {
+                single = {
+                    sender_uid: contact.uid,
+                    sender_callsign: contact.callsign
+                }
+            } else {
+                single = {
+                    sender_uid: name.value,
+                    sender_callsign: name.value
+                }
+            }
+        }
     }
 
     if (!single) throw new Error('Error sending Chat - Contact is not defined');
 
     await mapStore.worker.conn.sendCOT({
-        chatroom: single.sender_callsign,
+        chatroom: name.value,
         to: {
             uid: single.sender_uid,
             callsign: single.sender_callsign
