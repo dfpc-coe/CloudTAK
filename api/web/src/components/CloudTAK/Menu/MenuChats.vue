@@ -39,7 +39,7 @@
             />
             <TablerLoading v-else-if='loading' />
             <TablerNone
-                v-else-if='!filteredChats.length'
+                v-else-if='!chats.length'
                 :create='false'
             />
             <template v-else>
@@ -48,7 +48,7 @@
                     role='menu'
                     :disabled='!multiselect'
                     :hover='false'
-                    :items='filteredChats'
+                    :items='chats'
                 >
                     <template #buttons='{disabled}'>
                         <TablerDelete
@@ -60,7 +60,7 @@
                     <template #item='{item}'>
                         <StandardItem
                             class='d-flex align-items-center gap-3 p-2 w-100'
-                            @click='multiselect ? undefined : router.push(`/menu/chats/${item.chatroom}`)'
+                            @click='multiselect ? undefined : router.push(`/menu/chats/${item.name}`)'
                         >
                             <div
                                 class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
@@ -74,7 +74,7 @@
 
                             <div class='d-flex flex-column'>
                                 <div class='fw-bold'>
-                                    {{ item.chatroom }}
+                                    {{ item.name }}
                                 </div>
                             </div>
                         </StandardItem>
@@ -87,8 +87,12 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted, useTemplateRef } from 'vue'
+import type { Ref } from 'vue';
 import type { ComponentExposed } from 'vue-component-type-helpers'
 import { server } from '../../../std.ts';
+import Chatroom from '../../../base/chatroom.ts';
+import { db } from '../../../base/database.ts';
+import type { DBChatroom } from '../../../base/database.ts';
 import type { ProfileChatroomList } from '../../../types.ts';
 import GenericSelect from '../util/GenericSelect.vue';
 import StandardItem from '../util/StandardItem.vue';
@@ -102,13 +106,15 @@ import {
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { liveQuery } from "dexie";
 import {
     IconListCheck,
     IconUser,
     IconPlus,
 } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
+import { liveQuery } from "dexie";
+import { useObservable } from "@vueuse/rxjs";
+import { from } from 'rxjs';
 
 const select = useTemplateRef<ComponentExposed<typeof GenericSelect>>('select');
 const router = useRouter();
@@ -116,16 +122,11 @@ const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 const multiselect = ref(false)
 
-const rooms: Ref<Array<MissionLog>> = useObservable(
+const chats: Ref<Array<DBChatroom>> = useObservable(
     from(liveQuery(async () => {
-        return await props.subscription.log.list()
+        return await Chatroom.list(paging.value.filter);
     }))
 )
-
-const chats = ref<ProfileChatroomList>({
-    total: 0,
-    items: []
-});
 
 const paging = ref({
     filter: ''
@@ -135,14 +136,6 @@ onMounted(async () => {
     await fetchList();
 });
 
-const filteredChats = computed(() => {
-    if (!paging.value.filter) return chats.value.items;
-
-    return chats.value.items.filter(c =>
-        c.chatroom.toLowerCase().includes(paging.value.filter.toLowerCase())
-    ).sort().reverse();
-});
-
 async function deleteChats(): Promise<void> {
     if (!select.value) return;
     const selected = select.value.selected;
@@ -150,15 +143,12 @@ async function deleteChats(): Promise<void> {
     loading.value = true;
 
     const chatroom: Array<string> = Array.from(selected.values()).map(id => String(id));
-    const res = await server.DELETE('/api/profile/chatroom', {
-        params: {
-            query: { chatroom }
-        }
-    });
 
-    if (res.error) {
+    try {
+        await Chatroom.delete(chatroom);
+    } catch (err) {
         loading.value = false;
-        error.value = Error(res.error.message);
+        error.value = err as Error;
         return;
     }
 
@@ -170,14 +160,11 @@ async function fetchList(): Promise<void> {
     multiselect.value = false;
     error.value = undefined;
 
-    const res = await server.GET('/api/profile/chatroom');
-    loading.value = false;
-
-    loading.value = false;
-    if (res.error) error.value = Error(res.error.message);
-
-    if (res.data) {
-        chats.value = res.data;
+    try {
+        await Chatroom.sync();
+    } catch (err) {
+        error.value = err as Error;
     }
+    loading.value = false;
 }
 </script>

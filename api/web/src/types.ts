@@ -108,6 +108,7 @@ export type Profile = paths["/api/profile"]["get"]["responses"]["200"]["content"
 export type Profile_Update = paths["/api/profile"]["patch"]["requestBody"]["content"]["application/json"]
 
 export type ProfileChatroomList = paths["/api/profile/chatroom"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ProfileChatList = paths["/api/profile/chatroom/{:chatroom}/chat"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type ProfileVideoList = paths["/api/profile/video"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ProfileVideo = paths["/api/profile/video/{:id}"]["get"]["responses"]["200"]["content"]["application/json"]
