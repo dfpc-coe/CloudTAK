@@ -151,31 +151,37 @@ export default class AtlasConnection {
                     console.warn('Unknown Task', JSON.stringify(task));
                 }
             } else if (body.type === 'chat') {
-                const feat = body.data as Feature;
-                const chat = feat.properties;
-                if (chat.chat) {
-                    await Chatroom.load(chat.chat.chatroom, { reload: false });
+                const chat = body.data as any;
 
-                    await db.chatroom_chats.put({
-                        id: feat.id,
-                        chatroom: chat.chat.chatroom,
-                        sender: chat.chat.senderCallsign,
-                        // @ts-expect-error - senderUid might not be in type definition
-                        sender_uid: chat.chat.senderUid || chat.chat.senderCallsign,
-                        message: chat.remarks || '',
-                        created: chat.time || new Date().toISOString()
-                    });
+                let chatroom = chat.chatroom;
 
-                    await TAKNotification.create(
-                        NotificationType.Chat,
-                        'New Chat Message',
-                        `${chat.chat.senderCallsign} to ${chat.chat.chatroom} says: ${chat.remarks}`,
-                        `/menu/chats`,
-                        true
-                    );
-                } else {
-                    console.log('UNKNOWN Chat', body.data);
+                try {
+                    const profile = await this.atlas.profile.profile;
+                    if (profile && (chatroom === profile.tak_callsign || chatroom === `ANDROID-CloudTAK-${profile.username}`)) {
+                        chatroom = chat.from.callsign;
+                    }
+                } catch (err) {
+                    console.error('Error getting profile for chat routing', err);
                 }
+
+                await Chatroom.load(chatroom, { reload: false });
+
+                await db.chatroom_chats.put({
+                    id: chat.messageId,
+                    chatroom: chatroom,
+                    sender: chat.from.callsign,
+                    sender_uid: chat.from.uid,
+                    message: chat.message,
+                    created: chat.time
+                });
+
+                await TAKNotification.create(
+                    NotificationType.Chat,
+                    'New Chat Message',
+                    `${chat.from.callsign} to ${chat.chatroom} says: ${chat.message}`,
+                    `/menu/chats`,
+                    true
+                );
             } else if (body.type === 'status') {
                 const status = body.data as { version: string };
 
