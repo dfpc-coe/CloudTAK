@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v12.39.0 - 2025-12-26
+
+- :rocket: Make Chatroom List Live
+- :rocket: Make Chats List Live
+- :rocket: Update Chat delete call to use message_id instead of Database ID
+- :arrow_up: Update VueTabler@4 to use typescript based components
+
 ### v12.38.0 - 2025-12-24
 
 - :bug: Fix issue where icons with Folders would fail to be fetched
