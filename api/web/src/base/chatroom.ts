@@ -60,13 +60,7 @@ export default class Chatroom {
 
             return exists;
         } else {
-            const url = stdurl('/api/profile/chatroom/' + encodeURIComponent(name));
-
-            const chatroom = await std(url) as ProfileChatroomList;
-
-            const room = new Chatroom(
-                chatroom.name
-            );
+            const room = new Chatroom(name);
 
             await db.chatroom.put({
                 id: room.name,
@@ -84,11 +78,12 @@ export default class Chatroom {
 
     static async delete(names: string[]): Promise<void> {
         const url = stdurl('/api/profile/chatroom');
+        for (const name of names) {
+            url.searchParams.append('chatroom', name);
+        }
+
         await std(url, {
-            method: 'DELETE',
-            query: {
-                chatroom: names
-            }
+            method: 'DELETE'
         });
 
         await db.chatroom.bulkDelete(names);
@@ -114,25 +109,28 @@ export default class Chatroom {
     };
 
     async fetch(): Promise<void> {
-        const url = stdurl('/api/profile/chatroom/' + encodeURIComponent(this.name));
+        const url = stdurl('/api/profile/chatroom');
 
-        const chatroom = await std(url) as ProfileChatroomList;
+        const list = await std(url) as ProfileChatroomList;
 
-        this.name = chatroom.name;
+        const found = list.items.find((c) => c.chatroom === this.name);
+        if (found) {
+            this.name = found.chatroom;
+        }
     }
 
     async getChats(): Promise<ProfileChatList> {
         const url = stdurl(`/api/profile/chatroom/${encodeURIComponent(this.name)}/chat`);
         return await std(url) as ProfileChatList;
     }
-
     async deleteChats(ids: string[]): Promise<void> {
         const url = stdurl(`/api/profile/chatroom/${encodeURIComponent(this.name)}/chat`);
+        for (const id of ids) {
+            url.searchParams.append('chat', id);
+        }
+
         await std(url, {
-            method: 'DELETE',
-            query: {
-                chat: ids
-            }
+            method: 'DELETE'
         });
     }
 

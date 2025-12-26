@@ -5,6 +5,7 @@
 import { stdurl } from '../std.ts';
 import type Atlas from './atlas.ts';
 import { version } from '../../package.json'
+import Chatroom from '../base/chatroom.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../base/events.ts';
 import type { Feature, Import } from '../types.ts';
@@ -151,6 +152,8 @@ export default class AtlasConnection {
             } else if (body.type === 'chat') {
                 const chat = (body.data as Feature).properties;
                 if (chat.chat) {
+                    await Chatroom.load(chat.chat.chatroom, { reload: false });
+
                     await TAKNotification.create(
                         NotificationType.Chat,
                         'New Chat Message',

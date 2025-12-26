@@ -51,16 +51,16 @@
             </GenericSelect>
 
             <div class='border-top border-blue position-absolute start-0 bottom-0 end-0'>
-                <div class='row mx-2 mt-2'>
-                    <div class='col-12'>
+                <div class='d-flex mx-2 my-2'>
+                    <div class='flex-grow-1 me-2'>
                         <TablerInput
                             v-model='message'
                             @keyup.enter='sendMessage'
                         />
                     </div>
-                    <div class='col-12 my-2'>
+                    <div>
                         <button
-                            class='w-100 btn btn-primary'
+                            class='btn btn-primary'
                             @click='sendMessage'
                         >
                             Send
