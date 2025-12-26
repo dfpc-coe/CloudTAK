@@ -48,7 +48,7 @@
             />
             <TablerNone
                 v-else-if='!list.items.length'
-                label='Templates'
+                label='No Templates'
                 :create='false'
             />
             <div

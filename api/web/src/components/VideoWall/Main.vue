@@ -16,7 +16,7 @@
             v-else-if='list.total === 0'
         >
             <TablerNone
-                label='Video Sources Configured'
+                label='No Video Sources Configured'
                 :create='false'
             />
         </div>

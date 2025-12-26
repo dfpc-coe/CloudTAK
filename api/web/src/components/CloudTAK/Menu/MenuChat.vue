@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, shallowRef } from 'vue';
 import { useRoute } from 'vue-router';
 import Chatroom from '../../../base/chatroom.ts';
 import GenericSelect from '../util/GenericSelect.vue';
@@ -108,12 +108,13 @@ const loading = ref(true);
 const select = ref(null);
 const multiselect = ref(false);
 const name = ref(route.params.chatroom === 'new' ? route.query.callsign : route.params.chatroom);
-const room = new Chatroom(name.value);
+const room = shallowRef();
 
 const chats = useObservable(
     from(liveQuery(async () => {
+        if (!room.value) return [];
         if (route.params.chatroom === 'new') return [];
-        return await room.chats.list();
+        return await room.value.chats.list();
     })),
     { initialValue: [] }
 );
@@ -125,11 +126,14 @@ onMounted(async () => {
     id.value = `ANDROID-CloudTAK-${profile.username}`
     callsign.value = profile.tak_callsign;
 
+    room.value = new Chatroom(name.value);
+
     await fetchChats();
 });
 
 async function sendMessage() {
     if (!message.value.trim().length) return;
+    if (!room.value) return;
 
     let recipient;
     if (route.query.uid && route.query.callsign) {
@@ -139,7 +143,7 @@ async function sendMessage() {
         }
     }
 
-    await room.chats.send(
+    await room.value.chats.send(
         message.value,
         { uid: id.value, callsign: callsign.value },
         mapStore.worker,
@@ -151,12 +155,13 @@ async function sendMessage() {
 
 async function deleteChats() {
     if (!select.value) return;
+    if (!room.value) return;
     const selected = select.value.selected;
 
     loading.value = true;
 
     try {
-        await room.deleteChats(Array.from(selected.values()));
+        await room.value.deleteChats(Array.from(selected.values()));
     } catch (err) {
         loading.value = false;
         throw new Error(err.message);
@@ -168,10 +173,10 @@ async function deleteChats() {
 async function fetchChats() {
     loading.value = true;
 
-    if (route.params.chatroom !== 'new') {
+    if (route.params.chatroom !== 'new' && room.value) {
         try {
-            await Chatroom.load(room.name, { reload: false });
-            await room.chats.refresh();
+            await Chatroom.load(room.value.name, { reload: false });
+            await room.value.chats.refresh();
         } catch (err) {
             console.error(err);
         }
