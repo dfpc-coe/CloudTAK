@@ -1,6 +1,7 @@
 import { db } from './database.ts'
 import type { DBChatroom } from './database.ts';
 import { std, stdurl } from '../std.ts';
+import ChatroomChats from './chatroom-chats.ts';
 import type {
     ProfileChatroomList,
     ProfileChatList
@@ -13,11 +14,13 @@ import type {
  */
 export default class Chatroom {
     name: string;
+    chats: ChatroomChats;
 
     constructor(
         name: string
     ) {
         this.name = name;
+        this.chats = new ChatroomChats(name);
     }
 
     /**
