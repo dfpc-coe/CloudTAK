@@ -80,13 +80,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { server } from '../../../std.ts';
 import Chatroom from '../../../base/chatroom.ts';
 import GenericSelect from '../util/GenericSelect.vue';
 import { useObservable } from '@vueuse/rxjs';
 import { liveQuery } from 'dexie';
 import { from } from 'rxjs';
-import { db } from '../../../base/database.ts';
 import {
     IconListCheck,
     IconSend,

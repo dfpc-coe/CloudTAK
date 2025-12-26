@@ -109,6 +109,20 @@ export type Chat = {
     message: string;
     time: string;
 }
+
+export type APIProfileChat = {
+    id: number;
+    read: boolean;
+    username: string;
+    chatroom: string;
+    sender_callsign: string;
+    sender_uid: string;
+    created: string;
+    updated: string;
+    message_id: string;
+    message: string;
+}
+
 export type PaletteList = paths["/api/palette"]["get"]["responses"]["200"]["content"]["application/json"]
 export type PaletteFeature = paths["/api/palette/{:palette}/feature/{:feature}"]["get"]["responses"]["200"]["content"]["application/json"]
 
