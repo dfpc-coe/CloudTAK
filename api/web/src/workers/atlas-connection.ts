@@ -9,7 +9,7 @@ import Chatroom from '../base/chatroom.ts';
 import { db } from '../base/database.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../base/events.ts';
-import type { Feature, Import } from '../types.ts';
+import type { Feature, Import, Chat } from '../types.ts';
 
 export default class AtlasConnection {
     atlas: Atlas;
@@ -151,7 +151,7 @@ export default class AtlasConnection {
                     console.warn('Unknown Task', JSON.stringify(task));
                 }
             } else if (body.type === 'chat') {
-                const chat = body.data as any;
+                const chat = body.data as Chat;
 
                 let chatroom = chat.chatroom;
 
