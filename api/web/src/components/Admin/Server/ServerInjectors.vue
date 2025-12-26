@@ -32,7 +32,7 @@
         >
             <TablerNone
                 v-if='list.items.length === 0'
-                label='Injectors'
+                label='No Injectors'
                 :create='false'
             />
             <template v-else>

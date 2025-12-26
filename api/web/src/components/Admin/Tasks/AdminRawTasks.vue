@@ -30,13 +30,13 @@
             <TablerLoading v-if='loading' />
             <TablerNone
                 v-else-if='!Object.keys(tasks.items)'
-                label='Tasks'
+                label='No Tasks'
                 :create='false'
             />
             <template v-else-if='task'>
                 <TablerNone
                     v-if='!tasks.items[task].length'
-                    label='Versions'
+                    label='No Versions'
                     :create='false'
                 />
                 <div

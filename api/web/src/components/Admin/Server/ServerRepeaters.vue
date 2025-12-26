@@ -24,7 +24,7 @@
         >
             <TablerNone
                 v-if='list.total === 0'
-                label='Repeaters'
+                label='No Repeaters'
                 :create='false'
             />
             <template v-else>
