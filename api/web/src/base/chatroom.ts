@@ -1,20 +1,15 @@
 import { db } from './database.ts'
+import type { DBChatroom } from './database.ts';
 import { std, stdurl } from '../std.ts';
 import type {
-    ProfileChatroomList
+    ProfileChatroomList,
+    ProfileChatList
 } from '../types.ts';
 
 /**
  * High Level Wrapper around the Profile Chatroom API
  *
- * @property {string} guid - The unique identifier for the mission
- * @property {string} name - The name of the mission
- * @property {Mission} meta - The mission metadata
- * @property {MissionRole} role - The role of the user in the mission
- * @property {string} token - The CloudTAK Authentication token for API calls
- * @property {string} [missiontoken] - The mission token for authentication
- *
- * @property {boolean} subscribed - Whether the user is subscribed to the mission
+ * @property {string} name - The name of the chatroom
  */
 export default class Chatroom {
     name: string;
@@ -22,17 +17,17 @@ export default class Chatroom {
     constructor(
         name: string
     ) {
-        this.name = mission.name;
+        this.name = name;
     }
 
     /**
      * Return a Chatroom instance if one already exists in the local DB,
      */
     static async from(
-        id: string,
-    ): Promise<Subscription | undefined> {
+        name: string,
+    ): Promise<Chatroom | undefined> {
         const exists = await db.chatroom
-            .get(id)
+            .get(name)
 
         if (!exists) {
             return;
@@ -46,141 +41,68 @@ export default class Chatroom {
     /**
      * Loads an existing Chatroom from the local DB and refresh it,
      *
-     * @param id - The unique identifier for the mission
-     * @param opts - Options for loading the subscription
-     * @param opts.reload - Whether to reload the mission from the local DB
+     * @param name - The unique identifier for the chatroom
+     * @param opts - Options for loading the chatroom
+     * @param opts.reload - Whether to reload the chatroom from the local DB
      */
     static async load(
-        id: string,
+        name: string,
         opts: {
             reload?: boolean,
-        }
-    ): Promise<ProfileChatroomList> {
-        const exists = await this.from(id);
+        } = {}
+    ): Promise<Chatroom> {
+        const exists = await this.from(name);
 
         if (exists) {
             if (opts.reload !== false) {
-                await exists.refresh({
-                    refresh: true
-                });
+                await exists.refresh();
             }
 
             return exists;
         } else {
-            const url = stdurl('/api/profile/chat/' + encodeURIComponent(id));
+            const url = stdurl('/api/profile/chatroom/' + encodeURIComponent(name));
 
-            const chatroom = await std(url, {
-                token: opts.token
-            }) as ProfileChatroomList;
+            const chatroom = await std(url) as ProfileChatroomList;
 
             const room = new Chatroom(
                 chatroom.name
             );
 
-            await db.subscription.put({
-
+            await db.chatroom.put({
+                id: room.name,
+                name: room.name,
+                created: new Date().toISOString(),
+                updated: new Date().toISOString(),
+                last_read: null
             });
 
-            await sub.refresh();
+            await room.refresh();
 
-            return sub;
+            return room;
         }
     }
 
-    async update(
-        body: {
-            dirty?: boolean,
-            subscribed?: boolean,
-            token?: string,
-            description?: string
-        }
-    ): Promise<void> {
-        if (body.subscribed !== undefined) {
-            this.subscribed = body.subscribed;
-        }
-
-        if (body.dirty !== undefined) {
-            this.dirty = body.dirty;
-        }
-
-        if (body.token !== undefined) {
-            this.token = body.token;
-        }
-
-        if (body.description !== undefined) {
-            this.meta.description = body.description;
-        }
-
-        await db.subscription.update(this.guid, {
-            dirty: this.dirty,
-            subscribed: this.subscribed,
-            token: this.token
-        });
-
-        if (body.description !== undefined) {
-            const url = stdurl(`/api/marti/missions/${this.guid}`);
-            this.meta = await std(url, {
-                method: 'PATCH',
-                headers: Subscription.headers(this.missiontoken),
-                token: this.token,
-                body: {
-                    description: body.description
-                }
-            }) as Mission;
-
-            await db.subscription.update(this.guid, {
-                meta: JSON.parse(JSON.stringify(this.meta)),
-            });
-        }
-
-        this._sync.postMessage({
-            guid: this.guid,
-            type: SubscriptionEventType.UPDATE,
-            state: {
-                dirty: this.dirty,
-                subscribed: this.subscribed,
-            }
-        });
-    }
-
-    async delete(): Promise<void> {
-        const url = stdurl(`/api/marti/missions/${this.guid}`);
-        const list = await std(url, {
+    static async delete(names: string[]): Promise<void> {
+        const url = stdurl('/api/profile/chatroom');
+        await std(url, {
             method: 'DELETE',
-            headers: Subscription.headers(this.missiontoken),
-            token: this.token
-        }) as { data: Array<unknown> };
-
-        if (list.data.length !== 1) throw new Error('Mission Error');
-
-        await db.subscription.delete(this.meta.guid);
-
-        this._sync.postMessage({
-            guid: this.guid,
-            type: SubscriptionEventType.DELETE,
-            state: {
-                dirty: this.dirty,
-                subscribed: this.subscribed,
+            query: {
+                chatroom: names
             }
         });
-    }
 
-    headers(): Record<string, string> {
-        return Subscription.headers(this.missiontoken);
+        await db.chatroom.bulkDelete(names);
     }
 
     /**
-     * Reload the Mission from the local Database
+     * Reload the Chatroom from the local Database
      */
     async reload(): Promise<void> {
-        const exists = await db.subscription
-            .get(this.guid)
+        const exists = await db.chatroom
+            .get(this.name)
 
         if (exists) {
-            this.meta = exists.meta;
-            this.role = exists.role;
-            this.missiontoken = exists.token;
-            this.subscribed = exists.subscribed;
+            this.name = exists.name;
         }
     };
 
@@ -192,84 +114,88 @@ export default class Chatroom {
     };
 
     async fetch(): Promise<void> {
-        const url = stdurl('/api/profile/chat/' + encodeURIComponent(this.id));
+        const url = stdurl('/api/profile/chatroom/' + encodeURIComponent(this.name));
 
-        const chatroom = await std(url, {
-            token: this.token
-        }) as ProfileChatroomList;
-        
+        const chatroom = await std(url) as ProfileChatroomList;
+
         this.name = chatroom.name;
+    }
 
+    async getChats(): Promise<ProfileChatList> {
+        const url = stdurl(`/api/profile/chatroom/${encodeURIComponent(this.name)}/chat`);
+        return await std(url) as ProfileChatList;
+    }
+
+    async deleteChats(ids: string[]): Promise<void> {
+        const url = stdurl(`/api/profile/chatroom/${encodeURIComponent(this.name)}/chat`);
+        await std(url, {
+            method: 'DELETE',
+            query: {
+                chat: ids
+            }
+        });
     }
 
     /**
-     * List all locally stored missions, with optional filtering
-     *
-     * @param filter - Filter options for the local mission list
-     * @param filter.role - Filter by minimum role
-     * @param filter.subscribed - Filter by subscription status
-     * @param filter.dirty - Filter by dirty status
+     * List all locally stored chatrooms
      */
-    static async localList(
-        filter?: {
-            role?: 'MISSION_OWNER' | 'MISSION_SUBSCRIBER' | 'MISSION_READONLY_SUBSCRIBER',
-            subscribed?: boolean,
-            dirty?: boolean
-        }
-    ): Promise<Set<{
-        guid: string;
+    static async localList(): Promise<Set<{
         name: string;
     }>> {
-        let collection = db.subscription.toCollection();
+        const list = await db.chatroom.toArray();
 
-        if (filter?.subscribed !== undefined) {
-            collection = collection.filter((sub) => sub.subscribed === filter.subscribed);
-        }
-
-        if (filter?.dirty !== undefined) {
-            collection = collection.filter((sub) => sub.dirty === filter.dirty);
-        }
-
-        if (filter?.role !== undefined) {
-            collection = collection.filter((sub) => {
-                if (!sub.role) return false;
-
-                if (filter.role === 'MISSION_OWNER') {
-                    return sub.role.type === 'MISSION_OWNER'
-                } else if (filter.role === 'MISSION_SUBSCRIBER') {
-                    return sub.role.type === 'MISSION_OWNER' || sub.role.type === 'MISSION_SUBSCRIBER'
-                } else {
-                    return true;
-                }
-            });
-        }
-
-
-        const list = await collection
-        .sortBy('name');
-
-        const guids = new Set<{
-            guid: string;
+        const names = new Set<{
             name: string;
         }>();
 
         for (const sub of list) {
-            guids.add({
+            names.add({
                 name: sub.name,
-                guid: sub.guid
             });
         }
 
-        return guids;
+        return names;
     }
 
-    static async list(): Promise<ProfileChatroomList> {
-        if (opts.passwordProtected === undefined) opts.passwordProtected = true;
-        if (opts.defaultRole === undefined) opts.defaultRole = true;
+    static async list(filter?: string): Promise<DBChatroom[]> {
+        let collection = db.chatroom.toCollection();
 
-        const url = stdurl('/api/profile/chat');
+        if (filter) {
+            collection = collection.filter((room) => {
+                return room.name.toLowerCase().includes(filter.toLowerCase());
+            });
+        }
 
-        return await std(url) as ProfileChatroomList;
+        return (await collection.sortBy('name')).reverse();
     }
 
+    static async sync(): Promise<ProfileChatroomList> {
+        const url = stdurl('/api/profile/chatroom');
+
+        const list = await std(url) as ProfileChatroomList;
+
+        const serverNames = new Set(list.items.map(c => c.chatroom));
+        const local = await db.chatroom.toArray();
+
+        for (const chat of local) {
+            if (!serverNames.has(chat.name)) {
+                await db.chatroom.delete(chat.id);
+            }
+        }
+
+        for (const chat of list.items) {
+            const exists = await db.chatroom.get(chat.chatroom);
+            if (!exists) {
+                await db.chatroom.put({
+                    id: chat.chatroom,
+                    name: chat.chatroom,
+                    created: new Date().toISOString(),
+                    updated: new Date().toISOString(),
+                    last_read: null
+                });
+            }
+        }
+
+        return list;
+    }
 }

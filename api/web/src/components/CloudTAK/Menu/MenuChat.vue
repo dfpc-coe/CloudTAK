@@ -76,6 +76,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { server } from '../../../std.ts';
+import Chatroom from '../../../base/chatroom.ts';
 import GenericSelect from '../util/GenericSelect.vue';
 import {
     IconListCheck,
@@ -156,17 +157,12 @@ async function deleteChats() {
 
     loading.value = true;
 
-    const res = await server.DELETE('/api/profile/chatroom/{:chatroom}/chat', {
-        params: {
-            query: {
-                chat: Array.from(selected.values())
-            }
-        }
-    });
-
-    if (res.error) {
+    try {
+        const room = new Chatroom(name.value);
+        await room.deleteChats(Array.from(selected.values()));
+    } catch (err) {
         loading.value = false;
-        throw new Error(res.error.message);
+        throw new Error(err.message);
     }
 
     await fetchChats();
@@ -176,15 +172,12 @@ async function fetchChats() {
     loading.value = true;
 
     if (route.params.chatroom !== 'new') {
-        const res = await server.GET(`/api/profile/chatroom/{:chatroom}/chat`, {
-            params: {
-                path: {
-                    ':chatroom': route.params.chatroom
-                }
-            }
-        });
-
-        chats.value = res.data;
+        try {
+            const room = new Chatroom(route.params.chatroom);
+            chats.value = await room.getChats();
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     loading.value = false;
