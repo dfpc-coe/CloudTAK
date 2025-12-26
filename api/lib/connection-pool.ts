@@ -204,7 +204,20 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                     for (const client of (this.config.wsClients.get(String(conn.id)) || [])) {
                         if (client.format == 'geojson') {
                             if (feat.properties && feat.properties.chat) {
-                                client.ws.send(JSON.stringify({ type: 'chat', connection: conn.id, data: feat }));
+                                client.ws.send(JSON.stringify({
+                                    type: 'chat',
+                                    connection: conn.id,
+                                    data: {
+                                        chatroom: feat.properties.chat.chatroom,
+                                        messageId: feat.properties.chat.messageId,
+                                        from: {
+                                            callsign: feat.properties.chat.senderCallsign,
+                                            uid: feat.properties.chat.senderUid
+                                        },
+                                        message: feat.properties.remarks,
+                                        time: feat.properties.time || new Date().toISOString()
+                                    }
+                                }));
                             } else if (feat.properties.type.startsWith("t-x")) {
                                 client.ws.send(JSON.stringify({ type: 'task', connection: conn.id, data: feat }));
                             } else {

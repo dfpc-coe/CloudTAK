@@ -40,7 +40,7 @@
             />
             <TablerNone
                 v-else-if='!list.items.length'
-                label='Layers'
+                label='No Layers'
                 :create='false'
             />
             <div

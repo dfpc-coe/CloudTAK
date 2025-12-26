@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -9,7 +10,7 @@ flight.user();
 
 const time = new Date('2025-03-04T22:54:15.447Z').toISOString()
 
-test('GET: api/profile/interest', async (t) => {
+test('GET: api/profile/interest', async () => {
     try {
         const res = await flight.fetch('/api/profile/interest', {
             method: 'GET',
@@ -18,18 +19,16 @@ test('GET: api/profile/interest', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('POST: api/profile/interest', async (t) => {
+test('POST: api/profile/interest', async () => {
     try {
         const res = await flight.fetch('/api/profile/interest', {
             method: 'POST',
@@ -45,7 +44,7 @@ test('POST: api/profile/interest', async (t) => {
         res.body.created = time;
         res.body.updated = time;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             name: 'Test AOI',
             username: 'admin@example.com',
@@ -57,13 +56,11 @@ test('POST: api/profile/interest', async (t) => {
             }
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/profile/interest', async (t) => {
+test('GET: api/profile/interest', async () => {
     try {
         const res = await flight.fetch('/api/profile/interest', {
             method: 'GET',
@@ -75,7 +72,7 @@ test('GET: api/profile/interest', async (t) => {
         res.body.items[0].created = time;
         res.body.items[0].updated = time;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 1,
             items: [{
                 id: 1,
@@ -90,13 +87,11 @@ test('GET: api/profile/interest', async (t) => {
             }]
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PATCH: api/profile/interest/1', async (t) => {
+test('PATCH: api/profile/interest/1', async () => {
     try {
         const res = await flight.fetch('/api/profile/interest/1', {
             method: 'PATCH',
@@ -111,7 +106,7 @@ test('PATCH: api/profile/interest/1', async (t) => {
         res.body.created = time;
         res.body.updated = time;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             name: 'Test AOI Renamed',
             username: 'admin@example.com',
@@ -123,13 +118,11 @@ test('PATCH: api/profile/interest/1', async (t) => {
             }
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/profile/interest', async (t) => {
+test('GET: api/profile/interest', async () => {
     try {
         const res = await flight.fetch('/api/profile/interest', {
             method: 'GET',
@@ -141,7 +134,7 @@ test('GET: api/profile/interest', async (t) => {
         res.body.items[0].created = time;
         res.body.items[0].updated = time;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 1,
             items: [{
                 id: 1,
@@ -156,13 +149,11 @@ test('GET: api/profile/interest', async (t) => {
             }]
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('DELETE: api/profile/interest/1', async (t) => {
+test('DELETE: api/profile/interest/1', async () => {
     try {
         const res = await flight.fetch('/api/profile/interest/1', {
             method: 'DELETE',
@@ -171,18 +162,16 @@ test('DELETE: api/profile/interest/1', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 200,
             message: 'Interest Area Deleted'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/profile/interest', async (t) => {
+test('GET: api/profile/interest', async () => {
     try {
         const res = await flight.fetch('/api/profile/interest', {
             method: 'GET',
@@ -191,15 +180,13 @@ test('GET: api/profile/interest', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

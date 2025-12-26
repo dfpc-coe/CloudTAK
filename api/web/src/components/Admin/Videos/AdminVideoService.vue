@@ -19,7 +19,7 @@
         />
         <TablerNone
             v-else-if='!service'
-            label='Video ECS Service'
+            label='No Video ECS Service'
             :create='false'
         />
         <VideoConfig

@@ -12,9 +12,9 @@
     ],
     "artifacts": {
         "docker": [
-            "coe-ecr-etl:{{gitsha}}",
-            "coe-ecr-etl:pmtiles-{{gitsha}}",
-            "coe-ecr-etl:events-{{gitsha}}"
+            "tak-vpc-{{stack}}-cloudtak-api:{{gitsha}}",
+            "tak-vpc-{{stack}}-cloudtak-api:pmtiles-{{gitsha}}",
+            "tak-vpc-{{stack}}-cloudtak-api:events-{{gitsha}}"
         ]
     }
 }

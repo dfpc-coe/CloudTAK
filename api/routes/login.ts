@@ -7,8 +7,6 @@ import { Type } from '@sinclair/typebox'
 import Provider from '../lib/provider.js';
 
 export default async function router(schema: Schema, config: Config) {
-    const provider = new Provider(config);
-
     await schema.post('/login', {
         name: 'Create Login',
         group: 'Login',
@@ -27,7 +25,8 @@ export default async function router(schema: Schema, config: Config) {
         try {
             let profile;
 
-            if (config.server.auth.key && config.server.auth.cert) {
+            if (config.server.auth.key && config.server.auth.cert && config.server.webtak) {
+                const provider = new Provider(config);
                 const email = await provider.login(req.body.username, req.body.password);
 
                 if (config.external && config.external.configured) {
@@ -91,6 +90,7 @@ export default async function router(schema: Schema, config: Config) {
 
             // If the server hasn't been configured the user won't have a valid cert
             if (config.server.auth.key && config.server.auth.cert) {
+                const provider = new Provider(config);
                 await provider.valid(profile);
             }
 

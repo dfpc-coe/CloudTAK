@@ -33,7 +33,7 @@
             />
             <TablerNone
                 v-else-if='!list.items.length'
-                label='Video Leases'
+                label='No Video Leases'
                 :create='false'
             />
             <div
