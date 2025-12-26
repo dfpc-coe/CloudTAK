@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -7,7 +8,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: api/swagger', async (t) => {
+test('GET: api/swagger', async () => {
     try {
         const res = await flight.fetch('/api/swagger', {
             method: 'GET',
@@ -16,13 +17,11 @@ test('GET: api/swagger', async (t) => {
             }
         }, true);
 
-        t.ok(res.body.info)
-        t.equals(res.body.info.title, 'CloudTAK API');
+        assert.ok(res.body.info)
+        assert.equal(res.body.info.title, 'CloudTAK API');
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

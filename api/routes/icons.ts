@@ -233,12 +233,13 @@ export default async function router(schema: Schema, config: Config) {
                     let buffer = Buffer.from(icon.data, 'base64');
 
                     if (req.query.resize) {
-                        buffer = Buffer.from(await sharp(buffer).resize(32).toBuffer())
+                        buffer = Buffer.from(await sharp(buffer).resize(32).png().toBuffer())
                     }
 
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
+
                     xmljson.iconset.icon.push({ $: {
-                        name: path.parse(icon.name).base,
+                        name: icon.name + '.png',
                         type2525b: icon.type2525b
                     } })
                 }
@@ -362,13 +363,16 @@ export default async function router(schema: Schema, config: Config) {
 
             const parsedName = path.parse(req.body.name);
             const name = parsedName.name;
+            const dir = parsedName.dir;
             const format = parsedName.ext.toLowerCase();
+
+            const full = dir ? `${dir}/${name}` : name;
 
             const icon = await config.models.Icon.generate({
                 ...req.body,
-                name: name,
+                name: full,
                 format: format,
-                path: `${iconset.uid}/${req.body.name}`,
+                path: `${iconset.uid}/${full}`,
                 iconset: iconset.uid
             });
 
@@ -448,8 +452,14 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (isNaN(Number(req.params.icon))) {
-                const name = path.parse(String(req.params.icon)).name;
-                const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND name = ${name}`);
+                const { name, dir } = path.parse(decodeURIComponent(String(req.params.icon)));
+                const full = dir ? `${dir}/${name}` : name;
+
+                const icon = await config.models.Icon.from(sql`
+                    iconset = ${req.params.iconset}
+                    AND name = ${full}
+                `);
+
                 return res.json(icon);
             } else {
                 const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
@@ -487,7 +497,10 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
-            let icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
+            let icon = await config.models.Icon.from(sql`
+                iconset = ${req.params.iconset}
+                AND id = ${req.params.icon}
+            `);
 
             await Sprites.validate({
                 name: req.body.name,
@@ -533,7 +546,10 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
-            await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND id = ${req.params.icon}`);
+            await config.models.Icon.delete(sql`
+                iconset = ${req.params.iconset}
+                AND id = ${req.params.icon}
+            `);
 
             res.json({
                 status: 200,

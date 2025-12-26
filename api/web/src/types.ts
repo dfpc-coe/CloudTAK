@@ -83,7 +83,6 @@ export type ImportList = paths["/api/import"]["get"]["responses"]["200"]["conten
 export type Package = paths["/api/marti/package/{:uid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type PackageList = paths["/api/marti/package"]["get"]["responses"]["200"]["content"]["application/json"]
 
-export type ServerAdminPackageList = paths["/api/server/package"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ServerAdminVideoList = paths["/api/server/video"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type IconsetList = paths["/api/iconset"]["get"]["responses"]["200"]["content"]["application/json"]
@@ -99,6 +98,31 @@ export type Basemap = paths["/api/basemap/{:basemapid}"]["patch"]["responses"]["
 export type BasemapList = paths["/api/basemap"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Palette = paths["/api/palette/{:palette}"]["get"]["responses"]["200"]["content"]["application/json"]
+
+export type Chat = {
+    chatroom: string;
+    messageId: string;
+    from: {
+        callsign: string;
+        uid: string;
+    };
+    message: string;
+    time: string;
+}
+
+export type APIProfileChat = {
+    id: number;
+    read: boolean;
+    username: string;
+    chatroom: string;
+    sender_callsign: string;
+    sender_uid: string;
+    created: string;
+    updated: string;
+    message_id: string;
+    message: string;
+}
+
 export type PaletteList = paths["/api/palette"]["get"]["responses"]["200"]["content"]["application/json"]
 export type PaletteFeature = paths["/api/palette/{:palette}/feature/{:feature}"]["get"]["responses"]["200"]["content"]["application/json"]
 
@@ -109,6 +133,7 @@ export type Profile = paths["/api/profile"]["get"]["responses"]["200"]["content"
 export type Profile_Update = paths["/api/profile"]["patch"]["requestBody"]["content"]["application/json"]
 
 export type ProfileChatroomList = paths["/api/profile/chatroom"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ProfileChatList = paths["/api/profile/chatroom/{:chatroom}/chat"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type ProfileVideoList = paths["/api/profile/video"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ProfileVideo = paths["/api/profile/video/{:id}"]["get"]["responses"]["200"]["content"]["application/json"]

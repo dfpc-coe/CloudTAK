@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -9,7 +10,7 @@ flight.user();
 
 let id = '';
 
-test('GET: api/import', async (t) => {
+test('GET: api/import', async () => {
     try {
         const res = await flight.fetch('/api/import', {
             method: 'GET',
@@ -18,18 +19,16 @@ test('GET: api/import', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('POST: api/import', async (t) => {
+test('POST: api/import', async () => {
     try {
         const res = await flight.fetch('/api/import', {
             method: 'POST',
@@ -41,15 +40,15 @@ test('POST: api/import', async (t) => {
             }
         }, true);
 
-        t.ok(res.body.id, 'has id');
+        assert.ok(res.body.id, 'has id');
         id = res.body.id;
 
-        t.ok(res.body.created, 'has created');
+        assert.ok(res.body.created, 'has created');
         res.body.created = '2025-09-12T00:12:46.016Z';
-        t.ok(res.body.updated, 'has updated');
+        assert.ok(res.body.updated, 'has updated');
         res.body.updated = '2025-09-12T00:12:46.016Z';
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: id,
             created: '2025-09-12T00:12:46.016Z',
             updated: '2025-09-12T00:12:46.016Z',
@@ -63,13 +62,11 @@ test('POST: api/import', async (t) => {
             config: {}
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test(`GET: api/import/<id>`, async (t) => {
+test(`GET: api/import/<id>`, async () => {
     try {
         const res = await flight.fetch(`/api/import/${id}`, {
             method: 'GET',
@@ -78,13 +75,13 @@ test(`GET: api/import/<id>`, async (t) => {
             },
         }, true);
 
-        t.ok(res.body.id, 'has id');
-        t.ok(res.body.created, 'has created');
+        assert.ok(res.body.id, 'has id');
+        assert.ok(res.body.created, 'has created');
         res.body.created = '2025-09-12T00:12:46.016Z';
-        t.ok(res.body.updated, 'has updated');
+        assert.ok(res.body.updated, 'has updated');
         res.body.updated = '2025-09-12T00:12:46.016Z';
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: id,
             created: '2025-09-12T00:12:46.016Z',
             updated: '2025-09-12T00:12:46.016Z',
@@ -98,13 +95,11 @@ test(`GET: api/import/<id>`, async (t) => {
             config: {}
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test(`PATCH: api/import/<id>`, async (t) => {
+test(`PATCH: api/import/<id>`, async () => {
     try {
         const res = await flight.fetch(`/api/import/${id}`, {
             method: 'PATCH',
@@ -116,13 +111,13 @@ test(`PATCH: api/import/<id>`, async (t) => {
             }
         }, true);
 
-        t.ok(res.body.id, 'has id');
-        t.ok(res.body.created, 'has created');
+        assert.ok(res.body.id, 'has id');
+        assert.ok(res.body.created, 'has created');
         res.body.created = '2025-09-12T00:12:46.016Z';
-        t.ok(res.body.updated, 'has updated');
+        assert.ok(res.body.updated, 'has updated');
         res.body.updated = '2025-09-12T00:12:46.016Z';
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: id,
             created: '2025-09-12T00:12:46.016Z',
             updated: '2025-09-12T00:12:46.016Z',
@@ -136,13 +131,11 @@ test(`PATCH: api/import/<id>`, async (t) => {
             config: {}
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test(`PATCH: api/import/<id> - Success`, async (t) => {
+test(`PATCH: api/import/<id> - Success`, async () => {
     try {
         const res = await flight.fetch(`/api/import/${id}`, {
             method: 'PATCH',
@@ -154,13 +147,13 @@ test(`PATCH: api/import/<id> - Success`, async (t) => {
             }
         }, true);
 
-        t.ok(res.body.id, 'has id');
-        t.ok(res.body.created, 'has created');
+        assert.ok(res.body.id, 'has id');
+        assert.ok(res.body.created, 'has created');
         res.body.created = '2025-09-12T00:12:46.016Z';
-        t.ok(res.body.updated, 'has updated');
+        assert.ok(res.body.updated, 'has updated');
         res.body.updated = '2025-09-12T00:12:46.016Z';
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: id,
             created: '2025-09-12T00:12:46.016Z',
             updated: '2025-09-12T00:12:46.016Z',
@@ -174,10 +167,8 @@ test(`PATCH: api/import/<id> - Success`, async (t) => {
             config: {}
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

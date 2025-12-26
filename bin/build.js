@@ -3,15 +3,13 @@ import CP from 'child_process';
 
 process.env.GITSHA = sha();
 
-process.env.API_URL = process.env.API_URL || '"https://example.com"';
 process.env.Environment = process.env.Environment || 'prod';
 
 for (const env of [
     'GITSHA',
     'AWS_REGION',
     'AWS_ACCOUNT_ID',
-    'Environment',
-    'API_URL'
+    'Environment'
 ]) {
     if (!process.env[env]) {
         throw new Error(`${env} Env Var must be set`);
@@ -25,7 +23,7 @@ if (!process.argv[2]) {
 
     await cloudtak_api();
 
-    for (const dir of await fs.readdir(new URL('./tasks/', import.meta.url))) {
+    for (const dir of await fs.readdir(new URL('../tasks/', import.meta.url))) {
         await cloudtak_task(dir);
     }
 } else {
@@ -60,8 +58,8 @@ function cloudtak_api() {
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
             docker compose build api \
-            && docker tag cloudtak-api:latest "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-etl:$\{GITSHA\}" \
-            && docker push "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-etl:$\{GITSHA\}"
+            && docker tag cloudtak-api:latest "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{GITSHA\}" \
+            && docker push "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{GITSHA\}"
         `, (err) => {
             if (err) return reject(err);
             return resolve();
@@ -78,8 +76,8 @@ async function cloudtak_task(task) {
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
             docker buildx build ./tasks/$\{TASK\}/ -t cloudtak-$\{TASK\} \
-            && docker tag cloudtak-$\{TASK\}:latest "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-etl:$\{TASK\}-$\{GITSHA\}" \
-            && docker push "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-etl:$\{TASK\}-$\{GITSHA\}"
+            && docker tag cloudtak-$\{TASK\}:latest "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{TASK\}-$\{GITSHA\}" \
+            && docker push "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{TASK\}-$\{GITSHA\}"
         `, (err) => {
             if (err) return reject(err);
             return resolve();

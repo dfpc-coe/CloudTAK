@@ -12,6 +12,44 @@
 
 ### Pending Release
 
+### v12.39.0 - 2025-12-26
+
+- :rocket: Make Chatroom List Live
+- :rocket: Make Chats List Live
+- :rocket: Update Chat delete call to use message_id instead of Database ID
+- :arrow_up: Update VueTabler@4 to use typescript based components
+
+### v12.38.0 - 2025-12-24
+
+- :bug: Fix issue where icons with Folders would fail to be fetched
+- :rocket: Implement LockOn functionality from CoTView - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1136
+
+### v12.37.0 - 2025-12-23
+
+- :bug: Ensure Readable Stream is passed to Data Package and not File Path
+- :white_check_mark: Add Unit Tests
+
+### v12.36.0 - 2025-12-23
+
+> [!WARNING]
+> This Version of CloudTAK requires updating to `vpc@2.9.0` or above if using the provided CloudFormation templates.
+> Docker Compose or custom deployments do not require any action.
+>
+
+- :rocket: Update to use per-environment ECR repositories for improved security and isolation
+- :rocket: Update to use CloudFormation managed ACM Certificates for improved security and easier management
+
+### v12.35.0 - 2025-12-22
+
+- :white_check_mark: Remove `tape` in favour of `node:test`
+
+### v12.34.0 - 2025-12-22
+
+- :rocket: Migrate to unified Package Listing Endpoint
+- :rocket: Allow use of Server Certificate via `impersonate` query param
+- :rocket: Update ServerPackage UI to allow filtering
+- :rocket: Update ServerPackage UI to allow downloading packages
+
 ### v12.33.2 - 2025-12-19
 
 - :rocket: Add a cleanup section to remove danging Docker Images after an update

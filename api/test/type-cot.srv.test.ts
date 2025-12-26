@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -7,7 +8,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: api/type/cot', async (t) => {
+test('GET: api/type/cot', async () => {
     try {
         const res = await flight.fetch('/api/type/cot?identity=f&domain=a', {
             method: 'GET',
@@ -16,7 +17,7 @@ test('GET: api/type/cot', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
              total: 1006,
              items: [{
                   "cot": "a-f-A",
@@ -70,13 +71,11 @@ test('GET: api/type/cot', async (t) => {
              }]
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/type/cot/a-f-A-M-F', async (t) => {
+test('GET: api/type/cot/a-f-A-M-F', async () => {
     try {
         const res = await flight.fetch('/api/type/cot/a-f-A-M-F', {
             method: 'GET',
@@ -85,19 +84,17 @@ test('GET: api/type/cot/a-f-A-M-F', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             cot: 'a-f-A-M-F',
             full: 'Air/Mil/Fixed',
             desc: 'FIXED WING'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/type/cot/a-f-FAKE', async (t) => {
+test('GET: api/type/cot/a-f-FAKE', async () => {
     try {
         const res = await flight.fetch('/api/type/cot/a-f-FAKE', {
             method: 'GET',
@@ -106,16 +103,14 @@ test('GET: api/type/cot/a-f-FAKE', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             cot: 'a-f-FAKE',
             full: 'a-f-FAKE',
             desc: 'Unknown CoT Type'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

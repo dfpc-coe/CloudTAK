@@ -371,7 +371,7 @@ export default class Subscription {
 
 
         const list = await collection
-        .sortBy('name');
+            .sortBy('name');
 
         const guids = new Set<{
             guid: string;

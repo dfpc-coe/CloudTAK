@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -8,7 +9,21 @@ flight.takeoff();
 flight.user();
 flight.user({ admin: false });
 
-test('GET: api/server - Unconfigured - Admin', async (t) => {
+test('Reset Server to Unconfigured', async () => {
+    try {
+        flight.config!.server = await flight.config!.models.Server.commit(1, {
+            name: 'Default Server',
+            url: '',
+            api: '',
+            webtak: '',
+            auth: {}
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/server - Unconfigured - Admin', async () => {
     try {
         const res = await flight.fetch('/api/server', {
             method: 'GET',
@@ -21,7 +36,7 @@ test('GET: api/server - Unconfigured - Admin', async (t) => {
         delete res.body.created;
         delete res.body.updated;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             status: 'unconfigured',
             name: 'Default Server',
@@ -31,13 +46,11 @@ test('GET: api/server - Unconfigured - Admin', async (t) => {
             auth: false
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/server - Unconfigured - User', async (t) => {
+test('GET: api/server - Unconfigured - User', async () => {
     try {
         const res = await flight.fetch('/api/server', {
             method: 'GET',
@@ -50,7 +63,7 @@ test('GET: api/server - Unconfigured - User', async (t) => {
         delete res.body.created;
         delete res.body.updated;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             status: 'unconfigured',
             name: 'Default Server',
@@ -60,13 +73,11 @@ test('GET: api/server - Unconfigured - User', async (t) => {
             auth: false
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/server - Unconfigured - No Auth', async (t) => {
+test('GET: api/server - Unconfigured - No Auth', async () => {
     try {
         const res = await flight.fetch('/api/server', {
             method: 'GET',
@@ -79,7 +90,7 @@ test('GET: api/server - Unconfigured - No Auth', async (t) => {
         delete res.body.created;
         delete res.body.updated;
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             status: 'unconfigured',
             name: 'Default Server',
@@ -89,10 +100,8 @@ test('GET: api/server - Unconfigured - No Auth', async (t) => {
             auth: false
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

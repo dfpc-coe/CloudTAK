@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK.web",
     "type": "module",
-    "version": "12.33.2",
+    "version": "12.39.0",
     "private": true,
     "engines": {
         "node": ">= 24"
@@ -19,7 +19,7 @@
         "@tabler/core": "^1.4.0",
         "@tabler/icons-vue": "^3.0.0",
         "@tak-ps/node-cot": "^14.0.0",
-        "@tak-ps/vue-tabler": "^3.87.0",
+        "@tak-ps/vue-tabler": "^4.0.0",
         "@turf/area": "^7.2.0",
         "@turf/bbox": "^7.1.0",
         "@turf/boolean-point-in-polygon": "^7.1.0",
@@ -46,7 +46,7 @@
         "hls.js": "^1.6.5",
         "imask": "^6.0.0",
         "jsonata": "^2.0.4",
-        "maplibre-gl": "5.14.0",
+        "maplibre-gl": "^5.15.0",
         "milsymbol": "^3.0.2",
         "moment": "^2.29.3",
         "openapi-fetch": "^0.15.0",

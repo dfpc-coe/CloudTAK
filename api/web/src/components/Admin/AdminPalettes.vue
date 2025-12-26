@@ -48,7 +48,7 @@
             />
             <TablerNone
                 v-else-if='!list.items.length'
-                label='Palettes'
+                label='No Palettes'
                 :create='false'
             />
             <div
