@@ -98,6 +98,17 @@ export type Basemap = paths["/api/basemap/{:basemapid}"]["patch"]["responses"]["
 export type BasemapList = paths["/api/basemap"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Palette = paths["/api/palette/{:palette}"]["get"]["responses"]["200"]["content"]["application/json"]
+
+export type Chat = {
+    chatroom: string;
+    messageId: string;
+    from: {
+        callsign: string;
+        uid: string;
+    };
+    message: string;
+    time: string;
+}
 export type PaletteList = paths["/api/palette"]["get"]["responses"]["200"]["content"]["application/json"]
 export type PaletteFeature = paths["/api/palette/{:palette}/feature/{:feature}"]["get"]["responses"]["200"]["content"]["application/json"]
 
