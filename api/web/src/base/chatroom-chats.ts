@@ -28,7 +28,7 @@ export default class ChatroomChats {
             for (const chat of list.items) {
                 const c = chat as any;
                 await db.chatroom_chats.put({
-                    id: c.id,
+                    id: c.message_id,
                     chatroom: this.chatroom,
                     sender: c.sender_callsign,
                     sender_uid: c.sender_uid,
@@ -66,13 +66,16 @@ export default class ChatroomChats {
         worker: any,
         recipient?: { uid: string, callsign: string }
     ): Promise<void> {
+        const id = crypto.randomUUID();
+        const created = new Date().toISOString();
+
         await db.chatroom_chats.put({
-            id: crypto.randomUUID(),
+            id: id,
             chatroom: this.chatroom,
             sender: sender.callsign,
             sender_uid: sender.uid,
             message: message,
-            created: new Date().toISOString()
+            created: created
         });
 
         if (!recipient) {
@@ -106,9 +109,14 @@ export default class ChatroomChats {
 
         await worker.conn.sendCOT({
             chatroom: this.chatroom,
+            from: {
+                uid: sender.uid,
+                callsign: sender.callsign
+            },
             to: recipient,
-            from: sender,
-            message: message
+            message: message,
+            messageId: id,
+            time: created
         }, 'chat');
     }
 }
