@@ -86,14 +86,11 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted, useTemplateRef } from 'vue'
+import { ref, onMounted, useTemplateRef } from 'vue'
 import type { Ref } from 'vue';
 import type { ComponentExposed } from 'vue-component-type-helpers'
-import { server } from '../../../std.ts';
 import Chatroom from '../../../base/chatroom.ts';
-import { db } from '../../../base/database.ts';
 import type { DBChatroom } from '../../../base/database.ts';
-import type { ProfileChatroomList } from '../../../types.ts';
 import GenericSelect from '../util/GenericSelect.vue';
 import StandardItem from '../util/StandardItem.vue';
 import {

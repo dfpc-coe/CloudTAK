@@ -1,9 +1,11 @@
 import { db } from './database.ts';
 import { std, stdurl } from '../std.ts';
 import type {
-    ProfileChatList
+    ProfileChatList,
+    APIProfileChat
 } from '../types.ts'
 import type { DBChatroomChat } from './database.ts';
+import type Atlas from '../workers/atlas.ts';
 
 export default class ChatroomChats {
     chatroom: string;
@@ -26,7 +28,7 @@ export default class ChatroomChats {
                 .delete();
 
             for (const chat of list.items) {
-                const c = chat as any;
+                const c = chat as APIProfileChat;
                 await db.chatroom_chats.put({
                     id: c.message_id,
                     chatroom: this.chatroom,
@@ -63,7 +65,7 @@ export default class ChatroomChats {
     async send(
         message: string,
         sender: { uid: string, callsign: string },
-        worker: any,
+        worker: Atlas,
         recipient?: { uid: string, callsign: string }
     ): Promise<void> {
         const id = crypto.randomUUID();
