@@ -54,9 +54,61 @@ export default class ChatroomChats {
             .toArray();
 
         chats.sort((a, b) => {
-            return new Date(a.created).getTime() - new Date(b.created).getTime();
+            return a.created.localeCompare(b.created);
         });
 
         return chats;
+    }
+
+    async send(
+        message: string,
+        sender: { uid: string, callsign: string },
+        worker: any,
+        recipient?: { uid: string, callsign: string }
+    ): Promise<void> {
+        await db.chatroom_chats.put({
+            id: crypto.randomUUID(),
+            chatroom: this.chatroom,
+            sender: sender.callsign,
+            sender_uid: sender.uid,
+            message: message,
+            created: new Date().toISOString()
+        });
+
+        if (!recipient) {
+            const chats = await this.list();
+            const single = chats.find((chat) => {
+                return chat.sender_uid !== sender.uid
+            });
+
+            if (single) {
+                recipient = {
+                    uid: single.sender_uid,
+                    callsign: single.sender
+                }
+            } else {
+                const contact = await worker.team.getByCallsign(this.chatroom);
+                if (contact) {
+                    recipient = {
+                        uid: contact.uid,
+                        callsign: contact.callsign
+                    }
+                } else {
+                    recipient = {
+                        uid: this.chatroom,
+                        callsign: this.chatroom
+                    }
+                }
+            }
+        }
+
+        if (!recipient) throw new Error('Error sending Chat - Contact is not defined');
+
+        await worker.conn.sendCOT({
+            chatroom: this.chatroom,
+            to: recipient,
+            from: sender,
+            message: message
+        }, 'chat');
     }
 }

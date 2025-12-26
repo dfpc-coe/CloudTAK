@@ -110,10 +110,11 @@ const loading = ref(true);
 const select = ref(null);
 const multiselect = ref(false);
 const name = ref(route.params.chatroom === 'new' ? route.query.callsign : route.params.chatroom);
+const room = new Chatroom(name.value);
+
 const chats = useObservable(
     from(liveQuery(async () => {
         if (route.params.chatroom === 'new') return [];
-        const room = await Chatroom.load(name.value, { reload: false });
         return await room.chats.list();
     })),
     { initialValue: [] }
@@ -132,66 +133,22 @@ onMounted(async () => {
 async function sendMessage() {
     if (!message.value.trim().length) return;
 
-    const msg = message.value;
-
-    await db.chatroom_chats.put({
-        id: crypto.randomUUID(),
-        chatroom: name.value,
-        sender: callsign.value,
-        sender_uid: id.value,
-        message: msg,
-        created: new Date().toISOString()
-    });
-
-    message.value = ''
-
-    let single;
+    let recipient;
     if (route.query.uid && route.query.callsign) {
-        single = {
-            sender_uid: route.query.uid,
-            sender_callsign: route.query.callsign
-        }
-    } else {
-        single = chats.value.filter((chat) => {
-            return chat.sender_uid !== id.value
-        })[0];
-
-        if (!single) {
-            const contact = await mapStore.worker.team.getByCallsign(name.value);
-            if (contact) {
-                single = {
-                    sender_uid: contact.uid,
-                    sender_callsign: contact.callsign
-                }
-            } else {
-                single = {
-                    sender_uid: name.value,
-                    sender_callsign: name.value
-                }
-            }
-        } else {
-            // Ensure single has sender_callsign (DBChatroomChat has sender)
-            single = {
-                sender_uid: single.sender_uid,
-                sender_callsign: single.sender
-            }
+        recipient = {
+            uid: String(route.query.uid),
+            callsign: String(route.query.callsign)
         }
     }
 
-    if (!single) throw new Error('Error sending Chat - Contact is not defined');
+    await room.chats.send(
+        message.value,
+        { uid: id.value, callsign: callsign.value },
+        mapStore.worker,
+        recipient
+    );
 
-    await mapStore.worker.conn.sendCOT({
-        chatroom: name.value,
-        to: {
-            uid: single.sender_uid,
-            callsign: single.sender_callsign
-        },
-        from: {
-            uid: id.value,
-            callsign: callsign.value
-        },
-        message: msg
-    }, 'chat');
+    message.value = ''
 }
 
 async function deleteChats() {
@@ -201,7 +158,6 @@ async function deleteChats() {
     loading.value = true;
 
     try {
-        const room = new Chatroom(name.value);
         await room.deleteChats(Array.from(selected.values()));
     } catch (err) {
         loading.value = false;
@@ -216,7 +172,7 @@ async function fetchChats() {
 
     if (route.params.chatroom !== 'new') {
         try {
-            const room = new Chatroom(route.params.chatroom);
+            await Chatroom.load(room.name, { reload: false });
             await room.chats.refresh();
         } catch (err) {
             console.error(err);
