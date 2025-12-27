@@ -101,7 +101,7 @@ export default class KML implements Transform {
 
                 iconMap.add({
                     name: name.replace(/.[a-z]+$/, '.png'),
-                    data: contents
+                    data: `data:image/png;base64,${contents}`
                 });
             } catch (err) {
                 console.error(`failing to process ${name}`, err);

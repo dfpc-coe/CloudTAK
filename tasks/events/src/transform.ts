@@ -153,7 +153,7 @@ export default class DataTransform {
                     const url = new URL(`/api/iconset/${iconset}/icon`, this.msg.api);
                     url.searchParams.append('regen', 'false');
 
-                    await fetch(url, {
+                    const iconRes = await fetch(url, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -164,6 +164,10 @@ export default class DataTransform {
                             data: icon.data.toString('base64')
                         })
                     })
+
+                    if (!iconRes.ok) {
+                        console.error(`err - Failed to upload icon: ${await iconRes.text()}`);
+                    }
                 }
 
                 await fetch(new URL(`/api/iconset/${iconset}/regen`, this.msg.api), {
