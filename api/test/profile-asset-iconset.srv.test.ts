@@ -16,11 +16,12 @@ flight.takeoff();
 flight.user();
 
 test('PROFILE: asset iconset integration', async () => {
+    let stub: Sinon.SinonStub | undefined;
     try {
         const assetId = '1e34f3bc-3c34-4f0a-8b52-91bd8b0d25d3';
         const iconsetId = 'profile-iconset';
 
-        Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
+        stub = Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
             if (command instanceof HeadObjectCommand) {
                 assert.deepEqual(command.input, {
                     Bucket: 'fake-asset-bucket',
@@ -160,11 +161,11 @@ test('PROFILE: asset iconset integration', async () => {
         }, true);
 
         assert.equal(icons.body.total, 0);
-
-        Sinon.restore();
     } catch (err) {
-        Sinon.restore();
         assert.ifError(err);
+    } finally {
+        stub?.restore();
+        Sinon.restore();
     }
 });
 
