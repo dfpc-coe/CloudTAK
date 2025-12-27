@@ -3,11 +3,16 @@ import jwt from 'jsonwebtoken';
 import tls from 'node:tls'
 import https from 'node:https'
 import http from 'node:http'
+import type CoT from '@tak-ps/node-cot';
+import { CoTParser } from '@tak-ps/node-cot';
 import stream2buffer from '../lib/stream.js';
 import crypto from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import fs from 'node:fs'
 
+/**
+ * Mocking Framework for CloudTAK <=> TAK Server API Interactions
+ */
 export default class MockTAKServer {
     keys: {
         cert: string
@@ -267,6 +272,12 @@ export default class MockTAKServer {
             this.mockWebtakDefaultResponses();
         } else {
             this.mockWebtak = []
+        }
+    }
+
+    write(cot: CoT): void {
+        for (const socket of this.sockets) {
+            socket.write(CoTParser.to_xml(cot));
         }
     }
 
