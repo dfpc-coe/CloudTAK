@@ -13,7 +13,7 @@ import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from './connection-config.js';
 import { MachineConnConfig, ProfileConnConfig } from './connection-config.js';
 
-const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8')) as {
+const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')) as {
     version: string;
 };
 
