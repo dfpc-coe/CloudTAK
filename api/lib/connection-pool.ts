@@ -160,9 +160,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         cots: CoT[],
     ) {
         try {
-            if (this.config.wsClients.has(String(conn.id))) {
+            if (conn instanceof ProfileConnConfig) {
                 for (const cot of cots) {
-
                     // While I am reluncant to override user-intent, client's don't necessarily
                     // pass archived tags on the following types which lead to a poor experience
                     // on reloads if not present
