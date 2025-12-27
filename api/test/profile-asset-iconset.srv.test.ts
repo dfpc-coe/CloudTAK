@@ -9,36 +9,29 @@ import {
     DeleteObjectsCommand
 } from '@aws-sdk/client-s3';
 
-const ADMIN_USERNAME = 'admin';
-const ADMIN_EMAIL = `${ADMIN_USERNAME}@example.com`;
 const flight = new Flight();
 
 flight.init();
 flight.takeoff();
-flight.user({ username: ADMIN_USERNAME });
+flight.user({ username: 'admin' });
+
+const assetId = '1e34f3bc-3c34-4f0a-8b52-91bd8b0d25d3';
+const iconsetId = 'profile-iconset';
 
 test('PROFILE: asset iconset integration', async () => {
     let stub: Sinon.SinonStub | undefined;
-    try {
-        const assetId = '1e34f3bc-3c34-4f0a-8b52-91bd8b0d25d3';
-        const iconsetId = 'profile-iconset';
 
+    try {
         stub = Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
             if (command instanceof HeadObjectCommand) {
                 assert.deepEqual(command.input, {
                     Bucket: 'fake-asset-bucket',
-                    Key: `profile/${ADMIN_EMAIL}/${assetId}.zip`
+                    Key: `profile/admin@example.com/${assetId}.zip`
                 });
 
                 return Promise.resolve({
                     ContentLength: 123
                 });
-            } else if (command instanceof ListObjectsV2Command) {
-                return Promise.resolve({
-                    Contents: []
-                });
-            } else if (command instanceof DeleteObjectsCommand) {
-                return Promise.resolve({});
             }
 
             throw new Error(`Unknown S3 Command: ${command.constructor.name}`);
@@ -59,7 +52,16 @@ test('PROFILE: asset iconset integration', async () => {
 
         assert.ok(asset.body.created, 'asset has created');
         assert.ok(asset.body.updated, 'asset has updated');
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        stub?.restore();
+        Sinon.restore();
+    }
+});
 
+test('PROFILE: iconset creation, icon upload, regen', async () => {
+    try {
         const iconset = await flight.fetch('/api/iconset', {
             method: 'POST',
             auth: {
@@ -115,6 +117,26 @@ test('PROFILE: asset iconset integration', async () => {
                 bearer: flight.token.admin
             }
         }, true);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PROFILE: assign iconset to asset', async () => {
+    let stub: Sinon.SinonStub | undefined;
+
+    try {
+        stub = Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
+            if (command instanceof ListObjectsV2Command) {
+                return Promise.resolve({
+                    Contents: []
+                });
+            } else if (command instanceof DeleteObjectsCommand) {
+                return Promise.resolve({});
+            }
+
+            throw new Error(`Unknown S3 Command: ${command.constructor.name}`);
+        });
 
         const patched = await flight.fetch(`/api/profile/asset/${assetId}`, {
             method: 'PATCH',
@@ -145,29 +167,43 @@ test('PROFILE: asset iconset integration', async () => {
                 bearer: flight.token.admin
             }
         }, true);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        stub?.restore();
+        Sinon.restore();
+    }
+});
 
-        const iconsets = await flight.fetch('/api/iconset', {
+test('PROFILE: verify cascade delete of icons', async () => {
+    try {
+        const iconsets = await flight.fetch(`/api/iconset/${iconsetId}`, {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin
             }
-        }, true);
+        }, false);
 
-        assert.equal(iconsets.body.items.find((i: { uid: string }) => i.uid === iconsetId), undefined);
+        assert.deepEqual(iconsets.body, {
+            message: 'Item Not Found',
+            messages: [],
+            status: 404
+        });
 
         const icons = await flight.fetch(`/api/icon?iconset=${iconsetId}`, {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin
             }
-        }, true);
+        }, false);
 
-        assert.equal(icons.body.total, 0);
+        assert.deepEqual(icons.body, {
+            message: 'Item Not Found',
+            messages: [],
+            status: 404
+        });
     } catch (err) {
         assert.ifError(err);
-    } finally {
-        stub?.restore();
-        Sinon.restore();
     }
 });
 
