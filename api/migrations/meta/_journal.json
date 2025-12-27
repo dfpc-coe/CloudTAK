@@ -995,6 +995,13 @@
       "when": 1766097573395,
       "tag": "0141_absurd_grandmaster",
       "breakpoints": true
+    },
+    {
+      "idx": 142,
+      "version": "7",
+      "when": 1766862698560,
+      "tag": "0142_amused_jubilee",
+      "breakpoints": true
     }
   ]
 }
