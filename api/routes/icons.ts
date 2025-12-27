@@ -413,6 +413,13 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.scope === ResourceCreationScope.SERVER) scope = sql`username IS NULL`;
             else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
 
+            if (req.query.iconset) {
+                const iconset = await config.models.Iconset.from(req.query.iconset);
+                if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
+            }
+
             const list = await config.models.Icon.list({
                 limit: req.query.limit,
                 page: req.query.page,
