@@ -188,6 +188,15 @@ export const ProfileFeature = pgTable('profile_features', {
     }
 })
 
+export const BasemapSource = pgTable('basemaps_source', {
+    uuid: uuid().notNull().default(sql`gen_random_uuid()`),
+    name: text().notNull(),
+    type: text().notNull(),
+
+    url: text().notNull(),
+    auth: json().notNull().default({})
+});
+
 export const Basemap = pgTable('basemaps', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
