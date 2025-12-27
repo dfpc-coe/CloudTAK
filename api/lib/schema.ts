@@ -112,15 +112,27 @@ export const ProfileFile = pgTable('profile_files', {
     }>>().notNull().default([]),
 });
 
+export const ProfileChatroom = pgTable('profile_chatroom', {
+    id: text().primaryKey(),
+
+    name: text().notNull(),
+    icon: text().notNull(),
+
+    username: text().notNull().references(() => Profile.username),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+});
+
 export const ProfileChat = pgTable('profile_chats', {
     id: serial().primaryKey(),
-    read: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
+    read: boolean().notNull().default(false),
     chatroom: text().notNull(),
     sender_callsign: text().notNull(),
     sender_uid: text().notNull(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     message_id: text().notNull(),
     message: text().notNull()
 });
