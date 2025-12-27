@@ -1144,30 +1144,10 @@
         "query": true,
         "res": true
     },
-    "GET /server/repeater": {
+    "GET /search": {
         "body": false,
         "query": false,
         "res": true
-    },
-    "DELETE /server/repeater/:uid": {
-        "body": false,
-        "query": false,
-        "res": true
-    "DELETE /server/repeater/:uid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /server/repeater": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /server/video": {
-        "body": false,
-        "query": true,
-        "res": true
-    },  "res": true
     },
     "GET /search/reverse/:longitude/:latitude": {
         "body": false,
@@ -1189,12 +1169,27 @@
         "query": true,
         "res": true
     },
-<<<<<<< HEAD
-    "GET /search/suggest": {
+    "GET /server/repeater": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /server/repeater/:uid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /server/video": {
         "body": false,
         "query": true,
         "res": true
     },
+    "GET /server": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /server": {
         "body": true,
         "query": false,
         "res": true
