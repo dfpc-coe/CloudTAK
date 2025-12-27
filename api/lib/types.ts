@@ -113,6 +113,12 @@ export const MissionTemplateResponse = createSelectSchema(schemas.MissionTemplat
     updated: Type.String(),
 })
 
+export const MissionTemplateLogResponse = createSelectSchema(schemas.MissionTemplateLog, {
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+})
+
 const Palette = createSelectSchema(schemas.Palette, {
     uuid: Type.String(),
     created: Type.String(),
