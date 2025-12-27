@@ -18,7 +18,7 @@ export default async function router(schema: Schema, config: Config) {
         const iconsetRes = await config.models.Iconset.from(iconset);
 
         if (iconsetRes.username !== email) {
-            throw new Err(403, null, 'You do not have permission to associate this iconset');
+            throw new Err(403, null, `You do not have permission to associate iconset '${iconset}'`);
         }
     }
 
@@ -211,7 +211,11 @@ export default async function router(schema: Schema, config: Config) {
                 file = await config.models.ProfileFile.commit(req.params.asset, { artifacts });
             }
 
-            const iconsetValue = req.body.iconset === undefined ? file.iconset : req.body.iconset;
+            const iconsetValue = req.body.iconset === undefined
+                ? file.iconset
+                : req.body.iconset === null
+                    ? null
+                    : req.body.iconset;
 
             await ensureIconsetPermission(iconsetValue, user.email);
 
