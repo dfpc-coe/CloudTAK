@@ -12,6 +12,16 @@ import Config from '../lib/config.js';
 import * as Default from '../lib/limits.js'
 
 export default async function router(schema: Schema, config: Config) {
+    async function ensureIconsetPermission(iconset: string | null | undefined, email: string) {
+        if (!iconset) return;
+
+        const iconsetRes = await config.models.Iconset.from(iconset);
+
+        if (iconsetRes.username !== email) {
+            throw new Err(403, null, 'You do not have permission to associate this iconset');
+        }
+    }
+
     await schema.get('/profile/asset', {
         name: 'List Files',
         group: 'ProfileFile',
@@ -143,13 +153,7 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
-            if (req.body.iconset) {
-                const iconset = await config.models.Iconset.from(req.body.iconset);
-
-                if (iconset.username !== user.email) {
-                    throw new Err(403, null, 'You do not have permission to associate this iconset');
-                }
-            }
+            await ensureIconsetPermission(req.body.iconset, user.email);
 
             const file = await config.models.ProfileFile.generate({
                 id: req.body.id,
@@ -207,15 +211,7 @@ export default async function router(schema: Schema, config: Config) {
                 file = await config.models.ProfileFile.commit(req.params.asset, { artifacts });
             }
 
-            if (typeof req.body.iconset !== 'undefined') {
-                if (req.body.iconset) {
-                    const iconset = await config.models.Iconset.from(req.body.iconset);
-
-                    if (iconset.username !== user.email) {
-                        throw new Err(403, null, 'You do not have permission to associate this iconset');
-                    }
-                }
-            }
+            await ensureIconsetPermission(req.body.iconset, user.email);
 
             file = await config.models.ProfileFile.commit(req.params.asset, {
                 name: req.body.name,
