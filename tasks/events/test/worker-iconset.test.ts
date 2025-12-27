@@ -9,13 +9,19 @@ import {
 } from '@aws-sdk/client-s3';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
-test(`Worker DataPackage Import: Iconset`, async () => {
+test(`Worker DataPackage Import: Iconset`, async (t) => {
     const mockAgent = new MockAgent();
     const originalDispatcher = getGlobalDispatcher();
 
     mockAgent.disableNetConnect();
 
     setGlobalDispatcher(mockAgent);
+
+    t.after(() => {
+        Sinon.restore();
+        setGlobalDispatcher(originalDispatcher);
+        mockAgent.close();
+    });
 
     const mockPool = mockAgent.get('http://localhost:5001');
 
@@ -112,9 +118,6 @@ test(`Worker DataPackage Import: Iconset`, async () => {
     });
 
     worker.on('success', () => {
-        Sinon.restore();
-        setGlobalDispatcher(originalDispatcher);
-        mockAgent.close();
     });
 
     await worker.process()

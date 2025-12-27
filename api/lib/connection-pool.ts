@@ -212,7 +212,6 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                         messageId: feat.properties.chat.messageId,
                                         from: {
                                             callsign: feat.properties.chat.senderCallsign,
-                                            uid: feat.properties.chat.senderUid
                                         },
                                         message: feat.properties.remarks,
                                         time: feat.properties.time || new Date().toISOString()

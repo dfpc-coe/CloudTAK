@@ -1,0 +1,1 @@
+ALTER TABLE "iconsets" ADD COLUMN "username_internal" boolean DEFAULT false NOT NULL;

@@ -1,12 +1,13 @@
 import fs from 'node:fs';
 import jwt from 'jsonwebtoken';
+import { randomUUID } from 'node:crypto';
 import type { Message, LocalMessage, Asset } from './types.ts';
 import s3client from './s3.ts'
 import { Upload } from '@aws-sdk/lib-storage';
 import path from 'node:path';
 import cp from 'node:child_process';
 
-import Tippecanoe from './transforms/tippecanoe.ts';
+import Tippecanoe from './tippecanoe.ts';
 
 // Formats
 import KML from './transforms/kml.ts';
@@ -49,17 +50,17 @@ export default class DataTransform {
 
         const convert = new (formats.get(this.local.ext))(this.msg, this.local);
 
-        const asset = await convert.convert();
+        const conversion = await convert.convert();
 
         const artifacts: Array<{ ext: string }> = this.asset.artifacts.map(a => ({ ext: a.ext }));
 
-        if (path.parse(asset).ext === '.geojsonld') {
+        if (path.parse(conversion.asset).ext === '.geojsonld') {
             const geouploader = new Upload({
                 client: s3,
                 params: {
                     Bucket: this.msg.bucket,
                     Key: `profile/${this.msg.job.username}/${this.asset.id}.geojsonld`,
-                    Body: fs.createReadStream(asset)
+                    Body: fs.createReadStream(conversion.asset)
                 }
             });
             await geouploader.done();
@@ -82,10 +83,10 @@ export default class DataTransform {
 
             const tp = new Tippecanoe();
 
-            console.log(`ok - tiling ${asset}`);
+            console.log(`ok - tiling ${conversion.asset}`);
             await tp.tile(
-                fs.createReadStream(asset),
-                path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles'), {
+                fs.createReadStream(conversion.asset),
+                path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles'), {
                     std: true,
                     quiet: false,
                     name: this.msg.job.name,
@@ -104,11 +105,11 @@ export default class DataTransform {
                 }
             );
         } else {
-            console.log(`ok - converting ${asset}`);
-            const pmout = cp.execFileSync('pmtiles', ['convert', asset, path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles')]);
+            console.log(`ok - converting ${conversion.asset}`);
+            const pmout = cp.execFileSync('pmtiles', ['convert', conversion.asset, path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')]);
             console.log(String(pmout));
 
-            console.log(`ok - converted: ${path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles')}`);
+            console.log(`ok - converted: ${path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')}`);
         }
 
         const pmuploader = new Upload({
@@ -116,11 +117,67 @@ export default class DataTransform {
             params: {
                 Bucket: this.msg.bucket,
                 Key: `profile/${this.msg.job.username}/${this.asset.id}.pmtiles`,
-                Body: fs.createReadStream(path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles'))
+                Body: fs.createReadStream(path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles'))
             }
         });
 
         await pmuploader.done();
+
+        if (conversion.icons) {
+            console.error('ok - Creating Iconset');
+
+            const iconset = randomUUID();
+
+            const iconsetRes = await fetch(new URL(`/api/iconset`, this.msg.api), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                },
+                body: JSON.stringify({
+                    uid: iconset,
+                    version: 1,
+                    name: `${this.msg.job.name} Icons`,
+                    internal: true,
+                    scope: 'user'
+
+                })
+            })
+
+            if (!iconsetRes.ok) {
+                console.error(`err - Failed to create iconset: ${await iconsetRes.text()}`);
+            } else {
+                for (const icon of conversion.icons) {
+                    console.error(`ok - Uploading Icon: ${icon.name}`);
+
+                    const url = new URL(`/api/iconset/${iconset}/icon`, this.msg.api);
+                    url.searchParams.append('regen', 'false');
+
+                    const iconRes = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                        },
+                        body: JSON.stringify({
+                            name: icon.name,
+                            data: icon.data
+                        })
+                    })
+
+                    if (!iconRes.ok) {
+                        console.error(`err - Failed to upload icon: ${await iconRes.text()}`);
+                    }
+                }
+
+                await fetch(new URL(`/api/iconset/${iconset}/regen`, this.msg.api), {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                    }
+                });
+            }
+        }
 
         artifacts.push({ ext: '.pmtiles' });
         const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {

@@ -40,6 +40,7 @@ test('POST: api/basemap - ArcGIS Imagery Source', async () => {
             actions: { feature: [] },
             url: ARCGIS_IMAGERY_URL,
             overlay: false,
+            iconset: '',
             title: 'callsign',
             username: 'admin@example.com',
             attribution: '',

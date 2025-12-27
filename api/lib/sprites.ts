@@ -61,6 +61,7 @@ export default class SpriteBuilder {
                 await Sharp(img)
                     .metadata();
             } catch (err) {
+                console.error('Sprite Error', err);
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to parse valid image');
             }
         }
