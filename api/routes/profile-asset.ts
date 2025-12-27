@@ -100,7 +100,15 @@ export default async function router(schema: Schema, config: Config) {
             if (file.iconset) {
                 const iconset = await config.models.Iconset.from(file.iconset);
 
-                if (iconset.username && iconset.username === user.email) {
+                if (await config.models.ProfileFile.count({
+                    where: sql`
+                      iconset = ${file.iconset}
+                    `
+                }) > 1) {
+                    return;
+                }
+
+                if (iconset.username_internal && iconset.username && iconset.username === user.email) {
                     await config.models.Icon.delete(sql`iconset = ${file.iconset}`);
                     await config.models.Iconset.delete(String(file.iconset));
                 }
