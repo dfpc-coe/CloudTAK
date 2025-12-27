@@ -54,6 +54,17 @@ export const MissionTemplate = pgTable('mission_template', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
+export const MissionTemplateLog = pgTable('mission_template_log', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    name: text().notNull(),
+    icon: text().notNull().default(''),
+    description: text().notNull().default(''),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
+    schema: json().notNull()
+});
+
 /** ==== END ==== */
 
 export const Profile = pgTable('profile', {
