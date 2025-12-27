@@ -62,6 +62,8 @@ export const MissionTemplateLog = pgTable('mission_template_log', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 
+    template: uuid().notNull().references(() => MissionTemplate.id),
+
     schema: json().notNull()
 });
 
