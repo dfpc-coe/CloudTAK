@@ -91,7 +91,7 @@ export default class KML implements Transform {
 
         const iconMap = new Set<{
             name: string;
-            data: Buffer;
+            data: string;
         }>();
         for (const [name, icon] of icons.entries()) {
             try {
@@ -101,7 +101,7 @@ export default class KML implements Transform {
 
                 iconMap.add({
                     name: name.replace(/.[a-z]+$/, '.png'),
-                    data: `data:image/png;base64,${contents}`
+                    data: `data:image/png;base64,${contents.toString('base64')}`
                 });
             } catch (err) {
                 console.error(`failing to process ${name}`, err);

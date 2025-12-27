@@ -4,7 +4,7 @@ export type ConvertResponse = {
     asset: string;
     icons?: Set<{
         name: string;
-        data: Buffer;
+        data: string;
     }>
 }
 
