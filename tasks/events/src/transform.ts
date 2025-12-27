@@ -161,7 +161,7 @@ export default class DataTransform {
                         },
                         body: JSON.stringify({
                             name: icon.name,
-                            data: icon.data.toString('base64')
+                            data: icon.data
                         })
                     })
 
