@@ -13,7 +13,7 @@ import * as Default from '../lib/limits.js'
 
 export default async function router(schema: Schema, config: Config) {
     async function ensureIconsetPermission(iconset: string | null | undefined, email: string) {
-        if (!iconset) return;
+        if (iconset === undefined || iconset === null || iconset === '') return;
 
         const iconsetRes = await config.models.Iconset.from(iconset);
 
@@ -211,12 +211,14 @@ export default async function router(schema: Schema, config: Config) {
                 file = await config.models.ProfileFile.commit(req.params.asset, { artifacts });
             }
 
-            await ensureIconsetPermission(req.body.iconset, user.email);
+            const iconsetValue = req.body.iconset === undefined ? file.iconset : req.body.iconset;
+
+            await ensureIconsetPermission(iconsetValue, user.email);
 
             file = await config.models.ProfileFile.commit(req.params.asset, {
                 name: req.body.name,
                 path: req.body.path,
-                iconset: req.body.iconset === undefined ? file.iconset : req.body.iconset
+                iconset: iconsetValue
             });
 
             res.json(file);
