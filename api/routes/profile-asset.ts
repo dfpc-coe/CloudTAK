@@ -156,7 +156,7 @@ export default async function router(schema: Schema, config: Config) {
                 username: user.email,
                 name: req.body.name,
                 path: req.body.path,
-                iconset: req.body.iconset,
+                iconset: req.body.iconset ?? null,
                 size: head.ContentLength || 0,
                 artifacts
             });
