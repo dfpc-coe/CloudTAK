@@ -211,11 +211,12 @@ export default async function router(schema: Schema, config: Config) {
                 file = await config.models.ProfileFile.commit(req.params.asset, { artifacts });
             }
 
-            const iconsetValue = req.body.iconset === undefined
-                ? file.iconset
-                : req.body.iconset === null
-                    ? null
-                    : req.body.iconset;
+            let iconsetValue = file.iconset;
+            if (req.body.iconset === null) {
+                iconsetValue = null;
+            } else if (req.body.iconset !== undefined) {
+                iconsetValue = req.body.iconset;
+            }
 
             await ensureIconsetPermission(iconsetValue, user.email);
 

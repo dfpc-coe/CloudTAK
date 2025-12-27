@@ -153,7 +153,7 @@ test('PROFILE: asset iconset integration', async () => {
             }
         }, true);
 
-        assert.ok(!iconsets.body.items.find((i: { uid: string }) => i.uid === iconsetId));
+        assert.equal(iconsets.body.items.find((i: { uid: string }) => i.uid === iconsetId), undefined);
 
         const icons = await flight.fetch(`/api/icon?iconset=${iconsetId}`, {
             method: 'GET',
