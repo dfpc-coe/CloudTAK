@@ -9,11 +9,13 @@ import {
     DeleteObjectsCommand
 } from '@aws-sdk/client-s3';
 
+const ADMIN_USERNAME = 'admin';
+const ADMIN_EMAIL = `${ADMIN_USERNAME}@example.com`;
 const flight = new Flight();
 
 flight.init();
 flight.takeoff();
-flight.user();
+flight.user({ username: ADMIN_USERNAME });
 
 test('PROFILE: asset iconset integration', async () => {
     let stub: Sinon.SinonStub | undefined;
@@ -25,7 +27,7 @@ test('PROFILE: asset iconset integration', async () => {
             if (command instanceof HeadObjectCommand) {
                 assert.deepEqual(command.input, {
                     Bucket: 'fake-asset-bucket',
-                    Key: `profile/admin@example.com/${assetId}.zip`
+                    Key: `profile/${ADMIN_EMAIL}/${assetId}.zip`
                 });
 
                 return Promise.resolve({
@@ -133,7 +135,7 @@ test('PROFILE: asset iconset integration', async () => {
             }
         }, true);
 
-        const found = list.body.items.find((i: any) => i.id === assetId);
+        const found = list.body.items.find((i: { id: string; iconset: string | null }) => i.id === assetId);
         assert.ok(found, 'asset returned from list');
         assert.equal(found.iconset, iconsetId);
 
@@ -151,7 +153,7 @@ test('PROFILE: asset iconset integration', async () => {
             }
         }, true);
 
-        assert.ok(!iconsets.body.items.find((i: any) => i.uid === iconsetId));
+        assert.ok(!iconsets.body.items.find((i: { uid: string }) => i.uid === iconsetId));
 
         const icons = await flight.fetch(`/api/icon?iconset=${iconsetId}`, {
             method: 'GET',
