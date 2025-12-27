@@ -156,6 +156,7 @@ export default async function router(schema: Schema, config: Config) {
                 username: user.email,
                 name: req.body.name,
                 path: req.body.path,
+                iconset: req.body.iconset,
                 size: head.ContentLength || 0,
                 artifacts
             });
@@ -181,6 +182,7 @@ export default async function router(schema: Schema, config: Config) {
                 ext: Type.String()
             }))),
             name: Type.Optional(Type.String()),
+            iconset: Type.Optional(Type.Union([Type.String(), Type.Null()]))
         }),
         res: ProfileFileResponse
     }, async (req, res) => {
@@ -205,9 +207,20 @@ export default async function router(schema: Schema, config: Config) {
                 file = await config.models.ProfileFile.commit(req.params.asset, { artifacts });
             }
 
+            if (typeof req.body.iconset !== 'undefined') {
+                if (req.body.iconset) {
+                    const iconset = await config.models.Iconset.from(req.body.iconset);
+
+                    if (iconset.username !== user.email) {
+                        throw new Err(403, null, 'You do not have permission to associate this iconset');
+                    }
+                }
+            }
+
             file = await config.models.ProfileFile.commit(req.params.asset, {
                 name: req.body.name,
                 path: req.body.path,
+                iconset: req.body.iconset === undefined ? file.iconset : req.body.iconset
             });
 
             res.json(file);
