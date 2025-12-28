@@ -73,12 +73,9 @@ export default class MockTAKServer {
             ca: fs.readFileSync(this.keys.cert)
         }, (socket) => {
             this.sockets.add(socket);
-            socket.on('close', () => this.sockets.delete(socket));
-        });
-
-        this.streaming.on('connection', (socket) => {
-            this.sockets.add(socket);
-            socket.on('close', () => this.sockets.delete(socket));
+            socket.on('close', () => {
+                this.sockets.delete(socket)
+            });
         });
 
         this.streaming.on('error', (e) => {

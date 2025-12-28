@@ -64,11 +64,10 @@ test('Streaming: TAK Chat Message', async () => {
             try {
                 const res = JSON.parse(String(data));
 
-                assert.deepEqual(res, {
-                    type: 'chat',
-                    properties: {
-                    }
-                });
+                assert.equal(res.type, 'chat');
+                assert.equal(res.connection, 'admin@example.com');
+                assert.equal(res.data.message, 'Wilco');
+                assert.equal(res.data.from.callsign, 'user@example.com');
 
                 conn.close();
                 resolve();
@@ -89,8 +88,11 @@ test('GET: api/profile/chatroom', async () => {
         }, true);
 
         assert.deepEqual(res.body, {
-             total: 0,
-             items: [],
+             total: 1,
+             items: [{
+                id: 'user@example.com',
+                chatroom: 'user@example.com'
+             }],
         });
     } catch (err) {
         assert.ifError(err);
