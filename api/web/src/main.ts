@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { version } from '../package.json'
+import { PluginAPI } from '../plugin.ts';
 import type { PluginStatic } from '../plugin.ts'
 import * as VueRouter from 'vue-router'
 import { createPinia } from 'pinia'
@@ -232,15 +233,15 @@ app.use(router);
 app.use(pinia);
 app.use(FloatingVue);
 
-
 const plugins: Record<string, {
     default: PluginStatic
 }> = import.meta.glob('../plugins/*.ts', {
     eager: true
 });
 
+const pluginAPI = new PluginAPI(app, router, pinia);
 for (const path in plugins) {
-    app.use(plugins[path].default);
+    app.use(plugins[path].default, pluginAPI);
 }
 
 app.mount('#app');
