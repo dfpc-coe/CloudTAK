@@ -1,30 +1,23 @@
 import { ref, computed } from 'vue';
 import type { Component, Ref, ComputedRef } from "vue";
 import {
-    IconX,
     IconBug,
     IconMap,
-    IconUser,
     IconFiles,
     IconUsers,
     IconVideo,
     IconPhoto,
     IconRoute,
     IconMapPin,
-    IconLogout,
     IconMessage,
     IconNetwork,
     IconPackages,
-    IconGridDots,
     IconSettings,
-    IconDeviceTv,
     IconAmbulance,
     IconServerCog,
     IconBoxMultiple,
     IconFileImport,
     IconAffiliate,
-    IconLayoutGrid,
-    IconLayoutList,
 } from '@tabler/icons-vue';
 
 export type MenuItemConfig = {
@@ -44,6 +37,7 @@ export type MenuItemConfig = {
  * Manage Pluggable Menu
  */
 export default class MenuManager {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mapStore: any;
     filter: Ref<string>;
     preferredLayout: Ref<'list' | 'tiles'>;
@@ -51,6 +45,7 @@ export default class MenuManager {
     isSystemAdmin: Ref<boolean>;
     isAgencyAdmin: Ref<boolean>;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(mapStore: any) {
         this.mapStore = mapStore;
         this.filter = ref('');
