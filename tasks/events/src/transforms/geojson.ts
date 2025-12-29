@@ -46,7 +46,7 @@ export default class GeoJSON implements Transform {
                 isFeatureCollection = true;
                 await fs.promises.writeFile(outputFile, JSON.stringify(json) + '\n');
             }
-        } catch (err) {
+        } catch {
             // Fallback to line-delimited processing
         }
 
@@ -70,7 +70,7 @@ export default class GeoJSON implements Transform {
                             writeStream.write(JSON.stringify(feature) + '\n');
                         }
                     }
-                } catch (e) {
+                } catch {
                     // Skip invalid lines
                 }
             }
