@@ -34,9 +34,13 @@ export type TAKNotification = { type: string; name: string; body: string; url: s
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _map?: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _draw?: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _icons?: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _menu?: any;
 
         db: DatabaseType;
@@ -191,6 +195,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.$reset();
         },
         removeOverlay: async function(overlay: Overlay) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const pos = (this.overlays as any[]).indexOf(overlay)
             if (pos === -1) return;
 
@@ -236,6 +241,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         getOverlayById(id: number): Overlay | null {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             for (const overlay of (this.overlays as any[])) {
                 if (overlay.id === id) return overlay as Overlay
             }
@@ -243,6 +249,7 @@ export const useMapStore = defineStore('cloudtak', {
             return null;
         },
         getOverlayByName(name: string): Overlay | null {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             for (const overlay of (this.overlays as any[])) {
                 if (overlay.name === name) return overlay as Overlay
             }
@@ -250,6 +257,7 @@ export const useMapStore = defineStore('cloudtak', {
             return null;
         },
         getOverlayByMode(mode: string, mode_id: string): Overlay | null {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             for (const overlay of (this.overlays as any[])) {
                 if (overlay.mode === mode && overlay.mode_id === mode_id) {
                     return overlay as Overlay;
@@ -677,6 +685,7 @@ export const useMapStore = defineStore('cloudtak', {
                         }
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     this.select.feats = feats as any;
                 }
             });
@@ -740,11 +749,13 @@ export const useMapStore = defineStore('cloudtak', {
                         mode_id: String(basemaps.items[0].id)
                     });
 
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.overlays as any[]).push(basemap);
                 }
             }
 
             for (const item of profileOverlays.items) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this.overlays as any[]).push(await Overlay.create(
                     item as ProfileOverlay,
                     {
@@ -753,6 +764,7 @@ export const useMapStore = defineStore('cloudtak', {
                 ));
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.overlays as any[]).push(await Overlay.internal({
                 id: -1,
                 name: 'CoT Icons',
@@ -760,7 +772,7 @@ export const useMapStore = defineStore('cloudtak', {
             }));
 
             // Data Syncs are specially loaded as they are dynamic
-            for (const overlay of (this.overlays as any[])) {
+            for (const overlay of this.overlays) {
                 if (overlay.mode === 'mission' && overlay.mode_id) {
                     const source = map.getSource(String(overlay.id));
 
@@ -790,7 +802,7 @@ export const useMapStore = defineStore('cloudtak', {
             await this.updateAttribution();
         },
         updateIconRotation: function(enabled: boolean): void {
-            for (const overlay of (this.overlays as any[])) {
+            for (const overlay of this.overlays) {
                 if (overlay.type === 'geojson') {
                     // Update icon rotation
                     const iconLayerId = `${overlay.id}-icon`;
@@ -895,6 +907,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!opts.mode) opts.mode = this.featureSource(feat) || 'feat';
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.radial as any).cot = feat;
             this.radial.mode = opts.mode;
 
