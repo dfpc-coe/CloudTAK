@@ -22,8 +22,8 @@ export default class GeoJSON implements Transform {
     }
 
     async convert(): Promise<ConvertResponse> {
-        const inputFile = path.resolve(this.local.tmpdir, this.local.name);
-        const outputFile = path.resolve(this.local.tmpdir, `output-${this.local.name}`);
+        const inputFile = path.resolve(this.local.tmpdir, `${this.local.id}${this.local.ext}`);
+        const outputFile = path.resolve(this.local.tmpdir, `output-${this.local.id}.geojsonld`);
 
         let isFeatureCollection = false;
 
@@ -74,7 +74,7 @@ export default class GeoJSON implements Transform {
                     // Skip invalid lines
                 }
             }
-            
+
             writeStream.end();
             await new Promise((resolve, reject) => {
                 writeStream.on('finish', resolve);

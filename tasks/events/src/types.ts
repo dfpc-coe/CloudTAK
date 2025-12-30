@@ -20,6 +20,7 @@ export type Message = {
 };
 
 export type LocalMessage = {
+    id: string;
     tmpdir: string;
     ext: string;
     name: string;
