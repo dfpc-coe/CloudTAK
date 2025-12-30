@@ -143,8 +143,10 @@ export default class DataTransform {
                     if (!line.trim()) continue;
                     const feat = JSON.parse(line);
                     if (feat.properties && feat.properties.icon) {
-                        feat.properties.icon = `${iconset}:${path.parse(feat.properties.icon).name}`;
+                        // Remove File Extension from icon name - but retain path/directory
+                        feat.properties.icon = feat.properties.icon.replace(/(\.[^/.]+)$/, '');
                     }
+
                     writeStream.write(JSON.stringify(feat) + '\n');
                 }
 
