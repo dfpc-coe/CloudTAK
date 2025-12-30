@@ -2,7 +2,7 @@ import AWSECR, { ImageIdentifier, ListImagesCommandInput } from '@aws-sdk/client
 import Err from '@openaddresses/batch-error';
 import process from 'node:process';
 
-const ECR_TASKS_REPOSITORY = process.env.ECR_TASKS_REPOSITORY_NAME || 'coe-ecr-etl-tasks';
+const ECR_TASKS_REPOSITORY = String(process.env.ECR_TASKS_REPOSITORY_NAME);
 
 /**
  * @class
