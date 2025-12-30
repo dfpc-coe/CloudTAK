@@ -314,6 +314,7 @@ async function createOverlay(asset: ProfileFile) {
             name: asset.name,
             mode: 'profile',
             mode_id: asset.name,
+            iconset: asset.iconset,
             type: 'vector',
         }));
     } else {
@@ -322,6 +323,7 @@ async function createOverlay(asset: ProfileFile) {
             name: asset.name,
             mode: 'profile',
             mode_id: asset.name,
+            iconset: asset.iconset,
             type: 'raster',
         }));
     }
