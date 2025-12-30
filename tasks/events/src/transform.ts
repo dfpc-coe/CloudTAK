@@ -54,6 +54,85 @@ export default class DataTransform {
 
         const artifacts: Array<{ ext: string }> = this.asset.artifacts.map(a => ({ ext: a.ext }));
 
+        if (conversion.icons) {
+            console.error('ok - Creating Iconset');
+
+            const iconset = randomUUID();
+
+            const iconsetRes = await fetch(new URL(`/api/iconset`, this.msg.api), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                },
+                body: JSON.stringify({
+                    uid: iconset,
+                    version: 1,
+                    name: `${this.msg.job.name} Icons`,
+                    internal: true,
+                    scope: 'user'
+
+                })
+            })
+
+            if (!iconsetRes.ok) {
+                console.error(`err - Failed to create iconset: ${await iconsetRes.text()}`);
+            } else {
+                for (const icon of conversion.icons) {
+                    const url = new URL(`/api/iconset/${iconset}/icon`, this.msg.api);
+                    url.searchParams.append('regen', 'false');
+
+                    const iconRes = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                        },
+                        body: JSON.stringify({
+                            name: icon.name,
+                            data: icon.data
+                        })
+                    })
+
+                    if (!iconRes.ok) {
+                        console.error(`err - Failed to upload icon: ${await iconRes.text()}`);
+                    }
+                }
+
+                const regen = await fetch(new URL(`/api/iconset/${iconset}/regen`, this.msg.api), {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                    }
+                });
+
+                if (!regen.ok) {
+                    throw new Error(`Failed to update asset: ${await res.text()}`);
+                }
+
+                const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                    },
+                    body: JSON.stringify({ iconset })
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Failed to update asset: ${await res.text()}`);
+                } else {
+                    this.asset = await res.json() as Asset;
+                }
+            }
+
+            // Iterate over features and prefix with Iconset UID
+            // Do it as a stream to ensure memory efficiency
+            if (path.parse(conversion.asset).ext === '.geojsonld') {
+
+            }
+        }
+
         if (path.parse(conversion.asset).ext === '.geojsonld') {
             const geouploader = new Upload({
                 client: s3,
@@ -122,62 +201,6 @@ export default class DataTransform {
         });
 
         await pmuploader.done();
-
-        if (conversion.icons) {
-            console.error('ok - Creating Iconset');
-
-            const iconset = randomUUID();
-
-            const iconsetRes = await fetch(new URL(`/api/iconset`, this.msg.api), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
-                },
-                body: JSON.stringify({
-                    uid: iconset,
-                    version: 1,
-                    name: `${this.msg.job.name} Icons`,
-                    internal: true,
-                    scope: 'user'
-
-                })
-            })
-
-            if (!iconsetRes.ok) {
-                console.error(`err - Failed to create iconset: ${await iconsetRes.text()}`);
-            } else {
-                for (const icon of conversion.icons) {
-                    console.error(`ok - Uploading Icon: ${icon.name}`);
-
-                    const url = new URL(`/api/iconset/${iconset}/icon`, this.msg.api);
-                    url.searchParams.append('regen', 'false');
-
-                    const iconRes = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
-                        },
-                        body: JSON.stringify({
-                            name: icon.name,
-                            data: icon.data
-                        })
-                    })
-
-                    if (!iconRes.ok) {
-                        console.error(`err - Failed to upload icon: ${await iconRes.text()}`);
-                    }
-                }
-
-                await fetch(new URL(`/api/iconset/${iconset}/regen`, this.msg.api), {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
-                    }
-                });
-            }
-        }
 
         artifacts.push({ ext: '.pmtiles' });
         const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
