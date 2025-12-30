@@ -68,6 +68,26 @@ test(`Worker Import: KML-Samples.kml`, async (t) => {
 
     mockPool.intercept({
         path: /profile\/asset\//,
+        method: 'PATCH',
+        body: (str) => !!JSON.parse(str).iconset
+    }).reply((req) => {
+        const body = JSON.parse(req.body) as {
+            iconset: string
+        };
+
+        assert.ok(body.iconset);
+
+        return {
+            statusCode: 200,
+            data: JSON.stringify({
+                id: id,
+                artifacts: []
+            })
+        };
+    });
+
+    mockPool.intercept({
+        path: /profile\/asset\//,
         method: 'PATCH'
     }).reply((req) => {
         const body = JSON.parse(req.body) as {
