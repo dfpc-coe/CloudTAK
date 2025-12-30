@@ -32,11 +32,14 @@ export default class Worker extends EventEmitter {
             const s3 = s3client();
 
             const tmpdir = fs.mkdtempSync(path.resolve(os.tmpdir(), 'cloudtak-'));
-            const ext = path.parse(this.msg.job.name).ext;
+            const { ext } = path.parse(this.msg.job.name);
             const name = `${this.msg.job.id}${ext}`;
 
             local = {
-                ext, name, tmpdir,
+                id: this.msg.job.id,
+                ext,
+                name: this.msg.job.name,
+                tmpdir,
                 raw: path.resolve(tmpdir, name)
             }
 
@@ -44,7 +47,7 @@ export default class Worker extends EventEmitter {
                 // @ts-expect-error 'StreamingBlobPayloadOutputTypes | undefined' is not assignable to parameter of type 'ReadableStream'
                 (await s3.send(new GetObjectCommand({
                     Bucket: this.msg.bucket,
-                    Key: `import/${local.name}`,
+                    Key: `import/${local.id}${local.ext}`,
                 }))).Body,
                 fs.createWriteStream(local.raw)
             );

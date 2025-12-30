@@ -83,7 +83,7 @@ export default class KML implements Transform {
 
         console.error('ok - converted to GeoJSON');
 
-        const output = path.resolve(this.local.tmpdir, path.parse(this.local.name).name + '.geojsonld');
+        const output = path.resolve(this.local.tmpdir, this.local.id + '.geojsonld');
 
         await fs.writeFile(output, converted.map((feat) => {
             return JSON.stringify(feat);
