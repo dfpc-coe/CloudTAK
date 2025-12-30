@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.40.0 - 2025-12-30
+
+- :rocket: Setup ETL Builder in bin/build
+- :bug: Move from `docker down` to `docker stop` in cloudtak.sh
+
 ### v12.39.0 - 2025-12-26
 
 - :rocket: Make Chatroom List Live
