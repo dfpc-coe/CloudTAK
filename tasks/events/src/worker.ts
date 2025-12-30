@@ -154,6 +154,7 @@ export default class Worker extends EventEmitter {
                 if (['.png', '.xml'].includes(ext)) continue;
 
                 await this.processFile({
+                    id: randomUUID(),
                     tmpdir: pkg.path,
                     ext: ext,
                     name: base,
