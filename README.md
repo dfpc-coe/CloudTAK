@@ -88,7 +88,7 @@ For example:
 ## AWS Custom Resource name configuration
 
 If using the provided CloudFormation templates, these values will be populated for you and you
-shoudl ignore this section. All defaults in CloudTAK assume you are deploying via the provided
+should ignore this section. All defaults in CloudTAK assume you are deploying via the provided
 CloudFormation templates.
 
 The following values can be overridden through the use environment variables.
@@ -111,40 +111,6 @@ The following are dependencies which need to be created:
 | Name                  | Notes |
 | --------------------- | ----- |
 | `coe-vpc-<name>`      | VPC & networking to place tasks in - [repo](https://github.com/dfpc-coe/vpc)      |
-| `coe-ecs-<name>`      | ECS Cluster for API Service - [repo](https://github.com/dfpc-coe/ecs)             |
-| `coe-ecr-etl`         | ECR Repository for storing API Images - [repo](https://github.com/dfpc-coe/ecr)   |
-| `coe-ecr-etl-tasks`   | ECR Repository for storing Task Images - [repo](https://github.com/dfpc-coe/ecr)  |
-| `coe-elb-access`      | Centralized ELB Logs - [repo](https://github.com/dfpc-coe/elb-logs)               |
-
-An AWS ACM certificate must also be generated that covers the subdomain that CloudTAK is deployed to as well
-as the second level wildcard. Where in the example below CloudTAK is deployed to ie: `map.example.com` The second
-level wildcard will be used for serving tiles, currently configured to be `tiles.map.example.com`
-
-IE:
-```
-*.example.com
-*.map.example.com
-```
-
-**coe-ecr-etl**
-
-Can be created using the [dfpc-coe/ecr](https://github.com/dfpc-coe/ecr) repository.
-
-From the ecr repo:
-```sh
-npm install
-npx deploy create etl
-```
-
-**coe-ecr-etl-tasks**
-
-Can be created using the [dfpc-coe/ecr](https://github.com/dfpc-coe/ecr) repository.
-
-From the ecr repo:
-```sh
-npm install
-npx deploy create etl-tasks
-```
 
 ### 2. Installing Dependencies
 
