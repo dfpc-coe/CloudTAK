@@ -181,7 +181,7 @@ export default {
                                 'ecr:List*'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':ecr:', cf.region, ':', cf.accountId, ':repository/coe-ecr-etl-tasks'])
+                                cf.join(['arn:', cf.partition, ':ecr:', cf.region, ':', cf.accountId, ':repository/tak-vpc-', cf.ref('Environment'), '-cloudtak-tasks']),
                             ]
                         },{
                             Effect: 'Allow',
