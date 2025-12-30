@@ -51,6 +51,20 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
 
         mockPool.intercept({
             path: /api\/profile\/asset\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+            method: 'PATCH',
+            body: (str) => !!JSON.parse(str).iconset
+        }).reply(() => {
+            return {
+                statusCode: 200,
+                data: JSON.stringify({
+                    id,
+                    artifacts: []
+                })
+            };
+        });
+
+        mockPool.intercept({
+            path: /api\/profile\/asset\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
             method: 'PATCH'
         }).reply((req) => {
             const body = JSON.parse(req.body) as {
