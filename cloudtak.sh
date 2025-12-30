@@ -161,7 +161,7 @@ elif [[ "$SUBCOMMAND" == "start" ]]; then
 
     docker compose up -d api events tiles media
 elif [[ "$SUBCOMMAND" == "stop" ]]; then
-    docker compose down
+    docker compose stop
 elif [[ "$SUBCOMMAND" == "clean" ]]; then
     if ! command -v jq &> /dev/null; then
         echo "jq could not be found, please install jq first."
