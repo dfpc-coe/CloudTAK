@@ -53,7 +53,7 @@ test(`Worker Import: KML-Samples.kml`, async (t) => {
             name: string
         };
 
-        assert.equal(body.name, 'ba58a298-a3fe-46b4-a29a-9dd33fbb2139.kml', 'Name should be ba58a298-a3fe-46b4-a29a-9dd33fbb2139.kml');
+        assert.equal(body.name, 'KML-Samples.kml', 'Name should be KML-Samples.kml');
 
         id = body.id;
 

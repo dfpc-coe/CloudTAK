@@ -9,7 +9,9 @@ test('GeoJSON Transform', async (t) => {
     const tmpdir = await fs.promises.mkdtemp('/tmp/geojson-test-');
     
     await t.test('Convert FeatureCollection to Line Delimited', async () => {
-        const inputFile = path.join(tmpdir, 'input.json');
+        const id = 'input';
+        const ext = '.json';
+        const inputFile = path.join(tmpdir, id + ext);
         const featureCollection = {
             type: 'FeatureCollection',
             features: [
@@ -22,7 +24,8 @@ test('GeoJSON Transform', async (t) => {
         const transform = new GeoJSON({} as Message, {
             tmpdir,
             name: 'input.json',
-            ext: '.json',
+            ext,
+            id,
             raw: inputFile
         } as LocalMessage);
 
@@ -36,14 +39,17 @@ test('GeoJSON Transform', async (t) => {
     });
 
     await t.test('Convert Single Feature to Line Delimited', async () => {
-        const inputFile = path.join(tmpdir, 'single.json');
+        const id = 'single';
+        const ext = '.json';
+        const inputFile = path.join(tmpdir, id + ext);
         const feature = { type: 'Feature', properties: { a: 1 }, geometry: null };
         await fs.promises.writeFile(inputFile, JSON.stringify(feature));
 
         const transform = new GeoJSON({} as Message, {
             tmpdir,
             name: 'single.json',
-            ext: '.json',
+            ext,
+            id,
             raw: inputFile
         } as LocalMessage);
 
@@ -56,7 +62,9 @@ test('GeoJSON Transform', async (t) => {
     });
 
     await t.test('Pass through Line Delimited', async () => {
-        const inputFile = path.join(tmpdir, 'lines.geojsonld');
+        const id = 'lines';
+        const ext = '.geojsonld';
+        const inputFile = path.join(tmpdir, id + ext);
         const feature1 = { type: 'Feature', properties: { a: 1 }, geometry: null };
         const feature2 = { type: 'Feature', properties: { b: 2 }, geometry: null };
         await fs.promises.writeFile(inputFile, JSON.stringify(feature1) + '\n' + JSON.stringify(feature2) + '\n');
@@ -64,7 +72,8 @@ test('GeoJSON Transform', async (t) => {
         const transform = new GeoJSON({} as Message, {
             tmpdir,
             name: 'lines.geojsonld',
-            ext: '.geojsonld',
+            ext,
+            id,
             raw: inputFile
         } as LocalMessage);
 
