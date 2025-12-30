@@ -1,3 +1,5 @@
+#!/bin/bash
+
 SUBCOMMAND=${1:-}
 
 set -euo pipefail
