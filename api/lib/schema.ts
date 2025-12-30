@@ -485,6 +485,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     pos: integer().notNull().default(5),
     type: text().notNull().default('vector'),
     frequency: integer(),
+    iconset: text().references(() => Iconset.uid),
     opacity: numeric().notNull().default('1'),
     visible: boolean().notNull().default(true),
     token: text(),

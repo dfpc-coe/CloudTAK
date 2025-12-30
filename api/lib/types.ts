@@ -224,6 +224,7 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
     id: Type.Integer(),
     pos: Type.Integer(),
     frequency: Type.Union([Type.Null(), Type.Integer()]),
+    iconset: Type.Union([Type.Null(), Type.String()]),
     opacity: Type.Number(),
     visible: Type.Boolean(),
     styles: Type.Array(Type.Unknown())

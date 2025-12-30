@@ -30,6 +30,7 @@ export default class Overlay {
     active: boolean;
     username?: string;
     frequency: number | null;
+    iconset: string | null;
     created: string;
     updated: string;
     pos: number;
@@ -108,6 +109,7 @@ export default class Overlay {
             username: 'internal',
             url: '',
             frequency: null,
+            iconset: null,
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             token: undefined,
@@ -150,6 +152,7 @@ export default class Overlay {
         this.active = overlay.active;
         this.username = overlay.username;
         this.frequency = overlay.frequency;
+        this.iconset = overlay.iconset;
         this.created = overlay.created;
         this.updated = overlay.updated;
         this.actions = overlay.actions || {
@@ -266,7 +269,7 @@ export default class Overlay {
             this.styles = cotStyles(String(this.id), {
                 sourceLayer: 'out',
                 group: false,
-                icons: false,
+                icons: !!this.iconset,
                 labels: { size }
             });
         } else if (!this.styles.length && this.type === 'geojson') {
@@ -279,6 +282,10 @@ export default class Overlay {
             });
         } else if (!this.styles.length) {
             this.styles = [];
+        }
+
+        if (this.iconset) {
+            mapStore.icons.addIconset(this.iconset);
         }
 
         if (this.type === 'vector' && this. mode !== 'basemap' && opts.clickable === undefined) {
@@ -378,6 +385,10 @@ export default class Overlay {
 
         for (const l of this.styles) {
             mapStore.map.removeLayer(String(l.id));
+        }
+
+        if (this.iconset) {
+            mapStore.icons.removeIconset(this.iconset);
         }
 
         if (mapStore.map.getStyle().sources[String(this.id)]) {
