@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import readline from 'node:readline';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'node:crypto';
 import type { Message, LocalMessage, Asset } from './types.ts';
@@ -129,7 +130,29 @@ export default class DataTransform {
             // Iterate over features and prefix with Iconset UID
             // Do it as a stream to ensure memory efficiency
             if (path.parse(conversion.asset).ext === '.geojsonld') {
+                const tmpAsset = path.resolve(this.local.tmpdir, randomUUID() + '.geojsonld');
+                const readStream = fs.createReadStream(conversion.asset);
+                const writeStream = fs.createWriteStream(tmpAsset);
 
+                const rl = readline.createInterface({
+                    input: readStream,
+                    crlfDelay: Infinity
+                });
+
+                for await (const line of rl) {
+                    if (!line.trim()) continue;
+                    const feat = JSON.parse(line);
+                    if (feat.properties && feat.properties.icon) {
+                        feat.properties.icon = `${iconset}:${path.parse(feat.properties.icon).name}`;
+                    }
+                    writeStream.write(JSON.stringify(feat) + '\n');
+                }
+
+                await new Promise((resolve) => {
+                    writeStream.end(resolve);
+                });
+
+                fs.renameSync(tmpAsset, conversion.asset);
             }
         }
 
