@@ -27,7 +27,7 @@ export default class IconManager {
 
         this.map.addSprite(
             iconset.uid,
-            String(stdurl(`/api/iconset/default/sprite?token=${localStorage.token}`))
+            String(stdurl(`/api/iconset/${iconset.uid}/sprite?token=${localStorage.token}`))
         );
     }
 
