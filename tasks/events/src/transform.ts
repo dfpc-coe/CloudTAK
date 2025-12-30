@@ -108,7 +108,7 @@ export default class DataTransform {
                 });
 
                 if (!regen.ok) {
-                    throw new Error(`Failed to update asset: ${await res.text()}`);
+                    throw new Error(`Failed to update asset: ${await regen.text()}`);
                 }
 
                 const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {

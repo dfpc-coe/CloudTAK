@@ -9,6 +9,7 @@
                 v-if='!loading && subscription && subscription.role.permissions.includes("MISSION_WRITE")'
                 v-tooltip='"Delete"'
                 displaytype='icon'
+                match='Delete Data Sync'
                 @delete='deleteMission'
             />
             <TablerDropdown
