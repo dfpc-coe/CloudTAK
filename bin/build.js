@@ -1,6 +1,15 @@
 import fs from 'node:fs/promises';
 import CP from 'child_process';
 
+/**
+ * Build and push docker containers to AWS ECR
+ * Usage:
+ *    node build.js            # builds and pushes all containers
+ *    node build.js api        # builds and pushes only the API container
+ *    node build.js <taskname> # builds and pushes only the specified task container
+ *    node build.js .          # Build an ETL task in the current directory
+ */
+
 process.env.GITSHA = sha();
 
 process.env.Environment = process.env.Environment || 'prod';
@@ -29,6 +38,8 @@ if (!process.argv[2]) {
 } else {
     if (process.argv[2] === 'api') {
         await cloudtak_api();
+    } else if (process.argv[2] === '.') {
+        await cloudtak_etl();
     } else {
         await cloudtak_task(process.argv[2]);
     }
@@ -52,6 +63,31 @@ function login() {
         $.stderr.pipe(process.stderr);
     });
 
+}
+
+function cloudtak_etl() {
+    // Get Git Repo Name
+    const basename = (CP.execSync(`
+        basename $(git rev-parse --show-toplevel)
+    `)).toString().trim();
+
+    const version = (CP.execSync(`
+        jq .version ./package.json | tr -d '"'
+    `)).toString().trim();
+
+    return new Promise((resolve, reject) => {
+        const $ = CP.exec(`
+            docker build -t ${basename}:${version} . \
+            && docker tag ${basename}:${version} "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-tasks:${basename}-v${version}" \
+            && docker push "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-tasks:${basename}-v${version}"
+        `, (err) => {
+            if (err) return reject(err);
+            return resolve();
+        });
+
+        $.stdout.pipe(process.stdout);
+        $.stderr.pipe(process.stderr);
+    });
 }
 
 function cloudtak_api() {
