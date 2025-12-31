@@ -41,7 +41,7 @@
                     <TablerIconButton
                         v-if='preferredLayout !== "list"'
                         title='List View'
-                        @click='setPreferredLayout("list")'
+                        @click='mapStore.menu.setLayout("list")'
                     >
                         <IconLayoutList
                             :size='32'
@@ -51,7 +51,7 @@
                     <TablerIconButton
                         v-if='preferredLayout !== "tiles"'
                         title='Tile View'
-                        @click='setPreferredLayout("tiles")'
+                        @click='mapStore.menu.setLayout("tiles")'
                     >
                         <IconLayoutGrid
                             :size='32'
@@ -259,31 +259,13 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
-import type { Component } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import {
     IconX,
-    IconBug,
-    IconMap,
     IconUser,
-    IconFiles,
-    IconUsers,
-    IconVideo,
-    IconPhoto,
-    IconRoute,
-    IconMapPin,
     IconLogout,
-    IconMessage,
-    IconNetwork,
-    IconPackages,
     IconGridDots,
-    IconSettings,
     IconDeviceTv,
-    IconAmbulance,
-    IconServerCog,
-    IconBoxMultiple,
-    IconFileImport,
-    IconAffiliate,
     IconLayoutGrid,
     IconLayoutList,
 } from '@tabler/icons-vue';
@@ -297,8 +279,6 @@ import { useMapStore } from '../../stores/map.ts';
 import { useBrandStore } from '../../stores/brand.ts';
 import { useRouter, useRoute } from 'vue-router';
 import MenuItemCard from './Menu/MenuItemCard.vue';
-import type { WorkerMessage } from '../../base/events.ts';
-import { WorkerMessageType } from '../../base/events.ts';
 
 const route = useRoute();
 const router = useRouter();
@@ -312,258 +292,25 @@ const emit = defineEmits<{
 
 const version = ref('');
 const username = ref<string>('Username')
-const isSystemAdmin = ref<boolean>(false)
-const isAgencyAdmin = ref<boolean>(false)
-const menuFilter = ref('');
-const onlineContactsCount = ref(0);
-
-const channel = new BroadcastChannel("cloudtak");
-
-channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
-    const msg = event.data;
-    if (!msg || !msg.type) return;
-
-    if (msg.type === WorkerMessageType.Contact_Change) {
-        await updateContactsCount();
-    }
-}
-
-type MenuItemConfig = {
-    key: string;
-    label: string;
-    route: string;
-    routeExternal?: boolean;
-    tooltip: string;
-    description?: string;
-    icon: Component;
-    badge?: string;
-    requiresSystemAdmin?: boolean;
-    requiresAgencyAdmin?: boolean;
-};
-
-const baseMenuItems: MenuItemConfig[] = [
-    {
-        key: 'features',
-        label: 'Your Features',
-        route: '/menu/features',
-        tooltip: 'Your Features',
-        description: 'Manage saved features',
-        icon: IconMapPin,
-    },
-    {
-        key: 'overlays',
-        label: 'Overlays',
-        route: '/menu/overlays',
-        tooltip: 'Overlays',
-        description: 'Toggle and configure data overlays',
-        icon: IconBoxMultiple,
-    },
-    {
-        key: 'contacts',
-        label: 'Contacts',
-        route: '/menu/contacts',
-        tooltip: 'Contacts',
-        description: 'Manage and search for contacts',
-        icon: IconUsers,
-    },
-    {
-        key: 'basemaps',
-        label: 'BaseMaps',
-        route: '/menu/basemaps',
-        tooltip: 'Basemaps',
-        description: 'Switch between available basemaps',
-        icon: IconMap,
-    },
-    {
-        key: 'missions',
-        label: 'Data Sync',
-        route: '/menu/missions',
-        tooltip: 'Data Sync',
-        description: 'Real-Time Datasets',
-        icon: IconAmbulance,
-    },
-    {
-        key: 'packages',
-        label: 'Data Package',
-        route: '/menu/packages',
-        tooltip: 'Data Packages',
-        description: 'Create and share Data Packages',
-        icon: IconPackages,
-    },
-    {
-        key: 'channels',
-        label: 'Channels',
-        route: '/menu/channels',
-        tooltip: 'Channels',
-        description: 'Join and manage Data Channels',
-        icon: IconAffiliate,
-    },
-    {
-        key: 'videos',
-        label: 'Videos',
-        route: '/menu/videos',
-        tooltip: 'Videos',
-        description: 'Access live and recorded video feeds',
-        icon: IconVideo,
-    },
-    {
-        key: 'chats',
-        label: 'Chats',
-        route: '/menu/chats',
-        tooltip: 'Chats',
-        description: 'Open chat threads and history',
-        icon: IconMessage,
-    },
-    {
-        key: 'routes',
-        label: 'Routes',
-        route: '/menu/routes',
-        tooltip: 'Routes',
-        description: 'Plan and manage route overlays',
-        icon: IconRoute,
-    },
-    {
-        key: 'files',
-        label: 'Uploaded Files',
-        route: '/menu/files',
-        tooltip: 'Your Files',
-        description: 'Browse files you have uploaded',
-        icon: IconFiles,
-    },
-    {
-        key: 'imports',
-        label: 'Imports',
-        route: '/menu/imports',
-        tooltip: 'Imports',
-        description: 'Review and manage data imports',
-        icon: IconFileImport,
-    },
-    {
-        key: 'iconsets',
-        label: 'Iconsets',
-        route: '/menu/iconsets',
-        tooltip: 'Iconsets',
-        description: 'Customize Icons',
-        icon: IconPhoto,
-    },
-    {
-        key: 'connections',
-        label: 'Connections',
-        route: '/menu/connections',
-        tooltip: 'Connections (Admin)',
-        description: 'Manage Integrations',
-        icon: IconNetwork,
-        badge: 'A',
-        requiresAgencyAdmin: true,
-    },
-    {
-        key: 'debugger',
-        label: 'COT Debugger',
-        route: '/menu/debugger',
-        tooltip: 'Debugger (Admin)',
-        description: 'Inspect and debug COT traffic',
-        icon: IconBug,
-        badge: 'A',
-        requiresSystemAdmin: true,
-    },
-    {
-        key: 'server',
-        label: 'Server',
-        route: '/admin',
-        routeExternal: true,
-        tooltip: 'Server Settings (Admin)',
-        description: 'Configure CloudTAK server settings.',
-        icon: IconServerCog,
-        badge: 'A',
-        requiresSystemAdmin: true,
-    },
-    {
-        key: 'settings',
-        label: 'Settings',
-        route: '/menu/settings',
-        tooltip: 'Display Settings',
-        description: 'Adjust personal display preferences.',
-        icon: IconSettings,
-    },
-];
 
 const props = defineProps({
     compact: Boolean,
     modal: Boolean
 })
 
-const storedLayoutPref = typeof window !== 'undefined' ? localStorage.getItem('cloudtak-menu-layout') : null;
-
-const preferredLayout = ref<'list' | 'tiles'>(storedLayoutPref === 'tiles' ? 'tiles' : 'list');
-const menuLayout = computed(() => props.compact ? 'list' : preferredLayout.value);
-
-const menuItems = computed(() => {
-    return baseMenuItems.filter((item) => {
-        if (item.requiresSystemAdmin && !isSystemAdmin.value) return false;
-        if (item.requiresAgencyAdmin && !(isAgencyAdmin.value || isSystemAdmin.value)) return false;
-        return true;
-    }).map((item) => {
-        if (item.key === 'contacts' && onlineContactsCount.value > 0) {
-            return {
-                ...item,
-                badge: onlineContactsCount.value > 99 ? '99+' : String(onlineContactsCount.value)
-            }
-        }
-        return item;
-    });
+const menuLayout = computed(() => props.compact ? 'list' : mapStore.menu.preferredLayout.value);
+const preferredLayout = computed(() => mapStore.menu.preferredLayout.value);
+const menuFilter = computed({
+    get: () => mapStore.menu.filter.value,
+    set: (val) => mapStore.menu.filter.value = val
 });
-
-const filteredMenuItems = computed(() => {
-    const term = menuFilter.value.trim().toLowerCase();
-    if (!term) return menuItems.value;
-
-    return menuItems.value.filter((item) => {
-        const label = item.label.toLowerCase();
-        const tooltip = item.tooltip.toLowerCase();
-        const description = item.description?.toLowerCase() ?? '';
-
-        return (
-            label.includes(term)
-            || tooltip.includes(term)
-            || description.includes(term)
-        );
-    });
-});
-
-function setPreferredLayout(mode: 'list' | 'tiles') {
-    preferredLayout.value = mode;
-
-    if (typeof window !== 'undefined') {
-        localStorage.setItem('cloudtak-menu-layout', mode);
-    }
-}
+const filteredMenuItems = computed(() => mapStore.menu.filtered.value);
+const menuItems = computed(() => mapStore.menu.items.value);
 
 onMounted(async () => {
     version.value = (await mapStore.worker.profile.loadServer()).version;
     username.value = await mapStore.worker.profile.username();
-    isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
-    isAgencyAdmin.value = await mapStore.worker.profile.isAgencyAdmin();
-    await updateContactsCount();
 })
-
-onBeforeUnmount(() => {
-    if (channel) {
-        channel.close();
-    }
-})
-
-async function updateContactsCount() {
-    const team = await mapStore.worker.team.load();
-    const self = await mapStore.worker.profile.uid();
-    let count = 0;
-    for (const contact of team.values()) {
-        if (contact.uid === self) continue;
-        if (await mapStore.worker.db.has(contact.uid)) {
-            count++;
-        }
-    }
-    onlineContactsCount.value = count;
-}
 
 function external(url: string) {
     window.open(String(new URL(url, window.location.origin)));

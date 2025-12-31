@@ -85,6 +85,7 @@ export type PackageList = paths["/api/marti/package"]["get"]["responses"]["200"]
 
 export type ServerAdminVideoList = paths["/api/server/video"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type Iconset = paths["/api/iconset/{:iconset}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type IconsetList = paths["/api/iconset"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type AttachmentList = paths["/api/attachment"]["get"]["responses"]["200"]["content"]["application/json"]

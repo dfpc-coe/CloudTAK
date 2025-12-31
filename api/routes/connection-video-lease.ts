@@ -185,7 +185,7 @@ export default async function router(schema: Schema, config: Config) {
             source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
-            channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            channel: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             proxy: Type.Optional(Type.String())
         }),
         res: Type.Object({
@@ -255,7 +255,7 @@ export default async function router(schema: Schema, config: Config) {
             source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
-            channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            channel: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             secure: Type.Optional(Type.Boolean()),
             share: Type.Optional(Type.Boolean({
                 description: 'Allow other users to manage lease if they are also members of the channel'

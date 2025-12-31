@@ -72,6 +72,7 @@ export default class Flight {
                     const pool = await Pool.connect(connstr, pgtypes, {
                         migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
                     });
+
                     await pool.end();
                 }
             } catch (err) {

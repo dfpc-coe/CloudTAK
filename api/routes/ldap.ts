@@ -46,7 +46,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.String(),
             description: Type.String(),
-            agency_id: Type.Union([Type.Integer(), Type.Null()]),
+            agency_id: Type.Union([Type.Null(), Type.Integer()]),
             channels: Type.Array(Type.Object({
                 id: Type.Integer(),
                 access: ChannelAccess

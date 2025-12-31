@@ -15,7 +15,7 @@ import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector/', import.meta.url))) {
     const { ext } = path.parse(fixturename);
 
-    test(`Worker Data Transform Vector: ${fixturename}`, async () => {
+    test(`Worker Data Transform Vector: ${fixturename}`, async (t) => {
         let id: string;
 
         const mockAgent = new MockAgent();
@@ -23,6 +23,12 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
         mockAgent.disableNetConnect();
         setGlobalDispatcher(mockAgent);
         const mockPool = mockAgent.get('http://localhost:5001');
+
+        t.after(() => {
+            Sinon.restore();
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+        });
 
         mockPool.intercept({
             path: /profile\/asset/,
@@ -38,6 +44,20 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
                 statusCode: 200,
                 data: JSON.stringify({
                     id: body.id,
+                    artifacts: []
+                })
+            };
+        });
+
+        mockPool.intercept({
+            path: /api\/profile\/asset\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+            method: 'PATCH',
+            body: (str) => !!JSON.parse(str).iconset
+        }).reply(() => {
+            return {
+                statusCode: 200,
+                data: JSON.stringify({
+                    id,
                     artifacts: []
                 })
             };
@@ -80,6 +100,28 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
                 })
             };
         });
+
+        mockPool.intercept({
+            path: '/api/iconset',
+            method: 'POST'
+        }).reply(() => {
+            assert.ok(true, 'Creating Iconset');
+            return {
+                statusCode: 200,
+                data: JSON.stringify({})
+            };
+        }).persist();
+
+        mockPool.intercept({
+            path: /\/api\/iconset\/.*\/regen/,
+            method: 'POST'
+        }).reply(() => {
+            assert.ok(true, 'Regenerating Iconset');
+            return {
+                statusCode: 200,
+                data: JSON.stringify({})
+            };
+        }).persist();
 
         const ExternalOperations = [
                 (command) => {
@@ -149,9 +191,6 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
         });
 
         worker.on('success', () => {
-            Sinon.restore();
-            setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
         });
 
         await worker.process()

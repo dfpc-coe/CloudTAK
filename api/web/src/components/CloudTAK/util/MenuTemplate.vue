@@ -1,7 +1,10 @@
 <template>
-    <div class='w-100 px-0'>
+    <div
+        class='w-100 px-0 d-flex flex-column'
+        style='height: calc(100vh - 64px)'
+    >
         <div
-            class='sticky-top col-12 bg-dark'
+            class='col-12 bg-dark flex-shrink-0'
             :style='`z-index: ${zindex};`'
             style='
                 border-radius: 0px;
@@ -10,34 +13,39 @@
                 "border-bottom border-light": border
             }'
         >
-            <div class='card-header py-2 px-0 mx-2'>
-                <TablerIconButton
-                    v-if='backType === "close"'
-                    title='Close Menu'
-                    @click='router.push("/")'
-                >
-                    <IconCircleX
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-                <TablerIconButton
-                    v-if='backType === "back"'
-                    title='Close Menu'
-                    icon='IconCircleArrowLeft'
-                    @click='routerBack'
-                >
-                    <IconCircleArrowLeft
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-                <div v-else />
-
+            <div class='card-header d-flex align-items-center py-2 px-0 mx-2 flex-wrap row-gap-2'>
                 <div
-                    class='strong d-flex mx-auto user-select-none'
-                    v-text='name'
-                />
+                    class='d-flex align-items-center flex-grow-1'
+                    style='min-width: 0'
+                >
+                    <TablerIconButton
+                        v-if='backType === "close"'
+                        title='Close Menu'
+                        @click='router.push("/")'
+                    >
+                        <IconCircleX
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
+                        v-if='backType === "back"'
+                        title='Close Menu'
+                        icon='IconCircleArrowLeft'
+                        @click='routerBack'
+                    >
+                        <IconCircleArrowLeft
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <div v-else />
+
+                    <div
+                        class='strong user-select-none text-break px-2'
+                        v-text='name'
+                    />
+                </div>
                 <div class='col-auto btn-list align-items-center'>
                     <slot name='buttons' />
                 </div>
@@ -45,8 +53,7 @@
         </div>
 
         <div
-            class='row mx-0 d-flex flex-row overflow-y-auto overflow-x-hidden align-content-start'
-            style='height: calc(100vh - 114px)'
+            class='row mx-0 d-flex flex-row overflow-y-auto overflow-x-hidden align-content-start flex-grow-1'
         >
             <TablerLoading
                 v-if='loading'
