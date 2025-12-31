@@ -544,6 +544,11 @@
         "query": true,
         "res": true
     },
+    "POST /iconset/:iconset/regen": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "DELETE /iconset/:iconset": {
         "body": false,
         "query": false,
@@ -551,7 +556,7 @@
     },
     "POST /iconset/:iconset/icon": {
         "body": true,
-        "query": false,
+        "query": true,
         "res": true
     },
     "GET /icon": {

@@ -15,7 +15,7 @@ import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster/', import.meta.url))) {
     const { ext } = path.parse(fixturename);
 
-    test(`Worker Data Transform Raster: ${fixturename}`, async () => {
+    test(`Worker Data Transform Raster: ${fixturename}`, async (t) => {
         let id: string;
 
         const mockAgent = new MockAgent();
@@ -23,6 +23,12 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster
         mockAgent.disableNetConnect();
         setGlobalDispatcher(mockAgent);
         const mockPool = mockAgent.get('http://localhost:5001');
+
+        t.after(() => {
+            Sinon.restore();
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+        });
 
         mockPool.intercept({
             path: /api\/profile\/asset/,
@@ -121,9 +127,6 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster
         });
 
         worker.on('success', () => {
-            Sinon.restore();
-            setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
         });
 
         await worker.process()

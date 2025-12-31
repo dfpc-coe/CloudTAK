@@ -41,7 +41,7 @@
                                 :dark='true'
                                 :status='imported.status'
                             /><span
-                                class='mx-2'
+                                class='mx-2 text-break'
                                 v-text='imported.name'
                             />
                         </div>

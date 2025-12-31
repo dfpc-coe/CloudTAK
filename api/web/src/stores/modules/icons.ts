@@ -4,7 +4,7 @@
 import ms from 'milsymbol'
 import Icon from '../../base/icon.ts'
 import type { Map as MapLibreMap } from 'maplibre-gl';
-import type { IconsetList } from '../../types.ts';
+import type { IconsetList, Iconset } from '../../types.ts';
 import { std, stdurl } from '../../std.ts';
 import { db, type DBIconset } from '../../base/database.ts';
 
@@ -18,6 +18,22 @@ export default class IconManager {
 
     static async from(uid: string): Promise<DBIconset | undefined> {
         return await db.iconset.get(uid);
+    }
+
+    async addIconset(uid: string): Promise<void> {
+        const iconset = await std(`/api/iconset/${uid}`) as Iconset;
+
+        await db.iconset.put(iconset);
+
+        this.map.addSprite(
+            iconset.uid,
+            String(stdurl(`/api/iconset/${iconset.uid}/sprite?token=${localStorage.token}`))
+        );
+    }
+
+    async removeIconset(uid: string): Promise<void> {
+        this.map.removeSprite(uid);
+        await db.iconset.delete(uid);
     }
 
     static async sprites(): Promise<Array<{

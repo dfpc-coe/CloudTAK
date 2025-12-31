@@ -13,7 +13,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
-test(`Worker DataPackage Import: Packaged File`, async () => {
+test(`Worker DataPackage Import: Packaged File`, async (t) => {
     let id: string;
 
     const mockAgent = new MockAgent();
@@ -23,7 +23,46 @@ test(`Worker DataPackage Import: Packaged File`, async () => {
 
     setGlobalDispatcher(mockAgent);
 
+    t.after(() => {
+        Sinon.restore();
+        setGlobalDispatcher(originalDispatcher);
+        mockAgent.close();
+    });
+
     const mockPool = mockAgent.get('http://localhost:5001');
+
+    mockPool.intercept({
+        path: '/api/iconset',
+        method: 'POST'
+    }).reply(() => {
+        assert.ok(true, 'Creating Iconset');
+        return {
+            statusCode: 200,
+            data: JSON.stringify({})
+        };
+    }).persist();
+
+    mockPool.intercept({
+        path: /\/api\/iconset\/.*\/icon/,
+        method: 'POST'
+    }).reply(() => {
+        assert.ok(true, 'Uploading Icon');
+        return {
+            statusCode: 200,
+            data: JSON.stringify({})
+        };
+    }).persist();
+
+    mockPool.intercept({
+        path: /\/api\/iconset\/.*\/regen/,
+        method: 'POST'
+    }).reply(() => {
+        assert.ok(true, 'Regenerating Iconset');
+        return {
+            statusCode: 200,
+            data: JSON.stringify({})
+        };
+    }).persist();
 
     const expectedNames = new Set(['Base-FAB.kmz', 'Mapa Base FAB.kmz']);
 
@@ -46,6 +85,26 @@ test(`Worker DataPackage Import: Packaged File`, async () => {
                 statusCode: 200,
                 data: JSON.stringify({
                     id: body.id,
+                    artifacts: []
+                })
+            };
+        });
+
+        mockPool.intercept({
+            path: /profile\/asset\//,
+            method: 'PATCH',
+            body: (str) => !!JSON.parse(str).iconset
+        }).reply((req) => {
+            const body = JSON.parse(req.body) as {
+                iconset: string
+            };
+
+            assert.ok(body.iconset);
+
+            return {
+                statusCode: 200,
+                data: JSON.stringify({
+                    id: id,
                     artifacts: []
                 })
             };
@@ -238,9 +297,6 @@ test(`Worker DataPackage Import: Packaged File`, async () => {
     });
 
     worker.on('success', () => {
-        Sinon.restore();
-        setGlobalDispatcher(originalDispatcher);
-        mockAgent.close();
     });
 
     await worker.process()

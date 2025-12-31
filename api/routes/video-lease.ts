@@ -409,7 +409,7 @@ export default async function router(schema: Schema, config: Config) {
             source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
-            channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            channel: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             proxy: Type.Optional(Type.String())
         }),
         res: VideoLeaseResponse,
@@ -463,7 +463,7 @@ export default async function router(schema: Schema, config: Config) {
             source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
-            channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            channel: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             secure: Type.Optional(Type.Boolean()),
             recording: Type.Optional(Type.Boolean({
                 description: 'Record streams to disk'

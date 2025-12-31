@@ -1,8 +1,8 @@
 import path from 'node:path';
-import type { Message, LocalMessage } from '../types.ts';
+import type { Message, LocalMessage, Transform, ConvertResponse } from '../types.ts';
 import cp from 'node:child_process';
 
-export default class GDALTranslate {
+export default class GDALTranslate implements Transform {
     static register() {
         return {
             inputs: ['.pdf', '.tif', '.tiff']
@@ -20,7 +20,7 @@ export default class GDALTranslate {
         this.local = local;
     }
 
-    async convert() {
+    async convert(): Promise<ConvertResponse> {
         const input = path.resolve(this.local.tmpdir, this.local.raw);
         const output = path.resolve(this.local.tmpdir, path.parse(this.local.raw).name + '.mbtiles');
 
@@ -33,6 +33,8 @@ export default class GDALTranslate {
 
         cp.execFileSync('gdaladdo', ['-r', 'cubic', output]);
 
-        return output;
+        return {
+            asset: output
+        }
     }
 }

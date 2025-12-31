@@ -1,5 +1,17 @@
 import type { paths } from './derived-types.js';
 
+export type ConvertResponse = {
+    asset: string;
+    icons?: Set<{
+        name: string;
+        data: string;
+    }>
+}
+
+export interface Transform {
+    convert(): Promise<ConvertResponse>;
+}
+
 export type Message = {
     api: string
     bucket: string
@@ -8,6 +20,7 @@ export type Message = {
 };
 
 export type LocalMessage = {
+    id: string;
     tmpdir: string;
     ext: string;
     name: string;
