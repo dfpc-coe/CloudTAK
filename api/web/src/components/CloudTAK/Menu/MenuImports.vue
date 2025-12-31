@@ -90,7 +90,7 @@
                             style='width: 280px;'
                         >
                             <div
-                                class='text-truncate'
+                                class='text-break'
                                 v-text='imported.name'
                             />
                             <div
