@@ -139,7 +139,7 @@ export default async function router(schema: Schema, config: Config) {
             path: Type.String({
                 default: '/'
             }),
-            iconset: Type.Optional(Type.String()),
+            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             artifacts: Type.Array(Type.Object({
                 ext: Type.String()
             }), {
@@ -194,7 +194,7 @@ export default async function router(schema: Schema, config: Config) {
                 ext: Type.String()
             }))),
             name: Type.Optional(Type.String()),
-            iconset: Type.Optional(Type.Union([Type.String(), Type.Null()]))
+            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()]))
         }),
         res: ProfileFileResponse
     }, async (req, res) => {
