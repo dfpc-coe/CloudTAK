@@ -290,6 +290,7 @@ export const JobResponse = Type.Object({
 
 export const ProfileFileResponse = createSelectSchema(schemas.ProfileFile, {
     id: Type.String(),
+    iconset: Type.Union([Type.Null(), Type.String()]),
     artifacts: Type.Array(Type.Object({
         ext: Type.String(),
         size: Type.Integer(),
