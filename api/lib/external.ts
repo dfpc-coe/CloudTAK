@@ -426,7 +426,7 @@ export default class ExternalProvider {
                 id: Type.Integer(),
                 name: Type.String(),
                 email: Type.String(),
-                phone: Type.Union([Type.String(), Type.Null()]),
+                phone: Type.Union([Type.Null(), Type.String()]),
                 active: Type.Boolean(),
                 agencies: Type.Array(Type.Object({
                     id: Type.Integer(),

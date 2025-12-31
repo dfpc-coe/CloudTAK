@@ -36,9 +36,9 @@ export default async function router(schema: Schema, config: Config) {
             declination: Type.Number(),
             inclination: Type.Number()
         }),
-        weather: Type.Union([FetchHourly, Type.Null()]),
-        reverse: Type.Union([FetchReverse, Type.Null()]),
-        elevation: Type.Union([Type.String(), Type.Null()])
+        weather: Type.Union([Type.Null(), FetchHourly]),
+        reverse: Type.Union([Type.Null(), FetchReverse]),
+        elevation: Type.Union([Type.Null(), Type.String()])
     });
 
     const SuggestResponse = Type.Object({
