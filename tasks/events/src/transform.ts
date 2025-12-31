@@ -93,7 +93,7 @@ export default class DataTransform {
 
                         // If URLs are like example.com/icon.png?v=123 we need to randomize the name
                         if (!name || iconUrl.searchParams.size !== 0) {
-                            const rando = randmUUID();
+                            const rando = randomUUID();
                             iconNameMap.set(icon.name, rando);
                             icon.name = rando + '.png';
                         } else {
