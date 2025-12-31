@@ -23,6 +23,8 @@ flight.user();
 
 flight.connection();
 
+process.env.ECR_TASKS_REPOSITORY_NAME = 'example-ecr';
+
 test('GET: api/connection/1/layer', async () => {
     try {
         const res = await flight.fetch('/api/connection/1/layer', {
@@ -75,7 +77,7 @@ test('POST: api/connection/1/layer', async () => {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             if (command instanceof BatchGetImageCommand) {
                 assert.deepEqual(command.input, {
-                    repositoryName: 'coe-ecr-etl-tasks',
+                    repositoryName: process.env.ECR_TASKS_REPOSITORY_NAME,
                     imageIds: [{ imageTag: 'etl-test-v1.0.0' }]
                 });
 

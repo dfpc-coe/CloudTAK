@@ -13,6 +13,15 @@
                 class='strong d-flex align-items-center'
                 v-text='iconset.name || "Unnamed"'
             />
+            <div class='ms-auto'>
+                <TablerIconButton
+                    v-if='route.params.iconset'
+                    title='Regenerate Spritesheet'
+                    @click='regen'
+                >
+                    <IconWand />
+                </TablerIconButton>
+            </div>
         </div>
 
         <TablerLoading
@@ -49,8 +58,10 @@ import { std, stdurl } from '../../../../std.ts';
 import {
     TablerModal,
     TablerLoading,
-    TablerSchema
+    TablerSchema,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
+import { IconWand } from '@tabler/icons-vue';
 
 const emit = defineEmits([ 'close' ]);
 
@@ -88,6 +99,14 @@ async function submit() {
     });
 
     emit('close');
+}
+
+async function regen() {
+    loading.value.iconset = true;
+    await std(`/api/iconset/${route.params.iconset}/regen`, {
+        method: 'POST'
+    });
+    loading.value.iconset = false;
 }
 
 async function fetchSchema() {

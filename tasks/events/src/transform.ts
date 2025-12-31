@@ -87,9 +87,12 @@ export default class DataTransform {
                     url.searchParams.append('regen', 'false');
 
                     if (icon.name.startsWith('http')) {
-                        const name = path.parse(new URL(icon.name).pathname).name + '.png';
+                        const iconUrl = new URL(icon.name);
 
-                        if (!name) {
+                        const name = path.parse(iconUrl.pathname).name + '.png';
+
+                        // If URLs are like example.com/icon.png?v=123 we need to randomize the name
+                        if (!name || iconUrl.searchParams.size !== 0) {
                             const rando = randomUUID();
                             iconNameMap.set(icon.name, rando);
                             icon.name = rando + '.png';

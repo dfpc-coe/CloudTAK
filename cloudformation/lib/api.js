@@ -181,7 +181,7 @@ export default {
                                 'ecr:List*'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':ecr:', cf.region, ':', cf.accountId, ':repository/coe-ecr-etl-tasks'])
+                                cf.join(['arn:', cf.partition, ':ecr:', cf.region, ':', cf.accountId, ':repository/tak-vpc-', cf.ref('Environment'), '-cloudtak-tasks'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -431,6 +431,7 @@ export default {
                             ])
                         },
                         { Name: 'AWS_REGION', Value: cf.region },
+                        { Name: 'ECR_TASKS_REPOSITORY_NAME', Value: cf.join(['tak-vpc-', cf.ref('Environment'), '-cloudtak-tasks']) },
                         { Name: 'CLOUDTAK_Mode', Value: 'AWS' },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
