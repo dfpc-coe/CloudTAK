@@ -92,8 +92,9 @@ export default class DataTransform {
                         if (!name) {
                             const rando = randomUUID();
                             iconNameMap.set(icon.name, rando);
-                            icon.name = randomUUID() + '.png';
+                            icon.name = rando + '.png';
                         } else {
+                            iconNameMap.set(icon.name, name);
                             icon.name = name;
                         }
                     }
