@@ -9,8 +9,10 @@
 
 import { v4 as randomUUID } from 'uuid';
 import { defineStore } from 'pinia'
+import { markRaw } from 'vue';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
+import MenuManager from './modules/menu.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
@@ -32,9 +34,14 @@ export type TAKNotification = { type: string; name: string; body: string; url: s
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
-        _map?: mapgl.Map;
-        _draw?: DrawTool;
-        _icons?: IconManager;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        _map?: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        _draw?: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        _icons?: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        _menu?: any;
 
         db: DatabaseType;
         channel: BroadcastChannel;
@@ -152,18 +159,19 @@ export const useMapStore = defineStore('cloudtak', {
     getters: {
         map: function(): mapgl.Map {
             if (!this._map) throw new Error('Map has not yet initialized');
-            // @ts-expect-error Maplibre Type difference, need to investigate
-            return this._map;
+            return this._map as mapgl.Map;
         },
         draw: function(): DrawTool {
             if (!this._draw) throw new Error('Drawing Tools have not yet initialized');
-            // @ts-expect-error Type difference, need to investigate
-            return this._draw;
+            return this._draw as DrawTool;
         },
         icons: function(): IconManager {
             if (!this._icons) throw new Error('Icon Manager has not yet initialized');
-            // @ts-expect-error Type difference, need to investigate
-            return this._icons;
+            return this._icons as IconManager;
+        },
+        menu: function(): MenuManager {
+            if (!this._menu) throw new Error('Menu Manager has not yet initialized');
+            return this._menu as MenuManager;
         }
     },
     actions: {
@@ -187,8 +195,8 @@ export const useMapStore = defineStore('cloudtak', {
             this.$reset();
         },
         removeOverlay: async function(overlay: Overlay) {
-            // @ts-expect-error Doesn't like use of object to index array
-            const pos = this.overlays.indexOf(overlay)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const pos = (this.overlays as any[]).indexOf(overlay)
             if (pos === -1) return;
 
             this.overlays.splice(pos, 1)
@@ -233,21 +241,24 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         getOverlayById(id: number): Overlay | null {
-            for (const overlay of this.overlays) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            for (const overlay of (this.overlays as any[])) {
                 if (overlay.id === id) return overlay as Overlay
             }
 
             return null;
         },
         getOverlayByName(name: string): Overlay | null {
-            for (const overlay of this.overlays) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            for (const overlay of (this.overlays as any[])) {
                 if (overlay.name === name) return overlay as Overlay
             }
 
             return null;
         },
         getOverlayByMode(mode: string, mode_id: string): Overlay | null {
-            for (const overlay of this.overlays) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            for (const overlay of (this.overlays as any[])) {
                 if (overlay.mode === mode && overlay.mode_id === mode_id) {
                     return overlay as Overlay;
                 }
@@ -427,6 +438,8 @@ export const useMapStore = defineStore('cloudtak', {
                     this.hasNoChannels = false;
                 } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
                     await this.loadMission(msg.body.guid);
+                } else if (msg.type === WorkerMessageType.Contact_Change) {
+                    if (this._menu) await this._menu.updateContactsCount();
                 }
             }
 
@@ -510,9 +523,11 @@ export const useMapStore = defineStore('cloudtak', {
             // Store reference for later use
             (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
 
-            this._map = map;
-            this._draw = new DrawTool(this);
-            this._icons = new IconManager(map);
+            this._map = markRaw(map);
+            this._draw = markRaw(new DrawTool(this));
+            this._icons = markRaw(new IconManager(map));
+            this._menu = markRaw(new MenuManager(this));
+            await this._menu!.init();
 
             // If we missed the Profile_Location_Source make sure it gets synced
             const loc = await this.worker.profile.location;
@@ -670,7 +685,8 @@ export const useMapStore = defineStore('cloudtak', {
                         }
                     }
 
-                    this.select.feats = feats;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    this.select.feats = feats as any;
                 }
             });
 
@@ -733,12 +749,14 @@ export const useMapStore = defineStore('cloudtak', {
                         mode_id: String(basemaps.items[0].id)
                     });
 
-                    this.overlays.push(basemap);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (this.overlays as any[]).push(basemap);
                 }
             }
 
             for (const item of profileOverlays.items) {
-                this.overlays.push(await Overlay.create(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (this.overlays as any[]).push(await Overlay.create(
                     item as ProfileOverlay,
                     {
                         skipSave: true
@@ -746,7 +764,8 @@ export const useMapStore = defineStore('cloudtak', {
                 ));
             }
 
-            this.overlays.push(await Overlay.internal({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.overlays as any[]).push(await Overlay.internal({
                 id: -1,
                 name: 'CoT Icons',
                 type: 'geojson',
@@ -888,7 +907,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!opts.mode) opts.mode = this.featureSource(feat) || 'feat';
 
-            this.radial.cot = feat;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.radial as any).cot = feat;
             this.radial.mode = opts.mode;
 
             if (feat.properties && feat.properties.center) {

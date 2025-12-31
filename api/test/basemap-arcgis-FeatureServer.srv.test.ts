@@ -43,6 +43,7 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
             actions: { feature: ['fetch', 'query'] },
             url: ARCGIS_FEATURE_URL,
             overlay: false,
+            iconset: '',
             title: 'callsign',
             username: 'admin@example.com',
             attribution: '',

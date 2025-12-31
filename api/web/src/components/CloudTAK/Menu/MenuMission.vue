@@ -1,6 +1,6 @@
 <template>
     <MenuTemplate
-        :name='subscription ? subscription.meta.name : "Mission"'
+        :name='subscription ? subscription.meta.name : "Data Sync"'
         :error='error'
         :loading='(!subscription && !error) || loading'
     >
@@ -8,7 +8,9 @@
             <TablerDelete
                 v-if='!loading && subscription && subscription.role.permissions.includes("MISSION_WRITE")'
                 v-tooltip='"Delete"'
+                :label='"Delete " + (subscription.meta.name || "Data Sync")'
                 displaytype='icon'
+                match='Delete Data Sync'
                 @delete='deleteMission'
             />
             <TablerDropdown

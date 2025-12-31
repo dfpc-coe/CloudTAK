@@ -981,6 +981,41 @@
       "when": 1765841295112,
       "tag": "0139_square_lionheart",
       "breakpoints": true
+    },
+    {
+      "idx": 140,
+      "version": "7",
+      "when": 1766094248027,
+      "tag": "0140_young_deathbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 141,
+      "version": "7",
+      "when": 1766097573395,
+      "tag": "0141_absurd_grandmaster",
+      "breakpoints": true
+    },
+    {
+      "idx": 142,
+      "version": "7",
+      "when": 1766862698560,
+      "tag": "0142_amused_jubilee",
+      "breakpoints": true
+    },
+    {
+      "idx": 143,
+      "version": "7",
+      "when": 1766864263788,
+      "tag": "0143_careful_firedrake",
+      "breakpoints": true
+    },
+    {
+      "idx": 144,
+      "version": "7",
+      "when": 1767134631896,
+      "tag": "0144_oval_sasquatch",
+      "breakpoints": true
     }
   ]
 }

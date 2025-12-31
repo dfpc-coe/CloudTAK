@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v12.41.0 - 2025-12-31
+
+- :tada: MVP support for Iconsets created during Imports
+- :bug: Fix Basemap Menu appearing below Basemap List
+- :rocket: More aggressive warning message and requirements to delete Data Sync
+- :rocket: Support `.json` and `.geojson` extension in Import Task
+- :rocket: Support Line Delimited AND Standard GeoJSON in Import Task
+
 ### v12.40.0 - 2025-12-30
 
 - :rocket: Setup ETL Builder in bin/build

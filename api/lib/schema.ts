@@ -54,6 +54,19 @@ export const MissionTemplate = pgTable('mission_template', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
+export const MissionTemplateLog = pgTable('mission_template_log', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    name: text().notNull(),
+    icon: text().notNull().default(''),
+    description: text().notNull().default(''),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
+    template: uuid().notNull().references(() => MissionTemplate.id),
+
+    schema: json().notNull()
+});
+
 /** ==== END ==== */
 
 export const Profile = pgTable('profile', {
@@ -91,6 +104,7 @@ export const ProfileFile = pgTable('profile_files', {
     username: text().notNull().references(() => Profile.username),
     path: text().notNull().default('/'),
     name: text().notNull(),
+    iconset: text().references(() => Iconset.uid),
     size: integer().notNull(),
     artifacts: json().$type<Array<{
         ext: string;
@@ -98,15 +112,27 @@ export const ProfileFile = pgTable('profile_files', {
     }>>().notNull().default([]),
 });
 
+export const ProfileChatroom = pgTable('profile_chatroom', {
+    id: text().primaryKey(),
+
+    name: text().notNull(),
+    icon: text().notNull(),
+
+    username: text().notNull().references(() => Profile.username),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+});
+
 export const ProfileChat = pgTable('profile_chats', {
     id: serial().primaryKey(),
-    read: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
+    read: boolean().notNull().default(false),
     chatroom: text().notNull(),
     sender_callsign: text().notNull(),
     sender_uid: text().notNull(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     message_id: text().notNull(),
     message: text().notNull()
 });
@@ -174,6 +200,15 @@ export const ProfileFeature = pgTable('profile_features', {
     }
 })
 
+export const BasemapSource = pgTable('basemaps_source', {
+    uuid: uuid().notNull().default(sql`gen_random_uuid()`),
+    name: text().notNull(),
+    type: text().notNull(),
+
+    url: text().notNull(),
+    auth: json().notNull().default({})
+});
+
 export const Basemap = pgTable('basemaps', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -184,6 +219,7 @@ export const Basemap = pgTable('basemaps', {
     title: text().notNull().default('callsign'), // Title of features within the layer
     url: text().notNull(),
     overlay: boolean().notNull().default(false),
+    iconset: text().references(() => Iconset.uid),
     username: text().references(() => Profile.username),
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
     tilesize: integer().notNull().default(256),
@@ -246,7 +282,10 @@ export const Iconset = pgTable('iconsets', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     version: integer().notNull(),
     name: text().notNull(),
+
     username: text().references(() => Profile.username),
+    username_internal: boolean().notNull().default(false),
+
     default_group: text(),
     default_friendly: text(),
     default_hostile: text(),
@@ -446,6 +485,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     pos: integer().notNull().default(5),
     type: text().notNull().default('vector'),
     frequency: integer(),
+    iconset: text().references(() => Iconset.uid),
     opacity: numeric().notNull().default('1'),
     visible: boolean().notNull().default(true),
     token: text(),
