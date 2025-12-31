@@ -76,12 +76,27 @@ export default class DataTransform {
                 })
             })
 
+            // Map of original icon name to new icon name if name is incompatible
+            const iconNameMap = new Map<string, string>();
+
             if (!iconsetRes.ok) {
                 console.error(`err - Failed to create iconset: ${await iconsetRes.text()}`);
             } else {
                 for (const icon of conversion.icons) {
                     const url = new URL(`/api/iconset/${iconset}/icon`, this.msg.api);
                     url.searchParams.append('regen', 'false');
+
+                    if (icon.name.startsWith('http')) {
+                        const name = path.parse(new URL(icon.name).pathname).name + '.png';
+
+                        if (!name) {
+                            const rando = randomUUID();
+                            iconNameMap.set(icon.name, rando);
+                            icon.name = randomUUID() + '.png';
+                        } else {
+                            icon.name = name;
+                        }
+                    }
 
                     const iconRes = await fetch(url, {
                         method: 'POST',
@@ -143,8 +158,12 @@ export default class DataTransform {
                     if (!line.trim()) continue;
                     const feat = JSON.parse(line);
                     if (feat.properties && feat.properties.icon) {
+                        if (iconNameMap.has(feat.properties.icon)) {
+                            feat.properties.icon = iconNameMap.get(feat.properties.icon);
+                        }
+
                         // Remove File Extension from icon name - but retain path/directory
-                        feat.properties.icon = feat.properties.icon.replace(/(\.[^/.]+)$/, '');
+                        feat.properties.icon = iconset + ':' + feat.properties.icon.replace(/(\.[^/.]+)$/, '');
                     }
 
                     writeStream.write(JSON.stringify(feat) + '\n');
