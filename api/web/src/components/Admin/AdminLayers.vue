@@ -169,7 +169,7 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
-import { std, stdurl } from '../../std.ts';
+import { std, stdurl, stdclick } from '../../std.ts';
 import type { ETLLayerList, ETLLayer } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
@@ -243,7 +243,7 @@ async function redeploy() {
 }
 
 function external(url: string) {
-    window.location.href = url;
+    window.open(url, '_blank');
 }
 
 async function listLayerSchema() {
