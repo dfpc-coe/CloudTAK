@@ -431,6 +431,7 @@ export default {
                             ])
                         },
                         { Name: 'AWS_REGION', Value: cf.region },
+                        { Name: 'ECR_TASKS_REPOSITORY_NAME', Value: cf.join(['tak-vpc-', cf.ref('Environment'), '-cloudtak-tasks']) },
                         { Name: 'CLOUDTAK_Mode', Value: 'AWS' },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
