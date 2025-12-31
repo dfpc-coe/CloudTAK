@@ -42,7 +42,7 @@
                     <div v-else />
 
                     <div
-                        class='strong user-select-none text-truncate px-2'
+                        class='strong user-select-none text-break px-2'
                         v-text='name'
                     />
                 </div>
