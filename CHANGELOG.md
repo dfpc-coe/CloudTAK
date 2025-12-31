@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### v12.42.0 - 2025-12-31
+
+> ![WARNING]
+> This Version of CloudTAK requires updating to `vpc@2.10.0` or above if using the provided CloudFormation templates.
+>
+> If using the provided templates, ETLs must be updated to point at the per-stack ECR provided by the new VPC module.
+
+- :rocket: Update ECR Repo structure
+
 ### v12.41.0 - 2025-12-31
 
 - :tada: MVP support for Iconsets created during Imports
