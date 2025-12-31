@@ -13,7 +13,7 @@
                     :size='28'
                     stroke='1'
                 />
-                <span class='mx-2'>Import GeoJSON</span>
+                <span class='mx-2'>Import GeoJSON to Editable Features</span>
             </div>
         </div>
         <div class='modal-body text-white'>

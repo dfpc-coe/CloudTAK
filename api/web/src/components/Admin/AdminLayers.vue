@@ -243,7 +243,7 @@ async function redeploy() {
 }
 
 function external(url: string) {
-    window.location.href = url;
+    window.open(url, '_blank');
 }
 
 async function listLayerSchema() {
