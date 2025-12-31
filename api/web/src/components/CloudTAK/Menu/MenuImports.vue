@@ -86,8 +86,7 @@
                             />
                         </div>
                         <div
-                            class='mx-2 col-auto row'
-                            style='width: 280px;'
+                            class='mx-2 col d-flex flex-column'
                         >
                             <div
                                 class='text-break'
