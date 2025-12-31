@@ -18,7 +18,7 @@ test('GET: api/task - empty', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             assert.deepEqual(command.input, {
-                repositoryName: process.env.ECR_TASKS_REPOSITORY
+                repositoryName: process.env.ECR_TASKS_REPOSITORY_NAME
             });
             return Promise.resolve({ imageIds: [] });
         });
@@ -45,7 +45,7 @@ test('GET: api/task - empty', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             assert.deepEqual(command.input, {
-                repositoryName: process.env.ECR_TASKS_REPOSITORY
+                repositoryName: process.env.ECR_TASKS_REPOSITORY_NAME
             });
 
             return Promise.resolve({
