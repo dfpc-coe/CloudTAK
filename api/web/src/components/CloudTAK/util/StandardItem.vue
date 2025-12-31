@@ -33,5 +33,10 @@ withDefaults(defineProps<{
     border-color: rgba(255, 255, 255, 0.4);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
     cursor: pointer;
+    z-index: 1;
+}
+
+.standard-item--hover:focus-within {
+    z-index: 2;
 }
 </style>

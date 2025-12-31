@@ -69,8 +69,7 @@
                                                 Package
                                             </p>
                                             <h2
-                                                class='h4 mb-0 text-truncate'
-                                                style='max-width: calc(100% - 48px);'
+                                                class='h4 mb-0 text-break'
                                                 v-text='pkg.name'
                                             />
                                         </div>

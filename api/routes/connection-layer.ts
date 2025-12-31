@@ -341,7 +341,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             webhooks: Type.Optional(Type.Boolean()),
-            cron: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            cron: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             enabled_styles: Type.Optional(Type.Boolean()),
             styles: Type.Optional(StyleContainer),
             stale: Type.Optional(Type.Integer()),

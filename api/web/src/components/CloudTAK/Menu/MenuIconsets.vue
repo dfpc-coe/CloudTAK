@@ -115,11 +115,14 @@
                                     :size='32'
                                     stroke='1'
                                 />
-                                <div class='ms-2 flex-grow-1 fw-bold'>
+                                <div
+                                    class='ms-2 flex-grow-1 fw-bold text-truncate'
+                                    style='min-width: 0'
+                                >
                                     {{ iconset.name }}
                                 </div>
 
-                                <div class='d-flex align-items-center'>
+                                <div class='d-flex align-items-center flex-shrink-0'>
                                     <span
                                         v-if='!iconset.username'
                                         class='mx-3 badge border bg-blue text-white'

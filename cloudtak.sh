@@ -95,44 +95,57 @@ elif [[ "$SUBCOMMAND" == "backup" ]]; then
     echo "Backing up PostgreSQL database to ${BACKUP_FILE}"
     docker exec cloudtak-postgis-1 pg_dump -d $(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/') > $BACKUP_FILE
 elif [[ "$SUBCOMMAND" == "restore" ]]; then
+    TARGET_FILE=${2:-}
+    FORCE=${3:-}
+
     if [ ! -f .env ]; then
         echo ".env file not found. Please run 'install' first."
         exit 1
     fi
 
-    BACKUP_DIR=~/cloudtak-backups
-    if [ ! -d "$BACKUP_DIR" ]; then
-        echo "Backup directory $BACKUP_DIR does not exist."
-        exit 1
-    fi
-
-    shopt -s nullglob
-    FILES=("$BACKUP_DIR"/*.sql)
-    shopt -u nullglob
-
-    if [ ${#FILES[@]} -eq 0 ]; then
-        echo "No backup files found in $BACKUP_DIR"
-        exit 1
-    fi
-
-    echo "Available backups:"
-    PS3="Select a backup number to restore (or 'q' to quit): "
-    select BACKUP_FILE in "${FILES[@]}"; do
-        if [[ -n "$BACKUP_FILE" ]]; then
-            break
+    if [[ -n "$TARGET_FILE" ]]; then
+        BACKUP_FILE="$TARGET_FILE"
+        if [ ! -f "$BACKUP_FILE" ]; then
+            echo "Backup file $BACKUP_FILE does not exist."
+            exit 1
         fi
-        if [[ "$REPLY" == "q" || "$REPLY" == "quit" ]]; then
-            echo "Cancelled."
+    else
+        BACKUP_DIR=~/cloudtak-backups
+        if [ ! -d "$BACKUP_DIR" ]; then
+            echo "Backup directory $BACKUP_DIR does not exist."
+            exit 1
+        fi
+
+        shopt -s nullglob
+        FILES=("$BACKUP_DIR"/*.sql)
+        shopt -u nullglob
+
+        if [ ${#FILES[@]} -eq 0 ]; then
+            echo "No backup files found in $BACKUP_DIR"
+            exit 1
+        fi
+
+        echo "Available backups:"
+        PS3="Select a backup number to restore (or 'q' to quit): "
+        select BACKUP_FILE in "${FILES[@]}"; do
+            if [[ -n "$BACKUP_FILE" ]]; then
+                break
+            fi
+            if [[ "$REPLY" == "q" || "$REPLY" == "quit" ]]; then
+                echo "Cancelled."
+                exit 0
+            fi
+            echo "Invalid selection. Please try again."
+        done
+        echo "You selected: $BACKUP_FILE"
+    fi
+
+    if [[ "$FORCE" != "--force" ]]; then
+        read -p "WARNING: This will OVERWRITE the current database. Are you sure? (y/n): " CONFIRM
+        if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
+            echo "Restore cancelled."
             exit 0
         fi
-        echo "Invalid selection. Please try again."
-    done
-
-    echo "You selected: $BACKUP_FILE"
-    read -p "WARNING: This will OVERWRITE the current database. Are you sure? (y/n): " CONFIRM
-    if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
-        echo "Restore cancelled."
-        exit 0
     fi
 
     if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
@@ -184,11 +197,10 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
         exit 1
     fi
 
-    # Promp if they want a backup
-    read -p "Backup Database? (y/n): " BACKUP_CHOICE
-    if [[ "$BACKUP_CHOICE" == "y" || "$BACKUP_CHOICE" == "Y" ]]; then
-        $0 backup
-    fi
+    # Always backup database
+    echo "Backing up database..."
+    $0 backup
+    LATEST_BACKUP=$(ls -t ~/cloudtak-backups/cloudtak-*.sql 2>/dev/null | head -n1)
 
     git pull
 
@@ -196,6 +208,35 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
     docker compose build events tiles media
 
     $0 start
+
+    echo "Verifying database integrity..."
+    sleep 10
+
+    if docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
+        DB_URL=$(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/')
+
+        # Check table count
+        if TABLE_COUNT=$(docker exec cloudtak-postgis-1 psql -d "$DB_URL" -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | xargs); then
+            echo "Found $TABLE_COUNT tables in public schema."
+
+            if [[ "$TABLE_COUNT" -eq 0 ]]; then
+                echo "Database appears empty!"
+                if [[ -n "$LATEST_BACKUP" && -f "$LATEST_BACKUP" ]]; then
+                    echo "Attempting automatic restore from $LATEST_BACKUP..."
+                    $0 restore "$LATEST_BACKUP" --force
+                    echo "Automatic restore complete."
+                else
+                    echo "No backup available to restore from!"
+                fi
+            else
+                echo "Database seems intact."
+            fi
+        else
+            echo "Failed to check database table count."
+        fi
+    else
+        echo "PostGIS container is not running. Skipping database check."
+    fi
 
     read -p "Cleanup unused docker images? (y/n): " CLEAN_CHOICE
     if [[ "$CLEAN_CHOICE" == "y" || "$CLEAN_CHOICE" == "Y" ]]; then

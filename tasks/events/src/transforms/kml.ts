@@ -1,18 +1,13 @@
 import fs from 'node:fs/promises';
-import type { Message, LocalMessage } from '../types.ts';
+import type { Message, LocalMessage, Transform, ConvertResponse } from '../types.ts';
 import path from 'node:path';
-import spritesmith from 'spritesmith';
 import Sharp from 'sharp';
-import Vinyl from 'vinyl';
 import { glob } from 'glob';
 import StreamZip from 'node-stream-zip';
 import { kml } from '@tmcw/togeojson';
 import { DOMParser } from '@xmldom/xmldom';
-import { promisify } from 'node:util';
 
-const SpriteSmith = promisify(spritesmith.run);
-
-export default class KML {
+export default class KML implements Transform {
     static register() {
         return {
             inputs: ['.kml', '.kmz']
@@ -30,7 +25,7 @@ export default class KML {
         this.local = local;
     }
 
-    async convert() {
+    async convert(): Promise<ConvertResponse> {
         const icons = new Map();
 
         let asset;
@@ -60,51 +55,62 @@ export default class KML {
             if (!feat.properties) feat.properties = {};
 
             if (feat.properties.icon && !icons.has(feat.properties.icon)) {
-                const search = await glob(path.resolve(this.local.tmpdir, '**/' + feat.properties.icon));
-                if (!search.length) continue;
+                if (feat.properties.icon.startsWith('http')) {
+                    try {
+                        const res = await fetch(feat.properties.icon);
 
-                icons.set(feat.properties.icon, await fs.readFile(search[0]));
+                        if (!res.ok) {
+                            throw new Error(`HTTP ${res.status} ${await res.text()}`);
+                        }
+
+                        const iconbuffer = Buffer.from(await res.arrayBuffer());
+
+                        icons.set(feat.properties.icon, iconbuffer);
+                    } catch (err) {
+                        console.warn(`icon ${feat.properties.icon} not retrievable (${err})`);
+                    }
+                } else {
+                    const search = await glob(path.resolve(this.local.tmpdir, '**/' + feat.properties.icon));
+                    if (!search.length) {
+                        console.warn(`icon ${feat.properties.icon} not found`);
+                        continue;
+                    }
+
+                    icons.set(feat.properties.icon, await fs.readFile(search[0]));
+                }
             }
         }
 
         console.error('ok - converted to GeoJSON');
 
-        const output = path.resolve(this.local.tmpdir, path.parse(this.local.name).name + '.geojsonld');
+        const output = path.resolve(this.local.tmpdir, this.local.id + '.geojsonld');
 
         await fs.writeFile(output, converted.map((feat) => {
             return JSON.stringify(feat);
         }).join('\n'));
 
-        const src = [];
+        const iconMap = new Set<{
+            name: string;
+            data: string;
+        }>();
         for (const [name, icon] of icons.entries()) {
             try {
                 const contents = await (Sharp(icon)
-                    .resize(32, 32, {
-                        fit: 'contain',
-                        background: { r: 0, g: 0, b: 0, alpha: 0 }
-                    })
                     .png()
                     .toBuffer());
 
-                src.push(new Vinyl({
-                    path: name.replace(/.[a-z]+$/, '.png'),
-                    contents
-                }));
+                iconMap.add({
+                    name: name.replace(/.[a-z]+$/, '.png'),
+                    data: `data:image/png;base64,${contents.toString('base64')}`
+                });
             } catch (err) {
                 console.error(`failing to process ${name}`, err);
             }
         }
 
-        const doc = await SpriteSmith({ src });
-
-        const coords: Record<string, any> = {};
-        for (const key in doc.coordinates) {
-            coords[key.replace(/.png/, '')] = {
-                ...doc.coordinates[key],
-                pixelRatio: 1
-            };
+        return {
+            asset: output,
+            icons: iconMap
         }
-
-        return output;
     }
 }
