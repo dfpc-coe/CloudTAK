@@ -22,7 +22,7 @@
                 :create='false'
             />
             <template v-else>
-                <div class='row g-1'>
+                <div class='row g-1 pt-2'>
                     <div
                         v-for='icon in list.items'
                         :key='icon.name'
