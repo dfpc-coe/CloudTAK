@@ -107,7 +107,7 @@ export const PathListItem = Type.Object({
     ]),
 
     ready: Type.Boolean(),
-    readyTime: Type.Union([Type.String(), Type.Null()]),
+    readyTime: Type.Union([Type.Null(), Type.String()]),
     tracks: Type.Array(Type.String()),
     bytesReceived: Type.Integer(),
     bytesSent: Type.Integer(),

@@ -163,6 +163,8 @@ export default async function router(schema: Schema, config: Config) {
 
             await ensureIconsetPermission(req.body.iconset, user.email);
 
+            console.error('ICONSET', req.body.iconset, typeof req.body.iconset);
+
             const file = await config.models.ProfileFile.generate({
                 id: req.body.id,
                 username: user.email,
