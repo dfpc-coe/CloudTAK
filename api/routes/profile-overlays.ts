@@ -176,7 +176,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Type.String()),
             active: Type.Optional(Type.Boolean()),
             frequency: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
-            iconset: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             type: Type.Optional(Type.String()),
             opacity: Type.Optional(Type.Number()),
             visible: Type.Optional(Type.Boolean()),
