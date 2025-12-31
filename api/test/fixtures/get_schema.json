@@ -524,21 +524,6 @@
         "query": false,
         "res": true
     },
-    "GET /layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /layer/:layerid": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -603,6 +588,21 @@
         "body": false,
         "query": true,
         "res": false
+    },
+    "GET /layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid": {
+        "body": false,
+        "query": true,
+        "res": true
     },
     "GET /template": {
         "body": false,

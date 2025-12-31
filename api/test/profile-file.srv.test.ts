@@ -75,7 +75,7 @@ test('POST: api/profile/asset', async () => {
             username: 'admin@example.com',
             path: '/',
             name: 'example.zip',
-            iconset: '',
+            iconset: null,
             size: 123,
             artifacts: []
         });
@@ -123,7 +123,7 @@ test('PATCH: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', async () =
             username: 'admin@example.com',
             path: '/',
             name: 'example.zip',
-            iconset: '',
+            iconset: null,
             size: 123,
             artifacts: []
         });
