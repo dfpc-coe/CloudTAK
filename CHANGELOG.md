@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v12.43.0 - 2026-01-01
+
+- :bug: SVG icons in an Iconset would result in an invalid iconset.zip being generated
+- :bug: Iconset.zip would have the raw data URL instead of just the PNG buffer
+- :white_check_mark: Add strong unit testing to iconset.zip generation to ensure functionality
+- :rocket: Automate populate of API URL env vars in cloudtak.sh install manager
+
 ### v12.42.0 - 2025-12-31
 
 > ![WARNING]
