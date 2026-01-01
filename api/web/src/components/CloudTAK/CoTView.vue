@@ -141,7 +141,6 @@
                             />
                         </TablerIconButton>
 
-
                         <TablerIconButton
                             v-if='cot.properties.group && !cot.is_self'
                             title='Chat'
