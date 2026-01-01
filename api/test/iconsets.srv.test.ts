@@ -104,13 +104,13 @@ test('POST: /api/iconset/:iconset/icon - SVG with folder', async () => {
                 bearer: flight.token.admin
             },
             body: {
-                name: 'google/camera.svg',
+                name: 'google/marker.svg',
                 data: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InJlZCIvPjwvc3ZnPg=='
             }
         }, true);
 
-        assert.equal(res.body.name, 'google/camera');
-        assert.equal(res.body.path, 'test-iconset/google/camera');
+        assert.equal(res.body.name, 'google/marker');
+        assert.equal(res.body.path, 'test-iconset/google/marker');
     } catch (err) {
         assert.ifError(err);
     }
@@ -159,9 +159,9 @@ test('GET: /api/icon', async () => {
         assert.ok(carPng);
         assert.equal(carPng.path, 'test-iconset/car');
 
-        const cameraSvg = res.body.items.find((i: any) => i.name === 'google/camera' && i.format === '.svg');
+        const cameraSvg = res.body.items.find((i: any) => i.name === 'google/marker' && i.format === '.svg');
         assert.ok(cameraSvg);
-        assert.equal(cameraSvg.path, 'test-iconset/google/camera');
+        assert.equal(cameraSvg.path, 'test-iconset/google/marker');
 
         const truckSvg = res.body.items.find((i: any) => i.name === 'truck' && i.format === '.svg');
         assert.ok(truckSvg);
@@ -230,12 +230,18 @@ test('GET: /api/iconset/:iconset?format=zip', async () => {
         const car = await sharp('/tmp/test-iconset/car.png').metadata();
         assert.equal(car.format, 'png');
 
+        const marker = await sharp('/tmp/test-iconset/google/marker.png').metadata();
+        assert.equal(marker.format, 'png');
+
+        const truck = await sharp('/tmp/test-iconset/truck.png').metadata();
+        assert.equal(truck.format, 'png');
+
         const xml = fs.readFileSync('/tmp/test-iconset/iconset.xml', 'utf8');
         assert.equal(xml, `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <iconset version="1" defaultFriendly="test" defaultHostile="test" defaultNeutral="test" defaultUnknown="test" name="Test Iconset" defaultGroup="test" skipResize="false" uid="test-iconset">
   <icon name="google/camera.png"/>
   <icon name="car.png"/>
-  <icon name="google/camera.png"/>
+  <icon name="google/marker.png"/>
   <icon name="truck.png"/>
 </iconset>`);
     } catch (err) {
