@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.44.1 - 2026-01-01
+
+- :arrow_up: Update TerraDraw
+
 ### v12.44.0 - 2026-01-01
 
 - :tada: KML HTML Description Support
