@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.44.0 - 2026-01-01
+
+- :tada: KML HTML Description Support
+
 ### v12.43.0 - 2026-01-01
 
 - :bug: SVG icons in an Iconset would result in an invalid iconset.zip being generated
