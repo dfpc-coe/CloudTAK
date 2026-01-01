@@ -8,7 +8,7 @@ import Err from '@openaddresses/batch-error';
 import Config from '../lib/config.js';
 import Sprites from '../lib/sprites.js';
 import archiver from 'archiver';
-import xml2js from 'xml2js';
+import xmljs from 'xml-js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { StandardResponse, IconResponse, IconsetResponse } from '../lib/types.js';
@@ -210,8 +210,15 @@ export default async function router(schema: Schema, config: Config) {
                 archive.pipe(res);
 
                 const xmljson: any = {
+                    _declaration: {
+                        _attributes: {
+                            version: '1.0',
+                            encoding: 'UTF-8',
+                            standalone: 'yes'
+                        }
+                    },
                     iconset: {
-                        $: {
+                        _attributes: {
                             version: 1,
                             defaultFriendly: iconset.default_friendly,
                             defaultHostile: iconset.default_hostile,
@@ -230,24 +237,26 @@ export default async function router(schema: Schema, config: Config) {
                     limit: 1000,
                     where: sql`iconset = ${String(req.params.iconset)}`
                 })).items) {
-                    let buffer = Buffer.from(icon.data, 'base64');
+                    let buffer = Buffer.from(icon.data.split(',')[1], 'base64');
+                    let ext = icon.format;
 
                     if (req.query.resize) {
                         buffer = Buffer.from(await sharp(buffer).resize(32).png().toBuffer())
+                        ext = '.png';
+                    } else if (ext !== '.png') {
+                        buffer = Buffer.from(await sharp(buffer).png().toBuffer())
+                        ext = '.png';
                     }
 
-                    archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
+                    archive.append(buffer, { name: icon.name + ext });
 
-                    xmljson.iconset.icon.push({ $: {
-                        name: icon.name + '.png',
+                    xmljson.iconset.icon.push({ _attributes: {
+                        name: icon.name + ext,
                         type2525b: icon.type2525b
                     } })
                 }
 
-                res.setHeader('Content-Type', 'text/xml');
-
-                const builder = new xml2js.Builder();
-                const xml = builder.buildObject(xmljson);
+                const xml = xmljs.js2xml(xmljson, { compact: true, spaces: 2 });
 
                 archive.append(Buffer.from(xml), { name: 'iconset.xml' });
 
