@@ -66,8 +66,6 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
         exit 1
     fi
 
-    docker compose build
-
     if [[ ! -f .env ]]; then
         echo "Generating a new .env file with default settings..."
         cp .env.example .env
@@ -109,6 +107,8 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
         echo "WARNING: No API_URL provided. Skipping DNS validation and .env updates for API_URL and PMTILES_URL."
         echo "You may need to manually set API_URL and PMTILES_URL in your .env file before running the application."
     fi
+
+    docker compose build
 
 elif [[ "$SUBCOMMAND" == "backup" ]]; then
     if [ ! -f .env ]; then
