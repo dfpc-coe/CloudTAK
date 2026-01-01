@@ -135,13 +135,14 @@ export default class Flight {
     async fetch(
         url: string | URL,
         req: any,
-        t: boolean | { verify?: boolean; json?: boolean }
+        t: boolean | { verify?: boolean; json?: boolean; binary?: boolean }
     ): Promise<any> {
         if (t === undefined) throw new Error('flight.fetch requires two arguments - pass (<url>, <req>, false) to disable schema testing');
 
         const defs = {
             verify: false,
-            json: true
+            json: true,
+            binary: false
         };
 
         if (t === true) {
@@ -169,7 +170,11 @@ export default class Flight {
 
         if (!defs.verify) {
             const _res = await fetch(parsedurl, req);
-            const body = defs.json ? await _res.json() : await _res.text();
+            let body;
+            if (defs.json) body = await _res.json();
+            else if (defs.binary) body = await _res.arrayBuffer();
+            else body = await _res.text();
+
             const res = new FlightResponse(_res, body);
             return res;
         }
