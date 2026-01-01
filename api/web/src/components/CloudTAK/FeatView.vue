@@ -193,7 +193,7 @@ const htmlDescription = computed(() => {
         if (desc['@type'] === 'html' && desc.value) {
             return desc.value;
         }
-    } catch (err) {
+    } catch {
         return null;
     }
     return null;
