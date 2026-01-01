@@ -269,7 +269,9 @@ export default class Worker extends EventEmitter {
             const lookup = new Map();
 
             for (const file of files) {
-                if (path.parse(file).ext !== '.png') continue;
+                if (!['.png', '.svg'].includes(path.parse(file).ext)) {
+                    continue;
+                }
                 lookup.set(path.parse(file).base, file);
             }
 

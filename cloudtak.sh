@@ -22,7 +22,7 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
     fi
 
     sudo apt update
-    sudo apt install -y git jq ca-certificates curl caddy
+    sudo apt install -y git jq ca-certificates curl caddy dnsutils
 
     for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
@@ -78,6 +78,35 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
     else
         echo ".env file already exists. Skipping creation."
     fi
+
+    read -p "Enter the API_URL (e.g. map.example.com): " API_URL
+    if [[ -n "$API_URL" ]]; then
+        echo "Checking DNS records for $API_URL..."
+        if dig +short "$API_URL" A | grep -q .; then
+            echo "DNS check passed: A records found for $API_URL."
+            sed -i "s|^API_URL=.*|API_URL=https://$API_URL|" .env
+            echo "Updated API_URL in .env"
+
+            PMTILES_URL="tiles.$API_URL"
+            echo "Checking DNS records for $PMTILES_URL..."
+            if dig +short "$PMTILES_URL" A | grep -q .; then
+                echo "DNS check passed: A records found for $PMTILES_URL."
+                sed -i "s|^PMTILES_URL=.*|PMTILES_URL=https://$PMTILES_URL|" .env
+                echo "Updated PMTILES_URL in .env"
+            else
+                echo "DNS check failed: No A records found for $PMTILES_URL."
+                echo "Please ensure your DNS is configured correctly."
+                echo "Run ./cloudtak.sh install again after fixing DNS."
+                exit 1
+            fi
+        else
+            echo "DNS check failed: No A records found for $API_URL."
+            echo "Please ensure your DNS is configured correctly."
+            echo "Run ./cloudtak.sh install again after fixing DNS."
+            exit 1
+        fi
+    fi
+
 elif [[ "$SUBCOMMAND" == "backup" ]]; then
     if [ ! -f .env ]; then
         echo ".env file not found. Please run 'install' first."
