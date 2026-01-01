@@ -146,4 +146,14 @@ export default class CloudFormation {
             StackName: this.stdname(config, layerid)
         }));
     }
+
+    static async resources(config: Config, layerid: number): Promise<AWSCloudFormation.StackResource[]> {
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
+
+        const res = await cf.send(new AWSCloudFormation.DescribeStackResourcesCommand({
+            StackName: this.stdname(config, layerid)
+        }));
+
+        return res.StackResources || [];
+    }
 }
