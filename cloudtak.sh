@@ -105,6 +105,9 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
             echo "Run ./cloudtak.sh install again after fixing DNS."
             exit 1
         fi
+    else
+        echo "WARNING: No API_URL provided. Skipping DNS validation and .env updates for API_URL and PMTILES_URL."
+        echo "You may need to manually set API_URL and PMTILES_URL in your .env file before running the application."
     fi
 
 elif [[ "$SUBCOMMAND" == "backup" ]]; then
