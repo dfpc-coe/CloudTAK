@@ -64,13 +64,11 @@
                                 class='col-lg-12'
                             >
                                 <div class='card'>
-                                    <div class='card-body'>
-                                        <ConnectionCard
-                                            :connection='connection'
-                                            :clickable='true'
-                                            :expanded='true'
-                                        />
-                                    </div>
+                                    <ConnectionCard
+                                        :connection='connection'
+                                        :clickable='true'
+                                        :expanded='true'
+                                    />
                                 </div>
                             </div>
 
