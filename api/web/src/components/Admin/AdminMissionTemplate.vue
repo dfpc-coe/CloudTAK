@@ -101,6 +101,56 @@
                         </div>
                     </div>
                 </div>
+
+                <div class='mt-3'>
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='form-label m-0'>Mission Template Logs</label>
+                        <div class='ms-auto'>
+                            <TablerIconButton
+                                title='Create Log'
+                                @click='router.push(`/admin/template/${route.params.template}/log/new`)'
+                            >
+                                <IconPlus
+                                    :size='20'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                        </div>
+                    </div>
+                    <TablerNone
+                        v-if='!template.logs || !template.logs.length'
+                        label='No Mission Template Logs'
+                        :create='false'
+                    />
+                    <div
+                        v-else
+                        class='card'
+                    >
+                        <div class='table-responsive'>
+                            <table class='table table-vcenter card-table table-hover'>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr
+                                        v-for='log in template.logs'
+                                        :key='log.id'
+                                        class='cursor-pointer'
+                                        @click='router.push(`/admin/template/${route.params.template}/log/${log.id}`)'
+                                    >
+                                        <td v-text='log.name' />
+                                        <td>
+                                            <TablerEpoch :date='log.created' />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </template>
         </div>
     </div>
@@ -117,13 +167,28 @@ import {
     TablerAlert,
     TablerDelete,
     TablerIconButton,
-    TablerLoading
+    TablerLoading,
+    TablerEpoch,
+    TablerNone
 } from '@tak-ps/vue-tabler';
 import {
     IconCircleArrowLeft,
     IconPencil,
+    IconPlus
 } from '@tabler/icons-vue'
 import UploadLogo from '../util/UploadLogo.vue';
+
+interface MissionTemplateLog {
+    id: string;
+    template: string;
+    name: string;
+    created: string;
+    updated: string;
+}
+
+interface MissionTemplateWithLogs extends MissionTemplate {
+    logs?: MissionTemplateLog[];
+}
 
 const route = useRoute();
 const router = useRouter();
@@ -132,13 +197,14 @@ const error = ref<Error | undefined>();
 const disabled = ref(true);
 const loading = ref(true);
 
-const template = ref<MissionTemplate>({
+const template = ref<MissionTemplateWithLogs>({
     id: randomUUID(),
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
     name: '',
     icon: '',
     description: '',
+    logs: []
 });
 
 onMounted(async () => {
@@ -158,7 +224,7 @@ async function saveTemplate() {
             template.value = await std(`/api/template/mission`, {
                 method: 'POST',
                 body: template.value
-            }) as MissionTemplate 
+            }) as MissionTemplateWithLogs 
 
             disabled.value = true;
             router.push(`/admin/template/${template.value.id}`);
@@ -166,7 +232,7 @@ async function saveTemplate() {
             template.value = await std(`/api/template/mission/${route.params.template}`, {
                 method: 'PATCH',
                 body: template.value
-            }) as MissionTemplate
+            }) as MissionTemplateWithLogs
 
             disabled.value = true;
         }
@@ -195,7 +261,7 @@ async function deleteTemplate() {
 async function fetchTemplate() {
     loading.value = true;
     try {
-        template.value = await std(`/api/template/mission/${route.params.template}`) as MissionTemplate;
+        template.value = await std(`/api/template/mission/${route.params.template}`) as MissionTemplateWithLogs;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {

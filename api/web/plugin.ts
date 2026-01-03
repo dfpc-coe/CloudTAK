@@ -1,5 +1,5 @@
 import type { App } from 'vue';
-import type { Router } from 'vue-router';
+import type { Router, RouteRecordRaw } from 'vue-router';
 import type { Pinia } from 'pinia';
 import { useMapStore } from './src/stores/map.ts';
 import type { MenuItemConfig } from './src/stores/modules/menu.ts';
@@ -53,6 +53,11 @@ export class PluginAPI {
         const mapStore = useMapStore(this.pinia);
         return {
             add: (item: MenuItemConfig) => {
+                if (!item.routeExternal && !this.router.hasRoute(item.route)) {
+                    console.warn(`Failed to add menu item, route '${item.route}' not found`);
+                    return;
+                }
+
                 try {
                     mapStore.menu.addMenuItem(item);
                 } catch (err) {
@@ -64,6 +69,22 @@ export class PluginAPI {
                     mapStore.menu.removeMenuItem(key);
                 } catch (err) {
                     // Ignore error if menu is not loaded
+                }
+            }
+        }
+    }
+
+    get routes() {
+        return {
+            add: (route: RouteRecordRaw, parentName?: string) => {
+                if (route.name && this.router.hasRoute(route.name)) {
+                    return;
+                }
+
+                if (parentName) {
+                    this.router.addRoute(parentName, route);
+                } else {
+                    this.router.addRoute(route);
                 }
             }
         }
