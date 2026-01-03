@@ -97,32 +97,39 @@
                         >
                     </div>
                     <div class='flex-fill'>
-                        <div class='row g-2'>
-                            <div class='col-12'>
-                                <label class='form-label'>Name</label>
-                                <div v-text='log.name' />
+                        <div class='datagrid'>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>Name</div>
+                                <div class='datagrid-content' v-text='log.name' />
                             </div>
-                            <div class='col-12'>
-                                <label class='form-label'>Description</label>
-                                <div v-text='log.description' />
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>Description</div>
+                                <div class='datagrid-content' v-text='log.description' />
                             </div>
-                            <div class='col-12'>
-                                <label class='form-label'>Created</label>
-                                <TablerEpoch :date='log.created' />
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>Created</div>
+                                <div class='datagrid-content'>
+                                    <TablerEpoch :date='log.created' />
+                                </div>
                             </div>
-                            <div class='col-12'>
-                                <label class='form-label'>Updated</label>
-                                <TablerEpoch :date='log.updated' />
-                            </div>
-                            <div class='col-12'>
-                                <label class='form-label'>Schema Preview</label>
-                                <TablerSchema
-                                    :schema='log.schema'
-                                    :model-value='{}'
-                                    :disabled='true'
-                                />
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>Updated</div>
+                                <div class='datagrid-content'>
+                                    <TablerEpoch :date='log.updated' />
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class='mt-3'>
+                    <div class='datagrid-title mb-2'>Schema Preview</div>
+                    <div class='border border-secondary border-opacity-25 rounded'>
+                        <TablerSchema
+                            :schema='log.schema'
+                            :model-value='{}'
+                            :disabled='true'
+                        />
                     </div>
                 </div>
             </template>
