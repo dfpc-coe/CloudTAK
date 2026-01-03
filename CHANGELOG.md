@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.46.0 - 2026-01-03
+
+- :tada: Introduce Mission Template Logs in API
+- :rocket: Standardize Connection Card in UI
+- :rocket: Introduce `menu` operations to PluginAPI 
+
 ### v12.45.0 - 2026-01-02
 
 - :arrow_up: Update NodeCoT
