@@ -64,32 +64,12 @@
                                 class='col-lg-12'
                             >
                                 <div class='card'>
-                                    <div class='card-header d-flex'>
-                                        <ConnectionStatus :connection='connection' />
-
-                                        <a
-                                            class='card-title cursor-pointer mx-2'
-                                            @click='router.push(`/connection/${connection.id}`)'
-                                            v-text='connection.name'
+                                    <div class='card-body'>
+                                        <ConnectionCard
+                                            :connection='connection'
+                                            :clickable='true'
+                                            :expanded='true'
                                         />
-
-                                        <div class='ms-auto align-items-center btn-list'>
-                                            <AgencyBadge :connection='connection' />
-
-                                            <IconSettings
-                                                :size='32'
-                                                stroke='1'
-                                                class='cursor-pointer'
-                                                @click='router.push(`/connection/${connection.id}/edit`)'
-                                            />
-                                        </div>
-                                    </div>
-                                    <TablerMarkdown
-                                        class='card-body'
-                                        :markdown='connection.description'
-                                    />
-                                    <div class='card-footer'>
-                                        Last updated <span v-text='timeDiff(connection.updated)' />
                                     </div>
                                 </div>
                             </div>
@@ -121,6 +101,7 @@ import type { ETLConnectionList } from '../../types.ts'
 import { std, stdurl } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
 import ConnectionStatus from './Connection/StatusDot.vue';
+import ConnectionCard from './ConnectionCard.vue';
 import AgencyBadge from './Connection/AgencyBadge.vue';
 import timeDiff from '../../timediff.ts';
 import {

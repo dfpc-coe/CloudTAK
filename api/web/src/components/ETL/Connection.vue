@@ -23,88 +23,19 @@
                             />
                             <template v-else>
                                 <div class='card-header'>
-                                    <ConnectionStatus :connection='connection' />
-
-                                    <a
-                                        class='card-title cursor-pointer mx-2'
-                                        @click='router.push(`/connection/${connection.id}`)'
-                                        v-text='connection.name'
+                                    <ConnectionCard
+                                        :connection='connection'
+                                        :clickable='false'
+                                        :expanded='true'
+                                        @update:connection='connection = $event'
                                     />
-
-                                    <div class='ms-auto d-flex align-items-center btn-list'>
-                                        <AgencyBadge :connection='connection' />
-
-                                        <TablerIconButton
-                                            v-if='!connection.readonly'
-                                            title='Cycle Connection'
-                                            @click='refresh'
-                                        >
-                                            <IconPlugConnected
-                                                :size='32'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
-                                        <TablerRefreshButton
-                                            :loading='!connection'
-                                            @click='fetch'
-                                        />
-                                        <TablerIconButton
-                                            title='Edit'
-                                            @click='router.push(`/connection/${connection.id}/edit`)'
-                                        >
-                                            <IconSettings
-                                                :size='32'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
-                                    </div>
                                 </div>
-                                <div class='card-body'>
+                                <div
+                                    v-if='connection.readonly'
+                                    class='card-body'
+                                >
                                     <div class='row g-2'>
-                                        <div class='col-12'>
-                                            <TablerMarkdown :markdown='connection.description' />
-                                        </div>
-                                        <div class='col-12 datagrid'>
-                                            <div class='datagrid-item pb-2'>
-                                                <div class='datagrid-title'>
-                                                    Certificate Valid From
-                                                </div>
-                                                <div
-                                                    class='datagrid-content'
-                                                    v-text='connection.certificate.validFrom'
-                                                />
-                                            </div>
-                                            <div class='datagrid-item pb-2'>
-                                                <div class='datagrid-title'>
-                                                    Certificate Valid To
-                                                </div>
-                                                <div
-                                                    class='datagrid-content d-flex'
-                                                    :class='{
-                                                        "rounded bg-red text-white px-2 py-1": new Date(connection.certificate.validTo) < new Date()
-                                                    }'
-                                                >
-                                                    <div v-text='connection.certificate.validTo' />
-                                                    <div
-                                                        v-if='new Date(connection.certificate.validTo) < new Date()'
-                                                        class='ms-auto'
-                                                    >
-                                                        Expired Certificate
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class='datagrid-item pb-2'>
-                                                <div class='datagrid-title'>
-                                                    Certificate Subject
-                                                </div>
-                                                <div
-                                                    class='datagrid-content'
-                                                    v-text='connection.certificate.subject'
-                                                />
-                                            </div>
-                                        </div>
                                         <div
-                                            v-if='connection.readonly'
                                             class='col-12 d-flex align-items-center justify-content-center pt-3'
                                         >
                                             <TablerDropdown>
@@ -325,6 +256,7 @@ import InitialAuthor from '../util/InitialAuthor.vue';
 import { std, stdurl } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
 import ConnectionStatus from './Connection/StatusDot.vue';
+import ConnectionCard from './ConnectionCard.vue';
 import timeDiff from '../../timediff.ts';
 import {
     IconFiles,
@@ -383,11 +315,5 @@ function downloadCertificate(type: 'truststore' | 'client') {
     url.searchParams.set('password', type === 'truststore' ? certificate.value.truststorePassword : certificate.value.clientPassword);
     url.searchParams.set('token', localStorage.token);
     window.open(url, '_blank');
-}
-
-async function refresh() {
-    connection.value = await std(`/api/connection/${route.params.connectionid}/refresh`, {
-        method: 'POST'
-    }) as ETLConnection;
 }
 </script>
