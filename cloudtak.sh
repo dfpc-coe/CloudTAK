@@ -195,6 +195,21 @@ elif [[ "$SUBCOMMAND" == "restore" ]]; then
     cat "$BACKUP_FILE" | docker exec -i cloudtak-postgis-1 psql -d "$DB_URL"
 
     echo "Restore complete."
+elif [[ "$SUBCOMMAND" == "connect" ]]; then
+    if [ ! -f .env ]; then
+        echo ".env file not found. Please run 'install' first."
+        exit 1
+    fi
+
+    if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
+        echo "PostgreSQL container is not running. Please start the services first."
+        exit 1
+    fi
+
+    DB_URL=$(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/')
+
+    echo "Connecting to PostgreSQL database..."
+    docker exec -it cloudtak-postgis-1 psql -d "$DB_URL"
 elif [[ "$SUBCOMMAND" == "start" ]]; then
     if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
         docker compose up -d postgis
@@ -275,6 +290,6 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
         $0 clean
     fi
 else
-    echo "Usage: $0 install|start|update|stop|backup|restore|clean"
+    echo "Usage: $0 install|start|update|stop|backup|restore|clean|connect"
     exit 0
 fi
