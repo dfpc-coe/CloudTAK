@@ -35,10 +35,24 @@ export interface PluginStatic {
  * The Main Plugin API for managing CloudTAK UI functions
  */
 export class PluginAPI {
+    /**
+     * The Vue App instance
+     */
     app: App;
+    /**
+     * The Vue Router instance
+     */
     router: Router;
+    /**
+     * The Pinia Store instance
+     */
     pinia: Pinia;
 
+    /**
+     * @param app The Vue App instance
+     * @param router The Vue Router instance
+     * @param pinia The Pinia Store instance
+     */
     constructor(
         app: App,
         router: Router,
@@ -49,9 +63,16 @@ export class PluginAPI {
         this.pinia = pinia;
     }
 
+    /**
+     * Manage the Main Menu
+     */
     get menu() {
         const mapStore = useMapStore(this.pinia);
         return {
+            /**
+             * Add a new item to the main menu
+             * @param item The menu item configuration
+             */
             add: (item: MenuItemConfig) => {
                 if (!item.routeExternal && !this.router.hasRoute(item.route)) {
                     console.warn(`Failed to add menu item, route '${item.route}' not found`);
@@ -64,6 +85,10 @@ export class PluginAPI {
                     console.warn('Failed to add menu item, map not loaded?', err);
                 }
             },
+            /**
+             * Remove an item from the main menu
+             * @param key The key of the menu item to remove
+             */
             remove: (key: string) => {
                 try {
                     mapStore.menu.removeMenuItem(key);
@@ -74,8 +99,16 @@ export class PluginAPI {
         }
     }
 
+    /**
+     * Manage Application Routes
+     */
     get routes() {
         return {
+            /**
+             * Add a new route to the application
+             * @param route The route configuration
+             * @param parentName The name of the parent route to add this route to (optional)
+             */
             add: (route: RouteRecordRaw, parentName?: string) => {
                 if (route.name && this.router.hasRoute(route.name)) {
                     return;
