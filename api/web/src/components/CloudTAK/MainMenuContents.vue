@@ -106,7 +106,7 @@
                     :badge='item.badge'
                     :layout='menuLayout'
                     :compact='false'
-                    @select='item.routeExternal ? external(item.route) : router.push(item.route)'
+                    @select='item.routeExternal ? external(item.route) : router.push(item.route.startsWith("/") ? item.route : { name: item.route })'
                 />
             </div>
             <TablerNone
@@ -130,7 +130,7 @@
                 :badge='item.badge'
                 :layout='"list"'
                 :compact='true'
-                @select='item.routeExternal ? external(item.route) : router.push(item.route)'
+                @select='item.routeExternal ? external(item.route) : router.push(item.route.startsWith("/") ? item.route : { name: item.route })'
             />
         </div>
     </template>
