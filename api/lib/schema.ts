@@ -57,7 +57,7 @@ export const MissionTemplate = pgTable('mission_template', {
 export const MissionTemplateLog = pgTable('mission_template_log', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     name: text().notNull(),
-    icon: text().notNull().default(''),
+    icon: text(),
     description: text().notNull().default(''),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
