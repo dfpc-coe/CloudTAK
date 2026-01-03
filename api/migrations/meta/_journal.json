@@ -1016,6 +1016,13 @@
       "when": 1767134631896,
       "tag": "0144_oval_sasquatch",
       "breakpoints": true
+    },
+    {
+      "idx": 145,
+      "version": "7",
+      "when": 1767458015134,
+      "tag": "0145_optimal_mad_thinker",
+      "breakpoints": true
     }
   ]
 }
