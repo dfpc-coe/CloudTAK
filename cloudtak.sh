@@ -208,6 +208,7 @@ elif [[ "$SUBCOMMAND" == "connect" ]]; then
 
     DB_URL=$(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/')
 
+    echo "Connection String: $DB_URL"
     echo "Connecting to PostgreSQL database..."
     docker exec -it cloudtak-postgis-1 psql -d "$DB_URL"
 elif [[ "$SUBCOMMAND" == "start" ]]; then
