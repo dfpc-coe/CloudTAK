@@ -12,7 +12,7 @@
 
 ### Pending Release
 
-### v12.44.2 - 2026-01-02
+### v12.45.0 - 2026-01-02
 
 - :arrow_up: Update NodeCoT
 
