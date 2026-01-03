@@ -98,19 +98,14 @@ import { useRouter } from 'vue-router';
 import type { ETLConnectionList } from '../../types.ts'
 import { std, stdurl } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
-import ConnectionStatus from './Connection/StatusDot.vue';
 import ConnectionCard from './ConnectionCard.vue';
-import AgencyBadge from './Connection/AgencyBadge.vue';
-import timeDiff from '../../timediff.ts';
 import {
     TablerPager,
     TablerBreadCrumb,
-    TablerMarkdown,
     TablerLoading,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import {
-    IconSettings,
     IconSearch
 } from '@tabler/icons-vue'
 
