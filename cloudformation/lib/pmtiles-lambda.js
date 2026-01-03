@@ -1,11 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 const MOUNT_PATH = '/mnt/efs';
 const RETENTION_DAYS = 7;
 const RETENTION_MS = RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
-exports.handler = async (event) => {
+export const handler = async () => {
     const now = Date.now();
     let deletedCount = 0;
 
@@ -38,7 +38,7 @@ exports.handler = async (event) => {
     }
 
     console.log('Starting cleanup...');
-    
+
     if (fs.existsSync(MOUNT_PATH)) {
         await walk(MOUNT_PATH);
     } else {
