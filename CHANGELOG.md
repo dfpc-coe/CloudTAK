@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.44.2 - 2026-01-02
+
+- :arrow_up: Update NodeCoT
+
 ### v12.44.1 - 2026-01-01
 
 - :arrow_up: Update TerraDraw
