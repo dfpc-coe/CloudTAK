@@ -1,6 +1,10 @@
 import type { App } from 'vue';
 import type { Router } from 'vue-router';
 import type { Pinia } from 'pinia';
+import { useMapStore } from './src/stores/map.ts';
+import type { MenuItemConfig } from './src/stores/modules/menu.ts';
+
+export type { MenuItemConfig };
 
 export interface PluginInstance {
     /**
@@ -24,7 +28,7 @@ export interface PluginStatic {
     install(
         app: App,
         api: PluginAPI
-    ): PluginInstance;
+    ): PluginInstance | Promise<PluginInstance>;
 }
 
 /**
@@ -43,5 +47,25 @@ export class PluginAPI {
         this.app = app;
         this.router = router;
         this.pinia = pinia;
+    }
+
+    get menu() {
+        const mapStore = useMapStore(this.pinia);
+        return {
+            add: (item: MenuItemConfig) => {
+                try {
+                    mapStore.menu.addMenuItem(item);
+                } catch (err) {
+                    console.warn('Failed to add menu item, map not loaded?', err);
+                }
+            },
+            remove: (key: string) => {
+                try {
+                    mapStore.menu.removeMenuItem(key);
+                } catch (err) {
+                    // Ignore error if menu is not loaded
+                }
+            }
+        }
     }
 };

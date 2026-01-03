@@ -889,6 +889,31 @@
         "query": false,
         "res": true
     },
+    "GET /template/mission/:mission/log": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /template/mission/:mission/log": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /template/mission/:mission/log/:log": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /template/mission/:mission/log/:log": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /template/mission/:mission/log/:log": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "POST /template/mission": {
         "body": true,
         "query": false,

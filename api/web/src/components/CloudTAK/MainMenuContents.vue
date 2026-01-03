@@ -111,7 +111,7 @@
             </div>
             <TablerNone
                 v-else
-                label='menu items match your search'
+                label='No Menu Items'
                 :create='false'
                 class='px-3'
             />

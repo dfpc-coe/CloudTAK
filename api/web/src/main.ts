@@ -1,9 +1,10 @@
-import { createApp } from 'vue'
+import { createApp, watch } from 'vue'
 import { version } from '../package.json'
 import { PluginAPI } from '../plugin.ts';
-import type { PluginStatic } from '../plugin.ts'
+import type { PluginStatic, PluginInstance } from '../plugin.ts'
 import * as VueRouter from 'vue-router'
 import { createPinia } from 'pinia'
+import { useMapStore } from './stores/map.ts';
 
 if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -240,8 +241,24 @@ const plugins: Record<string, {
 });
 
 const pluginAPI = new PluginAPI(app, router, pinia);
+const pluginInstances: PluginInstance[] = [];
+
 for (const path in plugins) {
-    app.use(plugins[path].default, pluginAPI);
+    const instance = await plugins[path].default.install(app, pluginAPI);
+    pluginInstances.push(instance);
 }
+
+const mapStore = useMapStore(pinia);
+watch(() => mapStore.isLoaded, async (isLoaded) => {
+    if (isLoaded) {
+        for (const instance of pluginInstances) {
+            await instance.enable();
+        }
+    } else {
+        for (const instance of pluginInstances) {
+            await instance.disable();
+        }
+    }
+}, { immediate: true });
 
 app.mount('#app');
