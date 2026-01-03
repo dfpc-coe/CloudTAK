@@ -162,7 +162,7 @@ interface MissionTemplateLog {
     id: string;
     template: string;
     name: string;
-    description?: string;
+    description: string;
     icon?: string | null;
     created: string;
     updated: string;
@@ -182,7 +182,7 @@ const log = ref<MissionTemplateLog>({
     template: String(route.params.template),
     name: '',
     description: '',
-    icon: '',
+    icon: null,
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
     schema: {

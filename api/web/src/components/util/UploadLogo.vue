@@ -32,13 +32,17 @@ import {
 const emit = defineEmits(['update:modelValue', 'file-name']);
 
 const props = defineProps<{
-    modelValue?: string;
+    modelValue?: string | null;
     label?: string;
     disabled?: boolean;
 }>();
 
-const base64Data = ref<string | undefined>(props.modelValue);
+const base64Data = ref<string | undefined | null>(props.modelValue);
 const error = ref('');
+
+watch(() => props.modelValue, () => {
+    base64Data.value = props.modelValue;
+});
 
 watch(base64Data, () => {
     console.error('base64Data changed:', base64Data.value);

@@ -235,9 +235,9 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String({
                 description: 'A human friendly name for the Log'
             }),
-            icon: Type.String({
+            icon: Type.Optional(Type.String({
                 description: 'Base64 encoded icon image for the Log'
-            }),
+            })),
             description: Type.String({
                 description: 'A human friendly description for the Log'
             }),
@@ -252,9 +252,11 @@ export default async function router(schema: Schema, config: Config) {
                 admin: true
             });
 
-            await Sprites.validate({
-                data: req.body.icon,
-            });
+            if (req.body.icon) {
+                await Sprites.validate({
+                    data: req.body.icon,
+                });
+            }
 
             try {
                 ajv.compile(req.body.schema);
@@ -283,7 +285,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Update properties of a Log',
         body: Type.Object({
             name: Type.Optional(Type.String()),
-            icon: Type.Optional(Type.String()),
+            icon: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             description: Type.Optional(Type.String()),
             schema: Type.Optional(Type.Any())
         }),
