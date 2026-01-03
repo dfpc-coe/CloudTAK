@@ -117,6 +117,7 @@ export const MissionTemplateLogResponse = createSelectSchema(schemas.MissionTemp
     id: Type.String(),
     created: Type.String(),
     updated: Type.String(),
+    schema: Type.Any()
 })
 
 const Palette = createSelectSchema(schemas.Palette, {

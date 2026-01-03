@@ -44,6 +44,7 @@ export default class MenuManager {
     onlineContactsCount: Ref<number>;
     isSystemAdmin: Ref<boolean>;
     isAgencyAdmin: Ref<boolean>;
+    pluginMenuItems: Ref<MenuItemConfig[]>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(mapStore: any) {
@@ -52,6 +53,7 @@ export default class MenuManager {
         this.onlineContactsCount = ref(0);
         this.isSystemAdmin = ref(false);
         this.isAgencyAdmin = ref(false);
+        this.pluginMenuItems = ref([]);
 
         const storedLayoutPref = typeof window !== 'undefined' ? localStorage.getItem('cloudtak-menu-layout') : null;
         this.preferredLayout = ref<'list' | 'tiles'>(storedLayoutPref === 'tiles' ? 'tiles' : 'list');
@@ -213,7 +215,7 @@ export default class MenuManager {
 
     get items(): ComputedRef<MenuItemConfig[]> {
         return computed(() => {
-            return this.baseMenuItems.filter((item) => {
+            return [...this.baseMenuItems, ...this.pluginMenuItems.value].filter((item) => {
                 if (item.requiresSystemAdmin && !this.isSystemAdmin.value) return false;
                 if (item.requiresAgencyAdmin && !(this.isAgencyAdmin.value || this.isSystemAdmin.value)) return false;
                 return true;
@@ -267,5 +269,13 @@ export default class MenuManager {
             }
         }
         this.onlineContactsCount.value = count;
+    }
+
+    addMenuItem(item: MenuItemConfig) {
+        this.pluginMenuItems.value.push(item);
+    }
+
+    removeMenuItem(key: string) {
+        this.pluginMenuItems.value = this.pluginMenuItems.value.filter(i => i.key !== key);
     }
 }
