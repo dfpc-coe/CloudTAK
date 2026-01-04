@@ -754,15 +754,14 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            for (const item of profileOverlays.items) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this.overlays as any[]).push(await Overlay.create(
-                    item as ProfileOverlay,
-                    {
-                        skipSave: true
-                    }
-                ));
-            }
+            // Parallelize Overlay Creation
+            const overlayPromises = profileOverlays.items.map(item =>
+                Overlay.create(item as ProfileOverlay, { skipSave: true })
+            );
+
+            const newOverlays = await Promise.all(overlayPromises);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.overlays as any[]).push(...newOverlays);
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.overlays as any[]).push(await Overlay.internal({
@@ -772,14 +771,15 @@ export const useMapStore = defineStore('cloudtak', {
             }));
 
             // Data Syncs are specially loaded as they are dynamic
-            for (const overlay of this.overlays) {
-                if (overlay.mode === 'mission' && overlay.mode_id) {
+            // Parallelize Mission Loading
+            const missionPromises = this.overlays
+                .filter(overlay => overlay.mode === 'mission' && overlay.mode_id)
+                .map(async (overlay) => {
                     const source = map.getSource(String(overlay.id));
-
-                    if (!source) continue;
+                    if (!source) return;
 
                     try {
-                        const sub = await this.loadMission(overlay.mode_id, {
+                        const sub = await this.loadMission(overlay.mode_id!, {
                             reload: true
                         });
 
@@ -788,14 +788,11 @@ export const useMapStore = defineStore('cloudtak', {
                         }
                     } catch (err) {
                         console.error('Failed to load Mission', err)
-                        // TODO: Handle this gracefully
-                        // The Mission Sync is either:
-                        // - Deleted
-                        // - Part of a channel that is no longer active
                         overlay._error = err instanceof Error ? err : new Error(String(err));
                     }
-                }
-            }
+                });
+
+            await Promise.all(missionPromises);
 
             this.isLoaded = true;
 
@@ -858,20 +855,20 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         updateAttribution: async function(): Promise<void> {
-            const attributions: string[] = [];
-
-            for (const overlay of this.overlays) {
-                if (overlay.mode === 'basemap' && overlay.mode_id && overlay.visible) {
+            const attributionPromises = this.overlays
+                .filter(o => o.mode === 'basemap' && o.mode_id && o.visible)
+                .map(async (overlay) => {
                     try {
                         const basemap = await std(`/api/basemap/${overlay.mode_id}`) as { attribution?: string };
-                        if (basemap.attribution) {
-                            attributions.push(basemap.attribution);
-                        }
+                        return basemap.attribution;
                     } catch (err) {
                         console.warn('Failed to load basemap attribution:', err);
+                        return null;
                     }
-                }
-            }
+                });
+
+            const results = await Promise.all(attributionPromises);
+            const attributions = results.filter((a): a is string => !!a);
 
             // Update attribution by manipulating the DOM directly
             const attributionContainer = document.querySelector('.maplibregl-ctrl-attrib-inner');
