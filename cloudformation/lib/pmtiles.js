@@ -77,6 +77,7 @@ export default {
         },
         EFSCleanupLambda: {
             Type: 'AWS::Lambda::Function',
+            DependsOn: ['EFSMountTargetA', 'EFSMountTargetB'],
             Properties: {
                 FunctionName: cf.join([cf.stackName, '-efs-cleanup']),
                 MemorySize: 128,
@@ -157,7 +158,7 @@ export default {
         },
         PMTilesLambda: {
             Type: 'AWS::Lambda::Function',
-            DependsOn: ['SigningSecret'],
+            DependsOn: ['SigningSecret', 'EFSMountTargetA', 'EFSMountTargetB'],
             Properties: {
                 FunctionName: cf.join([cf.stackName, '-pmtiles']),
                 MemorySize: 256,
