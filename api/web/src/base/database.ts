@@ -138,7 +138,7 @@ db.version(1).stores({
     iconset: 'uid, name',
     filter: 'id, external',
     video: 'id, username',
-    feature: 'id, path'
+    feature: 'id, path',
 
     chatroom: 'id',
     chatroom_chats: 'id, chatroom',
