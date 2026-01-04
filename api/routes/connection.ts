@@ -373,14 +373,15 @@ export default async function router(schema: Schema, config: Config) {
 
             config.conns.delete(req.params.connectionid);
 
-            if (config.external && config.external.configured) {
+            const cotak = config.user?.get('cotak');
+            if (cotak && cotak.configured) {
                 const user = await Auth.as_user(config, req);
                 const profile = await config.models.Profile.from(user.email);
 
                 if (profile.id) {
                     // I don't know how to figure out if the connection was created with a machine user and hence registered
                     // with COTAK, so just firing off the delete, which won't error out if no integration found.
-                    await config.external.deleteIntegrationByConnectionId(profile.id, {
+                    await cotak.deleteIntegrationByConnectionId(profile.id, {
                         connection_id: req.params.connectionid,
                     })
                 }

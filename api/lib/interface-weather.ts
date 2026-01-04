@@ -110,7 +110,7 @@ export class WeatherManager {
             const noaa = this.services.get('noaa');
             if (!noaa) throw new Error('NOAA Service not found');
             return await noaa.get(lon, lat);
-        } catch (err) {
+        } catch {
             const om = this.services.get('open-meteo');
             if (!om) throw new Error('OpenMeteo Service not found');
             return await om.get(lon, lat);
