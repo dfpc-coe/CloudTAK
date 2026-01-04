@@ -97,7 +97,7 @@ export default {
                     ]
                 },
                 FileSystemConfigs: [{
-                    Arn: cf.join(['arn:aws:elasticfilesystem:', cf.region, ':', cf.accountId, ':access-point/', cf.ref('EFSPoint')]),
+                    Arn: cf.join(['arn:', cf.partition, ':elasticfilesystem:', cf.region, ':', cf.accountId, ':access-point/', cf.ref('EFSPoint')]),
                     LocalMountPath: '/mnt/efs'
                 }]
             }
@@ -116,8 +116,8 @@ export default {
                     }]
                 },
                 ManagedPolicyArns: [
-                    'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole',
-                    'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole']),
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'])
                 ]
             }
         },
@@ -185,7 +185,7 @@ export default {
                     ]
                 },
                 FileSystemConfigs: [{
-                    Arn: cf.join(['arn:aws:elasticfilesystem:', cf.region, ':', cf.accountId, ':access-point/', cf.ref('EFSPoint')]),
+                    Arn: cf.join(['arn:', cf.partition, ':elasticfilesystem:', cf.region, ':', cf.accountId, ':access-point/', cf.ref('EFSPoint')]),
                     LocalMountPath: '/mnt/efs'
                 }]
             }

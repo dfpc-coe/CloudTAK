@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.47.2 - 2026-01-04
+
+- :bug: Add Partition Parameter to allow non-commercial AWS regions to deploy CloudTAK
+
 ### v12.47.1 - 2026-01-04
 
 - :rocket: Add `DependsOn` sections to CloudFormation to ensure consistent deploy order
