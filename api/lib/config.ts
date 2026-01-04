@@ -1,6 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import STS from '@aws-sdk/client-sts';
-import External from './external.js';
+import { UserManager } from './interface-user.js';
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import EventsPool from './events-pool.js';
 import { Pool, GenerateUpsert } from '@openaddresses/batch-generic';
@@ -28,7 +28,7 @@ export default class Config {
     models: Models;
     StackName: string;
     SigningSecret: string;
-    external?: External;
+    user?: UserManager;
     API_URL: string;
     PMTILES_URL: string;
     wsClients: Map<string, ConnectionWebSocket[]>;
@@ -154,8 +154,8 @@ export default class Config {
             console.error(`ok - StackName: ${config.StackName}`);
         }
 
-        const external = await External.init(config);
-        config.external = external;
+        config.user = new UserManager(config);
+        await config.user.init();
 
         for (const envkey in process.env) {
             if (!envkey.startsWith('CLOUDTAK')) continue;
