@@ -1,6 +1,7 @@
 import Icon from './icon.ts';
 import { v4 as randomUUID } from 'uuid';
 import { std } from '../std.ts';
+import { db } from './database.ts';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
 import { isEqual } from '@react-hookz/deep-equal';
@@ -240,6 +241,12 @@ export default class COT {
 
             if (this.origin.mode === OriginMode.CONNECTION) {
                 atlas.db.pendingUpdate.set(this.id, this);
+                await db.feature.put({
+                    id: this.id,
+                    path: this._path,
+                    properties: this._properties,
+                    geometry: this._geometry
+                });
             }
 
             atlas.sync.postMessage(this.as_feature());
