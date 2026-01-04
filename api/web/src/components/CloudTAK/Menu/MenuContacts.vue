@@ -58,6 +58,10 @@
                                 />
                             </template>
 
+                            <template #right>
+                                <span class='badge rounded-pill small bg-secondary-subtle text-secondary-emphasis border border-secondary border-opacity-50 ms-auto'>{{ visibleActiveContacts.filter(c => c.team === team).length }}</span>
+                            </template>
+
                             <div class='mx-2 pt-2'>
                                 <div
                                     v-for='contact of visibleActiveContacts.values()'
@@ -80,6 +84,10 @@
                         v-model='showOffline'
                         label='Recently Offline'
                     >
+                        <template #right>
+                            <span class='badge rounded-pill small bg-secondary-subtle text-secondary-emphasis border border-secondary border-opacity-50 ms-auto'>{{ visibleOfflineContacts.length }}</span>
+                        </template>
+
                         <div class='mx-2 pt-2'>
                             <TablerNone
                                 v-if='visibleOfflineContacts.length === 0'
