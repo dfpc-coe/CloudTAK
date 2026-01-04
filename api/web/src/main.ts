@@ -208,7 +208,7 @@ const router = VueRouter.createRouter({
 
         { path: '/configure', name: 'configure', component: () => import('./components/Configure.vue') },
 
-        { path: '/:catchAll(.*)', name: 'lost', component: () => import('./components/LostUser.vue') },
+        { path: '/:catchAll(.*)', redirect: '/' },
     ]
 });
 

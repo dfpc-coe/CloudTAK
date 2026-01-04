@@ -1,7 +1,146 @@
 import cf from '@openaddresses/cloudfriend';
+import fs from 'fs';
+import path from 'path';
+import url from 'url';
+
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export default {
     Resources: {
+        PMTilesLambdaSecurityGroup: {
+            Type: 'AWS::EC2::SecurityGroup',
+            Properties: {
+                GroupDescription: 'Security Group for PMTiles Lambda',
+                VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
+                SecurityGroupEgress: [{
+                    IpProtocol: '-1',
+                    CidrIp: '0.0.0.0/0'
+                }]
+            }
+        },
+        EFSFileSystem: {
+            Type: 'AWS::EFS::FileSystem',
+            Properties: {
+                Encrypted: true,
+                FileSystemTags: [{
+                    Key: 'Name',
+                    Value: cf.join('-', [cf.stackName, 'pmtiles-efs'])
+                }]
+            }
+        },
+        EFSSecurityGroup: {
+            Type: 'AWS::EC2::SecurityGroup',
+            Properties: {
+                GroupDescription: 'Security Group for EFS',
+                VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
+                SecurityGroupIngress: [{
+                    IpProtocol: 'tcp',
+                    FromPort: 2049,
+                    ToPort: 2049,
+                    SourceSecurityGroupId: cf.ref('PMTilesLambdaSecurityGroup')
+                }]
+            }
+        },
+        EFSMountTargetA: {
+            Type: 'AWS::EFS::MountTarget',
+            Properties: {
+                FileSystemId: cf.ref('EFSFileSystem'),
+                SubnetId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-private-a'])),
+                SecurityGroups: [cf.ref('EFSSecurityGroup')]
+            }
+        },
+        EFSMountTargetB: {
+            Type: 'AWS::EFS::MountTarget',
+            Properties: {
+                FileSystemId: cf.ref('EFSFileSystem'),
+                SubnetId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-private-b'])),
+                SecurityGroups: [cf.ref('EFSSecurityGroup')]
+            }
+        },
+        EFSPoint: {
+            Type: 'AWS::EFS::AccessPoint',
+            Properties: {
+                FileSystemId: cf.ref('EFSFileSystem'),
+                PosixUser: {
+                    Uid: '1000',
+                    Gid: '1000'
+                },
+                RootDirectory: {
+                    CreationInfo: {
+                        OwnerGid: '1000',
+                        OwnerUid: '1000',
+                        Permissions: '755'
+                    },
+                    Path: '/pmtiles'
+                }
+            }
+        },
+        EFSCleanupLambda: {
+            Type: 'AWS::Lambda::Function',
+            Properties: {
+                FunctionName: cf.join([cf.stackName, '-efs-cleanup']),
+                MemorySize: 128,
+                Timeout: 900,
+                Description: 'Cleanup old files from EFS',
+                Runtime: 'nodejs20.x',
+                Handler: 'index.handler',
+                Role: cf.getAtt('EFSCleanupLambdaRole', 'Arn'),
+                Code: {
+                    ZipFile: fs.readFileSync(path.join(__dirname, './pmtiles-lambda.js'), 'utf8')
+                },
+                VpcConfig: {
+                    SecurityGroupIds: [cf.ref('PMTilesLambdaSecurityGroup')],
+                    SubnetIds: [
+                        cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-private-a'])),
+                        cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-private-b']))
+                    ]
+                },
+                FileSystemConfigs: [{
+                    Arn: cf.join(['arn:aws:elasticfilesystem:', cf.region, ':', cf.accountId, ':access-point/', cf.ref('EFSPoint')]),
+                    LocalMountPath: '/mnt/efs'
+                }]
+            }
+        },
+        EFSCleanupLambdaRole: {
+            Type: 'AWS::IAM::Role',
+            Properties: {
+                AssumeRolePolicyDocument: {
+                    Version: '2012-10-17',
+                    Statement: [{
+                        Effect: 'Allow',
+                        Principal: {
+                            Service: 'lambda.amazonaws.com'
+                        },
+                        Action: 'sts:AssumeRole'
+                    }]
+                },
+                ManagedPolicyArns: [
+                    'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole',
+                    'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+                ]
+            }
+        },
+        EFSCleanupSchedule: {
+            Type: 'AWS::Events::Rule',
+            Properties: {
+                Description: 'Schedule for EFS Cleanup',
+                ScheduleExpression: 'rate(1 day)',
+                State: 'ENABLED',
+                Targets: [{
+                    Arn: cf.getAtt('EFSCleanupLambda', 'Arn'),
+                    Id: 'EFSCleanupLambdaTarget'
+                }]
+            }
+        },
+        EFSCleanupPermission: {
+            Type: 'AWS::Lambda::Permission',
+            Properties: {
+                FunctionName: cf.ref('EFSCleanupLambda'),
+                Action: 'lambda:InvokeFunction',
+                Principal: 'events.amazonaws.com',
+                SourceArn: cf.getAtt('EFSCleanupSchedule', 'Arn')
+            }
+        },
         PMTilesDNS: {
             Type: 'AWS::Route53::RecordSet',
             Properties: {
@@ -36,7 +175,18 @@ export default {
                 Role: cf.getAtt('PMTilesLambdaRole', 'Arn'),
                 Code: {
                     ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-vpc-', cf.ref('Environment'), '-cloudtak-api:pmtiles-', cf.ref('GitSha')])
-                }
+                },
+                VpcConfig: {
+                    SecurityGroupIds: [cf.ref('PMTilesLambdaSecurityGroup')],
+                    SubnetIds: [
+                        cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-private-a'])),
+                        cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-private-b']))
+                    ]
+                },
+                FileSystemConfigs: [{
+                    Arn: cf.join(['arn:aws:elasticfilesystem:', cf.region, ':', cf.accountId, ':access-point/', cf.ref('EFSPoint')]),
+                    LocalMountPath: '/mnt/efs'
+                }]
             }
         },
         PMTilesLambdaRole: {
@@ -74,7 +224,8 @@ export default {
 
                 }],
                 ManagedPolicyArns: [
-                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole']),
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'])
                 ]
             }
         },
