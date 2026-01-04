@@ -91,6 +91,21 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
                 echo "DNS check passed: A records found for $PMTILES_URL."
                 sed -i "s|^PMTILES_URL=.*|PMTILES_URL=https://$PMTILES_URL|" .env
                 echo "Updated PMTILES_URL in .env"
+
+                echo "Generating Caddyfile..."
+                cat <<EOF | sudo tee /etc/caddy/Caddyfile > /dev/null
+# CloudTAK app
+$API_URL {
+        reverse_proxy localhost:5000
+}
+
+#CloudTAK Tiles
+$PMTILES_URL {
+        reverse_proxy localhost:5002
+}
+EOF
+                echo "Caddyfile generated at /etc/caddy/Caddyfile"
+                sudo systemctl reload caddy
             else
                 echo "DNS check failed: No A records found for $PMTILES_URL."
                 echo "Please ensure your DNS is configured correctly."
