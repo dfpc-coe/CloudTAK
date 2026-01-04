@@ -7,6 +7,7 @@ import Sprites from '../lib/sprites.js';
 import { Type } from '@sinclair/typebox'
 import { MissionTemplate, MissionTemplateLog } from '../lib/schema.js';
 import { MissionTemplateResponse, MissionTemplateLogResponse, StandardResponse } from '../lib/types.js';
+import { MissionTemplateSingleResponse } from '../lib/models/MissionTemplate.js';
 import * as Default from '../lib/limits.js';
 import Ajv from 'ajv';
 
@@ -58,12 +59,12 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             mission: Type.String()
         }),
-        res: MissionTemplateResponse
+        res: MissionTemplateSingleResponse
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
 
-            const template = await config.models.MissionTemplate.from(req.params.mission);
+            const template = await config.models.MissionTemplate.augmented_from(req.params.mission);
 
             res.json(template);
         } catch (err) {
@@ -234,9 +235,9 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String({
                 description: 'A human friendly name for the Log'
             }),
-            icon: Type.String({
+            icon: Type.Optional(Type.String({
                 description: 'Base64 encoded icon image for the Log'
-            }),
+            })),
             description: Type.String({
                 description: 'A human friendly description for the Log'
             }),
@@ -251,9 +252,11 @@ export default async function router(schema: Schema, config: Config) {
                 admin: true
             });
 
-            await Sprites.validate({
-                data: req.body.icon,
-            });
+            if (req.body.icon) {
+                await Sprites.validate({
+                    data: req.body.icon,
+                });
+            }
 
             try {
                 ajv.compile(req.body.schema);
@@ -282,7 +285,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Update properties of a Log',
         body: Type.Object({
             name: Type.Optional(Type.String()),
-            icon: Type.Optional(Type.String()),
+            icon: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             description: Type.Optional(Type.String()),
             schema: Type.Optional(Type.Any())
         }),
