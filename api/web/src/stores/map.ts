@@ -772,9 +772,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             // Data Syncs are specially loaded as they are dynamic
             // Parallelize Mission Loading
-            const missionPromises = this.overlays
-                .filter(overlay => overlay.mode === 'mission' && overlay.mode_id)
-                .map(async (overlay) => {
+            const missionOverlays = (this.overlays as any[]).filter((overlay: Overlay) => overlay.mode === 'mission' && overlay.mode_id);
+            const missionPromises = missionOverlays.map(async (overlay: Overlay) => {
                     const source = map.getSource(String(overlay.id));
                     if (!source) return;
 
@@ -855,9 +854,8 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         updateAttribution: async function(): Promise<void> {
-            const attributionPromises = this.overlays
-                .filter(o => o.mode === 'basemap' && o.mode_id && o.visible)
-                .map(async (overlay) => {
+            const attributionOverlays = (this.overlays as any[]).filter((o: Overlay) => o.mode === 'basemap' && o.mode_id && o.visible);
+            const attributionPromises = attributionOverlays.map(async (overlay: Overlay) => {
                     try {
                         const basemap = await std(`/api/basemap/${overlay.mode_id}`) as { attribution?: string };
                         return basemap.attribution;
