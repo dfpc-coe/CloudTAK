@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.47.1 - 2026-01-04
+
+- :rocket: Add `DependsOn` sections to CloudFormation to ensure consistent deploy order
+- :rocket: Add badge to show number of online users per subgroup in MenuContacts
+
 ### v12.47.0 - 2026-01-04
 
 - :tada: `api`  Introduce MissionTemplateLog APIs for managing Log Templates
