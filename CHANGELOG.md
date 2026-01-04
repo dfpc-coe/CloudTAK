@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v12.47.0 - 2026-01-04
+
+- :tada: `api`  Introduce MissionTemplateLog APIs for managing Log Templates
+- :tada: `UI`  Introduce Admin Interface to a UI driven approach to generating Log Templates
+- :tada: `infra` Introduce EFS file system for PMTiles Library
+- :tada: Introduce automated deletion polcy via lambda task for 7 day retention of files in EFS FS
+- :tada: Introduce Menu & Router APIs in frontend plugin system
+
 ### v12.46.0 - 2026-01-03
 
 - :tada: Introduce Mission Template Logs in API
