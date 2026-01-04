@@ -1,6 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import STS from '@aws-sdk/client-sts';
 import { UserManager } from './interface-user.js';
+import { WeatherManager } from './interface-weather.js';
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import EventsPool from './events-pool.js';
 import { Pool, GenerateUpsert } from '@openaddresses/batch-generic';
@@ -29,6 +30,7 @@ export default class Config {
     StackName: string;
     SigningSecret: string;
     user?: UserManager;
+    weather: WeatherManager;
     API_URL: string;
     PMTILES_URL: string;
     wsClients: Map<string, ConnectionWebSocket[]>;
@@ -71,6 +73,8 @@ export default class Config {
         this.conns = new ConnectionPool(this);
 
         this.events = new EventsPool(this.StackName);
+
+        this.weather = new WeatherManager();
     }
 
     serverCert(): {
