@@ -1,49 +1,26 @@
-import fetch from './fetch.js';
+import fetch from '../fetch.js';
 import Err from '@openaddresses/batch-error';
-import Config from './config.js'
+import Config from '../config.js'
 import { Static, Type } from '@sinclair/typebox';
+import {
+    UserInterface,
+    MachineUser,
+    Agency,
+    Channel,
+    ChannelAccessEnum
+} from '../interface-user.js';
 
-export const ExternalProviderConfig = Type.Object({
+export const CoTAKUserConfig = Type.Object({
     url: Type.String(),
     client: Type.String(),
     secret: Type.String()
 })
 
-export const Agency = Type.Object({
-    id: Type.Number(),
-    name: Type.String(),
-    description: Type.Any()
-});
-
-export const Integration = Type.Object({
-    id: Type.Number(),
-    name: Type.String(),
-});
-
-export const MachineUser = Type.Object({
-    id: Type.Number(),
-    email: Type.String(),
-    integrations: Type.Array(Integration),
-});
-
-export const Channel = Type.Object({
-    id: Type.Number(),
-    rdn: Type.String(),
-    name: Type.String(),
-    description: Type.Any()
-});
-
-enum ChannelAccessEnum {
-    write = 'write',
-    read = 'read',
-    duplex = 'duplex'
-}
-
-export const ChannelAccess = Type.Enum(ChannelAccessEnum);
-
-export default class ExternalProvider {
-    config: Config;
-    provider: Static<typeof ExternalProviderConfig>;
+export default class CoTAKUser implements UserInterface {
+    _id = 'cotak';
+    _name = 'CoTAK User Provider';
+    _config: Config;
+    provider: Static<typeof CoTAKUserConfig>;
     cache?: {
         expires: Date;
         token: string;
@@ -51,9 +28,9 @@ export default class ExternalProvider {
 
     constructor(
         config: Config,
-        provider: Static<typeof ExternalProviderConfig>
+        provider: Static<typeof CoTAKUserConfig>
     ) {
-        this.config = config;
+        this._config = config;
         this.provider = provider;
     }
 
@@ -61,7 +38,7 @@ export default class ExternalProvider {
         return !!(this.provider.url && this.provider.secret && this.provider.client);
     }
 
-    static async init(config: Config): Promise<ExternalProvider> {
+    static async init(config: Config): Promise<CoTAKUser> {
         const final: Record<string, string> = {};
         (await Promise.allSettled(([
             'provider::url',
@@ -74,11 +51,11 @@ export default class ExternalProvider {
             return final[k.value.key] = String(k.value.value);
         });
 
-        return new ExternalProvider(config, {
+        return new CoTAKUser(config, {
             url: final['provider::url'] || '',
             client: final['provider::client'] || '',
             secret: final['provider::secret'] || '',
-        } as Static<typeof ExternalProviderConfig>)
+        } as Static<typeof CoTAKUserConfig>)
     }
 
     async auth(): Promise<{
@@ -262,7 +239,7 @@ export default class ExternalProvider {
         url.searchParams.append('proxy_user_id', String(uid));
 
         const req = {
-            management_url: this.config.API_URL + `/connection/${body.connection_id}`,
+            management_url: this._config.API_URL + `/connection/${body.connection_id}`,
             external_identifier: body.connection_id,
             active: true,
         }

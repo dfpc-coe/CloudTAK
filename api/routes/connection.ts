@@ -129,10 +129,11 @@ export default async function router(schema: Schema, config: Config) {
 
             const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
-            if (req.body.integrationId && config.external && config.external.configured) {
+            const cotak = config.user?.get('cotak');
+            if (req.body.integrationId && cotak && cotak.configured) {
                 if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
 
-                await config.external.updateIntegrationConnectionId(profile.id, {
+                await cotak.updateIntegrationConnectionId(profile.id, {
                     connection_id: conn.id,
                     integration_id: req.body.integrationId
                 })

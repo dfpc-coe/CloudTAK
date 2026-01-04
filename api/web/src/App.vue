@@ -218,7 +218,7 @@ function logout() {
     user.value = undefined;
     delete localStorage.token;
 
-    router.push("/login");
+    window.location.href = '/login';
 }
 
 function external(url: string) {
