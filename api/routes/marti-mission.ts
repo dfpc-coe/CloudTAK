@@ -20,6 +20,7 @@ import {
     MissionCreateInput,
     MissionSubscriber
 } from '@tak-ps/node-tak/lib/api/mission';
+import { MissionInviteWrapper } from '@tak-ps/node-tak/lib/api/mission-invite';
 import {
     TAKList,
 } from '@tak-ps/node-tak/lib/api/types';
@@ -295,16 +296,27 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissions',
         description: 'Helper API to list missions',
         query: MissionListInput,
-        res: TAKList(Mission)
+        res: Type.Object({
+            items: Type.Array(Mission),
+            invites: Type.Array(MissionInviteWrapper),
+            total: Type.Integer()
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const missions = await api.Mission.list(req.query);
+            const [missions, invites] = await Promise.all([
+                api.Mission.list(req.query),
+                api.MissionInvite.list()
+            ]);
 
-            res.json(missions);
+            res.json({
+                items: missions.data,
+                invites: invites.data,
+                total: missions.data.length + invites.data.length
+            });
         } catch (err) {
              Err.respond(err, res);
         }
