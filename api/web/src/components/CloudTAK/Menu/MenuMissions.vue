@@ -50,68 +50,11 @@
                             v-else
                             class='d-flex flex-column gap-3 mx-2'
                         >
-                            <StandardItem
-                                v-if='invites.length'
-                                class='d-flex flex-column px-2 py-2'
-                                @click='showInvites = !showInvites'
-                            >
-                                <div class='d-flex align-items-center gap-2'>
-                                    <IconMail
-                                        :size='24'
-                                        stroke='1'
-                                    />
-                                    <span class='fw-bold'>Pending Invites</span>
-                                    <span class='badge rounded-pill small bg-danger text-white ms-auto'>{{ invites.length }}</span>
-                                    <IconChevronDown
-                                        v-if='!showInvites'
-                                        :size='20'
-                                        stroke='1'
-                                        class='ms-2'
-                                    />
-                                    <IconChevronUp
-                                        v-else
-                                        :size='20'
-                                        stroke='1'
-                                        class='ms-2'
-                                    />
-                                </div>
-
-                                <transition name='menu-overlays-fade'>
-                                    <div
-                                        v-if='showInvites'
-                                        class='mt-2 p-3 rounded-3 border border-white border-opacity-10 bg-black bg-opacity-25'
-                                        @click.stop
-                                    >
-                                        <div
-                                            v-for='invite in invites'
-                                            :key='invite'
-                                            class='d-flex align-items-center justify-content-between mb-2'
-                                        >
-                                            <span class='text-truncate me-2'>{{ invite }}</span>
-                                            <div class='d-flex gap-1'>
-                                                <TablerIconButton
-                                                    title='Accept Invite'
-                                                    @click='acceptInvite(invite)'
-                                                >
-                                                    <IconCheck
-                                                        :size='20'
-                                                        stroke='1'
-                                                    />
-                                                </TablerIconButton>
-                                                <TablerIconButton
-                                                    title='Delete Invite'
-                                                    @click='deleteInvite(invite)'
-                                                >
-                                                    <IconTrash
-                                                        :size='20'
-                                                        stroke='1'
-                                                    />
-                                                </TablerIconButton>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </transition>
-                            </StandardItem>
+                            <PendingInvites
+                                v-model:invites='invites'
+                                @open-mission='openMission($event, false)'
+                                @error='error = $event'
+                            />
 
                             <StandardItem
                                 v-for='(mission, mission_it) in filteredList'
@@ -222,6 +165,7 @@
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue';
 import MissionCreate from './Mission/MissionCreate.vue';
+import PendingInvites from './Mission/PendingInvites.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import Keywords from '../util/Keywords.vue';
@@ -241,12 +185,7 @@ import {
     IconPlus,
     IconLock,
     IconLockOpen,
-    IconAccessPoint,
-    IconMail,
-    IconChevronDown,
-    IconChevronUp,
-    IconCheck,
-    IconTrash
+    IconAccessPoint
 } from '@tabler/icons-vue';
 import ChannelInfo from '../util/ChannelInfo.vue';
 import { useMapStore } from '../../../stores/map.ts';
@@ -265,7 +204,6 @@ const router = useRouter();
 const paging = ref({ filter: '' });
 const list = ref<Array<Mission>>([]);
 const invites = ref<string[]>([]);
-const showInvites = ref(false);
 
 onMounted(async () => {
     await fetchMissions();
@@ -364,19 +302,7 @@ async function fetchMissions() {
     loading.value = false;
 }
 
-async function acceptInvite(invite: string) {
-    try {
-        const url = stdurl(`/api/marti/missions/${invite}`);
-        const mission = await std(url) as Mission;
-        openMission(mission, false);
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
-    }
-}
 
-async function deleteInvite(invite: string) {
-    invites.value = invites.value.filter(i => i !== invite);
-}
 </script>
 
 <style scoped>
