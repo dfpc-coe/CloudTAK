@@ -9,6 +9,13 @@ export interface DBIcon {
     name: string;
 }
 
+export interface DBFeature {
+    id: string;
+    path: string;
+    properties: Feature["properties"];
+    geometry: Feature["geometry"];
+}
+
 export interface DBChatroom {
     id: string;
     name: string;
@@ -115,6 +122,7 @@ export type DatabaseType = Dexie & {
     iconset: EntityTable<DBIconset, 'uid'>,
     video: EntityTable<DBVideo, 'id'>,
     filter: EntityTable<DBFilter, 'id'>,
+    feature: EntityTable<DBFeature, 'id'>,
     chatroom: EntityTable<DBChatroom, 'id'>,
     chatroom_chats: EntityTable<DBChatroomChat, 'id'>,
     notification: EntityTable<DBNotification, 'id'>,
@@ -130,6 +138,7 @@ db.version(1).stores({
     iconset: 'uid, name',
     filter: 'id, external',
     video: 'id, username',
+    feature: 'id, path',
 
     chatroom: 'id',
     chatroom_chats: 'id, chatroom',

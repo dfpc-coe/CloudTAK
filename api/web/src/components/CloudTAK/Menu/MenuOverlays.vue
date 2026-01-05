@@ -110,16 +110,16 @@
 
                                     <div class='flex-grow-1 w-100 overflow-hidden'>
                                         <div class='menu-overlays__title-row d-flex align-items-center gap-2 w-100'>
-                                            <div class='d-flex align-items-center flex-grow-1 w-100 overflow-hidden'>
+                                            <div class='d-flex align-items-center flex-grow-1 w-100'>
                                                 <a
                                                     v-if='card.overlay.mode === "mission"'
-                                                    class='menu-overlays__name menu-overlays__name--link fw-semibold text-decoration-underline d-inline-flex align-items-center'
+                                                    class='menu-overlays__name menu-overlays__name--link fw-semibold text-decoration-underline d-inline-flex align-items-center text-break'
                                                     @click.stop='router.push(`/menu/missions/${card.overlay.mode_id}`)'
                                                     v-text='card.overlay.name'
                                                 />
                                                 <span
                                                     v-else
-                                                    class='menu-overlays__name fw-semibold d-inline-flex align-items-center flex-grow-1 text-truncate'
+                                                    class='menu-overlays__name fw-semibold d-inline-flex align-items-center flex-grow-1 text-break'
                                                     v-text='card.overlay.name'
                                                 />
                                             </div>
