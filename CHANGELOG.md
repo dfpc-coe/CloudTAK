@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v12.48.0 - 2026-01-05
+
+- :rocket: `UI` Store CoT features in DexieDB on update call for future full migration out of memory into Dexie
+- :rocket: `UI` Load Overlays in Parallel for faster map initialization
+- :rocket: `API` Refactor `External` class into a generic `interface-user` for future implementations that reference other user providers: Ref: https://github.com/dfpc-coe/CloudTAK/issues/1180
+- :rocket: `API` Refactor Weather class into a generic `interface-weather` for future implementations that reference other weather providers, maintaining the current hardcoded NOAA => OpenMeteo fallback
+
 ### v12.47.2 - 2026-01-04
 
 - :bug: Add Partition Parameter to allow non-commercial AWS regions to deploy CloudTAK
