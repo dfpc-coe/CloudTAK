@@ -28,7 +28,7 @@
         <transition name='menu-overlays-fade'>
             <div
                 v-if='showInvites'
-                class='mt-2 p-3 rounded-3 border border-white border-opacity-10 bg-black bg-opacity-25'
+                class='mt-2 pt-2 px-3 rounded-3 border border-white border-opacity-10 bg-black bg-opacity-25'
                 @click.stop
             >
                 <div
@@ -36,7 +36,10 @@
                     :key='invite'
                     class='d-flex align-items-center justify-content-between mb-2'
                 >
-                    <span class='text-truncate me-2'>{{ invite }}</span>
+                    <span
+                        class='text-break me-2'
+                        v-text='invite.missionName'
+                    />
                     <div class='d-flex align-items-center gap-1'>
                         <TablerIconButton
                             title='Delete Invite'
