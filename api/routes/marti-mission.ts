@@ -20,7 +20,7 @@ import {
     MissionCreateInput,
     MissionSubscriber
 } from '@tak-ps/node-tak/lib/api/mission';
-import { MissionInviteWrapper } from '@tak-ps/node-tak/lib/api/mission-invite';
+import { MissionInvite } from '@tak-ps/node-tak/lib/api/mission-invite';
 import {
     TAKList,
 } from '@tak-ps/node-tak/lib/api/types';
@@ -298,7 +298,7 @@ export default async function router(schema: Schema, config: Config) {
         query: MissionListInput,
         res: Type.Object({
             items: Type.Array(Mission),
-            invites: Type.Array(MissionInviteWrapper),
+            invites: Type.Array(MissionInvite),
             total: Type.Integer()
         })
     }, async (req, res) => {
@@ -315,7 +315,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 items: missions.data,
                 invites: invites.data,
-                total: missions.data.length + invites.data.length
+                total: missions.data.length
             });
         } catch (err) {
              Err.respond(err, res);
