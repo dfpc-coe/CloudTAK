@@ -243,6 +243,7 @@ export const useMapStore = defineStore('cloudtak', {
         getOverlayById(id: number): Overlay | null {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             for (const overlay of (this.overlays as any[])) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 if (overlay.id === id) return overlay as Overlay
             }
 
@@ -251,6 +252,7 @@ export const useMapStore = defineStore('cloudtak', {
         getOverlayByName(name: string): Overlay | null {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             for (const overlay of (this.overlays as any[])) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 if (overlay.name === name) return overlay as Overlay
             }
 
@@ -259,6 +261,7 @@ export const useMapStore = defineStore('cloudtak', {
         getOverlayByMode(mode: string, mode_id: string): Overlay | null {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             for (const overlay of (this.overlays as any[])) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 if (overlay.mode === mode && overlay.mode_id === mode_id) {
                     return overlay as Overlay;
                 }
@@ -772,6 +775,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             // Data Syncs are specially loaded as they are dynamic
             // Parallelize Mission Loading
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const missionOverlays = (this.overlays as any[]).filter((overlay: Overlay) => overlay.mode === 'mission' && overlay.mode_id);
             const missionPromises = missionOverlays.map(async (overlay: Overlay) => {
                     const source = map.getSource(String(overlay.id));
@@ -854,6 +858,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         updateAttribution: async function(): Promise<void> {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const attributionOverlays = (this.overlays as any[]).filter((o: Overlay) => o.mode === 'basemap' && o.mode_id && o.visible);
             const attributionPromises = attributionOverlays.map(async (overlay: Overlay) => {
                     try {
