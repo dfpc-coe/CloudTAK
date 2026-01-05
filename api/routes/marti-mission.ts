@@ -309,7 +309,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const [missions, invites] = await Promise.all([
                 api.Mission.list(req.query),
-                api.MissionInvite.list()
+                api.MissionInvite.list('ANDROID-CloudTAK-' + user.email)
             ]);
 
             res.json({
