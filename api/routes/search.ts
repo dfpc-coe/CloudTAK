@@ -4,15 +4,13 @@ import geomagnetism from 'geomagnetism';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import Weather, { FetchHourly } from '../lib/weather.js';
-import { SearchManager } from '../lib/search.js';
+import { FetchHourly } from '../lib/interface-weather.js';
+import { SearchManager } from '../lib/interface-search.js';
 import { SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from '../lib/search/types.js';
 import { Feature } from '@tak-ps/node-cot';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
-    const weather = new Weather();
-
     const searchManager = await SearchManager.init(config);
 
     const ReverseResponse = Type.Object({
@@ -121,7 +119,7 @@ export default async function router(schema: Schema, config: Config) {
             await Promise.all([
                 (async () => {
                     try {
-                        response.weather = await weather.get(req.params.longitude, req.params.latitude);
+                        response.weather = await config.weather.get(req.params.longitude, req.params.latitude);
                     } catch (err) {
                         console.error('Weather Fetch Error', err)
                     }

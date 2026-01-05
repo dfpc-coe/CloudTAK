@@ -8,7 +8,7 @@ import { Feature } from '@tak-ps/node-cot';
 import { CoTParser } from '@tak-ps/node-cot';
 import ArcGISTokenManager from './arcgis-token-manager.js';
 import ArcGISConfigService from './arcgis-config.js'
-import { Search } from '../search.js';
+import { Search } from '../interface-search.js';
 import { SearchConfig, FetchSuggest, FetchReverse, FetchForward } from './types.js'
 
 export const AGOLReverseContainer = Type.Object({

@@ -29,9 +29,10 @@ export default async function router(schema: Schema, config: Config) {
                 const provider = new Provider(config);
                 const email = await provider.login(req.body.username, req.body.password);
 
-                if (config.external && config.external.configured) {
+                const cotak = config.user?.get('cotak');
+                if (cotak && cotak.configured) {
                     try {
-                        const response = await config.external.login(email);
+                        const response = await cotak.login(email);
 
                         await config.models.Profile.commit(email, {
                             ...response,
