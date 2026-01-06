@@ -52,6 +52,7 @@ export type VideoConnectionList = paths["/api/marti/video"]["get"]["responses"][
 export type Mission = paths["/api/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type Mission_Create = paths["/api/marti/mission"]["post"]["requestBody"]["content"]["application/json"]
 export type MissionList = paths["/api/marti/mission"]["get"]["responses"]["200"]["content"]["application/json"];
+export type MissionInvite = paths["/api/marti/mission"]["get"]["responses"]["200"]["content"]["application/json"]["invites"][0];
 
 export type MissionRole = paths["/api/marti/missions/{:name}/role"]["get"]["responses"]["200"]["content"]["application/json"];
 
