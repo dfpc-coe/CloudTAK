@@ -55,7 +55,7 @@
             >
                 <div class='d-flex align-items-center gap-2'>
                     <span
-                        class='fw-semibold text-truncate'
+                        class='fw-semibold text-break'
                         v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
                     />
                 </div>
