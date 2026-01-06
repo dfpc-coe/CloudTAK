@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.49.0 - 2026-01-06
+
+- :rocket: `UI` Add `feature` and `map` APIs for Plugin use
+
 ### v12.48.0 - 2026-01-05
 
 - :rocket: `UI` Store CoT features in DexieDB on update call for future full migration out of memory into Dexie
