@@ -11,7 +11,7 @@
         "typegen": "openapi-typescript http://localhost:5001/api/swagger --output src/derived-types.d.ts",
         "check": "vue-tsc",
         "build": "vite build",
-        "lint": "eslint ./src/ ./public/",
+        "lint": "eslint ./src/ ./public/ ./plugins/",
         "test": "exit 0"
     },
     "dependencies": {
