@@ -68,8 +68,8 @@
                     </div>
                     <div class='col-12'>
                         <TablerSchemaBuilder
-                            title='Log Schema'
                             v-model='log.schema'
+                            title='Log Schema'
                         />
                     </div>
                     <div class='col-12 d-flex'>
@@ -99,21 +99,35 @@
                     <div class='flex-fill'>
                         <div class='datagrid'>
                             <div class='datagrid-item'>
-                                <div class='datagrid-title'>Name</div>
-                                <div class='datagrid-content' v-text='log.name' />
+                                <div class='datagrid-title'>
+                                    Name
+                                </div>
+                                <div
+                                    class='datagrid-content'
+                                    v-text='log.name'
+                                />
                             </div>
                             <div class='datagrid-item'>
-                                <div class='datagrid-title'>Description</div>
-                                <div class='datagrid-content' v-text='log.description' />
+                                <div class='datagrid-title'>
+                                    Description
+                                </div>
+                                <div
+                                    class='datagrid-content'
+                                    v-text='log.description'
+                                />
                             </div>
                             <div class='datagrid-item'>
-                                <div class='datagrid-title'>Created</div>
+                                <div class='datagrid-title'>
+                                    Created
+                                </div>
                                 <div class='datagrid-content'>
                                     <TablerEpoch :date='log.created' />
                                 </div>
                             </div>
                             <div class='datagrid-item'>
-                                <div class='datagrid-title'>Updated</div>
+                                <div class='datagrid-title'>
+                                    Updated
+                                </div>
                                 <div class='datagrid-content'>
                                     <TablerEpoch :date='log.updated' />
                                 </div>
@@ -123,7 +137,9 @@
                 </div>
 
                 <div class='mt-3'>
-                    <div class='datagrid-title mb-2'>Schema Preview</div>
+                    <div class='datagrid-title mb-2'>
+                        Schema Preview
+                    </div>
                     <div class='border border-secondary border-opacity-25 rounded'>
                         <TablerSchema
                             :schema='log.schema'
