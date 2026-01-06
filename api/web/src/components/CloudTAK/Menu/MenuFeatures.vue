@@ -91,7 +91,7 @@
                 desc='Loading Features'
             />
             <TablerNone
-                v-else-if='cots.size === 0'
+                v-else-if='cots.size === 0 && paths.length === 0'
                 :create='false'
                 label='Archived Features'
             />
@@ -479,7 +479,7 @@ function createFolder() {
 
 function deleteFromSet(set: Set<COT>, id: string) {
     for (const item of set) {
-        if (item.id === id) {
+        if (String(item.id) === String(id)) {
             set.delete(item);
             return true;
         }
@@ -559,12 +559,7 @@ async function dragLeaveFolder(): Promise<void> {
 
 async function onFolderDrop(path: Path, event: DragEvent) {
     // If we dropped inside the actual sortable list, let Sortable handle it
-    if (path.opened) {
-         const list = document.getElementById(`folder-${path.id}`);
-         if (list && list.contains(event.target as Node)) {
-             return;
-         }
-    }
+    if (path.opened) return;
 
     if (!draggedId.value) return;
     const id = draggedId.value;
