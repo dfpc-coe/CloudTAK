@@ -243,7 +243,7 @@ export const useMapStore = defineStore('cloudtak', {
         getOverlayById(id: number): Overlay | null {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             for (const overlay of (this.overlays as any[])) {
-                 
+
                 if (overlay.id === id) return overlay as Overlay
             }
 
@@ -252,7 +252,7 @@ export const useMapStore = defineStore('cloudtak', {
         getOverlayByName(name: string): Overlay | null {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             for (const overlay of (this.overlays as any[])) {
-                 
+
                 if (overlay.name === name) return overlay as Overlay
             }
 
@@ -261,7 +261,7 @@ export const useMapStore = defineStore('cloudtak', {
         getOverlayByMode(mode: string, mode_id: string): Overlay | null {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             for (const overlay of (this.overlays as any[])) {
-                 
+
                 if (overlay.mode === mode && overlay.mode_id === mode_id) {
                     return overlay as Overlay;
                 }
@@ -527,7 +527,7 @@ export const useMapStore = defineStore('cloudtak', {
             (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
 
             this._map = markRaw(map);
-            this._draw = markRaw(new DrawTool(this));
+            this._draw = new DrawTool(this);
             this._icons = markRaw(new IconManager(map));
             this._menu = markRaw(new MenuManager(this));
             await this._menu!.init();
