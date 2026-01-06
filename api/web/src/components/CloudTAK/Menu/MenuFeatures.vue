@@ -115,16 +115,16 @@
                         :key='path.id'
                     >
                         <StandardItem
+                            :id='`foldertarget-${path.id}`'
                             class='px-3 py-3 user-select-none'
                             :style='hover === path ? "background-color: rgba(255, 255, 255, 0.1);" : ""'
-                            :id='`foldertarget-${path.id}`'
-                            @drop.stop.prevent='onFolderDrop(path, $event)'
+                            @drop.stop.prevent='onFolderDrop(path)'
                             @dragover.prevent='dragOverFolder(path)'
                             @dragleave='dragLeaveFolder()'
                             @click='path.opened ? closePath(path) : openPath(path)'
                         >
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center">
+                            <div class='d-flex align-items-center justify-content-between'>
+                                <div class='d-flex align-items-center'>
                                     <IconChevronRight
                                         v-if='!path.opened'
                                         :size='20'
@@ -141,7 +141,7 @@
                                         stroke='2'
                                     />
                                     <span
-                                        class="fw-bold"
+                                        class='fw-bold'
                                         v-text='path.name.replace(/(^\/|\/$)/g, "")'
                                     />
                                 </div>
@@ -178,9 +178,9 @@
                                     <TablerLoading v-if='path.loading' />
                                     <template v-else>
                                         <div
-                                            v-if="path.cots.size === 0"
-                                            class="text-center text-muted fst-italic py-2 small user-select-none opacity-50 pe-none position-absolute w-100"
-                                            style="margin-top: -8px;"
+                                            v-if='path.cots.size === 0'
+                                            class='text-center text-muted fst-italic py-2 small user-select-none opacity-50 pe-none position-absolute w-100'
+                                            style='margin-top: -8px;'
                                         >
                                             Folder is empty
                                         </div>
@@ -203,8 +203,8 @@
 
                 <div
                     id='general'
-                    class='px-2 mt-2'
                     ref='sortableFilesRef'
+                    class='px-2 mt-2'
                 >
                     <Feature
                         v-for='cot of cots.values()'
@@ -252,7 +252,8 @@
                 {{ folderModal.editingPath ? 'Save' : 'Create' }}
             </TablerButton>
         </div>
-    </TablerModal></template>
+    </TablerModal>
+</template>
 
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
@@ -557,7 +558,7 @@ async function dragLeaveFolder(): Promise<void> {
     }
 }
 
-async function onFolderDrop(path: Path, event: DragEvent) {
+async function onFolderDrop(path: Path) {
     // If we dropped inside the actual sortable list, let Sortable handle it
     if (path.opened) return;
 
