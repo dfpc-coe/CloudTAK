@@ -17,6 +17,7 @@ import type { InputFeature, Feature, APIList } from '../types.ts';
 
 type NestedArray = {
     path: string;
+    count: number;
     paths: Array<NestedArray>;
 }
 
@@ -308,14 +309,17 @@ export default class AtlasDatabase {
     async paths(store?: Map<string, COT>): Promise<Array<NestedArray>> {
         if (!store) store = this.cots;
 
-        const paths = new Set();
+        const paths = new Map<string, number>();
         for (const value of store.values()) {
-            if (value.path) paths.add(value.path);
+            if (value.path && value.path !== '/' && value.properties.archived) {
+                paths.set(value.path, (paths.get(value.path) || 0) + 1);
+            }
         }
 
-        return Array.from(paths).map((path) => {
+        return Array.from(paths.keys()).map((path) => {
             return {
                 path: path,
+                count: paths.get(path) || 0,
                 paths: []
             } as NestedArray
         });
