@@ -236,7 +236,7 @@ app.use(FloatingVue);
 
 const plugins: Record<string, {
     default: PluginStatic
-}> = import.meta.glob('../plugins/*.ts', {
+}> = import.meta.glob(['../plugins/*.ts', '../plugins/*/index.ts'], {
     eager: true
 });
 
