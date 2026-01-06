@@ -4,6 +4,9 @@ import type { Pinia } from 'pinia';
 import { useMapStore } from './src/stores/map.ts';
 import type { MenuItemConfig } from './src/stores/modules/menu.ts';
 import { db, type DBFeature } from './src/base/database.ts';
+import { liveQuery } from 'dexie';
+import { from, type Observable } from 'rxjs';
+import mapgl from 'maplibre-gl';
 
 export type { MenuItemConfig };
 
@@ -125,6 +128,14 @@ export class PluginAPI {
     }
 
     /**
+     * Map Accessors
+     */
+    get map(): mapgl.Map {
+        const mapStore = useMapStore(this.pinia);
+        return mapStore.map;
+    }
+
+    /**
      * Manage Features
      */
     get feature() {
@@ -140,6 +151,20 @@ export class PluginAPI {
                     return db.feature.filter(opts.filter).toArray();
                 }
                 return db.feature.toArray();
+            },
+            /**
+             * Stream features from the local database
+             * @param opts Filter options
+             */
+            stream: (opts: {
+                filter?: (feature: DBFeature) => boolean;
+            } = {}): Observable<DBFeature[]> => {
+                return from(liveQuery(() => {
+                    if (opts.filter) {
+                        return db.feature.filter(opts.filter).toArray();
+                    }
+                    return db.feature.toArray();
+                })) as Observable<DBFeature[]>;
             }
         }
     }
