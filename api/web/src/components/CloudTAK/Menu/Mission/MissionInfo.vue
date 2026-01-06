@@ -223,6 +223,7 @@
 <script setup lang='ts'>
 import { ref, onMounted, computed } from 'vue';
 import type { MissionSubscriptions } from '../../../../types.ts';
+import { useRoute, useRouter } from 'vue-router';
 import { stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
 import Keywords from '../../util/Keywords.vue';
@@ -255,6 +256,8 @@ const missionQRURL = computed(() => {
 });
 
 const showQR = ref(false);
+const route = useRoute();
+const router = useRouter();
 
 const subscriptions = ref<MissionSubscriptions>([])
 
@@ -262,6 +265,16 @@ onMounted(async () => {
     loading.value.users = true;
     await fetchSubscriptions();
     loading.value.users = false;
+
+    if (route.query.subscribe === 'true') {
+        await subscribe(true);
+        router.replace({
+            query: {
+                ...route.query,
+                subscribe: undefined
+            }
+        });
+    }
 });
 
 const loading = ref({

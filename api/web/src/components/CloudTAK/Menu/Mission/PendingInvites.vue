@@ -71,27 +71,27 @@ import {
     IconChevronUp,
     IconTrash
 } from '@tabler/icons-vue';
+import { useRouter } from 'vue-router';
 import { TablerIconButton } from '@tak-ps/vue-tabler';
 import StandardItem from '../../util/StandardItem.vue';
 import { std, stdurl } from '../../../../std.ts';
-import type { Mission } from '../../../../types.ts';
+import type { MissionInvite } from '../../../../types.ts';
 
 const props = defineProps<{
-    invites: string[]
+    invites: MissionInvite[]
 }>();
 
-const emit = defineEmits(['open-mission', 'update:invites', 'error']);
-
+const router = useRouter();
 const showInvites = ref(false);
 
-async function acceptInvite(invite: string) {
-    try {
-        const url = stdurl(`/api/marti/missions/${invite}`);
-        const mission = await std(url) as Mission;
-        emit('open-mission', mission);
-    } catch (err) {
-        emit('error', err);
-    }
+async function acceptInvite(invite: MissionInvite) {
+    router.push({
+        path: `/menu/missions/${invite.missionGuid}`,
+        query: {
+            token: invite.token,
+            subscribe: true
+        }
+    });
 }
 
 async function deleteInvite(invite: string) {
