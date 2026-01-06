@@ -12,7 +12,7 @@ export default class ExamplePlugin implements PluginInstance {
         app: App,
         api: PluginAPI
     ): Promise<PluginInstance> {
-        return new Test(api);
+        return new ExamplePlugin(api);
     }
 
     async enable(): Promise<void> {
