@@ -274,7 +274,8 @@ function missionKeywords(mission: Mission): string[] {
     if (!Array.isArray(mission.keywords)) return [];
     return mission.keywords
         .map((keyword) => typeof keyword === 'string' ? keyword.trim() : '')
-        .filter((keyword): keyword is string => keyword.length > 0);
+        .filter((keyword): keyword is string => keyword.length > 0)
+        .filter((keyword) => !keyword.startsWith('template:'));
 }
 
 async function fetchMissions() {
