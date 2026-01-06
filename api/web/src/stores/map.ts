@@ -759,10 +759,15 @@ export const useMapStore = defineStore('cloudtak', {
 
             // Parallelize Overlay Creation
             const overlayPromises = profileOverlays.items.map(item =>
-                Overlay.create(item as ProfileOverlay, { skipSave: true })
+                Overlay.create(item as ProfileOverlay, { skipSave: true, skipLayers: true })
             );
 
             const newOverlays = await Promise.all(overlayPromises);
+
+            for (const overlay of newOverlays) {
+                await overlay.addLayers();
+            }
+
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.overlays as any[]).push(...newOverlays);
 
