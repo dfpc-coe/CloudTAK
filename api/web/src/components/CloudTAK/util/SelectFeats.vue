@@ -30,7 +30,7 @@
             >
                 <div
                     v-for='select in selected.values()'
-                    class='col-12'
+                    class='col-12 px-1'
                 >
                     <DisplayFeature
                         :feature='select'
