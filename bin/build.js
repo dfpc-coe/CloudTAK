@@ -27,21 +27,36 @@ for (const env of [
 
 await login();
 
-if (!process.argv[2]) {
+const args = process.argv.slice(2);
+const plugins = [];
+let target = null;
+
+for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--plugin') {
+        if (args[i + 1]) {
+            plugins.push(args[i + 1]);
+            i++;
+        }
+    } else if (!target) {
+        target = args[i];
+    }
+}
+
+if (!target) {
     console.error('ok - building all containers');
 
-    await cloudtak_api();
+    await cloudtak_api(plugins);
 
     for (const dir of await fs.readdir(new URL('../tasks/', import.meta.url))) {
         await cloudtak_task(dir);
     }
 } else {
-    if (process.argv[2] === 'api') {
-        await cloudtak_api();
-    } else if (process.argv[2] === '.') {
+    if (target === 'api') {
+        await cloudtak_api(plugins);
+    } else if (target === '.') {
         await cloudtak_etl();
     } else {
-        await cloudtak_task(process.argv[2]);
+        await cloudtak_task(target);
     }
 }
 
@@ -90,10 +105,12 @@ function cloudtak_etl() {
     });
 }
 
-function cloudtak_api() {
+function cloudtak_api(plugins = []) {
+    const buildArgs = plugins.length ? `--build-arg WEB_PLUGINS="${plugins.join(',')}"` : '';
+
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
-            docker compose build api \
+            docker compose build ${buildArgs} api \
             && docker tag cloudtak-api:latest "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{GITSHA}" \
             && docker push "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{GITSHA}"
         `, (err) => {
