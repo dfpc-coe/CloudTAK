@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### v12.50.0 - 2026-01-06
+
+- :rocket: Allow editing MenuFeature folder names
+- :rocket: Allow creating new folders in MenuFeature
+- :rocket: Improve usability of dropping features
+- :rocket: Wrap instead of truncating feature names
+- :bug: Parallel Overlay creation could result in the final visual layers being out of order, causing rendering issues in the final output.
+- :bug: Fix Draw Popup not displaying
+
 ### v12.49.0 - 2026-01-06
 
 - :rocket: `UI` Add `feature` and `map` APIs for Plugin use
@@ -44,7 +53,7 @@
 
 - :tada: Introduce Mission Template Logs in API
 - :rocket: Standardize Connection Card in UI
-- :rocket: Introduce `menu` operations to PluginAPI 
+- :rocket: Introduce `menu` operations to PluginAPI
 
 ### v12.45.0 - 2026-01-02
 
