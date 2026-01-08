@@ -50,7 +50,7 @@
         "@tak-ps/etl": "^9.24.0",
         "@tak-ps/geojson-vt": "^4.2.0",
         "@tak-ps/node-cot": "^14.17.0",
-        "@tak-ps/node-tak": "^11.18.0",
+        "@tak-ps/node-tak": "^11.23.0",
         "@turf/bbox": "^7.1.0",
         "@turf/bbox-polygon": "^7.2.0",
         "@turf/meta": "^7.0.0",
