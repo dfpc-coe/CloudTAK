@@ -53,6 +53,7 @@ export default class Overlay {
             skipSave?: boolean;
             clickable?: Array<{ id: string; type: string }>;
             before?: string;
+            skipLayers?: boolean;
         } = {}
     ): Promise<Overlay> {
         if (opts.skipSave !== true) {
@@ -217,9 +218,84 @@ export default class Overlay {
         }
     }
 
+    async addLayers(before?: string): Promise<void> {
+        const mapStore = useMapStore();
+
+        for (const l of this.styles) {
+            if (before) {
+                mapStore.map.addLayer(l, before);
+            } else {
+                mapStore.map.addLayer(l)
+            }
+        }
+
+        // The above doesn't set vis/opacity initially
+        await this.update({
+            opacity: this.opacity,
+            visible: this.visible
+        })
+
+        for (const click of this._clickable) {
+            const hoverIds = new Set<string>();
+
+            mapStore.map.on('mouseenter', click.id, () => {
+                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
+                mapStore.map.getCanvas().style.cursor = 'pointer';
+            })
+
+            mapStore.map.on('mousemove', click.id, (e) => {
+                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
+
+                if (this.type === 'vector' && e.features) {
+                    const newIds = e.features.map(f => String(f.id));
+
+                    for (const id of hoverIds) {
+                        if (newIds.includes(id)) continue;
+
+                        mapStore.map.setFeatureState({
+                            id: id,
+                            source: String(this.id),
+                            sourceLayer: 'out'
+                        }, { hover: false });
+
+                        hoverIds.delete(id);
+                    }
+
+                    for (const id of newIds) {
+                        mapStore.map.setFeatureState({
+                            id: id,
+                            source: String(this.id),
+                            sourceLayer: 'out'
+                        }, { hover: true });
+
+                        hoverIds.add(id);
+                    }
+                }
+            });
+
+            mapStore.map.on('mouseleave', click.id, () => {
+                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
+                mapStore.map.getCanvas().style.cursor = '';
+
+                if (this.type === 'vector') {
+                    for (const id of hoverIds) {
+                        mapStore.map.setFeatureState({
+                            id: id,
+                            source: String(this.id),
+                            sourceLayer: 'out'
+                        }, { hover: false });
+                    }
+
+                    hoverIds.clear()
+                }
+            })
+        }
+    }
+
     async init(opts: {
         clickable?: Array<{ id: string; type: string }>;
         before?: string;
+        skipLayers?: boolean;
     } = {}) {
         const mapStore = useMapStore();
 
@@ -302,81 +378,15 @@ export default class Overlay {
             });
         }
 
-        for (const l of this.styles) {
-            if (opts.before) {
-                mapStore.map.addLayer(l, opts.before);
-            } else {
-                mapStore.map.addLayer(l)
-            }
-        }
-
-        // The above doesn't set vis/opacity initially
-        this.update({
-            opacity: this.opacity,
-            visible: this.visible
-        })
-
         if (!opts.clickable) {
             opts.clickable = [];
         }
 
-        for (const click of opts.clickable) {
-            const hoverIds = new Set<string>();
-
-            mapStore.map.on('mouseenter', click.id, () => {
-                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
-                mapStore.map.getCanvas().style.cursor = 'pointer';
-            })
-
-            mapStore.map.on('mousemove', click.id, (e) => {
-                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
-
-                if (this.type === 'vector' && e.features) {
-                    const newIds = e.features.map(f => String(f.id));
-
-                    for (const id of hoverIds) {
-                        if (newIds.includes(id)) continue;
-
-                        mapStore.map.setFeatureState({
-                            id: id,
-                            source: String(this.id),
-                            sourceLayer: 'out'
-                        }, { hover: false });
-
-                        hoverIds.delete(id);
-                    }
-
-                    for (const id of newIds) {
-                        mapStore.map.setFeatureState({
-                            id: id,
-                            source: String(this.id),
-                            sourceLayer: 'out'
-                        }, { hover: true });
-
-                        hoverIds.add(id);
-                    }
-                }
-            });
-
-            mapStore.map.on('mouseleave', click.id, () => {
-                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
-                mapStore.map.getCanvas().style.cursor = '';
-
-                if (this.type === 'vector') {
-                    for (const id of hoverIds) {
-                        mapStore.map.setFeatureState({
-                            id: id,
-                            source: String(this.id),
-                            sourceLayer: 'out'
-                        }, { hover: false });
-                    }
-
-                    hoverIds.clear()
-                }
-            })
-        }
-
         this._clickable = opts.clickable;
+
+        if (!opts.skipLayers) {
+            await this.addLayers(opts.before);
+        }
         this._loaded = true;
     }
 

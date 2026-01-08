@@ -147,6 +147,11 @@ export default class AtlasConnection {
                         `/menu/missions/${task.properties.mission.guid}`,
                         true
                     );
+                } else if (task.properties.type === 't-x-m-i' && task.properties.mission && task.properties.mission.type === 'INVITE') {
+                    this.atlas.postMessage({
+                        type: WorkerMessageType.Mission_Invite,
+                        body: task.properties.mission
+                    });
                 } else {
                     console.warn('Unknown Task', JSON.stringify(task));
                 }

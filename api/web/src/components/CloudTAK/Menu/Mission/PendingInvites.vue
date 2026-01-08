@@ -81,6 +81,8 @@ const props = defineProps<{
     invites: MissionInvite[]
 }>();
 
+const emit = defineEmits(['update:invites']);
+
 const router = useRouter();
 const showInvites = ref(false);
 
@@ -94,7 +96,15 @@ async function acceptInvite(invite: MissionInvite) {
     });
 }
 
-async function deleteInvite(invite: string) {
+async function deleteInvite(invite: MissionInvite) {
+    const url = stdurl(`/api/marti/missions/${invite.missionGuid}/invite`);
+    url.searchParams.append('type', invite.type);
+    url.searchParams.append('invitee', invite.invitee);
+
+    await std(url, {
+        method: 'DELETE'
+    });
+
     const newInvites = props.invites.filter(i => i !== invite);
     emit('update:invites', newInvites);
 }
