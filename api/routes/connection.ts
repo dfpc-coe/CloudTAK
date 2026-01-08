@@ -3,7 +3,7 @@ import S3 from '../lib/aws/s3.js';
 import { sql, and, inArray } from 'drizzle-orm';
 import Config from '../lib/config.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
-import { X509Certificate } from 'crypto';
+import { X509Certificate, createPrivateKey } from 'crypto';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, ConnectionResponse } from '../lib/types.js';
 import { Connection } from '../lib/schema.js';
@@ -120,6 +120,18 @@ export default async function router(schema: Schema, config: Config) {
                 req.body.enabled = false;
             }
 
+            try {
+                new X509Certificate(req.body.auth.cert);
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid X509 Certificate Provided');
+            }
+
+            try {
+                createPrivateKey(req.body.auth.key);
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid Private Key Provided');
+            }
+
             const conn = await config.models.Connection.generate({
                 ...req.body,
                 username: user.email
@@ -160,7 +172,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Default.NameField),
             description: Type.Optional(Default.DescriptionField),
             enabled: Type.Optional(Type.Boolean()),
-            agency: Type.Union([Type.Null(), Type.Optional(Type.Integer({ minimum: 1 }))]),
+            agency: Type.Optional(Type.Union([Type.Null(), Type.Integer({ minimum: 1 })])),
             auth: Type.Optional(ConnectionAuth)
         }),
         res: ConnectionResponse
@@ -173,6 +185,20 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.agency && await Auth.is_user(config, req)) {
                 const user = await Auth.as_user(config, req, { admin: true });
                 if (!user) throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
+            }
+
+            if (req.body.auth) {
+                try {
+                    new X509Certificate(req.body.auth.cert);
+                } catch (err) {
+                    throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid X509 Certificate Provided');
+                }
+
+                try {
+                    createPrivateKey(req.body.auth.key);
+                } catch (err) {
+                    throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid Private Key Provided');
+                }
             }
 
             if (connection.readonly) {
