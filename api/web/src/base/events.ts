@@ -25,6 +25,7 @@ export enum WorkerMessageType {
     Connection_Close = 'connection:close',
 
     Mission_Change_Feature = 'mission:change:feature',
+    Mission_Invite = 'mission:invite',
 }
 
 export type WorkerMessage = {

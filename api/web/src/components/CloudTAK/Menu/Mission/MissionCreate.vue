@@ -210,7 +210,7 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { server } from '../../../../std.ts';
-import type { Mission_Create, MissionTemplate } from '../../../../types.ts';
+import type { Mission_Create, MissionTemplateList } from '../../../../types.ts';
 import { useMapStore } from '../../../../stores/map.ts'
 import {
     IconLock,
@@ -239,7 +239,7 @@ const attempted = ref(false);
 const loading = ref(false);
 const advanced = ref(false);
 
-const templates = ref<MissionTemplate[]>([]);
+const templates = ref<MissionTemplateList['items']>([]);
 const templatesLoading = ref(false);
 const showSearch = ref(false);
 
@@ -294,7 +294,7 @@ async function listTemplates() {
             icon: '',
             description: '',
             created: '',
-            updated: ''
+            updated: '',
         }, ...res.data.items];
 
         if (!selectedTemplate.value) selectedTemplate.value = 'default';

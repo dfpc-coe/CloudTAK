@@ -50,6 +50,12 @@
                             v-else
                             class='d-flex flex-column gap-3 mx-2'
                         >
+                            <PendingInvites
+                                v-model:invites='invites'
+                                @open-mission='openMission($event, false)'
+                                @error='error = $event'
+                            />
+
                             <StandardItem
                                 v-for='(mission, mission_it) in filteredList'
                                 :key='mission_it'
@@ -159,6 +165,7 @@
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue';
 import MissionCreate from './Mission/MissionCreate.vue';
+import PendingInvites from './Mission/PendingInvites.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import Keywords from '../util/Keywords.vue';
@@ -172,13 +179,13 @@ import {
     TablerModal,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import type { Mission } from '../../../types.ts';
+import type { Mission, MissionInvite } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import {
     IconPlus,
     IconLock,
     IconLockOpen,
-    IconAccessPoint,
+    IconAccessPoint
 } from '@tabler/icons-vue';
 import ChannelInfo from '../util/ChannelInfo.vue';
 import { useMapStore } from '../../../stores/map.ts';
@@ -196,6 +203,7 @@ const router = useRouter();
 
 const paging = ref({ filter: '' });
 const list = ref<Array<Mission>>([]);
+const invites = ref<MissionInvite[]>([]);
 
 onMounted(async () => {
     await fetchMissions();
@@ -284,7 +292,9 @@ async function fetchMissions() {
     try {
         loading.value = true;
 
-        list.value = (await Subscription.list()).data;
+        const res = await Subscription.list();
+        list.value = res.items;
+        invites.value = res.invites;
     } catch (err) {
         loading.value = false;
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -292,6 +302,8 @@ async function fetchMissions() {
 
     loading.value = false;
 }
+
+
 </script>
 
 <style scoped>
@@ -301,5 +313,22 @@ async function fetchMissions() {
     min-width: 3rem;
     min-height: 3rem;
     flex-shrink: 0;
+}
+
+.menu-overlays-fade-enter-active,
+.menu-overlays-fade-leave-active {
+    transition: all 0.2s ease-out;
+    max-height: 500px;
+    opacity: 1;
+    overflow: hidden;
+}
+
+.menu-overlays-fade-enter-from,
+.menu-overlays-fade-leave-to {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
 }
 </style>
