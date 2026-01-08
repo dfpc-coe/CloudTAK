@@ -178,18 +178,6 @@ import {
 } from '@tabler/icons-vue'
 import UploadLogo from '../util/UploadLogo.vue';
 
-interface MissionTemplateLog {
-    id: string;
-    template: string;
-    name: string;
-    created: string;
-    updated: string;
-}
-
-interface MissionTemplateWithLogs extends MissionTemplate {
-    logs?: MissionTemplateLog[];
-}
-
 const route = useRoute();
 const router = useRouter();
 
@@ -197,7 +185,7 @@ const error = ref<Error | undefined>();
 const disabled = ref(true);
 const loading = ref(true);
 
-const template = ref<MissionTemplateWithLogs>({
+const template = ref<MissionTemplate>({
     id: randomUUID(),
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
@@ -224,7 +212,7 @@ async function saveTemplate() {
             template.value = await std(`/api/template/mission`, {
                 method: 'POST',
                 body: template.value
-            }) as MissionTemplateWithLogs 
+            }) as MissionTemplate
 
             disabled.value = true;
             router.push(`/admin/template/${template.value.id}`);
@@ -232,7 +220,7 @@ async function saveTemplate() {
             template.value = await std(`/api/template/mission/${route.params.template}`, {
                 method: 'PATCH',
                 body: template.value
-            }) as MissionTemplateWithLogs
+            }) as MissionTemplate
 
             disabled.value = true;
         }
@@ -261,7 +249,7 @@ async function deleteTemplate() {
 async function fetchTemplate() {
     loading.value = true;
     try {
-        template.value = await std(`/api/template/mission/${route.params.template}`) as MissionTemplateWithLogs;
+        template.value = await std(`/api/template/mission/${route.params.template}`) as MissionTemplate;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {

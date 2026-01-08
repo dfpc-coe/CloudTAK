@@ -33,7 +33,7 @@
             >
                 <div
                     v-for='invite in invites'
-                    :key='invite'
+                    :key='invite.token'
                     class='d-flex align-items-center justify-content-between mb-2'
                 >
                     <span
@@ -91,15 +91,15 @@ async function acceptInvite(invite: MissionInvite) {
         path: `/menu/missions/${invite.missionGuid}`,
         query: {
             token: invite.token,
-            subscribe: true
+            subscribe: 'true'
         }
     });
 }
 
 async function deleteInvite(invite: MissionInvite) {
     const url = stdurl(`/api/marti/missions/${invite.missionGuid}/invite`);
-    url.searchParams.append('type', invite.type);
-    url.searchParams.append('invitee', invite.invitee);
+    url.searchParams.append('type', String(invite.type));
+    url.searchParams.append('invitee', String(invite.invitee));
 
     await std(url, {
         method: 'DELETE'
