@@ -12,7 +12,13 @@
 
 ### Pending Release
 
-### v12.51.0 - 2026-01-06
+### v12.51.1 - 2026-01-08
+
+- :bug: Don't return an iconset object in transform worker if there are no iconset
+- :bug: Don't create iconset object via API if iconset object doesn't exist or if the size is 0
+- :bug: Ensure iconset loading failure doesn't prevent overlay loading
+
+### v12.51.0 - 2026-01-08
 
 > [!WARNING]
 > TAK Server has a bug that prevent Data Sync invites from working.
