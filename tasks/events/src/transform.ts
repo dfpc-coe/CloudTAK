@@ -55,7 +55,7 @@ export default class DataTransform {
 
         const artifacts: Array<{ ext: string }> = this.asset.artifacts.map(a => ({ ext: a.ext }));
 
-        if (conversion.icons) {
+        if (conversion.icons && conversion.icons.size > 0) {
             console.error('ok - Creating Iconset');
 
             const iconset = randomUUID();
