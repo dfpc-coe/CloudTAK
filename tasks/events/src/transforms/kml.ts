@@ -93,6 +93,7 @@ export default class KML implements Transform {
             name: string;
             data: string;
         }>();
+
         for (const [name, icon] of icons.entries()) {
             try {
                 const contents = await (Sharp(icon)
@@ -108,9 +109,15 @@ export default class KML implements Transform {
             }
         }
 
-        return {
-            asset: output,
-            icons: iconMap
+        if (iconMap.size) {
+            return {
+                asset: output,
+                icons: iconMap
+            }
+        } else {
+            return {
+                asset: output
+            }
         }
     }
 }
