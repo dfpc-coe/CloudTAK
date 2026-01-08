@@ -179,7 +179,7 @@ import {
     TablerModal,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import type { Mission } from '../../../types.ts';
+import type { Mission, MissionInvite } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import {
     IconPlus,
@@ -203,7 +203,7 @@ const router = useRouter();
 
 const paging = ref({ filter: '' });
 const list = ref<Array<Mission>>([]);
-const invites = ref<string[]>([]);
+const invites = ref<MissionInvite[]>([]);
 
 onMounted(async () => {
     await fetchMissions();
@@ -282,7 +282,8 @@ function missionKeywords(mission: Mission): string[] {
     if (!Array.isArray(mission.keywords)) return [];
     return mission.keywords
         .map((keyword) => typeof keyword === 'string' ? keyword.trim() : '')
-        .filter((keyword): keyword is string => keyword.length > 0);
+        .filter((keyword): keyword is string => keyword.length > 0)
+        .filter((keyword) => !keyword.startsWith('template:'));
 }
 
 async function fetchMissions() {

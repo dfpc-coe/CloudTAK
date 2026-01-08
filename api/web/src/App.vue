@@ -118,6 +118,11 @@
             @close='login = false'
             @login='login= false'
         />
+        <MissionInviteModal
+            v-if='inviteMission'
+            :mission='inviteMission'
+            @close='inviteMission = undefined'
+        />
     </div>
 </template>
 
@@ -141,6 +146,9 @@ import {
     TablerError
 } from '@tak-ps/vue-tabler';
 import { std } from './std.ts';
+import MissionInviteModal from './components/CloudTAK/Menu/Mission/MissionInviteModal.vue';
+import { WorkerMessageType } from './base/events.ts';
+import type { WorkerMessage } from './base/events.ts';
 
 const router = useRouter();
 const route = useRoute();
@@ -148,6 +156,14 @@ const brandStore = useBrandStore();
 
 const loading = ref(true);
 const login = ref(false);
+const inviteMission = ref<{
+    name: string;
+    guid: string;
+    token: string;
+    authorUid: string;
+    tool: string;
+    type: string;
+} | undefined>();
 const mounted = ref(false);
 const user = ref<Login | undefined>();
 const error = ref<Error | undefined>();
@@ -198,6 +214,14 @@ onMounted(async () => {
     window.addEventListener('unhandledrejection', (e) => {
         error.value = e.reason;
     });
+
+    const channel = new BroadcastChannel('cloudtak');
+    channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
+        const msg = event.data;
+        if (msg && msg.type === WorkerMessageType.Mission_Invite) {
+            inviteMission.value = msg.body;
+        }
+    };
 
     if (status === 'unconfigured') {
         delete localStorage.token;
