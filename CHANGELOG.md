@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.52.0 - 2026-01-08
+
+- :rocket: Strongly Validate Connection Key Pair
+
 ### v12.51.2 - 2026-01-08
 
 - :arrow_up: Update VueTabler to allow breadcrumbs to route accross PWA Router Boundaries
