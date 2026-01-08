@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.51.2 - 2026-01-08
+
+- :arrow_up: Update VueTabler to allow breadcrumbs to route accross PWA Router Boundaries
+
 ### v12.51.1 - 2026-01-08
 
 - :bug: Don't return an iconset object in transform worker if there are no iconset
