@@ -12,6 +12,17 @@
 
 ### Pending Release
 
+### v12.51.0 - 2026-01-06
+
+> [!WARNING]
+> TAK Server has a bug that prevent Data Sync invites from working.
+> For new Data Sync invite features to function, TAK Server must be updated
+> to 5.6-RELEASE-8 or newer.
+
+- :tada: `API` Introduce Pending Invites list in Data Sync API
+- :rocket: `UI` Show Pending Invites UI in Data Sync List and allow accepting or rejecting them
+- :rocket: `UI` Support the Mission Invite CoT message and show a modal to accept/reject invites when received over CoT
+
 ### v12.50.0 - 2026-01-06
 
 - :rocket: Allow editing MenuFeature folder names
