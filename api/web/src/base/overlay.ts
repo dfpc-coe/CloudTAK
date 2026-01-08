@@ -361,7 +361,11 @@ export default class Overlay {
         }
 
         if (this.iconset) {
-            mapStore.icons.addIconset(this.iconset);
+            try {
+                mapStore.icons.addIconset(this.iconset);
+            } catch (err) {
+                console.error('Error adding iconset', this.iconset, err);
+            }
         }
 
         if (this.type === 'vector' && this. mode !== 'basemap' && opts.clickable === undefined) {
