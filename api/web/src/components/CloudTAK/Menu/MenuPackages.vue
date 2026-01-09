@@ -73,8 +73,7 @@
                         <div class='flex-grow-1 d-flex flex-column gap-2 py-2'>
                             <div class='d-flex flex-wrap align-items-center gap-2'>
                                 <span
-                                    class='fw-semibold text-truncate'
-                                    style='max-width: calc(100% - 20px)'
+                                    class='fw-semibold text-break'
                                     v-text='pkg.name'
                                 />
                             </div>
@@ -123,8 +122,7 @@ import {
     IconPlus,
     IconPackage,
 } from '@tabler/icons-vue';
-import timeDiff_ from '../../../timediff.ts';
-const timeDiff = timeDiff_;
+import timeDiff from '../../../timediff.ts';
 import ChannelInfo from '../util/ChannelInfo.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import ShareToPackage from '../util/ShareToPackage.vue';

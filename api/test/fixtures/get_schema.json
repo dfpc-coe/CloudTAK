@@ -484,66 +484,6 @@
         "query": false,
         "res": false
     },
-    "GET /iconset": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /iconset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /iconset/:iconset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /iconset/:iconset": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "DELETE /iconset/:iconset": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /iconset/:iconset/icon": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /icon": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /iconset/:iconset/icon/:icon": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /iconset/:iconset/icon/:icon": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /iconset/:iconset/icon/:icon": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /iconset/:iconset/sprite{:size}.json": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /iconset/:iconset/sprite{:size}.png": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
     "GET /import": {
         "body": false,
         "query": true,
@@ -583,6 +523,71 @@
         "body": false,
         "query": false,
         "res": true
+    },
+    "GET /iconset": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /iconset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /iconset/:iconset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /iconset/:iconset": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /iconset/:iconset/regen": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /iconset/:iconset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /iconset/:iconset/icon": {
+        "body": true,
+        "query": true,
+        "res": true
+    },
+    "GET /icon": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /iconset/:iconset/icon/:icon": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /iconset/:iconset/icon/:icon": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /iconset/:iconset/icon/:icon": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /iconset/:iconset/sprite{:size}.json": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /iconset/:iconset/sprite{:size}.png": {
+        "body": false,
+        "query": true,
+        "res": false
     },
     "GET /layer": {
         "body": false,
@@ -794,6 +799,11 @@
         "query": false,
         "res": true
     },
+    "DELETE /marti/missions/:guid/invite": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "POST /marti/package": {
         "body": false,
         "query": true,
@@ -895,6 +905,31 @@
         "res": true
     },
     "DELETE /template/mission/:mission": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /template/mission/:mission/log": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /template/mission/:mission/log/:log": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /template/mission/:mission/log": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /template/mission/:mission/log/:log": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /template/mission/:mission/log/:log": {
         "body": false,
         "query": false,
         "res": true
@@ -1139,14 +1174,19 @@
         "query": true,
         "res": true
     },
-    "GET /server/package": {
+    "GET /server/repeater": {
         "body": false,
         "query": false,
         "res": true
     },
-    "DELETE /server/package/:hash": {
+    "DELETE /server/repeater/:uid": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "GET /server/video": {
+        "body": false,
+        "query": true,
         "res": true
     },
     "GET /search": {
@@ -1170,21 +1210,6 @@
         "res": true
     },
     "GET /search/suggest": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /server/repeater": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /server/repeater/:uid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /server/video": {
         "body": false,
         "query": true,
         "res": true

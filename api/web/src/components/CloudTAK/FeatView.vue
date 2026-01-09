@@ -90,7 +90,20 @@
                         />
                         <label class='subheader user-select-none'>Remarks</label>
                     </div>
-                    <div class='table-responsive rounded mx-2'>
+                    <div
+                        v-if='htmlDescription'
+                        class='mx-2'
+                    >
+                        <CopyField
+                            :model-value='htmlDescription'
+                            :rows='2'
+                            mode='text'
+                        />
+                    </div>
+                    <div
+                        v-else
+                        class='table-responsive rounded mx-2'
+                    >
                         <table class='table card-table table-hover table-vcenter datatable'>
                             <thead>
                                 <tr>
@@ -141,6 +154,7 @@ import type { LngLatLike, MapGeoJSONFeature } from 'maplibre-gl';
 import type { Feature } from 'geojson';
 import pointOnFeature from '@turf/point-on-feature';
 import Coordinate from './util/Coordinate.vue';
+import CopyField from './util/CopyField.vue';
 import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
@@ -170,6 +184,19 @@ const overlay = computed<Overlay | null>(() => {
 
 const center = computed(() => {
     return pointOnFeature(props.feat).geometry.coordinates;
+});
+
+const htmlDescription = computed(() => {
+    if (!props.feat.properties?.description) return null;
+    try {
+        const desc = JSON.parse(props.feat.properties.description);
+        if (desc['@type'] === 'html' && desc.value) {
+            return desc.value;
+        }
+    } catch {
+        return null;
+    }
+    return null;
 });
 
 async function cutFeature() {

@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 import Sinon from 'sinon';
 import {
@@ -15,10 +16,10 @@ flight.connection();
 
 const time = new Date('2025-03-04T22:54:15.447Z').getTime()
 
-test('GET: api/connection/1/asset', async (t) => {
+test('GET: api/connection/1/asset', async () => {
     try {
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
-            t.deepEquals(command.input, {
+            assert.deepEqual(command.input, {
                 Bucket: 'fake-asset-bucket',
                 Prefix: 'connection/1/'
             });
@@ -34,22 +35,21 @@ test('GET: api/connection/1/asset', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     Sinon.restore();
-    t.end();
 });
 
-test('GET: api/connection/1/asset - result', async (t) => {
+test('GET: api/connection/1/asset - result', async () => {
     try {
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
-            t.deepEquals(command.input, {
+            assert.deepEqual(command.input, {
                 Bucket: 'fake-asset-bucket',
                 Prefix: 'connection/1/'
             });
@@ -70,10 +70,10 @@ test('GET: api/connection/1/asset - result', async (t) => {
             }
         }, true);
 
-        t.ok(res.body.items[0].updated);
+        assert.ok(res.body.items[0].updated);
         res.body.items[0].updated = time
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 1,
             items: [{
                 name: 'image.png',
@@ -83,11 +83,10 @@ test('GET: api/connection/1/asset - result', async (t) => {
             }]
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     Sinon.restore();
-    t.end();
 });
 
 

@@ -143,7 +143,7 @@
 
                     <TablerNone
                         v-else
-                        label='server overlays match your search'
+                        label='No Overlays'
                         :create='false'
                         class='px-2'
                     />

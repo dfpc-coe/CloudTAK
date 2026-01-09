@@ -7,7 +7,7 @@
         "node": ">= 24"
     },
     "scripts": {
-        "test": "StackName='test' test/test",
+        "test": "StackName='test' tsx --test test/*.test.ts",
         "check": "tsc --noEmit",
         "build": "tsc --noEmit",
         "lint": "eslint index.ts src/ test/",
@@ -25,21 +25,19 @@
         "node-stream-zip": "^1.15.0",
         "rimraf": "^6.0.1",
         "sharp": "^0.34.1",
-        "spritesmith": "^3.5.1",
         "undici": "^7.15.0",
         "vinyl": "^3.0.0"
     },
     "devDependencies": {
         "@types/jsonwebtoken": "^9.0.5",
-        "@types/node": "^24.0.0",
+        "@types/node": "^25.0.0",
         "@types/sinon": "^21.0.0",
-        "@types/spritesmith": "^3.4.5",
         "@types/vinyl": "^2.0.12",
         "eslint": "^9.0.0",
-        "globals": "^16.0.0",
+        "globals": "^17.0.0",
         "openapi-typescript": "^7.9.1",
         "sinon": "^21.0.0",
-        "tape": "^5.9.0",
+        "tsx": "^4.21.0",
         "typescript": "^5.0.0",
         "typescript-eslint": "^8.0.0"
     }

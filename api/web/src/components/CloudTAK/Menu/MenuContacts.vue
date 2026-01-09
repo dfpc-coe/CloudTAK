@@ -45,99 +45,71 @@
                         :key='team'
                         class='col-lg-12'
                     >
-                        <div
-                            class='col-lg-12 d-flex align-items-center cursor-pointer hover'
-                            style='height: 40px'
-                            @click='opened.has(team) ? opened.delete(team) : opened.add(team)'
+                        <SlideDownHeader
+                            :model-value='opened.has(team)'
+                            :label='config.groups[team] ? config.groups[team] : team'
+                            @update:model-value='val => val ? opened.add(team) : opened.delete(team)'
                         >
-                            <div class='ps-2'>
-                                <TablerIconButton
-                                    v-if='opened.has(team)'
-                                    title='Close Contact Team'
-                                >
-                                    <IconChevronDown
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
-                                <TablerIconButton
-                                    v-else
-                                    title='Open Contact Team'
-                                >
-                                    <IconChevronRight
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
-                            </div>
-                            <ContactPuck
-                                class='mx-2'
-                                :size='20'
-                                :team='team'
-                            /> <span v-text='config.groups[team] ? config.groups[team] : team' />
-                        </div>
-                        <template v-if='opened.has(team)'>
-                            <div
-                                v-for='contact of visibleActiveContacts.values()'
-                                :key='contact.uid'
-                                class='col-lg-12'
-                            >
-                                <Contact
-                                    v-if='contact.team === team'
-                                    :contact='contact'
-                                    @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
+                            <template #icon>
+                                <ContactPuck
+                                    class='mx-2'
+                                    :size='20'
+                                    :team='team'
                                 />
+                            </template>
+
+                            <template #right>
+                                <span class='badge rounded-pill small bg-secondary-subtle text-secondary-emphasis border border-secondary border-opacity-50 ms-auto'>{{ visibleActiveContacts.filter(c => c.team === team).length }}</span>
+                            </template>
+
+                            <div class='mx-2 pt-2'>
+                                <div
+                                    v-for='contact of visibleActiveContacts.values()'
+                                    :key='contact.uid'
+                                    class='col-lg-12'
+                                >
+                                    <Contact
+                                        v-if='contact.team === team'
+                                        :contact='contact'
+                                        @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
+                                    />
+                                </div>
                             </div>
-                        </template>
+                        </SlideDownHeader>
                     </div>
                 </template>
 
-                <div
-                    class='col-lg-12 d-flex align-items-center cursor-pointer hover'
-                    style='height: 40px'
-                    @click='showOffline = !showOffline'
-                >
-                    <TablerIconButton
-                        v-if='showOffline'
-                        title='Hide Offline'
+                <div class='col-lg-12'>
+                    <SlideDownHeader
+                        v-model='showOffline'
+                        label='Recently Offline'
                     >
-                        <IconChevronDown
-                            :size='32'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
-                    <TablerIconButton
-                        v-else
-                        title='Show Offline'
-                    >
-                        <IconChevronRight
-                            :size='32'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
+                        <template #right>
+                            <span class='badge rounded-pill small bg-secondary-subtle text-secondary-emphasis border border-secondary border-opacity-50 ms-auto'>{{ visibleOfflineContacts.length }}</span>
+                        </template>
 
-                    <label class='subheader mx-2 cursor-pointer'>Recently Offline</label>
-                </div>
-                <template v-if='showOffline'>
-                    <TablerNone
-                        v-if='visibleOfflineContacts.length === 0'
-                        label='Offline Contacts'
-                        :compact='true'
-                        :create='false'
-                    />
-                    <template v-else>
-                        <div
-                            v-for='a of visibleOfflineContacts'
-                            :key='a.uid'
-                            class='col-lg-12'
-                        >
-                            <Contact
-                                :contact='a'
-                                :button-chat='false'
+                        <div class='mx-2 pt-2'>
+                            <TablerNone
+                                v-if='visibleOfflineContacts.length === 0'
+                                label='Offline Contacts'
+                                :compact='true'
+                                :create='false'
                             />
+                            <template v-else>
+                                <div
+                                    v-for='a of visibleOfflineContacts'
+                                    :key='a.uid'
+                                    class='col-lg-12'
+                                >
+                                    <Contact
+                                        :contact='a'
+                                        :button-chat='false'
+                                    />
+                                </div>
+                            </template>
                         </div>
-                    </template>
-                </template>
+                    </SlideDownHeader>
+                </div>
             </template>
         </template>
     </MenuTemplate>
@@ -152,16 +124,12 @@ import type { ContactList, ConfigGroups } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
-import {
-    IconChevronRight,
-    IconChevronDown
-} from '@tabler/icons-vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
 import {
     TablerNone,
     TablerAlert,
     TablerInput,
     TablerLoading,
-    TablerIconButton,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import Contact from '../util/Contact.vue';

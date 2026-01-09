@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -16,7 +17,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('POST: api/basemap - ArcGIS Imagery Source', async (t) => {
+test('POST: api/basemap - ArcGIS Imagery Source', async () => {
     try {
         const res = await flight.fetch('/api/basemap', {
             method: 'POST',
@@ -33,12 +34,13 @@ test('POST: api/basemap - ArcGIS Imagery Source', async (t) => {
         delete res.body.created;
         delete res.body.updated;
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             name: 'USGS NAIP Imagery',
             actions: { feature: [] },
             url: ARCGIS_IMAGERY_URL,
             overlay: false,
+            iconset: '',
             title: 'callsign',
             username: 'admin@example.com',
             attribution: '',
@@ -55,13 +57,11 @@ test('POST: api/basemap - ArcGIS Imagery Source', async (t) => {
             type: 'raster'
         });
     } catch (err) {
-        t.error(err);
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/basemap/1/tiles - ArcGIS Imagery TileJSON', async (t) => {
+test('GET: api/basemap/1/tiles - ArcGIS Imagery TileJSON', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1/tiles', {
             method: 'GET',
@@ -70,7 +70,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Imagery TileJSON', async (t) => {
             }
         }, true);
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             tilejson: '3.0.0',
             version: '1.0.0',
             description: '',
@@ -87,14 +87,12 @@ test('GET: api/basemap/1/tiles - ArcGIS Imagery TileJSON', async (t) => {
             vector_layers: [{ id: 'out', fields: {} }]
         });
     } catch (err) {
-        t.error(err);
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 for (const { label, z, x, y } of SAMPLE_TILES) {
-    test(`GET: api/basemap/1/tiles/${z}/${x}/${y} - ${label}`, async (t) => {
+    test(`GET: api/basemap/1/tiles/${z}/${x}/${y} - ${label}`, async () => {
         try {
             const res = await flight.fetch(`/api/basemap/1/tiles/${z}/${x}/${y}`, {
                 method: 'GET',
@@ -106,14 +104,12 @@ for (const { label, z, x, y } of SAMPLE_TILES) {
                 json: false
             });
 
-            t.equals(res.status, 200);
-            t.equals(res.headers.get('content-type'), 'image/jpeg');
-            t.ok(res.body.length > 0, 'tile payload received');
+            assert.equal(res.status, 200);
+            assert.equal(res.headers.get('content-type'), 'image/jpeg');
+            assert.ok(res.body.length > 0, 'tile payload received');
         } catch (err) {
-            t.error(err);
+            assert.ifError(err);
         }
-
-        t.end();
     });
 }
 

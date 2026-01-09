@@ -66,6 +66,12 @@ export default class AtlasTeam {
         return this.contacts.get(uid);
     }
 
+    async getByCallsign(callsign: string): Promise<Contact | undefined> {
+        for (const contact of this.contacts.values()) {
+            if (contact.callsign === callsign) return contact;
+        }
+    }
+
     async load(): Promise<Map<string, Contact>> {
         const url = stdurl('/api/marti/api/contacts/all');
         const contacts = await std(url, {

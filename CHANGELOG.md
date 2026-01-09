@@ -12,6 +12,182 @@
 
 ### Pending Release
 
+### v12.53.1 - 2026-01-09
+
+- :arrow_up: Update TerraDraw
+
+### v12.53.0 - 2026-01-09
+
+- :bug: Ensure updates that are PATCHed to server also are updated in the UI when toggling back to read-only view
+- :tada: Include an optional `name` field in filter to describe/retain intent
+- :tada: Introduce new QueryInput for validating JSONata queries on the frontend
+- :rocket: Update Style & Filter UIs to use new unified QueryInput
+- :bug: Fix issue where logs would continue to be loaded outside of the Deploy tab
+- :rocket: Show Outgoing config by default if an outgoing config is present but no incoming config.
+
+### v12.52.0 - 2026-01-08
+
+- :rocket: Strongly Validate Connection Key Pair
+
+### v12.51.2 - 2026-01-08
+
+- :arrow_up: Update VueTabler to allow breadcrumbs to route accross PWA Router Boundaries
+
+### v12.51.1 - 2026-01-08
+
+- :bug: Don't return an iconset object in transform worker if there are no iconset
+- :bug: Don't create iconset object via API if iconset object doesn't exist or if the size is 0
+- :bug: Ensure iconset loading failure doesn't prevent overlay loading
+
+### v12.51.0 - 2026-01-08
+
+> [!WARNING]
+> TAK Server has a bug that prevent Data Sync invites from working.
+> For new Data Sync invite features to function, TAK Server must be updated
+> to 5.6-RELEASE-8 or newer.
+
+- :tada: `API` Introduce Pending Invites list in Data Sync API
+- :rocket: `UI` Show Pending Invites UI in Data Sync List and allow accepting or rejecting them
+- :rocket: `UI` Support the Mission Invite CoT message and show a modal to accept/reject invites when received over CoT
+
+### v12.50.0 - 2026-01-06
+
+- :rocket: Allow editing MenuFeature folder names
+- :rocket: Allow creating new folders in MenuFeature
+- :rocket: Improve usability of dropping features
+- :rocket: Wrap instead of truncating feature names
+- :bug: Parallel Overlay creation could result in the final visual layers being out of order, causing rendering issues in the final output.
+- :bug: Fix Draw Popup not displaying
+
+### v12.49.0 - 2026-01-06
+
+- :rocket: `UI` Add `feature` and `map` APIs for Plugin use
+
+### v12.48.0 - 2026-01-05
+
+- :rocket: `UI` Store CoT features in DexieDB on update call for future full migration out of memory into Dexie
+- :rocket: `UI` Load Overlays in Parallel for faster map initialization
+- :rocket: `API` Refactor `External` class into a generic `interface-user` for future implementations that reference other user providers: Ref: https://github.com/dfpc-coe/CloudTAK/issues/1180
+- :rocket: `API` Refactor Weather class into a generic `interface-weather` for future implementations that reference other weather providers, maintaining the current hardcoded NOAA => OpenMeteo fallback
+
+### v12.47.2 - 2026-01-04
+
+- :bug: Add Partition Parameter to allow non-commercial AWS regions to deploy CloudTAK
+
+### v12.47.1 - 2026-01-04
+
+- :rocket: Add `DependsOn` sections to CloudFormation to ensure consistent deploy order
+- :rocket: Add badge to show number of online users per subgroup in MenuContacts
+
+### v12.47.0 - 2026-01-04
+
+- :tada: `api`  Introduce MissionTemplateLog APIs for managing Log Templates
+- :tada: `UI`  Introduce Admin Interface to a UI driven approach to generating Log Templates
+- :tada: `infra` Introduce EFS file system for PMTiles Library
+- :tada: Introduce automated deletion polcy via lambda task for 7 day retention of files in EFS FS
+- :tada: Introduce Menu & Router APIs in frontend plugin system
+
+### v12.46.0 - 2026-01-03
+
+- :tada: Introduce Mission Template Logs in API
+- :rocket: Standardize Connection Card in UI
+- :rocket: Introduce `menu` operations to PluginAPI
+
+### v12.45.0 - 2026-01-02
+
+- :arrow_up: Update NodeCoT
+
+### v12.44.1 - 2026-01-01
+
+- :arrow_up: Update TerraDraw
+
+### v12.44.0 - 2026-01-01
+
+- :tada: KML HTML Description Support
+
+### v12.43.0 - 2026-01-01
+
+- :bug: SVG icons in an Iconset would result in an invalid iconset.zip being generated
+- :bug: Iconset.zip would have the raw data URL instead of just the PNG buffer
+- :white_check_mark: Add strong unit testing to iconset.zip generation to ensure functionality
+- :rocket: Automate populate of API URL env vars in cloudtak.sh install manager
+
+### v12.42.0 - 2025-12-31
+
+> ![WARNING]
+> This Version of CloudTAK requires updating to `vpc@2.10.0` or above if using the provided CloudFormation templates.
+>
+> If using the provided templates, ETLs must be updated to point at the per-stack ECR provided by the new VPC module.
+
+- :rocket: Update ECR Repo structure
+
+### v12.41.0 - 2025-12-31
+
+- :tada: MVP support for Iconsets created during Imports
+- :bug: Fix Basemap Menu appearing below Basemap List
+- :rocket: More aggressive warning message and requirements to delete Data Sync
+- :rocket: Support `.json` and `.geojson` extension in Import Task
+- :rocket: Support Line Delimited AND Standard GeoJSON in Import Task
+
+### v12.40.0 - 2025-12-30
+
+- :rocket: Setup ETL Builder in bin/build
+- :bug: Move from `docker down` to `docker stop` in cloudtak.sh
+
+### v12.39.0 - 2025-12-26
+
+- :rocket: Make Chatroom List Live
+- :rocket: Make Chats List Live
+- :rocket: Update Chat delete call to use message_id instead of Database ID
+- :arrow_up: Update VueTabler@4 to use typescript based components
+
+### v12.38.0 - 2025-12-24
+
+- :bug: Fix issue where icons with Folders would fail to be fetched
+- :rocket: Implement LockOn functionality from CoTView - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1136
+
+### v12.37.0 - 2025-12-23
+
+- :bug: Ensure Readable Stream is passed to Data Package and not File Path
+- :white_check_mark: Add Unit Tests
+
+### v12.36.0 - 2025-12-23
+
+> [!WARNING]
+> This Version of CloudTAK requires updating to `vpc@2.9.0` or above if using the provided CloudFormation templates.
+> Docker Compose or custom deployments do not require any action.
+>
+
+- :rocket: Update to use per-environment ECR repositories for improved security and isolation
+- :rocket: Update to use CloudFormation managed ACM Certificates for improved security and easier management
+
+### v12.35.0 - 2025-12-22
+
+- :white_check_mark: Remove `tape` in favour of `node:test`
+
+### v12.34.0 - 2025-12-22
+
+- :rocket: Migrate to unified Package Listing Endpoint
+- :rocket: Allow use of Server Certificate via `impersonate` query param
+- :rocket: Update ServerPackage UI to allow filtering
+- :rocket: Update ServerPackage UI to allow downloading packages
+
+### v12.33.2 - 2025-12-19
+
+- :rocket: Add a cleanup section to remove danging Docker Images after an update
+
+### v12.33.1 - 2025-12-17
+
+- :bug: Fix a bug where a DataPackage would fail to import due to mismatched extensions
+
+### v12.33.0 - 2025-12-16
+
+- :tada: Significant Revamp of the Query Endpoints
+
+### v12.32.0 - 2025-12-16
+
+- :rocket: Initial Implementation of TAK Server Sharing
+
 ### v12.31.0 - 2025-12-15
 
 - :bug: RadialMenu could error when using a VectorTile encoded GeoJSON Centroid

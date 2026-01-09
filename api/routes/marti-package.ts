@@ -91,7 +91,7 @@ export default async function router(schema: Schema, config: Config) {
                             const pkg = new DataPackage(id, id);
 
                             pkg.settings.name = req.query.name || meta.filename;
-                            await pkg.addFile(filePath, {
+                            await pkg.addFile(fs.createReadStream(filePath), {
                                 name: meta.filename,
                             });
 
@@ -387,7 +387,11 @@ export default async function router(schema: Schema, config: Config) {
             filter: Type.String({
                 description: 'Filter packages by name',
                 default: ''
-            })
+            }),
+            impersonate: Type.Optional(Type.Union([
+                Type.Boolean({ description: 'List all of the given resource, regardless of ACL' }),
+                Type.String({ description: 'Filter the given resource by a given username' }),
+            ])),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -419,8 +423,23 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
-            const auth = (await config.models.Profile.from(user.email)).auth;
+            let auth;
+
+            if (req.query.impersonate) {
+                await Auth.as_user(config, req, { admin: true });
+                auth = config.serverCert();
+
+                if (typeof req.query.impersonate === 'string' && req.query.impersonate !== 'true') {
+                    const profile = await config.models.Profile.from(req.query.impersonate);
+                    auth = profile.auth;
+                } else {
+                    auth = config.serverCert();
+                }
+            } else {
+                const user = await Auth.as_user(config, req);
+                auth = (await config.models.Profile.from(user.email)).auth;
+            }
+
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const pkg = await api.Package.list({
@@ -535,7 +554,8 @@ export default async function router(schema: Schema, config: Config) {
             uid: Type.String()
         }),
         query: Type.Object({
-            hash: Type.Optional(Type.String())
+            hash: Type.Optional(Type.String()),
+            impersonate: Type.Optional(Type.Union([Type.Boolean(), Type.String()]))
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -563,11 +583,18 @@ export default async function router(schema: Schema, config: Config) {
 
             const pkg = pkgs.results[pkgs.results.length - 1];
 
-            if (
+            if (req.query.impersonate) {
+                await Auth.as_user(config, req, { admin: true });
+            } else if (pkg.SubmissionUser !== user.email) {
+                throw new Err(403, null, 'Insufficient Acces to delete Package');
+                if (user.access !== AuthUserAccess.ADMIN) {
+                    throw new Err(403, null, 'Insufficient Access to delete Package');
+                }
+            } else if (
                 user.access !== AuthUserAccess.ADMIN
                 || pkg.SubmissionUser !== user.email
             ) {
-                throw new Err(403, null, 'Insufficient Acces to delete Package');
+                throw new Err(403, null, 'Insufficient Access to delete Package');
             }
 
             await api.Files.adminDelete(pkg.Hash);

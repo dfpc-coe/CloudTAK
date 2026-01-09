@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 import Sinon from 'sinon';
 import {
@@ -17,10 +18,10 @@ flight.user();
 
 const time = new Date('2025-03-04T22:54:15.447Z').toISOString()
 
-test('GET: api/attachments - no result', async (t) => {
+test('GET: api/attachments - no result', async () => {
     try {
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
-            t.deepEquals(command.input, {
+            assert.deepEqual(command.input, {
                 Bucket: 'fake-asset-bucket',
                 Prefix: 'attachment/123/'
             });
@@ -36,22 +37,21 @@ test('GET: api/attachments - no result', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     Sinon.restore();
-    t.end();
 });
 
-test('GET: api/attachments - result', async (t) => {
+test('GET: api/attachments - result', async () => {
     try {
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
-            t.deepEquals(command.input, {
+            assert.deepEqual(command.input, {
                 Bucket: 'fake-asset-bucket',
                 Prefix: 'attachment/123/'
             });
@@ -72,7 +72,7 @@ test('GET: api/attachments - result', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 1,
             items: [{
                 hash: '123',
@@ -83,15 +83,14 @@ test('GET: api/attachments - result', async (t) => {
             }]
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     Sinon.restore();
-    t.end();
 });
 
 
-test('PUT: api/attachment - success', async (t) => {
+test('PUT: api/attachment - success', async () => {
     try {
         const s3Stub = Sinon.stub(S3, 'put').resolves();
         const hashStub = Sinon.stub(DataPackage, 'hash').resolves('hash-123');
@@ -109,19 +108,18 @@ test('PUT: api/attachment - success', async (t) => {
             body
         }, true);
 
-        t.deepEquals(res.body, { hash: 'hash-123' });
-        t.ok(s3Stub.calledOnce);
-        t.ok(hashStub.calledOnce);
-        t.equals(s3Stub.firstCall.args[0], 'attachment/hash-123/image.png');
+        assert.deepEqual(res.body, { hash: 'hash-123' });
+        assert.ok(s3Stub.calledOnce);
+        assert.ok(hashStub.calledOnce);
+        assert.equal(s3Stub.firstCall.args[0], 'attachment/hash-123/image.png');
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     Sinon.restore();
-    t.end();
 });
 
-test('PUT: api/attachment - unsupported content type', async (t) => {
+test('PUT: api/attachment - unsupported content type', async () => {
     try {
         const res = await flight.fetch('/api/attachment', {
             method: 'PUT',
@@ -133,20 +131,18 @@ test('PUT: api/attachment - unsupported content type', async (t) => {
             }
         }, false);
 
-        t.equals(res.status, 400);
-        t.equals(res.body.message, 'Unsupported Content-Type');
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Unsupported Content-Type');
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET: api/attachment/:hash - stream', async (t) => {
+test('GET: api/attachment/:hash - stream', async () => {
     try {
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
             if (command.constructor.name === 'ListObjectsV2Command') {
-                t.deepEquals(command.input, {
+                assert.deepEqual(command.input, {
                     Bucket: 'fake-asset-bucket',
                     Prefix: 'attachment/stream-hash/'
                 });
@@ -156,7 +152,7 @@ test('GET: api/attachment/:hash - stream', async (t) => {
                     }]
                 });
             } else if (command.constructor.name === 'GetObjectCommand') {
-                t.deepEquals(command.input, {
+                assert.deepEqual(command.input, {
                     Bucket: 'fake-asset-bucket',
                     Key: 'attachment/stream-hash/data.txt'
                 });
@@ -177,17 +173,16 @@ test('GET: api/attachment/:hash - stream', async (t) => {
             json: false
         });
 
-        t.equals(res.status, 200);
-        t.equals(res.body, 'file-body');
+        assert.equal(res.status, 200);
+        assert.equal(res.body, 'file-body');
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     Sinon.restore();
-    t.end();
 });
 
-test('GET: api/attachment/:hash - missing', async (t) => {
+test('GET: api/attachment/:hash - missing', async () => {
     try {
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
             if (command.constructor.name === 'ListObjectsV2Command') {
@@ -206,14 +201,13 @@ test('GET: api/attachment/:hash - missing', async (t) => {
             }
         }, false);
 
-        t.equals(res.status, 404);
-        t.equals(res.body.message, 'Attachment not found');
+        assert.equal(res.status, 404);
+        assert.equal(res.body.message, 'Attachment not found');
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     Sinon.restore();
-    t.end();
 });
 
 flight.landing();

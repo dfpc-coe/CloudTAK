@@ -69,8 +69,7 @@
                                                 Package
                                             </p>
                                             <h2
-                                                class='h4 mb-0 text-truncate'
-                                                style='max-width: calc(100% - 48px);'
+                                                class='h4 mb-0 text-break'
                                                 v-text='pkg.name'
                                             />
                                         </div>
@@ -165,8 +164,7 @@ import type { Profile, Server, Package, Feature } from '../../../../src/types.ts
 import { server, stdurl, std } from '../../../std.ts';
 import Share from '../util/Share.vue';
 import Keywords from '../util/Keywords.vue';
-import timeDiff_ from '../../../timediff.ts';
-const timeDiff = timeDiff_;
+import timeDiff from '../../../timediff.ts';
 import {
     TablerAlert,
     TablerDelete,

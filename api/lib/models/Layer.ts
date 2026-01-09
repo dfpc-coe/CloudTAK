@@ -29,13 +29,13 @@ export const AugmentedLayerIncoming = Type.Object({
     created: Type.String(),
     updated: Type.String(),
     config: Layer_Config,
-    cron: Type.Union([Type.String(), Type.Null()]),
+    cron: Type.Union([Type.Null(), Type.String()]),
     webhooks: Type.Boolean(),
     enabled_styles: Type.Boolean(),
     styles: StyleContainer,
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.Any()),
-    data: Type.Union([Type.Integer(), Type.Null()]),
+    data: Type.Union([Type.Null(), Type.Integer()]),
     groups: Type.Array(Type.String())
 })
 

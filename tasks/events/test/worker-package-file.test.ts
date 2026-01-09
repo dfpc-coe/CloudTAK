@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Worker from '../src/worker.js';
 import fs from 'node:fs';
 import Sinon from 'sinon';
@@ -18,6 +19,12 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
     mockAgent.disableNetConnect();
 
     setGlobalDispatcher(mockAgent);
+
+    t.after(() => {
+        Sinon.restore();
+        setGlobalDispatcher(originalDispatcher);
+        mockAgent.close();
+    });
 
     const mockPool = mockAgent.get('http://localhost:5001');
 
@@ -48,7 +55,7 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
             artifacts: Array<{ ext: string }>
         };
 
-        t.deepEquals(body, {
+        assert.deepEqual(body, {
             artifacts: [ { ext: '.pmtiles' } ]
         });
 
@@ -65,29 +72,29 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
 
     const ExternalOperations = [
             (command) => {
-                t.ok(command instanceof GetObjectCommand);
-                t.deepEquals(command.input, {
+                assert.ok(command instanceof GetObjectCommand);
+                assert.deepEqual(command.input, {
                     Bucket: 'test-bucket',
                     Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.zip`
                 });
 
                 return Promise.resolve({
-                    Body: fs.createReadStream(new URL(`./fixtures/package/FilePackaged.zip`, import.meta.url))
+                    Body: fs.createReadStream(new URL(`./fixtures/package/DP-TiffFile.zip`, import.meta.url))
                 })
             },
             (command) => {
-                t.ok(command instanceof PutObjectCommand);
-                t.equals(command.input.Bucket, 'test-bucket');
-                t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                t.ok(command.input.Key.endsWith('.tiff'))
+                assert.ok(command instanceof PutObjectCommand);
+                assert.equal(command.input.Bucket, 'test-bucket');
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                assert.ok(command.input.Key.endsWith('.tiff'))
 
                 return Promise.resolve({})
             },
             (command) => {
-                t.ok(command instanceof PutObjectCommand);
-                t.equals(command.input.Bucket, 'test-bucket');
-                t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                t.ok(command.input.Key.endsWith('.pmtiles'))
+                assert.ok(command instanceof PutObjectCommand);
+                assert.equal(command.input.Bucket, 'test-bucket');
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                assert.ok(command.input.Key.endsWith('.pmtiles'))
 
                 return Promise.resolve({})
             },
@@ -117,14 +124,10 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
     });
 
     worker.on('error', (err) => {
-        t.error(err);
+        assert.ifError(err);
     });
 
     worker.on('success', () => {
-        Sinon.restore();
-        setGlobalDispatcher(originalDispatcher);
-        mockAgent.close();
-        t.end()
     });
 
     await worker.process()

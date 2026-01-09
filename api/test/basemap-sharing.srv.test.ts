@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -9,7 +10,7 @@ flight.user();
 
 let token: string;
 
-test('POST: api/basemap - Sharing Turned On Initially', async (t) => {
+test('POST: api/basemap - Sharing Turned On Initially', async () => {
     try {
         const res = await flight.fetch('/api/basemap', {
             method: 'POST',
@@ -26,16 +27,17 @@ test('POST: api/basemap - Sharing Turned On Initially', async (t) => {
         delete res.body.created;
         delete res.body.updated
 
-        t.ok(res.body.sharing_token)
+        assert.ok(res.body.sharing_token)
         token = res.body.sharing_token;
         delete res.body.sharing_token;
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             name: 'Test Basemap',
             actions: { feature: [] },
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
+            iconset: '',
             attribution: "",
             frequency: null,
             title: 'callsign',
@@ -51,32 +53,28 @@ test('POST: api/basemap - Sharing Turned On Initially', async (t) => {
             type: 'raster'
         })
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
-test('GET: api/basemap/1/tiles - Ensure Access Without Token Doesn\'t', async (t) => {
+test('GET: api/basemap/1/tiles - Ensure Access Without Token Doesn\'t', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1/tiles', {
             method: 'GET',
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 401,
             message: 'No Auth Present',
             messages: []
         });
 
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
-test('GET: api/basemap/1/tiles - Ensure Token Works', async (t) => {
+test('GET: api/basemap/1/tiles - Ensure Token Works', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1/tiles', {
             method: 'GET',
@@ -88,7 +86,7 @@ test('GET: api/basemap/1/tiles - Ensure Token Works', async (t) => {
         delete res.body.created;
         delete res.body.updated
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             tilejson: '3.0.0',
             version: '1.0.0',
             name: 'Test Basemap',
@@ -105,13 +103,11 @@ test('GET: api/basemap/1/tiles - Ensure Token Works', async (t) => {
             actions: { feature: [] }
         })
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
-test('PATCH: api/basemap/1 - Turn off Sharing', async (t) => {
+test('PATCH: api/basemap/1 - Turn off Sharing', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1', {
             method: 'PATCH',
@@ -126,12 +122,13 @@ test('PATCH: api/basemap/1 - Turn off Sharing', async (t) => {
         delete res.body.created;
         delete res.body.updated
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             name: 'Test Basemap',
             actions: { feature: [] },
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
+            iconset: '',
             attribution: "",
             frequency: null,
             title: 'callsign',
@@ -148,13 +145,11 @@ test('PATCH: api/basemap/1 - Turn off Sharing', async (t) => {
             type: 'raster'
         })
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
-test('GET: api/basemap/1/tiles - Ensure Token Is Now Disabled', async (t) => {
+test('GET: api/basemap/1/tiles - Ensure Token Is Now Disabled', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1/tiles', {
             method: 'GET',
@@ -163,19 +158,17 @@ test('GET: api/basemap/1/tiles - Ensure Token Is Now Disabled', async (t) => {
             },
         }, false);
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             status: 400,
             message: 'Sharing for Test Basemap is disabled',
             messages: []
         })
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
-test('PATCH: api/basemap/1 - Turn on Sharing', async (t) => {
+test('PATCH: api/basemap/1 - Turn on Sharing', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1', {
             method: 'PATCH',
@@ -190,15 +183,16 @@ test('PATCH: api/basemap/1 - Turn on Sharing', async (t) => {
         delete res.body.created;
         delete res.body.updated
 
-        t.ok(res.body.sharing_token)
+        assert.ok(res.body.sharing_token)
         delete res.body.sharing_token;
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             name: 'Test Basemap',
             actions: { feature: [] },
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
+            iconset: '',
             attribution: "",
             frequency: null,
             title: 'callsign',
@@ -214,13 +208,11 @@ test('PATCH: api/basemap/1 - Turn on Sharing', async (t) => {
             type: 'raster'
         })
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
-test('GET: api/basemap/1/tiles - Ensure Old Token is unusable', async (t) => {
+test('GET: api/basemap/1/tiles - Ensure Old Token is unusable', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1/tiles', {
             method: 'GET',
@@ -229,16 +221,14 @@ test('GET: api/basemap/1/tiles - Ensure Old Token is unusable', async (t) => {
             },
         }, false);
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             status: 400,
             message: 'You don\'t have permission to access this resource',
             messages: []
         })
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
 flight.landing();

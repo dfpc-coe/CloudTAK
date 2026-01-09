@@ -174,6 +174,10 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Publish stream URL to TAK Server Video Manager'
             }),
+            share: Type.Boolean({
+                default: false,
+                description: 'Allow other users to manage lease if they are also members of the channel'
+            }),
             secure: Type.Boolean({
                 default: false,
                 description: 'Increase stream security by enforcing a seperate read and write username/password'
@@ -181,7 +185,7 @@ export default async function router(schema: Schema, config: Config) {
             source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
-            channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            channel: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             proxy: Type.Optional(Type.String())
         }),
         res: Type.Object({
@@ -216,6 +220,7 @@ export default async function router(schema: Schema, config: Config) {
                 source_type: req.body.source_type,
                 source_model: req.body.source_model,
                 recording: req.body.recording,
+                share: req.body.share,
                 publish: req.body.publish,
                 path: randomUUID(),
                 secure: req.body.secure,
@@ -250,8 +255,11 @@ export default async function router(schema: Schema, config: Config) {
             source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
-            channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            channel: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             secure: Type.Optional(Type.Boolean()),
+            share: Type.Optional(Type.Boolean({
+                description: 'Allow other users to manage lease if they are also members of the channel'
+            })),
             secure_rotate: Type.Boolean({
                 default: false,
                 description: 'Rotate Read-User Credentials if using seperate read/write user - infers secure: true'
@@ -312,6 +320,7 @@ export default async function router(schema: Schema, config: Config) {
                 secure_rotate: req.body.secure_rotate,
                 expiration,
                 recording: req.body.recording,
+                share: req.body.share,
                 publish: req.body.publish,
                 source_id: req.body.source_id,
                 source_type: req.body.source_type,

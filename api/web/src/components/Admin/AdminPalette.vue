@@ -82,7 +82,7 @@
             <template v-else>
                 <TablerNone
                     v-if='!palette.features.length'
-                    label='Palette Features'
+                    label='No Palette Features'
                     :create='false'
                 />
                 <template v-else>

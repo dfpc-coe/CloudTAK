@@ -3,11 +3,16 @@ import jwt from 'jsonwebtoken';
 import tls from 'node:tls'
 import https from 'node:https'
 import http from 'node:http'
+import type CoT from '@tak-ps/node-cot';
+import { CoTParser } from '@tak-ps/node-cot';
 import stream2buffer from '../lib/stream.js';
 import crypto from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import fs from 'node:fs'
 
+/**
+ * Mocking Framework for CloudTAK <=> TAK Server API Interactions
+ */
 export default class MockTAKServer {
     keys: {
         cert: string
@@ -18,7 +23,7 @@ export default class MockTAKServer {
     webtak: ReturnType<typeof http.createServer>;
     marti: ReturnType<typeof https.createServer>;
 
-    sockets: Set<tls.TLSSocket>
+    sockets: Set<tls.TLSSocket | import('net').Socket>
 
     defaultMartiResponses: boolean;
     defaultWebtakResponses: boolean;
@@ -58,7 +63,7 @@ export default class MockTAKServer {
             this.mockWebtakDefaultResponses();
         }
 
-        CP.execSync(`openssl req -x509 -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -keyout ${this.keys.key} -out ${this.keys.cert}`);
+        CP.execSync(`openssl req -x509 -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -keyout ${this.keys.key} -out ${this.keys.cert} 2> /dev/null`);
 
         this.streaming = tls.createServer({
             cert: fs.readFileSync(this.keys.cert),
@@ -68,15 +73,14 @@ export default class MockTAKServer {
             ca: fs.readFileSync(this.keys.cert)
         }, (socket) => {
             this.sockets.add(socket);
+            socket.on('close', () => {
+                this.sockets.delete(socket)
+            });
         });
 
         this.streaming.on('error', (e) => {
             console.error('Server Error', e);
         });
-
-        this.streaming.listen(8089, 'localhost', () => {
-            console.log('opened TCP streaming on', this.streaming.address())
-        })
 
         this.marti = https.createServer({
             cert: fs.readFileSync(this.keys.cert),
@@ -87,42 +91,111 @@ export default class MockTAKServer {
         }, async (request, response) => {
             console.log(`ok - Mock TAK Request: ${request.method} ${request.url}`);
 
-            let handled = false;
-            for (const handler of this.mockMarti) {
-                if (await handler(request, response)) {
-                    handled = true;
-                    break;
+            try {
+                let handled = false;
+                for (const handler of this.mockMarti) {
+                    if (await handler(request, response)) {
+                        handled = true;
+                        break;
+                    }
                 }
-            }
 
-            if (!handled) {
-                throw new Error(`Unhandled TAK API Operation: ${request.method} ${request.url}`);
+                if (!handled) {
+                    throw new Error(`Unhandled TAK API Operation: ${request.method} ${request.url}`);
+                }
+            } catch (err) {
+                console.error(err);
+                if (!response.headersSent) {
+                    response.statusCode = 500;
+                    response.end();
+                }
             }
         });
 
-        this.marti.listen(8443, 'localhost', () => {
-            console.log('opened MARTI API on', this.marti.address())
-        })
+        this.marti.on('secureConnection', (socket) => {
+            this.sockets.add(socket);
+            socket.on('close', () => this.sockets.delete(socket));
+        });
+
+        this.marti.on('connection', (socket) => {
+            this.sockets.add(socket);
+            socket.on('close', () => this.sockets.delete(socket));
+        });
 
         this.webtak = http.createServer({}, async (request, response) => {
             console.log(`ok - Mock TAK (WebTAK) Request: ${request.method} ${request.url || ''}`);
 
-            let handled = false;
-            for (const handler of this.mockWebtak) {
-                if (await handler(request, response)) {
-                    handled = true;
-                    break;
+            try {
+                let handled = false;
+                for (const handler of this.mockWebtak) {
+                    if (await handler(request, response)) {
+                        handled = true;
+                        break;
+                    }
                 }
-            }
 
-            if (!handled) {
-                throw new Error(`Unhandled TAK (WebTAK) API Operation: ${request.method} ${request.url}`);
+                if (!handled) {
+                    throw new Error(`Unhandled TAK (WebTAK) API Operation: ${request.method} ${request.url}`);
+                }
+            } catch (err) {
+                console.error(err);
+                if (!response.headersSent) {
+                    response.statusCode = 500;
+                    response.end();
+                }
             }
         });
 
-        this.webtak.listen(8444, 'localhost', () => {
-            console.log('opened WEBTAK API on', this.webtak.address())
-        })
+        this.webtak.on('connection', (socket) => {
+            this.sockets.add(socket);
+            socket.on('close', () => this.sockets.delete(socket));
+        });
+    }
+
+    async start(): Promise<void> {
+        await Promise.all([
+            this.listen(this.streaming, 8089, 'TCP streaming'),
+            this.listen(this.marti, 8443, 'MARTI API'),
+            this.listen(this.webtak, 8444, 'WEBTAK API')
+        ]);
+    }
+
+    async listen(server: any, port: number, name: string, retries = 5): Promise<void> {
+        for (let i = 0; i < retries; i++) {
+            try {
+                await new Promise<void>((resolve, reject) => {
+                    const onError = (e: any) => {
+                        server.removeListener('listening', onListening);
+                        reject(e);
+                    };
+                    const onListening = () => {
+                        server.removeListener('error', onError);
+                        console.log(`opened ${name} on`, server.address());
+                        resolve();
+                    };
+
+                    server.once('error', onError);
+                    server.once('listening', onListening);
+                    server.listen(port, '127.0.0.1');
+                });
+                return;
+            } catch (err: any) {
+                if (err.code === 'EADDRINUSE') {
+                    if (i < retries - 1) {
+                        console.log(`Port ${port} in use, retrying (${i + 1}/${retries})...`);
+                        await new Promise(r => setTimeout(r, 1000));
+                        try {
+                            server.close();
+                        } catch (e) {
+                            console.error('Error closing server:', e);
+                        }
+                        continue;
+                    }
+                }
+                throw err;
+            }
+        }
+        throw new Error(`Failed to bind port ${port} after ${retries} retries`);
     }
 
     mockWebtakDefaultResponses(): void {
@@ -146,7 +219,7 @@ export default class MockTAKServer {
                 const csr = crypto.randomUUID();
                 fs.writeFileSync(`/tmp/${csr}.csr`, String(await stream2buffer(request)));
 
-                CP.execSync(`openssl x509 -req -in /tmp/${csr}.csr -CA ${this.keys.cert} -CAkey ${this.keys.key} -CAcreateserial -out /tmp/${csr}.pem -days 365 -sha256`)
+                CP.execSync(`openssl x509 -req -in /tmp/${csr}.csr -CA ${this.keys.cert} -CAkey ${this.keys.key} -CAcreateserial -out /tmp/${csr}.pem -days 365 -sha256 2> /dev/null`)
 
                 const signedCertArr = String(fs.readFileSync(`/tmp/${csr}.pem`))
                     .split('\n')
@@ -199,25 +272,33 @@ export default class MockTAKServer {
         }
     }
 
+    write(cot: CoT): void {
+        for (const socket of this.sockets) {
+            socket.write(CoTParser.to_xml(cot));
+        }
+    }
+
     async close(): Promise<void> {
+        for (const socket of this.sockets.values()) {
+            socket.destroy();
+        }
+        this.sockets.clear();
+
         await Promise.all([
             new Promise<void>((resolve) => {
+                if ('closeAllConnections' in this.streaming) (this.streaming as any).closeAllConnections();
                 this.streaming.close(() => {
                     return resolve();
                 });
-
-                for (const socket of this.sockets.values()) {
-                    socket.destroy();
-                }
-
-                this.sockets.clear();
             }),
             new Promise<void>((resolve) => {
+                if ('closeAllConnections' in this.webtak) (this.webtak as any).closeAllConnections();
                 this.webtak.close(() => {
                     return resolve();
                 });
             }),
             new Promise<void>((resolve) => {
+                if ('closeAllConnections' in this.marti) (this.marti as any).closeAllConnections();
                 this.marti.close(() => {
                     return resolve();
                 });

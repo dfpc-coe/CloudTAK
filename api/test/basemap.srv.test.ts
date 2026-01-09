@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -7,7 +8,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: api/basemap', async (t) => {
+test('GET: api/basemap', async () => {
     try {
         const res = await flight.fetch('/api/basemap', {
             method: 'GET',
@@ -16,19 +17,17 @@ test('GET: api/basemap', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             collections: [],
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('POST: api/basemap - Invalid URL', async (t) => {
+test('POST: api/basemap - Invalid URL', async () => {
     try {
         await flight.fetch('/api/basemap', {
             method: 'POST',
@@ -41,15 +40,13 @@ test('POST: api/basemap - Invalid URL', async (t) => {
             }
         }, true);
 
-        t.fail()
+        assert.fail()
     } catch (err) {
-        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Invalid URL provided","messages":[]}');
+        assert.equal(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Invalid URL provided","messages":[]}');
     }
-
-    t.end();
 });
 
-test('POST: api/basemap - Invalid URL Protocol', async (t) => {
+test('POST: api/basemap - Invalid URL Protocol', async () => {
     try {
         await flight.fetch('/api/basemap', {
             method: 'POST',
@@ -62,15 +59,13 @@ test('POST: api/basemap - Invalid URL Protocol', async (t) => {
             }
         }, true);
 
-        t.fail()
+        assert.fail()
     } catch (err) {
-        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Only HTTP and HTTPS Protocols are supported","messages":[]}');
+        assert.equal(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Only HTTP and HTTPS Protocols are supported","messages":[]}');
     }
-
-    t.end();
 });
 
-test('POST: api/basemap - Invalid URL - No Variables', async (t) => {
+test('POST: api/basemap - Invalid URL - No Variables', async () => {
     try {
         await flight.fetch('/api/basemap', {
             method: 'POST',
@@ -83,15 +78,13 @@ test('POST: api/basemap - Invalid URL - No Variables', async (t) => {
             }
         }, true);
 
-        t.fail()
+        assert.fail()
     } catch (err) {
-        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Either XYZ, Quadkey variables OR ESRI FeatureServer/ImageServer must be used","messages":[]}');
+        assert.equal(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Either XYZ, Quadkey variables OR ESRI FeatureServer/ImageServer must be used","messages":[]}');
     }
-
-    t.end();
 });
 
-test('POST: api/basemap', async (t) => {
+test('POST: api/basemap', async () => {
     try {
         const res = await flight.fetch('/api/basemap', {
             method: 'POST',
@@ -108,12 +101,13 @@ test('POST: api/basemap', async (t) => {
         delete res.body.created;
         delete res.body.updated
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             name: 'Test Basemap',
             actions: { feature: [] },
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
+            iconset: '',
             attribution: "",
             frequency: null,
             title: 'callsign',
@@ -130,13 +124,11 @@ test('POST: api/basemap', async (t) => {
             type: 'raster'
         })
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
-test('GET: api/basemap/1/tiles', async (t) => {
+test('GET: api/basemap/1/tiles', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1/tiles', {
             method: 'GET',
@@ -145,7 +137,7 @@ test('GET: api/basemap/1/tiles', async (t) => {
             },
         }, true);
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             tilejson: '3.0.0',
             version: '1.0.0',
             description: '',
@@ -162,13 +154,11 @@ test('GET: api/basemap/1/tiles', async (t) => {
             vector_layers: [{ id: 'out', fields: {} }]
         })
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
-test('PATCH: api/basemap/1', async (t) => {
+test('PATCH: api/basemap/1', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1', {
             method: 'PATCH',
@@ -183,12 +173,13 @@ test('PATCH: api/basemap/1', async (t) => {
         delete res.body.created;
         delete res.body.updated
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             id: 1,
             name: 'Test Basemap2',
             actions: { feature: [] },
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
+            iconset: '',
             title: 'callsign',
             username: 'admin@example.com',
             attribution: "",
@@ -205,13 +196,11 @@ test('PATCH: api/basemap/1', async (t) => {
             type: 'raster'
         })
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
-test('PATCH: api/basemap/1 - Invalid URL', async (t) => {
+test('PATCH: api/basemap/1 - Invalid URL', async () => {
     try {
         await flight.fetch('/api/basemap/1', {
             method: 'PATCH',
@@ -224,15 +213,13 @@ test('PATCH: api/basemap/1 - Invalid URL', async (t) => {
             }
         }, true);
 
-        t.fail()
+        assert.fail()
     } catch (err) {
-        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Invalid URL provided","messages":[]}');
+        assert.equal(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Invalid URL provided","messages":[]}');
     }
-
-    t.end();
 });
 
-test('DELETE: api/basemap/1', async (t) => {
+test('DELETE: api/basemap/1', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1', {
             method: 'DELETE',
@@ -241,18 +228,16 @@ test('DELETE: api/basemap/1', async (t) => {
             },
         }, true);
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             status: 200,
             message: 'Basemap Deleted'
         })
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
-test('DELETE: api/basemap/1 - Doesn\'t Exist', async (t) => {
+test('DELETE: api/basemap/1 - Doesn\'t Exist', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1', {
             method: 'DELETE',
@@ -261,19 +246,17 @@ test('DELETE: api/basemap/1 - Doesn\'t Exist', async (t) => {
             },
         }, false);
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             status: 404,
             message:"Item Not Found",
             messages:[]
         })
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
-test('PATCH: api/basemap/1 - Doesn\'t Exist', async (t) => {
+test('PATCH: api/basemap/1 - Doesn\'t Exist', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1', {
             method: 'PATCH',
@@ -285,16 +268,14 @@ test('PATCH: api/basemap/1 - Doesn\'t Exist', async (t) => {
             }
         }, false);
 
-        t.deepEqual(res.body, {
+        assert.deepEqual(res.body, {
             status: 404,
             message:"Item Not Found",
             messages:[]
         })
     } catch (err) {
-        t.error(err)
+        assert.ifError(err)
     }
-
-    t.end();
 });
 
 flight.landing();

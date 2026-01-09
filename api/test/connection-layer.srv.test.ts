@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 import Sinon from 'sinon';
 import {
@@ -22,7 +23,9 @@ flight.user();
 
 flight.connection();
 
-test('GET: api/connection/1/layer', async (t) => {
+process.env.ECR_TASKS_REPOSITORY_NAME = 'example-ecr';
+
+test('GET: api/connection/1/layer', async () => {
     try {
         const res = await flight.fetch('/api/connection/1/layer', {
             method: 'GET',
@@ -31,7 +34,7 @@ test('GET: api/connection/1/layer', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: {
                 healthy: 0,
                 alarm: 0,
@@ -42,17 +45,15 @@ test('GET: api/connection/1/layer', async (t) => {
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('POST: api/connection/1/layer', async (t) => {
+test('POST: api/connection/1/layer', async () => {
     try {
         Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
             if (command instanceof DescribeStacksCommand) {
-                t.deepEquals(command.input, {
+                assert.deepEqual(command.input, {
                     StackName: 'test'
                 });
                 return Promise.resolve({});
@@ -63,7 +64,7 @@ test('POST: api/connection/1/layer', async (t) => {
 
         Sinon.stub(CloudWatchLogsClient.prototype, 'send').callsFake((command) => {
             if (command instanceof DeleteLogGroupCommand) {
-                t.deepEquals(command.input, {
+                assert.deepEqual(command.input, {
                     logGroupName: '/aws/lambda/test-layer-1'
                 });
 
@@ -75,8 +76,8 @@ test('POST: api/connection/1/layer', async (t) => {
 
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             if (command instanceof BatchGetImageCommand) {
-                t.deepEquals(command.input, {
-                    repositoryName: 'coe-ecr-etl-tasks',
+                assert.deepEqual(command.input, {
+                    repositoryName: process.env.ECR_TASKS_REPOSITORY_NAME,
                     imageIds: [{ imageTag: 'etl-test-v1.0.0' }]
                 });
 
@@ -106,16 +107,16 @@ test('POST: api/connection/1/layer', async (t) => {
             }
         }, true);
 
-        t.ok(res.body.uuid, 'has uuid');
+        assert.ok(res.body.uuid, 'has uuid');
         res.body.uuid = '123'
 
-        t.ok(res.body.created, 'has created');
+        assert.ok(res.body.created, 'has created');
         res.body.created = '2025-06-26'
 
-        t.ok(res.body.created, 'has updated');
+        assert.ok(res.body.created, 'has updated');
         res.body.updated = '2025-06-26'
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
              status: 'unknown',
              id: 1,
              uuid: '123',
@@ -142,14 +143,13 @@ test('POST: api/connection/1/layer', async (t) => {
              }
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     Sinon.restore();
-    t.end();
 });
 
-test('GET: api/connection/1/layer/1', async (t) => {
+test('GET: api/connection/1/layer/1', async () => {
     try {
         const res = await flight.fetch('/api/connection/1/layer/1', {
             method: 'GET',
@@ -158,16 +158,16 @@ test('GET: api/connection/1/layer/1', async (t) => {
             },
         }, true);
 
-        t.ok(res.body.uuid, 'has uuid');
+        assert.ok(res.body.uuid, 'has uuid');
         res.body.uuid = '123'
 
-        t.ok(res.body.created, 'has created');
+        assert.ok(res.body.created, 'has created');
         res.body.created = '2025-06-26'
 
-        t.ok(res.body.created, 'has updated');
+        assert.ok(res.body.created, 'has updated');
         res.body.updated = '2025-06-26'
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
              status: 'unknown',
              id: 1,
              uuid: '123',
@@ -194,11 +194,10 @@ test('GET: api/connection/1/layer/1', async (t) => {
              }
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     Sinon.restore();
-    t.end();
 });
 
 flight.landing();

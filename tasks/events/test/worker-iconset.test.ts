@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Worker from '../src/worker.js';
 import fs from 'node:fs';
 import Sinon from 'sinon';
@@ -16,6 +17,12 @@ test(`Worker DataPackage Import: Iconset`, async (t) => {
 
     setGlobalDispatcher(mockAgent);
 
+    t.after(() => {
+        Sinon.restore();
+        setGlobalDispatcher(originalDispatcher);
+        mockAgent.close();
+    });
+
     const mockPool = mockAgent.get('http://localhost:5001');
 
     mockPool.intercept({
@@ -32,7 +39,7 @@ test(`Worker DataPackage Import: Iconset`, async (t) => {
         path: '/api/iconset',
         method: 'POST'
     }).reply((req) => {
-        t.deepEquals(JSON.parse(req.body), {
+        assert.deepEqual(JSON.parse(req.body), {
             uid: '6d180afb-89a6-4c07-b2b3-a89748b6a38f',
             version: 2,
             name: 'FalconView',
@@ -51,9 +58,9 @@ test(`Worker DataPackage Import: Iconset`, async (t) => {
     }).reply((req) => {
         const body = JSON.parse(req.body);
 
-        t.ok(body.name && body.name.endsWith('.png'));
-        t.ok(body.path && body.path.endsWith('.png'));
-        t.ok(body.data);
+        assert.ok(body.name && body.name.endsWith('.png'));
+        assert.ok(body.path && body.path.endsWith('.png'));
+        assert.ok(body.data);
 
         return {
             statusCode: 200,
@@ -63,8 +70,8 @@ test(`Worker DataPackage Import: Iconset`, async (t) => {
 
     const ExternalOperations = [
             (command) => {
-                t.ok(command instanceof GetObjectCommand);
-                t.deepEquals(command.input, {
+                assert.ok(command instanceof GetObjectCommand);
+                assert.deepEqual(command.input, {
                     Bucket: 'test-bucket',
                     Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.zip`
                 });
@@ -74,6 +81,14 @@ test(`Worker DataPackage Import: Iconset`, async (t) => {
                 })
             },
     ].reverse();
+
+    const logStub = Sinon.stub(console, 'log');
+    logStub.callThrough();
+    logStub.withArgs(Sinon.match(/is not a Basemap/)).returns();
+
+    const warnStub = Sinon.stub(console, 'warn');
+    warnStub.callThrough();
+    warnStub.withArgs(Sinon.match(/must have required property 'customMapSource'/)).returns();
 
     Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
         return ExternalOperations.pop()(command);
@@ -99,14 +114,10 @@ test(`Worker DataPackage Import: Iconset`, async (t) => {
     });
 
     worker.on('error', (err) => {
-        t.error(err);
+        assert.ifError(err);
     });
 
     worker.on('success', () => {
-        Sinon.restore();
-        setGlobalDispatcher(originalDispatcher);
-        mockAgent.close();
-        t.end()
     });
 
     await worker.process()

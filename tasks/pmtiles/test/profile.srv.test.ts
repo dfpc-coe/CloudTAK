@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
 import http from 'http';
 import type { AddressInfo } from 'net';
@@ -15,7 +16,7 @@ function getAddress(): string {
     return `http://localhost:${addr.port}`;
 }
 
-test('Setup', async (t) => {
+test('Setup', async () => {
     try {
         const mod = await import('../src/index.js');
         app = mod.app;
@@ -26,86 +27,78 @@ test('Setup', async (t) => {
                 resolve();
             });
         });
-        t.pass('Server started');
     } catch (err) {
-        t.error(err, 'Failed to start server');
+        assert.ifError(err);
     }
-    t.end();
 });
 
-test('GET /tiles/profile/:username/:file - Missing Token', async (t) => {
+test('GET /tiles/profile/:username/:file - Missing Token', async () => {
     try {
         const res = await fetch(`${getAddress()}/tiles/profile/user@example.com/map`);
-        t.equal(res.status, 400, 'Returns 400 (Validation Error)');
+        assert.equal(res.status, 400, 'Returns 400 (Validation Error)');
         const body = await res.json();
-        t.match(body.message, /Validation Error/, 'Error message matches');
+        assert.match(body.message, /Validation Error/, 'Error message matches');
     } catch (err) {
-        t.error(err);
+        assert.ifError(err);
     }
-    t.end();
 });
 
-test('GET /tiles/profile/:username/:file - Unauthorized (Wrong User)', async (t) => {
+test('GET /tiles/profile/:username/:file - Unauthorized (Wrong User)', async () => {
     try {
         const token = jwt.sign({ email: 'other@example.com', access: 'profile' }, process.env.SigningSecret!);
         const res = await fetch(`${getAddress()}/tiles/profile/user@example.com/map?token=${token}`);
-        t.equal(res.status, 401, 'Returns 401');
+        assert.equal(res.status, 401, 'Returns 401');
         const body = await res.json();
-        t.match(body.message, /Unauthorized Access/, 'Error message matches');
+        assert.match(body.message, /Unauthorized Access/, 'Error message matches');
     } catch (err) {
-        t.error(err);
+        assert.ifError(err);
     }
-    t.end();
 });
 
-test('GET /tiles/profile/:username/:file - Unauthorized (Wrong Access)', async (t) => {
+test('GET /tiles/profile/:username/:file - Unauthorized (Wrong Access)', async () => {
     try {
         const token = jwt.sign({ email: 'user@example.com', access: 'other' }, process.env.SigningSecret!);
         const res = await fetch(`${getAddress()}/tiles/profile/user@example.com/map?token=${token}`);
-        t.equal(res.status, 401, 'Returns 401');
+        assert.equal(res.status, 401, 'Returns 401');
         const body = await res.json();
-        t.match(body.message, /Unauthorized Access/, 'Error message matches');
+        assert.match(body.message, /Unauthorized Access/, 'Error message matches');
     } catch (err) {
-        t.error(err);
+        assert.ifError(err);
     }
-    t.end();
 });
 
-test('GET /tiles/profile/:username/:file - Success (Auth passes, S3 fails)', async (t) => {
+test('GET /tiles/profile/:username/:file - Success (Auth passes, S3 fails)', async () => {
     try {
         const token = jwt.sign({ email: 'user@example.com', access: 'profile' }, process.env.SigningSecret!);
         const res = await fetch(`${getAddress()}/tiles/profile/user@example.com/map?token=${token}`);
         
         // We expect a 500 or similar because S3 is not mocked and will fail
         // But getting past 401 means auth worked
-        t.notEqual(res.status, 401, 'Should not be 401');
+        assert.notEqual(res.status, 401, 'Should not be 401');
     } catch (err) {
-        t.error(err);
+        assert.ifError(err);
     }
-    t.end();
 });
 
-test('GET /tiles/profile/:username/:file/query - Missing Token', async (t) => {
+test('GET /tiles/profile/:username/:file/query - Missing Token', async () => {
     try {
         const res = await fetch(`${getAddress()}/tiles/profile/user@example.com/map/query`);
-        t.equal(res.status, 400, 'Returns 400 (Validation Error)');
+        assert.equal(res.status, 400, 'Returns 400 (Validation Error)');
     } catch (err) {
-        t.error(err);
+        assert.ifError(err);
     }
-    t.end();
 });
 
-test('GET /tiles/profile/:username/:file/tiles/:z/:x/:y.:ext - Missing Token', async (t) => {
+test('GET /tiles/profile/:username/:file/tiles/:z/:x/:y.:ext - Missing Token', async () => {
     try {
         const res = await fetch(`${getAddress()}/tiles/profile/user@example.com/map/tiles/0/0/0.mvt`);
-        t.equal(res.status, 400, 'Returns 400 (Validation Error)');
+        assert.equal(res.status, 400, 'Returns 400 (Validation Error)');
     } catch (err) {
-        t.error(err);
+        assert.ifError(err);
     }
-    t.end();
 });
 
-test('Teardown', async (t) => {
+test('Teardown', async () => {
     if (server) {
         server.closeAllConnections();
         await new Promise<void>((resolve) => {
@@ -113,8 +106,6 @@ test('Teardown', async (t) => {
                 resolve();
             });
         });
-        t.pass('Server stopped');
     }
-    t.end();
     process.exit(0);
 });

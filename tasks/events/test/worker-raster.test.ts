@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import path from 'node:path';
 import Worker from '../src/worker.js';
 import fs from 'node:fs';
@@ -22,6 +23,12 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster
         mockAgent.disableNetConnect();
         setGlobalDispatcher(mockAgent);
         const mockPool = mockAgent.get('http://localhost:5001');
+
+        t.after(() => {
+            Sinon.restore();
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+        });
 
         mockPool.intercept({
             path: /api\/profile\/asset/,
@@ -50,7 +57,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster
                 artifacts: string[]
             };
 
-            t.deepEquals(body.artifacts, [{ "ext": ".pmtiles" }]);
+            assert.deepEqual(body.artifacts, [{ "ext": ".pmtiles" }]);
 
             return {
                 statusCode: 200,
@@ -63,8 +70,8 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster
 
         const ExternalOperations = [
                 (command) => {
-                    t.ok(command instanceof GetObjectCommand);
-                    t.deepEquals(command.input, {
+                    assert.ok(command instanceof GetObjectCommand);
+                    assert.deepEqual(command.input, {
                         Bucket: 'test-bucket',
                         Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139${ext}`
                     });
@@ -74,19 +81,19 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster
                     })
                 },
                 (command) => {
-                    t.ok(command instanceof PutObjectCommand);
+                    assert.ok(command instanceof PutObjectCommand);
 
-                    t.equals(command.input.Bucket, 'test-bucket')
-                    t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                    t.ok(command.input.Key.endsWith(ext))
+                    assert.equal(command.input.Bucket, 'test-bucket')
+                    assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                    assert.ok(command.input.Key.endsWith(ext))
 
                     return Promise.resolve({});
                 },
                 (command) => {
-                    t.ok(command instanceof PutObjectCommand);
+                    assert.ok(command instanceof PutObjectCommand);
 
-                    t.equals(command.input.Bucket, 'test-bucket')
-                    t.equals(command.input.Key, `profile/admin@example.com/${id}.pmtiles`);
+                    assert.equal(command.input.Bucket, 'test-bucket')
+                    assert.equal(command.input.Key, `profile/admin@example.com/${id}.pmtiles`);
 
                     return Promise.resolve({});
                 },
@@ -116,14 +123,10 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster
         });
 
         worker.on('error', (err) => {
-            t.error(err);
+            assert.ifError(err);
         });
 
         worker.on('success', () => {
-            Sinon.restore();
-            setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
-            t.end()
         });
 
         await worker.process()

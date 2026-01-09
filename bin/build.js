@@ -1,17 +1,24 @@
 import fs from 'node:fs/promises';
 import CP from 'child_process';
 
+/**
+ * Build and push docker containers to AWS ECR
+ * Usage:
+ *    node build.js            # builds and pushes all containers
+ *    node build.js api        # builds and pushes only the API container
+ *    node build.js <taskname> # builds and pushes only the specified task container
+ *    node build.js .          # Build an ETL task in the current directory
+ */
+
 process.env.GITSHA = sha();
 
-process.env.API_URL = process.env.API_URL || '"https://example.com"';
 process.env.Environment = process.env.Environment || 'prod';
 
 for (const env of [
     'GITSHA',
     'AWS_REGION',
     'AWS_ACCOUNT_ID',
-    'Environment',
-    'API_URL'
+    'Environment'
 ]) {
     if (!process.env[env]) {
         throw new Error(`${env} Env Var must be set`);
@@ -20,19 +27,36 @@ for (const env of [
 
 await login();
 
-if (!process.argv[2]) {
+const args = process.argv.slice(2);
+const plugins = [];
+let target = null;
+
+for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--plugin') {
+        if (args[i + 1]) {
+            plugins.push(args[i + 1]);
+            i++;
+        }
+    } else if (!target) {
+        target = args[i];
+    }
+}
+
+if (!target) {
     console.error('ok - building all containers');
 
-    await cloudtak_api();
+    await cloudtak_api(plugins);
 
-    for (const dir of await fs.readdir(new URL('./tasks/', import.meta.url))) {
+    for (const dir of await fs.readdir(new URL('../tasks/', import.meta.url))) {
         await cloudtak_task(dir);
     }
 } else {
-    if (process.argv[2] === 'api') {
-        await cloudtak_api();
+    if (target === 'api') {
+        await cloudtak_api(plugins);
+    } else if (target === '.') {
+        await cloudtak_etl();
     } else {
-        await cloudtak_task(process.argv[2]);
+        await cloudtak_task(target);
     }
 }
 
@@ -40,10 +64,10 @@ function login() {
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
             aws ecr get-login-password \
-                --region $\{AWS_REGION\} \
+                --region $\{AWS_REGION} \
             | docker login \
                 --username AWS \
-                --password-stdin "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com"
+                --password-stdin "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com"
 
         `, (err) => {
             if (err) return reject(err);
@@ -56,12 +80,39 @@ function login() {
 
 }
 
-function cloudtak_api() {
+function cloudtak_etl() {
+    // Get Git Repo Name
+    const basename = (CP.execSync(`
+        basename $(git rev-parse --show-toplevel)
+    `)).toString().trim();
+
+    const version = (CP.execSync(`
+        jq .version ./package.json | tr -d '"'
+    `)).toString().trim();
+
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
-            docker compose build api \
-            && docker tag cloudtak-api:latest "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-etl:$\{GITSHA\}" \
-            && docker push "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-etl:$\{GITSHA\}"
+            docker build -t ${basename}:${version} . \
+            && docker tag ${basename}:${version} "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-tasks:${basename}-v${version}" \
+            && docker push "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-tasks:${basename}-v${version}"
+        `, (err) => {
+            if (err) return reject(err);
+            return resolve();
+        });
+
+        $.stdout.pipe(process.stdout);
+        $.stderr.pipe(process.stderr);
+    });
+}
+
+function cloudtak_api(plugins = []) {
+    const buildArgs = plugins.length ? `--build-arg WEB_PLUGINS="${plugins.join(',')}"` : '';
+
+    return new Promise((resolve, reject) => {
+        const $ = CP.exec(`
+            docker compose build ${buildArgs} api \
+            && docker tag cloudtak-api:latest "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{GITSHA}" \
+            && docker push "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{GITSHA}"
         `, (err) => {
             if (err) return reject(err);
             return resolve();
@@ -77,9 +128,9 @@ async function cloudtak_task(task) {
 
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
-            docker buildx build ./tasks/$\{TASK\}/ -t cloudtak-$\{TASK\} \
-            && docker tag cloudtak-$\{TASK\}:latest "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-etl:$\{TASK\}-$\{GITSHA\}" \
-            && docker push "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-etl:$\{TASK\}-$\{GITSHA\}"
+            docker buildx build ./tasks/$\{TASK}/ -t cloudtak-$\{TASK} \
+            && docker tag cloudtak-$\{TASK}:latest "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{TASK}-$\{GITSHA}" \
+            && docker push "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{TASK}-$\{GITSHA}"
         `, (err) => {
             if (err) return reject(err);
             return resolve();

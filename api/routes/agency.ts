@@ -31,7 +31,9 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
 
-            if (!config.external || !config.external.configured) {
+            const cotak = config.user?.get('cotak');
+
+            if (!cotak || !cotak.configured) {
                 res.json({
                     total: 0,
                     config: {
@@ -41,8 +43,8 @@ export default async function router(schema: Schema, config: Config) {
                 });
             } else if (!profile.id) {
                 throw new Err(400, null, 'External ID must be set on profile');
-            } else if (config.external)  {
-                const list = await config.external.agencies(profile.id, req.query.filter);
+            } else {
+                const list = await cotak.agencies(profile.id, req.query.filter);
 
                 res.json({
                     ...list,
@@ -69,12 +71,14 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
 
-            if (!config.external || !config.external.configured) {
+            const cotak = config.user?.get('cotak');
+
+            if (!cotak || !cotak.configured) {
                 throw new Err(404, null, 'External API not configured');
             }
 
             if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
-            const agency = await config.external.agency(profile.id, req.params.agencyid);
+            const agency = await cotak.agency(profile.id, req.params.agencyid);
 
             res.json(agency);
         } catch (err) {
