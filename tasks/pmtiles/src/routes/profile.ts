@@ -69,7 +69,9 @@ export default async function router(schema: Schema) {
         description: 'Return features for a given zxy',
         query: Type.Object({
             token: Type.String(),
-            layer: Type.Optional(Type.String())
+            layer: Type.Optional(Type.String()),
+            type: Type.Optional(Type.String()),
+            multi: Type.Optional(Type.Boolean({ default: true }))
         }),
         params: Type.Object({
             username: Type.String(),
@@ -89,7 +91,9 @@ export default async function router(schema: Schema) {
             const file = new FileTiles(`profile/${req.params.username}/${req.params.file}`);
 
             res.json(await file.features(req.params.z, req.params.x, req.params.y, {
-                layer: req.query.layer
+                layer: req.query.layer,
+                type: req.query.type,
+                multi: req.query.multi
             }));
         } catch (err) {
             Err.respond(err, res);
@@ -103,6 +107,8 @@ export default async function router(schema: Schema) {
         query: Type.Object({
             token: Type.String(),
             layer: Type.Optional(Type.String()),
+            type: Type.Optional(Type.String()),
+            multi: Type.Optional(Type.Boolean({ default: true })),
             zoom: Type.Optional(Type.Integer()),
             bbox: Type.String({ description: 'BBOX in format "minX,minY,maxX,maxY"' })
         }),
@@ -125,7 +131,9 @@ export default async function router(schema: Schema) {
 
             res.json(await file.featuresByBounds(bbox, {
                 layer: req.query.layer,
-                zoom: req.query.zoom
+                zoom: req.query.zoom,
+                type: req.query.type,
+                multi: req.query.multi
             }));
         } catch (err) {
             Err.respond(err, res);
