@@ -157,12 +157,11 @@
             <template v-else-if='query !== null'>
                 <div class='card-body'>
                     <div class='col-md-12 hover rounded px-2 py-2'>
-                        <TablerInput
+                        <QueryInput
                             v-model='queries[query].query'
                             :disabled='disabled'
                             placeholder='JSONata Query'
                             label='JSONata Query'
-                            :error='error_query'
                         />
                     </div>
 
@@ -238,7 +237,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router'
 import { std } from '../../../std.ts';
 import {
@@ -250,16 +249,15 @@ import {
     IconBrush,
     IconDeviceFloppy
 } from '@tabler/icons-vue'
-import jsonata from 'jsonata';
 import {
     TablerInlineAlert,
-    TablerInput,
     TablerToggle,
     TablerNone,
     TablerLoading,
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import StyleSingle from './utils/StyleSingle.vue';
+import QueryInput from './utils/QueryInput.vue';
 
 const props = defineProps({
     layer: {
@@ -292,17 +290,6 @@ const style = ref({
 
 const queries = ref([]);
 const query = ref(null);
-
-const error_query = computed(() => {
-    if (!query.value) return '';
-
-    try {
-        jsonata(queries.value[query.value].query)
-        return '';
-    } catch (err) {
-        return err.message;
-    }
-});
 
 onMounted(() => {
     reload();
