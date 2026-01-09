@@ -212,7 +212,9 @@ export class FileTiles {
         x: number,
         y: number,
         opts: {
-            layer?: string
+            layer?: string;
+            type?: string;
+            multi?: boolean;
         } = {}
     ): Promise<Static<typeof FeaturesResponse>> {
         const p = new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
@@ -243,7 +245,30 @@ export class FileTiles {
 
                 for (let i = 0; i < layer.length; i++) {
                     const feature = layer.feature(i);
-                    features.push(feature.toGeoJSON(x, y, z));
+                    const geojson = feature.toGeoJSON(x, y, z);
+
+                    if (opts.multi === false && geojson.geometry.type.startsWith('Multi')) {
+                        const type = geojson.geometry.type.replace('Multi', '');
+                        const coordinates = (geojson.geometry as any).coordinates;
+
+                        for (const coord of coordinates) {
+                            const feat: any = {
+                                type: 'Feature',
+                                properties: geojson.properties,
+                                geometry: {
+                                    type: type,
+                                    coordinates: coord
+                                }
+                            };
+                            if (geojson.id) feat.id = geojson.id;
+
+                            if (opts.type && feat.geometry.type !== opts.type) continue;
+                            features.push(feat);
+                        }
+                    } else {
+                        if (opts.type && geojson.geometry.type !== opts.type) continue;
+                        features.push(geojson);
+                    }
                 }
             }
         } else {
@@ -267,8 +292,10 @@ export class FileTiles {
     async featuresByBounds(
         bbox: number[],
         opts: {
-            layer?: string,
-            zoom?: number
+            layer?: string;
+            zoom?: number;
+            type?: string;
+            multi?: boolean;
         } = {}
     ): Promise<Static<typeof FeaturesResponse>> {
         const p = new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
@@ -317,7 +344,30 @@ export class FileTiles {
 
                     for (let i = 0; i < layer.length; i++) {
                         const feature = layer.feature(i);
-                        features.push(feature.toGeoJSON(x, y, z));
+                        const geojson = feature.toGeoJSON(x, y, z);
+
+                        if (opts.multi === false && geojson.geometry.type.startsWith('Multi')) {
+                            const type = geojson.geometry.type.replace('Multi', '');
+                            const coordinates = (geojson.geometry as any).coordinates;
+
+                            for (const coord of coordinates) {
+                                const feat: any = {
+                                    type: 'Feature',
+                                    properties: geojson.properties,
+                                    geometry: {
+                                        type: type,
+                                        coordinates: coord
+                                    }
+                                };
+                                if (geojson.id) feat.id = geojson.id;
+
+                                if (opts.type && feat.geometry.type !== opts.type) continue;
+                                features.push(feat);
+                            }
+                        } else {
+                            if (opts.type && geojson.geometry.type !== opts.type) continue;
+                            features.push(geojson);
+                        }
                     }
                 }
 
