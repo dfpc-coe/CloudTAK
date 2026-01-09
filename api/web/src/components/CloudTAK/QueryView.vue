@@ -71,7 +71,7 @@ import type { SearchReverse } from '../../types.ts';
 import {
     IconRefresh
 } from '@tabler/icons-vue';
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import QueryWeather from './Query/Weather.vue';
 import QuerySun from './Query/Sun.vue';
@@ -120,12 +120,21 @@ async function fetch() {
                 // No terrain data available
             }
             
-            const url = stdurl(`/api/search/reverse/${coords.value[0]}/${coords.value[1]}`);
-            if (elevation !== undefined && elevation !== null) {
-                url.searchParams.append('elevation', String(elevation));
-            }
-            
-            query.value = await std(url) as SearchReverse;
+            const { data, error: reqError } = await server.GET('/api/search/reverse/{:longitude}/{:latitude}', {
+                params: {
+                    path: {
+                        ':longitude': coords.value[0],
+                        ':latitude': coords.value[1]
+                    },
+                    query: {
+                        elevation,
+                        altitude: 0
+                    }
+                }
+            });
+
+            if (reqError) throw new Error(String(reqError));
+            query.value = data;
         } catch (err) {
             error.value = err instanceof Error ? err : new Error(String(err));
         }

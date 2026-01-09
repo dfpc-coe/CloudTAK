@@ -61,7 +61,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import PropertyType from './PropertyType.vue';
 import type { Profile, ConfigGroups } from '../../../../src/types.ts';
-import { std } from '../../../../src/std.ts';
+import { server } from '../../../../src/std.ts';
 import {
     TablerInput,
     TablerEnum,
@@ -126,7 +126,9 @@ onMounted(async () => {
 });
 
 async function fetchConfig() {
-    config.value = await std('/api/config/group') as ConfigGroups;
+    const { data, error } = await server.GET('/api/config/group');
+    if (error) throw new Error(String(error));
+    config.value = data;
 }
 
 async function updateProfile() {

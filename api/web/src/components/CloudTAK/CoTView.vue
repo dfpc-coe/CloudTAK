@@ -689,7 +689,7 @@ import {
     IconLockOpen,
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
-import { std } from '../../std.ts';
+import { server } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useFloatStore } from '../../stores/float.ts';
 
@@ -870,7 +870,15 @@ async function editGeometry() {
 
 async function fetchType() {
     if (!cot.value) return;
-    type.value = await std(`/api/type/cot/${cot.value.properties.type}`) as COTType
+    const { data, error } = await server.GET('/api/type/cot/{:type}', {
+        params: {
+            path: {
+                ':type': cot.value.properties.type
+            }
+        }
+    });
+    if (error) throw new Error(String(error));
+    type.value = data;
 }
 
 function updatePropertyAttachment(hashes: string[]) {
