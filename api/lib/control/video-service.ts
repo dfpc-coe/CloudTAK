@@ -107,7 +107,7 @@ export const PathListItem = Type.Object({
     ]),
 
     ready: Type.Boolean(),
-    readyTime: Type.Union([Type.String(), Type.Null()]),
+    readyTime: Type.Union([Type.Null(), Type.String()]),
     tracks: Type.Array(Type.String()),
     bytesReceived: Type.Integer(),
     bytesSent: Type.Integer(),
@@ -443,6 +443,7 @@ export default class VideoServiceControl {
         recording: boolean;
         publish: boolean;
         secure: boolean;
+        share: boolean;
         channel?: string | null;
         proxy?: string | null;
     }): Promise<Static<typeof VideoLeaseResponse>> {
@@ -453,6 +454,10 @@ export default class VideoServiceControl {
 
         if (opts.username && opts.connection) {
             throw new Err(400, null, 'Either username or connection must be set but not both');
+        } else if (opts.share && !opts.channel) {
+            throw new Err(400, null, 'Channel must be set when share is true');
+        } else if (opts.publish && !opts.channel) {
+            throw new Err(400, null, 'Channel must be set when publish is true');
         }
 
         const lease = await this.config.models.VideoLease.generate({
@@ -468,6 +473,7 @@ export default class VideoServiceControl {
             username: opts.username,
             connection: opts.connection,
             layer: opts.layer,
+            share: opts.share,
             channel: opts.channel,
             proxy: opts.proxy
         });
@@ -478,6 +484,37 @@ export default class VideoServiceControl {
         url.port = '9997';
 
         headers.append('Content-Type', 'application/json');
+
+        if (lease.publish) {
+            const auth = this.config.serverCert();
+            const api = await TAKAPI.init(
+                new URL(String(this.config.server.api)),
+                new APIAuthCertificate(auth.cert, auth.key)
+            );
+
+            try {
+                const protocols = await this.protocols(lease, ProtocolPopulation.READ)
+
+                if (protocols.hls) {
+                    await api.Video.create({
+                        uuid: lease.path,
+                        active: true,
+                        alias: lease.name,
+                        groups: [ lease.channel! ],
+                        feeds: [{
+                            uuid: lease.path,
+                            active: true,
+                            alias: lease.name,
+                            url: protocols.hls.url,
+                        }]
+                    })
+                } else {
+                    throw new Err(400, null, 'Only HLS shared video streams are supported at this time');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
 
         if (lease.proxy) {
             try {
@@ -574,7 +611,7 @@ export default class VideoServiceControl {
                 const groups = (await api.Group.list({ useCache: true }))
                     .data.map((group) => group.name);
 
-                if (lease.username !== opts.username && (!lease.channel || !groups.includes(lease.channel))) {
+                if (lease.username !== opts.username && (!lease.share || !lease.channel || !groups.includes(lease.channel))) {
                     throw new Err(400, null, 'You can only access a lease you created or that is assigned to a channel you are in');
                 }
 
@@ -590,6 +627,7 @@ export default class VideoServiceControl {
         body: {
             name?: string,
             channel?: string | null,
+            share?: boolean,
             secure?: boolean,
             secure_rotate?: boolean
             expiration?: string | null,
@@ -615,6 +653,18 @@ export default class VideoServiceControl {
             throw new Err(400, null, 'Lease must be edited in the context of a Connection');
         } else if (lease.username && !opts.username) {
             throw new Err(400, null, 'Lease must be edited in the context of the CloudTAK Map');
+        } else if (
+            (body.share && body.channel === undefined && !lease.channel)
+            || (body.share && body.channel === null)
+            || (lease.share && body.channel === null)
+        ) {
+            throw new Err(400, null, 'Channel must be set when share is true');
+        } else if (
+            (body.publish && body.channel === undefined && !lease.channel)
+            || (body.publish && body.channel === null)
+            || (lease.publish && body.channel === null)
+        ) {
+            throw new Err(400, null, 'Channel must be set when publish is true');
         }
 
         if (body.secure !== undefined) {
@@ -623,6 +673,46 @@ export default class VideoServiceControl {
         }
 
         lease = await this.config.models.VideoLease.commit(leaseid, body);
+
+        try {
+            const auth = this.config.serverCert();
+            const api = await TAKAPI.init(
+                new URL(String(this.config.server.api)),
+                new APIAuthCertificate(auth.cert, auth.key)
+            );
+
+            try {
+                await api.Video.delete(lease.path);
+            } catch (err) {
+                console.error(err);
+            }
+
+            // We can't change channels so just delete and recreate
+            try {
+                const protocols = await this.protocols(lease, ProtocolPopulation.READ)
+
+                if (protocols.hls) {
+                    await api.Video.create({
+                        uuid: lease.path,
+                        active: true,
+                        alias: lease.name,
+                        groups: [ lease.channel! ],
+                        feeds: [{
+                            uuid: lease.path,
+                            active: true,
+                            alias: lease.name,
+                            url: protocols.hls.url,
+                        }]
+                    })
+                } else {
+                    throw new Err(400, null, 'Only HLS shared video streams are supported at this time');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        } catch (err) {
+            console.error(err);
+        }
 
         try {
             await this.path(lease.path);
@@ -753,6 +843,18 @@ export default class VideoServiceControl {
             method: 'DELETE',
             headers,
         })
+
+        try {
+            const auth = this.config.serverCert();
+            const api = await TAKAPI.init(
+                new URL(String(this.config.server.api)),
+                new APIAuthCertificate(auth.cert, auth.key)
+            );
+
+            await api.Video.delete(lease.path);
+        } catch (err) {
+            console.error(err);
+        }
 
         return;
     }

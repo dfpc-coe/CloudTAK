@@ -9,7 +9,7 @@
     "scripts": {
         "check": "tsc --noEmit",
         "lint": "eslint src/",
-        "test": "tsx test/*.test.ts",
+        "test": "tsx --test test/*.test.ts",
         "build": "tsup --target es2022 --format esm src/",
         "dev": "tsx watch src/index.ts --noevents --nometrics --nosinks --unsafe",
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js"
@@ -39,10 +39,8 @@
         "@types/aws-lambda": "^8.10.108",
         "@types/cors": "^2.8.17",
         "@types/jsonwebtoken": "^9.0.2",
-        "@types/node": "^24.0.0",
-        "@types/tape": "^5.8.1",
+        "@types/node": "^25.0.0",
         "eslint": "^9.0.0",
-        "tape": "^5.9.0",
         "tsup": "^8.0.0",
         "typescript": "^5.0.0",
         "typescript-eslint": "^8.0.0"

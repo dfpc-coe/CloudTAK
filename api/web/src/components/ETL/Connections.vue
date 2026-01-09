@@ -64,33 +64,11 @@
                                 class='col-lg-12'
                             >
                                 <div class='card'>
-                                    <div class='card-header d-flex'>
-                                        <ConnectionStatus :connection='connection' />
-
-                                        <a
-                                            class='card-title cursor-pointer mx-2'
-                                            @click='router.push(`/connection/${connection.id}`)'
-                                            v-text='connection.name'
-                                        />
-
-                                        <div class='ms-auto align-items-center btn-list'>
-                                            <AgencyBadge :connection='connection' />
-
-                                            <IconSettings
-                                                :size='32'
-                                                stroke='1'
-                                                class='cursor-pointer'
-                                                @click='router.push(`/connection/${connection.id}/edit`)'
-                                            />
-                                        </div>
-                                    </div>
-                                    <TablerMarkdown
-                                        class='card-body'
-                                        :markdown='connection.description'
+                                    <ConnectionCard
+                                        :connection='connection'
+                                        :clickable='true'
+                                        :expanded='true'
                                     />
-                                    <div class='card-footer'>
-                                        Last updated <span v-text='timeDiff(connection.updated)' />
-                                    </div>
                                 </div>
                             </div>
 
@@ -120,19 +98,15 @@ import { useRouter } from 'vue-router';
 import type { ETLConnectionList } from '../../types.ts'
 import { std, stdurl } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
-import ConnectionStatus from './Connection/StatusDot.vue';
-import AgencyBadge from './Connection/AgencyBadge.vue';
-import timeDiff_ from '../../timediff.ts';
-const timeDiff = timeDiff_;
+import ConnectionCard from './ConnectionCard.vue';
+import timeDiff from '../../timediff.ts';
 import {
     TablerPager,
     TablerBreadCrumb,
-    TablerMarkdown,
     TablerLoading,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import {
-    IconSettings,
     IconSearch
 } from '@tabler/icons-vue'
 

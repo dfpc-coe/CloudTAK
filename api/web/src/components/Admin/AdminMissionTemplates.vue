@@ -48,7 +48,7 @@
             />
             <TablerNone
                 v-else-if='!list.items.length'
-                label='Templates'
+                label='No Templates'
                 :create='false'
             />
             <div
@@ -101,7 +101,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl, stdclick } from '../../../src/std.ts';
-import type { MissionTemplateList, MissionTemplate } from '../../../src/types.ts';
+import type { MissionTemplateList } from '../../../src/types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import {
@@ -116,7 +116,7 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue'
 
-type Header = { name: keyof MissionTemplate, display: boolean };
+type Header = { name: keyof MissionTemplateList['items'][0], display: boolean };
 
 const router = useRouter();
 
@@ -149,7 +149,7 @@ onMounted(async () => {
 async function listMissionTemplateSchema() {
     const schema = await std('/api/schema?method=GET&url=/template/mission');
 
-    const defaults: Array<keyof MissionTemplate> = ['name'];
+    const defaults: Array<keyof MissionTemplateList['items'][0]> = ['name'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
     });

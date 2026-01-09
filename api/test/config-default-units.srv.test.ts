@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -7,7 +8,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET api/config/display', async (t) => {
+test('GET api/config/display', async () => {
     try {
         const res = await flight.fetch('/api/config/display', {
             method: 'GET',
@@ -16,7 +17,7 @@ test('GET api/config/display', async (t) => {
             },
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
              stale: {
                 value: '10 Minutes',
                 options: [ 'Immediate', '10 Minutes', '30 Minutes', '1 Hour', 'Never' ]
@@ -51,13 +52,11 @@ test('GET api/config/display', async (t) => {
              }
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PUT api/config', async (t) => {
+test('PUT api/config', async () => {
 
     try {
         const res = await flight.fetch('/api/config', {
@@ -73,20 +72,18 @@ test('PUT api/config', async (t) => {
             }
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             'display::stale': '30 Minutes',
             'display::distance': 'kilometer',
             'display::elevation': 'meter',
             'display::icon_rotation': 'false'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET api/config/display - icon_rotation false conversion', async (t) => {
+test('GET api/config/display - icon_rotation false conversion', async () => {
     try {
         const res = await flight.fetch('/api/config/display', {
             method: 'GET',
@@ -95,15 +92,13 @@ test('GET api/config/display - icon_rotation false conversion', async (t) => {
             },
         }, true);
 
-        t.equals(res.body.icon_rotation.value, false, 'string "false" converted to boolean false');
+        assert.equal(res.body.icon_rotation.value, false, 'string "false" converted to boolean false');
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PUT api/config - reset icon_rotation to true', async (t) => {
+test('PUT api/config - reset icon_rotation to true', async () => {
     try {
         const res = await flight.fetch('/api/config', {
             method: 'PUT',
@@ -115,17 +110,15 @@ test('PUT api/config - reset icon_rotation to true', async (t) => {
             }
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             'display::icon_rotation': 'true'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET api/config/display - icon_rotation true conversion', async (t) => {
+test('GET api/config/display - icon_rotation true conversion', async () => {
     try {
         const res = await flight.fetch('/api/config/display', {
             method: 'GET',
@@ -134,12 +127,10 @@ test('GET api/config/display - icon_rotation true conversion', async (t) => {
             },
         }, true);
 
-        t.equals(res.body.icon_rotation.value, true, 'string "true" converted to boolean true');
+        assert.equal(res.body.icon_rotation.value, true, 'string "true" converted to boolean true');
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.user({
@@ -147,7 +138,7 @@ flight.user({
     admin: false
 });
 
-test('GET api/profile', async (t) => {
+test('GET api/profile', async () => {
     try {
         const res = await flight.fetch('/api/profile', {
             method: 'GET',
@@ -156,14 +147,12 @@ test('GET api/profile', async (t) => {
             },
         }, true);
 
-        t.equals(res.body.display_stale, '30 Minutes', 'default stale value');
-        t.equals(res.body.display_distance, 'kilometer', 'default distance value');
-        t.equals(res.body.display_elevation, 'meter', 'default elevation value');
+        assert.equal(res.body.display_stale, '30 Minutes', 'default stale value');
+        assert.equal(res.body.display_distance, 'kilometer', 'default distance value');
+        assert.equal(res.body.display_elevation, 'meter', 'default elevation value');
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

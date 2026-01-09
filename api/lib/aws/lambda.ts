@@ -10,7 +10,7 @@ import { Static } from '@sinclair/typebox'
 import { StackFrame } from './cloudformation.js';
 import { Capabilities } from '@tak-ps/etl'
 
-const ECR_TASKS_REPOSITORY = process.env.ECR_TASKS_REPOSITORY_NAME || 'coe-ecr-etl-tasks';
+const ECR_TASKS_REPOSITORY = process.env.ECR_TASKS_REPOSITORY_NAME;
 
 /**
  * @class

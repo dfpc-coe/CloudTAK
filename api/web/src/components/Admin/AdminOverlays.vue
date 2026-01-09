@@ -66,7 +66,7 @@
             />
             <TablerNone
                 v-else-if='!list.items.length'
-                label='Overlays'
+                label='No Overlays'
                 :create='false'
             />
             <div

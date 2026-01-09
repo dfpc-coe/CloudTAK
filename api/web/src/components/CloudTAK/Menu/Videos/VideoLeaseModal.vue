@@ -67,8 +67,7 @@
             <div class='d-flex align-items-center w-100 justify-content-center'>
                 <div class='py-2'>
                     <img
-                        height='600px'
-                        width='600px'
+                        style='max-width: 100%; height: auto; max-height: 600px;'
                         alt='UAS Tool Wizard Image'
                         :src='`/wizard/Step${wizard}.png`'
                         class='rounded'
@@ -142,7 +141,7 @@
                                 class='d-flex align-items-center user-select-none'
                             >
                                 <IconServer
-                                    :size='32'
+                                    :size='24'
                                     stroke='1'
                                 />
                                 <span class='ms-2'>External Stream URL</span>
@@ -153,14 +152,14 @@
                             >
                                 <IconArrowsLeftRight
                                     v-tooltip='"Read/Write User"'
-                                    :size='32'
+                                    :size='24'
                                     stroke='1'
                                 />
                                 <span class='ms-2'>Read-Write User</span>
                             </div>
                             <div
                                 v-else
-                                class='px-2 py-2 round btn-group w-100'
+                                class='p-1 round btn-group w-100'
                                 role='group'
                             >
                                 <input
@@ -178,7 +177,7 @@
                                 >
                                     <IconBook2
                                         v-tooltip='"Read User"'
-                                        :size='32'
+                                        :size='24'
                                         stroke='1'
                                     />
                                     <span class='mx-2'>Read User</span>
@@ -199,7 +198,7 @@
                                 >
                                     <IconPencil
                                         v-tooltip='"Write User"'
-                                        :size='32'
+                                        :size='24'
                                         stroke='1'
                                     />
                                     <span class='mx-2'>Write User</span>
@@ -283,6 +282,33 @@
                             </template>
                         </div>
                     </template>
+
+                    <div
+                        v-if='disabled'
+                        class='col-12 pt-2'
+                    >
+                        <div class='col-12 d-flex align-items-center mb-1'>
+                            <label>Expiration</label>
+
+                            <div class='ms-auto'>
+                                <span
+                                    v-if='expired(editLease.expiration)'
+                                    class='badge bg-red text-white mt-2'
+                                >Expired</span>
+                                <span
+                                    v-else-if='editLease.expiration === null'
+                                    class='badge bg-blue text-white mt-2'
+                                >Permanent</span>
+                            </div>
+                        </div>
+
+                        <div class='col-12'>
+                            <CopyField
+                                v-if='editLease.expiration'
+                                :model-value='editLease.expiration'
+                            />
+                        </div>
+                    </div>
                 </template>
 
                 <div
@@ -320,7 +346,7 @@
             >
                 <div class='col-12'>
                     <div
-                        class='px-2 py-2 round btn-group w-100'
+                        class='p-1 round btn-group w-100'
                         role='group'
                     >
                         <input
@@ -337,7 +363,7 @@
                             class='btn btn-sm'
                         ><IconDrone
                             v-tooltip='"Provide a stream URL to push data to"'
-                            :size='32'
+                            :size='24'
                             stroke='1'
                         /><span class='ms-2'>Hosted Stream URL</span></label>
 
@@ -355,7 +381,7 @@
                             class='btn btn-sm'
                         ><IconServer
                             v-tooltip='"Pull from existing external Stream URL"'
-                            :size='32'
+                            :size='24'
                             stroke='1'
                         /><span class='ms-2'>External Stream URL</span></label>
                     </div>
@@ -378,7 +404,7 @@
                         description='Leases remain active on the server for the duration specified. Once the lease expires the lease can be renewed without the Lease URL changing'
                     />
                 </div>
-                <div class='col-12 col-md-8'>
+                <div class='col-12 col-md-6'>
                     <TablerEnum
                         v-model='editLease.source_type'
                         default='unknown'
@@ -398,7 +424,7 @@
                         description='The type of sensor that is broadcasting'
                     />
                 </div>
-                <div class='col-12 col-md-4'>
+                <div class='col-12 col-md-6'>
                     <TablerInput
                         v-model='editLease.source_model'
                         :disabled='disabled'
@@ -419,7 +445,7 @@
                         description='Pull media into the Video Manager from an existing URL.'
                     />
                 </div>
-                <div class='col-12'>
+                <div class='col-12 col-md-6'>
                     <TablerToggle
                         v-model='editLease.publish'
                         label='Publish to TAK Server'
@@ -427,7 +453,7 @@
                         description='Publish the non-geolocated Video Stream to the Video Manager'
                     />
                 </div>
-                <div class='col-12'>
+                <div class='col-12 col-md-6'>
                     <TablerToggle
                         v-model='editLease.recording'
                         label='Record Stream'
@@ -437,7 +463,7 @@
                 </div>
                 <div
                     v-if='typeof editLease.proxy !== "string"'
-                    class='col-12'
+                    class='col-12 col-md-6'
                 >
                     <TablerToggle
                         v-model='secure'
@@ -446,58 +472,35 @@
                         description='Create a seperate Read/Write user to ensure unauthorized users cannot publish to a stream'
                     />
                 </div>
-                <div class='col-12'>
+                <div class='col-12 col-md-6'>
                     <TablerToggle
-                        v-model='shared'
+                        v-model='editLease.share'
                         description='By default only the user that created a Lease can manage it. If you are operating as part of an agency, turn on Lease Sharing to allow all users in your Channel to manage the lease'
                         :disabled='disabled'
                         label='Shared Lease'
                     />
                 </div>
                 <div
-                    v-if='shared'
+                    v-if='editLease.share || editLease.publish'
                     class='col-12'
                 >
-                    <GroupSelect
+                    <div
                         v-if='!disabled'
-                        v-model='channels'
-                        :limit='1'
-                    />
+                        style='height: 20vh; min-height: 200px; overflow-y: auto;'
+                    >
+                        <GroupSelect
+                            v-model='channels'
+                            :limit='1'
+                        />
+                    </div>
                     <div
                         v-else
                         class='border border-white rounded px-2 py-2'
                     >
                         <IconAffiliate
-                            :size='24'
+                            :size='32'
                             stroke='1'
                         /> <span v-text='editLease.channel' />
-                    </div>
-                </div>
-
-                <div
-                    v-if='editLease.expiration !== undefined'
-                    class='col-12'
-                >
-                    <div class='col-12 d-flex align-items-center mb-1'>
-                        <label>Expiration</label>
-
-                        <div class='ms-auto'>
-                            <span
-                                v-if='expired(editLease.expiration)'
-                                class='badge bg-red text-white mt-2'
-                            >Expired</span>
-                            <span
-                                v-else-if='editLease.expiration === null'
-                                class='badge bg-blue text-white mt-2'
-                            >Permanent</span>
-                        </div>
-                    </div>
-
-                    <div class='col-12'>
-                        <CopyField
-                            v-if='editLease.expiration'
-                            :model-value='editLease.expiration'
-                        />
                     </div>
                 </div>
             </div>
@@ -546,7 +549,7 @@
 import { std } from '../../../../std.ts';
 import { validateURL } from '../../../../base/validators.ts';
 import CopyField from '../../util/CopyField.vue';
-import { ref, watch, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols, VideoLeaseMetadata } from '../../../../types.ts';
 import VideoLeaseSourceType from '../../util/VideoLeaseSourceType.vue'
 import GroupSelect from '../../../util/GroupSelect.vue';
@@ -593,18 +596,17 @@ const channels = ref<string[]>([]);
 
 const durations = ref<Array<string>>(["16 Hours", "12 Hours", "6 Hours", "1 Hour"]);
 
-const shared = ref(false);
-
 const editLease = ref<{
     id?: number
     name: string
     duration: string
     recording: boolean
     publish: boolean
+    share: boolean
     channel: string | null
     source_type: string
     source_model: string
-    proxy?: string | null 
+    proxy?: string | null
     expiration?: string | null
     stream_user: string | null
     stream_pass: string | null
@@ -616,6 +618,7 @@ const editLease = ref<{
     channel: null,
     recording: false,
     publish: false,
+    share: true,
     source_type: 'unknown',
     source_model: '',
     stream_user: '',
@@ -641,12 +644,6 @@ onMounted(async () => {
     }
 
     loading.value = false
-});
-
-watch(shared, () => {
-    if (!shared.value) {
-        channels.value = [];
-    }
 });
 
 function expired(expiration?: string | null) {
@@ -678,12 +675,6 @@ async function fetchLease() {
         channels.value = [ editLease.value.channel ];
     } else {
         channels.value = [];
-    }
-
-    if (res.channel) {
-        shared.value = true;
-    } else {
-        shared.value = false;
     }
 
     const resMetadata = await std(`/api/video/lease/${editLease.value.id}/metadata`, {
@@ -729,6 +720,7 @@ async function saveLease() {
                     permanent: editLease.value.duration === 'Permanent' ? true : false,
                     recording: editLease.value.recording,
                     publish: editLease.value.publish,
+                    share: editLease.value.share,
                     source_type: editLease.value.source_type,
                     source_model: editLease.value.source_model,
                 }
@@ -745,6 +737,7 @@ async function saveLease() {
                     permanent: editLease.value.duration === 'Permanent' ? true : false,
                     recording: editLease.value.recording,
                     publish: editLease.value.publish,
+                    share: editLease.value.share,
                     source_type: editLease.value.source_type,
                     source_model: editLease.value.source_model,
                 }

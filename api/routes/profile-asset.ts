@@ -12,6 +12,16 @@ import Config from '../lib/config.js';
 import * as Default from '../lib/limits.js'
 
 export default async function router(schema: Schema, config: Config) {
+    async function ensureIconsetPermission(iconset: string | null | undefined, email: string) {
+        if (iconset === undefined || iconset === null || iconset === '') return;
+
+        const iconsetRes = await config.models.Iconset.from(iconset);
+
+        if (iconsetRes.username !== email) {
+            throw new Err(403, null, `You do not have permission to associate iconset '${iconset}'`);
+        }
+    }
+
     await schema.get('/profile/asset', {
         name: 'List Files',
         group: 'ProfileFile',
@@ -87,6 +97,23 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.ProfileFile.delete(req.params.asset);
 
+            if (file.iconset) {
+                const iconset = await config.models.Iconset.from(file.iconset);
+
+                if (await config.models.ProfileFile.count({
+                    where: sql`
+                      iconset = ${file.iconset}
+                    `
+                }) > 1) {
+                    return;
+                }
+
+                if (iconset.username_internal && iconset.username && iconset.username === user.email) {
+                    await config.models.Icon.delete(sql`iconset = ${file.iconset}`);
+                    await config.models.Iconset.delete(String(file.iconset));
+                }
+            }
+
             await S3.del(`profile/${user.email}/${req.params.asset}`, {
                 recurse: true
             });
@@ -112,6 +139,7 @@ export default async function router(schema: Schema, config: Config) {
             path: Type.String({
                 default: '/'
             }),
+            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             artifacts: Type.Array(Type.Object({
                 ext: Type.String()
             }), {
@@ -133,11 +161,16 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
+            await ensureIconsetPermission(req.body.iconset, user.email);
+
+            console.error('ICONSET', req.body.iconset, typeof req.body.iconset);
+
             const file = await config.models.ProfileFile.generate({
                 id: req.body.id,
                 username: user.email,
                 name: req.body.name,
                 path: req.body.path,
+                iconset: req.body.iconset ?? null,
                 size: head.ContentLength || 0,
                 artifacts
             });
@@ -163,6 +196,7 @@ export default async function router(schema: Schema, config: Config) {
                 ext: Type.String()
             }))),
             name: Type.Optional(Type.String()),
+            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()]))
         }),
         res: ProfileFileResponse
     }, async (req, res) => {
@@ -187,9 +221,19 @@ export default async function router(schema: Schema, config: Config) {
                 file = await config.models.ProfileFile.commit(req.params.asset, { artifacts });
             }
 
+            let iconsetValue = file.iconset;
+            if (req.body.iconset === null) {
+                iconsetValue = null;
+            } else if (req.body.iconset !== undefined) {
+                iconsetValue = req.body.iconset;
+            }
+
+            await ensureIconsetPermission(iconsetValue, user.email);
+
             file = await config.models.ProfileFile.commit(req.params.asset, {
                 name: req.body.name,
                 path: req.body.path,
+                iconset: iconsetValue
             });
 
             res.json(file);

@@ -22,180 +22,12 @@
                                 class='text-white'
                             />
                             <template v-else>
-                                <div class='card-header'>
-                                    <ConnectionStatus :connection='connection' />
-
-                                    <a
-                                        class='card-title cursor-pointer mx-2'
-                                        @click='router.push(`/connection/${connection.id}`)'
-                                        v-text='connection.name'
-                                    />
-
-                                    <div class='ms-auto d-flex align-items-center btn-list'>
-                                        <AgencyBadge :connection='connection' />
-
-                                        <TablerIconButton
-                                            v-if='!connection.readonly'
-                                            title='Cycle Connection'
-                                            @click='refresh'
-                                        >
-                                            <IconPlugConnected
-                                                :size='32'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
-                                        <TablerRefreshButton
-                                            :loading='!connection'
-                                            @click='fetch'
-                                        />
-                                        <TablerIconButton
-                                            title='Edit'
-                                            @click='router.push(`/connection/${connection.id}/edit`)'
-                                        >
-                                            <IconSettings
-                                                :size='32'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
-                                    </div>
-                                </div>
-                                <div class='card-body'>
-                                    <div class='row g-2'>
-                                        <div class='col-12'>
-                                            <TablerMarkdown :markdown='connection.description' />
-                                        </div>
-                                        <div class='col-12 datagrid'>
-                                            <div class='datagrid-item pb-2'>
-                                                <div class='datagrid-title'>
-                                                    Certificate Valid From
-                                                </div>
-                                                <div
-                                                    class='datagrid-content'
-                                                    v-text='connection.certificate.validFrom'
-                                                />
-                                            </div>
-                                            <div class='datagrid-item pb-2'>
-                                                <div class='datagrid-title'>
-                                                    Certificate Valid To
-                                                </div>
-                                                <div
-                                                    class='datagrid-content d-flex'
-                                                    :class='{
-                                                        "rounded bg-red text-white px-2 py-1": new Date(connection.certificate.validTo) < new Date()
-                                                    }'
-                                                >
-                                                    <div v-text='connection.certificate.validTo' />
-                                                    <div
-                                                        v-if='new Date(connection.certificate.validTo) < new Date()'
-                                                        class='ms-auto'
-                                                    >
-                                                        Expired Certificate
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class='datagrid-item pb-2'>
-                                                <div class='datagrid-title'>
-                                                    Certificate Subject
-                                                </div>
-                                                <div
-                                                    class='datagrid-content'
-                                                    v-text='connection.certificate.subject'
-                                                />
-                                            </div>
-                                        </div>
-                                        <div
-                                            v-if='connection.readonly'
-                                            class='col-12 d-flex align-items-center justify-content-center pt-3'
-                                        >
-                                            <TablerDropdown>
-                                                <template #default>
-                                                    <button class='btn mx-2'>
-                                                        <IconDownload
-                                                            :size='24'
-                                                            stroke='1'
-                                                        />
-                                                        <span class='mx-2'>Download Truststore</span>
-                                                    </button>
-                                                </template>
-                                                <template #dropdown>
-                                                    <div class='card'>
-                                                        <div class='card-body row g-2'>
-                                                            <div class='col-12'>
-                                                                <TablerInput
-                                                                    v-model='certificate.truststorePassword'
-                                                                    label='Choose Certificate Password'
-                                                                    type='password'
-                                                                    autocomplete='off'
-                                                                />
-                                                            </div>
-                                                            <div class='col-12'>
-                                                                <button
-                                                                    class='btn btn-primary w-100'
-                                                                    :disabled='!certificate.truststorePassword'
-                                                                    @click='downloadCertificate("truststore")'
-                                                                >
-                                                                    <IconDownload
-                                                                        :size='24'
-                                                                        stroke='1'
-                                                                    />
-                                                                    <span class='mx-2'>Download Truststore</span>
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </template>
-                                            </TablerDropdown>
-                                            <TablerDropdown>
-                                                <template #default>
-                                                    <button class='btn mx-2'>
-                                                        <IconDownload
-                                                            :size='24'
-                                                            stroke='1'
-                                                        />
-                                                        <span class='mx-2'>Download Certificate</span>
-                                                    </button>
-                                                </template>
-                                                <template #dropdown>
-                                                    <div class='card'>
-                                                        <div class='card-body row g-2'>
-                                                            <div class='col-12'>
-                                                                <TablerInput
-                                                                    v-model='certificate.clientPassword'
-                                                                    label='Choose Certificate Password'
-                                                                    type='password'
-                                                                    autocomplete='off'
-                                                                />
-                                                            </div>
-                                                            <div class='col-12'>
-                                                                <button
-                                                                    class='btn btn-primary w-100'
-                                                                    :disabled='!certificate.clientPassword'
-                                                                    @click='downloadCertificate("client")'
-                                                                >
-                                                                    <IconDownload
-                                                                        :size='24'
-                                                                        stroke='1'
-                                                                    />
-                                                                    <span class='mx-2'>Download Certificate</span>
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </template>
-                                            </TablerDropdown>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class='card-footer d-flex align-items-center'>
-                                    <div>
-                                        Last updated <span v-text='timeDiff(connection.updated)' />
-                                    </div>
-                                    <div class='ms-auto'>
-                                        <InitialAuthor
-                                            :email='connection.username || "Unknown"'
-                                        />
-                                    </div>
-                                </div>
+                                <ConnectionCard
+                                    :connection='connection'
+                                    :clickable='false'
+                                    :expanded='true'
+                                    @update:connection='connection = $event'
+                                />
                             </template>
                         </div>
                     </div>
@@ -321,41 +153,25 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { ETLConnection } from '../../types.ts';
-import InitialAuthor from '../util/InitialAuthor.vue';
-import { std, stdurl } from '../../std.ts';
+import { std } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
-import ConnectionStatus from './Connection/StatusDot.vue';
-import timeDiff_ from '../../timediff.ts';
-const timeDiff = timeDiff_;
+import timeDiff from '../../timediff.ts';
+import ConnectionCard from './ConnectionCard.vue';
 import {
     IconFiles,
     IconRobot,
     IconVideo,
     IconDatabase,
-    IconDownload,
     IconAffiliate,
-    IconPlugConnected,
     IconBuildingBroadcastTower,
-    IconSettings
 } from '@tabler/icons-vue'
 import {
-    TablerRefreshButton,
-    TablerIconButton,
     TablerBreadCrumb,
-    TablerDropdown,
-    TablerMarkdown,
     TablerLoading,
-    TablerInput,
 } from '@tak-ps/vue-tabler';
-import AgencyBadge from './Connection/AgencyBadge.vue';
 
 const route = useRoute();
 const router = useRouter();
-
-const certificate = ref({
-    truststorePassword: '',
-    clientPassword: ''
-});
 
 const connection = ref<ETLConnection | undefined>();
 
@@ -375,20 +191,5 @@ onMounted(async () => {
 async function fetch() {
     connection.value = undefined;
     connection.value = await std(`/api/connection/${route.params.connectionid}`) as ETLConnection;
-}
-
-function downloadCertificate(type: 'truststore' | 'client') {
-    const url = stdurl(`/api/connection/${route.params.connectionid}/auth`);
-    url.searchParams.set('type', type);
-    url.searchParams.set('download', 'true');
-    url.searchParams.set('password', type === 'truststore' ? certificate.value.truststorePassword : certificate.value.clientPassword);
-    url.searchParams.set('token', localStorage.token);
-    window.open(url, '_blank');
-}
-
-async function refresh() {
-    connection.value = await std(`/api/connection/${route.params.connectionid}/refresh`, {
-        method: 'POST'
-    }) as ETLConnection;
 }
 </script>

@@ -245,7 +245,7 @@
                                                 />
                                                 <TablerNone
                                                     v-else-if='!layer.incoming'
-                                                    label='Incoming Config'
+                                                    label='No Incoming Config'
                                                     :create='capabilities && capabilities.incoming !== undefined'
                                                     @create='createIncoming'
                                                 />
@@ -401,8 +401,7 @@ import { useRoute, useRouter } from 'vue-router';
 import PageFooter from '../PageFooter.vue';
 import LayerStatus from './Layer/utils/StatusDot.vue';
 import InitialAuthor from '../util/InitialAuthor.vue';
-import timeDiff_ from '../../timediff.ts';
-const timeDiff = timeDiff_;
+import timeDiff from '../../timediff.ts';
 import {
     TablerNone,
     TablerDelete,
@@ -508,6 +507,12 @@ async function fetch() {
     const url = stdurl(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}`);
     url.searchParams.append('alarms', 'true');
     layer.value = await std(url) as ETLLayer;
+
+    if (!String(route.name).includes('outgoing') && !String(route.name).includes('incoming')) {
+        if (layer.value.outgoing && !layer.value.incoming) {
+            mode.value = 'outgoing';
+        }
+    }
 }
 
 async function cancelUpdate() {

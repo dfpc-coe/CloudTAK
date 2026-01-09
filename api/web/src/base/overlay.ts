@@ -30,6 +30,7 @@ export default class Overlay {
     active: boolean;
     username?: string;
     frequency: number | null;
+    iconset: string | null;
     created: string;
     updated: string;
     pos: number;
@@ -52,6 +53,7 @@ export default class Overlay {
             skipSave?: boolean;
             clickable?: Array<{ id: string; type: string }>;
             before?: string;
+            skipLayers?: boolean;
         } = {}
     ): Promise<Overlay> {
         if (opts.skipSave !== true) {
@@ -108,6 +110,7 @@ export default class Overlay {
             username: 'internal',
             url: '',
             frequency: null,
+            iconset: null,
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             token: undefined,
@@ -150,6 +153,7 @@ export default class Overlay {
         this.active = overlay.active;
         this.username = overlay.username;
         this.frequency = overlay.frequency;
+        this.iconset = overlay.iconset;
         this.created = overlay.created;
         this.updated = overlay.updated;
         this.actions = overlay.actions || {
@@ -214,106 +218,24 @@ export default class Overlay {
         }
     }
 
-    async init(opts: {
-        clickable?: Array<{ id: string; type: string }>;
-        before?: string;
-    } = {}) {
+    async addLayers(before?: string): Promise<void> {
         const mapStore = useMapStore();
 
-        if (this.type === 'raster' && this.url) {
-            const url = stdurl(this.url);
-            url.searchParams.append('token', localStorage.token);
-
-            const tileJSON = await std(url.toString()) as TileJSON
-
-            mapStore.map.addSource(String(this.id), {
-                ...tileJSON,
-                type: 'raster',
-            });
-        } else if (this.type === 'vector' && this.url) {
-            const url = stdurl(this.url);
-            url.searchParams.append('token', localStorage.token);
-
-            mapStore.map.addSource(String(this.id), {
-                type: 'vector',
-                url: String(url)
-            });
-        } else if (this.type === 'geojson') {
-            if (!mapStore.map.getSource(String(this.id))) {
-                const data: FeatureCollection = { type: 'FeatureCollection', features: [] };
-
-                mapStore.map.addSource(String(this.id), {
-                    type: 'geojson',
-                    cluster: false,
-                    data
-                })
-            }
-        }
-
-        const profile = await mapStore.worker.profile.load();
-
-        let size = 8
-        if (profile.display_text === 'Small') size = 4;
-        if (profile.display_text === 'Large') size = 16;
-
-        if (!this.styles.length && this.type === 'raster') {
-            this.styles = [{
-                'id': String(this.id),
-                'type': 'raster',
-                'source': String(this.id)
-            }]
-        } else if (!this.styles.length && this.type === 'vector') {
-            this.styles = cotStyles(String(this.id), {
-                sourceLayer: 'out',
-                group: false,
-                icons: false,
-                labels: { size }
-            });
-        } else if (!this.styles.length && this.type === 'geojson') {
-            this.styles = cotStyles(String(this.id), {
-                group: this.mode !== "mission",
-                icons: true,
-                course: true,
-                rotateIcons: profile.display_icon_rotation,
-                labels: { size }
-            });
-        } else if (!this.styles.length) {
-            this.styles = [];
-        }
-
-        if (this.type === 'vector' && this. mode !== 'basemap' && opts.clickable === undefined) {
-            opts.clickable = this.styles.map((l) => {
-                return { id: l.id, type: 'feat' };
-            });
-        } else if (this.type === 'geojson' && opts.clickable === undefined) {
-            opts.clickable = this.styles.map((l) => {
-                if (this.mode === 'mission') {
-                    return { id: l.id, type: 'cot' };
-                } else {
-                    return { id: l.id, type: this.id === -1 ? 'cot' : 'feat' };
-                }
-            });
-        }
-
         for (const l of this.styles) {
-            if (opts.before) {
-                mapStore.map.addLayer(l, opts.before);
+            if (before) {
+                mapStore.map.addLayer(l, before);
             } else {
                 mapStore.map.addLayer(l)
             }
         }
 
         // The above doesn't set vis/opacity initially
-        this.update({
+        await this.update({
             opacity: this.opacity,
             visible: this.visible
         })
 
-        if (!opts.clickable) {
-            opts.clickable = [];
-        }
-
-        for (const click of opts.clickable) {
+        for (const click of this._clickable) {
             const hoverIds = new Set<string>();
 
             mapStore.map.on('mouseenter', click.id, () => {
@@ -368,8 +290,107 @@ export default class Overlay {
                 }
             })
         }
+    }
+
+    async init(opts: {
+        clickable?: Array<{ id: string; type: string }>;
+        before?: string;
+        skipLayers?: boolean;
+    } = {}) {
+        const mapStore = useMapStore();
+
+        if (this.type === 'raster' && this.url) {
+            const url = stdurl(this.url);
+            url.searchParams.append('token', localStorage.token);
+
+            const tileJSON = await std(url.toString()) as TileJSON
+
+            mapStore.map.addSource(String(this.id), {
+                ...tileJSON,
+                type: 'raster',
+            });
+        } else if (this.type === 'vector' && this.url) {
+            const url = stdurl(this.url);
+            url.searchParams.append('token', localStorage.token);
+
+            mapStore.map.addSource(String(this.id), {
+                type: 'vector',
+                url: String(url)
+            });
+        } else if (this.type === 'geojson') {
+            if (!mapStore.map.getSource(String(this.id))) {
+                const data: FeatureCollection = { type: 'FeatureCollection', features: [] };
+
+                mapStore.map.addSource(String(this.id), {
+                    type: 'geojson',
+                    cluster: false,
+                    data
+                })
+            }
+        }
+
+        const profile = await mapStore.worker.profile.load();
+
+        let size = 8
+        if (profile.display_text === 'Small') size = 4;
+        if (profile.display_text === 'Large') size = 16;
+
+        if (!this.styles.length && this.type === 'raster') {
+            this.styles = [{
+                'id': String(this.id),
+                'type': 'raster',
+                'source': String(this.id)
+            }]
+        } else if (!this.styles.length && this.type === 'vector') {
+            this.styles = cotStyles(String(this.id), {
+                sourceLayer: 'out',
+                group: false,
+                icons: !!this.iconset,
+                labels: { size }
+            });
+        } else if (!this.styles.length && this.type === 'geojson') {
+            this.styles = cotStyles(String(this.id), {
+                group: this.mode !== "mission",
+                icons: true,
+                course: true,
+                rotateIcons: profile.display_icon_rotation,
+                labels: { size }
+            });
+        } else if (!this.styles.length) {
+            this.styles = [];
+        }
+
+        if (this.iconset) {
+            try {
+                mapStore.icons.addIconset(this.iconset);
+            } catch (err) {
+                console.error('Error adding iconset', this.iconset, err);
+            }
+        }
+
+        if (this.type === 'vector' && this. mode !== 'basemap' && opts.clickable === undefined) {
+            opts.clickable = this.styles.map((l) => {
+                return { id: l.id, type: 'feat' };
+            });
+        } else if (this.type === 'geojson' && opts.clickable === undefined) {
+            opts.clickable = this.styles.map((l) => {
+                if (this.mode === 'mission') {
+                    return { id: l.id, type: 'cot' };
+                } else {
+                    return { id: l.id, type: this.id === -1 ? 'cot' : 'feat' };
+                }
+            });
+        }
+
+        if (!opts.clickable) {
+            opts.clickable = [];
+        }
 
         this._clickable = opts.clickable;
+
+        if (!opts.skipLayers) {
+            await this.addLayers(opts.before);
+        }
         this._loaded = true;
     }
 
@@ -378,6 +399,10 @@ export default class Overlay {
 
         for (const l of this.styles) {
             mapStore.map.removeLayer(String(l.id));
+        }
+
+        if (this.iconset) {
+            mapStore.icons.removeIconset(this.iconset);
         }
 
         if (mapStore.map.getStyle().sources[String(this.id)]) {

@@ -113,6 +113,13 @@ export const MissionTemplateResponse = createSelectSchema(schemas.MissionTemplat
     updated: Type.String(),
 })
 
+export const MissionTemplateLogResponse = createSelectSchema(schemas.MissionTemplateLog, {
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    schema: Type.Any()
+})
+
 const Palette = createSelectSchema(schemas.Palette, {
     uuid: Type.String(),
     created: Type.String(),
@@ -147,6 +154,7 @@ export const IconsetResponse = Type.Object({
     version: Type.Integer(),
     name: Type.String(),
     username: Type.Union([Type.Null(), Type.String()]),
+    username_internal: Type.Boolean(),
     default_group: Type.Union([Type.Null(), Type.String()]),
     default_friendly: Type.Union([Type.Null(), Type.String()]),
     default_hostile: Type.Union([Type.Null(), Type.String()]),
@@ -217,6 +225,7 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
     id: Type.Integer(),
     pos: Type.Integer(),
     frequency: Type.Union([Type.Null(), Type.Integer()]),
+    iconset: Type.Union([Type.Null(), Type.String()]),
     opacity: Type.Number(),
     visible: Type.Boolean(),
     styles: Type.Array(Type.Unknown())
@@ -282,6 +291,7 @@ export const JobResponse = Type.Object({
 
 export const ProfileFileResponse = createSelectSchema(schemas.ProfileFile, {
     id: Type.String(),
+    iconset: Type.Union([Type.Null(), Type.String()]),
     artifacts: Type.Array(Type.Object({
         ext: Type.String(),
         size: Type.Integer(),

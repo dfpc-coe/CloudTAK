@@ -107,7 +107,7 @@
                 />
                 <TablerNone
                     v-else-if='!list.items.length'
-                    label='Tasks'
+                    label='No Tasks'
                     :create='false'
                 />
                 <div

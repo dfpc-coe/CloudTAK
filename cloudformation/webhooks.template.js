@@ -17,10 +17,6 @@ export default cf.merge(
                 Description: 'VPC/ECS Stack to deploy into',
                 Type: 'String',
                 Default: 'prod'
-            },
-            SSLCertificateIdentifier: {
-                Description: 'ACM SSL Certificate for top level wildcard: *.example.com and second level *.map.example.com',
-                Type: 'String'
             }
         },
         Resources: {
@@ -42,7 +38,7 @@ export default cf.merge(
                 Type: 'AWS::ApiGateway::DomainName',
                 Properties: {
                     DomainName: cf.join([cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
-                    RegionalCertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('SSLCertificateIdentifier')]),
+                    RegionalCertificateArn: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-acm'])),
                     EndpointConfiguration: {
                         Types: ['REGIONAL']
                     }

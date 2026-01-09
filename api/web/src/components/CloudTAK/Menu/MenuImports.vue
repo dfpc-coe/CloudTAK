@@ -86,11 +86,10 @@
                             />
                         </div>
                         <div
-                            class='mx-2 col-auto row'
-                            style='width: 280px;'
+                            class='mx-2 col d-flex flex-column'
                         >
                             <div
-                                class='text-truncate'
+                                class='text-break'
                                 v-text='imported.name'
                             />
                             <div
@@ -140,8 +139,7 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import Status from '../../util/StatusDot.vue';
-import timeDiff_ from '../../../timediff.ts';
-const timeDiff = timeDiff_;
+import timeDiff from '../../../timediff.ts';
 import Upload from '../../util/Upload.vue';
 
 const router = useRouter();

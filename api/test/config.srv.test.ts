@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -7,7 +8,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET api/config', async (t) => {
+test('GET api/config', async () => {
     try {
         const res = await flight.fetch('/api/config?keys=group::Yellow', {
             method: 'GET',
@@ -16,15 +17,13 @@ test('GET api/config', async (t) => {
             },
         }, true);
 
-        t.deepEquals(res.body, {});
+        assert.deepEqual(res.body, {});
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PUT api/config', async (t) => {
+test('PUT api/config', async () => {
     try {
         const res = await flight.fetch('/api/config', {
             method: 'PUT',
@@ -36,17 +35,15 @@ test('PUT api/config', async (t) => {
             }
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             'group::Yellow': 'Wildland Firefighter'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET api/config', async (t) => {
+test('GET api/config', async () => {
     try {
         const res = await flight.fetch('/api/config?keys=group::Yellow', {
             method: 'GET',
@@ -55,17 +52,15 @@ test('GET api/config', async (t) => {
             },
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             'group::Yellow': 'Wildland Firefighter'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET api/config/group', async (t) => {
+test('GET api/config/group', async () => {
     try {
         const res = await flight.fetch('/api/config/group', {
             method: 'GET',
@@ -74,18 +69,16 @@ test('GET api/config/group', async (t) => {
             },
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             roles: [ 'Team Member', 'Team Lead', 'HQ', 'Sniper', 'Medic', 'Forward Observer', 'RTO', 'K9' ],
             groups: { Yellow: 'Wildland Firefighter', Cyan: '', Green: '', Red: '', Purple: '', Orange: '', Blue: '', Magenta: '', White: '', Maroon: '', 'Dark Blue': '', Teal: '', 'Dark Green': '', Brown: '' }
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET api/config/login', async (t) => {
+test('GET api/config/login', async () => {
     try {
         const res = await flight.fetch('/api/config/login', {
             method: 'GET',
@@ -94,17 +87,15 @@ test('GET api/config/login', async (t) => {
             },
         }, true);
 
-        t.deepEquals(res.body, {
-            name: 'Default Server',
+        assert.deepEqual(res.body, {
+            name: 'Test Runner',
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PUT api/config', async (t) => {
+test('PUT api/config', async () => {
     try {
         const res = await flight.fetch('/api/config', {
             method: 'PUT',
@@ -117,18 +108,16 @@ test('PUT api/config', async (t) => {
             }
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             'login::signup': 'https://example.com/signup',
             'login::forgot': 'https://example.com/forgot'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET api/config/login', async (t) => {
+test('GET api/config/login', async () => {
     try {
         const res = await flight.fetch('/api/config/login', {
             method: 'GET',
@@ -137,19 +126,17 @@ test('GET api/config/login', async (t) => {
             },
         }, true);
 
-        t.deepEquals(res.body, {
-            name: 'Default Server',
+        assert.deepEqual(res.body, {
+            name: 'Test Runner',
             signup: 'https://example.com/signup',
             forgot: 'https://example.com/forgot'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('GET api/config/map', async (t) => {
+test('GET api/config/map', async () => {
     try {
         const res = await flight.fetch('/api/config/map', {
             method: 'GET',
@@ -158,17 +145,15 @@ test('GET api/config/map', async (t) => {
             },
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             center: '-100,40',
             zoom: 4,
             pitch: 0,
             bearing: 0
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 import Sinon from 'sinon';
 import {
@@ -12,7 +13,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: api/profile/asset', async (t) => {
+test('GET: api/profile/asset', async () => {
     try {
         const res = await flight.fetch('/api/profile/asset', {
             method: 'GET',
@@ -21,7 +22,7 @@ test('GET: api/profile/asset', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
              total: 0,
              tiles: {
                  url: 'http://localhost:5001/tiles/profile/admin@example.com/'
@@ -29,19 +30,17 @@ test('GET: api/profile/asset', async (t) => {
              items: [],
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('POST: api/profile/asset', async (t) => {
+test('POST: api/profile/asset', async () => {
     try {
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
 
-            t.ok(command instanceof HeadObjectCommand);
+            assert.ok(command instanceof HeadObjectCommand);
 
-            t.deepEquals(command.input, {
+            assert.deepEqual(command.input, {
                 Bucket: 'fake-asset-bucket',
                 Key: 'profile/admin@example.com/9e286ca6-1932-4365-804b-7dd4830f01d7.zip'
             });
@@ -64,37 +63,36 @@ test('POST: api/profile/asset', async (t) => {
             }
         }, true);
 
-        t.ok(res.body.created, 'has created');
+        assert.ok(res.body.created, 'has created');
         res.body.created = '2025-09-12T00:12:46.016Z';
-        t.ok(res.body.updated, 'has updated');
+        assert.ok(res.body.updated, 'has updated');
         res.body.updated = '2025-09-12T00:12:46.016Z';
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: '9e286ca6-1932-4365-804b-7dd4830f01d7',
             created: '2025-09-12T00:12:46.016Z',
             updated: '2025-09-12T00:12:46.016Z',
             username: 'admin@example.com',
             path: '/',
             name: 'example.zip',
+            iconset: null,
             size: 123,
             artifacts: []
         });
 
         Sinon.restore();
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PATCH: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', async (t) => {
+test('PATCH: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', async () => {
     try {
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
 
-            t.ok(command instanceof HeadObjectCommand);
+            assert.ok(command instanceof HeadObjectCommand);
 
-            t.deepEquals(command.input, {
+            assert.deepEqual(command.input, {
                 Bucket: 'fake-asset-bucket',
                 Key: 'profile/admin@example.com/9e286ca6-1932-4365-804b-7dd4830f01d7.zip'
             });
@@ -113,28 +111,27 @@ test('PATCH: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', async (t) 
             }
         }, true);
 
-        t.ok(res.body.created, 'has created');
+        assert.ok(res.body.created, 'has created');
         res.body.created = '2025-09-12T00:12:46.016Z';
-        t.ok(res.body.updated, 'has updated');
+        assert.ok(res.body.updated, 'has updated');
         res.body.updated = '2025-09-12T00:12:46.016Z';
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             id: '9e286ca6-1932-4365-804b-7dd4830f01d7',
             created: '2025-09-12T00:12:46.016Z',
             updated: '2025-09-12T00:12:46.016Z',
             username: 'admin@example.com',
             path: '/',
             name: 'example.zip',
+            iconset: null,
             size: 123,
             artifacts: []
         });
 
         Sinon.restore();
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

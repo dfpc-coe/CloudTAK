@@ -1,11 +1,12 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 import Sinon from 'sinon';
 import {
     ECRClient
 } from '@aws-sdk/client-ecr';
 
-const ECR_TASKS_REPOSITORY = process.env.ECR_TASKS_REPOSITORY_NAME || 'coe-ecr-etl-tasks';
+process.env.ECR_TASKS_REPOSITORY_NAME = 'example-ecr';
 
 const flight = new Flight();
 
@@ -13,11 +14,11 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: api/task - empty', async (t) => {
+test('GET: api/task - empty', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
-            t.deepEquals(command.input, {
-                repositoryName: ECR_TASKS_REPOSITORY
+            assert.deepEqual(command.input, {
+                repositoryName: process.env.ECR_TASKS_REPOSITORY_NAME
             });
             return Promise.resolve({ imageIds: [] });
         });
@@ -29,23 +30,22 @@ test('GET: api/task - empty', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     Sinon.restore();
-    t.end();
 });
 
-test('GET: api/task - empty', async (t) => {
+test('GET: api/task - empty', async () => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
-            t.deepEquals(command.input, {
-                repositoryName: ECR_TASKS_REPOSITORY
+            assert.deepEqual(command.input, {
+                repositoryName: process.env.ECR_TASKS_REPOSITORY_NAME
             });
 
             return Promise.resolve({
@@ -70,7 +70,7 @@ test('GET: api/task - empty', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 5,
             items: {
                 test: [ '1.1.1', '1.1.0', '1.0.0' ],
@@ -78,11 +78,10 @@ test('GET: api/task - empty', async (t) => {
             }
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
 
     Sinon.restore();
-    t.end();
 });
 
 flight.landing();

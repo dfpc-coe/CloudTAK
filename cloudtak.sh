@@ -1,3 +1,5 @@
+#!/bin/bash
+
 SUBCOMMAND=${1:-}
 
 set -euo pipefail
@@ -20,7 +22,7 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
     fi
 
     sudo apt update
-    sudo apt install -y git jq ca-certificates curl caddy
+    sudo apt install -y git jq ca-certificates curl caddy dnsutils
 
     for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
@@ -64,8 +66,6 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
         exit 1
     fi
 
-    docker compose build
-
     if [[ ! -f .env ]]; then
         echo "Generating a new .env file with default settings..."
         cp .env.example .env
@@ -76,6 +76,55 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
     else
         echo ".env file already exists. Skipping creation."
     fi
+
+    read -p "Enter the API_URL (e.g. map.example.com): " API_URL
+    if [[ -n "$API_URL" ]]; then
+        echo "Checking DNS records for $API_URL..."
+        if dig +short "$API_URL" A | grep -q .; then
+            echo "DNS check passed: A records found for $API_URL."
+            sed -i "s|^API_URL=.*|API_URL=https://$API_URL|" .env
+            echo "Updated API_URL in .env"
+
+            PMTILES_URL="tiles.$API_URL"
+            echo "Checking DNS records for $PMTILES_URL..."
+            if dig +short "$PMTILES_URL" A | grep -q .; then
+                echo "DNS check passed: A records found for $PMTILES_URL."
+                sed -i "s|^PMTILES_URL=.*|PMTILES_URL=https://$PMTILES_URL|" .env
+                echo "Updated PMTILES_URL in .env"
+
+                echo "Generating Caddyfile..."
+                cat <<EOF | sudo tee /etc/caddy/Caddyfile > /dev/null
+# CloudTAK app
+$API_URL {
+        reverse_proxy localhost:5000
+}
+
+#CloudTAK Tiles
+$PMTILES_URL {
+        reverse_proxy localhost:5002
+}
+EOF
+                echo "Caddyfile generated at /etc/caddy/Caddyfile"
+                sudo systemctl reload caddy
+            else
+                echo "DNS check failed: No A records found for $PMTILES_URL."
+                echo "Please ensure your DNS is configured correctly."
+                echo "Run ./cloudtak.sh install again after fixing DNS."
+                exit 1
+            fi
+        else
+            echo "DNS check failed: No A records found for $API_URL."
+            echo "Please ensure your DNS is configured correctly."
+            echo "Run ./cloudtak.sh install again after fixing DNS."
+            exit 1
+        fi
+    else
+        echo "WARNING: No API_URL provided. Skipping DNS validation and .env updates for API_URL and PMTILES_URL."
+        echo "You may need to manually set API_URL and PMTILES_URL in your .env file before running the application."
+    fi
+
+    docker compose build
+
 elif [[ "$SUBCOMMAND" == "backup" ]]; then
     if [ ! -f .env ]; then
         echo ".env file not found. Please run 'install' first."
@@ -93,44 +142,57 @@ elif [[ "$SUBCOMMAND" == "backup" ]]; then
     echo "Backing up PostgreSQL database to ${BACKUP_FILE}"
     docker exec cloudtak-postgis-1 pg_dump -d $(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/') > $BACKUP_FILE
 elif [[ "$SUBCOMMAND" == "restore" ]]; then
+    TARGET_FILE=${2:-}
+    FORCE=${3:-}
+
     if [ ! -f .env ]; then
         echo ".env file not found. Please run 'install' first."
         exit 1
     fi
 
-    BACKUP_DIR=~/cloudtak-backups
-    if [ ! -d "$BACKUP_DIR" ]; then
-        echo "Backup directory $BACKUP_DIR does not exist."
-        exit 1
-    fi
-
-    shopt -s nullglob
-    FILES=("$BACKUP_DIR"/*.sql)
-    shopt -u nullglob
-
-    if [ ${#FILES[@]} -eq 0 ]; then
-        echo "No backup files found in $BACKUP_DIR"
-        exit 1
-    fi
-
-    echo "Available backups:"
-    PS3="Select a backup number to restore (or 'q' to quit): "
-    select BACKUP_FILE in "${FILES[@]}"; do
-        if [[ -n "$BACKUP_FILE" ]]; then
-            break
+    if [[ -n "$TARGET_FILE" ]]; then
+        BACKUP_FILE="$TARGET_FILE"
+        if [ ! -f "$BACKUP_FILE" ]; then
+            echo "Backup file $BACKUP_FILE does not exist."
+            exit 1
         fi
-        if [[ "$REPLY" == "q" || "$REPLY" == "quit" ]]; then
-            echo "Cancelled."
+    else
+        BACKUP_DIR=~/cloudtak-backups
+        if [ ! -d "$BACKUP_DIR" ]; then
+            echo "Backup directory $BACKUP_DIR does not exist."
+            exit 1
+        fi
+
+        shopt -s nullglob
+        FILES=("$BACKUP_DIR"/*.sql)
+        shopt -u nullglob
+
+        if [ ${#FILES[@]} -eq 0 ]; then
+            echo "No backup files found in $BACKUP_DIR"
+            exit 1
+        fi
+
+        echo "Available backups:"
+        PS3="Select a backup number to restore (or 'q' to quit): "
+        select BACKUP_FILE in "${FILES[@]}"; do
+            if [[ -n "$BACKUP_FILE" ]]; then
+                break
+            fi
+            if [[ "$REPLY" == "q" || "$REPLY" == "quit" ]]; then
+                echo "Cancelled."
+                exit 0
+            fi
+            echo "Invalid selection. Please try again."
+        done
+        echo "You selected: $BACKUP_FILE"
+    fi
+
+    if [[ "$FORCE" != "--force" ]]; then
+        read -p "WARNING: This will OVERWRITE the current database. Are you sure? (y/n): " CONFIRM
+        if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
+            echo "Restore cancelled."
             exit 0
         fi
-        echo "Invalid selection. Please try again."
-    done
-
-    echo "You selected: $BACKUP_FILE"
-    read -p "WARNING: This will OVERWRITE the current database. Are you sure? (y/n): " CONFIRM
-    if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
-        echo "Restore cancelled."
-        exit 0
     fi
 
     if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
@@ -148,6 +210,22 @@ elif [[ "$SUBCOMMAND" == "restore" ]]; then
     cat "$BACKUP_FILE" | docker exec -i cloudtak-postgis-1 psql -d "$DB_URL"
 
     echo "Restore complete."
+elif [[ "$SUBCOMMAND" == "connect" ]]; then
+    if [ ! -f .env ]; then
+        echo ".env file not found. Please run 'install' first."
+        exit 1
+    fi
+
+    if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
+        echo "PostgreSQL container is not running. Please start the services first."
+        exit 1
+    fi
+
+    DB_URL=$(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/')
+
+    echo "Connection String: $DB_URL"
+    echo "Connecting to PostgreSQL database..."
+    docker exec -it cloudtak-postgis-1 psql -d "$DB_URL"
 elif [[ "$SUBCOMMAND" == "start" ]]; then
     if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
         docker compose up -d postgis
@@ -159,7 +237,17 @@ elif [[ "$SUBCOMMAND" == "start" ]]; then
 
     docker compose up -d api events tiles media
 elif [[ "$SUBCOMMAND" == "stop" ]]; then
-    docker compose down
+    docker compose stop
+elif [[ "$SUBCOMMAND" == "clean" ]]; then
+    if ! command -v jq &> /dev/null; then
+        echo "jq could not be found, please install jq first."
+        echo "On Ubuntu: sudo apt-get install jq"
+        exit 1
+    fi
+
+    PROJECT_NAME=$(docker compose config --format json | jq -r .name)
+    echo "Cleaning up unused Docker images for project: $PROJECT_NAME..."
+    docker image prune --filter label=com.docker.compose.project=$PROJECT_NAME
 elif [[ "$SUBCOMMAND" == "update" ]]; then
     if ! command -v git &> /dev/null; then
         echo "git could not be found, please install git first."
@@ -172,11 +260,10 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
         exit 1
     fi
 
-    # Promp if they want a backup
-    read -p "Backup Database? (y/n): " BACKUP_CHOICE
-    if [[ "$BACKUP_CHOICE" == "y" || "$BACKUP_CHOICE" == "Y" ]]; then
-        $0 backup
-    fi
+    # Always backup database
+    echo "Backing up database..."
+    $0 backup
+    LATEST_BACKUP=$(ls -t ~/cloudtak-backups/cloudtak-*.sql 2>/dev/null | head -n1)
 
     git pull
 
@@ -184,7 +271,41 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
     docker compose build events tiles media
 
     $0 start
+
+    echo "Verifying database integrity..."
+    sleep 10
+
+    if docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
+        DB_URL=$(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/')
+
+        # Check table count
+        if TABLE_COUNT=$(docker exec cloudtak-postgis-1 psql -d "$DB_URL" -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | xargs); then
+            echo "Found $TABLE_COUNT tables in public schema."
+
+            if [[ "$TABLE_COUNT" -eq 0 ]]; then
+                echo "Database appears empty!"
+                if [[ -n "$LATEST_BACKUP" && -f "$LATEST_BACKUP" ]]; then
+                    echo "Attempting automatic restore from $LATEST_BACKUP..."
+                    $0 restore "$LATEST_BACKUP" --force
+                    echo "Automatic restore complete."
+                else
+                    echo "No backup available to restore from!"
+                fi
+            else
+                echo "Database seems intact."
+            fi
+        else
+            echo "Failed to check database table count."
+        fi
+    else
+        echo "PostGIS container is not running. Skipping database check."
+    fi
+
+    read -p "Cleanup unused docker images? (y/n): " CLEAN_CHOICE
+    if [[ "$CLEAN_CHOICE" == "y" || "$CLEAN_CHOICE" == "Y" ]]; then
+        $0 clean
+    fi
 else
-    echo "Usage: $0 install|start|update|stop|backup|restore"
+    echo "Usage: $0 install|start|update|stop|backup|restore|clean|connect"
     exit 0
 fi

@@ -24,7 +24,7 @@
         >
             <TablerNone
                 v-if='list.total === 0'
-                label='Repeaters'
+                label='No Repeaters'
                 :create='false'
             />
             <template v-else>
@@ -59,8 +59,7 @@
 import { ref, onMounted } from 'vue';
 import { std } from '../../../std.ts';
 import type { RepeaterList, Repeater } from '../../../types.ts';
-import timeDiff_ from '../../../timediff.ts';
-const timeDiff = timeDiff_;
+import timeDiff from '../../../timediff.ts';
 import {
     TablerRefreshButton,
     TablerLoading,

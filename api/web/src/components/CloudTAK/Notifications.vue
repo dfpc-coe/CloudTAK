@@ -138,8 +138,7 @@ import TAKNotification_, { NotificationType } from '../../base/notification.ts';
 const TAKNotification = TAKNotification_;
 import NotificationToast from './util/NotificationToast.vue';
 import NotificationIcon from './util/NotificationIcon.vue';
-import timeDiff_ from '../../timediff.ts';
-const timeDiff = timeDiff_;
+import timeDiff from '../../timediff.ts';
 import {
     TablerNone,
     TablerInput,

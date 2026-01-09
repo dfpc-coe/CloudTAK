@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -7,7 +8,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: api/fake/path/to/resource', async (t) => {
+test('GET: api/fake/path/to/resource', async () => {
     try {
         const res = await flight.fetch('/api/fake/path/to/resource', {
             method: 'GET',
@@ -16,16 +17,14 @@ test('GET: api/fake/path/to/resource', async (t) => {
             }
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 404,
             message: 'API endpoint does not exist!',
             messages: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

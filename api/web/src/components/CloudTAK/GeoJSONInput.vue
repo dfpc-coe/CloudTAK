@@ -13,7 +13,7 @@
                     :size='28'
                     stroke='1'
                 />
-                <span class='mx-2'>Import GeoJSON</span>
+                <span class='mx-2'>Import GeoJSON to Editable Features</span>
             </div>
         </div>
         <div class='modal-body text-white'>
@@ -109,6 +109,7 @@ import {
     TablerInlineAlert,
     TablerFileInput,
 } from '@tak-ps/vue-tabler';
+import type CoT from '../../base/cot.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { normalize_geojson } from '@tak-ps/node-cot/normalize_geojson';
 import {
@@ -209,11 +210,13 @@ async function saveToMap() {
         }
     });
 
-    for (const feat of feats.value) {
-        await mapStore.worker.db.add(JSON.parse(JSON.stringify(feat)), {
+    const adding: Array<Promise<CoT>> = feats.value.map(feat =>
+        mapStore.worker.db.add(JSON.parse(JSON.stringify(feat)), {
             authored: true
-        });
-    }
+        })
+    );
+
+    await Promise.all(adding);
 
     loading.value = false;
 

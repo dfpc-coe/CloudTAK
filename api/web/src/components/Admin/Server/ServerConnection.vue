@@ -201,8 +201,7 @@ import {
     IconLock,
     IconPencil
 } from '@tabler/icons-vue';
-import timeDiff_ from '../../../timediff.ts';
-const timeDiff = timeDiff_;
+import timeDiff from '../../../timediff.ts';
 
 const edit = ref(false);
 const loading = ref(true);

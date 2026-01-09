@@ -3,7 +3,7 @@ import S3 from '../lib/aws/s3.js';
 import { sql, and, inArray } from 'drizzle-orm';
 import Config from '../lib/config.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
-import { X509Certificate } from 'crypto';
+import { X509Certificate, createPrivateKey } from 'crypto';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, ConnectionResponse } from '../lib/types.js';
 import { Connection } from '../lib/schema.js';
@@ -120,6 +120,18 @@ export default async function router(schema: Schema, config: Config) {
                 req.body.enabled = false;
             }
 
+            try {
+                new X509Certificate(req.body.auth.cert);
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid X509 Certificate Provided');
+            }
+
+            try {
+                createPrivateKey(req.body.auth.key);
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid Private Key Provided');
+            }
+
             const conn = await config.models.Connection.generate({
                 ...req.body,
                 username: user.email
@@ -129,10 +141,11 @@ export default async function router(schema: Schema, config: Config) {
 
             const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
-            if (req.body.integrationId && config.external && config.external.configured) {
+            const cotak = config.user?.get('cotak');
+            if (req.body.integrationId && cotak && cotak.configured) {
                 if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
 
-                await config.external.updateIntegrationConnectionId(profile.id, {
+                await cotak.updateIntegrationConnectionId(profile.id, {
                     connection_id: conn.id,
                     integration_id: req.body.integrationId
                 })
@@ -159,7 +172,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Default.NameField),
             description: Type.Optional(Default.DescriptionField),
             enabled: Type.Optional(Type.Boolean()),
-            agency: Type.Union([Type.Null(), Type.Optional(Type.Integer({ minimum: 1 }))]),
+            agency: Type.Optional(Type.Union([Type.Null(), Type.Integer({ minimum: 1 })])),
             auth: Type.Optional(ConnectionAuth)
         }),
         res: ConnectionResponse
@@ -172,6 +185,20 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.agency && await Auth.is_user(config, req)) {
                 const user = await Auth.as_user(config, req, { admin: true });
                 if (!user) throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
+            }
+
+            if (req.body.auth) {
+                try {
+                    new X509Certificate(req.body.auth.cert);
+                } catch (err) {
+                    throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid X509 Certificate Provided');
+                }
+
+                try {
+                    createPrivateKey(req.body.auth.key);
+                } catch (err) {
+                    throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid Private Key Provided');
+                }
             }
 
             if (connection.readonly) {
@@ -372,14 +399,15 @@ export default async function router(schema: Schema, config: Config) {
 
             config.conns.delete(req.params.connectionid);
 
-            if (config.external && config.external.configured) {
+            const cotak = config.user?.get('cotak');
+            if (cotak && cotak.configured) {
                 const user = await Auth.as_user(config, req);
                 const profile = await config.models.Profile.from(user.email);
 
                 if (profile.id) {
                     // I don't know how to figure out if the connection was created with a machine user and hence registered
                     // with COTAK, so just firing off the delete, which won't error out if no integration found.
-                    await config.external.deleteIntegrationByConnectionId(profile.id, {
+                    await cotak.deleteIntegrationByConnectionId(profile.id, {
                         connection_id: req.params.connectionid,
                     })
                 }

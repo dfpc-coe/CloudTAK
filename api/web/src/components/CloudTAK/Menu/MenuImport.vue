@@ -41,7 +41,7 @@
                                 :dark='true'
                                 :status='imported.status'
                             /><span
-                                class='mx-2'
+                                class='mx-2 text-break'
                                 v-text='imported.name'
                             />
                         </div>
@@ -110,8 +110,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../src/std.ts';
 import type { Import } from '../../../../src/types.ts';
 import Status from '../../util/StatusDot.vue';
-import timeDiff_ from '../../../timediff.ts';
-const timeDiff = timeDiff_;
+import timeDiff from '../../../timediff.ts';
 import {
     TablerNone,
     TablerAlert,

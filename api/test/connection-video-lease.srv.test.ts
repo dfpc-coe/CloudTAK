@@ -1,4 +1,5 @@
-import test from 'tape';
+import test from 'node:test';
+import assert from 'node:assert';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -9,7 +10,7 @@ flight.user();
 
 flight.connection();
 
-test('GET: api/connection/1/video/lease', async (t) => {
+test('GET: api/connection/1/video/lease', async () => {
     try {
         const res = await flight.fetch('/api/connection/1/video/lease', {
             method: 'GET',
@@ -18,18 +19,16 @@ test('GET: api/connection/1/video/lease', async (t) => {
             }
         }, true);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             total: 0,
             items: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('POST: api/connection/1/video/lease', async (t) => {
+test('POST: api/connection/1/video/lease', async () => {
     try {
         const res = await flight.fetch('/api/connection/1/video/lease', {
             method: 'POST',
@@ -41,19 +40,17 @@ test('POST: api/connection/1/video/lease', async (t) => {
             }
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             status: 400,
             message: 'Media Integration is not configured',
             messages: []
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
-test('PUT api/config', async (t) => {
+test('PUT api/config', async () => {
     try {
         const res = await flight.fetch('/api/config', {
             method: 'PUT',
@@ -65,14 +62,12 @@ test('PUT api/config', async (t) => {
             }
         }, false);
 
-        t.deepEquals(res.body, {
+        assert.deepEqual(res.body, {
             'media::url': 'https://video.example.com'
         });
     } catch (err) {
-        t.error(err, 'no error');
+        assert.ifError(err);
     }
-
-    t.end();
 });
 
 flight.landing();

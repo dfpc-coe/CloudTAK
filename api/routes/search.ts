@@ -1,17 +1,16 @@
 import { Type, Static } from '@sinclair/typebox'
 import SunCalc from 'suncalc'
+import geomagnetism from 'geomagnetism';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import Weather, { FetchHourly } from '../lib/weather.js';
-import { SearchManager } from '../lib/search.js';
+import { FetchHourly } from '../lib/interface-weather.js';
+import { SearchManager } from '../lib/interface-search.js';
 import { SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from '../lib/search/types.js';
 import { Feature } from '@tak-ps/node-cot';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
-    const weather = new Weather();
-
     const searchManager = await SearchManager.init(config);
 
     const ReverseResponse = Type.Object({
@@ -31,9 +30,13 @@ export default async function router(schema: Schema, config: Config) {
             nauticalDawn: Type.String({ description: 'nautical dawn (morning nautical twilight starts)' }),
             dawn: Type.String({ description: 'dawn (morning nautical twilight ends, morning civil twilight starts)' }),
         }),
-        weather: Type.Union([FetchHourly, Type.Null()]),
-        reverse: Type.Union([FetchReverse, Type.Null()]),
-        elevation: Type.Union([Type.String(), Type.Null()])
+        magnetic: Type.Object({
+            declination: Type.Number(),
+            inclination: Type.Number()
+        }),
+        weather: Type.Union([Type.Null(), FetchHourly]),
+        reverse: Type.Union([Type.Null(), FetchReverse]),
+        elevation: Type.Union([Type.Null(), Type.String()])
     });
 
     const SuggestResponse = Type.Object({
@@ -85,6 +88,7 @@ export default async function router(schema: Schema, config: Config) {
             const elevationUnit = await config.models.Profile.from(user.email).then(p => p.display_elevation).catch(() => 'feet');
 
             const sun = SunCalc.getTimes(new Date(), req.params.latitude, req.params.longitude, req.query.altitude);
+            const magnetic = geomagnetism.model().point([req.params.latitude, req.params.longitude]);
 
             const response: Static<typeof ReverseResponse> = {
                 sun: {
@@ -103,6 +107,10 @@ export default async function router(schema: Schema, config: Config) {
                     nauticalDawn: sun.nauticalDawn.toISOString(),
                     dawn: sun.dawn.toISOString(),
                 },
+                magnetic: {
+                    declination: magnetic.decl,
+                    inclination: magnetic.incl
+                },
                 weather: null,
                 reverse: null,
                 elevation: null,
@@ -111,7 +119,7 @@ export default async function router(schema: Schema, config: Config) {
             await Promise.all([
                 (async () => {
                     try {
-                        response.weather = await weather.get(req.params.longitude, req.params.latitude);
+                        response.weather = await config.weather.get(req.params.longitude, req.params.latitude);
                     } catch (err) {
                         console.error('Weather Fetch Error', err)
                     }
@@ -135,6 +143,7 @@ export default async function router(schema: Schema, config: Config) {
             // Handle elevation from query parameter (from MapLibre terrain)
             const finalResponse = {
                 sun: response.sun,
+                magnetic: response.magnetic,
                 weather: response.weather,
                 reverse: response.reverse,
                 elevation: req.query.elevation !== undefined

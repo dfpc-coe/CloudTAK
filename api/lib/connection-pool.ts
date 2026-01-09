@@ -13,7 +13,7 @@ import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from './connection-config.js';
 import { MachineConnConfig, ProfileConnConfig } from './connection-config.js';
 
-const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8')) as {
+const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')) as {
     version: string;
 };
 
@@ -160,9 +160,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         cots: CoT[],
     ) {
         try {
-            if (this.config.wsClients.has(String(conn.id))) {
+            if (conn instanceof ProfileConnConfig) {
                 for (const cot of cots) {
-
                     // While I am reluncant to override user-intent, client's don't necessarily
                     // pass archived tags on the following types which lead to a poor experience
                     // on reloads if not present
@@ -204,7 +203,19 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                     for (const client of (this.config.wsClients.get(String(conn.id)) || [])) {
                         if (client.format == 'geojson') {
                             if (feat.properties && feat.properties.chat) {
-                                client.ws.send(JSON.stringify({ type: 'chat', connection: conn.id, data: feat }));
+                                client.ws.send(JSON.stringify({
+                                    type: 'chat',
+                                    connection: conn.id,
+                                    data: {
+                                        chatroom: feat.properties.chat.chatroom,
+                                        messageId: feat.properties.chat.messageId,
+                                        from: {
+                                            callsign: feat.properties.chat.senderCallsign,
+                                        },
+                                        message: feat.properties.remarks,
+                                        time: feat.properties.time || new Date().toISOString()
+                                    }
+                                }));
                             } else if (feat.properties.type.startsWith("t-x")) {
                                 client.ws.send(JSON.stringify({ type: 'task', connection: conn.id, data: feat }));
                             } else {
@@ -227,12 +238,26 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
     async add(connConfig: ConnectionConfig): Promise<ConnectionClient> {
         if (!connConfig.auth || !connConfig.auth.cert || !connConfig.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
-        const tak = await TAK.connect(new URL(this.config.server.url), {
-            key: connConfig.auth.key,
-            cert: connConfig.auth.cert,
-        },{
-            id: connConfig.id
-        });
+
+        let tak: TAK;
+
+        if (this.config.StackName === 'test') {
+            tak = await TAK.connect(new URL(this.config.server.url), {
+                key: connConfig.auth.key,
+                cert: connConfig.auth.cert,
+                rejectUnauthorized: false,
+                ca: this.config.server.auth.cert
+            },{
+                id: connConfig.id
+            });
+        } else {
+            tak = await TAK.connect(new URL(this.config.server.url), {
+                key: connConfig.auth.key,
+                cert: connConfig.auth.cert,
+            },{
+                id: connConfig.id
+            });
+        }
 
         const connClient = new ConnectionClient(connConfig, tak);
 
