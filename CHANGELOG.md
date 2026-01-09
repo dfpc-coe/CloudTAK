@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.53.1 - 2026-01-09
+
+- :arrow_up: Update TerraDraw
+
 ### v12.53.0 - 2026-01-09
 
 - :bug: Ensure updates that are PATCHed to server also are updated in the UI when toggling back to read-only view
