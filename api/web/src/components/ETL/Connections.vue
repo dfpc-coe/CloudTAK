@@ -99,7 +99,6 @@ import type { ETLConnectionList } from '../../types.ts'
 import { std, stdurl } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
 import ConnectionCard from './ConnectionCard.vue';
-import timeDiff from '../../timediff.ts';
 import {
     TablerPager,
     TablerBreadCrumb,
