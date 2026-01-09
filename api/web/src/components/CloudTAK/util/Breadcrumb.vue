@@ -39,8 +39,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import { std, stdurl } from '../../../std.ts';
-import type { FeatureCollection } from '../../../types.ts';
+import { server } from '../../../std.ts';
 import {
     IconRoute
 } from '@tabler/icons-vue';
@@ -66,13 +65,21 @@ async function loadBreadcrumb() {
     loading.value = true;
 
     try {
-        const url = stdurl(`/api/marti/cot/${props.uid}/all`)
-
-        url.searchParams.append('secago', String(60 * 60 * Number(query.value.relative.split(' ')[0])))
-        url.searchParams.append('track', String(true))
-        const crumb = await std(url) as FeatureCollection;
+        const { data: crumb, error } = await server.GET('/api/marti/cot/{:uid}/all', {
+            params: {
+                path: {
+                    ':uid': props.uid
+                },
+                query: {
+                    secago: String(60 * 60 * Number(query.value.relative.split(' ')[0])),
+                    track: true
+                }
+            }
+        });
+        if (error || !crumb) throw new Error(String(error || 'No data'));
 
         for (const feat of crumb.features) {
+            // @ts-expect-error Feature types are slightly incompatible
             await mapStore.worker.db.add(feat)
         }
 
