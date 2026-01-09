@@ -2,6 +2,11 @@
     "name": "@tak-ps/CloudTAK.web",
     "type": "module",
     "version": "12.54.0",
+    "types": "dist/types/plugin.d.ts",
+    "files": [
+        "dist/types",
+        "src"
+    ],
     "private": true,
     "engines": {
         "node": ">= 24"
@@ -10,6 +15,7 @@
         "serve": "DEV=true vite serve --port 8080",
         "typegen": "openapi-typescript http://localhost:5001/api/swagger --output src/derived-types.d.ts",
         "check": "vue-tsc",
+        "build:types": "vue-tsc -p tsconfig.build.json",
         "build": "vite build",
         "lint": "eslint ./src/ ./public/ ./plugins/",
         "test": "exit 0"
