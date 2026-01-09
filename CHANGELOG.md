@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### v12.53.0 - 2026-01-09
+
+- :bug: Ensure updates that are PATCHed to server also are updated in the UI when toggling back to read-only view
+- :tada: Include an optional `name` field in filter to describe/retain intent
+- :tada: Introduce new QueryInput for validating JSONata queries on the frontend
+- :rocket: Update Style & Filter UIs to use new unified QueryInput
+- :bug: Fix issue where logs would continue to be loaded outside of the Deploy tab
+- :rocket: Show Outgoing config by default if an outgoing config is present but no incoming config.
+
 ### v12.52.0 - 2026-01-08
 
 - :rocket: Strongly Validate Connection Key Pair
