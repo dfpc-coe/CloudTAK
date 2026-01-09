@@ -4,6 +4,7 @@ import CoT, { CoTParser } from '@tak-ps/node-cot';
 import Err from '@openaddresses/batch-error';
 
 export const FilterContainerQuery = Type.Object({
+    name: Type.Optional(Type.String()),
     query: Type.String()
 });
 

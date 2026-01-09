@@ -48,7 +48,7 @@
                 </div>
                 <div class='col-12 border rounded'>
                     <TablerNone
-                        v-if='!outgoing.filters.queries || outgoing.filters.queries.length === 0'
+                        v-if='!outgoing.filters || !outgoing.filters.queries || outgoing.filters.queries.length === 0'
                         label='Exclusion Filters'
                         :compact='true'
                         :create='false'
@@ -58,20 +58,36 @@
                             v-for='(filter, filter_idx) of outgoing.filters.queries'
                             :key='outgoing.filters.queries.length + "-" + filter_idx'
                         >
-                            <div class='row mx-2 my-2'>
-                                <TablerInput
-                                    v-model='filter.query'
-                                    label='Filter'
-                                    :disabled='disabled'
+                            <div class='row mx-2 my-2 border-bottom pb-2'>
+                                <div
+                                    v-if='!disabled'
+                                    class='col-md-4 col-12'
                                 >
-                                    <TablerDelete
-                                        v-if='!disabled'
-                                        title='Delete Filter'
-                                        :size='24'
-                                        displaytype='icon'
-                                        @delete='outgoing.filters.queries.splice(filter_idx, 1)'
+                                    <TablerInput
+                                        v-model='filter.name'
+                                        label='Name'
+                                        placeholder='Optional Name'
+                                        :disabled='disabled'
                                     />
-                                </TablerInput>
+                                </div>
+                                <div
+                                    class='col-12'
+                                    :class='{ "col-md-8": !disabled }'
+                                >
+                                    <TablerInput
+                                        v-model='filter.query'
+                                        :label='disabled && filter.name ? filter.name : "Filter"'
+                                        :disabled='disabled'
+                                    >
+                                        <TablerDelete
+                                            v-if='!disabled'
+                                            title='Delete Filter'
+                                            :size='24'
+                                            displaytype='icon'
+                                            @delete='outgoing.filters.queries.splice(filter_idx, 1)'
+                                        />
+                                    </TablerInput>
+                                </div>
                             </div>
                         </template>
                     </template>
@@ -155,9 +171,11 @@ function reload() {
 }
 
 function addFilter() {
+    if (!outgoing.value.filters) outgoing.value.filters = {};
     if (!outgoing.value.filters.queries) outgoing.value.filters.queries = [];
 
     outgoing.value.filters.queries.push({
+        name: '',
         query: ''
     })
 }
@@ -166,7 +184,7 @@ async function saveOutgoing() {
     loading.value.save = true;
 
     try {
-        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing`, {
+        outgoing.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing`, {
             method: 'PATCH',
             body: outgoing.value
         });
