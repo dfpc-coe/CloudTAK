@@ -7,7 +7,6 @@
         "dist/types",
         "src"
     ],
-    "private": true,
     "engines": {
         "node": ">= 24"
     },
