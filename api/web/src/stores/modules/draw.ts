@@ -355,6 +355,8 @@ export default class DrawTool {
             const url = new URL('https://tiles.map.cotak.gov/tiles/public/snapping/features')
             url.searchParams.set('token', localStorage.token);
             url.searchParams.set('bbox', this.mapStore.map.getBounds().toArray().join(','));
+            url.searchParams.set('type', 'LineString');
+            url.searchParams.set('multi', 'false');
 
             const network = await std(url) as GeoJSONFeatureCollection<LineString>;
 
