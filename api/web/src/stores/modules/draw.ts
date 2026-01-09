@@ -360,6 +360,31 @@ export default class DrawTool {
 
             this.graph.setNetwork(network);
 
+            const source = this.mapStore.map.getSource('snapping-graph-source') as mapgl.GeoJSONSource;
+            if (source) {
+                source.setData(network);
+            } else {
+                this.mapStore.map.addSource('snapping-graph-source', {
+                    type: 'geojson',
+                    data: network
+                });
+                this.mapStore.map.addLayer({
+                    id: 'snapping-graph-layer',
+                    type: 'line',
+                    source: 'snapping-graph-source',
+                    layout: {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    paint: {
+                        'line-color': '#5fb7ce',
+                        'line-width': 2,
+                        'line-dasharray': [2, 2],
+                        'line-opacity': 0.8
+                    }
+                });
+            }
+
             this.draw.start();
 
             this.draw.updateModeOptions(DrawToolMode.SNAPPING, {
@@ -380,6 +405,11 @@ export default class DrawTool {
 
     async stop(refresh = true): Promise<void> {
         this.mode = DrawToolMode.STATIC;
+
+        const source = this.mapStore.map.getSource('snapping-graph-source') as mapgl.GeoJSONSource;
+        if (source) {
+            source.setData({ type: 'FeatureCollection', features: [] });
+        }
 
         // Reset cursor to default BEFORE stopping draw operations
         this.mapStore.map.getCanvas().style.cursor = '';
