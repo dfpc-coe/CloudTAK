@@ -1,11 +1,10 @@
 {
-    "name": "@tak-ps/CloudTAK.web",
+    "name": "@tak-ps/cloudtak",
     "type": "module",
     "version": "12.54.0",
     "types": "dist/types/plugin.d.ts",
     "files": [
-        "dist/types",
-        "src"
+        "dist/types"
     ],
     "engines": {
         "node": ">= 24"
