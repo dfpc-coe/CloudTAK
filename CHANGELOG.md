@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.54.0 - 2026-01-09
+
+- :tada: Add `type` and `multi` parameters for choosing shape of data returned by PMTiles Feature APIs
+
 ### v12.53.1 - 2026-01-09
 
 - :arrow_up: Update TerraDraw
