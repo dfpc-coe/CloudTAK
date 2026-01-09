@@ -18,7 +18,7 @@ import Filter from '../../base/filter.ts';
 import { OriginMode } from '../../base/cot.ts';
 import { std, stdurl } from '../../std.ts';
 import type { Feature, FeatureCollection } from '../../types.ts';
-import type { Polygon, Position } from 'geojson';
+import type { Polygon, Position, LineString, FeatureCollection as GeoJSONFeatureCollection } from 'geojson';
 import type { useMapStore } from '../map.ts';
 
 export enum DrawToolMode {
@@ -356,7 +356,7 @@ export default class DrawTool {
             url.searchParams.set('token', localStorage.token);
             url.searchParams.set('bbox', this.mapStore.map.getBounds().toArray().join(','));
 
-            const network = await std(url);
+            const network = await std(url) as GeoJSONFeatureCollection<LineString>;
 
             this.graph.buildRouteGraph(network);
 

@@ -155,7 +155,6 @@ import { useRoute, useRouter } from 'vue-router';
 import type { ETLConnection } from '../../types.ts';
 import { std } from '../../std.ts';
 import PageFooter from '../PageFooter.vue';
-import timeDiff from '../../timediff.ts';
 import ConnectionCard from './ConnectionCard.vue';
 import {
     IconFiles,
