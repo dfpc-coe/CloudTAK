@@ -916,7 +916,7 @@ export const useMapStore = defineStore('cloudtak', {
             (this.radial as any).cot = feat;
             this.radial.mode = opts.mode;
 
-            if (feat.properties && feat.properties.center) {
+            if (feat.geometry && feat.geometry.type === 'Point' && feat.properties && feat.properties.center) {
                 if (typeof feat.properties.center === 'string') {
                     const parts = JSON.parse(feat.properties.center);
                     this.radial.lngLat = new mapgl.LngLat(parts[0], parts[1]);
