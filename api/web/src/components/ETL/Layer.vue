@@ -507,6 +507,12 @@ async function fetch() {
     const url = stdurl(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}`);
     url.searchParams.append('alarms', 'true');
     layer.value = await std(url) as ETLLayer;
+
+    if (!String(route.name).includes('outgoing') && !String(route.name).includes('incoming')) {
+        if (layer.value.outgoing && !layer.value.incoming) {
+            mode.value = 'outgoing';
+        }
+    }
 }
 
 async function cancelUpdate() {
