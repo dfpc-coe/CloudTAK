@@ -74,7 +74,7 @@
                                     class='col-12'
                                     :class='{ "col-md-8": !disabled }'
                                 >
-                                    <TablerInput
+                                    <QueryInput
                                         v-model='filter.query'
                                         :label='disabled && filter.name ? filter.name : "Filter"'
                                         :disabled='disabled'
@@ -86,7 +86,7 @@
                                             displaytype='icon'
                                             @delete='outgoing.filters.queries.splice(filter_idx, 1)'
                                         />
-                                    </TablerInput>
+                                    </QueryInput>
                                 </div>
                             </div>
                         </template>
@@ -125,10 +125,11 @@ import type { ETLLayerOutgoing } from '../../../types.ts';
 import {
     TablerIconButton,
     TablerLoading,
-    TablerDelete,
     TablerInput,
+    TablerDelete,
     TablerNone
 } from '@tak-ps/vue-tabler';
+import QueryInput from './utils/QueryInput.vue';
 import {
     IconPlus,
     IconPencil,
