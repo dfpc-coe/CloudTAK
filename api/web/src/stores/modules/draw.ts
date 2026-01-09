@@ -41,7 +41,7 @@ export default class DrawTool {
 
     public mode: DrawToolMode;
 
-    private graph: TerraRoute;
+    private graph: Routing;
 
     private mapStore: ReturnType<typeof useMapStore>;
 
@@ -88,17 +88,18 @@ export default class DrawTool {
             }
         }
 
-        this.graph = new TerraRoute();
+        const routeFinderInstance = new TerraRoute();
+        const routeFinder = Object.assign(routeFinderInstance, {
+            setNetwork: routeFinderInstance.buildRouteGraph.bind(routeFinderInstance)
+        });
 
-        const network = {
-            type: 'FeatureCollection' as const,
-            features: []
-        }
-
-        const routing = new Routing({
-            network,
+        this.graph = new Routing({
+            network: {
+                type: 'FeatureCollection' as const,
+                features: []
+            },
             useCache: true,
-            routeFinder: this.graph
+            routeFinder
         })
 
         this.draw = new terraDraw.TerraDraw({
@@ -130,9 +131,8 @@ export default class DrawTool {
                     showCoordinatePoints: true,
                     snapping: { toCustom }
                 }),
-                // @ts-expect-error Library mismatch
                 new TerraDrawRouteSnapMode({
-                   routing,
+                   routing: this.graph,
                    maxPoints: 5,
                    styles: {
                        lineStringColor: () => {
@@ -358,18 +358,12 @@ export default class DrawTool {
 
             const network = await std(url) as GeoJSONFeatureCollection<LineString>;
 
-            this.graph.buildRouteGraph(network);
-
-            const routing = new Routing({
-                network,
-                useCache: true,
-                routeFinder: this.graph
-            })
+            this.graph.setNetwork(network);
 
             this.draw.start();
 
             this.draw.updateModeOptions(DrawToolMode.SNAPPING, {
-                routing,
+                routing: this.graph,
                 maxPoints: 5,
             });
 
