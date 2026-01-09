@@ -406,9 +406,12 @@ export default class DrawTool {
     async stop(refresh = true): Promise<void> {
         this.mode = DrawToolMode.STATIC;
 
-        const source = this.mapStore.map.getSource('snapping-graph-source') as mapgl.GeoJSONSource;
-        if (source) {
-            source.setData({ type: 'FeatureCollection', features: [] });
+        if (this.mapStore.map.getLayer('snapping-graph-layer')) {
+            this.mapStore.map.removeLayer('snapping-graph-layer');
+        }
+
+        if (this.mapStore.map.getSource('snapping-graph-source')) {
+            this.mapStore.map.removeSource('snapping-graph-source');
         }
 
         // Reset cursor to default BEFORE stopping draw operations
