@@ -188,7 +188,7 @@ async function saveOutgoing() {
         outgoing.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing`, {
             method: 'PATCH',
             body: outgoing.value
-        });
+        }) as ETLLayerOutgoing;
 
         disabled.value = true;
 
