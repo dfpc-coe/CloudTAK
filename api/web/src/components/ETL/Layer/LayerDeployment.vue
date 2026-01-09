@@ -267,10 +267,11 @@ const loading = ref({
 const logs = ref({});
 
 onMounted(async () => {
-    await fetchLogs();
     looping.value = setInterval(async () => {
         await fetchLogs(false);
     }, 10 * 1000);
+
+    await fetchLogs();
 });
 
 onUnmounted(() => {
