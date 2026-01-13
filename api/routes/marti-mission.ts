@@ -296,11 +296,11 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Missions',
         group: 'MartiMissions',
         description: 'Helper API to list missions',
-        query: Type.Intersect([
+        query: Type.Composite([
             MissionListInput,
             Type.Object({
-                sort: Type.Optional(Type.String({ default: 'name', description: 'Property to sort by' })),
-                order: Type.Optional(Default.Order)
+                sort: Type.String({ default: 'createTime', description: 'Property to sort by' }),
+                order: { ...Default.Order, default: 'desc' }
             })
         ]),
         res: Type.Object({
