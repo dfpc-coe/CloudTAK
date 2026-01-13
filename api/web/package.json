@@ -9,6 +9,11 @@
     "engines": {
         "node": ">= 24"
     },
+    "exports": {
+        ".": {
+            "types": "./dist/types/plugin.d.ts"
+        }
+    },
     "scripts": {
         "serve": "DEV=true vite serve --port 8080",
         "typegen": "openapi-typescript http://localhost:5001/api/swagger --output src/derived-types.d.ts",
