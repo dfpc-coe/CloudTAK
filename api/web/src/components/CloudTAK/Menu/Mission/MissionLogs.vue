@@ -27,7 +27,7 @@
             <TablerNone
                 v-if='!filteredLogs.length'
                 :create='false'
-                label='Logs'
+                label='No Logs'
             />
             <div
                 v-else
@@ -54,30 +54,38 @@
                             :compact='true'
                         />
                     </div>
+
                     <TablerInput
                         v-model='createLog.content'
                         label='Create Log'
                         :rows='4'
                         @keyup.enter='submitOnEnter ? submitLog() : undefined'
                     >
-                        <TablerDropdown>
-                            <template #default>
-                                <TablerIconButton
-                                    title='Options'
-                                >
-                                    <IconSettings
-                                        :size='24'
-                                        stroke='1'
+                        <div class='d-flex align-items-center gap-2'>
+                            <TablerSelect
+                                v-if='templateLogs.length'
+                                v-model='selectedLogType'
+                                :options='logTypeOptions'
+                            />
+                            <TablerDropdown>
+                                <template #default>
+                                    <TablerIconButton
+                                        title='Options'
+                                    >
+                                        <IconSettings
+                                            :size='24'
+                                            stroke='1'
+                                        />
+                                    </TablerIconButton>
+                                </template>
+                                <template #dropdown>
+                                    <TablerToggle
+                                        v-model='submitOnEnter'
+                                        label='Submit on Enter'
                                     />
-                                </TablerIconButton>
-                            </template>
-                            <template #dropdown>
-                                <TablerToggle
-                                    v-model='submitOnEnter'
-                                    label='Submit on Enter'
-                                />
-                            </template>
-                        </TablerDropdown>
+                                </template>
+                            </TablerDropdown>
+                        </div>
                     </TablerInput>
 
                     <TagEntry
@@ -103,13 +111,15 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { from } from 'rxjs';
 import type { Ref, ComputedRef } from 'vue';
 import type { MissionLog } from '../../../../types.ts';
 import { std } from '../../../../std.ts';
 import TagEntry from '../../util/TagEntry.vue';
 import MissionLogItem from './MissionLog.vue';
+import MissionTemplateLogs from '../../../../base/mission-template-logs.ts';
+import type { DBMissionTemplateLog } from '../../base/database.ts';
 import {
     TablerNone,
     TablerInput,
@@ -117,6 +127,7 @@ import {
     TablerLoading,
     TablerDropdown,
     TablerIconButton,
+    TablerSelect,
 } from '@tak-ps/vue-tabler';
 import {
     IconSettings,
@@ -151,6 +162,24 @@ const loading = ref<{
 }> ({
     logs: false,
     create: false,
+});
+
+const templateLogs = ref<DBMissionTemplateLog[]>([]);
+const selectedLogType = ref('Default');
+
+onMounted(async () => {
+    if (props.subscription.templateid) {
+        try {
+            const tLogs = new MissionTemplateLogs(props.subscription.templateid);
+            templateLogs.value = await tLogs.list({ refresh: true });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+});
+
+const logTypeOptions = computed(() => {
+    return ['Default', ...templateLogs.value.map(l => l.name)];
 });
 
 const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
