@@ -52,7 +52,7 @@
 import { ref, onMounted } from 'vue'
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import TokenModal from './Settings/TokenModal.vue';
 import {
     TablerIconButton,
@@ -77,7 +77,9 @@ onMounted(async () => {
 async function fetch() {
     token.value = false;
     loading.value = true;
-    tokens.value = await std('/api/profile/token');
+    const { data, error } = await server.GET('/api/profile/token');
+    if (error) throw new Error(String(error));
+    tokens.value = data;
     loading.value = false;
 }
 </script>

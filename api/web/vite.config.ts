@@ -28,6 +28,12 @@ export default defineConfig(({ mode }) => {
         optimizeDeps: {
             include: ["showdown", "@tak-ps/vue-tabler"],
         },
+        resolve: {
+            alias: {
+                '@tak-ps/cloudtak': path.resolve(__dirname, './plugin.ts'),
+                '@': path.resolve(__dirname, './src'),
+            }
+        },
         build: {
             manifest: true,
             rollupOptions: {

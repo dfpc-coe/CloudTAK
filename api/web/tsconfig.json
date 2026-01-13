@@ -24,6 +24,10 @@
     // We expect users to use bundlers.
     // So here we enable some resolution features that are only available in bundlers.
     "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@tak-ps/cloudtak": ["./plugin.ts"]
+    },
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     // `allowImportingTsExtensions` can only be used when `noEmit` or `emitDeclarationOnly` is set.

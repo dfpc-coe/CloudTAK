@@ -148,7 +148,7 @@
 import { v4 as randomUUID } from 'uuid';
 import { ref, computed } from 'vue';
 import { useMapStore } from '../../stores/map.ts';
-import { std } from '../../std.ts';
+import { server } from '../../std.ts';
 import Overlay from '../../base/overlay.ts';
 import type { LngLatLike, MapGeoJSONFeature } from 'maplibre-gl';
 import type { Feature } from 'geojson';
@@ -202,7 +202,16 @@ const htmlDescription = computed(() => {
 async function cutFeature() {
     if (!overlay.value) throw new Error("Could not determine Overlay");
 
-    const rawFeature = await std(`/api/basemap/${overlay.value.mode_id}/feature/${props.feat.id}`) as Feature;
+    const { data: rawFeature, error } = await server.GET('/api/basemap/{:basemapid}/feature/{:featureid}', {
+        params: {
+            path: {
+                ':basemapid': Number(overlay.value.mode_id),
+                ':featureid': String(props.feat.id)
+            }
+        }
+    });
+    if (error || !rawFeature) throw new Error("Failed to load feature");
+
     const id = randomUUID();
 
     if (
@@ -210,7 +219,7 @@ async function cutFeature() {
         && rawFeature.geometry.type !== "LineString"
         && rawFeature.geometry.type !== "Polygon"
     ) {
-        throw new Error(`${rawFeature.geometry.type} geometry type is not currently supported`);
+        throw new Error(`Geometry type is not currently supported`);
     }
 
     mapStore.toImport.push({
