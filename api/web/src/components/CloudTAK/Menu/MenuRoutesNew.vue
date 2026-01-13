@@ -70,9 +70,9 @@ import {
     TablerAlert,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
-import { std, stdurl, server } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import { useMapStore } from '../../../stores/map.ts';
-import type { Search, FeatureCollection } from '../../../types.ts';
+import type { Search } from '../../../types.ts';
 
 const router = useRouter();
 const mapStore = useMapStore();
@@ -144,16 +144,14 @@ async function generateRoute(): Promise<void> {
     loading.value = true;
 
     try {
-        const url = stdurl('/api/search/route');
-        url.searchParams.set('start', routePlan.value.start.coordinates.join(','));
-        url.searchParams.set('end', routePlan.value.end.coordinates.join(','));
-        url.searchParams.set('callsign', routePlan.value.start.name + ' to ' + routePlan.value.end.name);
-        
+        let provider: string | undefined = undefined;
+        let travelMode: string | undefined = undefined;
+
         // Convert Human Name => ID
         if (config.value) {
             for (const p of config.value.providers) {
                 if (p.name === routePlan.value.provider) {
-                    url.searchParams.set('provider', p.id);
+                    provider = p.id;
                     break;
                 }
             }
@@ -163,15 +161,28 @@ async function generateRoute(): Promise<void> {
         if (routePlan.value.travelMode) {
             for (const m of modes.value) {
                 if (m.name === routePlan.value.travelMode) {
-                    url.searchParams.set('travelMode', m.id);
+                    travelMode = m.id;
                     break;
                 }
             }
         }
 
-        const route = await std(url) as FeatureCollection;
+        const { data: route, error: reqErr } = await server.GET('/api/search/route', {
+            params: {
+                query: {
+                    start: routePlan.value.start.coordinates.join(','),
+                    end: routePlan.value.end.coordinates.join(','),
+                    callsign: routePlan.value.start.name + ' to ' + routePlan.value.end.name,
+                    provider,
+                    travelMode,
+                }
+            }
+        });
 
-        if (route.features.length > 0) {
+        if (reqErr) throw new Error(String(reqErr));
+
+        if (route && route.features.length > 0) {
+            // @ts-expect-error Feature types are slightly incompatible
             const cot = await mapStore.worker.db.add(route.features[0], {
                 authored: true
             });

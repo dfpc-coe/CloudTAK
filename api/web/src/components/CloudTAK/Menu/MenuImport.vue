@@ -107,7 +107,7 @@
 <script setup lang='ts'>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { std, stdurl } from '../../../../src/std.ts';
+import { std, stdurl, server } from '../../../../src/std.ts';
 import type { Import } from '../../../../src/types.ts';
 import Status from '../../util/StatusDot.vue';
 import timeDiff from '../../../timediff.ts';
@@ -164,11 +164,14 @@ async function deleteImport() {
     loading.value.initial = true;
 
     try {
-        const url = stdurl(`/api/import/${route.params.import}`);
-
-        await std(url, {
-            method: 'DELETE'
+        const { error: reqErr } = await server.DELETE('/api/import/{:import}', {
+            params: {
+                path: {
+                    ':import': String(route.params.import)
+                }
+            }
         });
+        if (reqErr) throw new Error(String(reqErr));
 
         router.push('/menu/imports');
     } catch (err) {
@@ -182,8 +185,15 @@ async function fetch(init = false) {
     if (init) loading.value.initial = true;
 
     try {
-        const url = stdurl(`/api/import/${route.params.import}`);
-        imported.value = await std(url) as Import;
+        const { data, error: reqErr } = await server.GET('/api/import/{:import}', {
+             params: {
+                path: {
+                    ':import': String(route.params.import)
+                }
+            }
+        });
+        if (reqErr) throw new Error(String(reqErr));
+        imported.value = data;
 
         if (imported.value && (imported.value.status === 'Fail' || imported.value.status === 'Success')) {
             if (interval.value) clearInterval(interval.value);

@@ -117,7 +117,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, computed, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { COTType, COTTypeList } from '../../../types.ts';
 import FeatureIcon from './FeatureIcon.vue';
 import {
@@ -253,20 +253,34 @@ async function updateAffiliation(affil: string) {
 }
 
 async function fetchType() {
-    const url = stdurl(`/api/type/cot/${config.value.type}`);
-    meta.value = await std(url) as COTType;
+    const { data, error } = await server.GET('/api/type/cot/{:type}', {
+        params: {
+            path: {
+                ':type': config.value.type
+            }
+        }
+    });
+    if (error) throw new Error(String(error));
+    meta.value = data;
 }
 
 async function fetchList() {
     loading.value = true;
 
-    const url = stdurl('/api/type/cot');
-    url.searchParams.append('filter', paging.value.filter);
+    const { data, error } = await server.GET('/api/type/cot', {
+        params: {
+            query: {
+                filter: paging.value.filter,
+                // @ts-expect-error Types are loose
+                identity: config.value.affiliation,
+                domain: 'a',
+                limit: 100
+            }
+        }
+    });
 
-    url.searchParams.append('identity', config.value.affiliation);
-    url.searchParams.append('domain', 'a');
-
-    list.value = await std(url) as COTTypeList;
+    if (error) throw new Error(String(error));
+    list.value = data;
 
     loading.value = false;
 }
