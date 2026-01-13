@@ -55,39 +55,41 @@
                         />
                     </div>
 
+                    <div class='d-flex justify-content-between align-items-center mb-2 pt-2'>
+                        <label class='form-label mb-0'>Create Log</label>
+                        <div class='d-flex align-items-center gap-2'>
+                            <TablerSelect
+                                v-if='templateLogs.length'
+                                v-model='selectedLogType'
+                                :options='logTypeOptions'
+                            />
+                            <TablerDropdown>
+                                <template #default>
+                                    <TablerIconButton
+                                        title='Options'
+                                    >
+                                        <IconSettings
+                                            :size='24'
+                                            stroke='1'
+                                        />
+                                    </TablerIconButton>
+                                </template>
+                                <template #dropdown>
+                                    <TablerToggle
+                                        v-model='submitOnEnter'
+                                        label='Submit on Enter'
+                                    />
+                                </template>
+                            </TablerDropdown>
+                        </div>
+                    </div>
+
                     <div v-if='!selectedTemplateLog'>
                          <TablerInput
                             v-model='createLog.content'
-                            label='Create Log'
                             :rows='4'
                             @keyup.enter='submitOnEnter ? submitLog() : undefined'
-                        >
-                            <div class='d-flex align-items-center gap-2'>
-                                <TablerSelect
-                                    v-if='templateLogs.length'
-                                    v-model='selectedLogType'
-                                    :options='logTypeOptions'
-                                />
-                                <TablerDropdown>
-                                    <template #default>
-                                        <TablerIconButton
-                                            title='Options'
-                                        >
-                                            <IconSettings
-                                                :size='24'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
-                                    </template>
-                                    <template #dropdown>
-                                        <TablerToggle
-                                            v-model='submitOnEnter'
-                                            label='Submit on Enter'
-                                        />
-                                    </template>
-                                </TablerDropdown>
-                            </div>
-                        </TablerInput>
+                        />
 
                         <TagEntry
                             placeholder='Keyword Entry'
@@ -96,45 +98,16 @@
 
                         <div class='d-flex my-2'>
                             <div class='ms-auto'>
-                                <button
-                                    class='btn btn-primary'
-                                    :disabled='loading.create'
+                                <TablerButton
+                                    :loading='loading.create'
                                     @click='submitLog'
                                 >
                                     Save Log
-                                </button>
+                                </TablerButton>
                             </div>
                         </div>
                     </div>
                     <div v-else>
-                         <div class='d-flex justify-content-between align-items-center mb-2'>
-                            <label class='form-label mb-0'>Create Log</label>
-                            <div class='d-flex gap-2 ms-auto'>
-                                <TablerSelect
-                                    v-model='selectedLogType'
-                                    :options='logTypeOptions'
-                                />
-                                <TablerDropdown>
-                                    <template #default>
-                                        <TablerIconButton
-                                            title='Options'
-                                        >
-                                            <IconSettings
-                                                :size='24'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
-                                    </template>
-                                    <template #dropdown>
-                                        <TablerToggle
-                                            v-model='submitOnEnter'
-                                            label='Submit on Enter'
-                                        />
-                                    </template>
-                                </TablerDropdown>
-                            </div>
-                         </div>
-
                         <TablerSchema
                             v-model='createLog.schema'
                             :schema='selectedTemplateLog.schema'
@@ -186,6 +159,7 @@ import { liveQuery } from "dexie";
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import Subscription from '../../../../base/subscription.ts';
 import { useObservable } from "@vueuse/rxjs";
+import { stringify } from 'yaml';
 
 const props = defineProps<{
     subscription: Subscription
@@ -269,7 +243,7 @@ async function submitLog() {
     try {
         if (selectedTemplateLog.value) {
             await props.subscription.log.create({
-                content: JSON.stringify(createLog.value.schema),
+                content: stringify(createLog.value.schema),
                 keywords: [...createLog.value.keywords, `template:${selectedTemplateLog.value.id}`]
             });
         } else {
