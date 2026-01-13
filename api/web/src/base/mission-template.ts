@@ -66,7 +66,7 @@ export default class MissionTemplate {
             created: new Date().toISOString(),
             updated: new Date().toISOString()
         };
-        
+
         await db.mission_template.put(stub);
         const templ = new MissionTemplate(stub);
         await templ.refresh();
@@ -76,7 +76,7 @@ export default class MissionTemplate {
     async refresh(): Promise<void> {
         const url = stdurl(`/api/template/mission/${this.id}`);
         const data = await std(url) as APIMissionTemplate;
-        
+
         const update: DBMissionTemplate = {
             id: data.id,
             name: data.name,
@@ -85,9 +85,9 @@ export default class MissionTemplate {
             created: data.created,
             updated: data.updated
         };
-        
+
         await db.mission_template.put(update);
-        
+
         this.name = update.name;
         this.description = update.description;
         this.icon = update.icon;
