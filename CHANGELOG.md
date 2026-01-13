@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.55.0 - 2026-01-12
+
+- :rocket: Output Web Types as an npm package for use in CloudTAK Plugins
+- :rocket: Update `std` calls to instead use `server` for stronger type security
+
 ### v12.54.0 - 2026-01-09
 
 - :tada: Add `type` and `multi` parameters for choosing shape of data returned by PMTiles Feature APIs
