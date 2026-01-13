@@ -9,6 +9,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { GenericMartiResponse, StandardResponse } from '../lib/types.js';
+import * as Default from '../lib/limits.js';
 import {
     MissionOptions,
     MissionRole,
@@ -295,7 +296,13 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Missions',
         group: 'MartiMissions',
         description: 'Helper API to list missions',
-        query: MissionListInput,
+        query: Type.Composite([
+            MissionListInput,
+            Type.Object({
+                sort: Type.String({ default: 'createTime', description: 'Property to sort by' }),
+                order: { ...Default.Order, default: 'desc' }
+            })
+        ]),
         res: Type.Object({
             items: Type.Array(Mission),
             invites: Type.Array(MissionInvite),
@@ -307,10 +314,23 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const { sort, order, ...query } = req.query;
+
             const [missions, invites] = await Promise.all([
-                api.Mission.list(req.query),
+                api.Mission.list(query),
                 api.MissionInvite.list('ANDROID-CloudTAK-' + user.email)
             ]);
+
+            if (sort) {
+                missions.data.sort((a: any, b: any) => {
+                    const aVal = a[sort];
+                    const bVal = b[sort];
+
+                    if (aVal < bVal) return order === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return order === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
 
             res.json({
                 items: missions.data,
