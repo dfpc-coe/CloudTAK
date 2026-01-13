@@ -57,6 +57,8 @@ export default class Subscription {
     dirty: boolean;
     subscribed: boolean;
 
+    templateid: string | null;
+
     _sync: BroadcastChannel
 
     constructor(
@@ -92,6 +94,15 @@ export default class Subscription {
         this.name = mission.name;
         this.meta = mission;
         this.role = role;
+
+        this.templateid = null;
+
+        for (const keyword of (mission.keywords || [])) {
+            if (keyword.startsWith('template:')) {
+                this.templateid = keyword.slice(9);
+                break;
+            }
+        }
 
         this.token = opts.token;
 
