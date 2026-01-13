@@ -212,6 +212,7 @@ async function generate() {
             name: props.connection.name,
             description: props.connection.description,
             agency_id: props.connection.agency,
+            locking: !props.connection.readonly,
             channels: selected.value.map((s) => {
                 return {
                     id: s.channel.id,
