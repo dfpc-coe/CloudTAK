@@ -205,25 +205,30 @@ async function regenerate() {
 
 async function generate() {
     loading.value.gen = true;
-    const url = stdurl('/api/ldap/user');
-    const res = await std(url, {
-        method: 'POST',
-        body: {
-            name: props.connection.name,
-            description: props.connection.description,
-            agency_id: props.connection.agency,
-            locking: !props.connection.readonly,
-            channels: selected.value.map((s) => {
-                return {
-                    id: s.channel.id,
-                    access: s.access.toLowerCase()
-                }
-            })
-        }
-    }) as ETLLdapUser
+    try {
+        const url = stdurl('/api/ldap/user');
+        const res = await std(url, {
+            method: 'POST',
+            body: {
+                name: props.connection.name,
+                description: props.connection.description,
+                agency_id: props.connection.agency,
+                locking: !props.connection.readonly,
+                channels: selected.value.map((s) => {
+                    return {
+                        id: s.channel.id,
+                        access: s.access.toLowerCase()
+                    }
+                })
+            }
+        }) as ETLLdapUser
 
-    loading.value.gen = true;
-    emit('certs', res.auth);
-    emit('integration', res.integrationId);
+        loading.value.gen = false;
+        emit('certs', res.auth);
+        emit('integration', res.integrationId);
+    } catch (err) {
+        loading.value.gen = false;
+        throw err;
+    }
 }
 </script>

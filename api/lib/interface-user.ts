@@ -47,7 +47,7 @@ export interface UserInterface {
         management_url: string;
         active: boolean;
         locking: boolean;
-        agency_id: number;
+        agency_id?: number;
         password: string;
         channels: Array<{
             id: number;

@@ -103,7 +103,7 @@ export default class CoTAKUser implements UserInterface {
         management_url: string;
         active: boolean;
         locking: boolean;
-        agency_id: number;
+        agency_id?: number;
         password: string;
         channels: Array<{
             id: number;
@@ -119,7 +119,7 @@ export default class CoTAKUser implements UserInterface {
             name: body.name,
             description: body.description,
             management_url: body.management_url,
-            agency_id: body.agency_id,
+            agency_id: body.agency_id || null,
             active: body.active,
             machine_user: {
                 name: body.name,
