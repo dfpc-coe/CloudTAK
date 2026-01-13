@@ -49,7 +49,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
             description: Type.String(),
             locking: Type.Optional(Type.Boolean({ default: true })),
-            agency_id: Type.Union([Type.Null(), Type.Integer()]),
+            agency_id: Type.Optional(Type.Integer()),
             channels: Type.Array(Type.Object({
                 id: Type.Integer(),
                 access: ChannelAccess
@@ -72,7 +72,6 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
-            if (typeof req.body.agency_id !== 'number') throw new Err(400, null, 'Agency ID is required');
 
             const password = Array.from(crypto.randomFillSync(new Uint8Array(16)))
                 .map((n) => String.fromCharCode((n % 94) + 33))
