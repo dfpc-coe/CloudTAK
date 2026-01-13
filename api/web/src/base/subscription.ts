@@ -2,6 +2,7 @@ import { db } from './database.ts'
 import { std, stdurl } from '../std.ts';
 import SubscriptionLog from './subscription-log.ts';
 import SubscriptionFeature from './subscription-feature.ts';
+import MissionTemplate from './mission-template.ts';
 import type {
     Mission,
     MissionRole,
@@ -175,6 +176,14 @@ export default class Subscription {
                 });
             }
 
+            if (exists.templateid) {
+                try {
+                    await MissionTemplate.load(exists.templateid);
+                } catch (err) {
+                    console.error('Failed to load mission template', err);
+                }
+            }
+
             return exists;
         } else {
             if (!opts.subscribed) opts.subscribed = false;
@@ -211,6 +220,14 @@ export default class Subscription {
             });
 
             await sub.refresh();
+
+            if (sub.templateid) {
+                try {
+                    await MissionTemplate.load(sub.templateid);
+                } catch (err) {
+                    console.error('Failed to load mission template', err);
+                }
+            }
 
             return sub;
         }
