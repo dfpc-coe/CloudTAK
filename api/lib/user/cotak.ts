@@ -99,34 +99,37 @@ export default class CoTAKUser implements UserInterface {
 
     async createMachineUser(uid: number, body: {
         name: string;
-        agency_id?: number;
+        description: string;
+        management_url: string;
+        active: boolean;
+        locking: boolean;
+        agency_id: number;
         password: string;
-        integration: {
-            name: string;
-            description: string;
-            management_url: string;
-            active: boolean;
-        }
+        channels: Array<{
+            id: number;
+            access: ChannelAccessEnum;
+        }>;
     }): Promise<Static<typeof MachineUser>> {
         const creds = await this.auth();
 
-        const url = new URL(`api/v1/proxy/machine-users`, this.provider.url);
+        const url = new URL(`api/v1/proxy/integrations/etl`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
-        url.searchParams.append('sequential_email', 'true')
 
         const req = {
             name: body.name,
+            description: body.description,
+            management_url: body.management_url,
             agency_id: body.agency_id,
-            password: body.password,
-            active: true,
-            integration: {
-                ...body.integration,
+            active: body.active,
+            machine_user: {
+                name: body.name,
+                password: body.password,
+                active: true,
+                is_channel_locking: body.locking
             }
         }
 
-        if (!req.agency_id) delete req.agency_id;
-
-        const userres = await fetch(url, {
+        const intres = await fetch(url, {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -136,13 +139,54 @@ export default class CoTAKUser implements UserInterface {
             body: JSON.stringify(req)
         });
 
-        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Creation Error');
+        if (!intres.ok) throw new Err(500, new Error(await intres.text()), 'External Integration Creation Error');
 
-        const user = await userres.typed(Type.Object({
-            data: MachineUser
+        const integration_body = await intres.typed(Type.Object({
+            data: Type.Object({
+                id: Type.Integer()
+            })
+        }));
+
+        const murl = new URL(`api/v1/proxy/machine-users/integration/${integration_body.data.id}`, this.provider.url);
+        murl.searchParams.append('proxy_user_id', String(uid));
+
+        const musres = await fetch(murl, {
+            headers: {
+                Accept: 'application/json',
+                "Authorization": `Bearer ${creds.token}`
+            },
+        });
+
+        if (!musres.ok) throw new Err(500, new Error(await musres.text()), 'External Machine User Fetch Error');
+
+        const mus = await musres.typed(Type.Object({
+            data: Type.Array(MachineUser)
         }))
 
-        return user.data;
+        if (!mus.data.length) throw new Err(404, null, 'Machine User Not Found');
+
+        const user = mus.data[0];
+
+        for (const channel of body.channels) {
+            const url = new URL(`api/v1/proxy/channels/${channel.id}/machine-users/attach/${user.id}`, this.provider.url);
+            url.searchParams.append('proxy_user_id', String(uid));
+
+            url.searchParams.append('sync', 'true')
+            url.searchParams.append('access_type', channel.access)
+
+            const userres = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${creds.token}`
+                }
+            });
+
+            if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Attachment Error');
+        }
+
+        return user;
     }
 
     async fetchMachineUser(uid: number, email: string): Promise<Static<typeof MachineUser>> {
@@ -170,103 +214,123 @@ export default class CoTAKUser implements UserInterface {
 
     async updateMachineUser(
         uid: number,
-        mid: number,
         body: {
+            id?: number;
             name?: string;
             email?: string;
             active?: boolean;
             password?: string;
+            integration_id?: number;
+            connection_id?: number;
         }
     ): Promise<Static<typeof MachineUser>> {
         const creds = await this.auth();
 
-        const url = new URL(`api/v1/proxy/machine-users/${mid}`, this.provider.url);
-        url.searchParams.append('proxy_user_id', String(uid));
+        if (body.integration_id && body.connection_id) {
+            const url = new URL(`api/v1/proxy/integrations/etl/${body.integration_id}`, this.provider.url);
+            url.searchParams.append('proxy_user_id', String(uid));
 
-        const userres = await fetch(url, {
-            method: 'PATCH',
-            headers: {
-                Accept: 'application/json',
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${creds.token}`
-            },
-            body: JSON.stringify(body)
-        });
-
-        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Update Error');
-
-        const user = await userres.typed(Type.Object({
-            data: MachineUser
-        }))
-
-        return user.data;
-    }
-
-    async attachMachineUser(uid: number, body: {
-        machine_id: number;
-        channel_id: number;
-        access: ChannelAccessEnum;
-    }): Promise<void> {
-        const creds = await this.auth();
-
-        const url = new URL(`api/v1/proxy/channels/${body.channel_id}/machine-users/attach/${body.machine_id}`, this.provider.url);
-        url.searchParams.append('proxy_user_id', String(uid));
-
-        url.searchParams.append('sync', 'true')
-        url.searchParams.append('access_type', body.access)
-
-        const userres = await fetch(url, {
-            method: 'GET',
-            headers: {
-                Accept: 'application/json',
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${creds.token}`
+            const req = {
+                management_url: this._config.API_URL + `/connection/${body.connection_id}`,
+                external_identifier: body.connection_id,
+                active: true,
             }
-        });
 
-        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Attachment Error');
+            const userres = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    Accept: 'application/json',
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${creds.token}`
+                },
+                body: JSON.stringify(req)
+            });
 
-        return;
-    }
-
-    async updateIntegrationConnectionId(uid: number, body: {
-        integration_id: number;
-        connection_id: number;
-    }): Promise<void> {
-        const creds = await this.auth();
-
-        const url = new URL(`api/v1/proxy/integrations/etl/${body.integration_id}`, this.provider.url);
-        url.searchParams.append('proxy_user_id', String(uid));
-
-        const req = {
-            management_url: this._config.API_URL + `/connection/${body.connection_id}`,
-            external_identifier: body.connection_id,
-            active: true,
+            if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Integration Update Error');
         }
 
-        const userres = await fetch(url, {
-            method: 'PATCH',
-            headers: {
-                Accept: 'application/json',
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${creds.token}`
-            },
-            body: JSON.stringify(req)
-        });
+        if (!body.id && body.integration_id) {
+            const murl = new URL(`api/v1/proxy/machine-users/integration/${body.integration_id}`, this.provider.url);
+            murl.searchParams.append('proxy_user_id', String(uid));
 
-        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Integration Update Error');
+            const musres = await fetch(murl, {
+                headers: {
+                    Accept: 'application/json',
+                    "Authorization": `Bearer ${creds.token}`
+                },
+            });
 
-        return;
+            if (!musres.ok) throw new Err(500, new Error(await musres.text()), 'External Machine User Fetch Error');
+
+            const mus = await musres.typed(Type.Object({
+                data: Type.Array(MachineUser)
+            }))
+
+            if (mus.data.length) body.id = mus.data[0].id;
+        }
+
+        if (body.id) {
+            const url = new URL(`api/v1/proxy/machine-users/${body.id}`, this.provider.url);
+            url.searchParams.append('proxy_user_id', String(uid));
+
+            const hasUpdate = body.name || body.email || body.active !== undefined || body.password;
+
+            if (hasUpdate) {
+                const req = {
+                    name: body.name,
+                    email: body.email,
+                    active: body.active,
+                    password: body.password
+                };
+
+                const userres = await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        Accept: 'application/json',
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${creds.token}`
+                    },
+                    body: JSON.stringify(req)
+                });
+        
+                if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Update Error');
+        
+                const user = await userres.typed(Type.Object({
+                    data: MachineUser
+                }))
+        
+                return user.data;
+            } else {
+                const userres = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${creds.token}`
+                    }
+                });
+        
+                if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Fetch Error');
+        
+                const user = await userres.typed(Type.Object({
+                    data: MachineUser
+                }))
+        
+                return user.data;
+            }
+        }
+        
+        throw new Err(500, null, 'Could not determine Machine User ID to Update');
     }
 
-    async deleteIntegrationByConnectionId(uid: number, body: {
+    async deleteMachineUser(uid: number, body: {
         connection_id: number;
     }): Promise<void> {
         const creds = await this.auth();
 
-        // there is a ?delete_machine_user query param you can add, if you want to delete any MU's associated with the integration
         const url = new URL(`api/v1/proxy/integrations/etl/identifier/${body.connection_id}`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
+        url.searchParams.append('delete_machine_user', 'true');
 
         await fetch(url, {
             method: 'DELETE',
