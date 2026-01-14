@@ -12,7 +12,15 @@
                         <div class='card-body d-flex flex-column gap-4'>
                             <div class='d-flex align-items-center gap-3'>
                                 <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-1 d-flex align-items-center justify-content-center'>
+                                    <img
+                                        v-if='missionTemplate && missionTemplate.icon'
+                                        :src='String(stdurl(missionTemplate.icon))'
+                                        width='32'
+                                        height='32'
+                                        :title='missionTemplate.name'
+                                    >
                                     <IconBroadcast
+                                        v-else
                                         :size='32'
                                         stroke='1'
                                     />
@@ -77,13 +85,13 @@
                                 </div>
                                 <div class='col-12'>
                                     <small class='text-uppercase text-white-50 d-block mb-2'>Keywords</small>
-                                    <Keywords :keywords='props.subscription.meta.keywords' />
-                                    <p
-                                        v-if='!props.subscription.meta.keywords.length'
-                                        class='text-white-50 mb-0'
+                                    <Keywords :keywords='keywords' />
+                                    <div
+                                        v-if='!keywords.length'
+                                        class='text-secondary small'
                                     >
-                                        None
-                                    </p>
+                                        No keywords
+                                    </div>
                                 </div>
                                 <div class='col-12'>
                                     <small class='text-uppercase text-white-50 d-block mb-1'>Description</small>
@@ -226,6 +234,7 @@ import type { MissionSubscriptions } from '../../../../types.ts';
 import { useRoute, useRouter } from 'vue-router';
 import { stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
+import MissionTemplate from '../../../../base/mission-template.ts';
 import Keywords from '../../util/Keywords.vue';
 import CopyField from '../../util/CopyField.vue';
 import {
@@ -234,7 +243,7 @@ import {
     IconPlus,
     IconMinus,
     IconCheck,
-    IconX
+    IconX,
 } from '@tabler/icons-vue';
 import {
     TablerLoading,
@@ -255,16 +264,33 @@ const missionQRURL = computed(() => {
     return String(stdurl(`/api/marti/missions/${props.subscription.guid}/qr?token=${localStorage.token}`));
 });
 
+const keywords = computed(() => {
+    if (!Array.isArray(props.subscription.meta.keywords)) return [];
+    return props.subscription.meta.keywords
+        .map((keyword) => typeof keyword === 'string' ? keyword.trim() : '')
+        .filter((keyword): keyword is string => keyword.length > 0)
+        .filter((keyword) => !keyword.startsWith('template:'));
+});
+
 const showQR = ref(false);
 const route = useRoute();
 const router = useRouter();
 
-const subscriptions = ref<MissionSubscriptions>([])
+const subscriptions = ref<MissionSubscriptions>([]);
+const missionTemplate = ref<MissionTemplate>();
 
 onMounted(async () => {
     loading.value.users = true;
     await fetchSubscriptions();
     loading.value.users = false;
+
+    if (props.subscription.templateid) {
+        try {
+            missionTemplate.value = await MissionTemplate.load(props.subscription.templateid);
+        } catch (err) {
+            console.error('Failed to load mission template', err);
+        }
+    }
 
     if (route.query.subscribe === 'true') {
         await subscribe(true);

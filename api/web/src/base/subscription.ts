@@ -2,6 +2,7 @@ import { db } from './database.ts'
 import { std, stdurl } from '../std.ts';
 import SubscriptionLog from './subscription-log.ts';
 import SubscriptionFeature from './subscription-feature.ts';
+import MissionTemplate from './mission-template.ts';
 import type {
     Mission,
     MissionRole,
@@ -57,6 +58,8 @@ export default class Subscription {
     dirty: boolean;
     subscribed: boolean;
 
+    templateid: string | null;
+
     _sync: BroadcastChannel
 
     constructor(
@@ -92,6 +95,15 @@ export default class Subscription {
         this.name = mission.name;
         this.meta = mission;
         this.role = role;
+
+        this.templateid = null;
+
+        for (const keyword of (mission.keywords || [])) {
+            if (keyword.startsWith('template:')) {
+                this.templateid = keyword.slice(9);
+                break;
+            }
+        }
 
         this.token = opts.token;
 
@@ -164,6 +176,14 @@ export default class Subscription {
                 });
             }
 
+            if (exists.templateid) {
+                try {
+                    await MissionTemplate.load(exists.templateid);
+                } catch (err) {
+                    console.error('Failed to load mission template', err);
+                }
+            }
+
             return exists;
         } else {
             if (!opts.subscribed) opts.subscribed = false;
@@ -200,6 +220,14 @@ export default class Subscription {
             });
 
             await sub.refresh();
+
+            if (sub.templateid) {
+                try {
+                    await MissionTemplate.load(sub.templateid);
+                } catch (err) {
+                    console.error('Failed to load mission template', err);
+                }
+            }
 
             return sub;
         }

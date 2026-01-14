@@ -130,6 +130,8 @@ export type PaletteFeature = paths["/api/palette/{:palette}/feature/{:feature}"]
 
 export type MissionTemplate = paths["/api/template/mission/{:mission}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type MissionTemplateList = paths["/api/template/mission"]["get"]["responses"]["200"]["content"]["application/json"]
+export type MissionTemplateLog = paths["/api/template/mission/{:mission}/log/{:log}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type MissionTemplateLogList = paths["/api/template/mission/{:mission}/log"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Profile = paths["/api/profile"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Profile_Update = paths["/api/profile"]["patch"]["requestBody"]["content"]["application/json"]
