@@ -18,7 +18,7 @@
                                         width='32'
                                         height='32'
                                         :title='missionTemplate.name'
-                                    />
+                                    >
                                     <IconBroadcast
                                         v-else
                                         :size='32'
@@ -244,7 +244,6 @@ import {
     IconMinus,
     IconCheck,
     IconX,
-    IconTemplate
 } from '@tabler/icons-vue';
 import {
     TablerLoading,
