@@ -235,7 +235,8 @@ async function exportLogs(format: string): Promise<void> {
 }
 
 async function submitLog() {
-    if (loading.value.create || !createLog.value.content.trim()) return;
+    if (loading.value.create) return;
+    if (!selectedTemplateLog.value && !createLog.value.content.trim()) return;
 
     loading.value.logs = true;
     loading.value.create = true;
