@@ -1,1 +1,1 @@
-ALTER TABLE "iconsets" ADD COLUMN "username_internal" boolean DEFAULT false NOT NULL;
+ALTER TABLE "iconsets" ADD COLUMN IF NOT EXISTS "username_internal" boolean DEFAULT false NOT NULL;
