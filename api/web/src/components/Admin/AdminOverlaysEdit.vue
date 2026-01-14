@@ -177,22 +177,26 @@
 
                 <template v-if='overlay.type === "vector"'>
                     <div class='col-12'>
-                        <TablerToggle
-                            v-model='overlay.snapping_enabled'
-                            label='Enable Snapping'
-                            description='Allow drawing tools to snap to the underlying vector features'
-                        />
-                    </div>
+                        <div class='row g-2 my-2 border rounded'>
+                            <div class='col-12'>
+                                <TablerToggle
+                                    v-model='overlay.snapping_enabled'
+                                    label='Enable Snapping'
+                                    description='Allow drawing tools to snap to the underlying vector features'
+                                />
+                            </div>
 
-                    <div
-                        v-if='overlay.snapping_enabled'
-                        class='col-12'
-                    >
-                        <TablerInput
-                            v-model='overlay.snapping_layer'
-                            label='Snapping Layer'
-                            description='The specific layer name within the vector tiles to snap to'
-                        />
+                            <div
+                                v-if='overlay.snapping_enabled'
+                                class='col-12'
+                            >
+                                <TablerInput
+                                    v-model='overlay.snapping_layer'
+                                    label='Snapping Layer'
+                                    description='The specific layer name within the vector tiles to snap to'
+                                />
+                            </div>
+                        </div>
                     </div>
                 </template>
 
