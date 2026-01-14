@@ -215,6 +215,8 @@ export const Basemap = pgTable('basemaps', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     sharing_enabled: boolean().notNull().default(false),
     sharing_token: text(),
+    snapping_enabled: boolean().notNull().default(false),
+    snapping_layer: text(),
     name: text().notNull(),
     title: text().notNull().default('callsign'), // Title of features within the layer
     url: text().notNull(),

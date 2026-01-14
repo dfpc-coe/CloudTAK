@@ -86,7 +86,13 @@
                     stroke='1'
                 /><span class='mx-2'>Line Editing</span>
 
-                <div class='ms-auto btn-list'>
+                <div class='ms-auto btn-list align-items-center'>
+                    <TablerEnum
+                        description='Choose the type of line to draw.'
+                        default='No Snapping'
+                        :options='["No Snapping"]'
+                    />
+
                     <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
