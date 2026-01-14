@@ -85,7 +85,7 @@
                     </div>
 
                     <div v-if='!selectedTemplateLog'>
-                         <TablerInput
+                        <TablerInput
                             v-model='createLog.content'
                             :rows='4'
                             @keyup.enter='submitOnEnter ? submitLog() : undefined'
@@ -131,7 +131,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { from } from 'rxjs';
 import type { Ref, ComputedRef } from 'vue';
 import type { MissionLog } from '../../../../types.ts';
@@ -139,7 +139,7 @@ import { std } from '../../../../std.ts';
 import TagEntry from '../../util/TagEntry.vue';
 import MissionLogItem from './MissionLog.vue';
 import MissionTemplateLogs from '../../../../base/mission-template-logs.ts';
-import type { DBMissionTemplateLog } from '../../base/database.ts';
+import type { DBMissionTemplateLog } from '../../../../base/database.ts';
 import {
     TablerNone,
     TablerInput,
@@ -196,7 +196,9 @@ const templateLogs = ref<DBMissionTemplateLog[]>([]);
 const selectedLogType = ref('Default');
 
 const selectedTemplateLog = computed(() => {
-    return templateLogs.value.find(l => l.name === selectedLogType.value);
+    return templateLogs.value.find((l: DBMissionTemplateLog) => {
+        return l.name === selectedLogType.value
+    });
 });
 
 onMounted(async () => {
@@ -210,7 +212,7 @@ onMounted(async () => {
     }
 });
 
-const logTypeOptions = computed(() => {
+const logTypeOptions = computed<Array<string>>(() => {
     return ['Default', ...templateLogs.value.map(l => l.name)];
 });
 
