@@ -32,13 +32,13 @@
         >
             <div class='d-flex flex-wrap align-items-center gap-2'>
                 <span
-                    class='fw-semibold text-truncate'
+                    class='fw-semibold text-break'
                     v-text='contact.callsign'
                 />
             </div>
             <div
                 v-if='contact.notes && contact.notes.trim()'
-                class='text-truncate subheader user-select-none'
+                class='text-break subheader user-select-none'
                 v-text='contact.notes.trim()'
             />
         </div>
