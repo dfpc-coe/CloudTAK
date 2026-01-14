@@ -1,4 +1,4 @@
-CREATE TABLE "mission_template_log" (
+CREATE TABLE IF NOT EXISTS "mission_template_log" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
 	"icon" text DEFAULT '' NOT NULL,
