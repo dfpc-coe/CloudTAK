@@ -299,8 +299,11 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Composite([
             MissionListInput,
             Type.Object({
-                sort: Type.String({ default: 'createTime', description: 'Property to sort by' }),
-                order: { ...Default.Order, default: 'desc' }
+                sort: Type.String({
+                    default: 'createTime',
+                    description: 'Property to sort by'
+                }),
+                order: Default.Order,
             })
         ]),
         res: Type.Object({

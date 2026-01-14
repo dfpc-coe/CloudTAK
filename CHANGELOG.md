@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.56.0 - 2026-01-14
+
+- :tada: Implement Mission Template Log UI in Data Sync
+
 ### v12.55.1 - 2026-01-13
 
 - :rocket: Surface Recent Missions first by default
