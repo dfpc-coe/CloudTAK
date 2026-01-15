@@ -16,7 +16,6 @@
                     />
                 </TablerIconButton>
 
-
                 <span
                     class='ms-2'
                     v-text='route.params.template === "new" ? "New Template": template.name'
@@ -65,6 +64,13 @@
                         />
                     </div>
                     <div class='col-12'>
+                        <label class='form-label mx-2'>Default Keywords</label>
+                        <TagEntry
+                            placeholder='Default Keywords'
+                            v-model='template.keywords'
+                        />
+                    </div>
+                    <div class='col-12'>
                         <UploadLogo
                             v-model='template.icon'
                             label='Template Logo'
@@ -98,6 +104,13 @@
                         <label class='form-label'>Description</label>
                         <div class='text-muted'>
                             {{ template.description || 'No description provided.' }}
+                        </div>
+
+                        <div class='col-12'>
+                            <Keywords
+                                v-model='template.keywords'
+                                label='Default Keywords'
+                            />
                         </div>
                     </div>
                 </div>
@@ -162,6 +175,8 @@ import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { std } from '../../../src/std.ts';
 import type { MissionTemplate } from '../../../src/types.ts';
+import Keywords from '../CloudTAK/util/Keywords.vue';
+import TagEntry from '../CloudTAK/util/TagEntry.vue';
 import {
     TablerInput,
     TablerAlert,
@@ -192,6 +207,7 @@ const template = ref<MissionTemplate>({
     name: '',
     icon: '',
     description: '',
+    keywords: '',
     logs: []
 });
 

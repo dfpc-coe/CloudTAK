@@ -107,8 +107,12 @@ export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature,
     uuid: Type.String(),
 });
 
-export const MissionTemplateResponse = createSelectSchema(schemas.MissionTemplate, {
+export const MissionTemplateResponse = Type.Object({
     id: Type.String(),
+    name: Type.String(),
+    icon: Type.String(),
+    keywords: Type.Array(Type.String()),
+    description: Type.String(),
     created: Type.String(),
     updated: Type.String(),
 })
