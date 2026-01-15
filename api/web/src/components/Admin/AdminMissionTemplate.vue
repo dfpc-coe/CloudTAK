@@ -107,9 +107,9 @@
                         </div>
 
                         <div class='col-12'>
+                            <label class='form-label'>Default Keywords</label>
                             <Keywords
-                                v-model='template.keywords'
-                                label='Default Keywords'
+                                :keywords='template.keywords'
                             />
                         </div>
                     </div>
@@ -207,7 +207,7 @@ const template = ref<MissionTemplate>({
     name: '',
     icon: '',
     description: '',
-    keywords: '',
+    keywords: [],
     logs: []
 });
 
