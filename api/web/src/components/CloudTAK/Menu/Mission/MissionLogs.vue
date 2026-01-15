@@ -93,7 +93,8 @@
 
                         <TagEntry
                             placeholder='Keyword Entry'
-                            @tags='createLog.keywords = $event'
+                            :model-value='createLog.keywords'
+                            @update:model-value='createLog.keywords = $event'
                         />
 
                         <div class='d-flex my-2'>

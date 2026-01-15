@@ -26,7 +26,7 @@
                     <TablerIconButton
                         v-if='!disabled'
                         title='Remove Tag'
-                        @click.prevent.stop='innerTags.splice(index, 1);'
+                        @click.prevent.stop='removeTag(index)'
                     ><IconX
                         :size='16'
                         stroke='2'
@@ -42,7 +42,6 @@
                     @keydown='addNew'
                     @blur='handleInputBlur'
                     @focus='handleInputFocus'
-                    @input='handleInput'
                 >
             </div>
         </div>
@@ -70,8 +69,8 @@ const props = defineProps({
         default: false
     },
     modelValue: {
-        type: String,
-        default: '',
+        type: Array,
+        default: () => [],
     },
     validate: {
         type: [String, Function, Object],
@@ -88,10 +87,6 @@ const props = defineProps({
     placeholder: {
         type: String,
         default: ''
-    },
-    tags: {
-        type: Array,
-        default: () => []
     },
     limit: {
         type: Number,
@@ -112,7 +107,7 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['update:modelValue', 'on-limit', 'tags', 'on-error', 'on-focus', 'on-blur']);
+const emit = defineEmits(['update:modelValue', 'on-limit', 'on-error', 'on-focus', 'on-blur']);
 
 // State
 const isInputActive = ref(false);
@@ -132,12 +127,9 @@ const isLimit = computed(() => {
 
 // Watchers
 watch(() => props.modelValue, (value) => {
-    newTag.value = value;
-}, { immediate: true });
-
-watch(() => props.tags, (tags) => {
-    innerTags.value = [...tags];
-    emit('tags', innerTags.value);
+    if (JSON.stringify(value) !== JSON.stringify(innerTags.value)) {
+        innerTags.value = [...value];
+    }
 }, { deep: true, immediate: true });
 
 
@@ -201,7 +193,7 @@ function addNew(e) {
     if (newTag.value.trim() !== '') {
         innerTags.value.push(newTag.value.trim());
         newTag.value = '';
-        emit('update:modelValue', '');
+        emit('update:modelValue', innerTags.value);
     }
 
     if (e) {
@@ -210,7 +202,7 @@ function addNew(e) {
 }
 
 function handleInput(event) {
-    emit("update:modelValue", event.target.value);
+    // emit("update:modelValue", event.target.value);
 }
 
 function makeItError(errorMessage) {
@@ -245,12 +237,18 @@ function validateIfNeeded(tagValue) {
     return false;
 }
 
+function removeTag(index) {
+    innerTags.value.splice(index, 1);
+    emit('update:modelValue', innerTags.value);
+}
+
 function removeLastTag() {
     if (newTag.value) {
         return;
     }
 
     innerTags.value.pop();
+    emit('update:modelValue', innerTags.value);
 }
 </script>
 

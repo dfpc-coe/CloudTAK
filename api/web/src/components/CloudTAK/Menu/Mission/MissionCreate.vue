@@ -164,7 +164,8 @@
                             <label class='px-2 w-100'>Keywords</label>
                             <TagEntry
                                 placeholder='Enter Keywords'
-                                @tags='mission.keywords = $event'
+                                :model-value='mission.keywords'
+                                @update:model-value='mission.keywords = $event'
                             />
                         </div>
 
