@@ -67,8 +67,7 @@
                         <label class='form-label mx-2'>Default Keywords</label>
                         <TagEntry
                             placeholder='Default Keywords'
-                            :modelValue='template.keywords.join(",")'
-                            @tags='template.keywords = $event'
+                            v-model='template.keywords'
                         />
                     </div>
                     <div class='col-12'>

@@ -88,7 +88,8 @@
 
                 <TagEntry
                     placeholder='Hashtags'
-                    @tags='body.keywords = $event'
+                    :model-value='body.keywords'
+                    @update:model-value='body.keywords = $event'
                 />
 
                 <div class='col-12 pt-3'>
