@@ -86,12 +86,6 @@
                                 <div class='col-12'>
                                     <small class='text-uppercase text-white-50 d-block mb-2'>Keywords</small>
                                     <Keywords :keywords='keywords' />
-                                    <div
-                                        v-if='!keywords.length'
-                                        class='text-secondary small'
-                                    >
-                                        No keywords
-                                    </div>
                                 </div>
                                 <div class='col-12'>
                                     <small class='text-uppercase text-white-50 d-block mb-1'>Description</small>
