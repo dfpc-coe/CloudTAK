@@ -43,41 +43,34 @@ export interface UserInterface {
 
     createMachineUser(uid: number, body: {
         name: string;
+        description: string;
+        management_url: string;
+        active: boolean;
+        locking: boolean;
         agency_id?: number;
         password: string;
-        integration: {
-            name: string;
-            description: string;
-            management_url: string;
-            active: boolean;
-        }
+        channels: Array<{
+            id: number;
+            access: ChannelAccessEnum;
+        }>;
     }): Promise<Static<typeof MachineUser>>;
 
     fetchMachineUser(uid: number, email: string): Promise<Static<typeof MachineUser>>;
 
     updateMachineUser(
         uid: number,
-        mid: number,
         body: {
+            id?: number;
             name?: string;
             email?: string;
             active?: boolean;
             password?: string;
+            integration_id?: number;
+            connection_id?: number;
         }
     ): Promise<Static<typeof MachineUser>>;
 
-    attachMachineUser(uid: number, body: {
-        machine_id: number;
-        channel_id: number;
-        access: ChannelAccessEnum;
-    }): Promise<void>;
-
-    updateIntegrationConnectionId(uid: number, body: {
-        integration_id: number;
-        connection_id: number;
-    }): Promise<void>;
-
-    deleteIntegrationByConnectionId(uid: number, body: {
+    deleteMachineUser(uid: number, body: {
         connection_id: number;
     }): Promise<void>;
 

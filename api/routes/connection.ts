@@ -145,7 +145,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.integrationId && cotak && cotak.configured) {
                 if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
 
-                await cotak.updateIntegrationConnectionId(profile.id, {
+                await cotak.updateMachineUser(profile.id, {
                     connection_id: conn.id,
                     integration_id: req.body.integrationId
                 })
@@ -407,7 +407,7 @@ export default async function router(schema: Schema, config: Config) {
                 if (profile.id) {
                     // I don't know how to figure out if the connection was created with a machine user and hence registered
                     // with COTAK, so just firing off the delete, which won't error out if no integration found.
-                    await cotak.deleteIntegrationByConnectionId(profile.id, {
+                    await cotak.deleteMachineUser(profile.id, {
                         connection_id: req.params.connectionid,
                     })
                 }

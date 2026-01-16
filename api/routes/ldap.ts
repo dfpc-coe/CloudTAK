@@ -48,7 +48,8 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.String(),
             description: Type.String(),
-            agency_id: Type.Union([Type.Null(), Type.Integer()]),
+            locking: Type.Optional(Type.Boolean({ default: true })),
+            agency_id: Type.Optional(Type.Integer()),
             channels: Type.Array(Type.Object({
                 id: Type.Integer(),
                 access: ChannelAccess
@@ -77,24 +78,15 @@ export default async function router(schema: Schema, config: Config) {
                 .join('');
 
             const user = await cotak.createMachineUser(profile.id, {
-                ...req.body,
-                agency_id: req.body.agency_id || undefined,
+                name: req.body.name,
+                description: req.body.description,
+                management_url: config.API_URL,
+                active: false,
+                locking: req.body.locking ?? true,
+                agency_id: req.body.agency_id,
                 password,
-                integration: {
-                    name: req.body.name,
-                    description: req.body.description,
-                    management_url: config.API_URL,
-                    active: false,
-                }
+                channels: req.body.channels
             });
-
-            for (const channel of req.body.channels) {
-                await cotak.attachMachineUser(profile.id, {
-                    machine_id: user.id,
-                    channel_id: channel.id,
-                    access: channel.access
-                })
-            }
 
             const api = await TAKAPI.init(
                 new URL(config.server.webtak),
@@ -141,7 +133,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const user = await cotak.fetchMachineUser(profile.id, req.params.email)
 
-            await cotak.updateMachineUser(profile.id, user.id, { password });
+            await cotak.updateMachineUser(profile.id, { id: user.id, password });
 
             const api = await TAKAPI.init(
                 new URL(config.server.webtak),
