@@ -102,14 +102,12 @@ export default async function router(schema: Schema, config: Config) {
                 data: req.body.icon,
             });
 
-            const newtemplate = await config.models.MissionTemplate.generate({
+            const template = await config.models.MissionTemplate.generate({
                 ...req.body,
                 keywords: req.body.keywords.join(',')
             });
 
-            const template = await config.models.MissionTemplate.augmented_from(newtemplate.id);
-
-            res.json(template);
+            res.json(await config.models.MissionTemplate.augmented_from(template.id));
         } catch (err) {
              Err.respond(err, res);
         }
@@ -146,9 +144,7 @@ export default async function router(schema: Schema, config: Config) {
                 keywords: req.body.keywords ? req.body.keywords.join(',') : undefined
             });
 
-            const template = await config.models.MissionTemplate.augmented_from(req.params.mission);
-
-            res.json(template);
+            res.json(await config.models.MissionTemplate.augmented_from(req.params.mission));
         } catch (err) {
              Err.respond(err, res);
         }
@@ -289,7 +285,7 @@ export default async function router(schema: Schema, config: Config) {
                 template: req.params.mission
             });
 
-            res.json(log);
+            res.json(await config.models.MissionTemplateLog.augmented_from(log.id));
         } catch (err) {
              Err.respond(err, res);
         }
@@ -336,7 +332,7 @@ export default async function router(schema: Schema, config: Config) {
                 keywords: req.body.keywords ? req.body.keywords.join(',') : undefined
             });
 
-            res.json(log);
+            res.json(await config.models.MissionTemplateLog.augmented_from(log.id));
         } catch (err) {
              Err.respond(err, res);
         }

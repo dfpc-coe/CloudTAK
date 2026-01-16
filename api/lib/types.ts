@@ -117,12 +117,16 @@ export const MissionTemplateResponse = Type.Object({
     updated: Type.String(),
 })
 
-export const MissionTemplateLogResponse = createSelectSchema(schemas.MissionTemplateLog, {
+export const MissionTemplateLogResponse = Type.Object({
     id: Type.String(),
+    name: Type.String(),
+    icon: Type.String(),
+    keywords: Type.Array(Type.String()),
+    description: Type.String(),
     created: Type.String(),
     updated: Type.String(),
-    schema: Type.Any(),
-    keywords: Type.Array(Type.String())
+    template: Type.String(),
+    schema: Type.Unknown(),
 })
 
 const Palette = createSelectSchema(schemas.Palette, {
