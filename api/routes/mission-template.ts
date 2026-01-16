@@ -36,7 +36,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req);
 
-            const list = await config.models.MissionTemplate.list({
+            const list = await config.models.MissionTemplate.augmented_list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
@@ -86,6 +86,10 @@ export default async function router(schema: Schema, config: Config) {
             description: Type.String({
                 description: 'A human friendly description for the Template'
             }),
+            keywords: Type.Array(Type.String(), {
+                description: 'Keywords associated with this template',
+                default: []
+            }),
         }),
         res: MissionTemplateResponse
     }, async (req, res) => {
@@ -98,9 +102,12 @@ export default async function router(schema: Schema, config: Config) {
                 data: req.body.icon,
             });
 
-            const template = await config.models.MissionTemplate.generate(req.body);
+            const template = await config.models.MissionTemplate.generate({
+                ...req.body,
+                keywords: req.body.keywords.join(',')
+            });
 
-            res.json(template);
+            res.json(await config.models.MissionTemplate.augmented_from(template.id));
         } catch (err) {
              Err.respond(err, res);
         }
@@ -117,6 +124,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Type.String()),
             icon: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
+            keywords: Type.Optional(Type.Array(Type.String())),
         }),
         res: MissionTemplateResponse
     }, async (req, res) => {
@@ -131,9 +139,12 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
-            const template = await config.models.MissionTemplate.commit(req.params.mission, req.body);
+            await config.models.MissionTemplate.commit(req.params.mission, {
+                ...req.body,
+                keywords: req.body.keywords ? req.body.keywords.join(',') : undefined
+            });
 
-            res.json(template);
+            res.json(await config.models.MissionTemplate.augmented_from(req.params.mission));
         } catch (err) {
              Err.respond(err, res);
         }
@@ -186,7 +197,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req);
 
-            const list = await config.models.MissionTemplateLog.list({
+            const list = await config.models.MissionTemplateLog.augmented_list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
@@ -216,7 +227,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req);
 
-            const log = await config.models.MissionTemplateLog.from(req.params.log);
+            const log = await config.models.MissionTemplateLog.augmented_from(req.params.log);
 
             res.json(log);
         } catch (err) {
@@ -238,6 +249,10 @@ export default async function router(schema: Schema, config: Config) {
             icon: Type.Optional(Type.String({
                 description: 'Base64 encoded icon image for the Log'
             })),
+            keywords: Type.Array(Type.String(), {
+                description: 'Keywords associated with this log',
+                default: []
+            }),
             description: Type.String({
                 description: 'A human friendly description for the Log'
             }),
@@ -266,10 +281,11 @@ export default async function router(schema: Schema, config: Config) {
 
             const log = await config.models.MissionTemplateLog.generate({
                 ...req.body,
+                keywords: req.body.keywords.join(','),
                 template: req.params.mission
             });
 
-            res.json(log);
+            res.json(await config.models.MissionTemplateLog.augmented_from(log.id));
         } catch (err) {
              Err.respond(err, res);
         }
@@ -287,6 +303,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Type.String()),
             icon: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             description: Type.Optional(Type.String()),
+            keywords: Type.Optional(Type.Array(Type.String())),
             schema: Type.Optional(Type.Any())
         }),
         res: MissionTemplateLogResponse
@@ -310,9 +327,12 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            const log = await config.models.MissionTemplateLog.commit(req.params.log, req.body);
+            const log = await config.models.MissionTemplateLog.commit(req.params.log, {
+                ...req.body,
+                keywords: req.body.keywords ? req.body.keywords.join(',') : undefined
+            });
 
-            res.json(log);
+            res.json(await config.models.MissionTemplateLog.augmented_from(log.id));
         } catch (err) {
              Err.respond(err, res);
         }

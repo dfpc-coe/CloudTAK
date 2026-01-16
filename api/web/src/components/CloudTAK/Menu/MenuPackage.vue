@@ -108,13 +108,10 @@
                                         </div>
                                         <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-2'>Hashtags</small>
-                                            <Keywords :keywords='pkg.keywords' />
-                                            <p
-                                                v-if='!pkg.keywords || !pkg.keywords.length'
-                                                class='text-white-50 mb-0'
-                                            >
-                                                No hashtags provided
-                                            </p>
+                                            <Keywords
+                                                :keywords='pkg.keywords'
+                                                placeholder='No hashtags provided'
+                                            />
                                         </div>
                                     </div>
                                 </div>

@@ -16,7 +16,6 @@
                     />
                 </TablerIconButton>
 
-
                 <span
                     class='ms-2'
                     v-text='route.params.template === "new" ? "New Template": template.name'
@@ -65,6 +64,13 @@
                         />
                     </div>
                     <div class='col-12'>
+                        <label class='form-label mx-2'>Default Keywords</label>
+                        <TagEntry
+                            v-model='template.keywords'
+                            placeholder='Default Keywords'
+                        />
+                    </div>
+                    <div class='col-12'>
                         <UploadLogo
                             v-model='template.icon'
                             label='Template Logo'
@@ -99,6 +105,13 @@
                         <div class='text-muted'>
                             {{ template.description || 'No description provided.' }}
                         </div>
+
+                        <div class='col-12 mt-1'>
+                            <label class='form-label'>Default Keywords</label>
+                            <Keywords
+                                :keywords='template.keywords'
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -130,7 +143,9 @@
                             <table class='table table-vcenter card-table table-hover'>
                                 <thead>
                                     <tr>
+                                        <th />
                                         <th>Name</th>
+                                        <th>Keywords</th>
                                         <th>Created</th>
                                     </tr>
                                 </thead>
@@ -141,7 +156,23 @@
                                         class='cursor-pointer'
                                         @click='router.push(`/admin/template/${route.params.template}/log/${log.id}`)'
                                     >
+                                        <td class='w-1'>
+                                            <div
+                                                class='d-flex justify-content-center align-items-center'
+                                                style='width: 32px; height: 32px;'
+                                            >
+                                                <img
+                                                    v-if='log.icon'
+                                                    :src='log.icon'
+                                                    style='max-width: 100%; max-height: 100%; object-fit: contain;'
+                                                    alt='Log Icon'
+                                                >
+                                            </div>
+                                        </td>
                                         <td v-text='log.name' />
+                                        <td>
+                                            <Keywords :keywords='log.keywords' />
+                                        </td>
                                         <td>
                                             <TablerEpoch :date='log.created' />
                                         </td>
@@ -162,6 +193,8 @@ import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { std } from '../../../src/std.ts';
 import type { MissionTemplate } from '../../../src/types.ts';
+import Keywords from '../CloudTAK/util/Keywords.vue';
+import TagEntry from '../CloudTAK/util/TagEntry.vue';
 import {
     TablerInput,
     TablerAlert,
@@ -192,6 +225,7 @@ const template = ref<MissionTemplate>({
     name: '',
     icon: '',
     description: '',
+    keywords: [],
     logs: []
 });
 
