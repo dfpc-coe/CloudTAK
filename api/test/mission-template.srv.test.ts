@@ -40,7 +40,8 @@ test('POST: /template/mission - create', async () => {
             body: {
                 name: 'Test Template',
                 description: 'A test mission template',
-                icon: validIcon
+                icon: validIcon,
+                keywords: ['tag1', 'tag2']
             }
         }, true);
 
@@ -48,6 +49,7 @@ test('POST: /template/mission - create', async () => {
         assert.equal(res.body.name, 'Test Template');
         assert.equal(res.body.description, 'A test mission template');
         assert.equal(res.body.icon, validIcon);
+        assert.deepEqual(res.body.keywords, ['tag1', 'tag2']);
         assert.ok(res.body.created, 'returned a created date');
         assert.ok(res.body.updated, 'returned an updated date');
 
@@ -70,6 +72,7 @@ test('GET: /template/mission - list', async () => {
         assert.equal(res.body.items.length, 1);
         assert.equal(res.body.items[0].id, templateId);
         assert.equal(res.body.items[0].name, 'Test Template');
+        assert.deepEqual(res.body.items[0].keywords, ['tag1', 'tag2']);
     } catch (err) {
         assert.ifError(err);
     }
@@ -88,6 +91,7 @@ test('GET: /template/mission/:mission - get', async () => {
         assert.equal(res.body.name, 'Test Template');
         assert.equal(res.body.description, 'A test mission template');
         assert.equal(res.body.icon, validIcon);
+        assert.deepEqual(res.body.keywords, ['tag1', 'tag2']);
     } catch (err) {
         assert.ifError(err);
     }
@@ -102,7 +106,8 @@ test('PATCH: /template/mission/:mission - update', async () => {
             },
             body: {
                 name: 'Updated Template',
-                description: 'An updated description'
+                description: 'An updated description',
+                keywords: ['tag3']
             }
         }, true);
 
@@ -110,6 +115,7 @@ test('PATCH: /template/mission/:mission - update', async () => {
         assert.equal(res.body.name, 'Updated Template');
         assert.equal(res.body.description, 'An updated description');
         assert.equal(res.body.icon, validIcon);
+        assert.deepEqual(res.body.keywords, ['tag3']);
     } catch (err) {
         assert.ifError(err);
     }

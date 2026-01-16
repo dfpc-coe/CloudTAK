@@ -12,6 +12,21 @@
 
 ### Pending Release
 
+### v12.57.0 - 2026-01-15
+
+- :tada: Internal Implementaton of Route Snapping (Not yet exposed in UI)
+- :rocket: Allow preset Keywords in Mission Template
+- :rocket: Alow preset Keywords in Mission Template Log
+
+### v12.56.0 - 2026-01-14
+
+- :tada: Implement Mission Template Log UI in Data Sync
+
+### v12.55.1 - 2026-01-13
+
+- :rocket: Surface Recent Missions first by default
+- :white_check_mark: Add Mission List tests
+
 ### v12.55.0 - 2026-01-12
 
 - :rocket: Output Web Types as an npm package for use in CloudTAK Plugins

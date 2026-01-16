@@ -107,17 +107,26 @@ export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature,
     uuid: Type.String(),
 });
 
-export const MissionTemplateResponse = createSelectSchema(schemas.MissionTemplate, {
+export const MissionTemplateResponse = Type.Object({
     id: Type.String(),
+    name: Type.String(),
+    icon: Type.String(),
+    keywords: Type.Array(Type.String()),
+    description: Type.String(),
     created: Type.String(),
     updated: Type.String(),
 })
 
-export const MissionTemplateLogResponse = createSelectSchema(schemas.MissionTemplateLog, {
+export const MissionTemplateLogResponse = Type.Object({
     id: Type.String(),
+    name: Type.String(),
+    icon: Type.Union([Type.Null(), Type.String()]),
+    keywords: Type.Array(Type.String()),
+    description: Type.String(),
     created: Type.String(),
     updated: Type.String(),
-    schema: Type.Any()
+    template: Type.String(),
+    schema: Type.Unknown(),
 })
 
 const Palette = createSelectSchema(schemas.Palette, {
@@ -369,4 +378,5 @@ export const BasemapResponse = createSelectSchema(schemas.Basemap, {
     styles: Type.Array(Type.Unknown()),
     collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
     sharing_token: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+    snapping_layer: Type.Union([Type.Null(), Type.String()]),
 });

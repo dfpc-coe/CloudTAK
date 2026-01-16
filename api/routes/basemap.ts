@@ -304,6 +304,13 @@ export default async function router(schema: Schema, config: Config) {
                 default: true,
                 description: 'Allow CloudTAK users to share this layer with other users'
             }),
+            snapping_enabled: Type.Boolean({
+                default: false,
+                description: 'Allow CloudTAK line editing to snap to features in this basemap'
+            }),
+            snapping_layer: Type.Optional(Type.String({
+                description: 'The Vector Tile layer to snap to'
+            })),
             collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
@@ -348,6 +355,12 @@ export default async function router(schema: Schema, config: Config) {
                 username = user.email;
             }
 
+            if (req.body.type !== Basemap_Type.VECTOR && req.body.snapping_enabled) {
+                throw new Err(400, null, 'Snapping can only be enabled on Vector basemaps');
+            } else if (req.body.snapping_enabled && !req.body.snapping_layer) {
+                throw new Err(400, null, 'A snapping_layer must be provided when enabling snapping');
+            }
+
             let basemap = await config.models.Basemap.generate({
                 ...req.body,
                 bounds,
@@ -385,6 +398,12 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.Optional(Default.NameField),
             sharing_enabled: Type.Optional(Type.Boolean()),
+            snapping_enabled: Type.Optional(Type.Boolean({
+                description: 'Allow CloudTAK line editing to snap to features in this basemap'
+            })),
+            snapping_layer: Type.Optional(Type.String({
+                description: 'The Vector Tile layer to snap to'
+            })),
             collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             overlay: Type.Optional(Type.Boolean()),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
@@ -433,6 +452,13 @@ export default async function router(schema: Schema, config: Config) {
                 username = null
             } else if (req.body.scope && user.access === AuthUserAccess.USER || req.body.scope === ResourceCreationScope.USER) {
                 username = user.email;
+            }
+
+            const type = req.body.type || existing.type;
+            if (type !== Basemap_Type.VECTOR && req.body.snapping_enabled) {
+                throw new Err(400, null, 'Snapping can only be enabled on Vector basemaps');
+            } else if (req.body.snapping_enabled && !req.body.snapping_layer) {
+                throw new Err(400, null, 'A snapping_layer must be provided when enabling snapping');
             }
 
             let basemap = await config.models.Basemap.commit(req.params.basemapid, {

@@ -84,12 +84,6 @@
                                     </div>
 
                                     <Keywords :keywords='missionKeywords(mission)' />
-                                    <div
-                                        v-if='!missionKeywords(mission).length'
-                                        class='text-secondary small'
-                                    >
-                                        No keywords
-                                    </div>
 
                                     <div
                                         v-if='typeof missionPasswords[mission.guid] === "string"'

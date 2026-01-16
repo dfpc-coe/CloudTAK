@@ -2,7 +2,7 @@ import Dexie, { type EntityTable } from 'dexie';
 import type {
     Feature,
     Mission,
-    MissionRole
+    MissionRole,
 } from '../types.ts';
 
 export interface DBIcon {
@@ -117,6 +117,27 @@ export interface DBSubscriptionLog {
     keywords: string[];
 }
 
+export interface DBMissionTemplate {
+    id: string;
+    name: string;
+    icon: string;
+    description: string;
+    created: string;
+    updated: string;
+}
+
+export interface DBMissionTemplateLog {
+    id: string;
+    template: string;
+    name: string;
+    icon?: string | null;
+    description: string;
+    created: string;
+    updated: string;
+    schema: unknown;
+    keywords: string[];
+}
+
 export type DatabaseType = Dexie & {
     icon: EntityTable<DBIcon, 'name'>,
     iconset: EntityTable<DBIconset, 'uid'>,
@@ -127,8 +148,10 @@ export type DatabaseType = Dexie & {
     chatroom_chats: EntityTable<DBChatroomChat, 'id'>,
     notification: EntityTable<DBNotification, 'id'>,
     subscription: EntityTable<DBSubscription, 'guid'>,
-    subscription_log: EntityTable<DBSubscriptionLog, 'id'>
+    subscription_log: EntityTable<DBSubscriptionLog, 'id'>,
     subscription_feature: EntityTable<DBSubscriptionFeature, 'id'>,
+    mission_template: EntityTable<DBMissionTemplate, 'id'>,
+    mission_template_log: EntityTable<DBMissionTemplateLog, 'id'>
 };
 
 export const db = new Dexie('CloudTAK') as DatabaseType;
@@ -147,4 +170,6 @@ db.version(1).stores({
     subscription: 'guid, name',
     subscription_log: 'id, [mission+id]',
     subscription_feature: 'id, mission, [mission+id]',
+    mission_template: 'id, name',
+    mission_template_log: 'id, template, [template+id]'
 });

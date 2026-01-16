@@ -121,7 +121,9 @@ test('POST: api/basemap', async () => {
             format: 'png',
             scheme: 'xyz',
             styles: [],
-            type: 'raster'
+            type: 'raster',
+            snapping_enabled: false,
+            snapping_layer: null
         })
     } catch (err) {
         assert.ifError(err)
@@ -180,10 +182,10 @@ test('PATCH: api/basemap/1', async () => {
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
             iconset: '',
-            title: 'callsign',
-            username: 'admin@example.com',
             attribution: "",
             frequency: null,
+            title: 'callsign',
+            username: 'admin@example.com',
             sharing_enabled: false,
             sharing_token: null,
             collection: null,
@@ -193,7 +195,9 @@ test('PATCH: api/basemap/1', async () => {
             format: 'png',
             scheme: 'xyz',
             styles: [],
-            type: 'raster'
+            type: 'raster',
+            snapping_enabled: false,
+            snapping_layer: null
         })
     } catch (err) {
         assert.ifError(err)

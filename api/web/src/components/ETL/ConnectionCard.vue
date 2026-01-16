@@ -193,7 +193,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { ETLConnection } from '../../types';
 import { std, stdurl } from '../../std';
-import timeDiff from '../../timediff';
+import timeDiff from '../../timediff.ts';
 import ConnectionStatus from './Connection/StatusDot.vue';
 import AgencyBadge from './Connection/AgencyBadge.vue';
 import InitialAuthor from '../util/InitialAuthor.vue';

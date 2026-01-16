@@ -731,7 +731,7 @@ export interface paths {
                     /** @description No Description */
                     type?: ("raster" | "raster-dem" | "vector") | ("raster" | "raster-dem" | "vector")[];
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "sharing_enabled" | "sharing_token" | "name" | "title" | "url" | "overlay" | "iconset" | "username" | "bounds" | "tilesize" | "frequency" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "sharing_enabled" | "sharing_token" | "snapping_enabled" | "snapping_layer" | "name" | "title" | "url" | "overlay" | "iconset" | "username" | "bounds" | "tilesize" | "frequency" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only show Basemaps belonging to a given collection */
@@ -762,6 +762,8 @@ export interface paths {
                                 updated: string;
                                 sharing_enabled: boolean;
                                 sharing_token?: null | string;
+                                snapping_enabled: boolean;
+                                snapping_layer: string | null;
                                 name: string;
                                 title: string;
                                 url: string;
@@ -967,6 +969,13 @@ export interface paths {
                          * @default true
                          */
                         sharing_enabled: boolean;
+                        /**
+                         * @description Allow CloudTAK line editing to snap to features in this basemap
+                         * @default false
+                         */
+                        snapping_enabled: boolean;
+                        /** @description The Vector Tile layer to snap to */
+                        snapping_layer?: string;
                         collection?: null | string;
                         /** @default user */
                         scope: "server" | "user";
@@ -1002,6 +1011,8 @@ export interface paths {
                             updated: string;
                             sharing_enabled: boolean;
                             sharing_token?: null | string;
+                            snapping_enabled: boolean;
+                            snapping_layer: string | null;
                             name: string;
                             title: string;
                             url: string;
@@ -1133,6 +1144,8 @@ export interface paths {
                             updated: string;
                             sharing_enabled: boolean;
                             sharing_token?: null | string;
+                            snapping_enabled: boolean;
+                            snapping_layer: string | null;
                             name: string;
                             title: string;
                             url: string;
@@ -1330,6 +1343,10 @@ export interface paths {
                         /** @description Human readable name */
                         name?: string;
                         sharing_enabled?: boolean;
+                        /** @description Allow CloudTAK line editing to snap to features in this basemap */
+                        snapping_enabled?: boolean;
+                        /** @description The Vector Tile layer to snap to */
+                        snapping_layer?: string;
                         collection?: null | string;
                         overlay?: boolean;
                         /** @default user */
@@ -1364,6 +1381,8 @@ export interface paths {
                             updated: string;
                             sharing_enabled: boolean;
                             sharing_token?: null | string;
+                            snapping_enabled: boolean;
+                            snapping_layer: string | null;
                             name: string;
                             title: string;
                             url: string;
@@ -20548,13 +20567,17 @@ export interface paths {
         /** Helper API to list missions */
         get: {
             parameters: {
-                query?: {
+                query: {
                     /** @description No Description */
                     passwordProtected?: boolean;
                     /** @description No Description */
                     defaultRole?: boolean;
                     /** @description No Description */
                     tool?: string;
+                    /** @description Property to sort by */
+                    sort: string;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
                 };
                 header?: never;
                 path?: never;
@@ -23826,7 +23849,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "name" | "icon" | "description" | "created" | "updated" | "enableRLS";
+                    sort: "id" | "name" | "icon" | "keywords" | "description" | "created" | "updated" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -23848,6 +23871,7 @@ export interface paths {
                                 id: string;
                                 name: string;
                                 icon: string;
+                                keywords: string[];
                                 description: string;
                                 created: string;
                                 updated: string;
@@ -23935,6 +23959,11 @@ export interface paths {
                         icon: string;
                         /** @description A human friendly description for the Template */
                         description: string;
+                        /**
+                         * @description Keywords associated with this template
+                         * @default []
+                         */
+                        keywords: string[];
                     };
                 };
             };
@@ -23949,6 +23978,7 @@ export interface paths {
                             id: string;
                             name: string;
                             icon: string;
+                            keywords: string[];
                             description: string;
                             created: string;
                             updated: string;
@@ -24053,6 +24083,7 @@ export interface paths {
                             id: string;
                             name: string;
                             icon: string;
+                            keywords: string[];
                             description: string;
                             created: string;
                             updated: string;
@@ -24060,6 +24091,7 @@ export interface paths {
                                 id: string;
                                 name: string;
                                 icon: string | null;
+                                keywords: string[];
                                 description: string;
                                 created: string;
                                 updated: string;
@@ -24254,6 +24286,7 @@ export interface paths {
                             id: string;
                             name: string;
                             icon: string;
+                            keywords: string[];
                             description: string;
                             created: string;
                             updated: string;
@@ -24342,7 +24375,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "name" | "icon" | "description" | "created" | "updated" | "template" | "schema" | "enableRLS";
+                    sort: "id" | "name" | "icon" | "keywords" | "description" | "created" | "updated" | "template" | "schema" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -24367,6 +24400,7 @@ export interface paths {
                                 id: string;
                                 name: string;
                                 icon: string | null;
+                                keywords: string[];
                                 description: string;
                                 created: string;
                                 updated: string;
@@ -24458,6 +24492,11 @@ export interface paths {
                         name: string;
                         /** @description Base64 encoded icon image for the Log */
                         icon?: string;
+                        /**
+                         * @description Keywords associated with this log
+                         * @default []
+                         */
+                        keywords: string[];
                         /** @description A human friendly description for the Log */
                         description: string;
                         /** @description JSON Schema for the Log */
@@ -24476,6 +24515,7 @@ export interface paths {
                             id: string;
                             name: string;
                             icon: string | null;
+                            keywords: string[];
                             description: string;
                             created: string;
                             updated: string;
@@ -24585,6 +24625,7 @@ export interface paths {
                             id: string;
                             name: string;
                             icon: string | null;
+                            keywords: string[];
                             description: string;
                             created: string;
                             updated: string;
@@ -24768,6 +24809,7 @@ export interface paths {
                         name?: string;
                         icon?: string | null;
                         description?: string;
+                        keywords?: string[];
                         schema?: unknown;
                     };
                 };
@@ -24783,6 +24825,7 @@ export interface paths {
                             id: string;
                             name: string;
                             icon: string | null;
+                            keywords: string[];
                             description: string;
                             created: string;
                             updated: string;
