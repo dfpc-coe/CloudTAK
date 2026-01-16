@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.58.0 - 2026-01-16
+
+- :tada: Additional Consolidaton of COTAK API Calls
+- :rocket: Add Icon for "Type" (Delete vs Style) of Query in ETL Style Editor
+- :rocket: Visual Improvements to ETL Style Editor
+
 ### v12.57.0 - 2026-01-15
 
 - :tada: Internal Implementaton of Route Snapping (Not yet exposed in UI)
