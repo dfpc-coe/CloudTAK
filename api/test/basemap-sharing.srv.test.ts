@@ -50,7 +50,9 @@ test('POST: api/basemap - Sharing Turned On Initially', async () => {
             format: 'png',
             scheme: 'xyz',
             styles: [],
-            type: 'raster'
+            type: 'raster',
+            snapping_enabled: false,
+            snapping_layer: null
         })
     } catch (err) {
         assert.ifError(err)
@@ -142,7 +144,9 @@ test('PATCH: api/basemap/1 - Turn off Sharing', async () => {
             format: 'png',
             scheme: 'xyz',
             styles: [],
-            type: 'raster'
+            type: 'raster',
+            snapping_enabled: false,
+            snapping_layer: null
         })
     } catch (err) {
         assert.ifError(err)
@@ -205,7 +209,9 @@ test('PATCH: api/basemap/1 - Turn on Sharing', async () => {
             format: 'png',
             scheme: 'xyz',
             styles: [],
-            type: 'raster'
+            type: 'raster',
+            snapping_enabled: false,
+            snapping_layer: null
         })
     } catch (err) {
         assert.ifError(err)
