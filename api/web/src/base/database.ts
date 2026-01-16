@@ -135,6 +135,7 @@ export interface DBMissionTemplateLog {
     created: string;
     updated: string;
     schema: unknown;
+    keywords: string[];
 }
 
 export type DatabaseType = Dexie & {
