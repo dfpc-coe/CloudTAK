@@ -66,8 +66,8 @@
                     <div class='col-12'>
                         <label class='form-label mx-2'>Default Keywords</label>
                         <TagEntry
-                            placeholder='Default Keywords'
                             v-model='template.keywords'
+                            placeholder='Default Keywords'
                         />
                     </div>
                     <div class='col-12'>

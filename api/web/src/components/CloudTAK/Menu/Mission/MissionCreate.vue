@@ -257,8 +257,22 @@ const mission = ref({
     role: 'Subscriber',
     description: '',
     groups: [],
-    keywords: [],
+    keywords: [] as string[],
     hashtags: ''
+});
+
+watch(selectedTemplate, (newId) => {
+    const template = templates.value.find((t) => t.id === newId);
+
+    mission.value.keywords = [];
+
+    if (template && template.keywords) {
+        for (const keyword of template.keywords) {
+            if (!mission.value.keywords.includes(keyword)) {
+                mission.value.keywords.push(keyword);
+            }
+        }
+    }
 });
 
 watch(templatesPaging, async () => {
@@ -296,6 +310,7 @@ async function listTemplates() {
             description: '',
             created: '',
             updated: '',
+            keywords: [],
         }, ...res.data.items];
 
         if (!selectedTemplate.value) selectedTemplate.value = 'default';
