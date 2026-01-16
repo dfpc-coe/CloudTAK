@@ -77,7 +77,7 @@
             </div>
         </div>
         <div
-            v-else-if='mapStore.draw.mode === DrawToolMode.LINESTRING'
+            v-else-if='mapStore.draw.mode === DrawToolMode.LINESTRING || mapStore.draw.mode === DrawToolMode.SNAPPING'
             class='card user-select-none'
         >
             <div class='card-header'>
@@ -86,7 +86,13 @@
                     stroke='1'
                 /><span class='mx-2'>Line Editing</span>
 
-                <div class='ms-auto btn-list'>
+                <div class='ms-auto btn-list align-items-center'>
+                    <TablerEnum
+                        description='Choose the type of line to draw.'
+                        default='No Snapping'
+                        :options='["No Snapping"]'
+                    />
+
                     <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'

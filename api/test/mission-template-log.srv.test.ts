@@ -62,6 +62,7 @@ test('POST: /template/mission/:mission/log - create', async () => {
                 name: 'Test Log',
                 description: 'A test mission template log',
                 icon: validIcon,
+                keywords: ['log-tag1'],
                 schema: {
                     type: 'object',
                     properties: {
@@ -75,6 +76,7 @@ test('POST: /template/mission/:mission/log - create', async () => {
         assert.equal(res.body.name, 'Test Log');
         assert.equal(res.body.description, 'A test mission template log');
         assert.equal(res.body.icon, validIcon);
+        assert.deepEqual(res.body.keywords, ['log-tag1']);
         assert.deepEqual(res.body.schema, {
             type: 'object',
             properties: {
@@ -103,6 +105,7 @@ test('GET: /template/mission/:mission/log - list', async () => {
         assert.equal(res.body.items.length, 1);
         assert.equal(res.body.items[0].id, logId);
         assert.equal(res.body.items[0].name, 'Test Log');
+        assert.deepEqual(res.body.items[0].keywords, ['log-tag1']);
     } catch (err) {
         assert.ifError(err);
     }
@@ -121,6 +124,7 @@ test('GET: /template/mission/:mission/log/:log - get', async () => {
         assert.equal(res.body.name, 'Test Log');
         assert.equal(res.body.description, 'A test mission template log');
         assert.equal(res.body.icon, validIcon);
+        assert.deepEqual(res.body.keywords, ['log-tag1']);
         assert.deepEqual(res.body.schema, {
             type: 'object',
             properties: {
@@ -142,6 +146,7 @@ test('PATCH: /template/mission/:mission/log/:log - update', async () => {
             body: {
                 name: 'Updated Log',
                 description: 'An updated description',
+                keywords: ['log-tag2'],
                 schema: {
                     type: 'object',
                     properties: {
@@ -155,6 +160,7 @@ test('PATCH: /template/mission/:mission/log/:log - update', async () => {
         assert.equal(res.body.name, 'Updated Log');
         assert.equal(res.body.description, 'An updated description');
         assert.equal(res.body.icon, validIcon);
+        assert.deepEqual(res.body.keywords, ['log-tag2']);
         assert.deepEqual(res.body.schema, {
             type: 'object',
             properties: {

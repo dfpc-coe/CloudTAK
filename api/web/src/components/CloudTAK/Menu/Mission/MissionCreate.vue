@@ -164,7 +164,8 @@
                             <label class='px-2 w-100'>Keywords</label>
                             <TagEntry
                                 placeholder='Enter Keywords'
-                                @tags='mission.keywords = $event'
+                                :model-value='mission.keywords'
+                                @update:model-value='mission.keywords = $event'
                             />
                         </div>
 
@@ -256,8 +257,22 @@ const mission = ref({
     role: 'Subscriber',
     description: '',
     groups: [],
-    keywords: [],
+    keywords: [] as string[],
     hashtags: ''
+});
+
+watch(selectedTemplate, (newId) => {
+    const template = templates.value.find((t) => t.id === newId);
+
+    mission.value.keywords = [];
+
+    if (template && template.keywords) {
+        for (const keyword of template.keywords) {
+            if (!mission.value.keywords.includes(keyword)) {
+                mission.value.keywords.push(keyword);
+            }
+        }
+    }
 });
 
 watch(templatesPaging, async () => {
@@ -295,6 +310,7 @@ async function listTemplates() {
             description: '',
             created: '',
             updated: '',
+            keywords: [],
         }, ...res.data.items];
 
         if (!selectedTemplate.value) selectedTemplate.value = 'default';

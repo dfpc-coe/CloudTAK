@@ -61,6 +61,13 @@
                         />
                     </div>
                     <div class='col-12'>
+                        <label class='form-label mx-2'>Keywords</label>
+                        <TagEntry
+                            v-model='log.keywords'
+                            placeholder='Keywords'
+                        />
+                    </div>
+                    <div class='col-12'>
                         <UploadLogo
                             v-model='log.icon'
                             label='Log Icon'
@@ -118,6 +125,14 @@
                             </div>
                             <div class='datagrid-item'>
                                 <div class='datagrid-title'>
+                                    Keywords
+                                </div>
+                                <div class='datagrid-content'>
+                                    <Keywords :keywords='log.keywords' />
+                                </div>
+                            </div>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>
                                     Created
                                 </div>
                                 <div class='datagrid-content'>
@@ -140,7 +155,15 @@
                     <div class='datagrid-title mb-2'>
                         Schema Preview
                     </div>
-                    <div class='border border-secondary border-opacity-25 rounded'>
+                    <TablerNone
+                        v-if='!log.schema.properties || !Object.keys(log.schema.properties).length'
+                        label='No Schema Properties'
+                        :create='false'
+                    />
+                    <div
+                        v-else
+                        class='border border-secondary border-opacity-25 rounded'
+                    >
                         <TablerSchema
                             :schema='log.schema'
                             :model-value='{}'
@@ -166,19 +189,23 @@ import {
     TablerLoading,
     TablerEpoch,
     TablerSchemaBuilder,
-    TablerSchema
+    TablerSchema,
+    TablerNone
 } from '@tak-ps/vue-tabler';
 import {
     IconCircleArrowLeft,
     IconPencil,
 } from '@tabler/icons-vue'
 import UploadLogo from '../util/UploadLogo.vue';
+import Keywords from '../CloudTAK/util/Keywords.vue';
+import TagEntry from '../CloudTAK/util/TagEntry.vue';
 
 interface MissionTemplateLog {
     id: string;
     template: string;
     name: string;
     description: string;
+    keywords: string[];
     icon?: string | null;
     created: string;
     updated: string;
@@ -198,6 +225,7 @@ const log = ref<MissionTemplateLog>({
     template: String(route.params.template),
     name: '',
     description: '',
+    keywords: [],
     icon: null,
     created: new Date().toISOString(),
     updated: new Date().toISOString(),

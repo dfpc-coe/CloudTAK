@@ -1,9 +1,16 @@
 import * as terraDraw from 'terra-draw';
+import {
+    TerraDrawMapLibreGLAdapter
+} from 'terra-draw-maplibre-gl-adapter';
+import { TerraRoute } from 'terra-route'
+import {
+    Routing,
+    TerraDrawRouteSnapMode
+} from 'terra-draw-route-snap-mode'
 import { v4 as randomUUID } from 'uuid';
 import mapgl from 'maplibre-gl'
 import pointOnFeature from '@turf/point-on-feature';
 import { coordEach } from '@turf/meta';
-import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { distance } from '@turf/distance';
 import type { GeoJSONFeatureId } from 'maplibre-gl'
 import type COT from '../../base/cot.ts';
@@ -11,7 +18,7 @@ import Filter from '../../base/filter.ts';
 import { OriginMode } from '../../base/cot.ts';
 import { std, stdurl } from '../../std.ts';
 import type { Feature, FeatureCollection } from '../../types.ts';
-import type { Polygon, Position } from 'geojson';
+import type { Polygon, Position, LineString, FeatureCollection as GeoJSONFeatureCollection } from 'geojson';
 import type { useMapStore } from '../map.ts';
 
 export enum DrawToolMode {
@@ -21,6 +28,7 @@ export enum DrawToolMode {
 
     POINT = 'point',
     LINESTRING = 'linestring',
+    SNAPPING = 'routesnap',
     POLYGON = 'polygon',
     RECTANGLE = 'angled-rectangle',
     CIRCLE = 'circle',
@@ -32,6 +40,8 @@ export default class DrawTool {
     public editing: COT | null;
 
     public mode: DrawToolMode;
+
+    private graph: Routing;
 
     private mapStore: ReturnType<typeof useMapStore>;
 
@@ -78,6 +88,20 @@ export default class DrawTool {
             }
         }
 
+        const routeFinderInstance = new TerraRoute();
+        const routeFinder = Object.assign(routeFinderInstance, {
+            setNetwork: routeFinderInstance.buildRouteGraph.bind(routeFinderInstance)
+        });
+
+        this.graph = new Routing({
+            network: {
+                type: 'FeatureCollection' as const,
+                features: []
+            },
+            useCache: true,
+            routeFinder
+        })
+
         this.draw = new terraDraw.TerraDraw({
             adapter: new TerraDrawMapLibreGLAdapter({
                 map: this.mapStore.map,
@@ -106,6 +130,20 @@ export default class DrawTool {
                     editable: true,
                     showCoordinatePoints: true,
                     snapping: { toCustom }
+                }),
+                new TerraDrawRouteSnapMode({
+                   routing: this.graph,
+                   maxPoints: 5,
+                   styles: {
+                       lineStringColor: () => {
+                           // RED
+                           return '#990000';
+                       },
+                       routePointColor: () => {
+                            // RED
+                            return '#990000';
+                       }
+                   }
                 }),
                 new terraDraw.TerraDrawAngledRectangleMode(),
                 new terraDraw.TerraDrawFreehandMode(),
@@ -312,16 +350,71 @@ export default class DrawTool {
 
     async start(mode: DrawToolMode): Promise<void> {
         this.mode = mode;
-        this.draw.start();
-        this.draw.setMode(mode)
 
-        this.snapping = await this.mapStore.worker.db.snapping(
-            this.mapStore.map.getBounds().toArray()
-        );
+        if (mode === DrawToolMode.SNAPPING) {
+            const url = new URL('https://tiles.map.cotak.gov/tiles/public/snapping/features')
+            url.searchParams.set('token', localStorage.token);
+            url.searchParams.set('bbox', this.mapStore.map.getBounds().toArray().join(','));
+            url.searchParams.set('type', 'LineString');
+            url.searchParams.set('multi', 'false');
+
+            const network = await std(url) as GeoJSONFeatureCollection<LineString>;
+
+            this.graph.setNetwork(network);
+
+            const source = this.mapStore.map.getSource('snapping-graph-source') as mapgl.GeoJSONSource;
+            if (source) {
+                source.setData(network);
+            } else {
+                this.mapStore.map.addSource('snapping-graph-source', {
+                    type: 'geojson',
+                    data: network
+                });
+                this.mapStore.map.addLayer({
+                    id: 'snapping-graph-layer',
+                    type: 'line',
+                    source: 'snapping-graph-source',
+                    layout: {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    paint: {
+                        'line-color': '#5fb7ce',
+                        'line-width': 2,
+                        'line-dasharray': [2, 2],
+                        'line-opacity': 0.8
+                    }
+                });
+            }
+
+            this.draw.start();
+
+            this.draw.updateModeOptions(DrawToolMode.SNAPPING, {
+                routing: this.graph,
+                maxPoints: 5,
+            });
+
+            this.draw.setMode(mode)
+        } else {
+            this.draw.start();
+            this.draw.setMode(mode)
+
+            this.snapping = await this.mapStore.worker.db.snapping(
+                this.mapStore.map.getBounds().toArray()
+            );
+        }
     }
 
     async stop(refresh = true): Promise<void> {
         this.mode = DrawToolMode.STATIC;
+
+        if (this.mapStore.map.getLayer('snapping-graph-layer')) {
+            this.mapStore.map.removeLayer('snapping-graph-layer');
+        }
+
+        if (this.mapStore.map.getSource('snapping-graph-source')) {
+            this.mapStore.map.removeSource('snapping-graph-source');
+        }
 
         // Reset cursor to default BEFORE stopping draw operations
         this.mapStore.map.getCanvas().style.cursor = '';

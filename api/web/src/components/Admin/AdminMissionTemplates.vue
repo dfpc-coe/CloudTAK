@@ -74,7 +74,26 @@
                                 <template v-if='h.display'>
                                     <td>
                                         <div class='d-flex align-items-center'>
-                                            <span v-text='template[h.name]' />
+                                            <div
+                                                v-if='h.name === "icon"'
+                                                class='d-flex justify-content-center align-items-center'
+                                                style='width: 32px; height: 32px;'
+                                            >
+                                                <img
+                                                    v-if='template.icon'
+                                                    :src='template.icon'
+                                                    style='max-width: 100%; max-height: 100%; object-fit: contain;'
+                                                    alt='Template Icon'
+                                                >
+                                            </div>
+                                            <Keywords
+                                                v-else-if='h.name === "keywords"'
+                                                :keywords='template.keywords || []'
+                                            />
+                                            <span
+                                                v-else
+                                                v-text='template[h.name]'
+                                            />
                                         </div>
                                     </td>
                                 </template>
@@ -104,6 +123,7 @@ import { std, stdurl, stdclick } from '../../../src/std.ts';
 import type { MissionTemplateList } from '../../../src/types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
+import Keywords from '../CloudTAK/util/Keywords.vue'
 import {
     TablerNone,
     TablerInput,
@@ -149,7 +169,7 @@ onMounted(async () => {
 async function listMissionTemplateSchema() {
     const schema = await std('/api/schema?method=GET&url=/template/mission');
 
-    const defaults: Array<keyof MissionTemplateList['items'][0]> = ['name'];
+    const defaults: Array<keyof MissionTemplateList['items'][0]> = ['icon', 'name', 'keywords'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
