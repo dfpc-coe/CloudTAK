@@ -378,4 +378,5 @@ export const BasemapResponse = createSelectSchema(schemas.Basemap, {
     styles: Type.Array(Type.Unknown()),
     collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
     sharing_token: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+    snapping_layer: Type.Union([Type.Null(), Type.String()]),
 });
