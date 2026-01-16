@@ -61,6 +61,13 @@
                         />
                     </div>
                     <div class='col-12'>
+                        <label class='form-label mx-2'>Keywords</label>
+                        <TagEntry
+                            placeholder='Keywords'
+                            v-model='log.keywords'
+                        />
+                    </div>
+                    <div class='col-12'>
                         <UploadLogo
                             v-model='log.icon'
                             label='Log Icon'
@@ -115,6 +122,14 @@
                                     class='datagrid-content'
                                     v-text='log.description'
                                 />
+                            </div>
+                            <div class='datagrid-item'>
+                                <div class='datagrid-title'>
+                                    Keywords
+                                </div>
+                                <div class='datagrid-content'>
+                                    <Keywords :keywords='log.keywords' />
+                                </div>
                             </div>
                             <div class='datagrid-item'>
                                 <div class='datagrid-title'>
@@ -173,12 +188,15 @@ import {
     IconPencil,
 } from '@tabler/icons-vue'
 import UploadLogo from '../util/UploadLogo.vue';
+import Keywords from '../CloudTAK/util/Keywords.vue';
+import TagEntry from '../CloudTAK/util/TagEntry.vue';
 
 interface MissionTemplateLog {
     id: string;
     template: string;
     name: string;
     description: string;
+    keywords: string[];
     icon?: string | null;
     created: string;
     updated: string;
@@ -198,6 +216,7 @@ const log = ref<MissionTemplateLog>({
     template: String(route.params.template),
     name: '',
     description: '',
+    keywords: [],
     icon: null,
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
