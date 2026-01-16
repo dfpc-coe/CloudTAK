@@ -102,10 +102,12 @@ export default async function router(schema: Schema, config: Config) {
                 data: req.body.icon,
             });
 
-            const template = await config.models.MissionTemplate.generate({
+            const newtemplate = await config.models.MissionTemplate.generate({
                 ...req.body,
                 keywords: req.body.keywords.join(',')
             });
+
+            const template = await config.models.MissionTemplate.augmented_from(newtemplate.id);
 
             res.json(template);
         } catch (err) {
@@ -139,10 +141,12 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
-            const template = await config.models.MissionTemplate.commit(req.params.mission, {
+            await config.models.MissionTemplate.commit(req.params.mission, {
                 ...req.body,
                 keywords: req.body.keywords ? req.body.keywords.join(',') : undefined
             });
+
+            const template = await config.models.MissionTemplate.augmented_from(req.params.mission);
 
             res.json(template);
         } catch (err) {
