@@ -15451,6 +15451,8 @@ export interface paths {
                     "application/json": {
                         name: string;
                         description: string;
+                        /** @default true */
+                        locking?: boolean;
                         agency_id: null | number;
                         channels: {
                             id: number;

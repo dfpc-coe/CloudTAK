@@ -115,7 +115,7 @@
             </div>
             <template v-if='query === null && !queries.length'>
                 <TablerNone
-                    label='Queries'
+                    label='No Queries'
                     :create='false'
                     @create='newQuery'
                 />
@@ -137,6 +137,18 @@
                             @click='query = q_idx'
                         >
                             <div class='d-flex'>
+                                <div class='align-self-center me-2'>
+                                    <IconTrash
+                                        v-if='q.delete'
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    <IconBrush
+                                        v-else
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </div>
                                 <div
                                     class='align-self-center'
                                     v-text='q.query'
@@ -156,7 +168,7 @@
             </template>
             <template v-else-if='query !== null'>
                 <div class='card-body'>
-                    <div class='col-md-12 hover rounded px-2 py-2'>
+                    <div class='col-md-12 rounded px-2 py-2'>
                         <QueryInput
                             v-model='queries[query].query'
                             :disabled='disabled'
@@ -213,15 +225,12 @@
                     </div>
 
                     <template v-if='queries[query].delete'>
-                        <div class='border rounded mx-2 d-flex justify-content-center'>
-                            <div class='mx-2 my-2'>
-                                <IconTrash
-                                    size='24'
-                                    :stroke='1'
-                                />
-                                All features matching this query will not be submitted to the TAK Server
-                            </div>
-                        </div>
+                        <TablerInlineAlert
+                            severity='danger'
+                            class='mx-2 my-2'
+                            title='Delete Features'
+                            description='All features matching this query will not be submitted to the TAK Server'
+                        />
                     </template>
                     <template v-else>
                         <StyleSingle
