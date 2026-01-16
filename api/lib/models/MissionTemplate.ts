@@ -1,11 +1,11 @@
 import Err from '@openaddresses/batch-error'
-import Modeler from '@openaddresses/batch-generic';
+import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
 import { Type } from '@sinclair/typebox'
 import type { Static } from '@sinclair/typebox'
 import { MissionTemplateResponse, MissionTemplateLogResponse } from '../types.js'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { MissionTemplate, MissionTemplateLog } from '../schema.js';
-import { SQL, is, sql, eq } from 'drizzle-orm';
+import { SQL, is, sql, eq, desc, asc } from 'drizzle-orm';
 
 export const MissionTemplateSingleResponse = Type.Composite([
     MissionTemplateResponse,
@@ -20,6 +20,40 @@ export default class MissionTemplateModel extends Modeler<typeof MissionTemplate
     ) {
         super(pool, MissionTemplate);
     }
+
+    async augmented_list(query: GenericListInput = {}): Promise<GenericList<Static<typeof MissionTemplateResponse>>> {
+        const order = query.order && query.order === 'desc' ? desc : asc;
+        const orderBy = order(query.sort ? this.key(query.sort) : this.requiredPrimaryKey());
+
+        const pgres = await this.pool
+            .select({
+                count: sql<string>`count(*) OVER()`.as('count'),
+                template: MissionTemplate
+            })
+            .from(MissionTemplate)
+            .where(query.where)
+            .orderBy(orderBy)
+            .limit(query.limit || 10)
+            .offset((query.page || 0) * (query.limit || 10))
+
+        if (pgres.length === 0) {
+            return {
+                total: 0,
+                items: []
+            }
+        }
+
+        return {
+            total: parseInt(pgres[0].count),
+            items: pgres.map((res) => {
+                return {
+                    ...res.template,
+                    keywords: res.template.keywords ? res.template.keywords.split(',') : []
+                }
+            })
+        }
+    }
+
     async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof MissionTemplateSingleResponse>> {
         const SubTable = this.pool
             .select({
@@ -44,7 +78,13 @@ export default class MissionTemplateModel extends Modeler<typeof MissionTemplate
 
         return {
             ...pgres[0].template,
-            logs: pgres[0].logs
+            keywords: pgres[0].template.keywords ? pgres[0].template.keywords.split(',') : [],
+            logs: (pgres[0].logs as any[]).map((log: any) => {
+                return {
+                    ...log,
+                    keywords: log.keywords ? log.keywords.split(',') : []
+                }
+            })
         } as Static<typeof MissionTemplateSingleResponse>;
     }
 }

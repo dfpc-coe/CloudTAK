@@ -34,10 +34,12 @@
                     <TablerInput
                         v-model='overlay.name'
                         label='Name'
+                        description='The display name of the overlay layer'
                     >
                         <TablerToggle
                             v-model='overlay.sharing_enabled'
                             label='Enable Sharing'
+                            description='Allow this overlay to be shared with other users via invalidatable token'
                         />
                     </TablerInput>
                 </div>
@@ -104,10 +106,12 @@
                         v-model='overlay.url'
                         :disabled='mode !== "manual"'
                         label='Data URL'
+                        description='The URL template of the tile server'
                     >
                         <TablerToggle
                             v-model='overlay.overlay'
                             label='Overlay'
+                            description='If true, this layer is treated as an overlay on top of base maps'
                         />
                     </TablerInput>
                 </div>
@@ -118,6 +122,7 @@
                         :disabled='mode !== "manual"'
                         type='number'
                         label='Minzoom'
+                        description='The minimum zoom level for which tiles are available'
                     />
                 </div>
                 <div class='col-12 col-md-3'>
@@ -126,12 +131,14 @@
                         :disabled='mode !== "manual"'
                         type='number'
                         label='Maxzoom'
+                        description='The maximum zoom level for which tiles are available'
                     />
                 </div>
                 <div class='col-12 col-md-6'>
                     <TablerInput
                         v-model='overlay.frequency'
                         label='Update Frequency (Seconds)'
+                        description='How often to refresh the tiles in seconds'
                     />
                 </div>
                 <div class='col-12 col-md-6'>
@@ -139,6 +146,7 @@
                         v-model='overlay.bounds'
                         :disabled='mode !== "manual"'
                         label='Bounds'
+                        description='The geographic bounds of the overlay (W,S,E,N)'
                     />
                 </div>
                 <div class='col-12 col-md-6'>
@@ -146,6 +154,7 @@
                         v-model='overlay.center'
                         :disabled='mode !== "manual"'
                         label='Center'
+                        description='The default center point of the overlay (Lon,Lat)'
                     />
                 </div>
                 <div class='col-12 col-md-6'>
@@ -153,6 +162,7 @@
                         v-model='overlay.type'
                         label='Type'
                         :options='["vector", "raster", "raster-dem"]'
+                        description='The type of data served by this overlay'
                     />
                 </div>
                 <div class='col-12 col-md-6'>
@@ -161,8 +171,34 @@
                         label='Overlay Format'
                         :default='formats[0]'
                         :options='formats'
+                        description='The file format of existing tiles'
                     />
                 </div>
+
+                <template v-if='overlay.type === "vector"'>
+                    <div class='col-12'>
+                        <div class='row g-2 my-2 border rounded'>
+                            <div class='col-12'>
+                                <TablerToggle
+                                    v-model='overlay.snapping_enabled'
+                                    label='Enable Snapping'
+                                    description='Allow drawing tools to snap to the underlying vector features'
+                                />
+                            </div>
+
+                            <div
+                                v-if='overlay.snapping_enabled'
+                                class='col-12'
+                            >
+                                <TablerInput
+                                    v-model='overlay.snapping_layer'
+                                    label='Snapping Layer'
+                                    description='The specific layer name within the vector tiles to snap to'
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </template>
 
                 <div class='col-12'>
                     <StyleContainer
@@ -229,6 +265,8 @@ const overlay = ref({
     sharing_token: null,
     bounds: '-180, -90, 180, 90',
     center: '0, 0',
+    snapping_enabled: false,
+    snapping_layer: ''
 });
 
 const formats = computed(() => {
@@ -348,6 +386,8 @@ async function fetchOverlay() {
         res.center = res.center.join(',');
     }
 
+    if (res.snapping_enabled === undefined) res.snapping_enabled = false;
+    if (!res.snapping_layer) res.snapping_layer = '';
 
     overlay.value = res;
     loading.value = false;

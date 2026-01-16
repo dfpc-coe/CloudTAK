@@ -54,7 +54,9 @@ test('POST: api/basemap - ArcGIS Imagery Source', async () => {
             format: 'png',
             scheme: 'xyz',
             styles: [],
-            type: 'raster'
+            type: 'raster',
+            snapping_enabled: false,
+            snapping_layer: null
         });
     } catch (err) {
         assert.ifError(err);

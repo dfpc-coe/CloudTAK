@@ -3,6 +3,7 @@ import Data from './models/Data.js';
 import Layer from './models/Layer.js';
 import Basemap from './models/Basemap.js';
 import MissionTemplate from './models/MissionTemplate.js';
+import MissionTemplateLog from './models/MissionTemplateLog.js';
 import Palette from './models/Palette.js';
 import Setting from './models/Setting.js';
 import ProfileChat from './models/ProfileChat.js';
@@ -25,7 +26,7 @@ export default class Models {
     PaletteFeature: Modeler<typeof pgtypes.PaletteFeature>;
 
     MissionTemplate: MissionTemplate;
-    MissionTemplateLog: Modeler<typeof pgtypes.MissionTemplateLog>;
+    MissionTemplateLog: MissionTemplateLog;
 
     Profile: Modeler<typeof pgtypes.Profile>;
     ProfileChat: ProfileChat;
@@ -62,7 +63,7 @@ export default class Models {
         this.PaletteFeature = new Modeler(pg, pgtypes.PaletteFeature);
 
         this.MissionTemplate = new MissionTemplate(pg);
-        this.MissionTemplateLog = new Modeler(pg, pgtypes.MissionTemplateLog);
+        this.MissionTemplateLog = new MissionTemplateLog(pg);
 
         this.Profile = new Modeler(pg, pgtypes.Profile);
         this.ProfileToken = new Modeler(pg, pgtypes.ProfileToken);

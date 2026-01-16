@@ -1,6 +1,6 @@
 <template>
     <div
-        v-if='keywords && keywords.length'
+        v-if='filteredKeywords.length'
         class='d-flex flex-wrap gap-2 mt-1'
     >
         <span
@@ -10,6 +10,11 @@
             v-text='keyword'
         />
     </div>
+    <div
+        v-else
+        class='text-white-50 small fst-italic'
+        v-text='props.placeholder'
+    />
 </template>
 
 <script setup lang="ts">
@@ -20,12 +25,16 @@ const filtered = [
 ]
 
 const filteredKeywords = computed(() => {
-    return props.keywords.filter((keyword) => {
+    return (props.keywords || []).filter((keyword) => {
         return filtered.some((filter) => keyword.startsWith(filter)) === false
     });
 });
 
-const props = defineProps<{
-    keywords: string[];
-}>();
+const props = withDefaults(defineProps<{
+    keywords?: string[];
+    placeholder?: string;
+}>(), {
+    keywords: () => [],
+    placeholder: 'No Keywords'
+});
 </script>

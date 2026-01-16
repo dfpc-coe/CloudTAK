@@ -57,7 +57,9 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
             format: 'mvt',
             scheme: 'xyz',
             styles: [],
-            type: 'vector'
+            type: 'vector',
+            snapping_enabled: false,
+            snapping_layer: null
         });
     } catch (err) {
         assert.ifError(err);

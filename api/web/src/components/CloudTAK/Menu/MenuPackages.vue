@@ -81,12 +81,6 @@
                             <Keywords
                                 :keywords='pkg.keywords.filter((k) => k && k.trim() !== "missionpackage")'
                             />
-                            <div
-                                v-if='!pkg.keywords.filter((k) => k && k.trim() !== "missionpackage").length'
-                                class='text-secondary small'
-                            >
-                                No keywords
-                            </div>
 
                             <div class='text-secondary small d-flex flex-wrap align-items-center gap-2'>
                                 <div v-text='timeDiff(pkg.created)' />

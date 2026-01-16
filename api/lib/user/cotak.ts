@@ -330,7 +330,7 @@ export default class CoTAKUser implements UserInterface {
 
         const url = new URL(`api/v1/proxy/integrations/etl/identifier/${body.connection_id}`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
-        url.searchParams.append('delete_machine_user', 'true');
+        url.searchParams.append('delete_machine_users', 'true');
 
         await fetch(url, {
             method: 'DELETE',
