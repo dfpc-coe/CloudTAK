@@ -79,7 +79,7 @@ export default class MissionTemplateModel extends Modeler<typeof MissionTemplate
         return {
             ...pgres[0].template,
             keywords: pgres[0].template.keywords ? pgres[0].template.keywords.split(',') : [],
-            logs: pgres[0].logs.map((log: any) => {
+            logs: (pgres[0].logs as any[]).map((log: any) => {
                 return {
                     ...log,
                     keywords: log.keywords ? log.keywords.split(',') : []

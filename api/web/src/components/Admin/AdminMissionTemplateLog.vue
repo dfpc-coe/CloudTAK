@@ -155,7 +155,15 @@
                     <div class='datagrid-title mb-2'>
                         Schema Preview
                     </div>
-                    <div class='border border-secondary border-opacity-25 rounded'>
+                    <TablerNone
+                        v-if='!log.schema.properties || !Object.keys(log.schema.properties).length'
+                        label='No Schema Properties'
+                        :create='false'
+                    />
+                    <div
+                        v-else
+                        class='border border-secondary border-opacity-25 rounded'
+                    >
                         <TablerSchema
                             :schema='log.schema'
                             :model-value='{}'
@@ -181,7 +189,8 @@ import {
     TablerLoading,
     TablerEpoch,
     TablerSchemaBuilder,
-    TablerSchema
+    TablerSchema,
+    TablerNone
 } from '@tak-ps/vue-tabler';
 import {
     IconCircleArrowLeft,
