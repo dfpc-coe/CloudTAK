@@ -143,7 +143,9 @@
                             <table class='table table-vcenter card-table table-hover'>
                                 <thead>
                                     <tr>
+                                        <th />
                                         <th>Name</th>
+                                        <th>Keywords</th>
                                         <th>Created</th>
                                     </tr>
                                 </thead>
@@ -154,7 +156,23 @@
                                         class='cursor-pointer'
                                         @click='router.push(`/admin/template/${route.params.template}/log/${log.id}`)'
                                     >
+                                        <td class='w-1'>
+                                            <div
+                                                class='d-flex justify-content-center align-items-center'
+                                                style='width: 32px; height: 32px;'
+                                            >
+                                                <img
+                                                    v-if='log.icon'
+                                                    :src='log.icon'
+                                                    style='max-width: 100%; max-height: 100%; object-fit: contain;'
+                                                    alt='Log Icon'
+                                                >
+                                            </div>
+                                        </td>
                                         <td v-text='log.name' />
+                                        <td>
+                                            <Keywords :keywords='log.keywords' />
+                                        </td>
                                         <td>
                                             <TablerEpoch :date='log.created' />
                                         </td>

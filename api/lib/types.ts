@@ -120,7 +120,7 @@ export const MissionTemplateResponse = Type.Object({
 export const MissionTemplateLogResponse = Type.Object({
     id: Type.String(),
     name: Type.String(),
-    icon: Type.String(),
+    icon: Type.Union([Type.Null(), Type.String()]),
     keywords: Type.Array(Type.String()),
     description: Type.String(),
     created: Type.String(),
