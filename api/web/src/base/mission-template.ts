@@ -110,7 +110,8 @@ export default class MissionTemplate {
                         description: log.description,
                         created: log.created,
                         updated: log.updated,
-                        schema: log.schema
+                        schema: log.schema,
+                        keywords: log.keywords || []
                     });
                 }
             });
