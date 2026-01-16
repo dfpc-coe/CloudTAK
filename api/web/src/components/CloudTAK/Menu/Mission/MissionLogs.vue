@@ -132,7 +132,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { from } from 'rxjs';
 import type { Ref, ComputedRef } from 'vue';
 import type { MissionLog } from '../../../../types.ts';
@@ -228,6 +228,18 @@ const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
         return allLogs.filter((log: MissionLog) => {
             return log.content.toLowerCase().includes(filter);
         })
+    }
+});
+
+watch(selectedTemplateLog, (log) => {
+    createLog.value.keywords = [];
+
+    if (log && log.keywords && log.keywords.length) {
+        for (const keyword of log.keywords) {
+            if (!createLog.value.keywords.includes(keyword)) {
+                createLog.value.keywords.push(keyword);
+            }
+        }
     }
 });
 

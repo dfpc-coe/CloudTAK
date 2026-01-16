@@ -201,10 +201,6 @@ function addNew(e) {
     }
 }
 
-function handleInput(event) {
-    // emit("update:modelValue", event.target.value);
-}
-
 function makeItError(errorMessage) {
     if (errorMessage) {
         error.value = errorMessage;

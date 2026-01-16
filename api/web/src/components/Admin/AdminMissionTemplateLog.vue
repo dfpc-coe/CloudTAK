@@ -63,8 +63,8 @@
                     <div class='col-12'>
                         <label class='form-label mx-2'>Keywords</label>
                         <TagEntry
-                            placeholder='Keywords'
                             v-model='log.keywords'
+                            placeholder='Keywords'
                         />
                     </div>
                     <div class='col-12'>
