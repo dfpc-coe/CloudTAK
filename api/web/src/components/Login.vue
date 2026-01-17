@@ -56,8 +56,8 @@
                                         <TablerInput
                                             v-model='body.username'
                                             icon='user'
-                                            label='Username or Email'
-                                            placeholder='your@email.com'
+                                            :label='brandStore.login?.username || "Username or Email"'
+                                            :placeholder='brandStore.login?.username || "your@email.com"'
                                             @keyup.enter='createLogin'
                                         />
                                     </div>
