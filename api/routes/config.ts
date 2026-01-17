@@ -253,7 +253,7 @@ export default async function router(schema: Schema, config: Config) {
                 username: final.username || 'Username or Email',
                 brand: {
                     enabled: final['brand::enabled'] || 'default',
-                    logo: final['brand::logo'] === 'false' ? false : true
+                    logo: final['brand::logo']
                 },
                 background: {
                     enabled: final['background::enabled'] === 'true' ? true : false,
