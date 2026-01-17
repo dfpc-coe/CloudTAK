@@ -135,7 +135,7 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'Enable Custom Branding on Login Page',
                 enum: ['default', 'enabled', 'disabled']
             })),
-            'login::brand::logo': Type.Optional(Type.Boolean({
+            'login::brand::logo': Type.Optional(Type.String({
                 description: 'Show or Hide the CloudTAK Branding'
             })),
             'login::background::enabled': Type.Optional(Type.Boolean({
@@ -205,8 +205,8 @@ export default async function router(schema: Schema, config: Config) {
                     description: 'Enable Custom Branding on Login Page',
                     enum: ['default', 'enabled', 'disabled']
                 }),
-                logo: Type.Boolean({
-                    description: 'Show or Hide the CloudTAK Branding'
+                logo: Type.String({
+                    description: 'Brand Logo Data'
                 })
             }),
             background: Type.Object({

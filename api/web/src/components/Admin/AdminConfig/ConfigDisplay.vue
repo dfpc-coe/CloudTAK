@@ -15,6 +15,7 @@
     <div v-if="isOpen" class='col-lg-12 py-2 border rounded'>
         <TablerLoading v-if="loading" />
         <template v-else>
+            <TablerAlert v-if="err" :err="err" />
             <div class="row">
                 <TablerInlineAlert
                     title='Application Behavior'
@@ -51,7 +52,8 @@ import {
     TablerLoading,
     TablerEnum,
     TablerInlineAlert,
-    TablerIconButton
+    TablerIconButton,
+    TablerAlert
 } from '@tak-ps/vue-tabler';
 import {
     IconChevronRight,
@@ -62,6 +64,7 @@ import {
 const isOpen = ref(false);
 const loading = ref(false);
 const edit = ref(false);
+const err = ref(null);
 
 const config = ref({});
 const displayOptions = ref({});
@@ -78,7 +81,7 @@ watch(isOpen, (newState) => {
 
 async function fetch() {
     loading.value = true;
-    edit.value = false;
+    err.value = null;
     config.value = {}; 
     displayOptions.value = {};
     try {
@@ -88,13 +91,14 @@ async function fetch() {
             config.value[`display::${key}`] = value.value;
         }
     } catch (error) {
-        console.error('Failed to load Display config:', error);
+        err.value = error;
     }
     loading.value = false;
 }
 
 async function save() {
     loading.value = true;
+    err.value = null;
     try {
         await std(`/api/config`, {
             method: 'PUT',
@@ -103,6 +107,7 @@ async function save() {
         
         await fetch();
     } catch (error) {
+        err.value = error
         console.error('Failed to save Display config:', error);
         loading.value = false;
     }
