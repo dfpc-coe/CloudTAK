@@ -1,22 +1,40 @@
 <template>
-    <div class='col-lg-12 hover py-2 d-flex align-items-center' :class="{ 'cursor-pointer': !edit }">
-        <div class="d-flex align-items-center flex-grow-1" @click="isOpen = !isOpen">
-            <IconChevronDown v-if="isOpen" />
+    <div
+        class='col-lg-12 hover py-2 d-flex align-items-center'
+        :class='{ "cursor-pointer": !edit }'
+    >
+        <div
+            class='d-flex align-items-center flex-grow-1'
+            @click='isOpen = !isOpen'
+        >
+            <IconChevronDown v-if='isOpen' />
             <IconChevronRight v-else />
             <span class='mx-2 user-select-none'>ArcGIS Online</span>
         </div>
-        <div class='ms-auto' v-if="!edit && isOpen">
-             <TablerIconButton title="Edit" @click="edit = true">
+        <div
+            v-if='!edit && isOpen'
+            class='ms-auto'
+        >
+            <TablerIconButton
+                title='Edit'
+                @click='edit = true'
+            >
                 <IconPencil />
-             </TablerIconButton>
+            </TablerIconButton>
         </div>
     </div>
 
-    <div v-if="isOpen" class='col-lg-12 py-2 border rounded'>
-        <TablerLoading v-if="loading" />
+    <div
+        v-if='isOpen'
+        class='col-lg-12 py-2 border rounded'
+    >
+        <TablerLoading v-if='loading' />
         <template v-else>
-            <TablerAlert v-if="err" :err="err" />
-            <div class="row">
+            <TablerAlert
+                v-if='err'
+                :err='err'
+            />
+            <div class='row'>
                 <div class='col-lg-12'>
                     <TablerToggle
                         v-model='config["agol::enabled"]'
@@ -87,10 +105,23 @@
                     </template>
                 </div>
             </div>
-            <div class='col-lg-12 d-flex py-2' v-if="edit">
-                <div class='btn' @click='fetch'>Cancel</div>
+            <div
+                v-if='edit'
+                class='col-lg-12 d-flex py-2'
+            >
+                <div
+                    class='btn'
+                    @click='fetch'
+                >
+                    Cancel
+                </div>
                 <div class='ms-auto'>
-                    <div class='btn btn-primary' @click='save'>Save Settings</div>
+                    <div
+                        class='btn btn-primary'
+                        @click='save'
+                    >
+                        Save Settings
+                    </div>
                 </div>
             </div>
         </template>
