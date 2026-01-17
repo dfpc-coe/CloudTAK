@@ -158,8 +158,8 @@ const footerLogo = computed(() => {
     // If enabled or default, check logic below
     if (brandStore.login.brand?.enabled === 'disabled') {
         return undefined;
-    } else if (brandStore.login.brand?.footer) {
-        return brandStore.login.brand.footer;
+    } else if (brandStore.login.brand?.logo) {
+        return brandStore.login.brand.logo;
     } else {
         return '/CloudTAKLogoText.svg';
     }
