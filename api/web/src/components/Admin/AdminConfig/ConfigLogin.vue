@@ -56,7 +56,8 @@
                     />
 
                     <UploadLogo
-                        v-model='config["login::brand::enabled"]'
+                        v-if='config["login::brand::enabled"] === "enabled"'
+                        v-model='config["login::brand::logo"]'
                         label='Large Brand Logo'
                         :disabled='!edit'
                     />
