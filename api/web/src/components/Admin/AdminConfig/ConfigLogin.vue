@@ -110,6 +110,11 @@ const config = ref({
     'login::logo': '',
     'login::forgot': '',
     'login::signup': '',
+    'login::username': 'Username or Email',
+    'login::brand::enabled': 'default',
+    'login::brand::logo': '',
+    'login::background::enabled': false,
+    'login::background::color': '#000000',
 });
 
 onMounted(() => {

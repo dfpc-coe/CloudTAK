@@ -3,6 +3,13 @@
         class='page page-center cloudtak-gradient position-relative'
         style='overflow: auto;'
     >
+        <div 
+             v-if="customBackgroundColor"
+             class="position-absolute w-100 h-100 top-0 start-0 bg-fade-enter"
+             style="z-index: 0;"
+             :style="{ backgroundColor: customBackgroundColor }"
+        ></div>
+
         <img
             v-if="brandStore.loaded && footerLogo"
             class='position-absolute d-none d-md-inline user-select-none'
@@ -14,13 +21,14 @@
                 left: 24px;
                 opacity: 0;
                 transition: opacity 0.8s ease-in-out;
+                z-index: 1;
             '
             :src='footerLogo'
             alt='CloudTAK Logo'
             @load="footerLogoLoaded = true"
         >
 
-        <div class='container container-normal py-4'>
+        <div class='container container-normal py-4 position-relative' style="z-index: 1;">
             <div class='row align-items-center g-4'>
                 <div class='col-lg'>
                     <div class='container-tight'>
@@ -136,6 +144,13 @@ const brandStore = useBrandStore();
 
 const footerLogoLoaded = ref(false);
 
+const customBackgroundColor = computed(() => {
+    if (brandStore.login?.background?.enabled && brandStore.login.background.color) {
+        return brandStore.login.background.color;
+    }
+    return null;
+});
+
 const footerLogo = computed(() => {
     if (!brandStore.login) return undefined;
     
@@ -191,7 +206,14 @@ async function createLogin() {
         emit('login');
 
         if (route.query.redirect && !String(route.query.redirect).includes('/login')) {
-            router.push(String(route.query.redirect));
+            const redirectPath = String(route.query.redirect);
+            const resolved = router.resolve(redirectPath);
+
+            if (resolved.matched.length > 0) {
+                router.push(redirectPath);
+            } else {
+                window.location.href = redirectPath;
+            }
         } else {
             router.push("/");
         }
@@ -205,5 +227,14 @@ async function createLogin() {
 <style scoped>
 .logo-visible {
     opacity: 1 !important;
+}
+
+.bg-fade-enter {
+    animation: fadeIn 0.8s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 </style>
