@@ -22,25 +22,9 @@
                         <div class='card card-md'>
                             <div
                                 v-if='!brandStore || !brandStore.loaded'
-                                class='card-body'
+                                class='card-body d-flex align-items-center justify-content-center'
                                 style='height: 400px;'
                             >
-                                <div class='col-12 d-flex justify-content-center pb-4'>
-                                    <img
-                                        class='user-select-none'
-                                        draggable='false'
-                                        style='
-                                            height: 64px;
-                                        '
-                                        src='/CloudTAKLogo.svg'
-                                        alt='CloudTAK Logo'
-                                    >
-                                </div>
-                                <div class='col-12 d-flex justify-content-center pb-4'>
-                                    <h2 class='h2 text-center mb-4'>
-                                        Loading CloudTAK
-                                    </h2>
-                                </div>
                                 <TablerLoading />
                             </div>
                             <div
