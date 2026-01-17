@@ -212,10 +212,23 @@ async function createLogin() {
             const redirectPath = String(route.query.redirect);
             const resolved = router.resolve(redirectPath);
 
+            const isSafeRedirect = (() => {
+                try {
+                    const url = new URL(redirectPath, window.location.origin);
+                    const isSameOrigin = url.origin === window.location.origin;
+                    const isHttpProtocol = url.protocol === 'http:' || url.protocol === 'https:';
+                    return isSameOrigin && isHttpProtocol;
+                } catch {
+                    return false;
+                }
+            })();
+
             if (resolved.matched.length > 0) {
                 router.push(redirectPath);
-            } else {
+            } else if (isSafeRedirect) {
                 window.location.href = redirectPath;
+            } else {
+                router.push("/");
             }
         } else {
             router.push("/");
