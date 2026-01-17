@@ -5,15 +5,19 @@
     >
         <img
             v-if="brandStore.loaded && footerLogo"
-            class='position-absolute d-none d-md-inline user-select-none logo-fade-in'
+            class='position-absolute d-none d-md-inline user-select-none'
+            :class="{ 'logo-visible': footerLogoLoaded }"
             draggable='false'
             style='
                 height: 48px;
                 bottom: 24px;
                 left: 24px;
+                opacity: 0;
+                transition: opacity 0.8s ease-in-out;
             '
             :src='footerLogo'
             alt='CloudTAK Logo'
+            @load="footerLogoLoaded = true"
         >
 
         <div class='container container-normal py-4'>
@@ -130,6 +134,8 @@ const route = useRoute();
 const router = useRouter();
 const brandStore = useBrandStore();
 
+const footerLogoLoaded = ref(false);
+
 const footerLogo = computed(() => {
     if (!brandStore.login) return undefined;
     
@@ -197,12 +203,7 @@ async function createLogin() {
 </script>
 
 <style scoped>
-.logo-fade-in {
-    animation: fadeIn 0.8s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+.logo-visible {
+    opacity: 1 !important;
 }
 </style>
