@@ -4,16 +4,16 @@
         style='overflow: auto;'
     >
         <div 
-             v-if="customBackgroundColor"
-             class="position-absolute w-100 h-100 top-0 start-0 bg-fade-enter"
-             style="z-index: 0;"
-             :style="{ backgroundColor: customBackgroundColor }"
-        ></div>
+            v-if='customBackgroundColor'
+            class='position-absolute w-100 h-100 top-0 start-0 bg-fade-enter'
+            style='z-index: 0;'
+            :style='{ backgroundColor: customBackgroundColor }'
+        />
 
         <img
-            v-if="brandStore.loaded && footerLogo"
+            v-if='brandStore.loaded && footerLogo'
             class='position-absolute d-none d-md-inline user-select-none'
-            :class="{ 'logo-visible': footerLogoLoaded }"
+            :class='{ "logo-visible": footerLogoLoaded }'
             draggable='false'
             style='
                 height: 48px;
@@ -25,10 +25,13 @@
             '
             :src='footerLogo'
             alt='CloudTAK Logo'
-            @load="footerLogoLoaded = true"
+            @load='footerLogoLoaded = true'
         >
 
-        <div class='container container-normal py-4 position-relative' style="z-index: 1;">
+        <div
+            class='container container-normal py-4 position-relative'
+            style='z-index: 1;'
+        >
             <div class='row align-items-center g-4'>
                 <div class='col-lg'>
                     <div class='container-tight'>
