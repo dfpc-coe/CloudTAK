@@ -2136,7 +2136,7 @@ export interface paths {
                          */
                         "login::brand::enabled"?: "default" | "enabled" | "disabled";
                         /** @description Show or Hide the CloudTAK Branding */
-                        "login::brand::logo"?: boolean;
+                        "login::brand::logo"?: string;
                         /** @description Enable or Disable Custom Background on Login Page */
                         "login::background::enabled"?: boolean;
                         /** @description Hex Color Code for Login Background */
@@ -2398,8 +2398,8 @@ export interface paths {
                                  * @enum {string}
                                  */
                                 enabled: "default" | "enabled" | "disabled";
-                                /** @description Show or Hide the CloudTAK Branding */
-                                logo: boolean;
+                                /** @description Brand Logo Data */
+                                logo: string;
                             };
                             background: {
                                 /** @description Enable or Disable Custom Background on Login Page */

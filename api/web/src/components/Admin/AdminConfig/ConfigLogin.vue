@@ -65,10 +65,11 @@
 
                     <TablerToggle
                         v-model='config["login::background::enabled"]'
-                        label='Enable Background Image'
+                        label='Enable Custom Background'
                         :disabled='!edit'
                     />
                     <TablerInput
+                        v-if='config["login::background::enabled"]'
                         v-model='config["login::background::color"]'
                         type='color'
                         label='Background Colour'
@@ -96,7 +97,8 @@ import {
     TablerEnum,
     TablerColour,
     TablerIconButton,
-    TablerAlert
+    TablerAlert,
+    TablerToggle
 } from '@tak-ps/vue-tabler';
 import UploadLogo from '../../util/UploadLogo.vue';
 import {
