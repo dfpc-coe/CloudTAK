@@ -15,6 +15,7 @@
     <div v-if="isOpen" class='col-lg-12 py-2 border rounded'>
         <TablerLoading v-if="loading" />
         <template v-else>
+            <TablerAlert v-if="err" :err="err" />
             <div class="row">
                 <div class='col-lg-12'>
                     <TablerInput
@@ -94,7 +95,8 @@ import {
     TablerInput,
     TablerEnum,
     TablerColour,
-    TablerIconButton
+    TablerIconButton,
+    TablerAlert
 } from '@tak-ps/vue-tabler';
 import UploadLogo from '../../util/UploadLogo.vue';
 import {
@@ -106,6 +108,7 @@ import {
 const isOpen = ref(false);
 const loading = ref(false);
 const edit = ref(false);
+const err = ref(null);
 
 const config = ref({
     'login::logo': '',
@@ -129,7 +132,7 @@ watch(isOpen, (newState) => {
 
 async function fetch() {
     loading.value = true;
-    edit.value = false;
+    err.value = null;
     try {
         const url = stdurl('/api/config');
         url.searchParams.append('keys', Object.keys(config.value).join(','));
@@ -138,13 +141,14 @@ async function fetch() {
              if (res[key] !== undefined) config.value[key] = res[key];
         }
     } catch (error) {
-        console.error('Failed to load login config:', error);
+        err.value = error;
     }
     loading.value = false;
 }
 
 async function save() {
     loading.value = true;
+    err.value = null;
     try {
         await std(`/api/config`, {
             method: 'PUT',
@@ -152,6 +156,7 @@ async function save() {
         });
         edit.value = false;
     } catch (error) {
+        err.value = error
         console.error('Failed to save login config:', error);
     }
     loading.value = false;

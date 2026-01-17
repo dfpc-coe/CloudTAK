@@ -15,6 +15,7 @@
     <div v-if="isOpen" class='col-lg-12 py-2 border rounded'>
         <TablerLoading v-if="loading" />
         <template v-else>
+            <TablerAlert v-if="err" :err="err" />
             <div class="row">
                 <div class='col-lg-12'>
                     <TablerInput
@@ -64,7 +65,8 @@ import { validateLatLng } from '../../../base/validators.ts';
 import {
     TablerLoading,
     TablerInput,
-    TablerIconButton
+    TablerIconButton,
+    TablerAlert
 } from '@tak-ps/vue-tabler';
 import {
     IconChevronRight,
@@ -75,6 +77,7 @@ import {
 const isOpen = ref(false);
 const loading = ref(false);
 const edit = ref(false);
+const err = ref(null);
 
 const config = ref({
     'map::center': '40,-100', // Default Lat,Lng
@@ -93,7 +96,7 @@ watch(isOpen, (newState) => {
 
 async function fetch() {
     loading.value = true;
-    edit.value = false;
+    err.value = null;
     try {
         const url = stdurl('/api/config');
         url.searchParams.append('keys', Object.keys(config.value).join(','));
@@ -109,13 +112,14 @@ async function fetch() {
              }
         }
     } catch (error) {
-        console.error('Failed to load Map config:', error);
+        err.value = error;
     }
     loading.value = false;
 }
 
 async function save() {
     loading.value = true;
+    err.value = null;
     try {
         const payload = { ...config.value };
         // Save as Lng,Lat
@@ -127,6 +131,7 @@ async function save() {
         });
         edit.value = false;
     } catch (error) {
+        err.value = error
         console.error('Failed to save Map config:', error);
     }
     loading.value = false;
