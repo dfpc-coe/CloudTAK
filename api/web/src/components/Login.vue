@@ -4,14 +4,15 @@
         style='overflow: auto;'
     >
         <img
-            class='position-absolute d-none d-md-inline user-select-none'
+            v-if="brandStore.loaded && footerLogo"
+            class='position-absolute d-none d-md-inline user-select-none logo-fade-in'
             draggable='false'
             style='
                 height: 48px;
                 bottom: 24px;
                 left: 24px;
             '
-            src='/CloudTAKLogoText.svg'
+            :src='footerLogo'
             alt='CloudTAK Logo'
         >
 
@@ -114,7 +115,7 @@
 
 <script setup lang='ts'>
 import type { Login_Create, Login_CreateRes } from '../types.ts'
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useBrandStore } from '../stores/brand.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { std } from '../std.ts';
@@ -128,6 +129,20 @@ const emit = defineEmits([ 'login' ]);
 const route = useRoute();
 const router = useRouter();
 const brandStore = useBrandStore();
+
+const footerLogo = computed(() => {
+    if (!brandStore.login) return undefined;
+    
+    // Check if brand is enabled, if not return undefined (hidden)
+    // If enabled or default, check logic below
+    if (brandStore.login.brand?.enabled === 'disabled') {
+        return undefined;
+    } else if (brandStore.login.brand?.footer) {
+        return brandStore.login.brand.footer;
+    } else {
+        return '/CloudTAKLogoText.svg';
+    }
+}); 
 
 const loading = ref(false);
 const body = ref<Login_Create>({
@@ -180,3 +195,14 @@ async function createLogin() {
     }
 }
 </script>
+
+<style scoped>
+.logo-fade-in {
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+</style>
