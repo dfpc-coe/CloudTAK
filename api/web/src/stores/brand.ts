@@ -24,9 +24,15 @@ export const useBrandStore = defineStore('brand', {
 
             if (!this.login) {
                 this.isLoading = true;
-                this.login = await std('/api/config/login') as LoginConfig;
-                this.isLoading = false;
-                this.loaded = true;
+                try {
+                    this.login = await std('/api/config/login') as LoginConfig;
+                    this.loaded = true;
+                } catch (error) {
+                    // Optionally log or handle the error here
+                    throw error;
+                } finally {
+                    this.isLoading = false;
+                }
             }
         }
     }
