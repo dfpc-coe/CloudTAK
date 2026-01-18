@@ -9,20 +9,20 @@ import { sql } from 'drizzle-orm';
 import { Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Projection, Profile_Zoom } from  '../lib/enums.js';
 
 export const FullProfileConfig = Type.Object({
-    'display::stale': Type.Enum(Profile_Stale),
-    'display::distance': Type.Enum(Profile_Distance),
-    'display::elevation': Type.Enum(Profile_Elevation),
-    'display::projection': Type.Enum(Profile_Projection),
-    'display::speed': Type.Enum(Profile_Speed),
-    'display::zoom': Type.Enum(Profile_Zoom),
-    'display::icon_rotation': Type.Boolean(),
-    'display::text': Type.Enum(Profile_Text),
-    'tak::callsign': Type.String(),
-    'tak::remarks': Type.String(),
-    'tak::group': Type.Enum(TAKGroup),
-    'tak::type': Type.String(),
-    'tak::role': Type.Enum(TAKRole),
-    'tak::loc_freq': Type.Integer(),
+    'display::stale': Type.Enum(Profile_Stale, { default: Profile_Stale.TenMinutes }),
+    'display::distance': Type.Enum(Profile_Distance, { default: Profile_Distance.MILE }),
+    'display::elevation': Type.Enum(Profile_Elevation, { default: Profile_Elevation.FEET }),
+    'display::projection': Type.Enum(Profile_Projection, { default: Profile_Projection.GLOBE }),
+    'display::speed': Type.Enum(Profile_Speed, { default: Profile_Speed.MPH }),
+    'display::zoom': Type.Enum(Profile_Zoom, { default: Profile_Zoom.CONDITIONAL }),
+    'display::icon_rotation': Type.Boolean({ default: true }),
+    'display::text': Type.Enum(Profile_Text, { default: Profile_Text.Medium }),
+    'tak::callsign': Type.String({ default: 'CloudTAK User' }),
+    'tak::remarks': Type.String({ default: 'CloudTAK User' }),
+    'tak::group': Type.Enum(TAKGroup, { default: TAKGroup.ORANGE }),
+    'tak::type': Type.String({ default: 'a-f-G-E-V-C' }),
+    'tak::role': Type.Enum(TAKRole, { default: TAKRole.TEAM_MEMBER }),
+    'tak::loc_freq': Type.Integer({ default: 2000 }),
     'tak::loc': Type.Union([Type.Null(), Type.Object({
         type: Type.String(),
         coordinates: Type.Array(Type.Number())
@@ -54,26 +54,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Update Profile',
         group: 'Profile',
         description: 'Update User\'s Profile',
-        body: Type.Object({
-            display_stale: Type.Optional(Type.Enum(Profile_Stale)),
-            display_distance: Type.Optional(Type.Enum(Profile_Distance)),
-            display_elevation: Type.Optional(Type.Enum(Profile_Elevation)),
-            display_projection: Type.Optional(Type.Enum(Profile_Projection)),
-            display_speed: Type.Optional(Type.Enum(Profile_Speed)),
-            display_zoom: Type.Optional(Type.Enum(Profile_Zoom)),
-            display_icon_rotation: Type.Optional(Type.Boolean()),
-            display_text: Type.Optional(Type.Enum(Profile_Text)),
-            tak_callsign: Type.Optional(Type.String()),
-            tak_remarks: Type.Optional(Type.String()),
-            tak_group: Type.Optional(Type.Enum(TAKGroup)),
-            tak_type: Type.Optional(Type.String()),
-            tak_role: Type.Optional(Type.Enum(TAKRole)),
-            tak_loc_freq: Type.Optional(Type.Integer()),
-            tak_loc: Type.Optional(Type.Union([Type.Null(), Type.Object({
-                type: Type.String(),
-                coordinates: Type.Array(Type.Number())
-            })]))
-        }),
+        body: Type.Partial(FullProfileConfig),
         res: ProfileResponse
     }, async (req, res) => {
         try {
