@@ -29,6 +29,7 @@ export const useBrandStore = defineStore('brand', {
                     this.loaded = true;
                 } catch (error) {
                     // Optionally log or handle the error here
+                    console.error('Failed to load login config:', error);
                     throw error;
                 } finally {
                     this.isLoading = false;
