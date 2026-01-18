@@ -9,20 +9,32 @@ import { defineStore } from 'pinia'
 export const useBrandStore = defineStore('brand', {
     state: (): {
         loaded: boolean;
+        isLoading: boolean;
         login: LoginConfig | undefined;
     } => {
         return {
             loaded: false,
+            isLoading: false,
             login: undefined
         }
     },
     actions: {
         init: async function() {
-            if (!this.login) {
-                this.login = await std('/api/config/login') as LoginConfig;
-            }
+            if (this.isLoading) return;
 
-            this.loaded = true;
+            if (!this.login) {
+                this.isLoading = true;
+                try {
+                    this.login = await std('/api/config/login') as LoginConfig;
+                    this.loaded = true;
+                } catch (error) {
+                    // Optionally log or handle the error here
+                    console.error('Failed to load login config:', error);
+                    throw error;
+                } finally {
+                    this.isLoading = false;
+                }
+            }
         }
     }
 })

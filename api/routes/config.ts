@@ -128,8 +128,24 @@ export default async function router(schema: Schema, config: Config) {
             'login::forgot': Type.Optional(Type.String({
                 description: 'URL for Forgot Password Page'
             })),
+            'login::username': Type.Optional(Type.String({
+                description: 'Custom Label for Username Field'
+            })),
+            'login::brand::enabled': Type.Optional(Type.String({
+                description: 'Enable Custom Branding on Login Page',
+                enum: ['default', 'enabled', 'disabled']
+            })),
+            'login::brand::logo': Type.Optional(Type.String({
+                description: 'Show or Hide the CloudTAK Branding'
+            })),
+            'login::background::enabled': Type.Optional(Type.Boolean({
+                description: 'Enable or Disable Custom Background on Login Page'
+            })),
+            'login::background::color': Type.Optional(Type.String({
+                description: 'Hex Color Code for Login Background'
+            })),
             'login::logo': Type.Optional(Type.String({
-                description: 'Base64 encoded PNG for logo'
+                description: 'Base64 encoded PNG for Logo'
             })),
         }),
         res: Type.Any()
@@ -181,6 +197,24 @@ export default async function router(schema: Schema, config: Config) {
             logo: Type.Optional(Type.String()),
             signup: Type.Optional(Type.String()),
             forgot: Type.Optional(Type.String()),
+            username: Type.String({
+                default: 'Username or Email'
+            }),
+            brand: Type.Object({
+                enabled: Type.String({
+                    description: 'Enable Custom Branding on Login Page',
+                    enum: ['default', 'enabled', 'disabled']
+                }),
+                logo: Type.Optional(Type.String({
+                    description: 'Brand Logo Data'
+                }))
+            }),
+            background: Type.Object({
+                enabled: Type.Boolean({
+                    description: 'Enable or Disable Custom Background on Login Page'
+                }),
+                color: Type.Optional(Type.String())
+            })
         })
     }, async (req, res) => {
         try {
@@ -188,6 +222,11 @@ export default async function router(schema: Schema, config: Config) {
                 'login::logo',
                 'login::signup',
                 'login::forgot',
+                'login::username',
+                'login::brand::enabled',
+                'login::brand::logo',
+                'login::background::enabled',
+                'login::background::color',
             ];
 
             const final: Record<string, string> = {};
@@ -206,7 +245,21 @@ export default async function router(schema: Schema, config: Config) {
                 login = login.replace('login::', '')
             }
 
-            res.json(final);
+            res.json({
+                name: final.name,
+                logo: final.logo,
+                signup: final.signup,
+                forgot: final.forgot,
+                username: final.username || 'Username or Email',
+                brand: {
+                    enabled: final['brand::enabled'] || 'default',
+                    logo: final['brand::logo']
+                },
+                background: {
+                    enabled: final['background::enabled'] === 'true' ? true : false,
+                    color: final['background::color'] || undefined
+                }
+            });
         } catch (err) {
             Err.respond(err, res);
         }
