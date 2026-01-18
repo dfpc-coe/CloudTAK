@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v12.59.0 - 2026-01-18
+
+- :tada: Presence of the lower left logo is configurable (default, custom, disabled)
+- :tada: Logo itself is customizable
+- :tada: "Username" text can be configured - IE "Callsign" in the above or "Username/Email", "Email" etc Closes: https://github.com/dfpc-coe/CloudTAK/issues/1201
+- :tada: Background color is configurable, note there is a fade animation as the CSS baked into the page is loaded several seconds before the API calls complete to actually load up the custom stuff
+- :bug: Check VueRouter on login redirect and fallback to window.location if not using VueRouter
+
 ### v12.58.0 - 2026-01-16
 
 - :tada: Additional Consolidaton of COTAK API Calls
