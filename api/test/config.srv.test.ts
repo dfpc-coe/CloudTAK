@@ -89,6 +89,13 @@ test('GET api/config/login', async () => {
 
         assert.deepEqual(res.body, {
             name: 'Test Runner',
+            username: 'Username or Email',
+            brand: {
+                enabled: 'default'
+            },
+            background: {
+                enabled: false
+            }
         });
     } catch (err) {
         assert.ifError(err);
@@ -129,7 +136,14 @@ test('GET api/config/login', async () => {
         assert.deepEqual(res.body, {
             name: 'Test Runner',
             signup: 'https://example.com/signup',
-            forgot: 'https://example.com/forgot'
+            forgot: 'https://example.com/forgot',
+            username: 'Username or Email',
+            brand: {
+                enabled: 'default'
+            },
+            background: {
+                enabled: false
+            }
         });
     } catch (err) {
         assert.ifError(err);

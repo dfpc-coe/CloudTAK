@@ -205,9 +205,9 @@ export default async function router(schema: Schema, config: Config) {
                     description: 'Enable Custom Branding on Login Page',
                     enum: ['default', 'enabled', 'disabled']
                 }),
-                logo: Type.String({
+                logo: Type.Optional(Type.String({
                     description: 'Brand Logo Data'
-                })
+                }))
             }),
             background: Type.Object({
                 enabled: Type.Boolean({
