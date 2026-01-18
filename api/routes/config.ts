@@ -9,6 +9,113 @@ import {
 } from '../lib/enums.js'
 import Config from '../lib/config.js';
 
+export const FullConfig = Type.Object({
+    'agol::enabled': Type.Boolean({
+        description: 'Enable ArcGIS Online Integration'
+    }),
+
+    'agol::auth_method': Type.String({
+        description: 'AGOL Auth Type',
+        enum: ['oauth2', 'legacy']
+    }),
+
+    'agol::token': Type.String({
+        description: 'AGOL Legacy Token'
+    }),
+
+    'agol::client_id': Type.String({
+        description: 'AGOL OAuth2 Client ID'
+    }),
+
+    'agol::client_secret': Type.String({
+        description: 'AGOL OAuth2 Client Secret'
+    }),
+
+    'media::url': Type.String({
+        description: 'Base URL for Media Service'
+    }),
+
+    'map::center': Type.String({
+        description: 'Map Center Coordinates (lng,lat)',
+    }),
+    'map::pitch': Type.Integer({
+        description: 'Default Map Pitch Angle',
+        minimum: 0,
+        maximum: 90
+    }),
+    'map::bearing': Type.String({
+        description: 'Default Map Bearing',
+        minimum: 0,
+        maximum: 360
+    }),
+    'map::zoom': Type.Number({
+        description: 'Default Map Zoom Level',
+        minimum: 0,
+        maximum: 20
+    }),
+
+    'display::stale': Type.Enum(Profile_Stale),
+    'display::distance': Type.Enum(Profile_Distance),
+    'display::elevation': Type.Enum(Profile_Elevation),
+    'display::speed': Type.Enum(Profile_Speed),
+    'display::projection': Type.Enum(Profile_Projection),
+    'display::zoom': Type.Enum(Profile_Zoom),
+    'display::text': Type.Enum(Profile_Text),
+    'display::icon_rotation': Type.Boolean(),
+
+    'group::Yellow': Type.String(),
+    'group::Cyan': Type.String(),
+    'group::Green': Type.String(),
+    'group::Red': Type.String(),
+    'group::Purple': Type.String(),
+    'group::Orange': Type.String(),
+    'group::Blue': Type.String(),
+    'group::Magenta': Type.String(),
+    'group::White': Type.String(),
+    'group::Maroon': Type.String(),
+    'group::Dark Blue': Type.String(),
+    'group::Teal': Type.String(),
+    'group::Dark Green': Type.String(),
+    'group::Brown': Type.String(),
+
+    'oidc::enabled': Type.Boolean(),
+    'oidc::enforced': Type.Boolean(),
+    'oidc::name': Type.String(),
+    'oidc::discovery': Type.String(),
+    'oidc::client': Type.String(),
+
+    // COTAK Specific Properties
+    'provider::url': Type.String(),
+    'provider::secret': Type.String(),
+    'provider::client': Type.String(),
+
+    'login::signup': Type.String({
+        description: 'URL for Signup Page'
+    }),
+    'login::forgot': Type.String({
+        description: 'URL for Forgot Password Page'
+    }),
+    'login::username': Type.String({
+        description: 'Custom Label for Username Field'
+    }),
+    'login::brand::enabled': Type.String({
+        description: 'Enable Custom Branding on Login Page',
+        enum: ['default', 'enabled', 'disabled']
+    }),
+    'login::brand::logo': Type.String({
+        description: 'Show or Hide the CloudTAK Branding'
+    }),
+    'login::background::enabled': Type.Boolean({
+        description: 'Enable or Disable Custom Background on Login Page'
+    }),
+    'login::background::color': Type.String({
+        description: 'Hex Color Code for Login Background'
+    }),
+    'login::logo': Type.String({
+        description: 'Base64 encoded PNG for Logo'
+    }),
+});
+
 export default async function router(schema: Schema, config: Config) {
     const profileControl = new ProfileControl(config);
 
@@ -42,112 +149,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Update Config',
         group: 'Config',
         description: 'Update Config Key/Values',
-        body: Type.Object({
-            'agol::enabled': Type.Optional(Type.Boolean({
-                description: 'Enable ArcGIS Online Integration'
-            })),
-
-            'agol::auth_method': Type.Optional(Type.String({
-                description: 'AGOL Auth Type',
-                enum: ['oauth2', 'legacy']
-            })),
-
-            'agol::token': Type.Optional(Type.String({
-                description: 'AGOL Legacy Token'
-            })),
-
-            'agol::client_id': Type.Optional(Type.String({
-                description: 'AGOL OAuth2 Client ID'
-            })),
-
-            'agol::client_secret': Type.Optional(Type.String({
-                description: 'AGOL OAuth2 Client Secret'
-            })),
-
-            'media::url': Type.Optional(Type.String({
-                description: 'Base URL for Media Service'
-            })),
-
-            'map::center': Type.Optional(Type.String({
-                description: 'Map Center Coordinates (lng,lat)',
-            })),
-            'map::pitch': Type.Optional(Type.Integer({
-                description: 'Default Map Pitch Angle',
-                minimum: 0,
-                maximum: 90
-            })),
-            'map::bearing': Type.Optional(Type.String({
-                description: 'Default Map Bearing',
-                minimum: 0,
-                maximum: 360
-            })),
-            'map::zoom': Type.Optional(Type.Number({
-                description: 'Default Map Zoom Level',
-                minimum: 0,
-                maximum: 20
-            })),
-
-            'display::stale': Type.Optional(Type.Enum(Profile_Stale)),
-            'display::distance': Type.Optional(Type.Enum(Profile_Distance)),
-            'display::elevation': Type.Optional(Type.Enum(Profile_Elevation)),
-            'display::speed': Type.Optional(Type.Enum(Profile_Speed)),
-            'display::projection': Type.Optional(Type.Enum(Profile_Projection)),
-            'display::zoom': Type.Optional(Type.Enum(Profile_Zoom)),
-            'display::text': Type.Optional(Type.Enum(Profile_Text)),
-            'display::icon_rotation': Type.Optional(Type.Boolean()),
-
-            'group::Yellow': Type.Optional(Type.String()),
-            'group::Cyan': Type.Optional(Type.String()),
-            'group::Green': Type.Optional(Type.String()),
-            'group::Red': Type.Optional(Type.String()),
-            'group::Purple': Type.Optional(Type.String()),
-            'group::Orange': Type.Optional(Type.String()),
-            'group::Blue': Type.Optional(Type.String()),
-            'group::Magenta': Type.Optional(Type.String()),
-            'group::White': Type.Optional(Type.String()),
-            'group::Maroon': Type.Optional(Type.String()),
-            'group::Dark Blue': Type.Optional(Type.String()),
-            'group::Teal': Type.Optional(Type.String()),
-            'group::Dark Green': Type.Optional(Type.String()),
-            'group::Brown': Type.Optional(Type.String()),
-
-            'oidc::enabled': Type.Optional(Type.Boolean()),
-            'oidc::enforced': Type.Optional(Type.Boolean()),
-            'oidc::name': Type.Optional(Type.String()),
-            'oidc::discovery': Type.Optional(Type.String()),
-            'oidc::client': Type.Optional(Type.String()),
-
-            // COTAK Specific Properties
-            'provider::url': Type.Optional(Type.String()),
-            'provider::secret': Type.Optional(Type.String()),
-            'provider::client': Type.Optional(Type.String()),
-
-            'login::signup': Type.Optional(Type.String({
-                description: 'URL for Signup Page'
-            })),
-            'login::forgot': Type.Optional(Type.String({
-                description: 'URL for Forgot Password Page'
-            })),
-            'login::username': Type.Optional(Type.String({
-                description: 'Custom Label for Username Field'
-            })),
-            'login::brand::enabled': Type.Optional(Type.String({
-                description: 'Enable Custom Branding on Login Page',
-                enum: ['default', 'enabled', 'disabled']
-            })),
-            'login::brand::logo': Type.Optional(Type.String({
-                description: 'Show or Hide the CloudTAK Branding'
-            })),
-            'login::background::enabled': Type.Optional(Type.Boolean({
-                description: 'Enable or Disable Custom Background on Login Page'
-            })),
-            'login::background::color': Type.Optional(Type.String({
-                description: 'Hex Color Code for Login Background'
-            })),
-            'login::logo': Type.Optional(Type.String({
-                description: 'Base64 encoded PNG for Logo'
-            })),
-        }),
+        body: Type.Partial(FullConfig),
         res: Type.Any()
     }, async (req, res) => {
         try {

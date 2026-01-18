@@ -80,6 +80,8 @@ export const Profile = pgTable('profile', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     phone: text().notNull().default(''),
+    system_admin: boolean().notNull().default(false),
+    agency_admin: json().notNull().$type<Array<number>>().default([]),
     tak_callsign: text().notNull().default('CloudTAK User'),
     tak_remarks: text().notNull().default('CloudTAK User'),
     tak_group: text().$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
@@ -95,8 +97,11 @@ export const Profile = pgTable('profile', {
     display_zoom: text().$type<Profile_Zoom>().notNull().default(Profile_Zoom.CONDITIONAL),
     display_icon_rotation: boolean().notNull().default(true),
     display_text: text().$type<Profile_Text>().notNull().default(Profile_Text.Medium),
-    system_admin: boolean().notNull().default(false),
-    agency_admin: json().notNull().$type<Array<number>>().default([])
+});
+
+export const ProfileSetting = pgTable('profile_settings', {
+    key: text().primaryKey(),
+    value: text().notNull().default('')
 });
 
 export const ProfileFile = pgTable('profile_files', {

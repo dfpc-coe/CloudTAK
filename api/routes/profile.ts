@@ -8,6 +8,27 @@ import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { sql } from 'drizzle-orm';
 import { Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Projection, Profile_Zoom } from  '../lib/enums.js';
 
+export const FullProfileConfig = Type.Object({
+    'display::stale': Type.Enum(Profile_Stale),
+    'display::distance': Type.Enum(Profile_Distance),
+    'display::elevation': Type.Enum(Profile_Elevation),
+    'display::projection': Type.Enum(Profile_Projection),
+    'display::speed': Type.Enum(Profile_Speed),
+    'display::zoom': Type.Enum(Profile_Zoom),
+    'display::icon_rotation': Type.Boolean(),
+    'display::text': Type.Enum(Profile_Text),
+    'tak::callsign': Type.String(),
+    'tak::remarks': Type.String(),
+    'tak::group': Type.Enum(TAKGroup),
+    'tak::type': Type.String(),
+    'tak::role': Type.Enum(TAKRole),
+    'tak::loc_freq': Type.Integer(),
+    'tak::loc': Type.Union([Type.Null(), Type.Object({
+        type: Type.String(),
+        coordinates: Type.Array(Type.Number())
+    })])
+});
+
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile', {
         name: 'Get Profile',
