@@ -82,24 +82,11 @@ export const Profile = pgTable('profile', {
     phone: text().notNull().default(''),
     system_admin: boolean().notNull().default(false),
     agency_admin: json().notNull().$type<Array<number>>().default([]),
-    tak_callsign: text().notNull().default('CloudTAK User'),
-    tak_remarks: text().notNull().default('CloudTAK User'),
-    tak_group: text().$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
-    tak_role: text().$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
-    tak_type: text().notNull().default('a-f-G-E-V-C'),
-    tak_loc: geometry({ srid: 4326, type: GeometryType.Point }),
-    tak_loc_freq: integer().notNull().default(2000),
-    display_stale: text().$type<Profile_Stale>().notNull().default(Profile_Stale.TenMinutes),
-    display_distance: text().$type<Profile_Distance>().notNull().default(Profile_Distance.MILE),
-    display_elevation: text().$type<Profile_Elevation>().notNull().default(Profile_Elevation.FEET),
-    display_speed: text().$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
-    display_projection: text().$type<Profile_Projection>().notNull().default(Profile_Projection.GLOBE),
-    display_zoom: text().$type<Profile_Zoom>().notNull().default(Profile_Zoom.CONDITIONAL),
-    display_icon_rotation: boolean().notNull().default(true),
-    display_text: text().$type<Profile_Text>().notNull().default(Profile_Text.Medium),
 });
 
 export const ProfileSetting = pgTable('profile_settings', {
+    username: text().notNull().references(() => Profile.username),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     key: text().primaryKey(),
     value: text().notNull().default('')
 });
