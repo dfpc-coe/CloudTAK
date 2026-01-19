@@ -5,11 +5,11 @@ import type { Profile } from '../types.ts';
 
 export default class ProfileConfig {
     username: string;
-    data: Profile;
+    config: Profile;
 
     constructor(data: Profile) {
         this.username = data.username;
-        this.data = data;
+        this.config = data;
     }
 
     static async from(username: string): Promise<ProfileConfig | undefined> {
@@ -27,14 +27,17 @@ export default class ProfileConfig {
         return new ProfileConfig(profile as Profile);
     }
 
-    static async load(username: string, opts: { refresh?: boolean } = {}): Promise<ProfileConfig> {
+    static async load(username: string, opts: {
+        refresh?: boolean,
+        token?: string
+    } = {}): Promise<ProfileConfig> {
         const exists = await this.from(username);
         if (exists) {
-            if (opts.refresh) await exists.refresh();
+            if (opts.refresh) await exists.refresh(opts.token);
             return exists;
         }
 
-        const fresh = await this.fetch();
+        const fresh = await this.fetch(opts.token);
         await this.put(fresh);
 
         return new ProfileConfig(fresh);
@@ -54,20 +57,20 @@ export default class ProfileConfig {
         await db.profile.bulkPut(entries);
     }
 
-    static async fetch(): Promise<Profile> {
+    static async fetch(token?: string): Promise<Profile> {
         const url = stdurl('/api/profile');
-        const profile = await std(url) as Profile;
+        const profile = await std(url, { token }) as Profile;
         
         return profile;
     }
 
-    async refresh(): Promise<void> {
-        const profile = await ProfileConfig.fetch();
+    async refresh(token?: string): Promise<void> {
+        const profile = await ProfileConfig.fetch(token);
         await ProfileConfig.put(profile);
-        this.data = profile;
+        this.config = profile;
     }
     
     async save(): Promise<void> {
-         await ProfileConfig.put(this.data);
+         await ProfileConfig.put(this.config);
     }
 }

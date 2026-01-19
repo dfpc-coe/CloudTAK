@@ -3,8 +3,9 @@ import type Atlas from './atlas.ts';
 import { std, stdurl } from '../std.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts'
 import type { Feature, Group, Server, Profile, Profile_Update, FeaturePropertyCreator } from '../types.ts';
+import ProfileConfig from '../base/profile.ts';
 
-export type ProfileLocation = {
+export type ProfileLocationState = {
     source: LocationState
     accuracy: number | undefined
     altitude: number | null | undefined
@@ -20,8 +21,9 @@ export default class AtlasProfile {
     location: ProfileLocation;
 
     channels: Array<Group>;
-    profile: Profile | null;
+    profile: ProfileConfig | null;
     server: Server | null;
+
 
     constructor(atlas: Atlas) {
         this.atlas = atlas;
@@ -53,13 +55,13 @@ export default class AtlasProfile {
         if (!this.profile) {
             throw new Error('Failed loading profile');
         } else {
-            return this.profile.username;
+            return this.profile.config.username;
         }
     }
 
     async username(): Promise<string> {
         const profile = await this.load();
-        return profile.username;
+        return profile.config.username;
     }
 
     async creator(): Promise<FeaturePropertyCreator> {
@@ -73,22 +75,22 @@ export default class AtlasProfile {
 
     async callsign(): Promise<string> {
         const profile = await this.load();
-        return profile.tak_callsign;
+        return profile.config.tak_callsign;
     }
 
     async isSystemAdmin(): Promise<boolean> {
         const profile = await this.load();
-        return profile.system_admin;
+        return profile.config.system_admin;
     }
 
     async isAgencyAdmin(): Promise<boolean> {
         const profile = await this.load();
-        return profile.agency_admin.length > 0;
+        return profile.config.agency_admin.length > 0;
     }
 
     hasNoConfiguration(): boolean {
         if (!this.profile) return false;
-        return this.profile.created === this.profile.updated;
+        return this.profile.config.created === this.profile.config.updated;
     }
 
     hasNoChannels(): boolean {
@@ -116,7 +118,7 @@ export default class AtlasProfile {
             // Always send CoT - use GPS coordinates if available, manual location if set, otherwise default to 0,0
             if (this.location.accuracy) {
                 await this.CoT(this.location.coordinates, this.location.accuracy, this.location.altitude);
-            } else if (this.profile && this.profile.tak_loc) {
+            } else if (this.profile && this.profile.config.tak_loc) {
                 await this.CoT();
             } else {
                 // Send 0,0 location when no valid location is available
@@ -128,7 +130,7 @@ export default class AtlasProfile {
             if (me) {
                 this.atlas.conn.sendCOT(me.as_feature())
             }
-        }, this.profile ? this.profile.tak_loc_freq : 2000);
+        }, this.profile ? this.profile.config.tak_loc_freq : 5000);
     }
 
     async loadServer(): Promise<Server> {
@@ -141,20 +143,22 @@ export default class AtlasProfile {
         return this.server;
     }
 
-    async load(): Promise<Profile> {
+    async load(): Promise<ProfileConfig> {
         if (!this.profile) {
-            const profile = await std('/api/profile', {
+            const server = await this.loadServer();
+
+            const profile = await ProfileConfig.load(server.email, {
                 token: this.atlas.token
-            }) as Profile;
+            });
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Callsign,
-                body: { callsign: profile.tak_callsign }
+                body: { callsign: profile.config.tak_callsign }
             });
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Display_Zoom,
-                body: { zoom: profile.display_zoom }
+                body: { zoom: profile.config.display_zoom }
             });
 
             this.profile = profile;
@@ -168,22 +172,23 @@ export default class AtlasProfile {
     updateLocation() {
         if (
             this.profile
-            && this.profile.tak_loc
+            && this.profile.config.tak_loc
         ) {
             this.location.source = LocationState.Preset;
             this.location.accuracy = undefined;
             this.location.altitude = undefined;
-            this.location.coordinates = this.profile.tak_loc.coordinates;
+            this.location.coordinates = this.profile.config.tak_loc.coordinates;
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Location_Source,
                 body: { source: LocationState.Preset }
             });
-        } else if (this.profile && !this.profile.tak_loc && this.location.source === LocationState.Preset) {
+        } else if (this.profile && !this.profile.config.tak_loc && this.location.source === LocationState.Preset) {
             // Reset to disabled when manual location is cleared
             this.location.source = LocationState.Disabled;
             this.location.accuracy = undefined;
             this.location.coordinates = [0, 0];
+
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Location_Source,
@@ -257,14 +262,19 @@ export default class AtlasProfile {
     }
 
     async update(body: Profile_Update): Promise<void> {
-        if (this.profile && body.tak_loc_freq && this.profile.tak_loc_freq !== body.tak_loc_freq) {
+        if (!this.profile) throw new Error('Profile must be loaded before update');
+
+        if (this.profile && body.tak_loc_freq && this.profile.config.tak_loc_freq !== body.tak_loc_freq) {
             this.setupTimer();
         }
 
-        // Ensure if network request fails user intent is preserved for session
-        if (this.profile) {
-            Object.assign(this.profile, body);
-        }
+        const profile = await std('/api/profile', {
+            method: 'PATCH',
+            token: this.atlas.token,
+            body
+        }) as Profile;
+        
+        await this.profile.refresh(this.atlas.token);
 
         if (body.tak_loc) {
             await this.CoT();
@@ -308,26 +318,19 @@ export default class AtlasProfile {
         if (body.tak_loc !== undefined || body.tak_type) {
             this.updateLocation();
         }
-
-        this.profile = await std('/api/profile', {
-            method: 'PATCH',
-            token: this.atlas.token,
-            body
-        }) as Profile
-
     }
 
     uid(): string {
         if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
 
         // Need to differentiate between servers eventually
-        return `ANDROID-CloudTAK-${this.profile.username}`;
+        return `ANDROID-CloudTAK-${this.profile.config.username}`;
     }
 
     async CoT(coords?: number[], accuracy?: number, altitude?: number | null): Promise<void> {
         if (!this.profile || !this.server) throw new Error('Profile must be loaded before CoT is called');
 
-        const coordinates = coords || (this.profile.tak_loc ? toRaw(this.profile.tak_loc.coordinates) : [ 0, 0 ]);
+        const coordinates = coords || (this.profile.config.tak_loc ? toRaw(this.profile.config.tak_loc.coordinates) : [ 0, 0 ]);
         
         // HAE = Height Above Ellipsoid (altitude), CE = Circular Error (accuracy)
         const hae = altitude !== null && altitude !== undefined ? altitude : 0;
@@ -340,22 +343,22 @@ export default class AtlasProfile {
             type: 'Feature',
             properties: {
                 id: uid,
-                type: this.profile.tak_type,
+                type: this.profile.config.tak_type,
                 how: 'm-g',
-                callsign: this.profile.tak_callsign,
-                remarks: this.profile.tak_remarks,
-                droid: this.profile.tak_callsign,
+                callsign: this.profile.config.tak_callsign,
+                remarks: this.profile.config.tak_remarks,
+                droid: this.profile.config.tak_callsign,
                 time: new Date().toISOString(),
                 start: new Date().toISOString(),
                 stale: new Date(new Date().getTime() + (1000 * 60)).toISOString(),
                 center: coordinates,
                 contact: {
                     endpoint: '*:-1:stcp',
-                    callsign: this.profile.tak_callsign,
+                    callsign: this.profile.config.tak_callsign,
                 },
                 group: {
-                    name: this.profile.tak_group,
-                    role: this.profile.tak_role
+                    name: this.profile.config.tak_group,
+                    role: this.profile.config.tak_role
                 },
                 takv: {
                     device: navigator.userAgent,
