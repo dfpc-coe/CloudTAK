@@ -399,7 +399,20 @@ async function saveOrder(evt: SortableEvent) {
 }
 
 onMounted(async () => {
-    version.value = (await mapStore.worker.profile.loadServer()).version;
+    if ('serviceWorker' in navigator) {
+        const pkg = await navigator.serviceWorker.getRegistration();
+        if (pkg && pkg.active) {
+            const url = new URL(pkg.active.scriptURL);
+            if (url.searchParams.get('v')) {
+                version.value = String(url.searchParams.get('v'));
+            }
+        }
+    }
+
+    if (!version.value) {
+        version.value = (await mapStore.worker.profile.loadServer()).version;
+    }
+
     username.value = await mapStore.worker.profile.username();
 })
 
