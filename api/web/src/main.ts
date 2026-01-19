@@ -130,6 +130,10 @@ const router = VueRouter.createRouter({
                     name: 'home-menu-features-deleted',
                     component: () => import('./components/CloudTAK/Menu/MenuFeaturesDeleted.vue')
                 },{
+                    path: 'feature',
+                    name: 'home-menu-feature',
+                    component: () => import('./components/CloudTAK/FeatView.vue')
+                },{
                     path: 'overlays',
                     name: 'home-menu-overlays',
                     component: () => import('./components/CloudTAK/Menu/MenuOverlays.vue')

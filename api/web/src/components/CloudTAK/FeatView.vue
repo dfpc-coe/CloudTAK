@@ -1,12 +1,5 @@
 <template>
-    <div
-        class='position-absolute end-0 bottom-0 text-white bg-dark'
-        style='
-            z-index: 1;
-            width: 400px;
-            top: 56px;
-        '
-    >
+    <div v-if='feature'>
         <div
             class='col-12 border-light border-bottom sticky-top'
             style='
@@ -18,7 +11,7 @@
                 <div
                     class='card-title mx-2 text-truncate'
                     style='width: 280px'
-                    v-text='feat.properties?.name || "No Name"'
+                    v-text='feature.properties?.name || "No Name"'
                 />
             </div>
             <div class='col-12 btn-list my-2 d-flex align-items-center mx-2'>
@@ -112,22 +105,22 @@
                                 </tr>
                             </thead>
                             <tbody class='bg-accent'>
-                                <template v-if='feat.properties'>
+                                <template v-if='feature.properties'>
                                     <tr
-                                        v-for='prop of Object.keys(feat.properties)'
+                                        v-for='prop of Object.keys(feature.properties)'
                                         :key='prop'
                                     >
                                         <td v-text='prop' />
                                         <td>
                                             <a
-                                                v-if='typeof feat.properties[prop] === "string" && feat.properties[prop].startsWith("http")'
-                                                :href='feat.properties[prop]'
+                                                v-if='typeof feature.properties[prop] === "string" && feature.properties[prop].startsWith("http")'
+                                                :href='feature.properties[prop]'
                                                 target='_blank'
-                                                v-text='feat.properties[prop]'
+                                                v-text='feature.properties[prop]'
                                             />
                                             <span
                                                 v-else
-                                                v-text='feat.properties[prop]'
+                                                v-text='feature.properties[prop]'
                                             />
                                         </td>
                                     </tr>
@@ -138,7 +131,7 @@
                 </div>
             </template>
             <template v-else-if='mode === "raw"'>
-                <pre v-text='feat' />
+                <pre v-text='feature' />
             </template>
         </div>
     </div>
@@ -169,27 +162,34 @@ import {
 const mapStore = useMapStore();
 
 const props = defineProps<{
-    feat: Feature | MapGeoJSONFeature
+    feat?: Feature | MapGeoJSONFeature
 }>();
+
+const feature = computed(() => {
+    if (props.feat) return props.feat;
+    return mapStore.viewedFeature;
+})
 
 const mode = ref('default');
 
 const overlay = computed<Overlay | null>(() => {
+    if (!feature.value) return null;
     // @ts-expect-error Doesn't exist in typedef
-    const source: number | undefined = Number(props.feat.source);
+    const source: number | undefined = Number(feature.value.source);
     if (!source || isNaN(source)) return null
     const ov = mapStore.getOverlayById(source);
     return ov;
 })
 
 const center = computed(() => {
-    return pointOnFeature(props.feat).geometry.coordinates;
+    if (!feature.value) return [0, 0];
+    return pointOnFeature(feature.value).geometry.coordinates;
 });
 
 const htmlDescription = computed(() => {
-    if (!props.feat.properties?.description) return null;
+    if (!feature.value || !feature.value.properties?.description) return null;
     try {
-        const desc = JSON.parse(props.feat.properties.description);
+        const desc = JSON.parse(feature.value.properties.description);
         if (desc['@type'] === 'html' && desc.value) {
             return desc.value;
         }
@@ -200,13 +200,13 @@ const htmlDescription = computed(() => {
 });
 
 async function cutFeature() {
-    if (!overlay.value) throw new Error("Could not determine Overlay");
+    if (!overlay.value || !feature.value) throw new Error("Could not determine Overlay");
 
     const { data: rawFeature, error } = await server.GET('/api/basemap/{:basemapid}/feature/{:featureid}', {
         params: {
             path: {
                 ':basemapid': Number(overlay.value.mode_id),
-                ':featureid': String(props.feat.id)
+                ':featureid': String(feature.value.id)
             }
         }
     });

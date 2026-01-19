@@ -211,6 +211,11 @@ export const ProfileResponse = Type.Object({
         coordinates: Type.Array(Type.Number())
     }), Type.Null()]),
     tak_loc_freq: Type.Integer(),
+
+    menu_order: Type.Array(Type.Object({
+        key: Type.String(),
+    })),
+
     display_projection: Type.Enum(Profile_Projection),
     display_zoom: Type.Enum(Profile_Zoom),
     display_icon_rotation: Type.Boolean(),
