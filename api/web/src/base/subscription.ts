@@ -100,7 +100,7 @@ export default class Subscription {
 
         for (const keyword of (mission.keywords || [])) {
             // template:<uuidv4>
-            if (keyword.startsWith('template:') && keyword.length > 9 + 36) {
+            if (keyword.startsWith('template:') && keyword.length >= 9 + 36) {
                 this.templateid = keyword.slice(9);
                 break;
             }
