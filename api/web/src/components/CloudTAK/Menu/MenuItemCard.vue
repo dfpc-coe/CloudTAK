@@ -7,6 +7,13 @@
         @click='$emit("select")'
         @keyup.enter='$emit("select")'
     >
+        <div
+            v-if='$slots.prefix'
+            class='me-2'
+        >
+            <slot name='prefix' />
+        </div>
+
         <div class='menu-item-card__icon-wrapper'>
             <component
                 :is='icon'

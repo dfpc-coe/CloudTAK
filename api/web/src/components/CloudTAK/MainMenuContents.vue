@@ -127,7 +127,16 @@
                     :layout='menuLayout'
                     :compact='false'
                     @select='item.routeExternal ? external(item.route) : router.push(item.route.startsWith("/") ? item.route : { name: item.route })'
-                />
+                >
+                    <template #prefix>
+                        <IconGripVertical
+                            v-if='isDraggable'
+                            stroke='1'
+                            :size='20'
+                            class='text-muted cursor-move drag-handle'
+                        />
+                    </template>
+                </MenuItemCard>
             </div>
             <TablerNone
                 v-else
@@ -289,7 +298,8 @@ import {
     IconLayoutGrid,
     IconLayoutList,
     IconPencil, 
-    IconPencilCheck
+    IconPencilCheck,
+    IconGripVertical
 } from '@tabler/icons-vue';
 import Sortable from 'sortablejs';
 import type { SortableEvent } from 'sortablejs';
@@ -355,6 +365,7 @@ watch(
             if (sortable && sortable.el === container) return;
             if (sortable) sortable.destroy();
             sortable = new Sortable(container, {
+                handle: '.drag-handle',
                 sort: true,
                 animation: 150,
                 dataIdAttr: 'data-key',
