@@ -82,12 +82,20 @@ export const Profile = pgTable('profile', {
     agency_admin: json().notNull().$type<Array<number>>().default([]),
 });
 
-export const ProfileSetting = pgTable('profile_settings', {
-    username: text().notNull().references(() => Profile.username),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    key: text().primaryKey(),
-    value: text().notNull().default('')
-});
+export const ProfileSetting = pgTable(
+    'profile_settings',
+    {
+        username: text().notNull().references(() => Profile.username),
+        updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+        key: text().notNull(),
+        value: text().notNull().default(''),
+    },
+    (table) => ({
+        pk: primaryKey({
+            columns: [table.username, table.key],
+        }),
+    }),
+);
 
 export const ProfileFile = pgTable('profile_files', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
