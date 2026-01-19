@@ -325,12 +325,12 @@ const emit = defineEmits<{
 }>();
 
 const version = ref('');
-const username = ref<string>('Username')
+const username = ref<string>('Username');
 
 const props = defineProps({
     compact: Boolean,
     modal: Boolean
-})
+});
 
 const menuLayout = computed(() => props.compact ? 'list' : mapStore.menu.preferredLayout.value);
 const preferredLayout = computed(() => mapStore.menu.preferredLayout.value);
@@ -365,9 +365,9 @@ watch(
             if (sortable && sortable.el === container) return;
             if (sortable) sortable.destroy();
             sortable = new Sortable(container, {
-                handle: '.drag-handle',
                 sort: true,
                 animation: 150,
+                handle: '.drag-handle',
                 dataIdAttr: 'data-key',
                 onEnd: saveOrder
             });
