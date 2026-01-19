@@ -29,6 +29,24 @@ export const FullProfileConfig = Type.Object({
     })])
 });
 
+const ProfileDefaults: Record<string, any> = {
+    'display::stale': Profile_Stale.TenMinutes,
+    'display::distance': Profile_Distance.MILE,
+    'display::elevation': Profile_Elevation.FEET,
+    'display::projection': Profile_Projection.GLOBE,
+    'display::speed': Profile_Speed.MPH,
+    'display::zoom': Profile_Zoom.CONDITIONAL,
+    'display::icon_rotation': true,
+    'display::text': Profile_Text.Medium,
+    'tak::callsign': 'CloudTAK User',
+    'tak::remarks': 'CloudTAK User',
+    'tak::group': TAKGroup.ORANGE,
+    'tak::type': 'a-f-G-E-V-C',
+    'tak::role': TAKRole.TEAM_MEMBER,
+    'tak::loc_freq': 2000,
+    'tak::loc': null
+};
+
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile', {
         name: 'Get Profile',
@@ -41,8 +59,9 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await config.models.Profile.from(user.email);
             const configs = await config.models.ProfileConfig.from(user.email);
 
-            for (const key of Object.keys(configs)) {
-                (profile as any)[key.replace('::', '_')] = configs[key];
+            const full_config = { ...ProfileDefaults, ...configs };
+            for (const key of Object.keys(full_config)) {
+                (profile as any)[key.replace('::', '_')] = full_config[key];
             }
 
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
@@ -96,8 +115,9 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             const configs = await config.models.ProfileConfig.from(user.email);
-            for (const key of Object.keys(configs)) {
-                (profile as any)[key.replace('::', '_')] = configs[key];
+            const full_config = { ...ProfileDefaults, ...configs };
+            for (const key of Object.keys(full_config)) {
+                (profile as any)[key.replace('::', '_')] = full_config[key];
             }
 
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
