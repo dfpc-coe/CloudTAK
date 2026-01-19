@@ -3,6 +3,7 @@ import type {
     Feature,
     Mission,
     MissionRole,
+    Profile
 } from '../types.ts';
 
 export interface DBIcon {
@@ -138,6 +139,11 @@ export interface DBMissionTemplateLog {
     keywords: string[];
 }
 
+export interface DBProfileConfig {
+    key: string;
+    value: unknown;
+}
+
 export type DatabaseType = Dexie & {
     icon: EntityTable<DBIcon, 'name'>,
     iconset: EntityTable<DBIconset, 'uid'>,
@@ -151,7 +157,8 @@ export type DatabaseType = Dexie & {
     subscription_log: EntityTable<DBSubscriptionLog, 'id'>,
     subscription_feature: EntityTable<DBSubscriptionFeature, 'id'>,
     mission_template: EntityTable<DBMissionTemplate, 'id'>,
-    mission_template_log: EntityTable<DBMissionTemplateLog, 'id'>
+    mission_template_log: EntityTable<DBMissionTemplateLog, 'id'>,
+    profile: EntityTable<DBProfileConfig, 'key'>
 };
 
 export const db = new Dexie('CloudTAK') as DatabaseType;
@@ -171,5 +178,6 @@ db.version(1).stores({
     subscription_log: 'id, [mission+id]',
     subscription_feature: 'id, mission, [mission+id]',
     mission_template: 'id, name',
-    mission_template_log: 'id, template, [template+id]'
+    mission_template_log: 'id, template, [template+id]',
+    profile: 'key'
 });
