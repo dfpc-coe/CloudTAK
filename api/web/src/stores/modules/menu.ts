@@ -45,6 +45,7 @@ export default class MenuManager {
     isSystemAdmin: Ref<boolean>;
     isAgencyAdmin: Ref<boolean>;
     pluginMenuItems: Ref<MenuItemConfig[]>;
+    preferenceOrder: Ref<string[]>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(mapStore: any) {
@@ -54,6 +55,7 @@ export default class MenuManager {
         this.isSystemAdmin = ref(false);
         this.isAgencyAdmin = ref(false);
         this.pluginMenuItems = ref([]);
+        this.preferenceOrder = ref([]);
 
         const storedLayoutPref = typeof window !== 'undefined' ? localStorage.getItem('cloudtak-menu-layout') : null;
         this.preferredLayout = ref<'list' | 'tiles'>(storedLayoutPref === 'tiles' ? 'tiles' : 'list');
@@ -62,6 +64,18 @@ export default class MenuManager {
     async init() {
         this.isSystemAdmin.value = await this.mapStore.worker.profile.isSystemAdmin();
         this.isAgencyAdmin.value = await this.mapStore.worker.profile.isAgencyAdmin();
+
+        try {
+            const profile = await this.mapStore.worker.profile.load();
+            // @ts-expect-error - menu_order is dynamic
+            if (profile && profile.config.menu_order) {
+                // @ts-expect-error - menu_order is dynamic
+                this.preferenceOrder.value = profile.config.menu_order as string[];
+            }
+        } catch (e) {
+            console.error('Failed to load menu order', e);
+        }
+
         await this.updateContactsCount();
     }
 
@@ -215,11 +229,30 @@ export default class MenuManager {
 
     get items(): ComputedRef<MenuItemConfig[]> {
         return computed(() => {
-            return [...this.baseMenuItems, ...this.pluginMenuItems.value].filter((item) => {
+            let combined = [...this.baseMenuItems, ...this.pluginMenuItems.value].filter((item) => {
                 if (item.requiresSystemAdmin && !this.isSystemAdmin.value) return false;
                 if (item.requiresAgencyAdmin && !(this.isAgencyAdmin.value || this.isSystemAdmin.value)) return false;
                 return true;
-            }).map((item) => {
+            });
+
+            if (this.preferenceOrder.value.length > 0) {
+                const ordered: MenuItemConfig[] = [];
+                const map = new Map(combined.map(i => [i.key, i]));
+
+                for (const key of this.preferenceOrder.value) {
+                    if (map.has(key)) {
+                        ordered.push(map.get(key)!);
+                        map.delete(key);
+                    }
+                }
+
+                for (const item of map.values()) {
+                    ordered.push(item);
+                }
+                combined = ordered;
+            }
+
+            return combined.map((item) => {
                 if (item.key === 'contacts' && this.onlineContactsCount.value > 0) {
                     return {
                         ...item,
@@ -277,5 +310,13 @@ export default class MenuManager {
 
     removeMenuItem(key: string) {
         this.pluginMenuItems.value = this.pluginMenuItems.value.filter(i => i.key !== key);
+    }
+
+    async setOrder(keys: string[]) {
+        this.preferenceOrder.value = keys;
+        await this.mapStore.worker.profile.update({
+            // @ts-expect-error - dynamic property
+            menu_order: keys
+        });
     }
 }
