@@ -95,7 +95,8 @@ watch(resize, (newVal, oldVal, onCleanup) => {
         let beginX = resize.value.getBoundingClientRect().x;
         let deltaX = 0;
 
-        const onStart = () => {
+        const onStart = (e?: Event) => {
+            if (e && e.type === 'touchstart') e.preventDefault();
             if (!resize.value) return;
             beginWidth = menuWidth.value;
             beginX = resize.value.getBoundingClientRect().x;
@@ -120,7 +121,7 @@ watch(resize, (newVal, oldVal, onCleanup) => {
         const onMouseMove = (e: MouseEvent) => onMove(e.clientX, e);
         const onMouseUp = () => onEnd();
 
-        const onTouchStart = () => onStart();
+        const onTouchStart = (e: TouchEvent) => onStart(e);
         const onTouchMove = (e: TouchEvent) => onMove(e.touches[0].clientX, e);
         const onTouchEnd = () => onEnd();
 
@@ -129,23 +130,25 @@ watch(resize, (newVal, oldVal, onCleanup) => {
         const containerEl = container.value;
 
         resizeEl.addEventListener("mousedown", onMouseDown);
-        resizeEl.addEventListener("touchstart", onTouchStart);
+        resizeEl.addEventListener("touchstart", onTouchStart, { passive: false });
+        resizeEl.addEventListener("touchmove", onTouchMove, { passive: false });
         resizeEl.addEventListener("mouseup", onMouseUp);
         resizeEl.addEventListener("touchend", onTouchEnd);
 
         menuEl.addEventListener("mousemove", onMouseMove);
-        menuEl.addEventListener("touchmove", onTouchMove);
+        menuEl.addEventListener("touchmove", onTouchMove, { passive: false });
         menuEl.addEventListener("mouseup", onMouseUp);
         menuEl.addEventListener("touchend", onTouchEnd);
 
         containerEl.addEventListener("mousemove", onMouseMove);
-        containerEl.addEventListener("touchmove", onTouchMove);
+        containerEl.addEventListener("touchmove", onTouchMove, { passive: false });
         containerEl.addEventListener("mouseup", onMouseUp);
         containerEl.addEventListener("touchend", onTouchEnd);
 
         onCleanup(() => {
             resizeEl.removeEventListener("mousedown", onMouseDown);
             resizeEl.removeEventListener("touchstart", onTouchStart);
+            resizeEl.removeEventListener("touchmove", onTouchMove);
             resizeEl.removeEventListener("mouseup", onMouseUp);
             resizeEl.removeEventListener("touchend", onTouchEnd);
 
