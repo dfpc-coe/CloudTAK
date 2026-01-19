@@ -443,12 +443,6 @@
                 @click='handleRadial($event)'
             />
 
-            <CloudTAKFeatView
-                v-if='feat && mode === "Default" && route.name === "home"'
-                :key='feat.id'
-                :feat='feat'
-            />
-
             <template
                 v-for='float in floatStore.panes.values()'
                 :key='float.uid'
@@ -503,7 +497,6 @@ import WarnConfiguration from './util/WarnConfiguration.vue';
 import DrawTools from './DrawTools.vue';
 import type { MapGeoJSONFeature, LngLatLike, MapMouseEvent } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
-import CloudTAKFeatView from './FeatView.vue';
 import {
     IconSearch,
     IconLocationOff,
@@ -563,7 +556,6 @@ const warnChannels = ref<boolean>(false)
 const warnConfiguration = ref<boolean>(false);
 
 const searchBoxShown = ref(false);
-const feat = ref()        // Show the Feat Viewer sidebar
 
 const upload = ref({
     shown: false,
@@ -672,11 +664,8 @@ const locationTooltip = computed(() => {
 const mapRef = useTemplateRef<HTMLElement>('map');
 
 const noMenuShown = computed<boolean>(() => {
-    return !feat.value
-        && (!route.name || !String(route.name).startsWith('home-menu'))
+    return (!route.name || !String(route.name).startsWith('home-menu'))
 });
-
-
 
 onMounted(async () => {
     // ensure uncaught errors in the stack are captured into vue context
@@ -750,14 +739,13 @@ function selectFeat(selectedFeat: MapGeoJSONFeature | COT) {
     if (selectedFeat instanceof COT) {
         router.push(`/cot/${selectedFeat.properties.id}`);
     } else {
-        router.push(`/`);
-        feat.value = selectedFeat;
+        mapStore.viewedFeature = selectedFeat;
+        router.push(`/menu/feature`);
     }
 }
 
 function closeAllMenu() {
-    feat.value = false;
-    router.push("/");
+    router.push('/');
 }
 
 function closeRadial() {

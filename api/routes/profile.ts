@@ -17,6 +17,11 @@ export const FullProfileConfig = Type.Object({
     'display::zoom': Type.Enum(Profile_Zoom, { default: Profile_Zoom.CONDITIONAL }),
     'display::icon_rotation': Type.Boolean({ default: true }),
     'display::text': Type.Enum(Profile_Text, { default: Profile_Text.Medium }),
+
+    'menu::order': Type.Array(Type.Object({
+        key: Type.String(),
+    }), { default: [] }),
+
     'tak::callsign': Type.String({ default: 'CloudTAK User' }),
     'tak::remarks': Type.String({ default: 'CloudTAK User' }),
     'tak::group': Type.Enum(TAKGroup, { default: TAKGroup.ORANGE }),
@@ -38,6 +43,9 @@ const ProfileDefaults: Record<string, any> = {
     'display::zoom': Profile_Zoom.CONDITIONAL,
     'display::icon_rotation': true,
     'display::text': Profile_Text.Medium,
+
+    'menu::order': [],
+
     'tak::callsign': 'CloudTAK User',
     'tak::remarks': 'CloudTAK User',
     'tak::group': TAKGroup.ORANGE,
@@ -59,7 +67,11 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await config.models.Profile.from(user.email);
             const configs = await config.models.ProfileConfig.from(user.email);
 
-            const full_config = { ...ProfileDefaults, ...configs };
+            const full_config = {
+                ...ProfileDefaults,
+                ...configs
+            };
+
             for (const key of Object.keys(full_config)) {
                 (profile as any)[key.replace('::', '_')] = full_config[key];
             }
@@ -87,6 +99,11 @@ export default async function router(schema: Schema, config: Config) {
             display_zoom: Type.Optional(Type.Enum(Profile_Zoom)),
             display_icon_rotation: Type.Optional(Type.Boolean()),
             display_text: Type.Optional(Type.Enum(Profile_Text)),
+
+            menu_order: Type.Optional(Type.Array(Type.Object({
+                key: Type.String(),
+            }))),
+
             tak_callsign: Type.Optional(Type.String()),
             tak_remarks: Type.Optional(Type.String()),
             tak_group: Type.Optional(Type.Enum(TAKGroup)),
@@ -115,7 +132,12 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             const configs = await config.models.ProfileConfig.from(user.email);
-            const full_config = { ...ProfileDefaults, ...configs };
+
+            const full_config = {
+                ...ProfileDefaults,
+                ...configs
+            };
+
             for (const key of Object.keys(full_config)) {
                 (profile as any)[key.replace('::', '_')] = full_config[key];
             }

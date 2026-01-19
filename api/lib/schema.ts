@@ -8,12 +8,10 @@ import { Polygon, Point } from 'geojson';
 import { ImportResult } from './control/import.js'
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
-import { TAKGroup, TAKRole } from  '@tak-ps/node-tak/lib/api/types';
 import { Layer_Config } from './models/Layer.js';
 import {
     Layer_Priority,
     Import_Status,
-    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType
 } from  './enums.js';
 import { json, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';

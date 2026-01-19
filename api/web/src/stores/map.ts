@@ -89,6 +89,7 @@ export const useMapStore = defineStore('cloudtak', {
             y: number;
             popup?: mapgl.Popup;
         },
+        viewedFeature?: Feature | MapGeoJSONFeature,
         radial: {
             mode: string | undefined;
             cot: Feature | MapGeoJSONFeature | undefined;
