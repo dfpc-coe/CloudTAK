@@ -21,7 +21,7 @@ export default class AtlasProfile {
     location: ProfileLocation;
 
     channels: Array<Group>;
-    profile: ProfileConfig | null;
+    profile: Profile | null;
     server: Server | null;
 
 
@@ -55,13 +55,13 @@ export default class AtlasProfile {
         if (!this.profile) {
             throw new Error('Failed loading profile');
         } else {
-            return this.profile.config.username;
+            return this.profile.username;
         }
     }
 
     async username(): Promise<string> {
         const profile = await this.load();
-        return profile.config.username;
+        return profile.username;
     }
 
     async creator(): Promise<FeaturePropertyCreator> {
@@ -75,22 +75,22 @@ export default class AtlasProfile {
 
     async callsign(): Promise<string> {
         const profile = await this.load();
-        return profile.config.tak_callsign;
+        return profile.tak_callsign;
     }
 
     async isSystemAdmin(): Promise<boolean> {
         const profile = await this.load();
-        return profile.config.system_admin;
+        return profile.system_admin;
     }
 
     async isAgencyAdmin(): Promise<boolean> {
         const profile = await this.load();
-        return profile.config.agency_admin.length > 0;
+        return profile.agency_admin.length > 0;
     }
 
     hasNoConfiguration(): boolean {
         if (!this.profile) return false;
-        return this.profile.config.created === this.profile.config.updated;
+        return this.profile.created === this.profile.updated;
     }
 
     hasNoChannels(): boolean {
@@ -118,7 +118,7 @@ export default class AtlasProfile {
             // Always send CoT - use GPS coordinates if available, manual location if set, otherwise default to 0,0
             if (this.location.accuracy) {
                 await this.CoT(this.location.coordinates, this.location.accuracy, this.location.altitude);
-            } else if (this.profile && this.profile.config.tak_loc) {
+            } else if (this.profile && this.profile.tak_loc) {
                 await this.CoT();
             } else {
                 // Send 0,0 location when no valid location is available
@@ -130,7 +130,7 @@ export default class AtlasProfile {
             if (me) {
                 this.atlas.conn.sendCOT(me.as_feature())
             }
-        }, this.profile ? this.profile.config.tak_loc_freq : 5000);
+        }, this.profile ? this.profile.tak_loc_freq : 5000);
     }
 
     async loadServer(): Promise<Server> {
@@ -143,22 +143,25 @@ export default class AtlasProfile {
         return this.server;
     }
 
-    async load(): Promise<ProfileConfig> {
+    async load(): Promise<Profile> {
         if (!this.profile) {
             const server = await this.loadServer();
 
-            const profile = await ProfileConfig.load(server.email, {
+            await ProfileConfig.sync(server.email, {
                 token: this.atlas.token
             });
 
+            const profile = await ProfileConfig.toProfile();
+            if(!profile) throw new Error("Failed to load profile");
+
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Callsign,
-                body: { callsign: profile.config.tak_callsign }
+                body: { callsign: profile.tak_callsign }
             });
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Display_Zoom,
-                body: { zoom: profile.config.display_zoom }
+                body: { zoom: profile.display_zoom }
             });
 
             this.profile = profile;
@@ -172,18 +175,18 @@ export default class AtlasProfile {
     updateLocation() {
         if (
             this.profile
-            && this.profile.config.tak_loc
+            && this.profile.tak_loc
         ) {
             this.location.source = LocationState.Preset;
             this.location.accuracy = undefined;
             this.location.altitude = undefined;
-            this.location.coordinates = this.profile.config.tak_loc.coordinates;
+            this.location.coordinates = this.profile.tak_loc.coordinates;
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Location_Source,
                 body: { source: LocationState.Preset }
             });
-        } else if (this.profile && !this.profile.config.tak_loc && this.location.source === LocationState.Preset) {
+        } else if (this.profile && !this.profile.tak_loc && this.location.source === LocationState.Preset) {
             // Reset to disabled when manual location is cleared
             this.location.source = LocationState.Disabled;
             this.location.accuracy = undefined;
@@ -264,7 +267,7 @@ export default class AtlasProfile {
     async update(body: Profile_Update): Promise<void> {
         if (!this.profile) throw new Error('Profile must be loaded before update');
 
-        if (this.profile && body.tak_loc_freq && this.profile.config.tak_loc_freq !== body.tak_loc_freq) {
+        if (this.profile && body.tak_loc_freq && this.profile.tak_loc_freq !== body.tak_loc_freq) {
             this.setupTimer();
         }
 
@@ -274,7 +277,8 @@ export default class AtlasProfile {
             body
         }) as Profile;
         
-        await this.profile.refresh(this.atlas.token);
+        await ProfileConfig.sync(this.profile.username, { token: this.atlas.token, refresh: true });
+        this.profile = (await ProfileConfig.toProfile()) || null;
 
         if (body.tak_loc) {
             await this.CoT();
@@ -324,13 +328,13 @@ export default class AtlasProfile {
         if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
 
         // Need to differentiate between servers eventually
-        return `ANDROID-CloudTAK-${this.profile.config.username}`;
+        return `ANDROID-CloudTAK-${this.profile.username}`;
     }
 
     async CoT(coords?: number[], accuracy?: number, altitude?: number | null): Promise<void> {
         if (!this.profile || !this.server) throw new Error('Profile must be loaded before CoT is called');
 
-        const coordinates = coords || (this.profile.config.tak_loc ? toRaw(this.profile.config.tak_loc.coordinates) : [ 0, 0 ]);
+        const coordinates = coords || (this.profile.tak_loc ? toRaw(this.profile.tak_loc.coordinates) : [ 0, 0 ]);
         
         // HAE = Height Above Ellipsoid (altitude), CE = Circular Error (accuracy)
         const hae = altitude !== null && altitude !== undefined ? altitude : 0;
@@ -343,22 +347,22 @@ export default class AtlasProfile {
             type: 'Feature',
             properties: {
                 id: uid,
-                type: this.profile.config.tak_type,
+                type: this.profile.tak_type,
                 how: 'm-g',
-                callsign: this.profile.config.tak_callsign,
-                remarks: this.profile.config.tak_remarks,
-                droid: this.profile.config.tak_callsign,
+                callsign: this.profile.tak_callsign,
+                remarks: this.profile.tak_remarks,
+                droid: this.profile.tak_callsign,
                 time: new Date().toISOString(),
                 start: new Date().toISOString(),
                 stale: new Date(new Date().getTime() + (1000 * 60)).toISOString(),
                 center: coordinates,
                 contact: {
                     endpoint: '*:-1:stcp',
-                    callsign: this.profile.config.tak_callsign,
+                    callsign: this.profile.tak_callsign,
                 },
                 group: {
-                    name: this.profile.config.tak_group,
-                    role: this.profile.config.tak_role
+                    name: this.profile.tak_group,
+                    role: this.profile.tak_role
                 },
                 takv: {
                     device: navigator.userAgent,
