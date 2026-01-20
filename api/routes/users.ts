@@ -80,7 +80,24 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            await config.models.Profile.commit(req.params.username, req.body);
+            const profile_body: any = {};
+            const profile_config: any = {};
+
+            for (const key of Object.keys(req.body)) {
+                if (key === 'system_admin') {
+                     profile_body[key] = (req.body as any)[key];
+                } else {
+                     profile_config[key.replace('_', '::')] = (req.body as any)[key];
+                }
+            }
+
+            if (Object.keys(profile_body).length) {
+                await config.models.Profile.commit(req.params.username, profile_body);
+            }
+
+            if (Object.keys(profile_config).length) {
+                await config.models.ProfileConfig.commit(req.params.username, profile_config);
+            }
 
             const profile = await profileControl.from(req.params.username);
 
