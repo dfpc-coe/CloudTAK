@@ -85,7 +85,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const elevationUnit = await config.models.Profile.from(user.email).then(p => p.display_elevation).catch(() => 'feet');
+            const elevationUnit = await config.models.ProfileConfig.from(user.email).then(p => p['display::elevation'] as string).catch(() => 'feet');
 
             const sun = SunCalc.getTimes(new Date(), req.params.latitude, req.params.longitude, req.query.altitude);
             const magnetic = geomagnetism.model().point([req.params.latitude, req.params.longitude]);

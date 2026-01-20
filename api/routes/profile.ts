@@ -27,7 +27,7 @@ export default async function router(schema: Schema, config: Config) {
             };
 
             for (const key of Object.keys(full_config)) {
-                (profile as any)[key.replace('::', '_')] = full_config[key];
+                (profile as any)[key.replace('::', '_')] = full_config[key as keyof typeof full_config];
             }
 
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
@@ -93,7 +93,7 @@ export default async function router(schema: Schema, config: Config) {
             };
 
             for (const key of Object.keys(full_config)) {
-                (profile as any)[key.replace('::', '_')] = full_config[key];
+                (profile as any)[key.replace('::', '_')] = full_config[key as keyof typeof full_config];
             }
 
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
