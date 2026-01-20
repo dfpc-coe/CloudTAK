@@ -14,7 +14,7 @@ const SAMPLE_TILES = [
     { label: 'Klamath Falls close-up', z: 10, x: 166, y: 376 }
 ];
 
-flight.init();
+flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 

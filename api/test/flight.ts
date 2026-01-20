@@ -60,9 +60,14 @@ export default class Flight {
     /**
      * Clear and restore an empty database schema
      *
-     * @param {boolean} dropdb Should the database be dropped
+     * @param {Object} [opts] Options
+     * @param {boolean} [opts.dropdb=true] Should the database be dropped
+     * @param {boolean} [opts.takserver=false] Should the MockTAKServer be started
      */
-    init(dropdb = true) {
+    init(opts: { dropdb?: boolean, takserver?: boolean } = {}) {
+        const dropdb = opts.dropdb !== undefined ? opts.dropdb : true;
+        const takserver = opts.takserver !== undefined ? opts.takserver : false;
+
         test('start: database', async () => {
             try {
                 if (dropdb) {
@@ -90,15 +95,17 @@ export default class Flight {
                 }
             }
 
-            this._tak = new MockTAKServer();
-            await this._tak.start();
+            if (takserver) {
+                this._tak = new MockTAKServer();
+                await this._tak.start();
+            }
 
             process.env.ASSET_BUCKET = 'fake-asset-bucket';
         });
     }
 
     get tak() {
-        if (!this._tak) throw new Error('Flight Test Runner not initialized - call flight.init() first');
+        if (!this._tak) throw new Error('Flight Test Runner not initialized - call flight.init({ takserver: true }) first');
         return this._tak;
     }
 

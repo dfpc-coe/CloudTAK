@@ -4,7 +4,7 @@ import Flight from './flight.js';
 
 const flight = new Flight();
 
-flight.init();
+flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 flight.user({ admin: false });
