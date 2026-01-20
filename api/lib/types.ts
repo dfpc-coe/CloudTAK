@@ -190,6 +190,19 @@ export const ServerResponse = Type.Object({
     })),
 })
 
+export const ProfileListResponse = Type.Object({
+    username: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    phone: Type.String(),
+    last_login: Type.String(),
+    active: Type.Boolean({
+        description: 'Does the user have an active CloudTAK Session'
+    }),
+    system_admin: Type.Boolean(),
+    agency_admin: Type.Array(Type.Integer()),
+});
+
 export const ProfileResponse = Type.Object({
     username: Type.String(),
     created: Type.String(),
