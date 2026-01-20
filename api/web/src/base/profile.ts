@@ -2,14 +2,23 @@ import { db } from './database.ts'
 import type { DBProfileConfig } from './database.ts';
 import { std, stdurl } from '../std.ts';
 import type { Profile } from '../types.ts';
+import { liveQuery, type Subscription } from 'dexie';
 
 export default class ProfileConfig<T = unknown> {
     key: string;
     value: T;
+    _sub: Subscription;
 
     constructor(key: string, value: T) {
         this.key = key;
         this.value = value;
+        this._sub = liveQuery(() => db.profile.get(this.key)).subscribe((entry) => {
+            if (entry) this.value = entry.value as T;
+        });
+    }
+
+    destroy(): void {
+        this._sub.unsubscribe();
     }
 
     static async get<T = unknown>(key: string): Promise<ProfileConfig<T> | undefined> {
