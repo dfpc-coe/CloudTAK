@@ -30,20 +30,6 @@ const args = minimist(process.argv, {
     ],
 });
 
-try {
-    const dotfile = new URL(`.env${args.env ? '-' + args.env : ''}`, import.meta.url);
-
-    fs.accessSync(dotfile);
-
-    process.env = Object.assign(JSON.parse(String(fs.readFileSync(dotfile))), process.env);
-} catch (err) {
-    if (err instanceof Error && err.message.startsWith('ENOENT')) {
-        console.log('ok - no .env file loaded - none found');
-    } else {
-        console.log('ok - no .env file loaded', err);
-    }
-}
-
 const pkg = JSON.parse(String(fs.readFileSync(new URL('./package.json', import.meta.url))));
 
 process.on('uncaughtExceptionMonitor', (exception, origin) => {
@@ -51,6 +37,20 @@ process.on('uncaughtExceptionMonitor', (exception, origin) => {
 });
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+    try {
+        const dotfile = new URL(`.env${args.env ? '-' + args.env : ''}`, import.meta.url);
+
+        fs.accessSync(dotfile);
+
+        process.env = Object.assign(JSON.parse(String(fs.readFileSync(dotfile))), process.env);
+    } catch (err) {
+        if (err instanceof Error && err.message.startsWith('ENOENT')) {
+            console.log('ok - no .env file loaded - none found');
+        } else {
+            console.log('ok - no .env file loaded', err);
+        }
+    }
+
     const config = await Config.env({
         silent: args.silent || false,
         noevents: args.noevents || false,
