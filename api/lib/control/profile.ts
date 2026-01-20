@@ -99,7 +99,7 @@ export default class ProfileControl {
             configs.push(this.config.models.Setting.typed(key, value).then((setting) => {
                 return this.config.models.ProfileConfig.commit(profile.username, {
                     [key]: setting.value
-                });
+                })
             }));
         }
 
