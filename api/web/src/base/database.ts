@@ -3,7 +3,6 @@ import type {
     Feature,
     Mission,
     MissionRole,
-    Profile
 } from '../types.ts';
 
 export interface DBIcon {

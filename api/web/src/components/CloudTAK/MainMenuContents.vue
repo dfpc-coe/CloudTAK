@@ -302,7 +302,6 @@ import {
     IconGripVertical
 } from '@tabler/icons-vue';
 import Sortable from 'sortablejs';
-import type { SortableEvent } from 'sortablejs';
 import {
     TablerDropdown,
     TablerIconButton,
@@ -392,7 +391,7 @@ function handleReorderToggle() {
     isDraggable.value = true;
 }
 
-async function saveOrder(evt: SortableEvent) {
+async function saveOrder() {
    if (!sortable) return;
    const keys = sortable.toArray();
    await mapStore.menu.setOrder(keys);
