@@ -7,9 +7,11 @@ import Config from '../lib/config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { sql } from 'drizzle-orm';
 import { Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Projection, Profile_Zoom } from  '../lib/enums.js';
-import { ProfileConfigDefaults } from '../lib/control/profile.js';
+import ProfileControl from '../lib/control/profile.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const profileControl = new ProfileControl(config);
+
     await schema.get('/profile', {
         name: 'Get Profile',
         group: 'Profile',
@@ -18,23 +20,9 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.from(user.email);
-            const configs = await config.models.ProfileConfig.from(user.email);
+            const profile = await profileControl.from(user.email);
 
-            const full_config = {
-                ...ProfileConfigDefaults,
-                ...configs
-            };
-
-            for (const key of Object.keys(full_config)) {
-                (profile as any)[key.replace('::', '_')] = full_config[key as keyof typeof full_config];
-            }
-
-            // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
-            res.json({
-                active: config.wsClients.has(profile.username),
-                ...profile
-            });
+            res.json(profile);
         } catch (err) {
              Err.respond(err, res);
         }
@@ -81,29 +69,15 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.ProfileConfig.commit(user.email, profile_config);
 
-            const profile = await config.models.Profile.commit(user.email, {
+            await config.models.Profile.commit(user.email, {
                 updated: sql`Now()`
             });
 
-            const configs = await config.models.ProfileConfig.from(user.email);
+            const profile = await profileControl.from(user.email);
 
-            const full_config = {
-                ...ProfileConfigDefaults,
-                ...configs
-            };
-
-            for (const key of Object.keys(full_config)) {
-                (profile as any)[key.replace('::', '_')] = full_config[key as keyof typeof full_config];
-            }
-
-            // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
-            res.json({
-                active: config.wsClients.has(profile.username),
-                ...profile
-            });
+            res.json(profile);
         } catch (err) {
              Err.respond(err, res);
         }
     });
-
 }

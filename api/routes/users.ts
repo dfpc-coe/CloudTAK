@@ -8,8 +8,11 @@ import Config from '../lib/config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { Profile } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
+import ProfileControl from '../lib/control/profile.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const profileControl = new ProfileControl(config);
+
     await schema.get('/user', {
         name: 'List Users',
         group: 'User',
@@ -77,14 +80,11 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            const user = await config.models.Profile.commit(req.params.username, req.body);
+            await config.models.Profile.commit(req.params.username, req.body);
 
-            // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
-            res.json({
-                ...user,
-                active: config.wsClients.has(user.username),
-                agency_admin: user.agency_admin || []
-            });
+            const profile = await profileControl.from(req.params.username);
+
+            res.json(profile);
         } catch (err) {
              Err.respond(err, res);
         }
@@ -102,14 +102,9 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            const user = await config.models.Profile.from(req.params.username);
+            const profile = await profileControl.from(req.params.username);
 
-            // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
-            res.json({
-                ...user,
-                active: config.wsClients.has(user.username),
-                agency_admin: user.agency_admin || []
-            });
+            res.json(profile);
         } catch (err) {
              Err.respond(err, res);
         }
