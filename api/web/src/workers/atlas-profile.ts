@@ -268,7 +268,7 @@ export default class AtlasProfile {
             this.setupTimer();
         }
 
-        const profile = await std('/api/profile', {
+        await std('/api/profile', {
             method: 'PATCH',
             token: this.atlas.token,
             body

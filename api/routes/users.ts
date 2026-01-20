@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { ProfileResponse } from '../lib/types.js'
+import { ProfileResponse, ProfileListResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { Profile } from '../lib/schema.js';
@@ -26,7 +26,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ProfileResponse)
+            items: Type.Array(ProfileListResponse)
         })
     }, async (req, res) => {
         try {
