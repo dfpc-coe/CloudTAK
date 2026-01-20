@@ -113,11 +113,6 @@
             :err='error'
             @close='error = undefined'
         />
-        <LoginModal
-            v-if='login'
-            @close='login = false'
-            @login='login= false'
-        />
         <MissionInviteModal
             v-if='inviteMission'
             :mission='inviteMission'
@@ -133,7 +128,6 @@ import type { Login, Server } from './types.ts';
 import { useBrandStore } from './stores/brand.ts';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
-import LoginModal from './components/util/LoginModal.vue'
 import {
     IconCode,
     IconLogout,
@@ -155,7 +149,6 @@ const route = useRoute();
 const brandStore = useBrandStore();
 
 const loading = ref(true);
-const login = ref(false);
 const inviteMission = ref<{
     name: string;
     guid: string;
@@ -190,7 +183,7 @@ onErrorCaptured((err) => {
         // Popup Modal if reauthenticating vs initial login
 
         if (route.name !== 'login') {
-            login.value = true;
+            routeLogin();
         }
     } else if (String(e) === 'Error: Authentication Required') {
         routeLogin();
