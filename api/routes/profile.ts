@@ -7,53 +7,7 @@ import Config from '../lib/config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { sql } from 'drizzle-orm';
 import { Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Projection, Profile_Zoom } from  '../lib/enums.js';
-
-export const FullProfileConfig = Type.Object({
-    'display::stale': Type.Enum(Profile_Stale, { default: Profile_Stale.TenMinutes }),
-    'display::distance': Type.Enum(Profile_Distance, { default: Profile_Distance.MILE }),
-    'display::elevation': Type.Enum(Profile_Elevation, { default: Profile_Elevation.FEET }),
-    'display::projection': Type.Enum(Profile_Projection, { default: Profile_Projection.GLOBE }),
-    'display::speed': Type.Enum(Profile_Speed, { default: Profile_Speed.MPH }),
-    'display::zoom': Type.Enum(Profile_Zoom, { default: Profile_Zoom.CONDITIONAL }),
-    'display::icon_rotation': Type.Boolean({ default: true }),
-    'display::text': Type.Enum(Profile_Text, { default: Profile_Text.Medium }),
-
-    'menu::order': Type.Array(Type.Object({
-        key: Type.String(),
-    }), { default: [] }),
-
-    'tak::callsign': Type.String({ default: 'CloudTAK User' }),
-    'tak::remarks': Type.String({ default: 'CloudTAK User' }),
-    'tak::group': Type.Enum(TAKGroup, { default: TAKGroup.ORANGE }),
-    'tak::type': Type.String({ default: 'a-f-G-E-V-C' }),
-    'tak::role': Type.Enum(TAKRole, { default: TAKRole.TEAM_MEMBER }),
-    'tak::loc_freq': Type.Integer({ default: 2000 }),
-    'tak::loc': Type.Union([Type.Null(), Type.Object({
-        type: Type.String(),
-        coordinates: Type.Array(Type.Number())
-    })])
-});
-
-const ProfileDefaults: Record<string, any> = {
-    'display::stale': Profile_Stale.TenMinutes,
-    'display::distance': Profile_Distance.MILE,
-    'display::elevation': Profile_Elevation.FEET,
-    'display::projection': Profile_Projection.GLOBE,
-    'display::speed': Profile_Speed.MPH,
-    'display::zoom': Profile_Zoom.CONDITIONAL,
-    'display::icon_rotation': true,
-    'display::text': Profile_Text.Medium,
-
-    'menu::order': [],
-
-    'tak::callsign': 'CloudTAK User',
-    'tak::remarks': 'CloudTAK User',
-    'tak::group': TAKGroup.ORANGE,
-    'tak::type': 'a-f-G-E-V-C',
-    'tak::role': TAKRole.TEAM_MEMBER,
-    'tak::loc_freq': 2000,
-    'tak::loc': null
-};
+import { ProfileConfigDefaults } from '../lib/control/profile.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile', {
@@ -68,7 +22,7 @@ export default async function router(schema: Schema, config: Config) {
             const configs = await config.models.ProfileConfig.from(user.email);
 
             const full_config = {
-                ...ProfileDefaults,
+                ...ProfileConfigDefaults,
                 ...configs
             };
 
@@ -134,7 +88,7 @@ export default async function router(schema: Schema, config: Config) {
             const configs = await config.models.ProfileConfig.from(user.email);
 
             const full_config = {
-                ...ProfileDefaults,
+                ...ProfileConfigDefaults,
                 ...configs
             };
 

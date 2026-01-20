@@ -82,8 +82,7 @@ export const Profile = pgTable('profile', {
     agency_admin: json().notNull().$type<Array<number>>().default([]),
 });
 
-export const ProfileSetting = pgTable(
-    'profile_settings',
+export const ProfileSetting = pgTable('profile_settings',
     {
         username: text().notNull().references(() => Profile.username),
         updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),

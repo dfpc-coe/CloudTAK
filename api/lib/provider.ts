@@ -15,11 +15,11 @@ export enum AuthProviderAccess {
 
 export default class AuthProvider {
     config: Config;
-    profile: ProfileControl;
+    profileControl: ProfileControl;
 
     constructor(config: Config) {
         this.config = config;
-        this.profile = new ProfileControl(config);
+        this.profileControl = new ProfileControl(config);
     }
 
     async login(username: string, password: string): Promise<string> {
@@ -33,7 +33,7 @@ export default class AuthProvider {
             profile = await this.config.models.Profile.from(username);
         } catch (err) {
             if (err instanceof Error && err.message.includes('Item Not Found')) {
-                profile = await this.profile.generate({
+                profile = await this.profileControl.generate({
                     username: username,
                     auth: await api.Credentials.generate()
                 });
