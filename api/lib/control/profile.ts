@@ -6,6 +6,7 @@ import { Profile } from '../schema.js';
 import {
     toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
 } from '../enums.js'
+import { ProfileResponse } from '../types.js';
 
 export const ProfileConfigDefaults = {
     'display::stale': Profile_Stale.TenMinutes,
@@ -85,6 +86,27 @@ export default class ProfileControl {
 
     constructor(config: Config) {
         this.config = config;
+    }
+
+    async from(email: string): Promise<Static<typeof ProfileResponse>> {
+        const profile = await this.config.models.Profile.from(email);
+        const configs = await this.config.models.ProfileConfig.from(email);
+
+        const full_config = {
+            ...ProfileConfigDefaults,
+            ...configs
+        };
+
+        for (const key of Object.keys(full_config)) {
+            (profile as any)[key.replace('::', '_')] = full_config[key as keyof typeof full_config];
+        }
+
+        // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
+        return {
+            ...profile,
+            active: this.config.wsClients.has(profile.username),
+            agency_admin: profile.agency_admin || []
+        };
     }
 
     async generate(
