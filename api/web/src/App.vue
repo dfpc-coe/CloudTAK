@@ -243,7 +243,11 @@ function external(url: string) {
 }
 
 function routeLogin() {
-    router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+    if (router.hasRoute('login')) {
+        router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+    } else {
+        window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+    }
 }
 
 async function refreshLogin() {
