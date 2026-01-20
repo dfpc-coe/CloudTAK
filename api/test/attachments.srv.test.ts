@@ -12,7 +12,7 @@ import { DataPackage } from '@tak-ps/node-cot';
 
 const flight = new Flight();
 
-flight.init();
+flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 

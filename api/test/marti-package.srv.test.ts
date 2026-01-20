@@ -13,7 +13,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 
 const flight = new Flight();
 
-flight.init();
+flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 

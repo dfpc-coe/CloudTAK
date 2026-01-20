@@ -5,7 +5,7 @@ import Flight from './flight.js';
 
 const flight = new Flight();
 
-flight.init();
+flight.init({ takserver: true });
 flight.takeoff();
 
 const UPDATE = process.env.UPDATE;
