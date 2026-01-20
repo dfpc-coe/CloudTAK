@@ -1,5 +1,6 @@
 import { Static, Type } from '@sinclair/typebox'
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
+import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import Config from '../config.js';
 import { Profile } from '../schema.js';
 import {
@@ -92,15 +93,17 @@ export default class ProfileControl {
         const profile = await this.config.models.Profile.generate(input);
 
         // Create a new ProfileConfig for each default setting
-        const configs: Array<Promise<void>> = [];
+        const configs: Array<Promise<any>> = [];
 
         for (const [key, value] of Object.entries(ProfileConfigDefaults)) {
-            configs.push(this.config.models.ProfileConfig.commit({
-                username: profile.username,
-                key: key,
-                value: typeof value.value === 'string' ? value.value : JSON.stringify(value.value),
+            configs.push(this.config.models.Setting.typed(key, value).then((setting) => {
+                return this.config.models.ProfileConfig.commit(profile.username, {
+                    [key]: setting.value
+                });
             }));
         }
+
+        await Promise.all(configs);
 
         return profile;
     }
