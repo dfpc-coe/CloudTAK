@@ -12,7 +12,7 @@ export default class ProfileConfig {
         this.config = data;
     }
 
-    static async from(username: string): Promise<ProfileConfig | undefined> {
+    static async from(): Promise<ProfileConfig | undefined> {
         const entries = await db.profile.toArray();
 
         // If specific keys are missing, we should probably treat it as not found or partial?
@@ -44,7 +44,6 @@ export default class ProfileConfig {
     }
 
     static async put(profile: Profile): Promise<void> {
-        const username = profile.username;
         const entries: DBProfileConfig[] = [];
 
         for (const key of Object.keys(profile)) {
