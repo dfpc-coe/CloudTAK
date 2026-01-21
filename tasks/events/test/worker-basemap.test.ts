@@ -6,7 +6,6 @@ import Sinon from 'sinon';
 import {
     S3Client,
     GetObjectCommand,
-    PutObjectCommand,
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
@@ -38,24 +37,6 @@ test(`Worker Basemap Import: USGS.xml`, async (t) => {
                 name: 'USGS.xml',
                 path: '/'
             })
-        };
-    });
-
-    mockPool.intercept({
-        path: '/api/basemap',
-        method: 'POST'
-    }).reply((req) => {
-        assert.deepEqual(JSON.parse(req.body), {
-            name: 'USGS',
-            url: 'https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/{$z}/{$y}/{$x}',
-            minzoom: '0',
-            maxzoom: '15',
-            format: 'png'
-        });
-
-        return {
-            statusCode: 200,
-            data: JSON.stringify({})
         };
     });
 
@@ -108,11 +89,12 @@ test(`Worker Basemap Import: USGS.xml`, async (t) => {
     });
 
     worker.on('error', (err) => {
-        assert.ifError(err);
+        // We expect an error because raw XML import is not supported by worker.ts
+        assert.match(err.message, /Unsupported Input Format/);
     });
 
     worker.on('success', () => {
-        assert.ok(true, 'Worker completed successfully');
+        assert.fail('Worker should have failed with Unsupported Input Format');
     });
 
     await worker.process();

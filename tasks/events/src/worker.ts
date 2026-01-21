@@ -238,6 +238,14 @@ export default class Worker extends EventEmitter {
     ): Promise<void> {
         const xml = (await pkg.getFileBuffer(file)).toString();
 
+        await this.processIconset(xml, pkg);
+        await this.processBasemap(xml);
+    }
+
+    async processIconset(
+        xml: string,
+        pkg: DataPackage
+    ): Promise<void> {
         try {
             const iconset = await Iconset.parse(xml);
 
@@ -265,49 +273,56 @@ export default class Worker extends EventEmitter {
 
             // Someone decided that the icon name should be the name without the folder prefix
             // This was a dumb idea and this code tries to match 1:1 without the prefix
-            const files = await pkg.files();
-            const lookup = new Map();
+            if (pkg) {
+                const files = await pkg.files();
+                const lookup = new Map();
 
-            for (const file of files) {
-                if (!['.png', '.svg'].includes(path.parse(file).ext)) {
-                    continue;
-                }
-                lookup.set(path.parse(file).base, file);
-            }
+                for (const file of files) {
+                    if (!['.png', '.svg'].includes(path.parse(file).ext)) {
+                        continue;
+                    }
 
-            for (const icon of iconset.icons()) {
-                const ext = path.parse(icon.name).ext;
-
-                let prefix = 'data:';
-                if (ext === '.png') {
-                    prefix += 'image/png;base64,';
-                } else if (ext === '.svg') {
-                    prefix += 'image/svg+xml;base64,';
-                } else {
-                    console.warn(`Iconset ${iconset.name} (${iconset.uid}) - Unsupported icon type for ${icon.name}: ${ext}`);
-                    continue;
+                    lookup.set(path.parse(file).base, file);
                 }
 
-                const icon_req = await fetch(new URL(`/api/iconset/${iconset.uid}/icon`, this.msg.api), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
-                    },
-                    body: JSON.stringify({
-                        name: lookup.get(icon.name),
-                        path: `${iconset.uid}/${lookup.get(icon.name)}`,
-                        type2525b: icon.type2525b || null,
-                        data: `${prefix}${(await pkg.getFileBuffer(lookup.get(icon.name))).toString('base64')}`
-                    })
-                });
+                for (const icon of iconset.icons()) {
+                    const ext = path.parse(icon.name).ext;
 
-                if (!icon_req.ok) console.error(await icon_req.text());
+                    let prefix = 'data:';
+                    if (ext === '.png') {
+                        prefix += 'image/png;base64,';
+                    } else if (ext === '.svg') {
+                        prefix += 'image/svg+xml;base64,';
+                    } else {
+                        console.warn(`Iconset ${iconset.name} (${iconset.uid}) - Unsupported icon type for ${icon.name}: ${ext}`);
+                        continue;
+                    }
+
+                    const icon_req = await fetch(new URL(`/api/iconset/${iconset.uid}/icon`, this.msg.api), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                        },
+                        body: JSON.stringify({
+                            name: lookup.get(icon.name),
+                            path: `${iconset.uid}/${lookup.get(icon.name)}`,
+                            type2525b: icon.type2525b || null,
+                            data: `${prefix}${(await pkg.getFileBuffer(lookup.get(icon.name))).toString('base64')}`
+                        })
+                    });
+
+                    if (!icon_req.ok) console.error(await icon_req.text());
+                }
             }
         } catch (err) {
-            console.log(`Import: ${this.msg.job.id} - ${file} is not an Iconset:`, err instanceof Error ? err.message : String(err));
+            console.log(`Import: ${this.msg.job.id} - Is not an Iconset:`, err instanceof Error ? err.message : String(err));
         }
+    }
 
+    async processBasemap(
+        xml: string,
+    ): Promise<void> {
         try {
             const basemap = await Basemap.parse(xml);
             const json = basemap.to_json();
@@ -329,7 +344,7 @@ export default class Worker extends EventEmitter {
 
             if (!basemap_req.ok) console.error(await basemap_req.text());
         } catch (err) {
-            console.log(`Import: ${this.msg.job.id} - ${file} is not a Basemap:`, err instanceof Error ? err.message : String(err));
+            console.log(`Import: ${this.msg.job.id} - Is not a Basemap:`, err instanceof Error ? err.message : String(err));
         }
     }
 }
