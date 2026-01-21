@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.59.1 - 2026-01-20
+
+- :rocket: Enable KMS Rotation & Explicit Bucket Encryption on S3 Buckets
+
 ### v12.59.0 - 2026-01-18
 
 - :tada: Presence of the lower left logo is configurable (default, custom, disabled)
