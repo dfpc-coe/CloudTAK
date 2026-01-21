@@ -7,7 +7,6 @@ import {
     S3Client,
     GetObjectCommand,
 } from '@aws-sdk/client-s3';
-import { Upload } from '@aws-sdk/lib-storage';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
 test(`Worker Basemap Import: USGS.xml`, async (t) => {
