@@ -1,24 +1,39 @@
 import { db } from './database.ts'
 import type { DBProfileConfig } from './database.ts';
-import { std, stdurl } from '../std.ts';
+import { std } from '../std.ts';
 import type { Profile } from '../types.ts';
 import { liveQuery, type Subscription } from 'dexie';
 
 export default class ProfileConfig<T = unknown> {
     key: string;
     value: T;
-    _sub: Subscription;
+    _sub?: Subscription;
 
-    constructor(key: string, value: T) {
+    constructor(
+        key: string,
+        value: T,
+        opts?: {
+            subscribe?: boolean
+        }
+    ) {
         this.key = key;
         this.value = value;
-        this._sub = liveQuery(() => db.profile.get(this.key)).subscribe((entry) => {
-            if (entry) this.value = entry.value as T;
-        });
+
+        if (opts?.subscribe) {
+            this._sub = liveQuery(() => db.profile.get(this.key)).subscribe((entry) => {
+                if (entry) this.value = entry.value as T;
+            });
+        }
+    }
+
+    subscribed(): boolean {
+        return !!this._sub;
     }
 
     destroy(): void {
-        this._sub.unsubscribe();
+        if (this._sub) {
+            this._sub.unsubscribe();
+        }
     }
 
     static async get<T = unknown>(key: string): Promise<ProfileConfig<T> | undefined> {
@@ -27,10 +42,18 @@ export default class ProfileConfig<T = unknown> {
         return new ProfileConfig<T>(entry.key, entry.value as T);
     }
 
-    static async put(key: string, value: unknown): Promise<void> {
+    async commit(value: T): Promise<void> {
         await db.profile.put({
-            key,
+            key: this.key,
             value
+        });
+
+        await std('/api/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ [this.key]: value })
         });
     }
 
@@ -58,28 +81,5 @@ export default class ProfileConfig<T = unknown> {
             });
         }
         await db.profile.bulkPut(entries);
-    }
-
-    static async toProfile(): Promise<Profile | undefined> {
-        const entries = await db.profile.toArray();
-        if (!entries.length) return undefined;
-
-        const profile: Record<string, unknown> = {};
-        for (const entry of entries) {
-            profile[entry.key] = entry.value;
-        }
-
-        return profile as unknown as Profile;
-    }
-
-    static async fetch(token?: string): Promise<Profile> {
-        const url = stdurl('/api/profile');
-        const profile = await std(url, { token }) as Profile;
-        
-        return profile;
-    }
-
-    async save(): Promise<void> {
-         await ProfileConfig.put(this.key, this.value);
     }
 }

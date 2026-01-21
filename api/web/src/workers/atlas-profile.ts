@@ -18,10 +18,11 @@ export default class AtlasProfile {
     // Interval for reporting location to TAK Server
     timerSelf: ReturnType<typeof setInterval> | undefined;
 
+    username: string | null;
+
     location: ProfileLocation;
 
     channels: Array<Group>;
-    profile: Profile | null;
     server: Server | null;
 
 
@@ -29,6 +30,8 @@ export default class AtlasProfile {
         this.atlas = atlas;
 
         this.timerSelf = undefined;
+
+        this.username = null;
 
         this.location = {
             source: LocationState.Disabled,
@@ -38,7 +41,6 @@ export default class AtlasProfile {
         };
 
         this.channels = [];
-        this.profile = null;
         this.server = null;
 
     }
@@ -52,16 +54,11 @@ export default class AtlasProfile {
             this.loadChannels()
         ])
 
-        if (!this.profile) {
+        if (!this.username) {
             throw new Error('Failed loading profile');
         } else {
-            return this.profile.username;
+            return this.username;
         }
-    }
-
-    async username(): Promise<string> {
-        const profile = await this.load();
-        return profile.username;
     }
 
     async creator(): Promise<FeaturePropertyCreator> {
@@ -71,21 +68,6 @@ export default class AtlasProfile {
             callsign: await this.callsign(),
             time: new Date().toISOString(),
         }
-    }
-
-    async callsign(): Promise<string> {
-        const profile = await this.load();
-        return profile.tak_callsign;
-    }
-
-    async isSystemAdmin(): Promise<boolean> {
-        const profile = await this.load();
-        return profile.system_admin;
-    }
-
-    async isAgencyAdmin(): Promise<boolean> {
-        const profile = await this.load();
-        return profile.agency_admin.length > 0;
     }
 
     hasNoConfiguration(): boolean {
@@ -143,7 +125,7 @@ export default class AtlasProfile {
         return this.server;
     }
 
-    async load(): Promise<Profile> {
+    async load(): Promise<void> {
         if (!this.profile) {
             const server = await this.loadServer();
 
@@ -151,25 +133,24 @@ export default class AtlasProfile {
                 token: this.atlas.token
             });
 
-            const profile = await ProfileConfig.toProfile();
-            if(!profile) throw new Error("Failed to load profile");
+            const username = ProfileConfig.get('username');
+            const callsign = ProfileConfig.get('tak_callsign');
+            const display_zoom = ProfileConfig.get('display_zoom');
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Callsign,
-                body: { callsign: profile.tak_callsign }
+                body: { callsign: tak_callsign }
             });
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Display_Zoom,
-                body: { zoom: profile.display_zoom }
+                body: { zoom: display_zoom }
             });
 
-            this.profile = profile;
+            this.username = username;
         }
 
         this.updateLocation()
-
-        return this.profile;
     }
 
     updateLocation() {
@@ -276,7 +257,7 @@ export default class AtlasProfile {
             token: this.atlas.token,
             body
         }) as Profile;
-        
+
         await ProfileConfig.sync(this.profile.username, { token: this.atlas.token, refresh: true });
         this.profile = (await ProfileConfig.toProfile()) || null;
 
@@ -335,12 +316,15 @@ export default class AtlasProfile {
         if (!this.profile || !this.server) throw new Error('Profile must be loaded before CoT is called');
 
         const coordinates = coords || (this.profile.tak_loc ? toRaw(this.profile.tak_loc.coordinates) : [ 0, 0 ]);
-        
+
         // HAE = Height Above Ellipsoid (altitude), CE = Circular Error (accuracy)
         const hae = altitude !== null && altitude !== undefined ? altitude : 0;
 
         const uid = this.uid();
-       
+
+        const type = ProfileConfig.get('cot_type') || 'a-f-G-U-C';
+        const
+
         const feat: Feature = {
             id: uid,
             path: '/',
