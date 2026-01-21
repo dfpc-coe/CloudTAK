@@ -180,6 +180,17 @@ export default class Worker extends EventEmitter {
     async processFile(
         local: LocalMessage,
     ): Promise<void> {
+        if (local.ext.toLowerCase() === '.xml') {
+            try {
+                const xml = fs.readFileSync(local.raw, 'utf-8');
+                await Basemap.parse(xml);
+
+                return await this.processBasemap(xml);
+            } catch (err) {
+                console.error('Basemap Error: ' + err)
+            }
+        }
+
         console.log(`Import: ${this.msg.job.id} - uploading profile asset`);
 
         const s3 = s3client();
