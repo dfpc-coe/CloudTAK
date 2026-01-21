@@ -30,6 +30,15 @@ test(`Worker Basemap Import: USGS.xml`, async (t) => {
         path: '/api/basemap',
         method: 'POST'
     }).reply((req) => {
+        const body = JSON.parse(req.body as string);
+        assert.deepEqual(body, {
+            name: 'USGS',
+            url: 'https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/{$z}/{$y}/{$x}',
+            minzoom: 0,
+            maxzoom: 15,
+            format: 'png'
+        });
+        
         return {
             statusCode: 200,
             data: JSON.stringify({
@@ -62,11 +71,6 @@ test(`Worker Basemap Import: USGS.xml`, async (t) => {
         return Promise.resolve({});
     });
 
-    // Mock Upload (which is used in processFile)
-    const uploadStub = Sinon.stub(Upload.prototype, 'done').resolves({
-        Location: 's3://test-bucket/profile/admin@example.com/asset-123.xml'
-    });
-
     const worker = new Worker({
         api: 'http://localhost:5001',
         secret: 'coe-wildland-fire',
@@ -86,14 +90,15 @@ test(`Worker Basemap Import: USGS.xml`, async (t) => {
         }
     });
 
-    worker.on('error', (err) => {
-        // We expect an error because raw XML import is not supported by worker.ts
-        assert.match(err.message, /Unsupported Input Format/);
-    });
+    await new Promise((resolve, reject) => {
+        worker.on('error', (err) => {
+            reject(err);
+        });
 
-    worker.on('success', () => {
-        assert.fail('Worker should have failed with Unsupported Input Format');
-    });
+        worker.on('success', () => {
+            resolve(true);
+        });
 
-    await worker.process();
+        worker.process();
+    });
 });
