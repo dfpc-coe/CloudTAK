@@ -12,18 +12,17 @@ export default class ProfileConfig<T = unknown> {
     constructor(
         key: string,
         value: T,
-        opts?: {
-            subscribe?: boolean
-        }
     ) {
         this.key = key;
         this.value = value;
+    }
 
-        if (opts?.subscribe) {
-            this._sub = liveQuery(() => db.profile.get(this.key)).subscribe((entry) => {
-                if (entry) this.value = entry.value as T;
-            });
-        }
+    subscribe(): void {
+        if (this._sub) return;
+
+        this._sub = liveQuery(() => db.profile.get(this.key)).subscribe((entry) => {
+            if (entry) this.value = entry.value as T;
+        });
     }
 
     subscribed(): boolean {

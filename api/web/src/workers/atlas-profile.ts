@@ -313,17 +313,24 @@ export default class AtlasProfile {
     }
 
     async CoT(coords?: number[], accuracy?: number, altitude?: number | null): Promise<void> {
-        if (!this.profile || !this.server) throw new Error('Profile must be loaded before CoT is called');
+        if (!this.server) throw new Error('Profile must be loaded before CoT is called');
 
-        const coordinates = coords || (this.profile.tak_loc ? toRaw(this.profile.tak_loc.coordinates) : [ 0, 0 ]);
+        const coordinates: number[] | null = coords || null;
+        if (!coordinates) {
+            const tak_loc = ProfileConfig.get('tak_loc');
+            coords = tak_loc ? tak_loc.coordinates : [0, 0];
+        }
 
         // HAE = Height Above Ellipsoid (altitude), CE = Circular Error (accuracy)
         const hae = altitude !== null && altitude !== undefined ? altitude : 0;
 
         const uid = this.uid();
 
-        const type = ProfileConfig.get('cot_type') || 'a-f-G-U-C';
-        const
+        const type = ProfileConfig.get('cot_type');
+        const callsign = ProfileConfig.get('tak_callsign');
+        const remarks = ProfileConfig.get('tak_remarks');
+        const group = ProfileConfig.get('tak_group');
+        const role = ProfileConfig.get('tak_role');
 
         const feat: Feature = {
             id: uid,
@@ -331,22 +338,19 @@ export default class AtlasProfile {
             type: 'Feature',
             properties: {
                 id: uid,
-                type: this.profile.tak_type,
+                type,
                 how: 'm-g',
-                callsign: this.profile.tak_callsign,
-                remarks: this.profile.tak_remarks,
-                droid: this.profile.tak_callsign,
+                callsign,
+                remarks,
+                droid: callsign,
                 time: new Date().toISOString(),
                 start: new Date().toISOString(),
                 stale: new Date(new Date().getTime() + (1000 * 60)).toISOString(),
                 center: coordinates,
-                contact: {
-                    endpoint: '*:-1:stcp',
-                    callsign: this.profile.tak_callsign,
-                },
+                contact: { endpoint: '*:-1:stcp', callsign },
                 group: {
-                    name: this.profile.tak_group,
-                    role: this.profile.tak_role
+                    name: group,
+                    role
                 },
                 takv: {
                     device: navigator.userAgent,
