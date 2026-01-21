@@ -27,15 +27,13 @@ test(`Worker Basemap Import: USGS.xml`, async (t) => {
     const mockPool = mockAgent.get('http://localhost:5001');
 
     mockPool.intercept({
-        path: '/api/profile/asset',
+        path: '/api/basemap',
         method: 'POST'
     }).reply((req) => {
         return {
             statusCode: 200,
             data: JSON.stringify({
-                id: 'asset-123',
-                name: 'USGS.xml',
-                path: '/'
+                name: 'USGS.xml'
             })
         };
     });
