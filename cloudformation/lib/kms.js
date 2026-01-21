@@ -14,7 +14,7 @@ export default {
             Properties: {
                 Description: cf.stackName,
                 Enabled: true,
-                EnableKeyRotation: false,
+                EnableKeyRotation: true,
                 KeyPolicy: {
                     Id: cf.stackName,
                     Statement: [{
