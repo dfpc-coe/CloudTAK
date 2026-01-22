@@ -731,7 +731,7 @@ export interface paths {
                     /** @description No Description */
                     type?: ("raster" | "raster-dem" | "vector") | ("raster" | "raster-dem" | "vector")[];
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "sharing_enabled" | "sharing_token" | "name" | "title" | "url" | "overlay" | "username" | "bounds" | "tilesize" | "frequency" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "sharing_enabled" | "sharing_token" | "snapping_enabled" | "snapping_layer" | "name" | "title" | "url" | "overlay" | "iconset" | "username" | "bounds" | "tilesize" | "frequency" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only show Basemaps belonging to a given collection */
@@ -762,10 +762,13 @@ export interface paths {
                                 updated: string;
                                 sharing_enabled: boolean;
                                 sharing_token?: null | string;
+                                snapping_enabled: boolean;
+                                snapping_layer: null | string;
                                 name: string;
                                 title: string;
                                 url: string;
                                 overlay: boolean;
+                                iconset: string | null;
                                 username: string | null;
                                 tilesize: number;
                                 frequency: null | number;
@@ -966,6 +969,13 @@ export interface paths {
                          * @default true
                          */
                         sharing_enabled: boolean;
+                        /**
+                         * @description Allow CloudTAK line editing to snap to features in this basemap
+                         * @default false
+                         */
+                        snapping_enabled: boolean;
+                        /** @description The Vector Tile layer to snap to */
+                        snapping_layer?: string;
                         collection?: null | string;
                         /** @default user */
                         scope: "server" | "user";
@@ -1001,10 +1011,13 @@ export interface paths {
                             updated: string;
                             sharing_enabled: boolean;
                             sharing_token?: null | string;
+                            snapping_enabled: boolean;
+                            snapping_layer: null | string;
                             name: string;
                             title: string;
                             url: string;
                             overlay: boolean;
+                            iconset: string | null;
                             username: string | null;
                             tilesize: number;
                             frequency: null | number;
@@ -1131,10 +1144,13 @@ export interface paths {
                             updated: string;
                             sharing_enabled: boolean;
                             sharing_token?: null | string;
+                            snapping_enabled: boolean;
+                            snapping_layer: null | string;
                             name: string;
                             title: string;
                             url: string;
                             overlay: boolean;
+                            iconset: string | null;
                             username: string | null;
                             tilesize: number;
                             frequency: null | number;
@@ -1327,6 +1343,10 @@ export interface paths {
                         /** @description Human readable name */
                         name?: string;
                         sharing_enabled?: boolean;
+                        /** @description Allow CloudTAK line editing to snap to features in this basemap */
+                        snapping_enabled?: boolean;
+                        /** @description The Vector Tile layer to snap to */
+                        snapping_layer?: string;
                         collection?: null | string;
                         overlay?: boolean;
                         /** @default user */
@@ -1361,10 +1381,13 @@ export interface paths {
                             updated: string;
                             sharing_enabled: boolean;
                             sharing_token?: null | string;
+                            snapping_enabled: boolean;
+                            snapping_layer: null | string;
                             name: string;
                             title: string;
                             url: string;
                             overlay: boolean;
+                            iconset: string | null;
                             username: string | null;
                             tilesize: number;
                             frequency: null | number;
@@ -2105,7 +2128,20 @@ export interface paths {
                         "login::signup"?: string;
                         /** @description URL for Forgot Password Page */
                         "login::forgot"?: string;
-                        /** @description Base64 encoded PNG for logo */
+                        /** @description Custom Label for Username Field */
+                        "login::username"?: string;
+                        /**
+                         * @description Enable Custom Branding on Login Page
+                         * @enum {string}
+                         */
+                        "login::brand::enabled"?: "default" | "enabled" | "disabled";
+                        /** @description Show or Hide the CloudTAK Branding */
+                        "login::brand::logo"?: string;
+                        /** @description Enable or Disable Custom Background on Login Page */
+                        "login::background::enabled"?: boolean;
+                        /** @description Hex Color Code for Login Background */
+                        "login::background::color"?: string;
+                        /** @description Base64 encoded PNG for Logo */
                         "login::logo"?: string;
                     };
                 };
@@ -2354,6 +2390,22 @@ export interface paths {
                             logo?: string;
                             signup?: string;
                             forgot?: string;
+                            /** @default Username or Email */
+                            username: string;
+                            brand: {
+                                /**
+                                 * @description Enable Custom Branding on Login Page
+                                 * @enum {string}
+                                 */
+                                enabled: "default" | "enabled" | "disabled";
+                                /** @description Brand Logo Data */
+                                logo?: string;
+                            };
+                            background: {
+                                /** @description Enable or Disable Custom Background on Login Page */
+                                enabled: boolean;
+                                color?: string;
+                            };
                         };
                     };
                 };
@@ -7519,7 +7571,7 @@ export interface paths {
                                             timezone: string;
                                         };
                                     };
-                                    cron: string | null;
+                                    cron: null | string;
                                     webhooks: boolean;
                                     enabled_styles: boolean;
                                     styles: {
@@ -7658,7 +7710,7 @@ export interface paths {
                                     ephemeral: {
                                         [key: string]: unknown;
                                     };
-                                    data: number | null;
+                                    data: null | number;
                                     groups: string[];
                                 };
                                 outgoing?: {
@@ -7671,6 +7723,7 @@ export interface paths {
                                     };
                                     filters: {
                                         queries?: {
+                                            name?: string;
                                             query: string;
                                         }[];
                                     };
@@ -7828,7 +7881,7 @@ export interface paths {
                                         timezone: string;
                                     };
                                 };
-                                cron: string | null;
+                                cron: null | string;
                                 webhooks: boolean;
                                 enabled_styles: boolean;
                                 styles: {
@@ -7967,7 +8020,7 @@ export interface paths {
                                 ephemeral: {
                                     [key: string]: unknown;
                                 };
-                                data: number | null;
+                                data: null | number;
                                 groups: string[];
                             };
                             outgoing?: {
@@ -7980,6 +8033,7 @@ export interface paths {
                                 };
                                 filters: {
                                     queries?: {
+                                        name?: string;
                                         query: string;
                                     }[];
                                 };
@@ -8242,7 +8296,7 @@ export interface paths {
                                     timezone: string;
                                 };
                             };
-                            cron: string | null;
+                            cron: null | string;
                             webhooks: boolean;
                             enabled_styles: boolean;
                             styles: {
@@ -8381,7 +8435,7 @@ export interface paths {
                             ephemeral: {
                                 [key: string]: unknown;
                             };
-                            data: number | null;
+                            data: null | number;
                             groups: string[];
                         };
                     };
@@ -8556,7 +8610,7 @@ export interface paths {
                 content: {
                     "application/json": {
                         webhooks?: boolean;
-                        cron?: string | null;
+                        cron?: null | string;
                         enabled_styles?: boolean;
                         styles?: {
                             line?: {
@@ -8718,7 +8772,7 @@ export interface paths {
                                     timezone: string;
                                 };
                             };
-                            cron: string | null;
+                            cron: null | string;
                             webhooks: boolean;
                             enabled_styles: boolean;
                             styles: {
@@ -8857,7 +8911,7 @@ export interface paths {
                             ephemeral: {
                                 [key: string]: unknown;
                             };
-                            data: number | null;
+                            data: null | number;
                             groups: string[];
                         };
                     };
@@ -8953,6 +9007,7 @@ export interface paths {
                     "application/json": {
                         filters?: {
                             queries?: {
+                                name?: string;
                                 query: string;
                             }[];
                         };
@@ -8976,6 +9031,7 @@ export interface paths {
                             };
                             filters: {
                                 queries?: {
+                                    name?: string;
                                     query: string;
                                 }[];
                             };
@@ -9154,6 +9210,7 @@ export interface paths {
                         environment?: unknown;
                         filters?: {
                             queries?: {
+                                name?: string;
                                 query: string;
                             }[];
                         };
@@ -9177,6 +9234,7 @@ export interface paths {
                             };
                             filters: {
                                 queries?: {
+                                    name?: string;
                                     query: string;
                                 }[];
                             };
@@ -9316,7 +9374,7 @@ export interface paths {
                                         timezone: string;
                                     };
                                 };
-                                cron: string | null;
+                                cron: null | string;
                                 webhooks: boolean;
                                 enabled_styles: boolean;
                                 styles: {
@@ -9455,7 +9513,7 @@ export interface paths {
                                 ephemeral: {
                                     [key: string]: unknown;
                                 };
-                                data: number | null;
+                                data: null | number;
                                 groups: string[];
                             };
                             outgoing?: {
@@ -9468,6 +9526,7 @@ export interface paths {
                                 };
                                 filters: {
                                     queries?: {
+                                        name?: string;
                                         query: string;
                                     }[];
                                 };
@@ -9708,7 +9767,7 @@ export interface paths {
                                         timezone: string;
                                     };
                                 };
-                                cron: string | null;
+                                cron: null | string;
                                 webhooks: boolean;
                                 enabled_styles: boolean;
                                 styles: {
@@ -9847,7 +9906,7 @@ export interface paths {
                                 ephemeral: {
                                     [key: string]: unknown;
                                 };
-                                data: number | null;
+                                data: null | number;
                                 groups: string[];
                             };
                             outgoing?: {
@@ -9860,6 +9919,7 @@ export interface paths {
                                 };
                                 filters: {
                                     queries?: {
+                                        name?: string;
                                         query: string;
                                     }[];
                                 };
@@ -10628,7 +10688,7 @@ export interface paths {
                         source_id?: null | string;
                         source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                         source_model?: string;
-                        channel?: string | null;
+                        channel?: null | string;
                         proxy?: string;
                     };
                 };
@@ -11099,7 +11159,7 @@ export interface paths {
                         source_id?: null | string;
                         source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                         source_model?: string;
-                        channel?: string | null;
+                        channel?: null | string;
                         secure?: boolean;
                         /** @description Allow other users to manage lease if they are also members of the channel */
                         share?: boolean;
@@ -11708,7 +11768,7 @@ export interface paths {
                         /** @description Human readable description */
                         description?: string;
                         enabled?: boolean;
-                        agency: null | number;
+                        agency?: null | number;
                         auth?: {
                             ca?: string[];
                             /** @description PEM formatted client certificate */
@@ -14175,7 +14235,7 @@ export interface paths {
                                             timezone: string;
                                         };
                                     };
-                                    cron: string | null;
+                                    cron: null | string;
                                     webhooks: boolean;
                                     enabled_styles: boolean;
                                     styles: {
@@ -14314,7 +14374,7 @@ export interface paths {
                                     ephemeral: {
                                         [key: string]: unknown;
                                     };
-                                    data: number | null;
+                                    data: null | number;
                                     groups: string[];
                                 };
                                 outgoing?: {
@@ -14327,6 +14387,7 @@ export interface paths {
                                     };
                                     filters: {
                                         queries?: {
+                                            name?: string;
                                             query: string;
                                         }[];
                                     };
@@ -14472,7 +14533,7 @@ export interface paths {
                                         timezone: string;
                                     };
                                 };
-                                cron: string | null;
+                                cron: null | string;
                                 webhooks: boolean;
                                 enabled_styles: boolean;
                                 styles: {
@@ -14611,7 +14672,7 @@ export interface paths {
                                 ephemeral: {
                                     [key: string]: unknown;
                                 };
-                                data: number | null;
+                                data: null | number;
                                 groups: string[];
                             };
                             outgoing?: {
@@ -14624,6 +14685,7 @@ export interface paths {
                                 };
                                 filters: {
                                     queries?: {
+                                        name?: string;
                                         query: string;
                                     }[];
                                 };
@@ -14773,7 +14835,7 @@ export interface paths {
                                             timezone: string;
                                         };
                                     };
-                                    cron: string | null;
+                                    cron: null | string;
                                     webhooks: boolean;
                                     enabled_styles: boolean;
                                     styles: {
@@ -14912,7 +14974,7 @@ export interface paths {
                                     ephemeral: {
                                         [key: string]: unknown;
                                     };
-                                    data: number | null;
+                                    data: null | number;
                                     groups: string[];
                                 };
                                 outgoing?: {
@@ -14925,6 +14987,7 @@ export interface paths {
                                     };
                                     filters: {
                                         queries?: {
+                                            name?: string;
                                             query: string;
                                         }[];
                                     };
@@ -15058,7 +15121,7 @@ export interface paths {
                                         timezone: string;
                                     };
                                 };
-                                cron: string | null;
+                                cron: null | string;
                                 webhooks: boolean;
                                 enabled_styles: boolean;
                                 styles: {
@@ -15197,7 +15260,7 @@ export interface paths {
                                 ephemeral: {
                                     [key: string]: unknown;
                                 };
-                                data: number | null;
+                                data: null | number;
                                 groups: string[];
                             };
                             outgoing?: {
@@ -15210,6 +15273,7 @@ export interface paths {
                                 };
                                 filters: {
                                     queries?: {
+                                        name?: string;
                                         query: string;
                                     }[];
                                 };
@@ -15285,6 +15349,342 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ldap/channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Channels by proxy */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    agency?: number;
+                    /** @description No Description */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                rdn: string;
+                                name: string;
+                                description: unknown;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ldap/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a machine user */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        description: string;
+                        /** @default true */
+                        locking?: boolean;
+                        agency_id?: number;
+                        channels: {
+                            id: number;
+                            access: "write" | "read" | "duplex";
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            integrationId?: number;
+                            auth: {
+                                ca?: string[];
+                                /** @description PEM formatted client certificate */
+                                cert: string;
+                                /** @description PEM formatted private key */
+                                key: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ldap/user/{:email}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reset the password on an existing user and regen a certificate */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":email": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            integrationId?: number;
+                            auth: {
+                                ca?: string[];
+                                /** @description PEM formatted client certificate */
+                                cert: string;
+                                /** @description PEM formatted private key */
+                                key: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/iconset": {
         parameters: {
             query?: never;
@@ -15305,7 +15705,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "uid" | "created" | "updated" | "version" | "name" | "username" | "default_group" | "default_friendly" | "default_hostile" | "default_neutral" | "default_unknown" | "skip_resize" | "spritesheet_data" | "spritesheet_json" | "enableRLS";
+                    sort: "uid" | "created" | "updated" | "version" | "name" | "username" | "username_internal" | "default_group" | "default_friendly" | "default_hostile" | "default_neutral" | "default_unknown" | "skip_resize" | "spritesheet_data" | "spritesheet_json" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -15330,6 +15730,7 @@ export interface paths {
                                 version: number;
                                 name: string;
                                 username: null | string;
+                                username_internal: boolean;
                                 default_group: null | string;
                                 default_friendly: null | string;
                                 default_hostile: null | string;
@@ -15418,6 +15819,11 @@ export interface paths {
                         version: number;
                         /** @description Human readable name */
                         name: string;
+                        /**
+                         * @description If true, the iconset will not be shown in the UI for selection
+                         * @default false
+                         */
+                        internal: boolean;
                         scope?: "server" | "user";
                         default_group?: string;
                         default_friendly?: string;
@@ -15442,6 +15848,7 @@ export interface paths {
                             version: number;
                             name: string;
                             username: null | string;
+                            username_internal: boolean;
                             default_group: null | string;
                             default_friendly: null | string;
                             default_hostile: null | string;
@@ -15561,6 +15968,7 @@ export interface paths {
                             version: number;
                             name: string;
                             username: null | string;
+                            username_internal: boolean;
                             default_group: null | string;
                             default_friendly: null | string;
                             default_hostile: null | string;
@@ -15761,6 +16169,7 @@ export interface paths {
                             version: number;
                             name: string;
                             username: null | string;
+                            username_internal: boolean;
                             default_group: null | string;
                             default_friendly: null | string;
                             default_hostile: null | string;
@@ -15834,6 +16243,108 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/iconset/{:iconset}/regen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Regenerate Iconset Spritesheet */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":iconset": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/iconset/{:iconset}/icon": {
         parameters: {
             query?: never;
@@ -15846,7 +16357,10 @@ export interface paths {
         /** Create Icon */
         post: {
             parameters: {
-                query?: never;
+                query: {
+                    /** @description Regenerate Iconset spritesheet after upload */
+                    regen: boolean;
+                };
                 header?: never;
                 path: {
                     /** @description No Description */
@@ -15860,7 +16374,7 @@ export interface paths {
                         /** @description Human readable name */
                         name: string;
                         data: string;
-                        type2525b?: string | null;
+                        type2525b?: null | string;
                     };
                 };
             };
@@ -16290,7 +16804,7 @@ export interface paths {
                     "application/json": {
                         name?: string;
                         data?: string;
-                        type2525b?: string | null;
+                        type2525b?: null | string;
                     };
                 };
             };
@@ -16579,340 +17093,6 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/ldap/channel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Channels by proxy */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    agency?: number;
-                    /** @description No Description */
-                    filter: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                rdn: string;
-                                name: string;
-                                description: unknown;
-                            }[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/ldap/user": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create a machine user */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name: string;
-                        description: string;
-                        agency_id: number | null;
-                        channels: {
-                            id: number;
-                            access: "write" | "read" | "duplex";
-                        }[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            integrationId?: number;
-                            auth: {
-                                ca?: string[];
-                                /** @description PEM formatted client certificate */
-                                cert: string;
-                                /** @description PEM formatted private key */
-                                key: string;
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/ldap/user/{:email}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Reset the password on an existing user and regen a certificate */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":email": string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            integrationId?: number;
-                            auth: {
-                                ca?: string[];
-                                /** @description PEM formatted client certificate */
-                                cert: string;
-                                /** @description PEM formatted private key */
-                                key: string;
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
         post?: never;
         delete?: never;
         options?: never;
@@ -20416,13 +20596,17 @@ export interface paths {
         /** Helper API to list missions */
         get: {
             parameters: {
-                query?: {
+                query: {
                     /** @description No Description */
                     passwordProtected?: boolean;
                     /** @description No Description */
                     defaultRole?: boolean;
                     /** @description No Description */
                     tool?: string;
+                    /** @description Property to sort by */
+                    sort: string;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
                 };
                 header?: never;
                 path?: never;
@@ -20437,9 +20621,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            version: string;
-                            type: string;
-                            data: {
+                            items: {
                                 name: string;
                                 description: string;
                                 chatRoom?: string;
@@ -20523,8 +20705,21 @@ export interface paths {
                                     };
                                 }[];
                             }[];
-                            messages?: string[];
-                            nodeId?: string;
+                            invites: {
+                                missionName?: string;
+                                invitee?: string;
+                                type?: string;
+                                creatorUid?: string;
+                                createTime?: string;
+                                token?: string;
+                                role?: {
+                                    name?: string;
+                                    description?: string;
+                                    permissions?: string[];
+                                };
+                                missionGuid?: string;
+                            }[];
+                            total: number;
                         };
                     };
                 };
@@ -21630,6 +21825,113 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/marti/missions/{:guid}/invite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a pending mission invite */
+        delete: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    type: "clientUid" | "callsign" | "userName" | "group" | "team";
+                    /** @description No Description */
+                    invitee: string;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":guid": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/marti/package": {
         parameters: {
             query?: never;
@@ -21643,6 +21945,8 @@ export interface paths {
                 query: {
                     /** @description Filter packages by name */
                     filter: string;
+                    /** @description No Description */
+                    impersonate?: boolean | string;
                 };
                 header?: never;
                 path?: never;
@@ -22140,6 +22444,8 @@ export interface paths {
                 query?: {
                     /** @description No Description */
                     hash?: string;
+                    /** @description No Description */
+                    impersonate?: boolean | string;
                 };
                 header?: never;
                 path: {
@@ -23572,7 +23878,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "name" | "icon" | "description" | "created" | "updated" | "enableRLS";
+                    sort: "id" | "name" | "icon" | "keywords" | "description" | "created" | "updated" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -23594,6 +23900,7 @@ export interface paths {
                                 id: string;
                                 name: string;
                                 icon: string;
+                                keywords: string[];
                                 description: string;
                                 created: string;
                                 updated: string;
@@ -23681,6 +23988,11 @@ export interface paths {
                         icon: string;
                         /** @description A human friendly description for the Template */
                         description: string;
+                        /**
+                         * @description Keywords associated with this template
+                         * @default []
+                         */
+                        keywords: string[];
                     };
                 };
             };
@@ -23695,6 +24007,7 @@ export interface paths {
                             id: string;
                             name: string;
                             icon: string;
+                            keywords: string[];
                             description: string;
                             created: string;
                             updated: string;
@@ -23799,9 +24112,21 @@ export interface paths {
                             id: string;
                             name: string;
                             icon: string;
+                            keywords: string[];
                             description: string;
                             created: string;
                             updated: string;
+                            logs: {
+                                id: string;
+                                name: string;
+                                icon: null | string;
+                                keywords: string[];
+                                description: string;
+                                created: string;
+                                updated: string;
+                                template: string;
+                                schema: unknown;
+                            }[];
                         };
                     };
                 };
@@ -23975,6 +24300,7 @@ export interface paths {
                         name?: string;
                         icon?: string;
                         description?: string;
+                        keywords?: string[];
                     };
                 };
             };
@@ -23989,9 +24315,548 @@ export interface paths {
                             id: string;
                             name: string;
                             icon: string;
+                            keywords: string[];
                             description: string;
                             created: string;
                             updated: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/template/mission/{:mission}/log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Mission Template Logs */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "id" | "name" | "icon" | "keywords" | "description" | "created" | "updated" | "template" | "schema" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":mission": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                name: string;
+                                icon: null | string;
+                                keywords: string[];
+                                description: string;
+                                created: string;
+                                updated: string;
+                                template: string;
+                                schema: unknown;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new Mission Template Log */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":mission": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description A human friendly name for the Log */
+                        name: string;
+                        /** @description Base64 encoded icon image for the Log */
+                        icon?: string;
+                        /**
+                         * @description Keywords associated with this log
+                         * @default []
+                         */
+                        keywords: string[];
+                        /** @description A human friendly description for the Log */
+                        description: string;
+                        /** @description JSON Schema for the Log */
+                        schema: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            name: string;
+                            icon: null | string;
+                            keywords: string[];
+                            description: string;
+                            created: string;
+                            updated: string;
+                            template: string;
+                            schema: unknown;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/template/mission/{:mission}/log/{:log}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Mission Template Log */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":mission": string;
+                    /** @description No Description */
+                    ":log": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            name: string;
+                            icon: null | string;
+                            keywords: string[];
+                            description: string;
+                            created: string;
+                            updated: string;
+                            template: string;
+                            schema: unknown;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a Mission Template Log */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":mission": string;
+                    /** @description No Description */
+                    ":log": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update properties of a Log */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":mission": string;
+                    /** @description No Description */
+                    ":log": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        icon?: string | null;
+                        description?: string;
+                        keywords?: string[];
+                        schema?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            name: string;
+                            icon: null | string;
+                            keywords: string[];
+                            description: string;
+                            created: string;
+                            updated: string;
+                            template: string;
+                            schema: unknown;
                         };
                     };
                 };
@@ -25158,7 +26023,7 @@ export interface paths {
                     /** @description No Description */
                     limit: number;
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "username" | "path" | "name" | "size" | "artifacts" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "username" | "path" | "name" | "iconset" | "size" | "artifacts" | "enableRLS";
                     /** @description No Description */
                     filter: string;
                     /** @description Iterate through "pages" of items based on the "limit" query param */
@@ -25190,6 +26055,7 @@ export interface paths {
                                 username: string;
                                 path: string;
                                 name: string;
+                                iconset: null | string;
                                 size: number;
                                 artifacts: {
                                     ext: string;
@@ -25278,6 +26144,7 @@ export interface paths {
                         name: string;
                         /** @default / */
                         path: string;
+                        iconset?: null | string;
                         /** @default [] */
                         artifacts: {
                             ext: string;
@@ -25299,6 +26166,7 @@ export interface paths {
                             username: string;
                             path: string;
                             name: string;
+                            iconset: null | string;
                             size: number;
                             artifacts: {
                                 ext: string;
@@ -25493,6 +26361,7 @@ export interface paths {
                             ext: string;
                         }[];
                         name?: string;
+                        iconset?: null | string;
                     };
                 };
             };
@@ -25510,6 +26379,7 @@ export interface paths {
                             username: string;
                             path: string;
                             name: string;
+                            iconset: null | string;
                             size: number;
                             artifacts: {
                                 ext: string;
@@ -26092,7 +26962,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "read" | "username" | "chatroom" | "sender_callsign" | "sender_uid" | "created" | "updated" | "message_id" | "message" | "enableRLS";
+                    sort: "id" | "username" | "created" | "updated" | "read" | "chatroom" | "sender_callsign" | "sender_uid" | "message_id" | "message" | "enableRLS";
                 };
                 header?: never;
                 path: {
@@ -28199,7 +29069,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "name" | "active" | "username" | "created" | "updated" | "pos" | "type" | "frequency" | "opacity" | "visible" | "token" | "styles" | "mode" | "mode_id" | "url" | "enableRLS";
+                    sort: "id" | "name" | "active" | "username" | "created" | "updated" | "pos" | "type" | "frequency" | "iconset" | "opacity" | "visible" | "token" | "styles" | "mode" | "mode_id" | "url" | "enableRLS";
                 };
                 header?: never;
                 path?: never;
@@ -28225,6 +29095,7 @@ export interface paths {
                                 pos: number;
                                 type: string;
                                 frequency: null | number;
+                                iconset: null | string;
                                 opacity: number;
                                 visible: boolean;
                                 token: string | null;
@@ -28246,6 +29117,7 @@ export interface paths {
                                 pos: number;
                                 type: string;
                                 frequency: null | number;
+                                iconset: null | string;
                                 opacity: number;
                                 visible: boolean;
                                 token: string | null;
@@ -28339,7 +29211,8 @@ export interface paths {
                         pos?: number;
                         type?: string;
                         opacity?: number;
-                        frequency?: number | null;
+                        frequency?: null | number;
+                        iconset?: null | string;
                         visible?: boolean;
                         mode: string;
                         mode_id?: string;
@@ -28366,6 +29239,7 @@ export interface paths {
                             pos: number;
                             type: string;
                             frequency: null | number;
+                            iconset: null | string;
                             opacity: number;
                             visible: boolean;
                             token: string | null;
@@ -28569,6 +29443,7 @@ export interface paths {
                             pos: number;
                             type: string;
                             frequency: null | number;
+                            iconset: null | string;
                             opacity: number;
                             visible: boolean;
                             token: string | null;
@@ -28666,7 +29541,8 @@ export interface paths {
                         pos?: number;
                         name?: string;
                         active?: boolean;
-                        frequency?: number | null;
+                        frequency?: null | number;
+                        iconset?: null | string;
                         type?: string;
                         opacity?: number;
                         visible?: boolean;
@@ -28693,6 +29569,7 @@ export interface paths {
                             pos: number;
                             type: string;
                             frequency: null | number;
+                            iconset: null | string;
                             opacity: number;
                             visible: boolean;
                             token: string | null;
@@ -29615,6 +30492,9 @@ export interface paths {
                                 coordinates: number[];
                             } | null;
                             tak_loc_freq: number;
+                            menu_order: {
+                                key: string;
+                            }[];
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_icon_rotation: boolean;
@@ -29712,6 +30592,9 @@ export interface paths {
                         display_zoom?: "always" | "conditional" | "never";
                         display_icon_rotation?: boolean;
                         display_text?: "Small" | "Medium" | "Large";
+                        menu_order?: {
+                            key: string;
+                        }[];
                         tak_callsign?: string;
                         tak_remarks?: string;
                         tak_group?: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
@@ -29753,6 +30636,9 @@ export interface paths {
                                 coordinates: number[];
                             } | null;
                             tak_loc_freq: number;
+                            menu_order: {
+                                key: string;
+                            }[];
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_icon_rotation: boolean;
@@ -30028,220 +30914,6 @@ export interface paths {
                 };
                 header?: never;
                 path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/server/package": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Pacakge List */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                EXPIRATION: string;
-                                UID: string;
-                                SubmissionDateTime: string;
-                                Size: string;
-                                PrimaryKey: string;
-                                Hash: string;
-                                CreatorUid?: null | string;
-                                Name: string;
-                                MIMEType?: string;
-                                SubmissionUser?: string;
-                                Keywords?: string[];
-                                Tool?: string;
-                            }[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/server/package/{:hash}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete Package */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":hash": string;
-                };
                 cookie?: never;
             };
             requestBody?: never;
@@ -32073,7 +32745,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "tak_callsign" | "tak_remarks" | "tak_group" | "tak_role" | "tak_type" | "tak_loc" | "tak_loc_freq" | "display_stale" | "display_distance" | "display_elevation" | "display_speed" | "display_projection" | "display_zoom" | "display_icon_rotation" | "display_text" | "system_admin" | "agency_admin" | "enableRLS";
+                    sort: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "system_admin" | "agency_admin" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -32101,25 +32773,6 @@ export interface paths {
                                 active: boolean;
                                 system_admin: boolean;
                                 agency_admin: number[];
-                                tak_callsign: string;
-                                tak_remarks: string;
-                                tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
-                                tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
-                                tak_type: string;
-                                tak_loc: {
-                                    /** @constant */
-                                    type: "Point";
-                                    coordinates: number[];
-                                } | null;
-                                tak_loc_freq: number;
-                                display_projection: "mercator" | "globe";
-                                display_zoom: "always" | "conditional" | "never";
-                                display_icon_rotation: boolean;
-                                display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
-                                display_text: "Small" | "Medium" | "Large";
-                                display_distance: "meter" | "kilometer" | "mile";
-                                display_elevation: "meter" | "feet";
-                                display_speed: "m/s" | "km/h" | "mi/h";
                             }[];
                         };
                     };
@@ -32241,6 +32894,9 @@ export interface paths {
                                 coordinates: number[];
                             } | null;
                             tak_loc_freq: number;
+                            menu_order: {
+                                key: string;
+                            }[];
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_icon_rotation: boolean;
@@ -32370,6 +33026,9 @@ export interface paths {
                                 coordinates: number[];
                             } | null;
                             tak_loc_freq: number;
+                            menu_order: {
+                                key: string;
+                            }[];
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_icon_rotation: boolean;
@@ -32879,7 +33538,7 @@ export interface paths {
                         source_id?: null | string;
                         source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                         source_model?: string;
-                        channel?: string | null;
+                        channel?: null | string;
                         proxy?: string;
                     };
                 };
@@ -33213,7 +33872,7 @@ export interface paths {
                         source_id?: null | string;
                         source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                         source_model?: string;
-                        channel?: string | null;
+                        channel?: null | string;
                         secure?: boolean;
                         /** @description Record streams to disk */
                         recording?: boolean;
@@ -33359,7 +34018,7 @@ export interface paths {
                                     type: string;
                                 } | null;
                                 ready: boolean;
-                                readyTime: string | null;
+                                readyTime: null | string;
                                 tracks: string[];
                                 bytesReceived: number;
                                 bytesSent: number;
@@ -33521,7 +34180,7 @@ export interface paths {
                                     type: string;
                                 } | null;
                                 ready: boolean;
-                                readyTime: string | null;
+                                readyTime: null | string;
                                 tracks: string[];
                                 bytesReceived: number;
                                 bytesSent: number;
@@ -33638,7 +34297,7 @@ export interface paths {
                                     type: string;
                                 } | null;
                                 ready: boolean;
-                                readyTime: string | null;
+                                readyTime: null | string;
                                 tracks: string[];
                                 bytesReceived: number;
                                 bytesSent: number;
@@ -33912,7 +34571,7 @@ export interface paths {
                                 declination: number;
                                 inclination: number;
                             };
-                            weather: {
+                            weather: null | {
                                 type: string;
                                 properties: {
                                     units: string;
@@ -33956,13 +34615,13 @@ export interface paths {
                                     type: string;
                                     coordinates: number[][][];
                                 };
-                            } | null;
-                            reverse: {
+                            };
+                            reverse: null | {
                                 LongLabel: string;
                                 ShortLabel: string;
                                 Addr_type: string;
-                            } | null;
-                            elevation: string | null;
+                            };
+                            elevation: null | string;
                         };
                     };
                 };
