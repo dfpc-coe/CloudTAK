@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.60.0 - 2026-01-21
+
+- :rocket: Allow the import system to import Basemaps
+
 ### v12.59.1 - 2026-01-20
 
 - :rocket: Enable KMS Rotation & Explicit Bucket Encryption on S3 Buckets
