@@ -144,6 +144,10 @@ onMounted(async () => {
     const username = (await ProfileConfig.get('username'))?.value;
     const tak_callsign = (await ProfileConfig.get('tak_callsign'))?.value;
 
+    if (!username) {
+        throw new Error('Username not set in profile config');
+    }
+
     id.value = `ANDROID-CloudTAK-${username}`
     callsign.value = tak_callsign || '';
 
