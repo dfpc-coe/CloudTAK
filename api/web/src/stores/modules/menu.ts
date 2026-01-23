@@ -314,6 +314,10 @@ export default class MenuManager {
         this.pluginMenuItems.value = this.pluginMenuItems.value.filter(i => i.key !== key);
     }
 
+    setOrderLocal(keys: string[]) {
+        this.preferenceOrder.value = keys;
+    }
+
     async setOrder(keys: string[]) {
         this.preferenceOrder.value = keys;
         const val = keys.map(k => ({ key: k }));

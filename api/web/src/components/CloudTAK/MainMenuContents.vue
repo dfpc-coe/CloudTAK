@@ -369,7 +369,7 @@ watch(
                 animation: 150,
                 handle: '.drag-handle',
                 dataIdAttr: 'data-key',
-                onEnd: saveOrder
+                onEnd: bufferOrder
             });
         } else if (sortable) {
             sortable.destroy();
@@ -383,13 +383,21 @@ onBeforeUnmount(() => {
     if (sortable) sortable.destroy();
 });
 
-function handleReorderToggle() {
+async function handleReorderToggle() {
     if (isDraggable.value) {
+        // Save buffered changes when exiting reorder mode
+        await saveOrder();
         isDraggable.value = false;
         return;
     }
     if (!canEditOrder.value) return;
     isDraggable.value = true;
+}
+
+function bufferOrder() {
+   if (!sortable) return;
+   const keys = sortable.toArray();
+   mapStore.menu.setOrderLocal(keys);
 }
 
 async function saveOrder() {
