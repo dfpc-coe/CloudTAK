@@ -41,6 +41,12 @@ export default class ProfileConfig<T = unknown> {
         return new ProfileConfig<T>(entry.key, entry.value as T);
     }
 
+    static async fetch(token?: string): Promise<Profile> {
+        return await std('/api/profile', {
+            token
+        }) as Profile;
+    }
+
     async commit(value: T): Promise<void> {
         await db.profile.put({
             key: this.key,
