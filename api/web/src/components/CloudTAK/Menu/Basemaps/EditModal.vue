@@ -243,6 +243,7 @@
 import { ref, onMounted } from 'vue';
 import { std, stdurl } from '../../../../std.ts';
 import Upload from '../../../util/Upload.vue';
+import ProfileConfig from '../../../../base/profile.ts';
 import {
     IconMap,
     IconDownload,
@@ -259,7 +260,6 @@ import {
     TablerEnum,
     TablerInput
 } from '@tak-ps/vue-tabler';
-import { useMapStore } from '../../../../stores/map.ts';
 
 const emit = defineEmits(['close']);
 
@@ -270,7 +270,6 @@ const props = defineProps({
     }
 });
 
-const mapStore = useMapStore();
 const warnSharing = ref(false);
 
 const loading = ref(false);
@@ -309,7 +308,8 @@ const editing = ref({
 })
 
 onMounted(async () => {
-    isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
+    const isSysAdmin = await ProfileConfig.get('system_admin');
+    isSystemAdmin.value = isSysAdmin?.value ?? false;
 
     if (props.basemap.id) {
         await fetch();

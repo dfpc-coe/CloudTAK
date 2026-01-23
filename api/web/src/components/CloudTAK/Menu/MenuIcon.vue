@@ -126,7 +126,6 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '../../../std.ts';
-import { useMapStore } from '../../../stores/map.ts';
 import IconManager from '../../../stores/modules/icons.ts';
 import {
     TablerDelete,
@@ -139,11 +138,10 @@ import {
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import UploadLogo from '../../util/UploadLogo.vue';
+import ProfileConfig from '../../../base/profile.ts';
 
 const route = useRoute();
 const router = useRouter();
-
-const mapStore = useMapStore();
 
 const loading = ref(true);
 const isSystemAdmin = ref(false);
@@ -156,7 +154,8 @@ const icon = ref({
 });
 
 onMounted(async () => {
-    isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
+    const isSysAdmin = await ProfileConfig.get('system_admin');
+    isSystemAdmin.value = isSysAdmin?.value ?? false;
     await refresh();
 });
 

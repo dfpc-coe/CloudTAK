@@ -19,6 +19,7 @@ import {
     IconFileImport,
     IconAffiliate,
 } from '@tabler/icons-vue';
+import ProfileConfig from '../../base/profile.ts';
 
 export type MenuItemConfig = {
     key: string;
@@ -62,7 +63,8 @@ export default class MenuManager {
     }
 
     async init() {
-        this.isSystemAdmin.value = await this.mapStore.worker.profile.isSystemAdmin();
+        const isSystemAdmin = await ProfileConfig.get('system_admin');
+        this.isSystemAdmin.value = isSystemAdmin?.value ?? false;
         this.isAgencyAdmin.value = await this.mapStore.worker.profile.isAgencyAdmin();
 
         try {
