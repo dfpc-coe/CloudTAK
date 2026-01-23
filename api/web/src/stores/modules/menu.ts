@@ -316,8 +316,8 @@ export default class MenuManager {
 
     async setOrder(keys: string[]) {
         this.preferenceOrder.value = keys;
-        await this.mapStore.worker.profile.update({
-            menu_order: keys.map(k => ({ key: k }))
-        });
+        const val = keys.map(k => ({ key: k }));
+        const config = new ProfileConfig('menu_order', val);
+        await config.commit(val);
     }
 }
