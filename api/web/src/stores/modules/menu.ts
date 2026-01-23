@@ -314,10 +314,17 @@ export default class MenuManager {
         this.pluginMenuItems.value = this.pluginMenuItems.value.filter(i => i.key !== key);
     }
 
+    /**
+     * Update menu order locally without persisting to server.
+     * Used for buffering drag-and-drop reordering changes.
+     */
     setOrderLocal(keys: string[]) {
         this.preferenceOrder.value = keys;
     }
 
+    /**
+     * Update menu order locally and persist to server.
+     */
     async setOrder(keys: string[]) {
         this.preferenceOrder.value = keys;
         const val = keys.map(k => ({ key: k }));
