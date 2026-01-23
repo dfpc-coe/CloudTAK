@@ -54,7 +54,7 @@ export default class ProfileConfig<K extends keyof Profile = keyof Profile> {
         });
 
         await std('/api/profile', {
-            method: 'PUT',
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },
