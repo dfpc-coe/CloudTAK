@@ -69,6 +69,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import { validateTextNotEmpty } from '../../../base/validators.ts';
 import { useMapStore } from '../../../stores/map.ts';
+import ProfileConfig from '../../../base/profile.ts';
 const mapStore = useMapStore();
 
 const props = defineProps({
@@ -110,9 +111,15 @@ onMounted(async () => {
     loading.value = true;
     await fetchConfig();
 
-    const p = await mapStore.worker.profile.load();
+    const p = {
+        tak_callsign: (await ProfileConfig.get('tak_callsign'))?.value,
+        tak_group: (await ProfileConfig.get('tak_group'))?.value,
+        tak_role: (await ProfileConfig.get('tak_role'))?.value,
+        tak_type: (await ProfileConfig.get('tak_type'))?.value,
+        tak_loc_freq: (await ProfileConfig.get('tak_loc_freq'))?.value
+    } as Profile;
 
-    if (config.value.groups[p.tak_group]) {
+    if (p.tak_group && config.value.groups[p.tak_group]) {
         // @ts-expect-error We expect an enum of Colors
         p.tak_group = `${p.tak_group} - ${config.value.groups[p.tak_group]}`;
     }

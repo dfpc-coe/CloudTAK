@@ -157,7 +157,7 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import type { Profile, Server, Package, Feature } from '../../../../src/types.ts';
+import type { Server, Package, Feature } from '../../../../src/types.ts';
 import { server, stdurl, std } from '../../../std.ts';
 import Share from '../util/Share.vue';
 import Keywords from '../util/Keywords.vue';
@@ -176,6 +176,7 @@ import {
     IconPackage
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';
+import ProfileConfig from '../../../base/profile.ts';
 
 const route = useRoute();
 const router = useRouter();
@@ -192,7 +193,11 @@ watch(route, async () => {
     await fetch();
 });
 
-const profile = ref<Profile | undefined>(undefined);
+const profile = ref<{
+    username?: string;
+    tak_callsign?: string;
+    system_admin?: boolean;
+}>({});
 
 const shareFeat = computed<Feature | undefined>(() => {
     if (!profile.value || !pkg.value || !serverConfig.value) return;
@@ -245,7 +250,12 @@ function formatBytes(bytes: number): string {
 
 
 onMounted(async () => {
-    profile.value = await mapStore.worker.profile.load();
+    profile.value = {
+        username: (await ProfileConfig.get('username'))?.value,
+        tak_callsign: (await ProfileConfig.get('tak_callsign'))?.value,
+        system_admin: (await ProfileConfig.get('system_admin'))?.value
+    };
+
     serverConfig.value = await mapStore.worker.profile.loadServer();
     await fetch();
 });

@@ -65,14 +65,14 @@ export default class MenuManager {
     async init() {
         const isSystemAdmin = await ProfileConfig.get('system_admin');
         this.isSystemAdmin.value = isSystemAdmin?.value ?? false;
-        this.isAgencyAdmin.value = await this.mapStore.worker.profile.isAgencyAdmin();
+
+        const isAgencyAdmin = await ProfileConfig.get('agency_admin');
+        this.isAgencyAdmin.value = (isAgencyAdmin?.value && isAgencyAdmin.value.length > 0) || false;
 
         try {
-            const profile = await this.mapStore.worker.profile.load();
-            // @ts-expect-error - menu_order is dynamic
-            if (profile && profile.config.menu_order) {
-                // @ts-expect-error - menu_order is dynamic
-                this.preferenceOrder.value = profile.config.menu_order as string[];
+            const menuOrder = await ProfileConfig.get('menu_order');
+            if (menuOrder && menuOrder.value) {
+                this.preferenceOrder.value = menuOrder.value.map((m) => m.key);
             }
         } catch (e) {
             console.error('Failed to load menu order', e);
@@ -317,8 +317,7 @@ export default class MenuManager {
     async setOrder(keys: string[]) {
         this.preferenceOrder.value = keys;
         await this.mapStore.worker.profile.update({
-            // @ts-expect-error - dynamic property
-            menu_order: keys
+            menu_order: keys.map(k => ({ key: k }))
         });
     }
 }
