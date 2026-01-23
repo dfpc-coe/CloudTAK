@@ -402,7 +402,6 @@ function bufferOrder() {
 
 async function saveBufferedOrder() {
     const keys = mapStore.menu.preferenceOrder.value;
-    if (keys.length === 0) return;
     await mapStore.menu.setOrder(keys);
 }
 
