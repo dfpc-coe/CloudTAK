@@ -395,15 +395,15 @@ async function handleReorderToggle() {
 }
 
 function bufferOrder() {
-   if (!sortable) return;
-   const keys = sortable.toArray();
-   mapStore.menu.setOrderLocal(keys);
+    if (!sortable) return;
+    const keys = sortable.toArray();
+    mapStore.menu.setOrderLocal(keys);
 }
 
 async function saveOrder() {
-   if (!sortable) return;
-   const keys = sortable.toArray();
-   await mapStore.menu.setOrder(keys);
+    if (!sortable) return;
+    const keys = sortable.toArray();
+    await mapStore.menu.setOrder(keys);
 }
 
 onMounted(async () => {
