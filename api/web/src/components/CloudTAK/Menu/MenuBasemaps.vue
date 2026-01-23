@@ -209,6 +209,7 @@
 import { onMounted, ref, watch } from 'vue';
 import StandardItem from '../util/StandardItem.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
+import ProfileConfig from '../../../base/profile.ts';
 import { server, stdurl } from '../../../std.ts';
 import Overlay from '../../../base/overlay.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
@@ -262,7 +263,8 @@ const list = ref<BasemapList>({
 
 onMounted(async () => {
     await fetchList();
-    isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
+    const isSysAdmin = await ProfileConfig.get('system_admin');
+    isSystemAdmin.value = isSysAdmin?.value ?? false;
 });
 
 watch(editModal, async () => {

@@ -4,14 +4,14 @@ import { std } from '../std.ts';
 import type { Profile } from '../types.ts';
 import { liveQuery, type Subscription } from 'dexie';
 
-export default class ProfileConfig<T = unknown> {
-    key: string;
-    value: T;
+export default class ProfileConfig<K extends keyof Profile = keyof Profile> {
+    key: K;
+    value: Profile[K];
     _sub?: Subscription;
 
     constructor(
-        key: string,
-        value: T,
+        key: K,
+        value: Profile[K],
     ) {
         this.key = key;
         this.value = value;
@@ -21,7 +21,7 @@ export default class ProfileConfig<T = unknown> {
         if (this._sub) return;
 
         this._sub = liveQuery(() => db.profile.get(this.key)).subscribe((entry) => {
-            if (entry) this.value = entry.value as T;
+            if (entry) this.value = entry.value as Profile[K];
         });
     }
 
@@ -35,10 +35,10 @@ export default class ProfileConfig<T = unknown> {
         }
     }
 
-    static async get<T = unknown>(key: string): Promise<ProfileConfig<T> | undefined> {
+    static async get<K extends keyof Profile>(key: K): Promise<ProfileConfig<K> | undefined> {
         const entry = await db.profile.get(key);
         if (!entry) return undefined;
-        return new ProfileConfig<T>(entry.key, entry.value as T);
+        return new ProfileConfig<K>(entry.key as K, entry.value as Profile[K]);
     }
 
     static async fetch(token?: string): Promise<Profile> {
@@ -47,7 +47,7 @@ export default class ProfileConfig<T = unknown> {
         }) as Profile;
     }
 
-    async commit(value: T): Promise<void> {
+    async commit(value: Profile[K]): Promise<void> {
         await db.profile.put({
             key: this.key,
             value
@@ -66,7 +66,7 @@ export default class ProfileConfig<T = unknown> {
         await db.profile.delete(key);
     }
 
-    static async sync(username: string, opts: {
+    static async sync(opts: {
         refresh?: boolean,
         token?: string
     }  = {}): Promise<void> {

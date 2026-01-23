@@ -262,6 +262,7 @@ import EmptyInfo from '../util/EmptyInfo.vue';
 import StandardItem from '../util/StandardItem.vue';
 import { std, server } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
+import ProfileConfig from '../../../base/profile.ts';
 import type { VideoLease, VideoLeaseList, VideoConnectionList } from '../../../types.ts';
 
 import { useMapStore } from '../../../stores/map.ts';
@@ -329,7 +330,8 @@ watch(mode, async () => {
 });
 
 onMounted(async () => {
-    if (await mapStore.worker.profile.isSystemAdmin()) {
+    const isSysAdmin = await ProfileConfig.get('system_admin');
+    if (isSysAdmin && isSysAdmin.value) {
         isSystemAdmin.value = true;
     }
 

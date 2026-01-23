@@ -312,6 +312,7 @@ import { useMapStore } from '../../stores/map.ts';
 import { useBrandStore } from '../../stores/brand.ts';
 import { useRouter, useRoute } from 'vue-router';
 import MenuItemCard from './Menu/MenuItemCard.vue';
+import ProfileConfig from '../../base/profile.ts';
 
 const route = useRoute();
 const router = useRouter();
@@ -412,7 +413,10 @@ onMounted(async () => {
         version.value = (await mapStore.worker.profile.loadServer()).version;
     }
 
-    username.value = await mapStore.worker.profile.username();
+    const usernameConfig = await ProfileConfig.get('username');
+    if (usernameConfig) {
+        username.value = usernameConfig.value;
+    }
 })
 
 function external(url: string) {

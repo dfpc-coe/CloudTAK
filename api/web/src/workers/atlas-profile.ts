@@ -1,8 +1,7 @@
-import { toRaw } from 'vue';
 import type Atlas from './atlas.ts';
 import { std, stdurl } from '../std.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts'
-import type { Feature, Group, Server, Profile, Profile_Update, FeaturePropertyCreator } from '../types.ts';
+import type { Feature, Group, Server, Profile_Update, FeaturePropertyCreator } from '../types.ts';
 import ProfileConfig from '../base/profile.ts';
 
 export type ProfileLocationState = {
@@ -20,20 +19,20 @@ export default class AtlasProfile {
 
     username: string | null;
 
-    location: ProfileLocation;
+    location: ProfileLocationState;
 
     channels: Array<Group>;
     server: Server | null;
 
-    profile_type?: ProfileConfig;
-    profile_callsign? : ProfileConfig;
-    profile_remarks? : ProfileConfig;
-    profile_group? : ProfileConfig;
-    profile_role? : ProfileConfig;
-    profile_loc?: ProfileConfig;
-    profile_loc_freq?: ProfileConfig;
-    profile_created?: ProfileConfig;
-    profile_updated?: ProfileConfig;
+    profile_type?: ProfileConfig<'tak_type'>;
+    profile_callsign? : ProfileConfig<'tak_callsign'>;
+    profile_remarks? : ProfileConfig<'tak_remarks'>;
+    profile_group? : ProfileConfig<'tak_group'>;
+    profile_role? : ProfileConfig<'tak_role'>;
+    profile_loc?: ProfileConfig<'tak_loc'>;
+    profile_loc_freq?: ProfileConfig<'tak_loc_freq'>;
+    profile_created?: ProfileConfig<'created'>;
+    profile_updated?: ProfileConfig<'updated'>;
 
     constructor(atlas: Atlas) {
         this.atlas = atlas;
@@ -49,8 +48,6 @@ export default class AtlasProfile {
             coordinates: [0, 0]
         };
 
-        this.type
-
         this.channels = [];
         this.server = null;
 
@@ -65,7 +62,7 @@ export default class AtlasProfile {
             this.loadChannels()
         ])
 
-        this.profile_type = await ProfileConfig.get('cot_type');
+        this.profile_type = await ProfileConfig.get('tak_type');
         if (this.profile_type) this.profile_type.subscribe();
 
         this.profile_callsign = await ProfileConfig.get('tak_callsign');
@@ -92,18 +89,22 @@ export default class AtlasProfile {
         this.profile_updated = await ProfileConfig.get('updated');
         if (this.profile_updated) this.profile_updated.subscribe();
 
-        this.username = (await ProfileConfig.get('username')).value;
+        const usernameConfig = await ProfileConfig.get('username');
+        if (usernameConfig) {
+            this.username = usernameConfig.value;
+        }
 
         this.updateLocation();
 
-        return this.username;
+        if (this.username) return this.username;
+        throw new Error('Failed to load username');
     }
 
     async creator(): Promise<FeaturePropertyCreator> {
         return {
             uid: this.uid(),
             type: 'a-f-G-E-V-C',
-            callsign: await this.callsign(),
+            callsign: this.profile_callsign?.value || 'Unknown',
             time: new Date().toISOString(),
         }
     }
@@ -165,9 +166,9 @@ export default class AtlasProfile {
 
     async load(): Promise<void> {
         if (!this.username) {
-            const server = await this.loadServer();
+            await this.loadServer();
 
-            await ProfileConfig.sync(server.email, {
+            await ProfileConfig.sync({
                 token: this.atlas.token
             });
 
@@ -188,7 +189,10 @@ export default class AtlasProfile {
                 });
             }
 
-            this.username = server.email;
+            const usernameConfig = await ProfileConfig.get('username');
+            if (usernameConfig) {
+                 this.username = usernameConfig.value;
+            }
         }
 
         this.updateLocation()
@@ -300,7 +304,7 @@ export default class AtlasProfile {
             body
         });
 
-        await ProfileConfig.sync(this.username, { token: this.atlas.token, refresh: true });
+        await ProfileConfig.sync({ token: this.atlas.token, refresh: true });
 
         if (freqChanged) {
             this.setupTimer();
