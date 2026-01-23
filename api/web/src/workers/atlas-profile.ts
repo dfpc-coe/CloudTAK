@@ -25,6 +25,11 @@ export default class AtlasProfile {
     channels: Array<Group>;
     server: Server | null;
 
+    profile_type?: ProfileConfig;
+    profile_callsign? : ProfileConfig;
+    profile_remarks? : ProfileConfig;
+    profile_group? : ProfileConfig;
+    profile_role? : ProfileConfig;
 
     constructor(atlas: Atlas) {
         this.atlas = atlas;
@@ -40,6 +45,8 @@ export default class AtlasProfile {
             coordinates: [0, 0]
         };
 
+        this.type
+
         this.channels = [];
         this.server = null;
 
@@ -53,6 +60,21 @@ export default class AtlasProfile {
             this.loadServer(),
             this.loadChannels()
         ])
+
+        this.profile_type = await ProfileConfig.get('cot_type');
+        this.profile_type.subscribe();
+
+        this.profile_callsign = await ProfileConfig.get('tak_callsign');
+        this.profile_callsign.subscribe();
+
+        this.profile_remarks = await ProfileConfig.get('tak_remarks');
+        this.profile_remarks.subscribe();
+
+        this.profile_group = await ProfileConfig.get('tak_group');
+        this.profile_group.subscribe();
+
+        this.profile_role = await ProfileConfig.get('tak_role');
+        this.profile_role.subscribe();
 
         if (!this.username) {
             throw new Error('Failed loading profile');
@@ -133,9 +155,8 @@ export default class AtlasProfile {
                 token: this.atlas.token
             });
 
-            const username = ProfileConfig.get('username');
-            const callsign = ProfileConfig.get('tak_callsign');
-            const display_zoom = ProfileConfig.get('display_zoom');
+            const callsign = await ProfileConfig.get('tak_callsign');
+            const display_zoom = await ProfileConfig.get('display_zoom');
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Callsign,
