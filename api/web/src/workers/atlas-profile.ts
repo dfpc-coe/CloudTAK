@@ -95,6 +95,8 @@ export default class AtlasProfile {
         this.username = (await ProfileConfig.get('username')).value;
 
         this.updateLocation();
+
+        return this.username;
     }
 
     async creator(): Promise<FeaturePropertyCreator> {
