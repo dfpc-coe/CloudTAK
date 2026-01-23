@@ -386,7 +386,7 @@ onBeforeUnmount(() => {
 async function handleReorderToggle() {
     if (isDraggable.value) {
         // Save buffered changes when exiting reorder mode
-        await saveOrder();
+        await saveBufferedOrder();
         isDraggable.value = false;
         return;
     }
@@ -400,9 +400,9 @@ function bufferOrder() {
     mapStore.menu.setOrderLocal(keys);
 }
 
-async function saveOrder() {
-    if (!sortable) return;
-    const keys = sortable.toArray();
+async function saveBufferedOrder() {
+    const keys = mapStore.menu.preferenceOrder.value;
+    if (keys.length === 0) return;
     await mapStore.menu.setOrder(keys);
 }
 
