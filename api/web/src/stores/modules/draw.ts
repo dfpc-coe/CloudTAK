@@ -90,7 +90,8 @@ export default class DrawTool {
 
         const routeFinderInstance = new TerraRoute();
         const routeFinder = Object.assign(routeFinderInstance, {
-            setNetwork: routeFinderInstance.buildRouteGraph.bind(routeFinderInstance)
+            setNetwork: routeFinderInstance.buildRouteGraph.bind(routeFinderInstance),
+            expandNetwork: () => {}
         });
 
         this.graph = new Routing({

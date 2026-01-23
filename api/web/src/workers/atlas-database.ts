@@ -14,6 +14,7 @@ import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import type { Polygon } from 'geojson';
 import type { InputFeature, Feature, APIList } from '../types.ts';
+import ProfileConfig from '../base/profile.ts';
 
 type NestedArray = {
     path: string;
@@ -113,8 +114,7 @@ export default class AtlasDatabase {
         diff.remove = [];
         diff.update = [];
 
-        const profile = await this.atlas.profile.load();
-        const display_stale = profile.display_stale || 'Immediate';
+        const display_stale = (await ProfileConfig.get('display_stale'))?.value || 'Immediate';
 
         for (const cot of this.cots.values()) {
             const render = cot.as_rendered();

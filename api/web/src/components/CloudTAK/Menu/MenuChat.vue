@@ -96,6 +96,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
+import ProfileConfig from '../../../base/profile.ts';
 const mapStore = useMapStore();
 
 const route = useRoute();
@@ -140,9 +141,11 @@ onUnmounted(() => {
 const message = ref('');
 
 onMounted(async () => {
-    const profile = await mapStore.worker.profile.load();
-    id.value = `ANDROID-CloudTAK-${profile.username}`
-    callsign.value = profile.tak_callsign;
+    const username = (await ProfileConfig.get('username'))?.value;
+    const tak_callsign = (await ProfileConfig.get('tak_callsign'))?.value;
+
+    id.value = `ANDROID-CloudTAK-${username}`
+    callsign.value = tak_callsign || '';
 
     room.value = new Chatroom(name.value);
 

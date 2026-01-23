@@ -692,6 +692,7 @@ import Subscriptions from './util/Subscriptions.vue';
 import { server } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useFloatStore } from '../../stores/float.ts';
+import ProfileConfig from '../../base/profile.ts';
 
 const mapStore = useMapStore();
 
@@ -736,11 +737,19 @@ watch(route, async () => {
 onMounted(async () => {
     await load_cot();
 
-    const profile = await mapStore.worker.profile.load();
-    if (profile) {
-        units.value.display_speed = profile.display_speed;
-        units.value.display_elevation = profile.display_elevation;
-        units.value.display_distance = profile.display_distance;
+    const displaySpeed = await ProfileConfig.get('display_speed');
+    if (displaySpeed && displaySpeed.value) {
+        units.value.display_speed = displaySpeed.value;
+    }
+
+    const displayDistance = await ProfileConfig.get('display_distance');
+    if (displayDistance && displayDistance.value) {
+        units.value.display_distance = displayDistance.value;
+    }
+
+    const displayElevation = await ProfileConfig.get('display_elevation');
+    if (displayElevation && displayElevation.value) {
+        units.value.display_elevation = displayElevation.value;
     }
 
     interval.value = setInterval(async () => {

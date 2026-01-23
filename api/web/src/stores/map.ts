@@ -26,6 +26,7 @@ import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
+import ProfileConfig from '../base/profile.ts';
 
 import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, MapConfig } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
@@ -537,18 +538,22 @@ export const useMapStore = defineStore('cloudtak', {
             const loc = await this.worker.profile.location;
             this.location = loc.source;
 
-            const profile = await this.worker.profile.load()
-            this.callsign = profile.tak_callsign;
-            this.zoom = profile.display_zoom;
+            await this.worker.profile.load();
+
+            this.callsign = (await ProfileConfig.get('tak_callsign'))?.value || 'Unknown';
+            this.zoom = (await ProfileConfig.get('display_zoom'))?.value || 'conditional';
+
+            const icon_rotation = (await ProfileConfig.get('display_icon_rotation'))?.value;
+
             // Initialize icon rotation setting after overlays are loaded
             setTimeout(() => {
-                this.updateIconRotation(profile.display_icon_rotation);
+                this.updateIconRotation(icon_rotation as unknown as boolean);
             }, 100);
 
-            this.distanceUnit = profile.display_distance;
+            this.distanceUnit = (await ProfileConfig.get('display_distance'))?.value || 'meter';
 
             // Initialize scale control settings
-            this.updateDistanceUnit(profile.display_distance);
+            this.updateDistanceUnit(this.distanceUnit);
 
             this.isOpen = await this.worker.conn.isOpen;
         },

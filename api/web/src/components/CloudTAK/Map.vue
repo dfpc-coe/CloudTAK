@@ -534,7 +534,9 @@ import { useMapStore } from '../../stores/map.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore, PaneType } from '../../stores/float.ts';
 import { liveQuery } from 'dexie';
-import UploadImport from './util/UploadImport.vue'
+import UploadImport from './util/UploadImport.vue';
+import ProfileConfig from '../../base/profile.ts';
+
 const mapStore = useMapStore();
 const floatStore = useFloatStore();
 const router = useRouter();
@@ -818,7 +820,8 @@ async function exitManualMode() {
     mapStore.location = LocationState.Loading;
 
     // Remove current location dot from map by removing user's CoT
-    const userUid = `ANDROID-CloudTAK-${(await mapStore.worker.profile.load()).username}`;
+    const username = await ProfileConfig.get('username');
+    const userUid = `ANDROID-CloudTAK-${username ? username.value : 'unknown'}`;
     await mapStore.worker.db.remove(userUid);
 
     // Clear manual location and wait for it to complete
@@ -901,9 +904,9 @@ async function mountMap(): Promise<void> {
 
     return new Promise((resolve) => {
         mapStore.map.once('idle', async () => {
-            const profile = await mapStore.worker.profile.load();
+            const displayProjection = await ProfileConfig.get('display_projection');
 
-            if (profile.display_projection === 'globe') {
+            if (displayProjection && displayProjection.value === 'globe') {
                 mapStore.map.setProjection({ type: "globe" });
             }
 
