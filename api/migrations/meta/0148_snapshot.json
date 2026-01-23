@@ -1737,61 +1737,6 @@
           "notNull": true,
           "default": "'[]'::json"
         },
-        "tak_callsign": {
-          "name": "tak_callsign",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'CloudTAK User'"
-        },
-        "tak_remarks": {
-          "name": "tak_remarks",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'CloudTAK User'"
-        },
-        "tak_group": {
-          "name": "tak_group",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'Orange'"
-        },
-        "tak_role": {
-          "name": "tak_role",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'Team Member'"
-        },
-        "tak_type": {
-          "name": "tak_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'a-f-G-E-V-C'"
-        },
-        "tak_loc": {
-          "name": "tak_loc",
-          "type": "GEOMETRY(POINT, 4326)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "tak_loc_freq": {
-          "name": "tak_loc_freq",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 2000
-        },
-        "display_stale": {
-          "name": "display_stale",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'10 Minutes'"
-        },
         "display_distance": {
           "name": "display_distance",
           "type": "text",
