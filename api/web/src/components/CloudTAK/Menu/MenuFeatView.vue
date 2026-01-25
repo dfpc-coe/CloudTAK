@@ -140,14 +140,14 @@
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
 import { ref, computed } from 'vue';
-import { useMapStore } from '../../stores/map.ts';
-import { server } from '../../std.ts';
-import Overlay from '../../base/overlay.ts';
+import { useMapStore } from '../../../stores/map.ts';
+import { server } from '../../../std.ts';
+import Overlay from '../../../base/overlay.ts';
 import type { LngLatLike, MapGeoJSONFeature } from 'maplibre-gl';
 import type { Feature } from 'geojson';
 import pointOnFeature from '@turf/point-on-feature';
-import Coordinate from './util/Coordinate.vue';
-import CopyField from './util/CopyField.vue';
+import Coordinate from '../util/Coordinate.vue';
+import CopyField from '../util/CopyField.vue';
 import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';

@@ -10,6 +10,7 @@ import type { LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTile
 import cotStyles from './utils/styles.ts'
 import { std, stdurl } from '../std.js';
 import { useMapStore } from '../stores/map.js';
+import ProfileConfig from './profile.ts';
 
 /**
  * @class
@@ -329,11 +330,12 @@ export default class Overlay {
             }
         }
 
-        const profile = await mapStore.worker.profile.load();
+        const display_text = (await ProfileConfig.get('display_text'))?.value;
+        const display_icon_rotation = (await ProfileConfig.get('display_icon_rotation'))?.value;
 
         let size = 8
-        if (profile.display_text === 'Small') size = 4;
-        if (profile.display_text === 'Large') size = 16;
+        if (display_text === 'Small') size = 4;
+        if (display_text === 'Large') size = 16;
 
         if (!this.styles.length && this.type === 'raster') {
             this.styles = [{
@@ -353,7 +355,7 @@ export default class Overlay {
                 group: this.mode !== "mission",
                 icons: true,
                 course: true,
-                rotateIcons: profile.display_icon_rotation,
+                rotateIcons: display_icon_rotation,
                 labels: { size }
             });
         } else if (!this.styles.length) {

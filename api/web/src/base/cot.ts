@@ -252,16 +252,12 @@ export default class COT {
             atlas.sync.postMessage(this.as_feature());
 
             if (this.is_self) {
-                const getProfile = await atlas.profile.profile;
-
-                const profile = getProfile instanceof Promise ? await getProfile : getProfile;
+                const remarks = atlas.profile.profile_remarks?.value;
+                const callsign = atlas.profile.profile_callsign?.value;
 
                 if (
-                    profile
-                    && (
-                        this.properties.remarks !== profile.tak_remarks
-                        || this.properties.callsign !== profile.tak_callsign
-                    )
+                    (remarks !== undefined && this.properties.remarks !== remarks) // Remarks were updated locally
+                    || (callsign !== undefined && this.properties.callsign !== callsign) // Callsign was updated locally
                 ) {
                     await atlas.profile.update({
                         tak_callsign: this.properties.callsign,

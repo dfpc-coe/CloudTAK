@@ -5,7 +5,7 @@ import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
 const flight = new Flight();
 
-flight.init();
+flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 

@@ -3,13 +3,16 @@ import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { ProfileResponse } from '../lib/types.js'
+import { ProfileResponse, ProfileListResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { Profile } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
+import ProfileControl from '../lib/control/profile.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const profileControl = new ProfileControl(config);
+
     await schema.get('/user', {
         name: 'List Users',
         group: 'User',
@@ -26,7 +29,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ProfileResponse)
+            items: Type.Array(ProfileListResponse)
         })
     }, async (req, res) => {
         try {
@@ -77,14 +80,28 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            const user = await config.models.Profile.commit(req.params.username, req.body);
+            const profile_body: any = {};
+            const profile_config: any = {};
 
-            // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
-            res.json({
-                ...user,
-                active: config.wsClients.has(user.username),
-                agency_admin: user.agency_admin || []
-            });
+            for (const key of Object.keys(req.body)) {
+                if (key === 'system_admin') {
+                     profile_body[key] = (req.body as any)[key];
+                } else {
+                     profile_config[key.replace('_', '::')] = (req.body as any)[key];
+                }
+            }
+
+            if (Object.keys(profile_body).length) {
+                await config.models.Profile.commit(req.params.username, profile_body);
+            }
+
+            if (Object.keys(profile_config).length) {
+                await config.models.ProfileConfig.commit(req.params.username, profile_config);
+            }
+
+            const profile = await profileControl.from(req.params.username);
+
+            res.json(profile);
         } catch (err) {
              Err.respond(err, res);
         }
@@ -102,14 +119,9 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            const user = await config.models.Profile.from(req.params.username);
+            const profile = await profileControl.from(req.params.username);
 
-            // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
-            res.json({
-                ...user,
-                active: config.wsClients.has(user.username),
-                agency_admin: user.agency_admin || []
-            });
+            res.json(profile);
         } catch (err) {
              Err.respond(err, res);
         }

@@ -113,15 +113,29 @@ import {
     TablerEnum,
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../../stores/map.ts';
+import ProfileConfig from '../../../base/profile.ts';
 const mapStore = useMapStore();
 
 const router = useRouter();
 const loading = ref(false);
 const profile = ref<Profile | undefined>();
 
+async function getProfile() {
+    return {
+        display_stale: (await ProfileConfig.get('display_stale'))?.value,
+        display_text: (await ProfileConfig.get('display_text'))?.value,
+        display_distance: (await ProfileConfig.get('display_distance'))?.value,
+        display_elevation: (await ProfileConfig.get('display_elevation'))?.value,
+        display_speed: (await ProfileConfig.get('display_speed'))?.value,
+        display_projection: (await ProfileConfig.get('display_projection'))?.value,
+        display_zoom: (await ProfileConfig.get('display_zoom'))?.value,
+        display_icon_rotation: (await ProfileConfig.get('display_icon_rotation'))?.value,
+    } as Profile;
+}
+
 onMounted(async () => {
     loading.value = true;
-    profile.value = await mapStore.worker.profile.load();
+    profile.value = await getProfile();
     loading.value = false;
 });
 
@@ -137,7 +151,7 @@ async function updateProfile() {
     mapStore.updateIconRotation(profile.value.display_icon_rotation as unknown as boolean);
 
     // Refresh profile data to reflect persisted changes
-    profile.value = await mapStore.worker.profile.load();
+    profile.value = await getProfile();
 
     router.push("/menu/settings");
 }

@@ -13,7 +13,7 @@ const SAMPLE_TILES = [
     { label: 'Kentucky foothills', z: 8, x: 66, y: 98 }
 ];
 
-flight.init();
+flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 

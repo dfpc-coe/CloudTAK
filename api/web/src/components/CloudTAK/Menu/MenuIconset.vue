@@ -78,11 +78,10 @@ import {
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import IconsetEditModal from './Iconset/EditModal.vue';
-import { useMapStore } from '/src/stores/map.ts';
+import ProfileConfig from '../../../base/profile.ts';
 
 const route = useRoute();
 const router = useRouter();
-const mapStore = useMapStore();
 
 const loading = ref(true);
 const editIconsetModal = ref(false);
@@ -93,7 +92,8 @@ const iconset = ref({
 
 onMounted(async () => {
     await refresh();
-    isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
+    const isSysAdmin = await ProfileConfig.get('system_admin');
+    isSystemAdmin.value = isSysAdmin?.value ?? false;
 });
 
 async function refresh() {

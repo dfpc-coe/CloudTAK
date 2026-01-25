@@ -8,12 +8,10 @@ import { Polygon, Point } from 'geojson';
 import { ImportResult } from './control/import.js'
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
-import { TAKGroup, TAKRole } from  '@tak-ps/node-tak/lib/api/types';
 import { Layer_Config } from './models/Layer.js';
 import {
     Layer_Priority,
     Import_Status,
-    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType
 } from  './enums.js';
 import { json, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
@@ -80,24 +78,23 @@ export const Profile = pgTable('profile', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     phone: text().notNull().default(''),
-    tak_callsign: text().notNull().default('CloudTAK User'),
-    tak_remarks: text().notNull().default('CloudTAK User'),
-    tak_group: text().$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
-    tak_role: text().$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
-    tak_type: text().notNull().default('a-f-G-E-V-C'),
-    tak_loc: geometry({ srid: 4326, type: GeometryType.Point }),
-    tak_loc_freq: integer().notNull().default(2000),
-    display_stale: text().$type<Profile_Stale>().notNull().default(Profile_Stale.TenMinutes),
-    display_distance: text().$type<Profile_Distance>().notNull().default(Profile_Distance.MILE),
-    display_elevation: text().$type<Profile_Elevation>().notNull().default(Profile_Elevation.FEET),
-    display_speed: text().$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
-    display_projection: text().$type<Profile_Projection>().notNull().default(Profile_Projection.GLOBE),
-    display_zoom: text().$type<Profile_Zoom>().notNull().default(Profile_Zoom.CONDITIONAL),
-    display_icon_rotation: boolean().notNull().default(true),
-    display_text: text().$type<Profile_Text>().notNull().default(Profile_Text.Medium),
     system_admin: boolean().notNull().default(false),
-    agency_admin: json().notNull().$type<Array<number>>().default([])
+    agency_admin: json().notNull().$type<Array<number>>().default([]),
 });
+
+export const ProfileSetting = pgTable('profile_settings',
+    {
+        username: text().notNull().references(() => Profile.username),
+        updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+        key: text().notNull(),
+        value: text().notNull().default(''),
+    },
+    (table) => ({
+        pk: primaryKey({
+            columns: [table.username, table.key],
+        }),
+    }),
+);
 
 export const ProfileFile = pgTable('profile_files', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),

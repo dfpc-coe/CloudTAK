@@ -6,7 +6,7 @@ import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import * as Comlink from 'comlink';
 import AtlasProfile from './atlas-profile.ts';
-import type { ProfileLocation } from './atlas-profile.ts';
+import type { ProfileLocationState } from './atlas-profile.ts';
 import AtlasTeam from './atlas-team.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
@@ -45,7 +45,7 @@ export default class Atlas {
                     this.profile.location = {
                         source: LocationState.Live,
                         ...msg.body
-                    } as ProfileLocation;
+                    } as ProfileLocationState;
                 }
             }
         }

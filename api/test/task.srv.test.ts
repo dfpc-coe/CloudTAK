@@ -10,7 +10,7 @@ process.env.ECR_TASKS_REPOSITORY_NAME = 'example-ecr';
 
 const flight = new Flight();
 
-flight.init();
+flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 
