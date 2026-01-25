@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.61.1 - 2026-01-24
+
+- :rocket: Show ESRI Geometry Type in Server Explorer
+
 ### v12.61.0 - 2026-01-24
 
 - :rocket: Migrate to ProfileConfig model for storing user profile settings.
