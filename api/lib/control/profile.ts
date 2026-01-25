@@ -1,57 +1,81 @@
 import { Static, Type } from '@sinclair/typebox'
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
+import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import Config from '../config.js';
 import { Profile } from '../schema.js';
 import {
     toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
 } from '../enums.js'
+import { ProfileResponse } from '../types.js';
+
+export const ProfileConfigDefaults = {
+    'display::stale': Profile_Stale.TenMinutes,
+    'display::distance': Profile_Distance.MILE,
+    'display::elevation': Profile_Elevation.FEET,
+    'display::speed': Profile_Speed.MPH,
+    'display::projection': Profile_Projection.GLOBE,
+    'display::zoom': Profile_Zoom.CONDITIONAL,
+    'display::text': Profile_Text.Medium,
+    'display::icon_rotation': true,
+
+    'menu::order': [],
+
+    'tak::callsign': 'CloudTAK User',
+    'tak::remarks': 'CloudTAK User',
+    'tak::group': TAKGroup.ORANGE,
+    'tak::type': 'a-f-G-E-V-C',
+    'tak::role': TAKRole.TEAM_MEMBER,
+    'tak::loc_freq': 2000,
+    'tak::loc': null
+}
+
 
 export const DefaultUnits = Type.Object({
     'stale': Type.Object({
         value: Type.Enum(Profile_Stale, {
-            default: Profile_Stale.TenMinutes
+            default: ProfileConfigDefaults['display::stale']
         }),
         options: Type.Array(Type.String())
     }),
     'distance': Type.Object({
         value: Type.Enum(Profile_Distance, {
-            default: Profile_Distance.MILE
+            default: ProfileConfigDefaults['display::distance']
         }),
         options: Type.Array(Type.String())
     }),
     'elevation': Type.Object({
         value: Type.Enum(Profile_Elevation, {
-            default: Profile_Elevation.FEET
+            default: ProfileConfigDefaults['display::elevation']
         }),
         options: Type.Array(Type.String())
     }),
     'speed': Type.Object({
         value: Type.Enum(Profile_Speed, {
-            default: Profile_Speed.MPH
+            default: ProfileConfigDefaults['display::speed']
         }),
         options: Type.Array(Type.String())
     }),
     'projection': Type.Object({
         value: Type.Enum(Profile_Projection, {
-            default: Profile_Projection.GLOBE
+            default: ProfileConfigDefaults['display::projection']
         }),
         options: Type.Array(Type.String())
     }),
     'zoom': Type.Object({
         value: Type.Enum(Profile_Zoom, {
-            default: Profile_Zoom.CONDITIONAL
+            default: ProfileConfigDefaults['display::zoom']
         }),
         options: Type.Array(Type.String())
     }),
     'text': Type.Object({
         value: Type.Enum(Profile_Text, {
-            default: Profile_Text.Medium
+            default: ProfileConfigDefaults['display::text']
         }),
         options: Type.Array(Type.String())
     }),
     'icon_rotation': Type.Object({
         value: Type.Boolean({
-            default: true
+            default: ProfileConfigDefaults['display::icon_rotation']
         }),
         options: Type.Array(Type.Boolean())
     }),
@@ -64,21 +88,44 @@ export default class ProfileControl {
         this.config = config;
     }
 
+    async from(email: string): Promise<Static<typeof ProfileResponse>> {
+        const profile = await this.config.models.Profile.from(email);
+        const configs = await this.config.models.ProfileConfig.from(email);
+
+        const full_config = {
+            ...ProfileConfigDefaults,
+            ...configs
+        };
+
+        for (const key of Object.keys(full_config)) {
+            (profile as any)[key.replace('::', '_')] = full_config[key as keyof typeof full_config];
+        }
+
+        // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
+        return {
+            ...profile,
+            active: this.config.wsClients.has(profile.username),
+            agency_admin: profile.agency_admin || []
+        };
+    }
+
     async generate(
         input: InferInsertModel<typeof Profile>,
     ): Promise<InferSelectModel<typeof Profile>> {
-        const defaults = await this.defaultUnits();
-
-        if (!input.display_stale) input.display_stale = defaults.stale.value;
-        if (!input.display_distance) input.display_distance = defaults.distance.value;
-        if (!input.display_elevation) input.display_elevation = defaults.elevation.value;
-        if (!input.display_speed) input.display_speed = defaults.speed.value;
-        if (!input.display_projection) input.display_projection = defaults.projection.value;
-        if (!input.display_zoom) input.display_zoom = defaults.zoom.value;
-        if (!input.display_text) input.display_text = defaults.text.value;
-        if (input.display_icon_rotation === undefined) input.display_icon_rotation = true;
-
         const profile = await this.config.models.Profile.generate(input);
+
+        // Create a new ProfileConfig for each default setting
+        const configs: Array<Promise<any>> = [];
+
+        for (const [key, value] of Object.entries(ProfileConfigDefaults)) {
+            configs.push(this.config.models.Setting.typed(key, value).then((setting) => {
+                return this.config.models.ProfileConfig.commit(profile.username, {
+                    [key]: setting.value
+                })
+            }));
+        }
+
+        await Promise.all(configs);
 
         return profile;
     }

@@ -5,8 +5,6 @@ export default async function drop(connstr: string) {
         onnotice: () => {}
     });
 
-    console.log('ok - dropping database');
-
     const pgres = await client`
         SELECT
             'drop table "' || tablename || '" cascade;' AS drop
@@ -21,8 +19,6 @@ export default async function drop(connstr: string) {
     for (const r of pgres) {
         await client.unsafe(r.drop);
     }
-
-    console.log('ok - database dropped');
 
     client.end();
 }

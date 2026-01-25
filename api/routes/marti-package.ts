@@ -316,11 +316,12 @@ export default async function router(schema: Schema, config: Config) {
                     && req.body.destinations.filter((d) => !d.mission).length
             ) {
                 const url = new URL(config.server.api);
+                const configs = await config.models.ProfileConfig.from(profile.username);
 
                 const cot = new FileShare({
                     filename: id,
                     name: id,
-                    senderCallsign: profile.tak_callsign,
+                    senderCallsign: configs['tak::callsign'] as string || 'CloudTAK User',
                     senderUid: `ANDROID-CloudTAK-${profile.username}`,
                     // iTAK currently doesn't support DNS - Ref: https://issues.tak.gov/projects/ITAK/issues/ITAK-57
                     senderUrl: `https://${(await dns.lookup(url.hostname)).address}:${url.port}/Marti/sync/content?hash=${content.Hash}`,

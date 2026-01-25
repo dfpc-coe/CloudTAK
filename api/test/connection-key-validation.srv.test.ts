@@ -6,7 +6,7 @@ import CP from 'node:child_process';
 
 const flight = new Flight();
 
-flight.init();
+flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 

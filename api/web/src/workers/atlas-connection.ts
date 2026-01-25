@@ -161,8 +161,10 @@ export default class AtlasConnection {
                 let chatroom = chat.chatroom;
 
                 try {
-                    const profile = await this.atlas.profile.profile;
-                    if (profile && (chatroom === profile.tak_callsign || chatroom === `ANDROID-CloudTAK-${profile.username}`)) {
+                    const callsign = this.atlas.profile.profile_callsign?.value;
+                    const username = this.atlas.profile.username;
+
+                    if (callsign && username && (chatroom === callsign || chatroom === `ANDROID-CloudTAK-${username}`)) {
                         chatroom = chat.from.callsign;
                     }
                 } catch (err) {

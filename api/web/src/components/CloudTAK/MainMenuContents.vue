@@ -49,6 +49,23 @@
                         />
                     </TablerIconButton>
                     <TablerIconButton
+                        v-if='canEditOrder'
+                        :title='isDraggable ? "Save Order" : "Reorder Items"'
+                        :variant='isDraggable ? "primary" : "secondary"'
+                        @click='handleReorderToggle'
+                    >
+                        <IconPencil
+                            v-if='!isDraggable'
+                            :size='32'
+                            stroke='1'
+                        />
+                        <IconPencilCheck
+                            v-else
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
                         v-if='preferredLayout !== "tiles"'
                         title='Tile View'
                         @click='mapStore.menu.setLayout("tiles")'
@@ -90,6 +107,7 @@
             </div>
             <div
                 v-if='filteredMenuItems.length'
+                ref='sortableRef'
                 class='pb-3'
                 :class='{
                     "menu-tiles px-3 py-3": menuLayout === "tiles",
@@ -99,6 +117,8 @@
                 <MenuItemCard
                     v-for='item in filteredMenuItems'
                     :key='`tile-${item.key}`'
+                    :data-key='item.key'
+                    :class='{ "cursor-move": isDraggable }'
                     :icon='item.icon'
                     :label='item.label'
                     :description='item.description'
@@ -107,7 +127,16 @@
                     :layout='menuLayout'
                     :compact='false'
                     @select='item.routeExternal ? external(item.route) : router.push(item.route.startsWith("/") ? item.route : { name: item.route })'
-                />
+                >
+                    <template #prefix>
+                        <IconGripVertical
+                            v-if='isDraggable'
+                            stroke='1'
+                            :size='20'
+                            class='text-muted cursor-move drag-handle'
+                        />
+                    </template>
+                </MenuItemCard>
             </div>
             <TablerNone
                 v-else
@@ -259,7 +288,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch, onBeforeUnmount } from 'vue';
 import {
     IconX,
     IconUser,
@@ -268,7 +297,11 @@ import {
     IconDeviceTv,
     IconLayoutGrid,
     IconLayoutList,
+    IconPencil, 
+    IconPencilCheck,
+    IconGripVertical
 } from '@tabler/icons-vue';
+import Sortable from 'sortablejs';
 import {
     TablerDropdown,
     TablerIconButton,
@@ -279,6 +312,7 @@ import { useMapStore } from '../../stores/map.ts';
 import { useBrandStore } from '../../stores/brand.ts';
 import { useRouter, useRoute } from 'vue-router';
 import MenuItemCard from './Menu/MenuItemCard.vue';
+import ProfileConfig from '../../base/profile.ts';
 
 const route = useRoute();
 const router = useRouter();
@@ -291,12 +325,12 @@ const emit = defineEmits<{
 }>();
 
 const version = ref('');
-const username = ref<string>('Username')
+const username = ref<string>('Username');
 
 const props = defineProps({
     compact: Boolean,
     modal: Boolean
-})
+});
 
 const menuLayout = computed(() => props.compact ? 'list' : mapStore.menu.preferredLayout.value);
 const preferredLayout = computed(() => mapStore.menu.preferredLayout.value);
@@ -307,9 +341,82 @@ const menuFilter = computed({
 const filteredMenuItems = computed(() => mapStore.menu.filtered.value);
 const menuItems = computed(() => mapStore.menu.items.value);
 
+let sortable: Sortable | undefined;
+const sortableRef = ref<HTMLElement | null>(null);
+const isDraggable = ref(false);
+
+const canEditOrder = computed(() => !menuFilter.value.trim().length && filteredMenuItems.value.length > 1);
+
+watch(menuFilter, () => {
+    if (isDraggable.value && !canEditOrder.value) {
+        isDraggable.value = false;
+    }
+});
+
+watch(
+    () => ({
+        container: sortableRef.value,
+        draggable: isDraggable.value,
+        hasSearch: !!menuFilter.value.trim().length,
+    }),
+    ({ container, draggable, hasSearch }) => {
+        const canSort = !!container && draggable && !hasSearch;
+        if (canSort && container) {
+            if (sortable && sortable.el === container) return;
+            if (sortable) sortable.destroy();
+            sortable = new Sortable(container, {
+                sort: true,
+                animation: 150,
+                handle: '.drag-handle',
+                dataIdAttr: 'data-key',
+                onEnd: saveOrder
+            });
+        } else if (sortable) {
+            sortable.destroy();
+            sortable = undefined;
+        }
+    },
+    { immediate: true, flush: 'post' }
+);
+
+onBeforeUnmount(() => {
+    if (sortable) sortable.destroy();
+});
+
+function handleReorderToggle() {
+    if (isDraggable.value) {
+        isDraggable.value = false;
+        return;
+    }
+    if (!canEditOrder.value) return;
+    isDraggable.value = true;
+}
+
+async function saveOrder() {
+   if (!sortable) return;
+   const keys = sortable.toArray();
+   await mapStore.menu.setOrder(keys);
+}
+
 onMounted(async () => {
-    version.value = (await mapStore.worker.profile.loadServer()).version;
-    username.value = await mapStore.worker.profile.username();
+    if ('serviceWorker' in navigator) {
+        const pkg = await navigator.serviceWorker.getRegistration();
+        if (pkg && pkg.active) {
+            const url = new URL(pkg.active.scriptURL);
+            if (url.searchParams.get('v')) {
+                version.value = String(url.searchParams.get('v'));
+            }
+        }
+    }
+
+    if (!version.value) {
+        version.value = (await mapStore.worker.profile.loadServer()).version;
+    }
+
+    const usernameConfig = await ProfileConfig.get('username');
+    if (usernameConfig) {
+        username.value = usernameConfig.value;
+    }
 })
 
 function external(url: string) {
@@ -356,5 +463,9 @@ function logout() {
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+.cursor-move {
+    cursor: move !important;
 }
 </style>
