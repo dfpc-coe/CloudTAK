@@ -1736,55 +1736,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'[]'::json"
-        },
-        "display_distance": {
-          "name": "display_distance",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'mile'"
-        },
-        "display_elevation": {
-          "name": "display_elevation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'feet'"
-        },
-        "display_speed": {
-          "name": "display_speed",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'mi/h'"
-        },
-        "display_projection": {
-          "name": "display_projection",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'globe'"
-        },
-        "display_zoom": {
-          "name": "display_zoom",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'conditional'"
-        },
-        "display_icon_rotation": {
-          "name": "display_icon_rotation",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "display_text": {
-          "name": "display_text",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'Medium'"
         }
       },
       "indexes": {},
@@ -2432,10 +2383,23 @@
       "name": "profile_settings",
       "schema": "",
       "columns": {
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated": {
+          "name": "updated",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "Now()"
+        },
         "key": {
           "name": "key",
           "type": "text",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true
         },
         "value": {
@@ -2447,8 +2411,30 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
+      "foreignKeys": {
+        "profile_settings_username_profile_username_fk": {
+          "name": "profile_settings_username_profile_username_fk",
+          "tableFrom": "profile_settings",
+          "tableTo": "profile",
+          "columnsFrom": [
+            "username"
+          ],
+          "columnsTo": [
+            "username"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "profile_settings_username_key_pk": {
+          "name": "profile_settings_username_key_pk",
+          "columns": [
+            "username",
+            "key"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
