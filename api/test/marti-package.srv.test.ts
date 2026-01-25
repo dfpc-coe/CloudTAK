@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import busboy from 'busboy';
-import { FormData } from 'undici';
 import os from 'node:os';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';

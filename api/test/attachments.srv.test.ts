@@ -5,7 +5,6 @@ import Sinon from 'sinon';
 import {
     S3Client
 } from '@aws-sdk/client-s3';
-import { FormData } from 'undici';
 import { Readable } from 'node:stream';
 import S3 from '../lib/aws/s3.js';
 import { DataPackage } from '@tak-ps/node-cot';

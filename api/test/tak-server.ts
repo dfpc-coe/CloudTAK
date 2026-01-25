@@ -170,7 +170,6 @@ export default class MockTAKServer {
                     };
                     const onListening = () => {
                         server.removeListener('error', onError);
-                        console.log(`opened ${name} on`, server.address());
                         resolve();
                     };
 
