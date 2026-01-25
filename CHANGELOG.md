@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### v12.61.0 - 2026-01-24
+
+- :rocket: Migrate to ProfileConfig model for storing user profile settings.
+- :tada: Add frontend ability to reorder profile sections via drag-and-drop.
+- :rocket: Migrate FeatView to use Menu model for better navigation. Closes: https://github.com/dfpc-coe/CloudTAK/issues/1128 https://github.com/dfpc-coe/CloudTAK/issues/880
+- :bug: Fix MainMenu resize on a touch screen.
+- :rocket: Use ServiceWorker version as displayed version with fallback to package.json version
+- :rocket: Remove LoginModal - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1178
+
 ### v12.60.0 - 2026-01-21
 
 - :rocket: Allow the import system to import Basemaps
