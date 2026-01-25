@@ -146,7 +146,23 @@
                             >
                                 <td>
                                     <div class='d-flex align-items-center'>
+                                        <IconMapPin
+                                            v-if='lyr.geometryType === "esriGeometryPoint"'
+                                            :size='32'
+                                            stroke='1'
+                                        />
+                                        <IconLine
+                                            v-else-if='lyr.geometryType === "esriGeometryPolyline"'
+                                            :size='32'
+                                            stroke='1'
+                                        />
+                                        <IconPolygon
+                                            v-else-if='lyr.geometryType === "esriGeometryPolygon"'
+                                            :size='32'
+                                            stroke='1'
+                                        />
                                         <IconMap
+                                            v-else
                                             :size='32'
                                             stroke='1'
                                         /><span
@@ -193,6 +209,9 @@ import {
     IconRefresh,
     IconCheck,
     IconArrowBack,
+    IconMapPin,
+    IconLine,
+    IconPolygon,
 } from '@tabler/icons-vue';
 
 const props = defineProps({
