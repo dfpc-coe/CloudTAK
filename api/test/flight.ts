@@ -1,6 +1,6 @@
 process.env.StackName = 'test';
 
-import { fetch, FormData } from 'undici';
+import { FormData } from 'undici';
 import type { Response, Headers } from 'undici';
 import CP from 'node:child_process';
 import MockTAKServer from './tak-server.js'
