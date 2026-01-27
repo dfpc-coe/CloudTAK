@@ -160,13 +160,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.put('/connection/:connectionid/feature/:id', {
+    await schema.put('/connection/:connectionid/feature', {
         name: 'Upsert Feature',
         group: 'ConnectionFeature',
         description: 'Create or Update a feature',
         params: Type.Object({
             connectionid: Type.Integer(),
-            id: Type.String()
         }),
         body: FeatureResponse,
         res: FeatureResponse
@@ -181,8 +180,10 @@ export default async function router(schema: Schema, config: Config) {
                 return coords
             });
 
+            if (!req.body.id) throw new Err(400, null, 'Feature ID is required');
+
             const feature = await config.models.ConnectionFeature.generate({
-                id: req.params.id,
+                id: String(req.body.id),
                 connection: req.params.connectionid,
                 path: req.body.path,
                 geometry: req.body.geometry,
