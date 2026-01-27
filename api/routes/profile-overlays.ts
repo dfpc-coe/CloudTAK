@@ -43,7 +43,8 @@ export default async function router(schema: Schema, config: Config) {
             total: Type.Integer(),
             removed: Type.Array(ProfileOverlayResponse),
             available: Type.Object({
-                terrain: Type.Boolean()
+                terrain: Type.Boolean(),
+                snapping: Type.Boolean()
             }),
             items: Type.Array(AugmentedProfileOverlayResponse)
         })
@@ -54,16 +55,25 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const [terrain, snapping] = await Promise.all([
+                config.models.Basemap.count({
+                    where: sql`
+                        USERNAME IS NULL
+                        AND type = 'raster-dem'
+                    `
+                }),
+                config.models.Basemap.count({
+                    where: sql`
+                        USERNAME IS NULL
+                        AND type = 'vector'
+                        AND snapping_enabled = true
+                    `
+                })
+            ]);
+
             const available = {
-                terrain:
-                    (
-                        await config.models.Basemap.count({
-                            where: sql`
-                                USERNAME IS NULL
-                                AND type = 'raster-dem'
-                            `
-                        })
-                    ) > 0
+                terrain: terrain > 0,
+                snapping: snapping > 0
             }
 
             const overlays = await config.models.ProfileOverlay.list({
