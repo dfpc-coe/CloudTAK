@@ -1,1 +1,1 @@
-ALTER TABLE "connections" ADD COLUMN "features" boolean DEFAULT false NOT NULL;
+ALTER TABLE "connections" ADD COLUMN IF NOT EXISTS "features" boolean DEFAULT false NOT NULL;
