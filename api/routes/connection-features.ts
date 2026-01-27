@@ -3,6 +3,7 @@ import tokml from 'tokml';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
+import { coordEach } from '@turf/meta';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { ConnectionFeature } from '../lib/schema.js';
@@ -174,6 +175,11 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
+
+            coordEach(req.body.geometry, (coords) => {
+                if (coords.length === 2) coords.push(0);
+                return coords
+            });
 
             const feature = await config.models.ConnectionFeature.generate({
                 id: req.params.id,
