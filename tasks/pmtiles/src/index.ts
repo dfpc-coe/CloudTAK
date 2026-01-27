@@ -42,7 +42,7 @@ await schema.load(
     new URL('./routes/', import.meta.url),
     config,
     {
-        silent: false
+        silent: !!process.env.StackName
     }
 );
 
