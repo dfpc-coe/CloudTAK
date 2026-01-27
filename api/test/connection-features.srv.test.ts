@@ -218,6 +218,25 @@ test('PUT: api/connection/1/feature/:id - Create another', async () => {
                 }
             }
         }, true);
+
+        assert.deepEqual(res.body, {
+            id: 'feature-2',
+            type: 'Feature',
+            path: '/Test Features/',
+            properties: {
+                type: 'a-f-g',
+                how: 'm-g',
+                time: time,
+                start: time,
+                stale: time,
+                center: [0, 0],
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [0, 0]
+            }
+        });
+
     } catch (err) {
         assert.ifError(err);
     }
