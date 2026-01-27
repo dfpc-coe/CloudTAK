@@ -327,6 +327,7 @@ export const Connection = pgTable('connections', {
     name: text().notNull(),
     description: text().notNull().default(''),
     enabled: boolean().notNull().default(true),
+    features: boolean().notNull().default(false),
     auth: json().$type<Static<typeof ConnectionAuth>>().notNull()
 });
 
