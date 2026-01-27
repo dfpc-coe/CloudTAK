@@ -209,6 +209,11 @@
         "query": true,
         "res": true
     },
+    "PUT /connection/:connectionid/feature/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "DELETE /connection/:connectionid/feature/:id": {
         "body": false,
         "query": false,
@@ -484,46 +489,6 @@
         "query": false,
         "res": false
     },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PUT /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PUT /import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import/raw": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
-    "PATCH /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -588,6 +553,46 @@
         "body": false,
         "query": true,
         "res": false
+    },
+    "GET /import": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import/raw": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "PATCH /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
     },
     "GET /layer": {
         "body": false,

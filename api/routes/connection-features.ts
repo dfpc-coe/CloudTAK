@@ -2,6 +2,7 @@ import { Type, Static } from '@sinclair/typebox'
 import tokml from 'tokml';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
+import { GenerateUpsert } from '@openaddresses/batch-generic';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { ConnectionFeature } from '../lib/schema.js';
@@ -153,6 +154,45 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Features Deleted'
             });
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.put('/connection/:connectionid/feature/:id', {
+        name: 'Upsert Feature',
+        group: 'ConnectionFeature',
+        description: 'Create or Update a feature',
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            id: Type.String()
+        }),
+        body: FeatureResponse,
+        res: FeatureResponse
+    }, async (req, res) => {
+        try {
+            await Auth.is_connection(config, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+            }, req.params.connectionid);
+
+            const feature = await config.models.ConnectionFeature.generate({
+                id: req.params.id,
+                connection: req.params.connectionid,
+                path: req.body.path,
+                geometry: req.body.geometry,
+                properties: req.body.properties
+            }, {
+                upsert: GenerateUpsert.UPDATE,
+                upsertTarget: [ ConnectionFeature.connection, ConnectionFeature.id ]
+            });
+
+            // @ts-expect-error Legacy features
+            feature.properties.archived = true;
+
+            res.json({
+                type: 'Feature',
+                ...feature
+            } as Static<typeof FeatureResponse>)
         } catch (err) {
              Err.respond(err, res);
         }
