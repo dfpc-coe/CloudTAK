@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v12.62.0 - 2026-01-27
+
+- :rocket: Add `snapping` to overlay features API response
+- :rocket: Reduce log verbosity when deployed in AWS Lambda for PMTiles calls
+- :rocket: Allow direct Connection Feature PUT requests outside of the submit
+- :white_check_mark: Add Connection Feature Tests
+
 ### v12.61.1 - 2026-01-24
 
 - :rocket: Show ESRI Geometry Type in Server Explorer
