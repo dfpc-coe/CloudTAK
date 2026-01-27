@@ -209,7 +209,7 @@
         "query": true,
         "res": true
     },
-    "PUT /connection/:connectionid/feature/:id": {
+    "PUT /connection/:connectionid/feature": {
         "body": true,
         "query": false,
         "res": true

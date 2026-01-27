@@ -29,9 +29,9 @@ test('GET: api/connection/1/feature', async () => {
     }
 });
 
-test('PUT: api/connection/1/feature/:id', async () => {
+test('PUT: api/connection/1/feature', async () => {
     try {
-        const res = await flight.fetch('/api/connection/1/feature/my-feature-id', {
+        const res = await flight.fetch('/api/connection/1/feature', {
             method: 'PUT',
             auth: {
                 bearer: flight.token.admin
@@ -60,6 +60,7 @@ test('PUT: api/connection/1/feature/:id', async () => {
                 }
             }
         }, true);
+
 
         // Properties might be stripped by rigid CoT schema
         assert.deepEqual(res.body, {
@@ -193,9 +194,9 @@ test('GET: api/connection/1/feature/:id - 404', async () => {
     }
 });
 
-test('PUT: api/connection/1/feature/:id - Create another', async () => {
+test('PUT: api/connection/1/feature - Create another', async () => {
      try {
-        const res = await flight.fetch('/api/connection/1/feature/feature-2', {
+        const res = await flight.fetch('/api/connection/1/feature', {
             method: 'PUT',
             auth: {
                 bearer: flight.token.admin
@@ -219,6 +220,7 @@ test('PUT: api/connection/1/feature/:id - Create another', async () => {
             }
         }, true);
 
+
         assert.deepEqual(res.body, {
             id: 'feature-2',
             type: 'Feature',
@@ -230,10 +232,12 @@ test('PUT: api/connection/1/feature/:id - Create another', async () => {
                 start: time,
                 stale: time,
                 center: [0, 0],
+                archived: true,
+                callsign: 'UNKNOWN'
             },
             geometry: {
                 type: 'Point',
-                coordinates: [0, 0]
+                coordinates: [0, 0, 0]
             }
         });
 
