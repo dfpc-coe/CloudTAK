@@ -22,7 +22,8 @@ test('GET: api/profile/overlay', async () => {
              total: 0,
              items: [],
              available: {
-                 terrain: false
+                 terrain: false,
+                 snapping: false
              }
         });
     } catch (err) {
