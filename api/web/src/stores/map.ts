@@ -21,6 +21,7 @@ import { db } from '../base/database.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay.ts';
+import OverlayManager from '../base/overlay_manager.ts';
 import Subscription from '../base/subscription.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
@@ -43,6 +44,8 @@ export const useMapStore = defineStore('cloudtak', {
         _icons?: any;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _menu?: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        _overlays: Map<number, Overlay>;
 
         db: DatabaseType;
         channel: BroadcastChannel;
@@ -97,8 +100,7 @@ export const useMapStore = defineStore('cloudtak', {
             x: number;
             y: number;
             lngLat?: LngLat;
-        },
-        overlays: Array<Overlay>
+        }
     } => {
         const worker = Comlink.wrap<Atlas>(new Worker(AtlasWorker, {
             type: 'module'
@@ -153,9 +155,11 @@ export const useMapStore = defineStore('cloudtak', {
                 x: 0, y: 0,
                 lngLat: undefined
             },
+
             overlays: [],
 
-            selected: new Map()
+            selected: new Map(),
+            _overlays: new Map()
         }
     },
     getters: {
@@ -197,13 +201,10 @@ export const useMapStore = defineStore('cloudtak', {
             this.$reset();
         },
         removeOverlay: async function(overlay: Overlay) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const pos = (this.overlays as any[]).indexOf(overlay)
-            if (pos === -1) return;
+            if (!this._overlays.has(overlay.id)) return;
+            this._overlays.delete(overlay.id);
 
-            this.overlays.splice(pos, 1)
-
-            await overlay.delete();
+            await OverlayManager.delete(overlay.id); // Replaces overlay.delete()
             if (overlay.mode === 'mission' && overlay.mode_id) {
                 const sub = await Subscription.from(overlay.mode_id, localStorage.token, {
                     subscribed: true
@@ -219,7 +220,7 @@ export const useMapStore = defineStore('cloudtak', {
             await this.worker.db.makeActiveMission(mission ? mission.meta.guid : undefined);
 
             if (mission) {
-                for (const overlay of this.overlays) {
+                for (const overlay of this._overlays.values()) {
                     if (overlay.mode !== 'mission' || !overlay.mode_id) continue;
 
                     if (overlay.mode_id !== mission.meta.guid && overlay.active) {
@@ -232,7 +233,7 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 }
             } else {
-                for (const overlay of this.overlays) {
+                for (const overlay of this._overlays.values()) {
                     if (overlay.mode !== 'mission' || !overlay.mode_id) continue;
 
                     if (overlay.active) {
@@ -243,29 +244,19 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         getOverlayById(id: number): Overlay | null {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            for (const overlay of (this.overlays as any[])) {
-
-                if (overlay.id === id) return overlay as Overlay
-            }
-
-            return null;
+            return this._overlays.get(id) || null;
         },
         getOverlayByName(name: string): Overlay | null {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            for (const overlay of (this.overlays as any[])) {
-
-                if (overlay.name === name) return overlay as Overlay
+            for (const overlay of this._overlays.values()) {
+                if (overlay.name === name) return overlay;
             }
 
             return null;
         },
         getOverlayByMode(mode: string, mode_id: string): Overlay | null {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            for (const overlay of (this.overlays as any[])) {
-
+            for (const overlay of this._overlays.values()) {
                 if (overlay.mode === mode && overlay.mode_id === mode_id) {
-                    return overlay as Overlay;
+                    return overlay;
                 }
             }
 
@@ -625,7 +616,7 @@ export const useMapStore = defineStore('cloudtak', {
 
                 // Ignore Non-Clickable Layer
                 const clickMap: Map<string, { type: string, id: string }> = new Map();
-                for (const overlay of this.overlays) {
+                for (const overlay of this._overlays.values()) {
                     for (const c of overlay._clickable) {
                         clickMap.set(c.id, c);
                     }
@@ -703,6 +694,7 @@ export const useMapStore = defineStore('cloudtak', {
                 if (this.draw.editing) return;
 
                 const id = randomUUID();
+
                 this.radialClick({
                     id,
                     type: 'Feature',
@@ -731,15 +723,14 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             });
 
-            const url = stdurl('/api/profile/overlay');
-            url.searchParams.append('sort', 'pos');
-            url.searchParams.append('order', 'asc');
-            url.searchParams.append('limit', '100');
-            const profileOverlays = await std(url) as ProfileOverlayList;
-            this.hasTerrain = profileOverlays.available.terrain;
+            await OverlayManager.sync();
+            const managerOverlays = await OverlayManager.list();
+            managerOverlays.sort((a, b) => a.value.pos - b.value.pos);
 
-            const hasBasemap = profileOverlays.items.some((o: ProfileOverlay) => {
-                return o.mode === 'basemap'
+            // this.hasTerrain = profileOverlays.available.terrain;
+
+            const hasBasemap = managerOverlays.some((o) => {
+                return o.value.mode === 'basemap'
             });
 
             // Courtesy add an initial basemap
@@ -749,7 +740,7 @@ export const useMapStore = defineStore('cloudtak', {
                 const basemaps = await std(burl) as APIList<Basemap>;
 
                 if (basemaps.items.length > 0) {
-                    const basemap = await Overlay.create({
+                    const basemap = await OverlayManager.create({
                         name: basemaps.items[0].name,
                         pos: -1,
                         type: 'raster',
@@ -758,36 +749,32 @@ export const useMapStore = defineStore('cloudtak', {
                         mode_id: String(basemaps.items[0].id)
                     });
 
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this.overlays as any[]).push(basemap);
+                    managerOverlays.push(basemap);
                 }
             }
 
             // Parallelize Overlay Creation
-            const overlayPromises = profileOverlays.items.map(item =>
-                Overlay.create(item as ProfileOverlay, { skipSave: true, skipLayers: true })
+            const overlayPromises = managerOverlays.map(item =>
+                Overlay.create(item.value as ProfileOverlay, { skipSave: true, skipLayers: true })
             );
 
             const newOverlays = await Promise.all(overlayPromises);
 
             for (const overlay of newOverlays) {
+                this._overlays.set(overlay.id, overlay);
                 await overlay.addLayers();
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.overlays as any[]).push(...newOverlays);
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.overlays as any[]).push(await Overlay.internal({
+            const internal = await Overlay.internal({
                 id: -1,
                 name: 'CoT Icons',
                 type: 'geojson',
-            }));
+            });
+            this._overlays.set(internal.id, internal);
 
             // Data Syncs are specially loaded as they are dynamic
             // Parallelize Mission Loading
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const missionOverlays = (this.overlays as any[]).filter((overlay: Overlay) => overlay.mode === 'mission' && overlay.mode_id);
+            const missionOverlays = Array.from(this._overlays.values()).filter((overlay: Overlay) => overlay.mode === 'mission' && overlay.mode_id);
             const missionPromises = missionOverlays.map(async (overlay: Overlay) => {
                     const source = map.getSource(String(overlay.id));
                     if (!source) return;
@@ -813,7 +800,7 @@ export const useMapStore = defineStore('cloudtak', {
             await this.updateAttribution();
         },
         updateIconRotation: function(enabled: boolean): void {
-            for (const overlay of this.overlays) {
+            for (const overlay of this._overlays.values()) {
                 if (overlay.type === 'geojson') {
                     // Update icon rotation
                     const iconLayerId = `${overlay.id}-icon`;
@@ -869,8 +856,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         updateAttribution: async function(): Promise<void> {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const attributionOverlays = (this.overlays as any[]).filter((o: Overlay) => o.mode === 'basemap' && o.mode_id && o.visible);
+            const attributionOverlays = Array.from(this._overlays.values()).filter((o: Overlay) => o.mode === 'basemap' && o.mode_id && o.visible);
             const attributionPromises = attributionOverlays.map(async (overlay: Overlay) => {
                     try {
                         const basemap = await std(`/api/basemap/${overlay.mode_id}`) as { attribution?: string };
@@ -896,7 +882,7 @@ export const useMapStore = defineStore('cloudtak', {
          */
         featureSource: function(feat: MapGeoJSONFeature | Feature): string | void {
             const clickMap: Map<string, { type: string, id: string }> = new Map();
-            for (const overlay of this.overlays) {
+            for (const overlay of this._overlays.values()) {
                 for (const c of overlay._clickable) {
                     clickMap.set(c.id, c);
                 }

@@ -104,6 +104,26 @@ export interface DBSubscription {
     subscribed: boolean;
 }
 
+export interface DBOverlay {
+    id: number;
+    name: string;
+    active: boolean;
+    username?: string;
+    frequency: number | null;
+    iconset: string | null;
+    created: string;
+    updated: string;
+    pos: number;
+    type: string;
+    opacity: number;
+    visible: boolean;
+    mode: string;
+    mode_id: string | null;
+    url?: string;
+    styles: unknown[];
+    token: string | null;
+}
+
 export interface DBSubscriptionLog {
     id: string;
     dtg?: string;
@@ -157,7 +177,8 @@ export type DatabaseType = Dexie & {
     subscription_feature: EntityTable<DBSubscriptionFeature, 'id'>,
     mission_template: EntityTable<DBMissionTemplate, 'id'>,
     mission_template_log: EntityTable<DBMissionTemplateLog, 'id'>,
-    profile: EntityTable<DBProfileConfig, 'key'>
+    profile: EntityTable<DBProfileConfig, 'key'>,
+    overlay: EntityTable<DBOverlay, 'id'>
 };
 
 export const db = new Dexie('CloudTAK') as DatabaseType;
@@ -178,5 +199,6 @@ db.version(1).stores({
     subscription_feature: 'id, mission, [mission+id]',
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
-    profile: 'key'
+    profile: 'key',
+    overlay: 'id, name, type, mode, active'
 });
