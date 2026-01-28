@@ -23,7 +23,7 @@ export default class Overlay {
     _destroyed: boolean;
     _internal: boolean;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _map?: any;
+    _map?: MapGLMap;
 
     _timer: ReturnType<typeof setInterval> | null;
 
