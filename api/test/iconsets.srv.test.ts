@@ -297,4 +297,43 @@ test('GET: /api/iconset/:iconset/icon/:name', async () => {
     }
 });
 
+test('POST: /api/iconset/:iconset/icon - PNG with dots in filename', async () => {
+    try {
+        const res = await flight.fetch('/api/iconset/test-iconset/icon', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                name: 'INF.01.FireStation.png',
+                data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+            }
+        }, true);
+
+        assert.equal(res.body.name, 'INF.01.FireStation');
+        assert.equal(res.body.path, 'test-iconset/INF.01.FireStation');
+
+        // Force synchronous regen
+        await flight.fetch('/api/iconset/test-iconset/regen', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {}
+        }, true);
+
+        const sprite = await flight.fetch('/api/iconset/test-iconset/sprite.json', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        assert.ok(sprite.body['INF.01.FireStation'], 'Sprite JSON should contain the key with dots');
+
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 flight.landing();
