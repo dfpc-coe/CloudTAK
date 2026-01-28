@@ -205,18 +205,28 @@ export const useMapStore = defineStore('cloudtak', {
         },
         removeOverlay: async function(overlay: Overlay) {
             if (!this._overlays.has(overlay.id)) return;
-            overlay.remove(this.map, this.icons);
-            this._overlays.delete(overlay.id);
 
-            await OverlayManager.delete(overlay.id); // Replaces overlay.delete()
-            if (overlay.mode === 'mission' && overlay.mode_id) {
-                const sub = await Subscription.from(overlay.mode_id, localStorage.token, {
-                    subscribed: true
-                });
+            try {
+                // Delete from backend first - if this fails, UI state remains consistent
+                await OverlayManager.delete(overlay.id);
+                
+                // Only remove from UI after successful backend deletion
+                overlay.remove(this.map, this.icons);
+                this._overlays.delete(overlay.id);
 
-                if (sub) {
-                    await sub.update({ subscribed: false });
+                if (overlay.mode === 'mission' && overlay.mode_id) {
+                    const sub = await Subscription.from(overlay.mode_id, localStorage.token, {
+                        subscribed: true
+                    });
+
+                    if (sub) {
+                        await sub.update({ subscribed: false });
+                    }
                 }
+            } catch (err) {
+                console.error('Failed to delete overlay:', err);
+                // Re-throw to allow caller to handle the error
+                throw err;
             }
         },
         addOverlay: async function(overlaySpec: ProfileOverlay_Create, opts: {
