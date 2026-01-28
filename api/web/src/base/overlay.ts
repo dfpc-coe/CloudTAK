@@ -499,7 +499,7 @@ export default class Overlay {
         if (this._internal) return;
 
         if (this.id) {
-            await std(`/api/profile/overlay?id=${this.id}`, {
+            await std(`/api/profile/overlay/${this.id}`, {
                 method: 'DELETE'
             });
         }
