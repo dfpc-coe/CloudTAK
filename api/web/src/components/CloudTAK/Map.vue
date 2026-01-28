@@ -889,8 +889,10 @@ async function handleRadial(event: string): Promise<void> {
         await mapStore.refresh();
         closeRadial()
     } else if (event === 'context:info') {
-        // @ts-expect-error Figure out geometry.coordinates type
-        router.push(`/query/${encodeURIComponent(mapStore.radial.cot.geometry.coordinates.join(','))}`);
+        const geom = mapStore.radial.cot?.geometry;
+        if (geom && 'coordinates' in geom) {
+            router.push(`/query/${encodeURIComponent(geom.coordinates.join(','))}`);
+        }
         closeRadial()
     } else {
         closeRadial()

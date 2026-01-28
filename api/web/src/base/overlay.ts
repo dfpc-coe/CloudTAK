@@ -4,13 +4,17 @@ import type {
     TileJSON
 } from '../types.ts';
 import { DrawToolMode } from '../stores/modules/draw.ts';
+import IconManager from '../stores/modules/icons.ts';
 import type { FeatureCollection } from 'geojson';
 import { bbox } from '@turf/bbox'
-import type { LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
+import type { LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource, Map as MapGLMap } from 'maplibre-gl'
 import cotStyles from './utils/styles.ts'
 import { std, stdurl } from '../std.js';
-import { useMapStore } from '../stores/map.js';
 import ProfileConfig from './profile.ts';
+
+export interface IDrawTool {
+    mode: DrawToolMode;
+}
 
 /**
  * @class
@@ -18,6 +22,8 @@ import ProfileConfig from './profile.ts';
 export default class Overlay {
     _destroyed: boolean;
     _internal: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _map?: any;
 
     _timer: ReturnType<typeof setInterval> | null;
 
@@ -48,6 +54,9 @@ export default class Overlay {
     token: string | null;
 
     static async create(
+        map: MapGLMap,
+        icons: IconManager,
+        draw: IDrawTool,
         body: ProfileOverlay | ProfileOverlay_Create,
         opts: {
             internal?: boolean;
@@ -81,7 +90,7 @@ export default class Overlay {
                 internal: opts.internal
             });
 
-            await overlay.init(opts);
+            await overlay.init(map, icons, draw, opts);
 
             return overlay;
         } else {
@@ -89,13 +98,16 @@ export default class Overlay {
                 internal: opts.internal
             });
 
-            await overlay.init(opts);
+            await overlay.init(map, icons, draw, opts);
 
             return overlay;
         }
     }
 
     static async internal(
+        map: MapGLMap,
+        icons: IconManager,
+        draw: IDrawTool,
         body: {
             id: number;
             type: string;
@@ -104,7 +116,7 @@ export default class Overlay {
             clickable?: Array<{ id: string; type: string }>;
         }
     ): Promise<Overlay> {
-        const overlay = await Overlay.create({
+        const overlay = await Overlay.create(map, icons, draw, {
             ...body,
             visible: true,
             opacity: 1,
@@ -128,10 +140,10 @@ export default class Overlay {
         return overlay;
     }
 
-    static async load(id: number): Promise<Overlay> {
+    static async load(map: MapGLMap, icons: IconManager, draw: IDrawTool, id: number): Promise<Overlay> {
         const remote = await std(`/api/profile/overlay/${id}`) as ProfileOverlay;
 
-        const ov = await Overlay.create(remote, {
+        const ov = await Overlay.create(map, icons, draw, remote, {
             skipSave: true
         });
 
@@ -172,11 +184,12 @@ export default class Overlay {
 
         if (this.frequency) {
             this._timer = setInterval(async () => {
-                const mapStore = useMapStore();
-                try {
-                    mapStore.map.refreshTiles(String(this.id));
-                } catch (err) {
-                    console.error('Error refreshing tiles for overlay', this.id, err);
+                if (this._map) {
+                    try {
+                        this._map.refreshTiles(String(this.id));
+                    } catch (err) {
+                        console.error('Error refreshing tiles for overlay', this.id, err);
+                    }
                 }
             }, this.frequency * 1000);
         } else {
@@ -188,9 +201,8 @@ export default class Overlay {
         return !this._error;
     }
 
-    hasBounds(): boolean {
-        const mapStore = useMapStore();
-        const source = mapStore.map.getSource(String(this.id))
+    hasBounds(map: MapGLMap): boolean {
+        const source = map.getSource(String(this.id))
         if (!source) return false;
 
         if (source.type === 'vector') {
@@ -204,34 +216,31 @@ export default class Overlay {
         }
     }
 
-    async zoomTo(): Promise<void> {
-        const mapStore = useMapStore();
-        const source = mapStore.map.getSource(String(this.id))
+    async zoomTo(map: MapGLMap): Promise<void> {
+        const source = map.getSource(String(this.id))
         if (!source) return;
 
         if (source.type === 'vector') {
-            mapStore.map.fitBounds((source as VectorTileSource).bounds);
+            map.fitBounds((source as VectorTileSource).bounds);
         } else if (source.type === 'raster') {
-            mapStore.map.fitBounds((source as RasterTileSource).bounds);
+            map.fitBounds((source as RasterTileSource).bounds);
         } else if (source.type === 'geojson') {
             const geojson = await (source as GeoJSONSource).getData();
-            mapStore.map.fitBounds(bbox(geojson) as LngLatBoundsLike);
+            map.fitBounds(bbox(geojson) as LngLatBoundsLike);
         }
     }
 
-    async addLayers(before?: string): Promise<void> {
-        const mapStore = useMapStore();
-
+    async addLayers(map: MapGLMap, draw: IDrawTool, before?: string): Promise<void> {
         for (const l of this.styles) {
             if (before) {
-                mapStore.map.addLayer(l, before);
+                map.addLayer(l, before);
             } else {
-                mapStore.map.addLayer(l)
+                map.addLayer(l)
             }
         }
 
         // The above doesn't set vis/opacity initially
-        await this.update({
+        await this.update(map, {
             opacity: this.opacity,
             visible: this.visible
         })
@@ -239,13 +248,13 @@ export default class Overlay {
         for (const click of this._clickable) {
             const hoverIds = new Set<string>();
 
-            mapStore.map.on('mouseenter', click.id, () => {
-                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
-                mapStore.map.getCanvas().style.cursor = 'pointer';
+            map.on('mouseenter', click.id, () => {
+                if (draw.mode !== DrawToolMode.STATIC) return;
+                map.getCanvas().style.cursor = 'pointer';
             })
 
-            mapStore.map.on('mousemove', click.id, (e) => {
-                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
+            map.on('mousemove', click.id, (e) => {
+                if (draw.mode !== DrawToolMode.STATIC) return;
 
                 if (this.type === 'vector' && e.features) {
                     const newIds = e.features.map(f => String(f.id));
@@ -253,7 +262,7 @@ export default class Overlay {
                     for (const id of hoverIds) {
                         if (newIds.includes(id)) continue;
 
-                        mapStore.map.setFeatureState({
+                        map.setFeatureState({
                             id: id,
                             source: String(this.id),
                             sourceLayer: 'out'
@@ -263,7 +272,7 @@ export default class Overlay {
                     }
 
                     for (const id of newIds) {
-                        mapStore.map.setFeatureState({
+                        map.setFeatureState({
                             id: id,
                             source: String(this.id),
                             sourceLayer: 'out'
@@ -274,13 +283,13 @@ export default class Overlay {
                 }
             });
 
-            mapStore.map.on('mouseleave', click.id, () => {
-                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
-                mapStore.map.getCanvas().style.cursor = '';
+            map.on('mouseleave', click.id, () => {
+                if (draw.mode !== DrawToolMode.STATIC) return;
+                map.getCanvas().style.cursor = '';
 
                 if (this.type === 'vector') {
                     for (const id of hoverIds) {
-                        mapStore.map.setFeatureState({
+                        map.setFeatureState({
                             id: id,
                             source: String(this.id),
                             sourceLayer: 'out'
@@ -293,12 +302,12 @@ export default class Overlay {
         }
     }
 
-    async init(opts: {
+    async init(map: MapGLMap, icons: IconManager, draw: IDrawTool, opts: {
         clickable?: Array<{ id: string; type: string }>;
         before?: string;
         skipLayers?: boolean;
     } = {}) {
-        const mapStore = useMapStore();
+        this._map = map;
 
         if (this.type === 'raster' && this.url) {
             const url = stdurl(this.url);
@@ -306,7 +315,7 @@ export default class Overlay {
 
             const tileJSON = await std(url.toString()) as TileJSON
 
-            mapStore.map.addSource(String(this.id), {
+            map.addSource(String(this.id), {
                 ...tileJSON,
                 type: 'raster',
             });
@@ -314,15 +323,15 @@ export default class Overlay {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
 
-            mapStore.map.addSource(String(this.id), {
+            map.addSource(String(this.id), {
                 type: 'vector',
                 url: String(url)
             });
         } else if (this.type === 'geojson') {
-            if (!mapStore.map.getSource(String(this.id))) {
+            if (!map.getSource(String(this.id))) {
                 const data: FeatureCollection = { type: 'FeatureCollection', features: [] };
 
-                mapStore.map.addSource(String(this.id), {
+                map.addSource(String(this.id), {
                     type: 'geojson',
                     cluster: false,
                     data
@@ -364,7 +373,7 @@ export default class Overlay {
 
         if (this.iconset) {
             try {
-                mapStore.icons.addIconset(this.iconset);
+                icons.addIconset(this.iconset);
             } catch (err) {
                 console.error('Error adding iconset', this.iconset, err);
             }
@@ -391,29 +400,32 @@ export default class Overlay {
         this._clickable = opts.clickable;
 
         if (!opts.skipLayers) {
-            await this.addLayers(opts.before);
+            await this.addLayers(map, draw, opts.before);
         }
         this._loaded = true;
     }
 
-    remove() {
-        const mapStore = useMapStore();
-
+    remove(map: MapGLMap, icons: IconManager) {
         for (const l of this.styles) {
-            mapStore.map.removeLayer(String(l.id));
+            if (map.getLayer(String(l.id))) {
+                 map.removeLayer(String(l.id));
+            }
         }
 
         if (this.iconset) {
-            mapStore.icons.removeIconset(this.iconset);
+            icons.removeIconset(this.iconset);
         }
 
-        if (mapStore.map.getStyle().sources[String(this.id)]) {
+        if (map.getStyle().sources[String(this.id)]) {
             // Don't crash the map if it already  removed
-            mapStore.map.removeSource(String(this.id));
+            map.removeSource(String(this.id));
         }
     }
 
     async replace(
+        map: MapGLMap,
+        icons: IconManager,
+        draw: IDrawTool,
         overlay: {
             name?: string
             active?: boolean;
@@ -430,9 +442,10 @@ export default class Overlay {
         },
         opts: {
             before?: string;
-        } = {}
+        } = {},
+        updateAttribution?: () => Promise<void>
     ): Promise<void> {
-        this.remove();
+        this.remove(map, icons);
 
         if (overlay.name) this.name = overlay.name;
         if (overlay.active !== undefined) this.active = overlay.active;
@@ -457,7 +470,7 @@ export default class Overlay {
             this.styles = overlay.styles as Array<LayerSpecification>;
         }
 
-        await this.init({
+        await this.init(map, icons, draw, {
             clickable: this._clickable,
             before: opts.before
         });
@@ -466,13 +479,12 @@ export default class Overlay {
 
 
         // Update attribution if this is a basemap
-        if (this.mode === 'basemap') {
-            const mapStore = useMapStore();
-            await mapStore.updateAttribution();
+        if (this.mode === 'basemap' && updateAttribution) {
+            await updateAttribution();
         }
     }
 
-    async delete(): Promise<void> {
+    async delete(map: MapGLMap, icons: IconManager, updateAttribution?: () => Promise<void>): Promise<void> {
         this._destroyed = true;
 
         const wasBasemap = this.mode === 'basemap';
@@ -482,7 +494,7 @@ export default class Overlay {
             this._timer = null;
         }
 
-        this.remove();
+        this.remove(map, icons);
 
         if (this._internal) return;
 
@@ -493,24 +505,22 @@ export default class Overlay {
         }
 
         // Update attribution if this was a basemap
-        if (wasBasemap) {
-            const mapStore = useMapStore();
-            await mapStore.updateAttribution();
+        if (wasBasemap && updateAttribution) {
+            await updateAttribution();
         }
     }
 
-    async update(body: {
+    async update(map: MapGLMap, body: {
         pos?: number;
         visible?: boolean;
         opacity?: number;
-    }): Promise<void> {
-        const mapStore = useMapStore();
+    }, updateAttribution?: () => Promise<void>): Promise<void> {
 
         if (body.opacity !== undefined) {
             this.opacity = body.opacity;
             for (const l of this.styles) {
                 if (this.type === 'raster') {
-                    mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity))
+                    map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity))
                 }
             }
         }
@@ -518,13 +528,13 @@ export default class Overlay {
         if (body.visible !== undefined) {
             this.visible = body.visible;
             for (const l of this.styles) {
-                mapStore.map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
+                map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
             }
         }
 
         // Update attribution if this is a basemap
-        if (this.mode === 'basemap') {
-            await mapStore.updateAttribution();
+        if (this.mode === 'basemap' && updateAttribution) {
+            await updateAttribution();
         }
 
         if (body.pos !== undefined) {

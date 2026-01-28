@@ -175,7 +175,6 @@ import {
     IconFolder
 } from '@tabler/icons-vue';
 import StandardItem from '../util/StandardItem.vue';
-import Overlay from '../../../base/overlay.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
 const mapStore = useMapStore();
@@ -310,7 +309,7 @@ async function createOverlay(overlay: Basemap) {
     loading.value = true;
 
     try {
-        const createdOverlay = await Overlay.create({
+        await mapStore.addOverlay({
             url: String(stdurl(`/api/basemap/${overlay.id}/tiles`)),
             name: overlay.name,
             mode: 'overlay',
@@ -319,8 +318,6 @@ async function createOverlay(overlay: Basemap) {
             type: overlay.type,
             styles: overlay.styles
         });
-
-        (mapStore.overlays as unknown as Overlay[]).push(createdOverlay);
 
         router.push('/menu/overlays');
     } finally {

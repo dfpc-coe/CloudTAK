@@ -29,7 +29,7 @@ import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 
-import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, MapConfig } from '../types.ts';
+import type { ProfileOverlay, ProfileOverlay_Create, Basemap, APIList, Feature, MapConfig } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
@@ -44,7 +44,6 @@ export const useMapStore = defineStore('cloudtak', {
         _icons?: any;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _menu?: any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _overlays: Map<number, Overlay>;
 
         db: DatabaseType;
@@ -96,7 +95,7 @@ export const useMapStore = defineStore('cloudtak', {
         viewedFeature?: Feature | MapGeoJSONFeature,
         radial: {
             mode: string | undefined;
-            cot: Feature | MapGeoJSONFeature | undefined;
+            cot: Feature | MapGeoJSONFeature | COT | undefined;
             x: number;
             y: number;
             lngLat?: LngLat;
@@ -156,8 +155,6 @@ export const useMapStore = defineStore('cloudtak', {
                 lngLat: undefined
             },
 
-            overlays: [],
-
             selected: new Map(),
             _overlays: new Map()
         }
@@ -178,6 +175,12 @@ export const useMapStore = defineStore('cloudtak', {
         menu: function(): MenuManager {
             if (!this._menu) throw new Error('Menu Manager has not yet initialized');
             return this._menu as MenuManager;
+        },
+        overlays: function(): Overlay[] {
+            const arr: Overlay[] = [];
+            // @ts-expect-error - MapLibre types cause infinite recursion
+            this._overlays.forEach((o) => arr.push(o));
+            return arr.sort((a, b) => a.pos - b.pos);
         }
     },
     actions: {
@@ -202,6 +205,7 @@ export const useMapStore = defineStore('cloudtak', {
         },
         removeOverlay: async function(overlay: Overlay) {
             if (!this._overlays.has(overlay.id)) return;
+            overlay.remove(this.map, this.icons);
             this._overlays.delete(overlay.id);
 
             await OverlayManager.delete(overlay.id); // Replaces overlay.delete()
@@ -214,6 +218,20 @@ export const useMapStore = defineStore('cloudtak', {
                     await sub.update({ subscribed: false });
                 }
             }
+        },
+        addOverlay: async function(overlaySpec: ProfileOverlay_Create, opts: {
+            before?: string
+        } = {}): Promise<Overlay> {
+            const manager = await OverlayManager.create(overlaySpec);
+
+            const overlay = await Overlay.create(this.map, this.icons, this.draw, manager.value as ProfileOverlay, {
+                skipSave: true,
+                before: opts.before
+            });
+
+            this._overlays.set(overlay.id, overlay);
+
+            return overlay;
         },
         makeActiveMission: async function(mission?: Subscription): Promise<void> {
             this.mission = mission;
@@ -755,17 +773,17 @@ export const useMapStore = defineStore('cloudtak', {
 
             // Parallelize Overlay Creation
             const overlayPromises = managerOverlays.map(item =>
-                Overlay.create(item.value as ProfileOverlay, { skipSave: true, skipLayers: true })
+                Overlay.create(this.map, this.icons, this.draw, item.value as ProfileOverlay, { skipSave: true, skipLayers: true })
             );
 
             const newOverlays = await Promise.all(overlayPromises);
 
             for (const overlay of newOverlays) {
                 this._overlays.set(overlay.id, overlay);
-                await overlay.addLayers();
+                await overlay.addLayers(this.map, this.draw);
             }
 
-            const internal = await Overlay.internal({
+            const internal = await Overlay.internal(this.map, this.icons, this.draw, {
                 id: -1,
                 name: 'CoT Icons',
                 type: 'geojson',

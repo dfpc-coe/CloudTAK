@@ -211,7 +211,6 @@ import StandardItem from '../util/StandardItem.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { server, stdurl } from '../../../std.ts';
-import Overlay from '../../../base/overlay.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Share from '../util/Share.vue';
@@ -276,17 +275,19 @@ watch(paging.value, async () => {
 });
 
 async function setBasemap(basemap: Basemap) {
-    const hasBasemap = mapStore.overlays.some((overlay) => {
+    const sortedOverlays = mapStore.overlays; // Use getter
+
+    const hasBasemap = sortedOverlays.some((overlay) => {
         return overlay.mode === 'basemap';
     });
 
     if (hasBasemap) {
-        for (let i = 0; i < mapStore.overlays.length; i++) {
-            const overlay = mapStore.overlays[i];
+        for (let i = 0; i < sortedOverlays.length; i++) {
+            const overlay = sortedOverlays[i];
 
             if (overlay.mode === 'basemap') {
-                if (mapStore.overlays[i + 1]) {
-                    await overlay.replace({
+                if (sortedOverlays[i + 1]) {
+                    await overlay.replace(mapStore.map, mapStore.icons, mapStore.draw, {
                         name: basemap.name,
                         type: basemap.type,
                         url: `/api/basemap/${basemap.id}/tiles`,
@@ -294,25 +295,26 @@ async function setBasemap(basemap: Basemap) {
                         mode_id: String(basemap.id),
                         styles: basemap.styles as Array<LayerSpecification>
                     }, {
-                        before: mapStore.overlays[i + 1].styles[0].id
-                    });
+                        before: sortedOverlays[i + 1].styles[0].id
+                    }, () => mapStore.updateAttribution());
                 } else {
-                    await overlay.replace({
+                    await overlay.replace(mapStore.map, mapStore.icons, mapStore.draw, {
                         name: basemap.name,
                         type: basemap.type,
                         url: `/api/basemap/${basemap.id}/tiles`,
                         mode: 'basemap',
                         mode_id: String(basemap.id),
                         styles: basemap.styles as Array<LayerSpecification>
-                    });
+                    }, {}, () => mapStore.updateAttribution());
                 }
                 break;
             }
         }
     } else {
-        const before = String(mapStore.overlays[0].styles[0].id);
+        const sorted = mapStore.overlays;
+        const before = (sorted.length > 0 && sorted[0].styles && sorted[0].styles.length) ? String(sorted[0].styles[0].id) : undefined;
 
-        mapStore.overlays.unshift(await Overlay.create({
+        await mapStore.addOverlay({
             name: basemap.name,
             pos: -1,
             type: basemap.type,
@@ -321,7 +323,7 @@ async function setBasemap(basemap: Basemap) {
             mode: 'basemap',
             mode_id: String(basemap.id),
             styles: basemap.styles
-        }, { before }));
+        }, { before });
     }
 }
 
@@ -343,8 +345,11 @@ function isCurrentBasemap(basemapId: number): boolean {
 
 async function addOverlay(basemap: Basemap) {
     try {
+        const sorted = mapStore.overlays;
+        const before = (sorted.length > 1 && sorted[1].styles && sorted[1].styles.length) ? String(sorted[1].styles[0].id) : undefined;
+
         // Insert in 1st position after basemap where mapStore.overlays[0] is the basemap
-        mapStore.overlays.splice(1, 0, await Overlay.create({
+        await mapStore.addOverlay({
             url: String(stdurl(`/api/basemap/${basemap.id}/tiles`)),
             name: basemap.name,
             mode: 'overlay',
@@ -353,8 +358,8 @@ async function addOverlay(basemap: Basemap) {
             type: basemap.type,
             styles: basemap.styles
         }, {
-            before: String(mapStore.overlays[1].styles[0].id)
-        }));
+            before
+        });
 
         loading.value = false;
 

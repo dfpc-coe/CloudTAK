@@ -259,7 +259,6 @@ import ShareToPackage from '../util/ShareToPackage.vue';
 import ShareToMission from '../util/ShareToMission.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
-import Overlay from '../../../base/overlay.ts';
 import Upload from '../../util/Upload.vue';
 
 const mapStore = useMapStore();
@@ -309,23 +308,23 @@ async function createOverlay(asset: ProfileFile) {
     };
 
     if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
-        await mapStore.overlays.push(await Overlay.create({
+        await mapStore.addOverlay({
             url: String(url),
             name: asset.name,
             mode: 'profile',
             mode_id: asset.name,
             iconset: asset.iconset,
             type: 'vector',
-        }));
+        });
     } else {
-        await mapStore.overlays.push(await Overlay.create({
+        await mapStore.addOverlay({
             url: String(url),
             name: asset.name,
             mode: 'profile',
             mode_id: asset.name,
             iconset: asset.iconset,
             type: 'raster',
-        }));
+        });
     }
 
     loading.value = false;

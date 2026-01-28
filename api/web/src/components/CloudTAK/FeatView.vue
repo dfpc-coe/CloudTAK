@@ -174,8 +174,8 @@ const mode = ref('default');
 
 const overlay = computed<Overlay | null>(() => {
     if (!feature.value) return null;
-    // @ts-expect-error Doesn't exist in typedef
-    const source: number | undefined = Number(feature.value.source);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const source: number | undefined = Number((feature.value as any).source);
     if (!source || isNaN(source)) return null
     const ov = mapStore.getOverlayById(source);
     return ov;

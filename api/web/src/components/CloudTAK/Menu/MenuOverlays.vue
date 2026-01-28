@@ -154,9 +154,9 @@
 
                                     <div class='d-flex align-items-center gap-2 flex-wrap justify-content-end w-100'>
                                         <TablerIconButton
-                                            v-if='card.overlay.hasBounds()'
+                                            v-if='card.overlay.hasBounds(mapStore.map)'
                                             title='Zoom To Overlay'
-                                            @click.stop.prevent='card.overlay.zoomTo()'
+                                            @click.stop.prevent='card.overlay.zoomTo(mapStore.map)'
                                         >
                                             <IconMaximize
                                                 :size='20'
@@ -167,7 +167,7 @@
                                         <TablerIconButton
                                             v-if='card.overlay.visible'
                                             title='Hide Layer'
-                                            @click.stop.prevent='card.overlay.update({ visible: !card.overlay.visible })'
+                                            @click.stop.prevent='card.overlay.update(mapStore.map, { visible: !card.overlay.visible }, () => mapStore.updateAttribution())'
                                         >
                                             <IconEye
                                                 :size='20'
@@ -178,7 +178,7 @@
                                         <TablerIconButton
                                             v-else
                                             title='Show Layer'
-                                            @click.stop.prevent='card.overlay.update({ visible: !card.overlay.visible })'
+                                            @click.stop.prevent='card.overlay.update(mapStore.map, { visible: !card.overlay.visible }, () => mapStore.updateAttribution())'
                                         >
                                             <IconEyeOff
                                                 :size='20'
@@ -216,9 +216,9 @@
                                             :min='0'
                                             :max='1'
                                             :step='0.1'
-                                            @change='card.overlay.update({
+                                            @change='card.overlay.update(mapStore.map, {
                                                 opacity: card.overlay.opacity
-                                            })'
+                                            }, () => mapStore.updateAttribution())'
                                         />
                                     </div>
                                     <div
@@ -248,7 +248,7 @@
 
                     <TablerNone
                         v-else
-                        label='overlays match your search'
+                        label='No Overlays'
                         :create='false'
                         class='px-2'
                     />
@@ -511,9 +511,9 @@ async function saveOrder(sortableEv: SortableEvent) {
     }
 
     for (const current of overlays) {
-        await current.update({
+        await current.update(mapStore.map, {
             pos: overlay_ids.indexOf(current.id)
-        });
+        }, () => mapStore.updateAttribution());
     }
 }
 

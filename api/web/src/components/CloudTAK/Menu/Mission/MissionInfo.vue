@@ -244,7 +244,6 @@ import {
     TablerModal,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import Overlay from '../../../../base/overlay.ts';
 import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
 
@@ -321,7 +320,7 @@ async function subscribe(subscribe: boolean) {
     const overlay = mapStore.getOverlayByMode('mission', props.subscription.guid);
 
     if (subscribe === true && !overlay) {
-        const missionOverlay = await Overlay.create({
+        await mapStore.addOverlay({
             name: props.subscription.name,
             url: `/mission/${encodeURIComponent(props.subscription.guid)}`,
             type: 'geojson',
@@ -330,7 +329,6 @@ async function subscribe(subscribe: boolean) {
             mode_id: props.subscription.guid,
         })
 
-        mapStore.overlays.push(missionOverlay);
         await mapStore.loadMission(props.subscription.guid);
 
         emit('refresh');
