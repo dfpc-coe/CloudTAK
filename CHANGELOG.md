@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.62.1 - 2026-01-28
+
+- :bug: Fix bugs related to KMZ icons with `.`
+- :bug: Fix bug in sprite loading in UI
+
 ### v12.62.0 - 2026-01-27
 
 - :rocket: Add `snapping` to overlay features API response
