@@ -66,7 +66,7 @@ export default class OverlayManager {
 
     static async delete(id: number): Promise<void> {
         await db.overlay.delete(id);
-        await std(`/api/profile/overlay/${id}`, {
+        await std(`/api/profile/overlay?id=${id}`, {
             method: 'DELETE'
         });
     }
