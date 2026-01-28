@@ -100,8 +100,9 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue']);
 
+type UserListItem = UserList['items'][number];
 const loading = ref(true);
-const selected = ref<User | undefined>()
+const selected = ref<User | UserListItem | undefined>()
 const paging = ref({
     filter: ''
 })

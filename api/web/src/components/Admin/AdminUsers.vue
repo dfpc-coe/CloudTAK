@@ -71,7 +71,7 @@
                                         <div
                                             v-else-if='h.name === "last_login"'
                                         >
-                                            <div v-text='timeDiff(user[h.name])' />
+                                            <div v-text='timeDiff(user.last_login || "")' />
                                             <div
                                                 class='subheader'
                                                 v-text='user[h.name]'
@@ -125,7 +125,7 @@ const loading = ref(true);
 
 type Header = { name: keyof User, display: boolean };
 const header = ref<Array<Header>>([])
-const list = ref<UserList>({ total: 0, items: [] });
+const list = ref<{ total: number, items: Partial<User>[] }>({ total: 0, items: [] });
 const paging = ref({
     filter: '',
     sort: 'last_login',
@@ -173,7 +173,11 @@ async function fetchList() {
         url.searchParams.append('page', String(paging.value.page));
         url.searchParams.append('sort', paging.value.sort);
         url.searchParams.append('order', paging.value.order);
-        list.value = await std(url) as UserList;
+        const res = await std(url) as UserList;
+        list.value = {
+            total: res.total,
+            items: res.items
+        }
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
