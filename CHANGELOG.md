@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.63.0 - 2026-01-28
+
+- :bug: Fix bug where if a GeoChat was sent to a Data Sync the entire change API would become corrupted due to a server schema mismatch
+- :tada: Add an IconMessage for GeoChat DataSync changes
+- :rocket: Update `batch-schema` to dump outgoing objects to the log if they fail the outgoing schema
+
 ### v12.62.1 - 2026-01-28
 
 - :bug: Fix bugs related to KMZ icons with `.`
