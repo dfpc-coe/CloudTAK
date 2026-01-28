@@ -43,6 +43,16 @@
                         v-text='change.contentResource.name'
                     />
                 </template>
+                <template v-else-if='change.type === "ADD_CONTENT" && change.details && change.details.type === "b-t-f"'>
+                    <IconMessage
+                        :size='24'
+                        stroke='1'
+                    />
+                    <span
+                        class='mx-2'
+                        v-text='"New Message"'
+                    />
+                </template>
                 <template v-else-if='change.type === "ADD_CONTENT" && change.details'>
                     <IconPolygon
                         :size='24'
@@ -108,6 +118,7 @@ import type { MissionChanges } from '../../../../types.ts';
 import {
     IconSquarePlus,
     IconSquareX,
+    IconMessage,
     IconFileX,
     IconFile,
     IconPolygon,
@@ -132,6 +143,8 @@ onMounted(async () => {
 
 async function fetchChanges() {
     loading.value = true;
+    error.value = undefined;
+
     try {
         changes.value = (await props.subscription.changes()).data;
     } catch (err) {
