@@ -89,8 +89,12 @@ export default class OverlayManager {
         const count = await db.overlay.count();
         if (count > 0 && !opts.refresh) return;
 
-        const fresh = await this.fetch();
-        await this.saveAll(fresh.items);
+        try {
+            const fresh = await this.fetch();
+            await this.saveAll(fresh.items);
+        } catch (error) {
+            console.error('OverlayManager.sync: failed to synchronize overlays', error);
+        }
     }
 
     static async saveAll(overlays: ProfileOverlay[]): Promise<void> {
