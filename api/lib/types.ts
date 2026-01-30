@@ -271,12 +271,20 @@ export const FeatureResponse = Type.Composite([ Feature.Feature, Type.Object({
     path: Type.String({ default: '/' }),
 })]);
 
-export const ImportResponse = createSelectSchema(schemas.Import, {
+export const ImportResult = createSelectSchema(schemas.ImportResult);
+
+const BaseImport = createSelectSchema(schemas.Import, {
     config: Type.Unknown(),
-    result: Type.Unknown(),
     error: Type.Optional(Type.Union([Type.Null(), Type.String()])),
     source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
 });
+
+export const ImportResponse = Type.Composite([
+    BaseImport,
+    Type.Object({
+        results: Type.Array(ImportResult)
+    })
+]);
 
 export const ErrorResponse = createSelectSchema(schemas.Errors, {
     id: Type.Integer(),
