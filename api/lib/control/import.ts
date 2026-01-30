@@ -6,15 +6,6 @@ import type { ImportResponse } from '../types.js';
 import crypto from 'node:crypto';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
-export const ImportResult = Type.Object({
-    items: Type.Optional(Type.Array(Type.Object({
-        type: Type.String(),
-        url: Type.String(),
-        id: Type.String(),
-        name: Type.String()
-    })))
-});
-
 export enum ImportSourceEnum {
     UPLOAD = 'Upload',
     MISSION = 'Mission',
