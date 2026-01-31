@@ -143,7 +143,7 @@ export default class Worker extends EventEmitter {
                  const feature = await res.json() as ProfileFeature;
                  await createImportResult(this.msg, {
                     name: feat.id as string,
-                    type: 'Mission Layer',
+                    type: 'Feature',
                     type_id: String(feature.id)
                 });
             }
