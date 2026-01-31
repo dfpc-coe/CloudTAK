@@ -263,7 +263,7 @@ export const Import = pgTable('imports', {
 
 export const ImportResult = pgTable('import_result', {
     id: serial().primaryKey(),
-    import: text().notNull().references(() => Import.id),
+    import: text().notNull().references(() => Import.id, { onDelete: 'cascade' }),
 
     name: text().notNull(),
     type: text().notNull(),
