@@ -378,7 +378,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.status && [Import_Status.EMPTY, Import_Status.PENDING].includes(req.body.status)) {
                 throw new Err(400, null, `Cannot set status to ${req.body.status}`);
             } else if (req.body.status === Import_Status.RUNNING && imported.status === Import_Status.RUNNING) {
-                throw new Err(400, null, `Cannot set statust to running on an import that is already running`);
+                throw new Err(400, null, `Cannot set status to running on an import that is already running`);
             }
 
             const new_import = await config.models.Import.commit(req.params.import, {
