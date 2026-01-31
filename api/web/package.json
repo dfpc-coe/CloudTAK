@@ -71,7 +71,7 @@
         "vue": "^3.2.31",
         "vue-component-type-helpers": "^3.0.7",
         "vue-mention": "^2.0.0-alpha.3",
-        "vue-router": "^4.0.14",
+        "vue-router": "^5.0.0",
         "yaml": "^2.8.2"
     },
     "devDependencies": {
