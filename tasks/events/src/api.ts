@@ -5,7 +5,7 @@ export async function createImportResult(
     msg: Message,
     result: {
         name: string;
-        type: string;
+        type: 'Feature' | 'Asset' | 'Iconset' | 'Basemap';
         type_id: string;
     }
 ) {
