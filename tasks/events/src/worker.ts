@@ -4,7 +4,7 @@ import { rimraf } from 'rimraf';
 import { randomUUID } from 'node:crypto';
 import { Upload } from '@aws-sdk/lib-storage';
 import { EventEmitter } from 'node:events'
-import type { Message, LocalMessage, Asset } from './types.ts';
+import type { Message, LocalMessage, Asset, ProfileFeature, Basemap as BasemapResponse } from './types.ts';
 import jwt from 'jsonwebtoken';
 import os from 'node:os';
 import fs from 'node:fs';
@@ -13,6 +13,7 @@ import s3client from "./s3.ts";
 import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
 import { CoTParser, DataPackage, Iconset, Basemap } from '@tak-ps/node-cot';
+import { createImportResult } from './api.ts';
 
 export default class Worker extends EventEmitter {
     msg: Message;
@@ -138,6 +139,13 @@ export default class Worker extends EventEmitter {
             if (!res.ok) {
                 const json = (await res.json()) as { message: string };
                 console.error(json.message);
+            } else {
+                 const feature = await res.json() as ProfileFeature;
+                 await createImportResult(this.msg, {
+                    name: feat.id as string,
+                    type: 'Feature',
+                    type_id: String(feature.id)
+                });
             }
         }
 
@@ -227,6 +235,12 @@ export default class Worker extends EventEmitter {
 
         const asset = await res.json() as Asset;
 
+        await createImportResult(this.msg, {
+            name: asset.name,
+            type: 'Asset',
+            type_id: asset.id
+        });
+
         const transformer = new DataTransform(
             this.msg,
             local,
@@ -281,6 +295,12 @@ export default class Worker extends EventEmitter {
             });
 
             if (!iconset_req.ok) throw new Error(await iconset_req.text());
+
+            await createImportResult(this.msg, {
+                name: iconset.name,
+                type: 'Iconset',
+                type_id: iconset.uid
+            });
 
             // Someone decided that the icon name should be the name without the folder prefix
             // This was a dumb idea and this code tries to match 1:1 without the prefix
@@ -353,7 +373,17 @@ export default class Worker extends EventEmitter {
                 })
             });
 
-            if (!basemap_req.ok) console.error(await basemap_req.text());
+            if (!basemap_req.ok) {
+                console.error(await basemap_req.text());
+            } else {
+                const prod = await basemap_req.json() as BasemapResponse;
+
+                await createImportResult(this.msg, {
+                    name: prod.name,
+                    type: 'Basemap',
+                    type_id: String(prod.id)
+                });
+            }
         } catch (err) {
             console.log(`Import: ${this.msg.job.id} - Is not a Basemap:`, err instanceof Error ? err.message : String(err));
         }

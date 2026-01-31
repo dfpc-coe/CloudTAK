@@ -64,6 +64,8 @@ test('Streaming: TAK Chat Message', async () => {
             try {
                 const res = JSON.parse(String(data));
 
+                if (res.type === 'status') return;
+
                 assert.equal(res.type, 'chat');
                 assert.equal(res.connection, 'admin@example.com');
                 assert.equal(res.data.message, 'Wilco');

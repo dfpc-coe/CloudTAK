@@ -5,7 +5,6 @@ import type { StyleContainer } from './style.js';
 import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from './palette.js';
 import { Polygon, Point } from 'geojson';
-import { ImportResult } from './control/import.js'
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { Layer_Config } from './models/Layer.js';
@@ -256,11 +255,19 @@ export const Import = pgTable('imports', {
     name: text().notNull(),
     status: text().notNull().default(Import_Status.PENDING),
     error: text(),
-    result: json().$type<Static<typeof ImportResult>>().notNull().default({}),
     username: text().notNull().references(() => Profile.username),
     source: text().notNull().default('Upload'),
     source_id: text(),
     config: json().notNull().default({})
+});
+
+export const ImportResult = pgTable('import_result', {
+    id: serial().primaryKey(),
+    import: text().notNull().references(() => Import.id, { onDelete: 'cascade' }),
+
+    name: text().notNull(),
+    type: text().notNull(),
+    type_id: text().notNull(),
 });
 
 export const Task = pgTable('tasks', {
