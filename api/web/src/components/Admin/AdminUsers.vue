@@ -74,12 +74,12 @@
                                             <div v-text='timeDiff(user[h.name])' />
                                             <div
                                                 class='subheader'
-                                                v-text='user[h.name]'
+                                                v-text='(user as Partial<User>)[h.name]'
                                             />
                                         </div>
                                         <span
                                             v-else
-                                            v-text='user[h.name]'
+                                            v-text='(user as Partial<User>)[h.name]'
                                         />
                                     </td>
                                 </template>
