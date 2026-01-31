@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.64.0 - 2026-01-31
+
+- :tada: Introduce an Import Result Type
+- :tada: Add Import Results as they are created in the import flow
+
 ### v12.63.0 - 2026-01-28
 
 - :bug: Fix bug where if a GeoChat was sent to a Data Sync the entire change API would become corrupted due to a server schema mismatch
