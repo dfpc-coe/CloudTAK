@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.65.0 - 2026-01-31
+
+- :tada: Show an Import Result list in the Admin Imports page
+
 ### v12.64.0 - 2026-01-31
 
 - :tada: Introduce an Import Result Type
