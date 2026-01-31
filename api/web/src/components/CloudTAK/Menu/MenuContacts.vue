@@ -28,7 +28,7 @@
             />
             <TablerNone
                 v-else-if='!visibleActiveContacts.length && !visibleOfflineContacts.length'
-                label='Contacts Found'
+                label='No Contacts'
                 :create='false'
             />
             <template v-else>
