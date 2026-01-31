@@ -359,8 +359,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             status: Type.Optional(Type.Enum(Import_Status)),
-            error: Type.Optional(Type.String()),
-            result: Type.Optional(Type.Any())
+            error: Type.Optional(Type.String())
         }),
         res: ImportResponse
     }, async (req, res) => {
@@ -369,7 +368,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
             });
 
-            let imported = await config.models.Import.augmented_from(req.params.import);
+            const imported = await config.models.Import.augmented_from(req.params.import);
 
             if (auth instanceof AuthUser) {
                 const user = auth as AuthUser;
@@ -382,21 +381,26 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, `Cannot set statust to running on an import that is already running`);
             }
 
-            imported = await config.models.Import.commit(req.params.import, {
+            const new_import = await config.models.Import.commit(req.params.import, {
                 ...req.body,
                 updated: sql`Now()`
             });
+
+            const response = {
+                ...new_import,
+                results: imported.results
+            };
 
             if (req.body.status === Import_Status.FAIL || req.body.status === Import_Status.SUCCESS) {
                 for (const client of config.wsClients.get(imported.username) || []) {
                     client.ws.send(JSON.stringify({
                         type: 'import',
-                        properties: imported
+                        properties: response
                     }))
                 }
             }
 
-            res.json(imported);
+            res.json(response);
         } catch (err) {
             Err.respond(err, res);
         }
