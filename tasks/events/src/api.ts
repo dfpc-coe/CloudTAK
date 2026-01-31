@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import type { Message } from './types.ts';
-=======
-import type { Message } from './types.js';
->>>>>>> 4bf87af4a1dba5a5eea9a68fbeba54b1743f4cd6
 import jwt from 'jsonwebtoken';
 
 export async function createImportResult(
