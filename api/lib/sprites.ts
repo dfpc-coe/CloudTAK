@@ -12,7 +12,7 @@ import Sharp from 'sharp';
 const SpriteSmith = promisify(spritesmith.run);
 
 type SpriteConfig = {
-    name?: string;
+    name?: keyof Static<typeof IconResponse>;
 };
 
 const SUPPORTED_EXT = [
@@ -119,7 +119,7 @@ export default class SpriteBuilder {
                 .png()
                 .toBuffer();
 
-            let iconPath = spriteConfig.name ? (icon as any)[spriteConfig.name] : icon.path.replace(/.*?\//, '');
+            let iconPath = spriteConfig.name ? String(icon[spriteConfig.name]) : icon.path.replace(/.*?\//, '');
 
             // Ensure path ends with .png extension
             if (!iconPath.endsWith('.png')) {
