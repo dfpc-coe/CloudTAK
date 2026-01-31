@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "import_result" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "import_result" ADD CONSTRAINT "import_result_import_imports_id_fk" FOREIGN KEY ("import") REFERENCES "public"."imports"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "import_result" ADD CONSTRAINT "import_result_import_imports_id_fk" FOREIGN KEY ("import") REFERENCES "public"."imports"("id") ON DELETE CASCADE ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
