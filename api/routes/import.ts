@@ -1,4 +1,4 @@
-import ImportControl, { ImportSourceEnum } from '../lib/control/import.js';
+import ImportControl, { ImportSourceEnum, ImportResultTypeEnum } from '../lib/control/import.js';
 import { Type } from '@sinclair/typebox'
 import path from 'node:path';
 import Schema from '@openaddresses/batch-schema';
@@ -320,7 +320,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.String(),
-            type: Type.String(),
+            type: Type.Enum(ImportResultTypeEnum),
             type_id: Type.String()
         }),
         res: ImportResult

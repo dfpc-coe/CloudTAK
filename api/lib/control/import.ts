@@ -12,6 +12,13 @@ export enum ImportSourceEnum {
     PACKAGE = 'Package'
 }
 
+export enum ImportResultTypeEnum {
+    FEATURE = 'Feature',
+    ASSET = 'Asset',
+    ICONSET = 'Iconset',
+    BASEMAP = 'Basemap'
+}
+
 export default class ImportControl {
     config: Config;
 
