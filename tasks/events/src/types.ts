@@ -30,3 +30,5 @@ export type LocalMessage = {
 export type ImportList = paths["/api/import"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Import = paths["/api/import/{:import}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Asset = paths["/api/profile/asset"]["post"]["responses"]["200"]["content"]["application/json"]
+export type Basemap = paths["/api/basemap"]["post"]["responses"]["200"]["content"]["application/json"]
+export type ProfileFeature = paths["/api/profile/feature"]["put"]["responses"]["200"]["content"]["application/json"]

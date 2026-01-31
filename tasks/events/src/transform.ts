@@ -14,6 +14,7 @@ import Tippecanoe from './tippecanoe.ts';
 import KML from './transforms/kml.ts';
 import Translate from './transforms/translate.ts';
 import GeoJSON from './transforms/geojson.ts';
+import { createImportResult } from './api.ts';
 
 const FORMATS = [KML, Translate, GeoJSON];
 const formats = new Map();
@@ -76,12 +77,17 @@ export default class DataTransform {
                 })
             })
 
-            // Map of original icon name to new icon name if name is incompatible
             const iconNameMap = new Map<string, string>();
 
             if (!iconsetRes.ok) {
                 console.error(`err - Failed to create iconset: ${await iconsetRes.text()}`);
             } else {
+                await createImportResult(this.msg, {
+                    name: `${this.msg.job.name} Icons`,
+                    type: 'Iconset',
+                    type_id: iconset
+                });
+
                 for (const icon of conversion.icons) {
                     const url = new URL(`/api/iconset/${iconset}/icon`, this.msg.api);
                     url.searchParams.append('regen', 'false');
