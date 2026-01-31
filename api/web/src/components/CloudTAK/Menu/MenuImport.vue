@@ -1,102 +1,177 @@
 <template>
     <MenuTemplate name='Import'>
         <template #buttons>
-            <TablerDelete
-                v-if='imported && (imported.status === "Fail" || imported.status === "Success")'
-                displaytype='icon'
-                @delete='deleteImport'
-            />
-            <TablerIconButton
-                title='Download File'
-                @click='downloadImport'
-            >
-                <IconDownload
-                    :size='32'
-                    stroke='1'
+            <div class='d-flex align-items-center gap-2'>
+                <TablerDelete
+                    v-if='imported && (imported.status === "Fail" || imported.status === "Success")'
+                    displaytype='icon'
+                    @delete='deleteImport'
                 />
-            </TablerIconButton>
-            <TablerRefreshButton
-                :loading='loading.initial'
-                @click='fetch(true)'
-            />
+                <TablerIconButton
+                    title='Download File'
+                    @click='downloadImport'
+                >
+                    <IconDownload
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerRefreshButton
+                    :loading='loading.initial'
+                    @click='fetch(true)'
+                />
+            </div>
         </template>
         <template #default>
-            <TablerLoading v-if='!imported || loading.initial' />
             <TablerAlert
-                v-else-if='error'
+                v-if='error'
                 title='Import Error'
                 :err='error'
             />
+            <TablerLoading v-else-if='!imported || loading.initial' />
             <div
                 v-else
-                class='mx-4 my-4'
+                class='container-fluid px-2 px-sm-3 py-4'
             >
-                <div class='datagrid'>
-                    <div class='datagrid-item'>
-                        <div class='datagrid-title'>
-                            Import Name
-                        </div>
-                        <div class='datagrid-content d-flex align-items-center'>
-                            <Status
-                                :dark='true'
-                                :status='imported.status'
-                            /><span
-                                class='mx-2 text-break'
-                                v-text='imported.name'
-                            />
-                        </div>
-                    </div>
-                    <div class='datagrid-item'>
-                        <div class='datagrid-title'>
-                            Import Type
-                        </div>
-                        <div
-                            class='datagrid-content'
-                            v-text='imported.source + ": " + imported.source_id'
-                        />
-                    </div>
-                </div>
-                <div class='py-2'>
-                    <TablerNone
-                        v-if='imported.status === "Empty"'
-                        :create='false'
-                    />
-                    <template v-else-if='loading.run'>
-                        <TablerLoading
-                            v-if='loading.run'
-                            desc='Running Import'
-                        />
-                    </template>
-                    <template v-else-if='imported.status === "Fail"'>
-                        <div class='datagrid-item'>
-                            <div class='datagrid-title'>
-                                Import Error
+                <div class='row gy-3 gx-0 gx-lg-3'>
+                    <div class='col-12'>
+                        <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
+                            <div class='card-body d-flex flex-column gap-4'>
+                                <div class='d-flex align-items-center gap-3'>
+                                    <div class='flex-grow-1'>
+                                        <p class='text-uppercase text-white-50 small mb-1'>
+                                            Import
+                                        </p>
+                                        <div class='d-flex align-items-center gap-3'>
+                                            <Status
+                                                :dark='true'
+                                                :status='imported.status'
+                                            />
+                                            <h2
+                                                class='h4 mb-0 text-break'
+                                                v-text='imported.name'
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class='row gy-3 gx-0 gx-sm-3'>
+                                    <div class='col-12'>
+                                        <small class='text-uppercase text-white-50 d-block mb-1'>Import Type</small>
+                                        <p
+                                            class='text-start text-white p-0 text-decoration-none text-break'
+                                            v-text='imported.source + ": " + imported.source_id'
+                                        />
+                                    </div>
+
+                                    <div class='col-12 col-lg-6'>
+                                        <small class='text-uppercase text-white-50 d-block'>Created</small>
+                                        <p
+                                            class='text-white mb-0 text-break'
+                                            v-text='timeDiff(imported.created)'
+                                        />
+                                    </div>
+                                    <div class='col-12 col-lg-6'>
+                                        <small class='text-uppercase text-white-50 d-block'>Updated</small>
+                                        <p
+                                            class='text-white mb-0 text-break'
+                                            v-text='timeDiff(imported.updated)'
+                                        />
+                                    </div>
+                                    
+                                    <div
+                                        v-if='imported.status === "Empty"'
+                                        class='col-12'
+                                    >
+                                        <TablerNone :create='false' />
+                                    </div>
+
+                                    <div
+                                        v-else-if='loading.run'
+                                        class='col-12'
+                                    >
+                                        <TablerLoading desc='Running Import' />
+                                    </div>
+
+                                    <div
+                                        v-else-if='imported.status === "Fail"'
+                                        class='col-12'
+                                    >
+                                        <div
+                                            class='alert alert-danger d-flex align-items-center'
+                                            role='alert'
+                                        >
+                                            <IconAlertTriangle class='me-2' />
+                                            <div>
+                                                <h4 class='alert-heading h5'>
+                                                    Import Error
+                                                </h4>
+                                                <p class='mb-0 text-break text-danger-emphasis'>
+                                                    {{ imported.error }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div
-                                class='datagrid-content'
-                                v-text='imported.error'
-                            />
                         </div>
-                    </template>
-                </div>
-                <div class='datagrid d-flex'>
-                    <div class='datagrid-item'>
-                        <div class='datagrid-title'>
-                            Created
-                        </div>
-                        <div
-                            class='datagrid-content'
-                            v-text='timeDiff(imported.created)'
-                        />
                     </div>
-                    <div class='datagrid-item ms-auto'>
-                        <div class='datagrid-title'>
-                            Updated
+                    
+                    <div class='col-12'>
+                        <div class='card bg-black bg-opacity-10 border border-light-subtle rounded overflow-hidden'>
+                            <div class='card-header border-bottom border-light-subtle py-2 d-flex align-items-center gap-2 bg-white bg-opacity-10'>
+                                <IconDatabaseImport :size='16' />
+                                <small class='text-uppercase fw-bold'>Import Results</small>
+                            </div>
+                            <div class='card-body p-2 d-flex flex-column gap-2'>
+                                <TablerNone
+                                    v-if='!imported.results || !imported.results.length'
+                                    label='No Results'
+                                    :create='false'
+                                />
+                                <template v-else>
+                                    <StandardItem
+                                        v-for='res in imported.results'
+                                        :key='res.id'
+                                        :hover='true'
+                                        @click='openResult(res)'
+                                    >
+                                        <div class='px-3 py-2'>
+                                            <div class='d-flex align-items-center gap-2'>
+                                                <IconMapPin
+                                                    v-if='res.type === "Feature"'
+                                                    :size='24'
+                                                    stroke='1'
+                                                    class='text-white-50'
+                                                />
+                                                <IconFile
+                                                    v-else-if='res.type === "Asset"'
+                                                    :size='24'
+                                                    stroke='1'
+                                                    class='text-white-50'
+                                                />
+                                                <IconPhoto
+                                                    v-else-if='res.type === "Iconset"'
+                                                    :size='24'
+                                                    stroke='1'
+                                                    class='text-white-50'
+                                                />
+                                                <IconMap2
+                                                    v-else-if='res.type === "Basemap"'
+                                                    :size='24'
+                                                    stroke='1'
+                                                    class='text-white-50'
+                                                />
+                                                <span
+                                                    class='text-white text-break'
+                                                    v-text='res.name'
+                                                />
+                                            </div>
+                                        </div>
+                                    </StandardItem>
+                                </template>
+                            </div>
                         </div>
-                        <div
-                            class='datagrid-content'
-                            v-text='timeDiff(imported.updated)'
-                        />
                     </div>
                 </div>
             </div>
@@ -120,10 +195,17 @@ import {
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import {
-    IconDownload
+    IconDownload,
+    IconAlertTriangle,
+    IconDatabaseImport,
+    IconMapPin,
+    IconFile,
+    IconPhoto,
+    IconMap2
 } from '@tabler/icons-vue';
 
 import MenuTemplate from '../util/MenuTemplate.vue';
+import StandardItem from '../util/StandardItem.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -204,5 +286,17 @@ async function fetch(init = false) {
     }
 
     loading.value.initial = false;
+}
+
+function openResult(res: { type: string, type_id: string }) {
+    if (res.type === 'Iconset') {
+        router.push(`/menu/iconset/${res.type_id}`);
+    } else if (res.type === 'Basemap') {
+        router.push(`/menu/basemaps`);
+    } else if (res.type === 'Asset') {
+         router.push(`/menu/files`);
+    } else if (res.type === 'Feature') {
+        router.push(`/menu/features`);
+    }
 }
 </script>
