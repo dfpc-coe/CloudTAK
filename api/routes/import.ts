@@ -171,7 +171,9 @@ export default async function router(schema: Schema, config: Config) {
                 })())
             }).on('finish', async () => {
                 try {
-                    res.json(imported)
+                    // Refetch to get updated status after commit
+                    const updated = await config.models.Import.augmented_from(req.params.import);
+                    res.json(updated)
                 } catch (err) {
                     Err.respond(err, res);
                 }
