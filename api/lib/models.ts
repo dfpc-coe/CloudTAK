@@ -1,5 +1,6 @@
 import Modeler, { Pool } from '@openaddresses/batch-generic';
 import Data from './models/Data.js';
+import Import from './models/Import.js';
 import Layer from './models/Layer.js';
 import Basemap from './models/Basemap.js';
 import MissionTemplate from './models/MissionTemplate.js';
@@ -13,7 +14,8 @@ import * as pgtypes from './schema.js';
 
 export default class Models {
     Basemap: Basemap;
-    Import: Modeler<typeof pgtypes.Import>;
+    Import: Import;
+    ImportResult: Modeler<typeof pgtypes.ImportResult>;
     Data: Data;
     Server: Modeler<typeof pgtypes.Server>;
 
@@ -76,7 +78,8 @@ export default class Models {
         this.ProfileOverlay = new Modeler(pg, pgtypes.ProfileOverlay);
         this.ProfileVideo = new Modeler(pg, pgtypes.ProfileVideo);
         this.Basemap = new Basemap(pg);
-        this.Import = new Modeler(pg, pgtypes.Import);
+        this.Import = new Import(pg);
+        this.ImportResult = new Modeler(pg, pgtypes.ImportResult);
         this.VideoLease = new Modeler(pg, pgtypes.VideoLease);
         this.Connection = new Modeler(pg, pgtypes.Connection);
         this.ConnectionToken = new Modeler(pg, pgtypes.ConnectionToken);

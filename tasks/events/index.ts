@@ -55,6 +55,9 @@ export default class WorkerPool extends EventEmitter {
                     this.emit('job', job);
 
                     const worker = new Worker(new URL('./src/comms.ts', import.meta.url))
+                    worker.on('error', (err) => {
+                        console.error(`Worker Thread Error (Import ${job.id}):`, err);
+                    });
                     const locked = { job, worker }
 
                     worker.on('message', async (message) => {

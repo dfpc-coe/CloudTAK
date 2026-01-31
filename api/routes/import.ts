@@ -1,4 +1,4 @@
-import ImportControl, { ImportSourceEnum } from '../lib/control/import.js';
+import ImportControl, { ImportSourceEnum, ImportResultTypeEnum } from '../lib/control/import.js';
 import { Type } from '@sinclair/typebox'
 import path from 'node:path';
 import Schema from '@openaddresses/batch-schema';
@@ -10,7 +10,7 @@ import S3 from '../lib/aws/s3.js'
 import crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
-import { ImportResponse, StandardResponse } from '../lib/types.js';
+import { ImportResponse, ImportResult, StandardResponse } from '../lib/types.js';
 import { Import_Status } from '../lib/enums.js';
 import { Import } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
@@ -52,7 +52,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 const impersonate: string | null = req.query.impersonate === true ? null : req.query.impersonate;
 
-                list = await config.models.Import.list({
+                list = await config.models.Import.augmented_list({
                     limit: req.query.limit,
                     page: req.query.page,
                     order: req.query.order,
@@ -76,7 +76,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 const username = auth instanceof AuthUser ? auth.email : null;
 
-                list = await config.models.Import.list({
+                list = await config.models.Import.augmented_list({
                     limit: req.query.limit,
                     page: req.query.page,
                     order: req.query.order,
@@ -143,7 +143,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
-            const imported = await config.models.Import.from(req.params.import);
+            const imported = await config.models.Import.augmented_from(req.params.import);
 
             if (imported.status !== Import_Status.EMPTY) throw new Err(400, null, 'An asset is already associated with this import');
             if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
@@ -171,7 +171,9 @@ export default async function router(schema: Schema, config: Config) {
                 })())
             }).on('finish', async () => {
                 try {
-                    res.json(imported)
+                    // Refetch to get updated status after commit
+                    const refetchedImport = await config.models.Import.augmented_from(req.params.import);
+                    res.json(refetchedImport)
                 } catch (err) {
                     Err.respond(err, res);
                 }
@@ -260,7 +262,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
             });
 
-            const imported = await config.models.Import.from(req.params.import);
+            const imported = await config.models.Import.augmented_from(req.params.import);
 
             if (auth instanceof AuthUser) {
                 const user = auth as AuthUser;
@@ -311,6 +313,44 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.post('/import/:import/result', {
+        name: 'Create Result',
+        group: 'Import',
+        description: 'Create a new Import Result',
+        params: Type.Object({
+            import: Type.String()
+        }),
+        body: Type.Object({
+            name: Type.String(),
+            type: Type.Enum(ImportResultTypeEnum),
+            type_id: Type.String()
+        }),
+        res: ImportResult
+    }, async (req, res) => {
+        try {
+            const auth = await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
+            });
+
+            const imported = await config.models.Import.augmented_from(req.params.import);
+            
+            if (auth instanceof AuthUser) {
+                 const user = auth as AuthUser;
+                 if (imported.username !== user.email && !user.is_admin()) {
+                     throw new Err(400, null, 'You did not create this import');
+                 }
+            }
+
+            const result = await config.models.ImportResult.generate({
+                ...req.body,
+                import: req.params.import
+            });
+
+            res.json(result);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 
     await schema.patch('/import/:import', {
         name: 'Update Import',
@@ -321,8 +361,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             status: Type.Optional(Type.Enum(Import_Status)),
-            error: Type.Optional(Type.String()),
-            result: Type.Optional(Type.Any())
+            error: Type.Optional(Type.String())
         }),
         res: ImportResponse
     }, async (req, res) => {
@@ -331,7 +370,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
             });
 
-            let imported = await config.models.Import.from(req.params.import);
+            const imported = await config.models.Import.augmented_from(req.params.import);
 
             if (auth instanceof AuthUser) {
                 const user = auth as AuthUser;
@@ -341,24 +380,29 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.status && [Import_Status.EMPTY, Import_Status.PENDING].includes(req.body.status)) {
                 throw new Err(400, null, `Cannot set status to ${req.body.status}`);
             } else if (req.body.status === Import_Status.RUNNING && imported.status === Import_Status.RUNNING) {
-                throw new Err(400, null, `Cannot set statust to running on an import that is already running`);
+                throw new Err(400, null, `Cannot set status to running on an import that is already running`);
             }
 
-            imported = await config.models.Import.commit(req.params.import, {
+            const new_import = await config.models.Import.commit(req.params.import, {
                 ...req.body,
                 updated: sql`Now()`
             });
+
+            const response = {
+                ...new_import,
+                results: imported.results
+            };
 
             if (req.body.status === Import_Status.FAIL || req.body.status === Import_Status.SUCCESS) {
                 for (const client of config.wsClients.get(imported.username) || []) {
                     client.ws.send(JSON.stringify({
                         type: 'import',
-                        properties: imported
+                        properties: response
                     }))
                 }
             }
 
-            res.json(imported);
+            res.json(response);
         } catch (err) {
             Err.respond(err, res);
         }
