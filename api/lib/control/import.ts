@@ -59,6 +59,9 @@ export default class ImportControl {
             });
         }
 
-        return imp;
+        return {
+            ...imp,
+            results: []
+        };
     }
 }
