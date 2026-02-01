@@ -120,9 +120,9 @@
                     :data-key='item.key'
                     :class='{
                         "cursor-move": isDraggable,
-                        "text-muted": getEyeState(item.key) === "hidden"
+                        "text-muted": item.visibility === "hidden"
                     }'
-                    :description-class='getEyeState(item.key) === "hidden" ? "text-muted" : ""'
+                    :description-class='item.visibility === "hidden" ? "text-muted" : ""'
                     :icon='item.icon'
                     :label='item.label'
                     :description='item.description'
@@ -144,15 +144,15 @@
                             />
                             <div
                                 class='cursor-pointer'
-                                @click.stop='cycleEyeState(item.key)'
+                                @click.stop='cycleVisibility(item)'
                             >
                                 <IconEye
-                                    v-if='getEyeState(item.key) === "full" || getEyeState(item.key) === 0'
+                                    v-if='!item.visibility || item.visibility === "full"'
                                     :size='20'
                                     stroke='1'
                                 />
                                 <IconEyeDotted
-                                    v-else-if='getEyeState(item.key) === "partial" || getEyeState(item.key) === 1'
+                                    v-else-if='item.visibility === "partial"'
                                     :size='20'
                                     stroke='1'
                                 />
@@ -461,20 +461,14 @@ onMounted(async () => {
     }
 })
 
-function getEyeState(key: string) {
-    const item = menuItems.value.find((i: MenuItemConfig) => i.key === key);
-    return item ? item.visibility : 'full';
-}
-
-function cycleEyeState(key: string) {
-    const current = getEyeState(key);
-
-    let next = 'full';
-    if (current === 'full') next = 'partial';
-    else if (current === 'partial') next = 'hidden';
-    else next = 'full';
-
-    mapStore.menu.setVisibility(key, next);
+function cycleVisibility(item: MenuItemConfig) {
+    const nextMap: Record<string, string> = {
+        'full': 'partial',
+        'partial': 'hidden',
+        'hidden': 'full'
+    };
+    const next = nextMap[item.visibility || 'full'] || 'full';
+    mapStore.menu.setVisibility(item.key, next);
 }
 
 function external(url: string) {
