@@ -75,6 +75,12 @@ export enum Profile_Zoom {
     NEVER = 'never',
 }
 
+export enum Profile_Menu_Visibility {
+    FULL = 'full',
+    PARTIAL = 'partial',
+    HIDDEN = 'hidden',
+}
+
 export enum Profile_Projection {
     MERCATOR = 'mercator',
     GLOBE = 'globe',

@@ -106,7 +106,7 @@
                 />
             </div>
             <div
-                v-if='filteredMenuItems.length'
+                v-if='visibleFilteredMenuItems.length'
                 ref='sortableRef'
                 class='pb-3'
                 :class='{
@@ -115,10 +115,14 @@
                 }'
             >
                 <MenuItemCard
-                    v-for='item in filteredMenuItems'
+                    v-for='item in visibleFilteredMenuItems'
                     :key='`tile-${item.key}`'
                     :data-key='item.key'
-                    :class='{ "cursor-move": isDraggable }'
+                    :class='{
+                        "cursor-move": isDraggable,
+                        "text-muted": getEyeState(item.key) === "hidden"
+                    }'
+                    :description-class='getEyeState(item.key) === "hidden" ? "text-muted" : ""'
                     :icon='item.icon'
                     :label='item.label'
                     :description='item.description'
@@ -126,15 +130,39 @@
                     :badge='item.badge'
                     :layout='menuLayout'
                     :compact='false'
-                    @select='item.routeExternal ? external(item.route) : router.push(item.route.startsWith("/") ? item.route : { name: item.route })'
+                    @select='handleSelect(item)'
                 >
                     <template #prefix>
-                        <IconGripVertical
+                        <div
                             v-if='isDraggable'
-                            stroke='1'
-                            :size='20'
-                            class='text-muted cursor-move drag-handle'
-                        />
+                            class='d-flex align-items-center'
+                        >
+                            <IconGripVertical
+                                stroke='1'
+                                :size='20'
+                                class='text-muted cursor-move drag-handle me-2'
+                            />
+                            <div
+                                class='cursor-pointer'
+                                @click.stop='cycleEyeState(item.key)'
+                            >
+                                <IconEye
+                                    v-if='getEyeState(item.key) === "full" || getEyeState(item.key) === 0'
+                                    :size='20'
+                                    stroke='1'
+                                />
+                                <IconEyeDotted
+                                    v-else-if='getEyeState(item.key) === "partial" || getEyeState(item.key) === 1'
+                                    :size='20'
+                                    stroke='1'
+                                />
+                                <IconEyeOff
+                                    v-else
+                                    :size='20'
+                                    stroke='1'
+                                />
+                            </div>
+                        </div>
                     </template>
                 </MenuItemCard>
             </div>
@@ -151,7 +179,7 @@
             style='height: calc(100% - 106px)'
         >
             <MenuItemCard
-                v-for='item in menuItems'
+                v-for='item in visibleCompactMenuItems'
                 :key='`compact-${item.key}`'
                 :icon='item.icon'
                 :label='item.label'
@@ -159,7 +187,7 @@
                 :badge='item.badge'
                 :layout='"list"'
                 :compact='true'
-                @select='item.routeExternal ? external(item.route) : router.push(item.route.startsWith("/") ? item.route : { name: item.route })'
+                @select='handleSelect(item)'
             />
         </div>
     </template>
@@ -299,7 +327,10 @@ import {
     IconLayoutList,
     IconPencil, 
     IconPencilCheck,
-    IconGripVertical
+    IconGripVertical,
+    IconEye,
+    IconEyeDotted,
+    IconEyeOff
 } from '@tabler/icons-vue';
 import Sortable from 'sortablejs';
 import {
@@ -309,6 +340,7 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../stores/map.ts';
+import type { MenuItemConfig } from '../../stores/modules/menu.ts';
 import { useBrandStore } from '../../stores/brand.ts';
 import { useRouter, useRoute } from 'vue-router';
 import MenuItemCard from './Menu/MenuItemCard.vue';
@@ -340,6 +372,15 @@ const menuFilter = computed({
 });
 const filteredMenuItems = computed(() => mapStore.menu.filtered.value);
 const menuItems = computed(() => mapStore.menu.items.value);
+
+const visibleFilteredMenuItems = computed(() => {
+    if (isDraggable.value) return filteredMenuItems.value;
+    return filteredMenuItems.value.filter((item: MenuItemConfig) => item.visibility !== 'hidden');
+});
+
+const visibleCompactMenuItems = computed(() => {
+    return menuItems.value.filter((item: MenuItemConfig) => item.visibility !== 'hidden' && item.visibility !== 'partial');
+});
 
 let sortable: Sortable | undefined;
 const sortableRef = ref<HTMLElement | null>(null);
@@ -386,6 +427,7 @@ onBeforeUnmount(() => {
 function handleReorderToggle() {
     if (isDraggable.value) {
         isDraggable.value = false;
+        saveOrder();
         return;
     }
     if (!canEditOrder.value) return;
@@ -419,8 +461,34 @@ onMounted(async () => {
     }
 })
 
+function getEyeState(key: string) {
+    const item = menuItems.value.find((i: MenuItemConfig) => i.key === key);
+    return item ? item.visibility : 'full';
+}
+
+function cycleEyeState(key: string) {
+    const current = getEyeState(key);
+
+    let next = 'full';
+    if (current === 'full') next = 'partial';
+    else if (current === 'partial') next = 'hidden';
+    else next = 'full';
+
+    mapStore.menu.setVisibility(key, next);
+}
+
 function external(url: string) {
     window.open(String(new URL(url, window.location.origin)));
+}
+
+function handleSelect(item: MenuItemConfig) {
+    if (isDraggable.value) return;
+
+    if (item.routeExternal) {
+        external(item.route);
+    } else {
+        router.push(item.route.startsWith("/") ? item.route : { name: item.route });
+    }
 }
 
 function returnHome() {

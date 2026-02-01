@@ -6,7 +6,7 @@ import { ProfileResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { sql } from 'drizzle-orm';
-import { Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Projection, Profile_Zoom } from  '../lib/enums.js';
+import { Profile_Menu_Visibility, Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Projection, Profile_Zoom } from  '../lib/enums.js';
 import ProfileControl from '../lib/control/profile.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -43,7 +43,13 @@ export default async function router(schema: Schema, config: Config) {
             display_text: Type.Optional(Type.Enum(Profile_Text)),
 
             menu_order: Type.Optional(Type.Array(Type.Object({
-                key: Type.String(),
+                key: Type.String({
+                    description: 'Menu Key'
+                }),
+                visibility: Type.Enum(Profile_Menu_Visibility, {
+                    description: 'Menu Visibility',
+                    default: Profile_Menu_Visibility.FULL
+                })
             }))),
 
             tak_callsign: Type.Optional(Type.String()),
