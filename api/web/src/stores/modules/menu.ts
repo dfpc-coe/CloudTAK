@@ -30,6 +30,7 @@ export type MenuItemConfig = {
     description?: string;
     icon: Component;
     badge?: string;
+    visibility?: string;
     requiresSystemAdmin?: boolean;
     requiresAgencyAdmin?: boolean;
 };
@@ -46,7 +47,7 @@ export default class MenuManager {
     isSystemAdmin: Ref<boolean>;
     isAgencyAdmin: Ref<boolean>;
     pluginMenuItems: Ref<MenuItemConfig[]>;
-    preferenceOrder: Ref<string[]>;
+    preferenceVisibility: Ref<Map<string, number>>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(mapStore: any) {
@@ -56,6 +57,8 @@ export default class MenuManager {
         this.isSystemAdmin = ref(false);
         this.isAgencyAdmin = ref(false);
         this.pluginMenuItems = ref([]);
+        this.preferenceOrder = ref([]);
+        this.preferenceVisibility = ref(new Map());
         this.preferenceOrder = ref([]);
 
         const storedLayoutPref = typeof window !== 'undefined' ? localStorage.getItem('cloudtak-menu-layout') : null;
@@ -70,6 +73,11 @@ export default class MenuManager {
         this.isAgencyAdmin.value = (isAgencyAdmin?.value && isAgencyAdmin.value.length > 0) || false;
 
         try {
+                const visMap = new Map();
+                for (const m of menuOrder.value) {
+                    if (m.visibility !== undefined) visMap.set(m.key, m.visibility);
+                }
+                this.preferenceVisibility.value = visMap;
             const menuOrder = await ProfileConfig.get('menu_order');
             if (menuOrder && menuOrder.value) {
                 this.preferenceOrder.value = menuOrder.value.map((m) => m.key);
@@ -255,13 +263,19 @@ export default class MenuManager {
             }
 
             return combined.map((item) => {
+                const visibility = this.preferenceVisibility.value.get(item.key) ?? 'full';
+
                 if (item.key === 'contacts' && this.onlineContactsCount.value > 0) {
                     return {
                         ...item,
+                        visibility,
                         badge: this.onlineContactsCount.value > 99 ? '99+' : String(this.onlineContactsCount.value)
                     }
                 }
-                return item;
+                return {
+                    ...item,
+                    visibility
+                };
             });
         });
     }
@@ -316,8 +330,20 @@ export default class MenuManager {
 
     async setOrder(keys: string[]) {
         this.preferenceOrder.value = keys;
-        const val = keys.map(k => ({ key: k }));
+        const val = keys.map(k => {
+            const visible = this.preferenceVisibility.value.get(k);
+
+            if (visible !== undefined) {
+                return { key: k, visibility: visible };
+            } else {
+                return { key: k };
+            }
+        });
         const config = new ProfileConfig('menu_order', val);
         await config.commit(val);
+    }
+
+    setVisibility(key: string, visible: string) {
+        this.preferenceVisibility.value.set(key, visible);
     }
 }
