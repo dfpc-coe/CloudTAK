@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.66.0 - 2026-01-31
+
+- :tada: Allow setting menu visibility per user profile
+
 ### v12.65.0 - 2026-01-31
 
 - :tada: Show an Import Result list in the Admin Imports page
