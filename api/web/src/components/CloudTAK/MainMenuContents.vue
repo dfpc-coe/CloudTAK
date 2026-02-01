@@ -370,7 +370,7 @@ const menuFilter = computed({
     get: () => mapStore.menu.filter.value,
     set: (val) => mapStore.menu.filter.value = val
 });
-const filteredMenuItems = computed(() => mapStore.menu.filtered.value);
+const filteredMenuItems = computed(() => mapStore.menu.filteredItems.value);
 const menuItems = computed(() => mapStore.menu.items.value);
 
 const visibleFilteredMenuItems = computed(() => {

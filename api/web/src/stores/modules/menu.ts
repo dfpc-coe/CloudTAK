@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref, computed, toRaw } from 'vue';
 import type { Component, Ref, ComputedRef } from "vue";
 import {
     IconBug,
@@ -47,7 +47,7 @@ export default class MenuManager {
     isSystemAdmin: Ref<boolean>;
     isAgencyAdmin: Ref<boolean>;
     pluginMenuItems: Ref<MenuItemConfig[]>;
-    preferenceVisibility: Ref<Map<string, number>>;
+    preferenceOrder: Ref<{ key: string; visibility?: string }[]>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(mapStore: any) {
@@ -57,8 +57,6 @@ export default class MenuManager {
         this.isSystemAdmin = ref(false);
         this.isAgencyAdmin = ref(false);
         this.pluginMenuItems = ref([]);
-        this.preferenceOrder = ref([]);
-        this.preferenceVisibility = ref(new Map());
         this.preferenceOrder = ref([]);
 
         const storedLayoutPref = typeof window !== 'undefined' ? localStorage.getItem('cloudtak-menu-layout') : null;
@@ -73,14 +71,9 @@ export default class MenuManager {
         this.isAgencyAdmin.value = (isAgencyAdmin?.value && isAgencyAdmin.value.length > 0) || false;
 
         try {
-                const visMap = new Map();
-                for (const m of menuOrder.value) {
-                    if (m.visibility !== undefined) visMap.set(m.key, m.visibility);
-                }
-                this.preferenceVisibility.value = visMap;
             const menuOrder = await ProfileConfig.get('menu_order');
             if (menuOrder && menuOrder.value) {
-                this.preferenceOrder.value = menuOrder.value.map((m) => m.key);
+                this.preferenceOrder.value = menuOrder.value;
             }
         } catch (e) {
             console.error('Failed to load menu order', e);
@@ -249,38 +242,34 @@ export default class MenuManager {
                 const ordered: MenuItemConfig[] = [];
                 const map = new Map(combined.map(i => [i.key, i]));
 
-                for (const key of this.preferenceOrder.value) {
-                    if (map.has(key)) {
-                        ordered.push(map.get(key)!);
-                        map.delete(key);
+                for (const pref of this.preferenceOrder.value) {
+                    if (map.has(pref.key)) {
+                        ordered.push({ ...map.get(pref.key)!, visibility: pref.visibility ?? 'full' });
+                        map.delete(pref.key);
                     }
                 }
 
                 for (const item of map.values()) {
-                    ordered.push(item);
+                    ordered.push({ ...item, visibility: 'full' });
                 }
                 combined = ordered;
+            } else {
+                combined = combined.map(item => ({ ...item, visibility: 'full' }));
             }
 
             return combined.map((item) => {
-                const visibility = this.preferenceVisibility.value.get(item.key) ?? 'full';
-
                 if (item.key === 'contacts' && this.onlineContactsCount.value > 0) {
                     return {
                         ...item,
-                        visibility,
                         badge: this.onlineContactsCount.value > 99 ? '99+' : String(this.onlineContactsCount.value)
                     }
                 }
-                return {
-                    ...item,
-                    visibility
-                };
+                return item;
             });
         });
     }
 
-    get filtered(): ComputedRef<MenuItemConfig[]> {
+    get filteredItems(): ComputedRef<MenuItemConfig[]> {
         return computed(() => {
             const term = this.filter.value.trim().toLowerCase();
             if (!term) return this.items.value;
@@ -329,21 +318,33 @@ export default class MenuManager {
     }
 
     async setOrder(keys: string[]) {
-        this.preferenceOrder.value = keys;
-        const val = keys.map(k => {
-            const visible = this.preferenceVisibility.value.get(k);
-
-            if (visible !== undefined) {
-                return { key: k, visibility: visible };
-            } else {
-                return { key: k };
-            }
+        const orderMap = new Map(this.preferenceOrder.value.map(p => [p.key, p]));
+        const newOrder = keys.map(k => {
+            const existing = orderMap.get(k);
+            return existing ? { ...toRaw(existing) } : { key: k, visibility: 'full' };
         });
-        const config = new ProfileConfig('menu_order', val);
-        await config.commit(val);
+
+        this.preferenceOrder.value = newOrder;
+        const config = new ProfileConfig('menu_order', newOrder);
+        await config.commit(newOrder);
     }
 
-    setVisibility(key: string, visible: string) {
-        this.preferenceVisibility.value.set(key, visible);
+    async setVisibility(key: string, visible: string) {
+        const index = this.preferenceOrder.value.findIndex(p => p.key === key);
+        if (index !== -1) {
+            this.preferenceOrder.value[index].visibility = visible;
+        } else {
+            // Need to reconstruct the full order to save it properly
+            // We can iterate the current items (which are ordered as per UI) and update the target key
+            const currentItems = this.items.value;
+            this.preferenceOrder.value = currentItems.map(item => ({
+                key: item.key,
+                visibility: item.key === key ? visible : (item.visibility || 'full')
+            }));
+        }
+
+        const rawOrder = this.preferenceOrder.value.map(p => toRaw(p));
+        const config = new ProfileConfig('menu_order', rawOrder);
+        await config.commit(rawOrder);
     }
 }
