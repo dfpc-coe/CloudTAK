@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.67.3 - 2026-02-02
+
+- :rocket: Change default Mission List order to newest => oldest
+
 ### v12.67.2 - 2026-02-02
 
 - :bug: Ensure Content-Encoding in API Gateway context is always set correctly by sniffing the actual contents of the buffer returned by the PMTiles Class
