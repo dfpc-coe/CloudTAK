@@ -88,6 +88,7 @@
 
                 <div class='ms-auto btn-list align-items-center'>
                     <TablerEnum
+                        v-if='mapStore.hasSnapping'
                         description='Choose the type of line to draw.'
                         default='No Snapping'
                         :options='["No Snapping"]'
