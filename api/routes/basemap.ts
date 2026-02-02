@@ -179,7 +179,8 @@ export default async function router(schema: Schema, config: Config) {
             collection: Type.Optional(Type.String({
                 description: 'Only show Basemaps belonging to a given collection'
             })),
-            overlay: Type.Boolean({ default: false })
+            overlay: Type.Boolean({ default: false }),
+            snapping: Type.Optional(Type.Boolean())
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -215,6 +216,7 @@ export default async function router(schema: Schema, config: Config) {
                     where: sql`
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                        AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
                         AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                         AND (
                                 (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
@@ -232,6 +234,7 @@ export default async function router(schema: Schema, config: Config) {
                         where: sql`
                             collection ~* ${Param(req.query.filter)}
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                            AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
                             AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                             AND ${scope}
                             AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
@@ -249,6 +252,7 @@ export default async function router(schema: Schema, config: Config) {
                     where: sql`
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                        AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
                         AND (username IS NULL OR username = ${user.email})
                         AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                         AND (
@@ -266,6 +270,7 @@ export default async function router(schema: Schema, config: Config) {
                         where: sql`
                             collection ~* ${Param(req.query.filter)}
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                            AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
                             AND (username IS NULL OR username = ${user.email})
                             AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                             AND ${scope}

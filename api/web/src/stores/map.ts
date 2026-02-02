@@ -76,6 +76,7 @@ export const useMapStore = defineStore('cloudtak', {
         mapConfig: MapConfig;
         container?: HTMLElement;
         hasTerrain: boolean;
+        hasSnapping: boolean;
         hasNoChannels: boolean;
         isTerrainEnabled: boolean;
         isLoaded: boolean;
@@ -737,6 +738,7 @@ export const useMapStore = defineStore('cloudtak', {
             url.searchParams.append('limit', '100');
             const profileOverlays = await std(url) as ProfileOverlayList;
             this.hasTerrain = profileOverlays.available.terrain;
+            this.hasSnapping = profileOverlays.available.snapping;
 
             const hasBasemap = profileOverlays.items.some((o: ProfileOverlay) => {
                 return o.mode === 'basemap'
