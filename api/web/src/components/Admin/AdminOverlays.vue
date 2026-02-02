@@ -21,51 +21,91 @@
                 />
             </div>
         </div>
-        <div style='min-height: 20vh; margin-bottom: 61px'>
+        <div>
             <div class='row col-12 mx-1 my-2'>
-                <div class='col-md-6'>
+                <div class='col'>
                     <TablerInput
                         v-model='paging.filter'
                         icon='search'
-                        label='Name Filter'
                         placeholder='Filter...'
                     />
                 </div>
-                <div class='col-md-3'>
-                    <TablerEnum
-                        v-model='paging.scope'
-                        label='Ownership'
-                        default='all'
-                        :options='[
-                            "all",
-                            "server",
-                            "user"
-                        ]'
-                    />
+                <div class='col-auto d-flex align-items-center'>
+                    <div
+                        class='round btn-group h-100'
+                        role='group'
+                    >
+                        <input
+                            id='entry-manual'
+                            type='radio'
+                            class='btn-check'
+                            autocomplete='off'
+                            :checked='paging.type === "basemap"'
+                            @click='paging.type = "basemap"'
+                        >
+                        <label
+                            for='entry-manual'
+                            type='button'
+                            class='btn btn-sm'
+                        >Basemap</label>
+
+                        <input
+                            id='entry-public'
+                            type='radio'
+                            class='btn-check'
+                            autocomplete='off'
+                            :checked='paging.type === "overlay"'
+                            @click='paging.type = "overlay"'
+                        >
+
+                        <label
+                            for='entry-public'
+                            type='button'
+                            class='btn btn-sm'
+                        >Overlay</label>
+                    </div>
+
+                    <TablerIconButton
+                        :title='advanced ? "Hide Advanced Search" : "Show Advanced Search"'
+                        @click='advanced = !advanced'
+                        class='ms-2'
+                    >
+                        <IconFilter
+                            :size='32'
+                            stroke='1'
+                            :color='advanced ? "#206bc4" : "white"'
+                        />
+                    </TablerIconButton>
                 </div>
-                <div class='col-md-3'>
+            </div>
+            <div
+                v-if='advanced'
+                class='row col-12 mx-1 my-2'
+            >
+                <div class='col-md-6'>
                     <TablerEnum
-                        v-model='paging.type'
-                        label='Type'
-                        default='basemap'
-                        :options='[
-                            "basemap",
-                            "overlay"
-                        ]'
-                    />
-                </div>
-                <div class='col-md-3'>
-                    <TablerEnum
-                         v-model='paging.hidden'
-                         label='Hidden'
-                         default='all'
-                         :options='[
-                             "true",
-                             "false",
-                             "all"
-                         ]'
-                     />
-                 </div>
+                            v-model='paging.scope'
+                            label='Ownership'
+                            default='all'
+                            :options='[
+                                "all",
+                                "server",
+                                "user"
+                            ]'
+                        />
+                    </div>
+                    <div class='col-md-6'>
+                        <TablerEnum
+                             v-model='paging.hidden'
+                             label='Hidden'
+                             default='all'
+                             :options='[
+                                "true",
+                                "false",
+                                "all"
+                            ]'
+                        />
+                    </div>
             </div>
 
             <TablerLoading
@@ -166,6 +206,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    IconFilter,
     IconPlus,
 } from '@tabler/icons-vue'
 
@@ -173,6 +214,7 @@ type Header = { name: keyof Basemap, display: boolean };
 
 const router = useRouter();
 
+const advanced = ref(false);
 const error = ref<Error | undefined>();
 const loading = ref(true);
 const header = ref<Array<Header>>([]);
