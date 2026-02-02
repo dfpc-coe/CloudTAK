@@ -41,11 +41,12 @@ export default class DrawTool {
 
     public mode: DrawToolMode;
 
-    private graph: Routing;
-
-    private routeFinder: TerraRoute & {
-        setNetwork: (network: GeoJSONFeatureCollection<LineString>) => void;
-        expandNetwork: (network: GeoJSONFeatureCollection<LineString>) => void;
+    public route: {
+        graph: Routing;
+        finder: TerraRoute & {
+            setNetwork: (network: GeoJSONFeatureCollection<LineString>) => void;
+            expandNetwork: (network: GeoJSONFeatureCollection<LineString>) => void;
+        };
     };
 
     private mapStore: ReturnType<typeof useMapStore>;
@@ -126,19 +127,24 @@ export default class DrawTool {
 
         const routeFinder = new TerraRoute();
 
-        this.routeFinder = Object.assign(routeFinder, {
+        const finder = Object.assign(routeFinder, {
             setNetwork: (network: GeoJSONFeatureCollection<LineString>) => routeFinder.buildRouteGraph(network),
             expandNetwork: (network: GeoJSONFeatureCollection<LineString>) => routeFinder.expandRouteGraph(network)
         });
 
-        this.graph = new Routing({
+        const graph = new Routing({
             network: {
                 type: 'FeatureCollection' as const,
                 features: []
             },
             useCache: true,
-            routeFinder: this.routeFinder
+            routeFinder: finder
         })
+
+        this.route = {
+            finder,
+            graph
+        };
 
         this.draw = new terraDraw.TerraDraw({
             adapter: new TerraDrawMapLibreGLAdapter({
@@ -171,7 +177,7 @@ export default class DrawTool {
                 }),
                 new TerraDrawRouteSnapMode({
                    straightLineFallback: true,
-                   routing: this.graph,
+                   routing: this.route.graph,
                    maxPoints: 5,
                    styles: {
                        lineStringColor: () => {
@@ -419,9 +425,9 @@ export default class DrawTool {
         network = await std(url) as GeoJSONFeatureCollection<LineString>;
 
         if (opts?.expand) {
-            this.routeFinder.expandRouteGraph(network);
+            this.route.graph.expandRouteNetwork(network);
         } else {
-            this.routeFinder.buildRouteGraph(network);
+            this.route.graph.setNetwork(network);
         }
 
         const source = this.mapStore.map.getSource('snapping-graph-source') as mapgl.GeoJSONSource;
@@ -452,7 +458,7 @@ export default class DrawTool {
     }
 
     async removeNetwork(): Promise<void> {
-        this.routeFinder.buildRouteGraph({
+        this.route.graph.setNetwork({
             type: 'FeatureCollection',
             features: []
         });
@@ -476,7 +482,7 @@ export default class DrawTool {
             this.draw.start();
 
             this.draw.updateModeOptions(DrawToolMode.SNAPPING, {
-                routing: this.graph,
+                routing: this.route.graph,
                 maxPoints: 5,
             });
 
