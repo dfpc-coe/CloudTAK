@@ -118,7 +118,7 @@ export default async function router(schema: Schema) {
         }
     })
 
-    schema.get('/tiles/public/:name/:z/:x/:y/features', {
+    schema.get('/tiles/public/:name/tiles/:z/:x/:y/features', {
         name: 'Get Features',
         group: 'PublicTiles',
         description: 'Return features for a given zxy',
