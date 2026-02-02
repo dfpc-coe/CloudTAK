@@ -95,6 +95,12 @@ const emit = defineEmits([
     'select'
 ]);
 
+const props = defineProps({
+    url: {
+        type: String
+    }
+});
+
 const loading = ref({
     main: true,
     modal: true,
@@ -132,6 +138,23 @@ watch(paging.value, async () => {
 
 onMounted(async () => {
     await listTiles();
+
+    if (props.url) {
+        try {
+            const u = new URL(props.url);
+            const match = u.pathname.match(/\/public\/(.+?)\//);
+
+            if (match && match[1]) {
+                const name = match[1];
+                const url = stdurl(new URL(config.value.url + `/tiles/public/${name}`));
+                url.searchParams.append('token', localStorage.token);
+                selected.value = await std(url);
+            }
+        } catch (err) {
+            console.error('Failed to parse URL for Public Tile', err);
+        }
+    }
+
     loading.value.main = false;
 });
 

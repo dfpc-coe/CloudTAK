@@ -97,6 +97,7 @@
 
                 <template v-if='mode === "public"'>
                     <PublicTilesSelect
+                        :url="overlay.url"
                         @select='publicTileSelect($event)'
                     />
                 </template>
@@ -175,7 +176,7 @@
                     />
                 </div>
 
-                <template v-if='overlay.type === "vector"'>
+                <template v-if='overlay.type === "vector" && mode === "public"'>
                     <div class='col-12'>
                         <div class='row g-2 my-2 border rounded'>
                             <div class='col-12'>
