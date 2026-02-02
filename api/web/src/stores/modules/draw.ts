@@ -373,7 +373,12 @@ export default class DrawTool {
 
     async populateSnappingLayers(): Promise<void> {
         if (this.mapStore.hasSnapping) {
-            const res = await std(stdurl('/api/basemap?snapping=true'));
+            const url = stdurl('/api/basemap');
+            url.searchParams.append('snapping', 'true');
+            url.searchParams.append('hidden', 'all');
+            url.searchParams.append('overlay', 'true');
+
+            const res = await std(url);
             // @ts-expect-error type
             if (res.items) {
                 // @ts-expect-error type
@@ -389,7 +394,13 @@ export default class DrawTool {
             let network: GeoJSONFeatureCollection<LineString>;
 
             if (this.snappingLayer && this.snappingLayer !== 'No Snapping') {
-                const list = await std(stdurl(`/api/basemap?snapping=true&filter=${this.snappingLayer}`)) as { items: any[] };
+                const url = stdurl('/api/basemap');
+                url.searchParams.append('snapping', 'true');
+                url.searchParams.append('hidden', 'all');
+                url.searchParams.append('overlay', 'true');
+                url.searchParams.append('filter', this.snappingLayer);
+
+                const list = await std(url) as { items: any[] };
 
                 if (list.items && list.items.length) {
                     const basemap = list.items[0];
