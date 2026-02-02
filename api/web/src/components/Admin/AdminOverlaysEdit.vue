@@ -374,6 +374,16 @@ async function fetchOverlay() {
     const url = stdurl(`/api/basemap/${route.params.overlay}`);
     const res = await std(url);
 
+    // If the URL is hosted on the S3 CloudTAK site assume it is a public tile
+    try {
+        const u = new URL(res.url);
+        if (u.hostname === 'tiles.map.cotak.gov') {
+            mode.value = 'public';
+        }
+    } catch {
+        // pass
+    }
+
     if (!res.bounds) {
         res.bounds = '-180, -90, 180, 90';
     } else {

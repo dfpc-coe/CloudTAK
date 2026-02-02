@@ -364,6 +364,8 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Snapping can only be enabled on Vector basemaps');
             } else if (req.body.snapping_enabled && !req.body.snapping_layer) {
                 throw new Err(400, null, 'A snapping_layer must be provided when enabling snapping');
+            } else if (req.body.snapping_enabled && !req.body.url.startsWith(config.PMTILES_URL)) {
+                throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
             }
 
             let basemap = await config.models.Basemap.generate({
@@ -460,10 +462,14 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const type = req.body.type || existing.type;
+            const url = req.body.url || existing.url;
+
             if (type !== Basemap_Type.VECTOR && req.body.snapping_enabled) {
                 throw new Err(400, null, 'Snapping can only be enabled on Vector basemaps');
             } else if (req.body.snapping_enabled && !req.body.snapping_layer) {
                 throw new Err(400, null, 'A snapping_layer must be provided when enabling snapping');
+            } else if (req.body.snapping_enabled && !url.startsWith(config.PMTILES_URL)) {
+                throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
             }
 
             let basemap = await config.models.Basemap.commit(req.params.basemapid, {
