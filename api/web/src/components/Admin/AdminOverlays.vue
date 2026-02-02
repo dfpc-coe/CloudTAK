@@ -165,6 +165,11 @@
                                                         v-else
                                                         class='mx-3 ms-auto badge border bg-green text-white'
                                                     >Overlay</span>
+
+                                                    <span
+                                                        v-if='ov.hidden'
+                                                        class='mx-3 ms-auto badge border bg-red text-white'
+                                                    >Hidden</span>
                                                 </div>
                                             </template>
                                         </div>
