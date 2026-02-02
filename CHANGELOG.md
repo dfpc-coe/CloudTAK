@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.67.0 - 2026-02-02
+
+- :rocket: Standardize `/tiles` endpoint for retrieving per-tile data
+- :rocket: Fixes to binary/gzip parsing of tiles in the PMTiles context
+
 ### v12.66.0 - 2026-01-31
 
 - :tada: Allow setting menu visibility per user profile
