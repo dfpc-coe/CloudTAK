@@ -45,7 +45,7 @@
 
         <TablerNone
             v-else-if='!props.subscription.meta.contents.length'
-            label='Files'
+            label='No Files'
             :create='false'
         />
         <template v-else>
