@@ -54,6 +54,18 @@
                         ]'
                     />
                 </div>
+                <div class='col-md-3'>
+                    <TablerEnum
+                         v-model='paging.hidden'
+                         label='Hidden'
+                         default='all'
+                         :options='[
+                             "true",
+                             "false",
+                             "all"
+                         ]'
+                     />
+                 </div>
             </div>
 
             <TablerLoading
@@ -172,6 +184,7 @@ const paging = ref({
     limit: 100,
     scope: 'server',
     type: 'basemap',
+    hidden: 'all',
     page: 0
 });
 
@@ -223,6 +236,9 @@ async function fetchList() {
     if (paging.value.scope !== "all") {
         url.searchParams.append('scope', paging.value.scope);
     }
+
+    url.searchParams.append('hidden', paging.value.hidden);
+
     url.searchParams.append('filter', paging.value.filter);
     url.searchParams.append('limit', String(paging.value.limit));
     url.searchParams.append('page', String(paging.value.page));
