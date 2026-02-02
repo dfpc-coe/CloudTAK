@@ -394,38 +394,6 @@ export default class DrawTool {
             let network: GeoJSONFeatureCollection<LineString>;
 
             if (this.snappingLayer && this.snappingLayer !== 'No Snapping') {
-                const url = stdurl('/api/basemap');
-                url.searchParams.append('snapping', 'true');
-                url.searchParams.append('hidden', 'all');
-                url.searchParams.append('overlay', 'true');
-                url.searchParams.append('filter', this.snappingLayer);
-
-                const list = await std(url) as { items: any[] };
-
-                if (list.items && list.items.length) {
-                    const basemap = list.items[0];
-                    const bounds = this.mapStore.map.getBounds();
-                    const polygon = {
-                        type: 'Polygon',
-                        coordinates: [[
-                            [bounds.getWest(), bounds.getSouth()],
-                            [bounds.getEast(), bounds.getSouth()],
-                            [bounds.getEast(), bounds.getNorth()],
-                            [bounds.getWest(), bounds.getNorth()],
-                            [bounds.getWest(), bounds.getSouth()]
-                        ]]
-                    };
-
-                    network = await std(stdurl(`/api/basemap/${basemap.id}/feature`), {
-                         method: 'POST',
-                         body: {
-                             polygon: polygon
-                         }
-                     }) as GeoJSONFeatureCollection<LineString>;
-                } else {
-                    network = { type: 'FeatureCollection', features: [] };
-                }
-            } else {
                 const url = new URL('https://tiles.map.cotak.gov/tiles/public/snapping/features')
                 url.searchParams.set('token', localStorage.token);
                 url.searchParams.set('bbox', this.mapStore.map.getBounds().toArray().join(','));
