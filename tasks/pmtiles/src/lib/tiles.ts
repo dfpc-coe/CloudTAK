@@ -462,8 +462,8 @@ export class FileTiles {
                 if (isGzip) {
                     res.send(buffer);
                 } else {
-                    const recompressed_data = zlib.gzipSync(buffer);
-                    res.send(recompressed_data);
+                    const compressed_data = zlib.gzipSync(buffer);
+                    res.send(compressed_data);
                 }
             } else {
                 if (isGzip) {
