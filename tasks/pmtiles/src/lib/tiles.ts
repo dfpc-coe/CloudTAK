@@ -431,7 +431,7 @@ export class FileTiles {
             switch (header.tileType) {
                 case pmtiles.TileType.Mvt:
                     // part of the list of Cloudfront compressible types.
-                    res.set("Content-Type", "application/vnd.mapbox-vector-tile");
+                    res.set("Content-Type", "application/x-protobuf");
                 break;
                 case pmtiles.TileType.Png:
                     res.set("Content-Type", "image/png");
@@ -453,6 +453,10 @@ export class FileTiles {
             // without depending on clients sending matching Accept: headers in the request.
             if (process.env.StackName) {
                 res.set("Content-Encoding", "gzip");
+                if (header.tileType === pmtiles.TileType.Mvt) {
+                    res.set("Content-Type", "application/x-protobuf");
+                }
+
                 const recompressed_data = zlib.gzipSync(data);
                 res.send(Buffer.from(recompressed_data));
             } else {
