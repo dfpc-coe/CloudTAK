@@ -18,7 +18,7 @@ import { StandardResponse, BasemapResponse, OptionalTileJSON, GeoJSONFeature, Ge
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
-import { toEnum, Basemap_Format, Basemap_Scheme, Basemap_Type } from '../lib/enums.js';
+import { toEnum, Basemap_Format, Basemap_Scheme, Basemap_Type, AllBoolean, AllBooleanCast } from '../lib/enums.js';
 import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
 import * as Default from '../lib/limits.js';
 
@@ -180,6 +180,7 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'Only show Basemaps belonging to a given collection'
             })),
             overlay: Type.Boolean({ default: false }),
+            hidden: Type.Enum(AllBoolean, { default: AllBoolean.FALSE }),
             snapping: Type.Optional(Type.Boolean())
         }),
         res: Type.Object({
@@ -199,6 +200,8 @@ export default async function router(schema: Schema, config: Config) {
                 scope = sql`username IS NOT NULL`;
             }
 
+            const hidden = AllBooleanCast(req.query.hidden);
+
             const types: Array<Basemap_Type> = Array.isArray(req.query.type) ? req.query.type : (req.query.type ? [req.query.type] : [
                 Basemap_Type.RASTER, Basemap_Type.VECTOR, Basemap_Type.TERRAIN
             ]);
@@ -216,6 +219,7 @@ export default async function router(schema: Schema, config: Config) {
                     where: sql`
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                        AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
                         AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
                         AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                         AND (
@@ -234,6 +238,7 @@ export default async function router(schema: Schema, config: Config) {
                         where: sql`
                             collection ~* ${Param(req.query.filter)}
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                            AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
                             AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
                             AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                             AND ${scope}
@@ -252,6 +257,7 @@ export default async function router(schema: Schema, config: Config) {
                     where: sql`
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                        AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
                         AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
                         AND (username IS NULL OR username = ${user.email})
                         AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
@@ -270,6 +276,7 @@ export default async function router(schema: Schema, config: Config) {
                         where: sql`
                             collection ~* ${Param(req.query.filter)}
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                            AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
                             AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
                             AND (username IS NULL OR username = ${user.email})
                             AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
