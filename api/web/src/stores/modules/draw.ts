@@ -43,6 +43,11 @@ export default class DrawTool {
 
     private graph: Routing;
 
+    private routeFinder: TerraRoute & {
+        setNetwork: (network: GeoJSONFeatureCollection<LineString>) => void;
+        expandNetwork: (network: GeoJSONFeatureCollection<LineString>) => void;
+    };
+
     private mapStore: ReturnType<typeof useMapStore>;
 
     // Contains coordinates to allow snapping to
@@ -82,6 +87,15 @@ export default class DrawTool {
     constructor(mapStore: ReturnType<typeof useMapStore>) {
         this.mapStore = mapStore;
 
+        this.mapStore.map.on('moveend', async (ev) => {
+            if (this.mode !== DrawToolMode.SNAPPING) return;
+
+            await this.updateGraph({
+                expand: true
+            });
+        });
+
+
         const toCustom = (event: terraDraw.TerraDrawMouseEvent): Position | undefined => {
             let closest: {
                 dist: number
@@ -110,10 +124,11 @@ export default class DrawTool {
             }
         }
 
-        const routeFinderInstance = new TerraRoute();
-        const routeFinder = Object.assign(routeFinderInstance, {
-            setNetwork: routeFinderInstance.buildRouteGraph.bind(routeFinderInstance),
-            expandNetwork: () => {}
+        const routeFinder = new TerraRoute();
+
+        this.routeFinder = Object.assign(routeFinder, {
+            setNetwork: (network: GeoJSONFeatureCollection<LineString>) => routeFinder.buildRouteGraph(network),
+            expandNetwork: (network: GeoJSONFeatureCollection<LineString>) => routeFinder.expandRouteGraph(network)
         });
 
         this.graph = new Routing({
@@ -122,7 +137,7 @@ export default class DrawTool {
                 features: []
             },
             useCache: true,
-            routeFinder
+            routeFinder: this.routeFinder
         })
 
         this.draw = new terraDraw.TerraDraw({
@@ -155,6 +170,7 @@ export default class DrawTool {
                     snapping: { toCustom }
                 }),
                 new TerraDrawRouteSnapMode({
+                   straightLineFallback: true,
                    routing: this.graph,
                    maxPoints: 5,
                    styles: {
@@ -387,48 +403,75 @@ export default class DrawTool {
         }
     }
 
+    async updateGraph(
+        opts: {
+            expand?: boolean
+        } = {}
+    ): Promise<void> {
+        let network: GeoJSONFeatureCollection<LineString>;
+
+        const url = new URL('https://tiles.map.cotak.gov/tiles/public/snapping/features')
+        url.searchParams.set('token', localStorage.token);
+        url.searchParams.set('bbox', this.mapStore.map.getBounds().toArray().join(','));
+        url.searchParams.set('type', 'LineString');
+        url.searchParams.set('multi', 'false');
+
+        network = await std(url) as GeoJSONFeatureCollection<LineString>;
+
+        if (opts?.expand) {
+            this.routeFinder.expandRouteGraph(network);
+        } else {
+            this.routeFinder.buildRouteGraph(network);
+        }
+
+        const source = this.mapStore.map.getSource('snapping-graph-source') as mapgl.GeoJSONSource;
+
+        if (source) {
+            source.setData(network);
+        } else {
+            this.mapStore.map.addSource('snapping-graph-source', {
+                type: 'geojson',
+                data: network
+            });
+            this.mapStore.map.addLayer({
+                id: 'snapping-graph-layer',
+                type: 'line',
+                source: 'snapping-graph-source',
+                layout: {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                paint: {
+                    'line-color': '#5fb7ce',
+                    'line-width': 2,
+                    'line-dasharray': [2, 2],
+                    'line-opacity': 0.8
+                }
+            });
+        }
+    }
+
+    async removeNetwork(): Promise<void> {
+        this.routeFinder.buildRouteGraph({
+            type: 'FeatureCollection',
+            features: []
+        });
+
+        if (this.mapStore.map.getLayer('snapping-graph-layer')) {
+            this.mapStore.map.removeLayer('snapping-graph-layer');
+        }
+
+        if (this.mapStore.map.getSource('snapping-graph-source')) {
+            this.mapStore.map.removeSource('snapping-graph-source');
+        }
+    }
+
+
     async start(mode: DrawToolMode): Promise<void> {
         this.mode = mode;
 
         if (mode === DrawToolMode.SNAPPING) {
-            let network: GeoJSONFeatureCollection<LineString>;
-
-            if (this.snappingLayer && this.snappingLayer !== 'No Snapping') {
-                const url = new URL('https://tiles.map.cotak.gov/tiles/public/snapping/features')
-                url.searchParams.set('token', localStorage.token);
-                url.searchParams.set('bbox', this.mapStore.map.getBounds().toArray().join(','));
-                url.searchParams.set('type', 'LineString');
-                url.searchParams.set('multi', 'false');
-
-                network = await std(url) as GeoJSONFeatureCollection<LineString>;
-            }
-
-            this.graph.setNetwork(network);
-
-            const source = this.mapStore.map.getSource('snapping-graph-source') as mapgl.GeoJSONSource;
-            if (source) {
-                source.setData(network);
-            } else {
-                this.mapStore.map.addSource('snapping-graph-source', {
-                    type: 'geojson',
-                    data: network
-                });
-                this.mapStore.map.addLayer({
-                    id: 'snapping-graph-layer',
-                    type: 'line',
-                    source: 'snapping-graph-source',
-                    layout: {
-                        'line-join': 'round',
-                        'line-cap': 'round'
-                    },
-                    paint: {
-                        'line-color': '#5fb7ce',
-                        'line-width': 2,
-                        'line-dasharray': [2, 2],
-                        'line-opacity': 0.8
-                    }
-                });
-            }
+            await this.updateGraph();
 
             this.draw.start();
 
