@@ -46,7 +46,9 @@ await schema.load(
     }
 );
 
-export const handler = serverless(app);
+export const handler = serverless(app, {
+    binary: ['application/x-protobuf', 'application/vnd.mapbox-vector-tile', 'image/png', 'image/jpeg', 'image/webp']
+});
 
 const startServer = async () => {
     app.listen(5002, () => {
