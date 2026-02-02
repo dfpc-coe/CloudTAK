@@ -57,6 +57,28 @@ export default class DrawTool {
         overlay: string;
     }
 
+    private _snappingLayer: string = 'No Snapping';
+    public snappingOptions: string[] = ['No Snapping'];
+
+    public get snappingLayer(): string {
+        return this._snappingLayer;
+    }
+
+    public set snappingLayer(layer: string) {
+        this._snappingLayer = layer;
+        if (this._snappingLayer === 'No Snapping') {
+            if (this.mode === DrawToolMode.SNAPPING) {
+               this.start(DrawToolMode.LINESTRING);
+            }
+        } else {
+            if (this.mode === DrawToolMode.LINESTRING) {
+                this.start(DrawToolMode.SNAPPING);
+            } else if (this.mode === DrawToolMode.SNAPPING) {
+                this.start(DrawToolMode.SNAPPING);
+            }
+        }
+    }
+
     constructor(mapStore: ReturnType<typeof useMapStore>) {
         this.mapStore = mapStore;
 
@@ -349,17 +371,58 @@ export default class DrawTool {
         }
     }
 
+    async populateSnappingLayers(): Promise<void> {
+        if (this.mapStore.hasSnapping) {
+            const res = await std(stdurl('/api/basemap?snapping=true'));
+            // @ts-expect-error type
+            if (res.items) {
+                // @ts-expect-error type
+                this.snappingOptions = ['No Snapping'].concat(res.items.map((b) => b.name));
+            }
+        }
+    }
+
     async start(mode: DrawToolMode): Promise<void> {
         this.mode = mode;
 
         if (mode === DrawToolMode.SNAPPING) {
-            const url = new URL('https://tiles.map.cotak.gov/tiles/public/snapping/features')
-            url.searchParams.set('token', localStorage.token);
-            url.searchParams.set('bbox', this.mapStore.map.getBounds().toArray().join(','));
-            url.searchParams.set('type', 'LineString');
-            url.searchParams.set('multi', 'false');
+            let network: GeoJSONFeatureCollection<LineString>;
 
-            const network = await std(url) as GeoJSONFeatureCollection<LineString>;
+            if (this.snappingLayer && this.snappingLayer !== 'No Snapping') {
+                const list = await std(stdurl(`/api/basemap?snapping=true&filter=${this.snappingLayer}`)) as { items: any[] };
+
+                if (list.items && list.items.length) {
+                    const basemap = list.items[0];
+                    const bounds = this.mapStore.map.getBounds();
+                    const polygon = {
+                        type: 'Polygon',
+                        coordinates: [[
+                            [bounds.getWest(), bounds.getSouth()],
+                            [bounds.getEast(), bounds.getSouth()],
+                            [bounds.getEast(), bounds.getNorth()],
+                            [bounds.getWest(), bounds.getNorth()],
+                            [bounds.getWest(), bounds.getSouth()]
+                        ]]
+                    };
+
+                    network = await std(stdurl(`/api/basemap/${basemap.id}/feature`), {
+                         method: 'POST',
+                         body: {
+                             polygon: polygon
+                         }
+                     }) as GeoJSONFeatureCollection<LineString>;
+                } else {
+                    network = { type: 'FeatureCollection', features: [] };
+                }
+            } else {
+                const url = new URL('https://tiles.map.cotak.gov/tiles/public/snapping/features')
+                url.searchParams.set('token', localStorage.token);
+                url.searchParams.set('bbox', this.mapStore.map.getBounds().toArray().join(','));
+                url.searchParams.set('type', 'LineString');
+                url.searchParams.set('multi', 'false');
+
+                network = await std(url) as GeoJSONFeatureCollection<LineString>;
+            }
 
             this.graph.setNetwork(network);
 
