@@ -1,0 +1,1 @@
+ALTER TABLE "basemaps" ADD COLUMN "hidden" boolean DEFAULT false NOT NULL;
