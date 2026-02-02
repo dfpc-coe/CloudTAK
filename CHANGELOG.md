@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.67.1 - 2026-02-02
+
+- :bug: Internally create a slice to avoid an unimplemented error
+
 ### v12.67.0 - 2026-02-02
 
 - :rocket: Standardize `/tiles` endpoint for retrieving per-tile data
