@@ -801,14 +801,14 @@ export const useMapStore = defineStore('cloudtak', {
             map.on('touchmove', (e) => {
                 // Only clear if there's an active timer
                 if (pressTimer && pressStartPoint) {
-                    // Calculate distance moved from starting point
+                    // Calculate squared distance moved from starting point (avoiding expensive sqrt)
                     const deltaX = e.point.x - pressStartPoint.x;
                     const deltaY = e.point.y - pressStartPoint.y;
-                    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                    const distanceSquared = deltaX * deltaX + deltaY * deltaY;
                     
-                    // Clear the timer if user moves more than 10 pixels (panning/scrolling)
+                    // Clear the timer if user moves more than 10 pixels (10^2 = 100)
                     // This allows for minor finger tremors while still preventing accidental triggers
-                    if (distance > 10) {
+                    if (distanceSquared > 100) {
                         clearTimeout(pressTimer);
                         pressTimer = undefined;
                         pressEvent = undefined;
