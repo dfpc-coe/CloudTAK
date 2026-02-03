@@ -741,7 +741,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const defaultBasemap = await config.models.Setting.typed<number | undefined>('map::basemap', undefined)
 
-            if (defaultBasemap.value === basemap.id) {
+            if (Number(defaultBasemap.value) === basemap.id) {
                 throw new Err(400, null, 'Cannot delete default basemap');
             }
 
