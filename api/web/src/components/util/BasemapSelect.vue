@@ -16,11 +16,11 @@
                     >
                         <IconTrash
                             v-if='!disabled'
-                            v-tooltip='&apos;Remove Basemap&apos;'
+                            v-tooltip='"Remove Basemap"'
                             :size='20'
                             stroke='1'
                             class='cursor-pointer'
-                            @click='emit(&apos;update:modelValue&apos;, null)'
+                            @click='emit("update:modelValue", null)'
                         />
                     </div>
                 </div>
@@ -76,7 +76,7 @@
                         v-for='basemap in list.items'
                         :key='basemap.id'
                         class='d-flex align-items-center p-2 hover cursor-pointer rounded'
-                        @click='emit(&apos;update:modelValue&apos;, basemap.id)'
+                        @click='emit("update:modelValue", basemap.id)'
                     >
                         {{ basemap.name }}
                     </div>
