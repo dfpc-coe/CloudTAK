@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.68.0 - 2026-02-02
+
+- :tada: Mimick LongPress events to open Context Radial on Touch Devices
+
 ### v12.67.3 - 2026-02-02
 
 - :rocket: Change default Mission List order to newest => oldest
