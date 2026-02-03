@@ -867,9 +867,12 @@ function updateCoordinates(center: number[]): void {
 
     if (cot.value.geometry.type === 'Point') {
         cot.value.geometry.coordinates = center;
+        cot.value.update({
+            geometry: cot.value.geometry
+        });
+    } else {
+        cot.value.update({});
     }
-
-    cot.value.update({});
 }
 
 async function editGeometry() {
