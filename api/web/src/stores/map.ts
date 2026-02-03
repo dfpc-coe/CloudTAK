@@ -734,6 +734,7 @@ export const useMapStore = defineStore('cloudtak', {
             // Long-press event handler for mobile devices
             let pressTimer: number | undefined;
             let pressEvent: MapTouchEvent | undefined;
+            let pressStartPoint: Point | undefined;
             
             map.on('touchstart', (e) => {
                 if (this.draw.editing) return;
@@ -741,8 +742,9 @@ export const useMapStore = defineStore('cloudtak', {
                 // Only handle single-touch (avoid interfering with multi-touch gestures like pinch-to-zoom)
                 if (e.originalEvent && e.originalEvent.touches.length !== 1) return;
                 
-                // Store the event for later use
+                // Store the event and starting point for later use
                 pressEvent = e;
+                pressStartPoint = e.point;
                 
                 // Set a timer for long-press detection (500ms)
                 pressTimer = window.setTimeout(() => {
@@ -781,6 +783,7 @@ export const useMapStore = defineStore('cloudtak', {
                         });
                         
                         pressEvent = undefined;
+                        pressStartPoint = undefined;
                     }
                 }, 500);
             });
@@ -792,15 +795,26 @@ export const useMapStore = defineStore('cloudtak', {
                     pressTimer = undefined;
                 }
                 pressEvent = undefined;
+                pressStartPoint = undefined;
             });
             
-            map.on('touchmove', () => {
-                // Clear the timer if user moves (panning/scrolling)
-                if (pressTimer) {
-                    clearTimeout(pressTimer);
-                    pressTimer = undefined;
+            map.on('touchmove', (e) => {
+                // Only clear if there's an active timer
+                if (pressTimer && pressStartPoint) {
+                    // Calculate distance moved from starting point
+                    const deltaX = e.point.x - pressStartPoint.x;
+                    const deltaY = e.point.y - pressStartPoint.y;
+                    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                    
+                    // Clear the timer if user moves more than 10 pixels (panning/scrolling)
+                    // This allows for minor finger tremors while still preventing accidental triggers
+                    if (distance > 10) {
+                        clearTimeout(pressTimer);
+                        pressTimer = undefined;
+                        pressEvent = undefined;
+                        pressStartPoint = undefined;
+                    }
                 }
-                pressEvent = undefined;
             });
 
             const url = stdurl('/api/profile/overlay');
