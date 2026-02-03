@@ -29,7 +29,7 @@ import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 
 import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, MapConfig } from '../types.ts';
-import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
+import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
 
@@ -729,6 +729,75 @@ export const useMapStore = defineStore('cloudtak', {
                     point: e.point,
                     lngLat: e.lngLat
                 });
+            });
+
+            // Long-press event handler for mobile devices
+            let pressTimer: number | undefined;
+            let pressEvent: MapTouchEvent | undefined;
+            
+            map.on('touchstart', (e) => {
+                if (this.draw.editing) return;
+                
+                // Store the event for later use
+                pressEvent = e;
+                
+                // Set a timer for long-press detection (500ms)
+                pressTimer = window.setTimeout(() => {
+                    if (pressEvent) {
+                        // Prevent default context menu on mobile
+                        if (e.originalEvent) {
+                            e.originalEvent.preventDefault();
+                        }
+                        
+                        const id = randomUUID();
+                        this.radialClick({
+                            id,
+                            type: 'Feature',
+                            path: '/',
+                            properties: {
+                                id,
+                                callsign: 'New Feature',
+                                archived: true,
+                                type: 'u-d-p',
+                                how: 'm-g',
+                                time: new Date().toISOString(),
+                                start: new Date().toISOString(),
+                                stale: new Date(Date.now() + 2 * (60 * 60 * 1000)).toISOString(),
+                                center: [ pressEvent.lngLat.lng, pressEvent.lngLat.lat ],
+                                'marker-color': '#00ff00',
+                                'marker-opacity': 1
+                            },
+                            geometry: {
+                                type: 'Point',
+                                coordinates: [pressEvent.lngLat.lng, pressEvent.lngLat.lat]
+                            }
+                        }, {
+                            mode: 'context',
+                            point: pressEvent.point,
+                            lngLat: pressEvent.lngLat
+                        });
+                        
+                        pressEvent = undefined;
+                    }
+                }, 500);
+            });
+            
+            map.on('touchend', () => {
+                // Clear the timer if touch ends before long-press threshold
+                if (pressTimer) {
+                    clearTimeout(pressTimer);
+                    pressTimer = undefined;
+                }
+                pressEvent = undefined;
+            });
+            
+            map.on('touchmove', () => {
+                // Clear the timer if user moves (panning/scrolling)
+                if (pressTimer) {
+                    clearTimeout(pressTimer);
+                    pressTimer = undefined;
+                }
+                pressEvent = undefined;
             });
 
             const url = stdurl('/api/profile/overlay');
