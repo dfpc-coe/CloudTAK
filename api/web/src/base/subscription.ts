@@ -427,6 +427,8 @@ export default class Subscription {
         const url = stdurl('/api/marti/mission');
         url.searchParams.append('passwordProtected', String(opts.passwordProtected));
         url.searchParams.append('defaultRole', String(opts.defaultRole));
+        url.searchParams.append('sort', 'createTime');
+        url.searchParams.append('order', 'desc');
         return await std(url) as MissionList;
     }
 
