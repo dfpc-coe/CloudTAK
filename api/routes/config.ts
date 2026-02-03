@@ -53,6 +53,10 @@ export const FullConfig = Type.Object({
         minimum: 0,
         maximum: 20
     }),
+    'map::basemap': Type.Integer({
+        description: 'Default Basemap for New Users'
+    }),
+
 
     'display::stale': Type.Enum(Profile_Stale),
     'display::distance': Type.Enum(Profile_Distance),
@@ -344,6 +348,7 @@ export default async function router(schema: Schema, config: Config) {
             zoom: Type.Number({ default: 4 }),
             pitch: Type.Integer({ default: 0 }),
             bearing: Type.Integer({ default: 0 }),
+            basemap: Type.Optional(Type.Integer())
         })
     }, async (req, res) => {
         try {
@@ -354,6 +359,7 @@ export default async function router(schema: Schema, config: Config) {
                 'map::pitch',
                 'map::bearing',
                 'map::zoom',
+                'map::basemap'
             ];
 
             const final: Record<string, any> = {};
@@ -373,7 +379,8 @@ export default async function router(schema: Schema, config: Config) {
                 center: final.center || '-100,40',
                 zoom: final.zoom || 4,
                 pitch: final.pitch || 0,
-                bearing: final.bearing || 0
+                bearing: final.bearing || 0,
+                basemap: final.basemap ? Number(final.basemap) : undefined
             });
         } catch (err) {
             Err.respond(err, res);
