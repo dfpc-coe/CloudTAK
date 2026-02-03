@@ -738,6 +738,9 @@ export const useMapStore = defineStore('cloudtak', {
             map.on('touchstart', (e) => {
                 if (this.draw.editing) return;
                 
+                // Only handle single-touch (avoid interfering with multi-touch gestures like pinch-to-zoom)
+                if (e.originalEvent && e.originalEvent.touches.length !== 1) return;
+                
                 // Store the event for later use
                 pressEvent = e;
                 
@@ -745,8 +748,8 @@ export const useMapStore = defineStore('cloudtak', {
                 pressTimer = window.setTimeout(() => {
                     if (pressEvent) {
                         // Prevent default context menu on mobile
-                        if (e.originalEvent) {
-                            e.originalEvent.preventDefault();
+                        if (pressEvent.originalEvent) {
+                            pressEvent.originalEvent.preventDefault();
                         }
                         
                         const id = randomUUID();
