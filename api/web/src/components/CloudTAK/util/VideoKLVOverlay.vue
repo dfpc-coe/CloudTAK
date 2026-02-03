@@ -61,7 +61,7 @@
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
 import { IconX } from '@tabler/icons-vue';
-import type { KLVField } from '../../../lib/klv.ts';
+import type { KLVField } from '../../../klv.ts';
 
 const props = defineProps<{
     metadata: Map<number, KLVField>;

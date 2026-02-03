@@ -181,7 +181,7 @@ import {
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import { parseKLV, parseID3PrivKLV } from '../../../klv.ts';
-import type { KLVField } from '../../../lib/klv.ts';
+import type { KLVField } from '../../../klv.ts';
 import VideoKLVOverlay from './VideoKLVOverlay.vue';
 
 // Store for managing floating panes
