@@ -63,6 +63,17 @@
                 </span>
 
                 <TablerIconButton
+                    v-if='hasKLVData'
+                    :title='showKLV ? "Hide KLV Metadata" : "Show KLV Metadata"'
+                    @click='showKLV = !showKLV'
+                >
+                    <IconDatabase
+                        :size='24'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <TablerIconButton
                     title='Close Video Player'
                     @click='emit("close")'
                 >
@@ -122,13 +133,19 @@
                 />
             </template>
             <template v-else>
-                <video
-                    ref='videoTag'
-                    class='w-100 h-100 live-video'
-                    controls
-                    autoplay
-                    muted
-                />
+                <div class='position-relative w-100 h-100'>
+                    <video
+                        ref='videoTag'
+                        class='w-100 h-100 live-video'
+                        controls
+                        autoplay
+                        muted
+                    />
+                    <VideoKLVOverlay
+                        v-if='showKLV && hasKLVData'
+                        :metadata='klvMetadata'
+                    />
+                </div>
             </template>
         </div>
     </div>
@@ -153,7 +170,8 @@ import type { VideoPane } from '../../../stores/float.ts';
 import {
     IconX,
     IconUsersGroup,
-    IconGripVertical
+    IconGripVertical,
+    IconDatabase,
 } from '@tabler/icons-vue';
 import {
     TablerNone,
@@ -162,6 +180,9 @@ import {
     TablerButton,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
+import { parseKLV, parseID3PrivKLV } from '../../../klv.ts';
+import type { KLVField } from '../../../klv.ts';
+import VideoKLVOverlay from './VideoKLVOverlay.vue';
 
 // Store for managing floating panes
 const floatStore = useFloatStore();
@@ -209,6 +230,12 @@ const lastPosition = ref({ top: 0, left: 0 }) // Last mouse position during drag
 // Active stream metadata
 const active = ref();
 
+// KLV metadata state
+const klvMetadata = ref<Map<number, KLVField>>(new Map());
+const showKLV = ref(false);
+const hasKLVData = ref(false);
+const textTrackCleanup = ref<(() => void) | undefined>();
+
 // Computed title - uses stream metadata name if available, falls back to prop
 const title = computed(() => {
     if (active.value && active.value.metadata) {
@@ -223,6 +250,11 @@ onUnmounted(async () => {
     // Stop observing resize events
     if (observer.value) {
         observer.value.disconnect();
+    }
+
+    // Clean up text track listeners
+    if (textTrackCleanup.value) {
+        textTrackCleanup.value();
     }
 
     // Destroy HLS player instance
@@ -421,6 +453,25 @@ async function createPlayer(): Promise<void> {
             }
         });
 
+        // Listen for KLV metadata in MPEG-TS fragments
+        player.value.on(Hls.Events.FRAG_PARSING_METADATA, (_event, data) => {
+            if (!data.samples || data.samples.length === 0) return;
+            for (const sample of data.samples) {
+                if (!sample.data) continue;
+                const bytes = sample.data instanceof Uint8Array ? sample.data : new Uint8Array(sample.data);
+                const parsed = parseID3PrivKLV(bytes) || parseKLV(bytes);
+                if (parsed && parsed.valid) {
+                    klvMetadata.value = parsed.fields;
+                    hasKLVData.value = true;
+                }
+            }
+        });
+
+        // Set up text track monitoring for KLV cues
+        if (videoTag.value) {
+            setupTextTrackMonitoring(videoTag.value);
+        }
+
         // Enhanced error handling for MediaMTX muxer restarts and network issues
         player.value.on(Hls.Events.ERROR, (event, data) => {
             console.log("HLS Error:", data);
@@ -467,6 +518,64 @@ async function createPlayer(): Promise<void> {
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
+}
+
+/**
+ * Monitor video element text tracks for KLV metadata cues (DataCue).
+ * Some HLS implementations expose metadata via text tracks with kind='metadata'.
+ */
+function setupTextTrackMonitoring(videoElement: HTMLVideoElement): void {
+    // Clean up any previous listener
+    if (textTrackCleanup.value) {
+        textTrackCleanup.value();
+        textTrackCleanup.value = undefined;
+    }
+
+    const handlers: Array<{ track: TextTrack; handler: () => void }> = [];
+
+    function scanTracks(): void {
+        for (let i = 0; i < videoElement.textTracks.length; i++) {
+            const track = videoElement.textTracks[i];
+            const isMetadata = track.kind === 'metadata' ||
+                (track.label && track.label.toLowerCase().includes('klv'));
+
+            if (!isMetadata) continue;
+
+            track.mode = 'hidden';
+
+            const handler = (): void => {
+                if (!track.activeCues) return;
+                for (let j = 0; j < track.activeCues.length; j++) {
+                    const cue = track.activeCues[j] as unknown as { data?: ArrayBuffer; value?: { data?: ArrayBuffer } };
+                    const buffer = cue.data || cue.value?.data;
+                    if (!buffer) continue;
+
+                    const bytes = new Uint8Array(buffer);
+                    const parsed = parseID3PrivKLV(bytes) || parseKLV(bytes);
+                    if (parsed && parsed.valid) {
+                        klvMetadata.value = parsed.fields;
+                        hasKLVData.value = true;
+                    }
+                }
+            };
+
+            track.addEventListener('cuechange', handler);
+            handlers.push({ track, handler });
+        }
+    }
+
+    scanTracks();
+
+    // Re-scan when new tracks are added
+    const onAddTrack = (): void => scanTracks();
+    videoElement.textTracks.addEventListener('addtrack', onAddTrack);
+
+    textTrackCleanup.value = () => {
+        for (const { track, handler } of handlers) {
+            track.removeEventListener('cuechange', handler);
+        }
+        videoElement.textTracks.removeEventListener('addtrack', onAddTrack);
+    };
 }
 
 /**
@@ -548,6 +657,11 @@ async function requestLease(): Promise<void> {
     } else {
         error.value = undefined;
     }
+
+    // Reset KLV state for new stream
+    klvMetadata.value = new Map();
+    hasKLVData.value = false;
+    showKLV.value = false;
 
     try {
         // Check if stream is already active on the server
