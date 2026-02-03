@@ -348,7 +348,7 @@ export default async function router(schema: Schema, config: Config) {
             zoom: Type.Number({ default: 4 }),
             pitch: Type.Integer({ default: 0 }),
             bearing: Type.Integer({ default: 0 }),
-            basemap: Type.Optional(Type.Integer())
+            basemap: Type.Union([Type.Null(), Type.Integer()])
         })
     }, async (req, res) => {
         try {
@@ -380,7 +380,7 @@ export default async function router(schema: Schema, config: Config) {
                 zoom: final.zoom || 4,
                 pitch: final.pitch || 0,
                 bearing: final.bearing || 0,
-                basemap: final.basemap ? Number(final.basemap) : undefined
+                basemap: final.basemap ? Number(final.basemap) : null
             });
         } catch (err) {
             Err.respond(err, res);
