@@ -12,6 +12,18 @@
 
 ### Pending Release
 
+### v12.68.0 - 2026-02-02
+
+- :tada: Mimick LongPress events to open Context Radial on Touch Devices
+
+### v12.67.3 - 2026-02-02
+
+- :rocket: Change default Mission List order to newest => oldest
+
+### v12.67.2 - 2026-02-02
+
+- :bug: Ensure Content-Encoding in API Gateway context is always set correctly by sniffing the actual contents of the buffer returned by the PMTiles Class
+
 ### v12.67.1 - 2026-02-02
 
 - :bug: Internally create a slice to avoid an unimplemented error

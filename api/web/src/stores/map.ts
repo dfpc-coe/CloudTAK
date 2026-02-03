@@ -29,7 +29,7 @@ import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 
 import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, MapConfig } from '../types.ts';
-import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
+import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
 
@@ -730,6 +730,92 @@ export const useMapStore = defineStore('cloudtak', {
                     point: e.point,
                     lngLat: e.lngLat
                 });
+            });
+
+            // Long-press event handler for mobile devices
+            let pressTimer: number | undefined;
+            let pressEvent: MapTouchEvent | undefined;
+            let pressStartPoint: Point | undefined;
+            
+            map.on('touchstart', (e) => {
+                if (this.draw.editing) return;
+                
+                // Only handle single-touch (avoid interfering with multi-touch gestures like pinch-to-zoom)
+                if (e.originalEvent && e.originalEvent.touches.length !== 1) return;
+                
+                // Store the event and starting point for later use
+                pressEvent = e;
+                pressStartPoint = e.point;
+                
+                // Set a timer for long-press detection (500ms)
+                pressTimer = window.setTimeout(() => {
+                    if (pressEvent) {
+                        // Prevent default context menu on mobile
+                        if (pressEvent.originalEvent) {
+                            pressEvent.originalEvent.preventDefault();
+                        }
+                        
+                        const id = randomUUID();
+                        this.radialClick({
+                            id,
+                            type: 'Feature',
+                            path: '/',
+                            properties: {
+                                id,
+                                callsign: 'New Feature',
+                                archived: true,
+                                type: 'u-d-p',
+                                how: 'm-g',
+                                time: new Date().toISOString(),
+                                start: new Date().toISOString(),
+                                stale: new Date(Date.now() + 2 * (60 * 60 * 1000)).toISOString(),
+                                center: [ pressEvent.lngLat.lng, pressEvent.lngLat.lat ],
+                                'marker-color': '#00ff00',
+                                'marker-opacity': 1
+                            },
+                            geometry: {
+                                type: 'Point',
+                                coordinates: [pressEvent.lngLat.lng, pressEvent.lngLat.lat]
+                            }
+                        }, {
+                            mode: 'context',
+                            point: pressEvent.point,
+                            lngLat: pressEvent.lngLat
+                        });
+                        
+                        pressEvent = undefined;
+                        pressStartPoint = undefined;
+                    }
+                }, 500);
+            });
+            
+            map.on('touchend', () => {
+                // Clear the timer if touch ends before long-press threshold
+                if (pressTimer) {
+                    clearTimeout(pressTimer);
+                    pressTimer = undefined;
+                }
+                pressEvent = undefined;
+                pressStartPoint = undefined;
+            });
+            
+            map.on('touchmove', (e) => {
+                // Only clear if there's an active timer
+                if (pressTimer && pressStartPoint) {
+                    // Calculate squared distance moved from starting point (avoiding expensive sqrt)
+                    const deltaX = e.point.x - pressStartPoint.x;
+                    const deltaY = e.point.y - pressStartPoint.y;
+                    const distanceSquared = deltaX * deltaX + deltaY * deltaY;
+                    
+                    // Clear the timer if user moves more than 10 pixels (10^2 = 100)
+                    // This allows for minor finger tremors while still preventing accidental triggers
+                    if (distanceSquared > 100) {
+                        clearTimeout(pressTimer);
+                        pressTimer = undefined;
+                        pressEvent = undefined;
+                        pressStartPoint = undefined;
+                    }
+                }
             });
 
             const url = stdurl('/api/profile/overlay');

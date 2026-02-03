@@ -445,9 +445,11 @@ export class FileTiles {
             }
 
             const data = tile_result.data;
+            const buffer = Buffer.from(data);
+            const isGzip = buffer.length >= 2 && buffer[0] === 0x1f && buffer[1] === 0x8b;
 
             res.set("Cache-Control", tile_result.cacheControl || "private, max-age=86400");
-            res.set('ETag', tile_result.etag || `"${createHash("sha256").update(Buffer.from(data)).digest("hex")}"`);
+            res.set('ETag', tile_result.etag || `"${createHash("sha256").update(buffer).digest("hex")}"`);
 
             // We need to force API Gateway to interpret the Lambda response as binary
             // without depending on clients sending matching Accept: headers in the request.
@@ -457,10 +459,17 @@ export class FileTiles {
                     res.set("Content-Type", "application/x-protobuf");
                 }
 
-                const recompressed_data = zlib.gzipSync(data);
-                res.send(Buffer.from(recompressed_data));
+                if (isGzip) {
+                    res.send(buffer);
+                } else {
+                    const compressed_data = zlib.gzipSync(buffer);
+                    res.send(compressed_data);
+                }
             } else {
-                res.send(Buffer.from(data));
+                if (isGzip) {
+                    res.set("Content-Encoding", "gzip");
+                }
+                res.send(buffer);
             }
         } else {
             res.status(204).send('');

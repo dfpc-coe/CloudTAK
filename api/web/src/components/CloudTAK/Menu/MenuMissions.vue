@@ -229,8 +229,13 @@ async function generateFilteredList() {
         filtered.push(mission);
     }
 
-    filtered.sort((a) => {
-        return !subscribed.value.has(a.guid) ? 1 : -1;
+    filtered.sort((a, b) => {
+        const aSub = subscribed.value.has(a.guid);
+        const bSub = subscribed.value.has(b.guid);
+
+        if (aSub && !bSub) return -1;
+        if (!aSub && bSub) return 1;
+        return 0;
     })
 
     filteredList.value = filtered;
