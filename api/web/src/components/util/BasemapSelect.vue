@@ -6,7 +6,7 @@
                 desc='Loading Basemap'
             />
         </div>
-        <div v-else-if='modelValue'>
+        <div v-else-if='modelValue && !err'>
             <div class='card'>
                 <div class='card-body d-flex align-items-center'>
                     <div>{{ selected?.name || 'Unknown Basemap' }}</div>
@@ -46,6 +46,16 @@
                 v-else
                 class='card-body'
             >
+                <div
+                    v-if='err'
+                    class='pb-2'
+                >
+                    <TablerInlineAlert
+                        title='Failed to load provided basemap'
+                        :description='String(err)'
+                        severity='danger'
+                    />
+                </div>
                 <TablerInput
                     v-model='paging.filter'
                     placeholder='Filter Basemaps...'
@@ -99,7 +109,8 @@ import {
     TablerLoading,
     TablerInput,
     TablerNone,
-    TablerPager
+    TablerPager,
+    TablerInlineAlert
 } from '@tak-ps/vue-tabler';
 
 const props = defineProps({
@@ -120,6 +131,7 @@ const loading = ref({
     list: false
 });
 
+const err = ref(null);
 const selected = ref(null);
 
 const paging = ref({
@@ -160,16 +172,20 @@ onMounted(async () => {
 });
 
 async function fetchSelected() {
+    err.value = null;
     if (!props.modelValue) {
         selected.value = null;
         return;
     }
 
     loading.value.init = true;
-
-    const url = stdurl(`/api/basemap/${props.modelValue}`);
-    selected.value = await std(url);
-
+    try {
+        const url = stdurl(`/api/basemap/${props.modelValue}`);
+        selected.value = await std(url);
+    } catch (e) {
+        err.value = e;
+        await fetchList();
+    }
     loading.value.init = false;
 }
 

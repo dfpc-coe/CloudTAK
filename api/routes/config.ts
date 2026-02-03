@@ -53,7 +53,7 @@ export const FullConfig = Type.Object({
         minimum: 0,
         maximum: 20
     }),
-    'map::basemap': Type.Union([Type.Integer(), Type.Null()], {
+    'map::basemap': Type.Union([Type.Null(), Type.Integer()], {
         description: 'Default Basemap for New Users'
     }),
 
