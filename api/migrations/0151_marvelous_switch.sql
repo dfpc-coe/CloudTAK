@@ -1,1 +1,1 @@
-ALTER TABLE "basemaps" ADD COLUMN "hidden" boolean DEFAULT false NOT NULL;
+ALTER TABLE "basemaps" ADD COLUMN IF NOT EXISTS "hidden" boolean DEFAULT false NOT NULL;

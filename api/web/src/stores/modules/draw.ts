@@ -108,7 +108,7 @@ export default class DrawTool {
     constructor(mapStore: ReturnType<typeof useMapStore>) {
         this.mapStore = mapStore;
 
-        this.mapStore.map.on('moveend', async (ev) => {
+        this.mapStore.map.on('moveend', async () => {
             if (this.mode !== DrawToolMode.SNAPPING) return;
 
             await this.updateGraph({
@@ -483,6 +483,7 @@ export default class DrawTool {
             ]]
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const tiles = tilecover.tiles(geom as any, {
             min_zoom: this.route.zoom,
             max_zoom: this.route.zoom
