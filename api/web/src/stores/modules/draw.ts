@@ -1,6 +1,5 @@
 import * as terraDraw from 'terra-draw';
 import * as tilecover from '@mapbox/tile-cover';
-import * as tilebelt from '@mapbox/tilebelt';
 import {
     TerraDrawMapLibreGLAdapter
 } from 'terra-draw-maplibre-gl-adapter';
@@ -200,7 +199,6 @@ export default class DrawTool {
                 new TerraDrawRouteSnapMode({
                    straightLineFallback: true,
                    routing: this.route.graph,
-                   maxPoints: 5,
                    styles: {
                        lineStringColor: () => {
                            // RED
@@ -256,7 +254,7 @@ export default class DrawTool {
 
         this.draw.on('finish', async (id, context) => {
             if (context.action === "draw") {
-                if (this.draw.getMode() === DrawToolMode.STATIC || this.editing) {
+                if (this.mode === DrawToolMode.STATIC || this.editing) {
                     return;
                 } else if (this.mode === DrawToolMode.FREEHAND) {
                     const feat = this.draw.getSnapshotFeature(id);
@@ -588,7 +586,6 @@ export default class DrawTool {
 
             this.draw.updateModeOptions(DrawToolMode.SNAPPING, {
                 routing: this.route.graph,
-                maxPoints: 5,
             });
 
             this.draw.setMode(mode)

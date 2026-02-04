@@ -63,6 +63,7 @@ export default async function router(schema: Schema, config: Config) {
                 minzoom?: number;
                 maxzoom?: number;
                 format?: Basemap_Format;
+                serverParts?: boolean;
             } = {
                 type: Basemap_Type.RASTER
             };
@@ -95,6 +96,10 @@ export default async function router(schema: Schema, config: Config) {
                             imported.minzoom = map.minZoom._text;
                             imported.maxzoom = map.maxZoom._text;
                             if (map.url) imported.url = map.url._text;
+
+                            if (map.serverParts?._text) {
+                                imported.serverParts = map.serverParts._text;
+                            }
 
                             if (map.tileType) {
                                 imported.format = toEnum.fromString(
