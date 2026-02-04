@@ -2,7 +2,7 @@ import { createSelectSchema } from 'drizzle-typebox';
 import { Type } from '@sinclair/typebox'
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
-import { Profile_Projection, Profile_Zoom, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text } from './enums.js';
+import { Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text } from './enums.js';
 import { VideoLease_SourceType} from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
@@ -226,7 +226,13 @@ export const ProfileResponse = Type.Object({
     tak_loc_freq: Type.Integer(),
 
     menu_order: Type.Array(Type.Object({
-        key: Type.String(),
+        key: Type.String({
+            description: 'Menu Key'
+        }),
+        visibility: Type.Enum(Profile_Menu_Visibility, {
+            description: 'Menu Visibility',
+            default: Profile_Menu_Visibility.FULL
+        })
     })),
 
     display_projection: Type.Enum(Profile_Projection),
