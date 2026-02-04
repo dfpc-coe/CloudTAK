@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v12.70.0 - 2026-02-04
+
+- :tada: Allow hiding a Basemap or Overlay
+- :rocket: Only allow snapping for public tilesets hosted on S3
+- :tada: Allow specifying a snapping layer when drawing a line if a snapping layer exists
+- :tada: Allow snapping to a given overlay
+
 ### v12.69.1 - 2026-02-03
 
 - :bug: stricter kmz parsing to ensure zipped kmls can still be imported
