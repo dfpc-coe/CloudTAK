@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v12.69.0 - 2026-02-03
+
+- :rocket: `UI` Update section menus in AdminConfig UI
+- :tada: Allow config API to specify a default basemap
+- :rocket: Update `/api/config/map` to return the default basemap ID
+- :rocket: Strongly type /api/config response objects
+- :white_check_mark: Add checks to ensure integrity of default basemap
+
 ### v12.68.1 - 2026-02-03
 
 - :arrow_up: Update NodeCoT to support `<uid/>` without droid property
