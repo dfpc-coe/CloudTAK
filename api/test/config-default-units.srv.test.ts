@@ -68,7 +68,7 @@ test('PUT api/config', async () => {
                 'display::stale': '30 Minutes',
                 'display::distance': 'kilometer',
                 'display::elevation': 'meter',
-                'display::icon_rotation': 'false'
+                'display::icon_rotation': false
             }
         }, false);
 
@@ -76,7 +76,7 @@ test('PUT api/config', async () => {
             'display::stale': '30 Minutes',
             'display::distance': 'kilometer',
             'display::elevation': 'meter',
-            'display::icon_rotation': 'false'
+            'display::icon_rotation': false
         });
     } catch (err) {
         assert.ifError(err);
@@ -106,12 +106,12 @@ test('PUT api/config - reset icon_rotation to true', async () => {
                 bearer: flight.token.admin
             },
             body: {
-                'display::icon_rotation': 'true'
+                'display::icon_rotation': true
             }
         }, false);
 
         assert.deepEqual(res.body, {
-            'display::icon_rotation': 'true'
+            'display::icon_rotation': true
         });
     } catch (err) {
         assert.ifError(err);

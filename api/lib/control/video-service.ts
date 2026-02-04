@@ -148,6 +148,7 @@ export default class VideoServiceControl {
     async url(): Promise<URL | null> {
         try {
             const url = await this.config.models.Setting.from('media::url');
+            if (!url.value) return null;
             return new URL(url.value);
         } catch (err) {
             if (err instanceof Error && err.message.includes('Not Found')) {

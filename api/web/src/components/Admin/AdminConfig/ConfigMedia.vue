@@ -1,73 +1,60 @@
 <template>
-    <div
-        class='col-lg-12 hover py-2 d-flex align-items-center'
-        :class='{ "cursor-pointer": !edit }'
+    <SlideDownHeader
+        v-model='isOpen'
+        label='Media Server'
     >
-        <div
-            class='d-flex align-items-center flex-grow-1'
-            @click='isOpen = !isOpen'
-        >
-            <IconChevronDown v-if='isOpen' />
-            <IconChevronRight v-else />
-            <span class='mx-2 user-select-none'>Media Server</span>
-        </div>
-        <div
-            v-if='!edit && isOpen'
-            class='ms-auto'
-        >
+        <template #right>
             <TablerIconButton
+                v-if='!edit && isOpen'
                 title='Edit'
-                @click='edit = true'
+                @click.stop='edit = true'
             >
-                <IconPencil />
+                <IconPencil :stroke='1' />
             </TablerIconButton>
-        </div>
-    </div>
-
-    <div
-        v-if='isOpen'
-        class='col-lg-12 py-2 border rounded'
-    >
-        <TablerLoading v-if='loading' />
-        <template v-else>
-            <TablerAlert
-                v-if='err'
-                :err='err'
-            />
-            <div class='row'>
-                <div class='col-lg-12'>
-                    <TablerInput
-                        v-model='config["media::url"]'
-                        :disabled='!edit'
-                        :error='validateURL(config["media::url"])'
-                        label='CloudTAK Hosted MediaMTX Service URL'
-                    />
-                </div>
-            </div>
             <div
-                v-if='edit'
-                class='col-lg-12 d-flex py-2'
+                v-else-if='edit && isOpen'
+                class='d-flex gap-1'
             >
-                <div
-                    class='btn'
-                    @click='fetch'
+                <TablerIconButton
+                    color='blue'
+                    title='Save'
+                    @click.stop='save'
                 >
-                    Cancel
-                </div>
-                <div class='ms-auto'>
-                    <div
-                        class='btn btn-primary'
-                        @click='save'
-                    >
-                        Save Settings
-                    </div>
-                </div>
+                    <IconDeviceFloppy :stroke='1' />
+                </TablerIconButton>
+                <TablerIconButton
+                    color='red'
+                    title='Cancel'
+                    @click.stop='edit = false; fetch()'
+                >
+                    <IconX :stroke='1' />
+                </TablerIconButton>
             </div>
         </template>
-    </div>
+        <div class='col-lg-12 py-2 px-2 border rounded'>
+            <TablerLoading v-if='loading' />
+            <template v-else>
+                <TablerAlert
+                    v-if='err'
+                    :err='err'
+                />
+                <div class='row'>
+                    <div class='col-lg-12'>
+                        <TablerInput
+                            v-model='config["media::url"]'
+                            :disabled='!edit'
+                            :error='validateURL(config["media::url"])'
+                            label='CloudTAK Hosted MediaMTX Service URL'
+                        />
+                    </div>
+                </div>
+            </template>
+        </div>
+    </SlideDownHeader>
 </template>
 
 <script setup>
+import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../../std.ts';
 import { validateURL } from '../../../base/validators.ts';
@@ -78,9 +65,9 @@ import {
     TablerAlert
 } from '@tak-ps/vue-tabler';
 import {
-    IconChevronRight,
-    IconChevronDown,
-    IconPencil
+    IconPencil,
+    IconDeviceFloppy,
+    IconX
 } from '@tabler/icons-vue';
 
 const isOpen = ref(false);
