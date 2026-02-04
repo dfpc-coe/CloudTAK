@@ -85,7 +85,7 @@ export default class Worker extends EventEmitter {
         });
 
         // If a .kml is present at the root level, assume an actual KMZ and process as a single file upload
-        if (pkg.contents.some((content) => {
+        if (local.ext.toLowerCase() === '.kmz' && pkg.contents.some((content) => {
             const p = path.parse(content._attributes.zipEntry);
             return !p.dir && p.ext.toLowerCase() === '.kml'
         })) {
