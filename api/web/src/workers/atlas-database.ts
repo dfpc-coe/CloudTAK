@@ -419,7 +419,7 @@ export default class AtlasDatabase {
             this.atlas.postMessage({
                 type: WorkerMessageType.Mission_Change_Feature,
                 body: {
-                    guid: mission_guid
+                    guid: cot.origin.mode_id
                 }
             });
         }
