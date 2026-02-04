@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.69.1 - 2026-02-03
+
+- :bug: stricter kmz parsing to ensure zipped kmls can still be imported
+
 ### v12.69.0 - 2026-02-03
 
 - :rocket: `UI` Update section menus in AdminConfig UI
