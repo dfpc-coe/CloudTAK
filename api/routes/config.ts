@@ -160,7 +160,12 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.as_user(config, req, { admin: true });
 
             const final: Record<string, string> = {};
-            (await Promise.allSettled(Object.keys(req.body).map((key) => {
+            (await Promise.allSettled(Object.keys(req.body).map(async (key) => {
+                if (req.body[key] === null) {
+                    await config.models.Setting.delete(key);
+                    return { key, value: null };
+                }
+
                 return config.models.Setting.generate({
                     key: key,
                     // @ts-expect-error Index issue - look into this later
