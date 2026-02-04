@@ -462,7 +462,7 @@ onMounted(async () => {
 })
 
 function cycleVisibility(item: MenuItemConfig) {
-    const nextMap: Record<string, string> = {
+    const nextMap: Record<string, "full" | "partial" | "hidden"> = {
         'full': 'partial',
         'partial': 'hidden',
         'hidden': 'full'

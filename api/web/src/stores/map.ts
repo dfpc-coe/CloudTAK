@@ -145,7 +145,8 @@ export const useMapStore = defineStore('cloudtak', {
                 center: '-100,40',
                 zoom: 4,
                 pitch: 0,
-                bearing: 0
+                bearing: 0,
+                basemap: null
             },
             radial: {
                 mode: undefined,
@@ -735,17 +736,17 @@ export const useMapStore = defineStore('cloudtak', {
             let pressTimer: number | undefined;
             let pressEvent: MapTouchEvent | undefined;
             let pressStartPoint: Point | undefined;
-            
+
             map.on('touchstart', (e) => {
                 if (this.draw.editing) return;
-                
+
                 // Only handle single-touch (avoid interfering with multi-touch gestures like pinch-to-zoom)
                 if (e.originalEvent && e.originalEvent.touches.length !== 1) return;
-                
+
                 // Store the event and starting point for later use
                 pressEvent = e;
                 pressStartPoint = e.point;
-                
+
                 // Set a timer for long-press detection (500ms)
                 pressTimer = window.setTimeout(() => {
                     if (pressEvent) {
@@ -753,7 +754,7 @@ export const useMapStore = defineStore('cloudtak', {
                         if (pressEvent.originalEvent) {
                             pressEvent.originalEvent.preventDefault();
                         }
-                        
+
                         const id = randomUUID();
                         this.radialClick({
                             id,
@@ -781,13 +782,13 @@ export const useMapStore = defineStore('cloudtak', {
                             point: pressEvent.point,
                             lngLat: pressEvent.lngLat
                         });
-                        
+
                         pressEvent = undefined;
                         pressStartPoint = undefined;
                     }
                 }, 500);
             });
-            
+
             map.on('touchend', () => {
                 // Clear the timer if touch ends before long-press threshold
                 if (pressTimer) {
@@ -797,7 +798,7 @@ export const useMapStore = defineStore('cloudtak', {
                 pressEvent = undefined;
                 pressStartPoint = undefined;
             });
-            
+
             map.on('touchmove', (e) => {
                 // Only clear if there's an active timer
                 if (pressTimer && pressStartPoint) {
@@ -805,7 +806,7 @@ export const useMapStore = defineStore('cloudtak', {
                     const deltaX = e.point.x - pressStartPoint.x;
                     const deltaY = e.point.y - pressStartPoint.y;
                     const distanceSquared = deltaX * deltaX + deltaY * deltaY;
-                    
+
                     // Clear the timer if user moves more than 10 pixels (10^2 = 100)
                     // This allows for minor finger tremors while still preventing accidental triggers
                     if (distanceSquared > 100) {
@@ -830,18 +831,35 @@ export const useMapStore = defineStore('cloudtak', {
 
             // Courtesy add an initial basemap
             if (!hasBasemap) {
-                const burl = stdurl('/api/basemap');
-                burl.searchParams.append('type', 'raster');
-                const basemaps = await std(burl) as APIList<Basemap>;
+                let defaultBasemap: Basemap | null = null;
 
-                if (basemaps.items.length > 0) {
+                if (this.mapConfig.basemap) {
+                    try {
+                        const burl = stdurl(`/api/basemap/${this.mapConfig.basemap}`);
+                        defaultBasemap = await std(burl) as Basemap;
+                    } catch (err) {
+                        console.warn('Failed to load configured basemap:', err);
+                    }
+                }
+
+                if (!defaultBasemap) {
+                    const burl = stdurl('/api/basemap');
+                    burl.searchParams.append('type', 'raster');
+                    const basemaps = await std(burl) as APIList<Basemap>;
+
+                    if (basemaps.items.length > 0) {
+                        defaultBasemap = basemaps.items[0];
+                    }
+                }
+
+                if (defaultBasemap) {
                     const basemap = await Overlay.create({
-                        name: basemaps.items[0].name,
+                        name: defaultBasemap.name,
                         pos: -1,
                         type: 'raster',
-                        url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles`)),
+                        url: String(stdurl(`/api/basemap/${defaultBasemap.id}/tiles`)),
                         mode: 'basemap',
-                        mode_id: String(basemaps.items[0].id)
+                        mode_id: String(defaultBasemap.id)
                     });
 
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any

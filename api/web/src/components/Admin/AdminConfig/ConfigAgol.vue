@@ -1,134 +1,121 @@
 <template>
-    <div
-        class='col-lg-12 hover py-2 d-flex align-items-center'
-        :class='{ "cursor-pointer": !edit }'
+    <SlideDownHeader
+        v-model='isOpen'
+        label='ArcGIS Online'
     >
-        <div
-            class='d-flex align-items-center flex-grow-1'
-            @click='isOpen = !isOpen'
-        >
-            <IconChevronDown v-if='isOpen' />
-            <IconChevronRight v-else />
-            <span class='mx-2 user-select-none'>ArcGIS Online</span>
-        </div>
-        <div
-            v-if='!edit && isOpen'
-            class='ms-auto'
-        >
+        <template #right>
             <TablerIconButton
+                v-if='!edit && isOpen'
                 title='Edit'
-                @click='edit = true'
+                @click.stop='edit = true'
             >
-                <IconPencil />
+                <IconPencil :stroke='1' />
             </TablerIconButton>
-        </div>
-    </div>
-
-    <div
-        v-if='isOpen'
-        class='col-lg-12 py-2 border rounded'
-    >
-        <TablerLoading v-if='loading' />
-        <template v-else>
-            <TablerAlert
-                v-if='err'
-                :err='err'
-            />
-            <div class='row'>
-                <div class='col-lg-12'>
-                    <TablerToggle
-                        v-model='config["agol::enabled"]'
-                        :disabled='!edit'
-                        label='ArcGIS Online Enabled'
-                    />
-
-                    <template v-if='config["agol::enabled"]'>
-                        <div
-                            class='px-2 py-2 round btn-group w-100'
-                            role='group'
-                        >
-                            <input
-                                id='agol-oauth2'
-                                type='radio'
-                                class='btn-check'
-                                autocomplete='off'
-                                :checked='config["agol::auth_method"] === "oauth2"'
-                                :disabled='config["agol::enabled"] === false || !edit'
-                                @click='config["agol::auth_method"] = "oauth2"'
-                            >
-                            <label
-                                for='agol-oauth2'
-                                type='button'
-                                class='btn'
-                            >OAuth2</label>
-
-                            <input
-                                id='agol-legacy'
-                                type='radio'
-                                class='btn-check'
-                                autocomplete='off'
-                                :checked='config["agol::auth_method"] === "legacy"'
-                                :disabled='config["agol::enabled"] === false || !edit'
-                                @click='config["agol::auth_method"] = "legacy"'
-                            >
-                            <label
-                                for='agol-legacy'
-                                type='button'
-                                class='btn'
-                            >Legacy</label>
-                        </div>
-
-                        <template v-if='config["agol::auth_method"] === "oauth2"'>
-                            <TablerInput
-                                v-model='config["agol::client_id"]'
-                                :disabled='!edit'
-                                label='OAuth2 Client ID'
-                                description='Client ID from your ArcGIS Location Platform or ArcGIS Enterprise account'
-                            />
-                            <TablerInput
-                                v-model='config["agol::client_secret"]'
-                                type='password'
-                                :disabled='!edit'
-                                label='OAuth2 Client Secret'
-                                description='Client Secret from your ArcGIS Location Platform or ArcGIS Enterprise account'
-                            />
-                        </template>
-                        <template v-else>
-                            <TablerInput
-                                v-model='config["agol::token"]'
-                                type='password'
-                                :disabled='!edit'
-                                label='Legacy Token'
-                                description='ArcGIS Online access token'
-                            />
-                        </template>
-                    </template>
-                </div>
-            </div>
             <div
-                v-if='edit'
-                class='col-lg-12 d-flex py-2'
+                v-else-if='edit && isOpen'
+                class='d-flex gap-1'
             >
-                <div
-                    class='btn'
-                    @click='fetch'
+                <TablerIconButton
+                    color='blue'
+                    title='Save'
+                    @click.stop='save'
                 >
-                    Cancel
-                </div>
-                <div class='ms-auto'>
-                    <div
-                        class='btn btn-primary'
-                        @click='save'
-                    >
-                        Save Settings
-                    </div>
-                </div>
+                    <IconDeviceFloppy :stroke='1' />
+                </TablerIconButton>
+                <TablerIconButton
+                    color='red'
+                    title='Cancel'
+                    @click.stop='edit = false; fetch()'
+                >
+                    <IconX :stroke='1' />
+                </TablerIconButton>
             </div>
         </template>
-    </div>
+        <div class='col-lg-12 py-2 px-2 border rounded'>
+            <TablerLoading v-if='loading' />
+            <template v-else>
+                <TablerAlert
+                    v-if='err'
+                    :err='err'
+                />
+                <div class='row'>
+                    <div class='col-lg-12'>
+                        <TablerToggle
+                            v-model='config["agol::enabled"]'
+                            :disabled='!edit'
+                            label='ArcGIS Online Enabled'
+                        />
+
+                        <template v-if='config["agol::enabled"]'>
+                            <div
+                                class='px-2 py-2 round btn-group w-100'
+                                role='group'
+                            >
+                                <input
+                                    id='agol-oauth2'
+                                    type='radio'
+                                    class='btn-check'
+                                    autocomplete='off'
+                                    :checked='config["agol::auth_method"] === "oauth2"'
+                                    :disabled='config["agol::enabled"] === false || !edit'
+                                    @click='config["agol::auth_method"] = "oauth2"'
+                                >
+                                <label
+                                    for='agol-oauth2'
+                                    type='button'
+                                    class='btn'
+                                >OAuth2</label>
+
+                                <input
+                                    id='agol-legacy'
+                                    type='radio'
+                                    class='btn-check'
+                                    autocomplete='off'
+                                    :checked='config["agol::auth_method"] === "legacy"'
+                                    :disabled='config["agol::enabled"] === false || !edit'
+                                    @click='config["agol::auth_method"] = "legacy"'
+                                >
+                                <label
+                                    for='agol-legacy'
+                                    type='button'
+                                    class='btn'
+                                >Legacy</label>
+                            </div>
+
+                            <template v-if='config["agol::auth_method"] === "oauth2"'>
+                                <TablerInput
+                                    v-model='config["agol::client_id"]'
+                                    :disabled='!edit'
+                                    label='OAuth2 Client ID'
+                                    description='Client ID from your ArcGIS Location Platform or ArcGIS Enterprise account'
+                                />
+                                <TablerInput
+                                    v-model='config["agol::client_secret"]'
+                                    type='password'
+                                    :disabled='!edit'
+                                    label='OAuth2 Client Secret'
+                                    description='Client Secret from your ArcGIS Location Platform or ArcGIS Enterprise account'
+                                />
+                            </template>
+                            <template v-else>
+                                <TablerInput
+                                    v-model='config["agol::token"]'
+                                    type='password'
+                                    :disabled='!edit'
+                                    label='Legacy Token'
+                                    description='ArcGIS Online access token'
+                                />
+                            </template>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </SlideDownHeader>
 </template>
 
 <script setup>
+import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../../std.ts';
 import {
@@ -139,9 +126,9 @@ import {
     TablerAlert
 } from '@tak-ps/vue-tabler';
 import {
-    IconChevronRight,
-    IconChevronDown,
-    IconPencil
+    IconPencil,
+    IconDeviceFloppy,
+    IconX
 } from '@tabler/icons-vue';
 
 const isOpen = ref(false);
