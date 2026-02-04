@@ -23,7 +23,7 @@ import type { Feature, FeatureCollection } from '../../types.ts';
 import type { paths } from '../../derived-types.ts';
 
 type AugmentedBasemapResponse = paths['/api/basemap']['get']['responses']['200']['content']['application/json']['items'][0];
-import type { Polygon, Position, LineString, FeatureCollection as GeoJSONFeatureCollection } from 'geojson';
+import type { Polygon, Position, LineString, Feature as GeoJSONFeature, FeatureCollection as GeoJSONFeatureCollection } from 'geojson';
 import type { useMapStore } from '../map.ts';
 
 export enum DrawToolMode {
@@ -173,7 +173,6 @@ export default class DrawTool {
         const routeSnapMode = new TerraDrawRouteSnapMode({
             straightLineFallback: true,
             routing: this.route.graph,
-            // @ts-expect-error maxPoints does not exist in type def
             maxPoints: 9999,
             styles: {
                 lineStringColor: () => {
@@ -187,10 +186,10 @@ export default class DrawTool {
             }
         });
 
-        // Monkey patch TerraDrawRouteSnapMode to fire onFinish
-        // This library currently fails to fire the finish event which is required for the
-        // draw tool to know when a feature has been completed.
+        // Monitor for finish event
+        // @ts-expect-error Accessing private property
         const originalFinish = routeSnapMode.finish.bind(routeSnapMode);
+        // @ts-expect-error Accessing private property
         routeSnapMode.finish = () => {
              // @ts-expect-error Accessing private property
              const id = routeSnapMode.currentId;
@@ -198,7 +197,6 @@ export default class DrawTool {
              originalFinish();
 
              if (id && routeSnapMode.onFinish) {
-                 // @ts-expect-error Accessing private/protected method
                  routeSnapMode.onFinish(id, { mode: routeSnapMode.mode, action: 'draw' });
              }
         }
@@ -441,6 +439,11 @@ export default class DrawTool {
             const { data } = await server.GET('/api/basemap', {
                 params: {
                     query: {
+                        limit: 100,
+                        page: 0,
+                        order: 'asc',
+                        sort: 'name',
+                        filter: '',
                         snapping: true,
                         hidden: 'all',
                         overlay: true
@@ -466,7 +469,7 @@ export default class DrawTool {
             expand?: boolean
         } = {}
     ): Promise<void> {
-        let newFeatures: Feature<LineString>[] = [];
+        let newFeatures: GeoJSONFeature<LineString>[] = [];
 
         const bounds = this.mapStore.map.getBounds();
         const geom: Polygon = {
@@ -485,7 +488,7 @@ export default class DrawTool {
             max_zoom: this.route.zoom
         });
 
-        const load: Promise<FeatureCollection<LineString>>[] = [];
+        const load: Promise<GeoJSONFeatureCollection<LineString>>[] = [];
 
         for (const tile of tiles) {
             const tileId = tile.join('/');
