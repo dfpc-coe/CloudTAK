@@ -24,6 +24,7 @@
         "test": "exit 0"
     },
     "dependencies": {
+        "@mapbox/tile-cover": "^3.0.2",
         "@react-hookz/deep-equal": "^3.0.3",
         "@tabler/core": "^1.4.0",
         "@tabler/icons-vue": "^3.0.0",
@@ -64,9 +65,9 @@
         "sortablejs": "^1.15.2",
         "swagger-ui-dist": "^5.30.2",
         "terra-draw": "^1.22.0",
-        "terra-route": "^0.0.14",
         "terra-draw-maplibre-gl-adapter": "^1.1.1",
         "terra-draw-route-snap-mode": "^0.3.0",
+        "terra-route": "^0.0.14",
         "uuid": "^13.0.0",
         "vue": "^3.2.31",
         "vue-component-type-helpers": "^3.0.7",
@@ -77,6 +78,7 @@
     "devDependencies": {
         "@eslint/js": "^9.18.0",
         "@testing-library/vue": "^8.1.0",
+        "@types/mapbox__tile-cover": "^3.0.4",
         "@types/sortablejs": "^1.15.8",
         "@types/swagger-ui": "^5.21.1",
         "@vitejs/plugin-vue": "^6.0.0",

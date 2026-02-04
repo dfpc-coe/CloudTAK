@@ -88,9 +88,11 @@
 
                 <div class='ms-auto btn-list align-items-center'>
                     <TablerEnum
+                        v-if='mapStore.hasSnapping'
+                        v-model='mapStore.draw.snappingLayer'
                         description='Choose the type of line to draw.'
                         default='No Snapping'
-                        :options='["No Snapping"]'
+                        :options='mapStore.draw.snappingOptions'
                     />
 
                     <TablerIconButton
@@ -233,7 +235,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import CoordinateType from '../util/CoordinateType.vue';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
 import { useMapStore } from '../../../stores/map.ts';
@@ -257,4 +259,10 @@ import {
 const mapStore = useMapStore();
 
 const opened = ref(false);
+
+onMounted(async () => {
+    if (mapStore.hasSnapping && (mapStore.draw.mode === DrawToolMode.LINESTRING || mapStore.draw.mode === DrawToolMode.SNAPPING)) {
+        await mapStore.draw.populateSnappingLayers();
+    }
+});
 </script>

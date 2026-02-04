@@ -219,6 +219,7 @@ export const Basemap = pgTable('basemaps', {
     title: text().notNull().default('callsign'), // Title of features within the layer
     url: text().notNull(),
     overlay: boolean().notNull().default(false),
+    hidden: boolean().notNull().default(false),
     iconset: text().references(() => Iconset.uid),
     username: text().references(() => Profile.username),
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
