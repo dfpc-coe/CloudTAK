@@ -41,6 +41,11 @@
                             label='Enable Sharing'
                             description='Allow this overlay to be shared with other users via invalidatable token'
                         />
+                        <TablerToggle
+                            v-model='overlay.hidden'
+                            label='Hidden'
+                            description='Hide this overlay from the default list'
+                        />
                     </TablerInput>
                 </div>
                 <div class='col-12'>
@@ -97,6 +102,7 @@
 
                 <template v-if='mode === "public"'>
                     <PublicTilesSelect
+                        :url='overlay.url'
                         @select='publicTileSelect($event)'
                     />
                 </template>
@@ -175,7 +181,7 @@
                     />
                 </div>
 
-                <template v-if='overlay.type === "vector"'>
+                <template v-if='overlay.type === "vector" && mode === "public"'>
                     <div class='col-12'>
                         <div class='row g-2 my-2 border rounded'>
                             <div class='col-12'>
@@ -263,6 +269,7 @@ const overlay = ref({
     frequency: 0,
     sharing_enabled: true,
     sharing_token: null,
+    hidden: false,
     bounds: '-180, -90, 180, 90',
     center: '0, 0',
     snapping_enabled: false,
@@ -374,6 +381,16 @@ async function fetchOverlay() {
     const url = stdurl(`/api/basemap/${route.params.overlay}`);
     const res = await std(url);
 
+    // If the URL is hosted on the S3 CloudTAK site assume it is a public tile
+    try {
+        const u = new URL(res.url);
+        if (u.hostname === 'tiles.map.cotak.gov') {
+            mode.value = 'public';
+        }
+    } catch {
+        // pass
+    }
+
     if (!res.bounds) {
         res.bounds = '-180, -90, 180, 90';
     } else {
@@ -388,6 +405,7 @@ async function fetchOverlay() {
 
     if (res.snapping_enabled === undefined) res.snapping_enabled = false;
     if (!res.snapping_layer) res.snapping_layer = '';
+    if (res.hidden === undefined) res.hidden = false;
 
     overlay.value = res;
     loading.value = false;

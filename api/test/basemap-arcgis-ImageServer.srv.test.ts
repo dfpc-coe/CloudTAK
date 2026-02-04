@@ -45,6 +45,7 @@ test('POST: api/basemap - ArcGIS Imagery Source', async () => {
             username: 'admin@example.com',
             attribution: '',
             frequency: null,
+            hidden: false,
             sharing_enabled: false,
             sharing_token: null,
             collection: null,

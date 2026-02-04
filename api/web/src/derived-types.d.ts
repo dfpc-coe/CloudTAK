@@ -731,13 +731,17 @@ export interface paths {
                     /** @description No Description */
                     type?: ("raster" | "raster-dem" | "vector") | ("raster" | "raster-dem" | "vector")[];
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "sharing_enabled" | "sharing_token" | "snapping_enabled" | "snapping_layer" | "name" | "title" | "url" | "overlay" | "iconset" | "username" | "bounds" | "tilesize" | "frequency" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "sharing_enabled" | "sharing_token" | "snapping_enabled" | "snapping_layer" | "name" | "title" | "url" | "overlay" | "hidden" | "iconset" | "username" | "bounds" | "tilesize" | "frequency" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only show Basemaps belonging to a given collection */
                     collection?: string;
                     /** @description No Description */
                     overlay: boolean;
+                    /** @description No Description */
+                    hidden: "true" | "false" | "all";
+                    /** @description No Description */
+                    snapping?: boolean;
                 };
                 header?: never;
                 path?: never;
@@ -768,6 +772,7 @@ export interface paths {
                                 title: string;
                                 url: string;
                                 overlay: boolean;
+                                hidden: boolean;
                                 iconset: string | null;
                                 username: string | null;
                                 tilesize: number;
@@ -982,6 +987,8 @@ export interface paths {
                         url: string;
                         /** @default false */
                         overlay: boolean;
+                        /** @default false */
+                        hidden: boolean;
                         /** @default 256 */
                         tilesize: number;
                         attribution?: null | string;
@@ -1017,6 +1024,7 @@ export interface paths {
                             title: string;
                             url: string;
                             overlay: boolean;
+                            hidden: boolean;
                             iconset: string | null;
                             username: string | null;
                             tilesize: number;
@@ -1150,6 +1158,7 @@ export interface paths {
                             title: string;
                             url: string;
                             overlay: boolean;
+                            hidden: boolean;
                             iconset: string | null;
                             username: string | null;
                             tilesize: number;
@@ -1349,6 +1358,7 @@ export interface paths {
                         snapping_layer?: string;
                         collection?: null | string;
                         overlay?: boolean;
+                        hidden?: boolean;
                         /** @default user */
                         scope: "server" | "user";
                         url?: string;
@@ -1387,6 +1397,7 @@ export interface paths {
                             title: string;
                             url: string;
                             overlay: boolean;
+                            hidden: boolean;
                             iconset: string | null;
                             username: string | null;
                             tilesize: number;
@@ -1994,7 +2005,80 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            [key: string]: unknown;
+                            /** @description Enable ArcGIS Online Integration */
+                            "agol::enabled"?: boolean;
+                            /**
+                             * @description AGOL Auth Type
+                             * @enum {string}
+                             */
+                            "agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Legacy Token */
+                            "agol::token"?: string;
+                            /** @description AGOL OAuth2 Client ID */
+                            "agol::client_id"?: string;
+                            /** @description AGOL OAuth2 Client Secret */
+                            "agol::client_secret"?: string;
+                            /** @description Base URL for Media Service */
+                            "media::url"?: string;
+                            /** @description Map Center Coordinates (lng,lat) */
+                            "map::center"?: string;
+                            /** @description Default Map Pitch Angle */
+                            "map::pitch"?: number;
+                            /** @description Default Map Bearing */
+                            "map::bearing"?: string;
+                            /** @description Default Map Zoom Level */
+                            "map::zoom"?: number;
+                            /** @description Default Basemap for New Users */
+                            "map::basemap"?: null | number;
+                            "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
+                            "display::distance"?: "meter" | "kilometer" | "mile";
+                            "display::elevation"?: "meter" | "feet";
+                            "display::speed"?: "m/s" | "km/h" | "mi/h";
+                            "display::projection"?: "mercator" | "globe";
+                            "display::zoom"?: "always" | "conditional" | "never";
+                            "display::text"?: "Small" | "Medium" | "Large";
+                            "display::icon_rotation"?: boolean;
+                            "group::Yellow"?: string;
+                            "group::Cyan"?: string;
+                            "group::Green"?: string;
+                            "group::Red"?: string;
+                            "group::Purple"?: string;
+                            "group::Orange"?: string;
+                            "group::Blue"?: string;
+                            "group::Magenta"?: string;
+                            "group::White"?: string;
+                            "group::Maroon"?: string;
+                            "group::Dark Blue"?: string;
+                            "group::Teal"?: string;
+                            "group::Dark Green"?: string;
+                            "group::Brown"?: string;
+                            "oidc::enabled"?: boolean;
+                            "oidc::enforced"?: boolean;
+                            "oidc::name"?: string;
+                            "oidc::discovery"?: string;
+                            "oidc::client"?: string;
+                            "provider::url"?: string;
+                            "provider::secret"?: string;
+                            "provider::client"?: string;
+                            /** @description URL for Signup Page */
+                            "login::signup"?: string;
+                            /** @description URL for Forgot Password Page */
+                            "login::forgot"?: string;
+                            /** @description Custom Label for Username Field */
+                            "login::username"?: string;
+                            /**
+                             * @description Enable Custom Branding on Login Page
+                             * @enum {string}
+                             */
+                            "login::brand::enabled"?: "default" | "enabled" | "disabled";
+                            /** @description Show or Hide the CloudTAK Branding */
+                            "login::brand::logo"?: string;
+                            /** @description Enable or Disable Custom Background on Login Page */
+                            "login::background::enabled"?: boolean;
+                            /** @description Hex Color Code for Login Background */
+                            "login::background::color"?: string;
+                            /** @description Base64 encoded PNG for Logo */
+                            "login::logo"?: string;
                         };
                     };
                 };
@@ -2155,7 +2239,82 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": unknown;
+                        "application/json": {
+                            /** @description Enable ArcGIS Online Integration */
+                            "agol::enabled"?: boolean;
+                            /**
+                             * @description AGOL Auth Type
+                             * @enum {string}
+                             */
+                            "agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Legacy Token */
+                            "agol::token"?: string;
+                            /** @description AGOL OAuth2 Client ID */
+                            "agol::client_id"?: string;
+                            /** @description AGOL OAuth2 Client Secret */
+                            "agol::client_secret"?: string;
+                            /** @description Base URL for Media Service */
+                            "media::url"?: string;
+                            /** @description Map Center Coordinates (lng,lat) */
+                            "map::center"?: string;
+                            /** @description Default Map Pitch Angle */
+                            "map::pitch"?: number;
+                            /** @description Default Map Bearing */
+                            "map::bearing"?: string;
+                            /** @description Default Map Zoom Level */
+                            "map::zoom"?: number;
+                            /** @description Default Basemap for New Users */
+                            "map::basemap"?: null | number;
+                            "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
+                            "display::distance"?: "meter" | "kilometer" | "mile";
+                            "display::elevation"?: "meter" | "feet";
+                            "display::speed"?: "m/s" | "km/h" | "mi/h";
+                            "display::projection"?: "mercator" | "globe";
+                            "display::zoom"?: "always" | "conditional" | "never";
+                            "display::text"?: "Small" | "Medium" | "Large";
+                            "display::icon_rotation"?: boolean;
+                            "group::Yellow"?: string;
+                            "group::Cyan"?: string;
+                            "group::Green"?: string;
+                            "group::Red"?: string;
+                            "group::Purple"?: string;
+                            "group::Orange"?: string;
+                            "group::Blue"?: string;
+                            "group::Magenta"?: string;
+                            "group::White"?: string;
+                            "group::Maroon"?: string;
+                            "group::Dark Blue"?: string;
+                            "group::Teal"?: string;
+                            "group::Dark Green"?: string;
+                            "group::Brown"?: string;
+                            "oidc::enabled"?: boolean;
+                            "oidc::enforced"?: boolean;
+                            "oidc::name"?: string;
+                            "oidc::discovery"?: string;
+                            "oidc::client"?: string;
+                            "provider::url"?: string;
+                            "provider::secret"?: string;
+                            "provider::client"?: string;
+                            /** @description URL for Signup Page */
+                            "login::signup"?: string;
+                            /** @description URL for Forgot Password Page */
+                            "login::forgot"?: string;
+                            /** @description Custom Label for Username Field */
+                            "login::username"?: string;
+                            /**
+                             * @description Enable Custom Branding on Login Page
+                             * @enum {string}
+                             */
+                            "login::brand::enabled"?: "default" | "enabled" | "disabled";
+                            /** @description Show or Hide the CloudTAK Branding */
+                            "login::brand::logo"?: string;
+                            /** @description Enable or Disable Custom Background on Login Page */
+                            "login::background::enabled"?: boolean;
+                            /** @description Hex Color Code for Login Background */
+                            "login::background::color"?: string;
+                            /** @description Base64 encoded PNG for Logo */
+                            "login::logo"?: string;
+                        };
                     };
                 };
                 /** @description Error Response */
@@ -16405,197 +16564,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** No Description */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            email: string;
-                            access: "admin" | "agency" | "user";
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** No Description */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Case-Sensitive username, if an email, the client MUST lowercase */
-                        username: string;
-                        password: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            token: string;
-                            access: "admin" | "agency" | "user";
-                            email: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/iconset": {
         parameters: {
             query?: never;
@@ -18005,6 +17973,197 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** No Description */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            email: string;
+                            access: "admin" | "agency" | "user";
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** No Description */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Case-Sensitive username, if an email, the client MUST lowercase */
+                        username: string;
+                        password: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            token: string;
+                            access: "admin" | "agency" | "user";
+                            email: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;

@@ -370,6 +370,7 @@ export default class Worker extends EventEmitter {
                     minzoom: json.minZoom,
                     maxzoom: json.maxZoom,
                     format: json.tileType,
+                    serverParts: json.serverParts,
                 })
             });
 
