@@ -374,6 +374,7 @@ async function fetchList() {
         const res = await server.GET('/api/basemap', {
             params: {
                 query: {
+                    hidden: 'false',
                     overlay: false,
                     filter: paging.value.filter,
                     collection: paging.value.collection ? paging.value.collection : undefined,

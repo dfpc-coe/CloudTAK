@@ -67,8 +67,8 @@
 
                     <TablerIconButton
                         :title='advanced ? "Hide Advanced Search" : "Show Advanced Search"'
-                        @click='advanced = !advanced'
                         class='ms-2'
+                        @click='advanced = !advanced'
                     >
                         <IconFilter
                             :size='32'
@@ -84,28 +84,28 @@
             >
                 <div class='col-md-6'>
                     <TablerEnum
-                            v-model='paging.scope'
-                            label='Ownership'
-                            default='all'
-                            :options='[
-                                "all",
-                                "server",
-                                "user"
-                            ]'
-                        />
-                    </div>
-                    <div class='col-md-6'>
-                        <TablerEnum
-                             v-model='paging.hidden'
-                             label='Hidden'
-                             default='all'
-                             :options='[
-                                "true",
-                                "false",
-                                "all"
-                            ]'
-                        />
-                    </div>
+                        v-model='paging.scope'
+                        label='Ownership'
+                        default='all'
+                        :options='[
+                            "all",
+                            "server",
+                            "user"
+                        ]'
+                    />
+                </div>
+                <div class='col-md-6'>
+                    <TablerEnum
+                        v-model='paging.hidden'
+                        label='Hidden'
+                        default='all'
+                        :options='[
+                            "true",
+                            "false",
+                            "all"
+                        ]'
+                    />
+                </div>
             </div>
 
             <TablerLoading

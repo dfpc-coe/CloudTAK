@@ -102,7 +102,7 @@
 
                 <template v-if='mode === "public"'>
                     <PublicTilesSelect
-                        :url="overlay.url"
+                        :url='overlay.url'
                         @select='publicTileSelect($event)'
                     />
                 </template>

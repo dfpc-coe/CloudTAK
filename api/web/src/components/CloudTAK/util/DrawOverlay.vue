@@ -235,7 +235,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import CoordinateType from '../util/CoordinateType.vue';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
 import { useMapStore } from '../../../stores/map.ts';

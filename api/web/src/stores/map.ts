@@ -116,6 +116,7 @@ export const useMapStore = defineStore('cloudtak', {
             callsign: 'Unknown',
             toImport: [],
             location: LocationState.Loading,
+            hasSnapping: false,
             db,
             channel: new BroadcastChannel("cloudtak"),
             zoom: 'conditional',
