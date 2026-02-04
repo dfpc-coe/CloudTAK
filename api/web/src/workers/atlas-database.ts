@@ -409,10 +409,18 @@ export default class AtlasDatabase {
             const subscription = await Subscription.from(cot.origin.mode_id, this.atlas.token, {
                 subscribed: true
             });
+
             if (!subscription) throw new Error('Could not delete as Mission Subscription does not exist');
 
             await subscription.feature.delete(this.atlas, cot.id, {
                 skipNetwork: opts.skipNetwork
+            });
+
+            this.atlas.postMessage({
+                type: WorkerMessageType.Mission_Change_Feature,
+                body: {
+                    guid: mission_guid
+                }
             });
         }
     }
