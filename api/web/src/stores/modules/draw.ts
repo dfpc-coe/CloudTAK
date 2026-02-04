@@ -8,6 +8,7 @@ import {
     Routing,
     TerraDrawRouteSnapMode
 } from 'terra-draw-route-snap-mode'
+
 import { v4 as randomUUID } from 'uuid';
 import mapgl from 'maplibre-gl'
 import pointOnFeature from '@turf/point-on-feature';
@@ -169,6 +170,39 @@ export default class DrawTool {
             definitions: new Map()
         };
 
+        const routeSnapMode = new TerraDrawRouteSnapMode({
+            straightLineFallback: true,
+            routing: this.route.graph,
+            // @ts-expect-error maxPoints does not exist in type def
+            maxPoints: 9999,
+            styles: {
+                lineStringColor: () => {
+                    // RED
+                    return '#990000';
+                },
+                routePointColor: () => {
+                    // RED
+                    return '#990000';
+                }
+            }
+        });
+
+        // Monkey patch TerraDrawRouteSnapMode to fire onFinish
+        // This library currently fails to fire the finish event which is required for the
+        // draw tool to know when a feature has been completed.
+        const originalFinish = routeSnapMode.finish.bind(routeSnapMode);
+        routeSnapMode.finish = () => {
+             // @ts-expect-error Accessing private property
+             const id = routeSnapMode.currentId;
+
+             originalFinish();
+
+             if (id && routeSnapMode.onFinish) {
+                 // @ts-expect-error Accessing private/protected method
+                 routeSnapMode.onFinish(id, { mode: routeSnapMode.mode, action: 'draw' });
+             }
+        }
+
         this.draw = new terraDraw.TerraDraw({
             adapter: new TerraDrawMapLibreGLAdapter({
                 map: this.mapStore.map,
@@ -198,20 +232,7 @@ export default class DrawTool {
                     showCoordinatePoints: true,
                     snapping: { toCustom }
                 }),
-                new TerraDrawRouteSnapMode({
-                   straightLineFallback: true,
-                   routing: this.route.graph,
-                   styles: {
-                       lineStringColor: () => {
-                           // RED
-                           return '#990000';
-                       },
-                       routePointColor: () => {
-                            // RED
-                            return '#990000';
-                       }
-                   }
-                }),
+                routeSnapMode,
                 new terraDraw.TerraDrawAngledRectangleMode(),
                 new terraDraw.TerraDrawFreehandMode(),
                 new terraDraw.TerraDrawSectorMode(),
