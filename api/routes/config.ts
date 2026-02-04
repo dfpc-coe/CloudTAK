@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type, Static } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
 import ProfileControl, { DefaultUnits } from '../lib/control/profile.js';
@@ -130,7 +130,7 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             keys: Type.String()
         }),
-        res: Type.Record(Type.String(), Type.Any())
+        res: Type.Partial(FullConfig)
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
@@ -154,13 +154,13 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Config',
         description: 'Update Config Key/Values',
         body: Type.Partial(FullConfig),
-        res: Type.Any()
+        res: Type.Partial(FullConfig)
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
 
             const final: Record<string, string> = {};
-            (await Promise.allSettled(Object.keys(req.body).map(async (key) => {
+            (await Promise.allSettled((Object.keys(req.body) as (keyof Static<typeof FullConfig>)[]).map(async (key) => {
                 if (req.body[key] === null) {
                     await config.models.Setting.delete(key);
                     return { key, value: null };
@@ -168,8 +168,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 return config.models.Setting.generate({
                     key: key,
-                    // @ts-expect-error Index issue - look into this later
-                    value: req.body[key]
+                    value: String(req.body[key])
                 },{
                     upsert: GenerateUpsert.UPDATE
                 });
