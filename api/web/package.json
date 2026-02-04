@@ -78,6 +78,7 @@
     "devDependencies": {
         "@eslint/js": "^9.18.0",
         "@testing-library/vue": "^8.1.0",
+        "@types/mapbox__tile-cover": "^3.0.4",
         "@types/sortablejs": "^1.15.8",
         "@types/swagger-ui": "^5.21.1",
         "@vitejs/plugin-vue": "^6.0.0",
