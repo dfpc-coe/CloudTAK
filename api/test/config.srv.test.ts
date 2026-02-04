@@ -163,7 +163,8 @@ test('GET api/config/map', async () => {
             center: '-100,40',
             zoom: 4,
             pitch: 0,
-            bearing: 0
+            bearing: 0,
+            basemap: null,
         });
     } catch (err) {
         assert.ifError(err);

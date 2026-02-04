@@ -20,6 +20,7 @@ import {
     IconAffiliate,
 } from '@tabler/icons-vue';
 import ProfileConfig from '../../base/profile.ts';
+import type { Profile } from '../../types.ts';
 
 export type MenuItemConfig = {
     key: string;
@@ -47,7 +48,7 @@ export default class MenuManager {
     isSystemAdmin: Ref<boolean>;
     isAgencyAdmin: Ref<boolean>;
     pluginMenuItems: Ref<MenuItemConfig[]>;
-    preferenceOrder: Ref<{ key: string; visibility?: string }[]>;
+    preferenceOrder: Ref<Profile['menu_order']>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(mapStore: any) {
@@ -321,7 +322,7 @@ export default class MenuManager {
         const orderMap = new Map(this.preferenceOrder.value.map(p => [p.key, p]));
         const newOrder = keys.map(k => {
             const existing = orderMap.get(k);
-            return existing ? { ...toRaw(existing) } : { key: k, visibility: 'full' };
+            return existing ? { ...toRaw(existing) } : { key: k, visibility: 'full' as const };
         });
 
         this.preferenceOrder.value = newOrder;
@@ -329,7 +330,7 @@ export default class MenuManager {
         await config.commit(newOrder);
     }
 
-    async setVisibility(key: string, visible: string) {
+    async setVisibility(key: string, visible: "full" | "partial" | "hidden") {
         const index = this.preferenceOrder.value.findIndex(p => p.key === key);
         if (index !== -1) {
             this.preferenceOrder.value[index].visibility = visible;
@@ -339,7 +340,7 @@ export default class MenuManager {
             const currentItems = this.items.value;
             this.preferenceOrder.value = currentItems.map(item => ({
                 key: item.key,
-                visibility: item.key === key ? visible : (item.visibility || 'full')
+                visibility: (item.key === key ? visible : (item.visibility || 'full')) as "full" | "partial" | "hidden"
             }));
         }
 

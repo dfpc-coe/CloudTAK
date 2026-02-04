@@ -12,6 +12,22 @@
 
 ### Pending Release
 
+### v12.69.1 - 2026-02-03
+
+- :bug: stricter kmz parsing to ensure zipped kmls can still be imported
+
+### v12.69.0 - 2026-02-03
+
+- :rocket: `UI` Update section menus in AdminConfig UI
+- :tada: Allow config API to specify a default basemap
+- :rocket: Update `/api/config/map` to return the default basemap ID
+- :rocket: Strongly type /api/config response objects
+- :white_check_mark: Add checks to ensure integrity of default basemap
+
+### v12.68.1 - 2026-02-03
+
+- :arrow_up: Update NodeCoT to support `<uid/>` without droid property
+
 ### v12.68.0 - 2026-02-02
 
 - :tada: Mimick LongPress events to open Context Radial on Touch Devices

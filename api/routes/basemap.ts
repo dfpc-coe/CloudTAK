@@ -759,6 +759,12 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
+            const defaultBasemap = await config.models.Setting.typed<number>('map::basemap', -1)
+
+            if (Number(defaultBasemap.value) === basemap.id) {
+                throw new Err(400, null, 'Cannot delete default basemap');
+            }
+
             await config.models.Basemap.delete(req.params.basemapid);
 
             res.json({
