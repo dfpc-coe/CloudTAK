@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.68.1 - 2026-02-03
+
+- :arrow_up: Update NodeCoT to support `<uid/>` without droid property
+
 ### v12.68.0 - 2026-02-02
 
 - :tada: Mimick LongPress events to open Context Radial on Touch Devices
