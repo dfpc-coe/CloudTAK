@@ -159,7 +159,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            const final: Record<string, string> = {};
+            const final: Partial<Static<typeof FullConfig>> = {};
             (await Promise.allSettled((Object.keys(req.body) as (keyof Static<typeof FullConfig>)[]).map(async (key) => {
                 if (req.body[key] === null) {
                     await config.models.Setting.delete(key);
@@ -174,7 +174,7 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }))).forEach((k) => {
                 if (k.status === 'rejected') return;
-                return final[k.value.key] = String(k.value.value);
+                return final[k.value.key as keyof Static<typeof FullConfig>] = k.value.value as any;
             });
 
             res.json(final);
