@@ -426,7 +426,7 @@ export const LayerIncoming = pgTable('layers_incoming', {
 
 export const Setting = pgTable('settings', {
     key: text().primaryKey(),
-    value: text()
+    value: text().notNull().default(''),
 });
 
 export const Server = pgTable('server', {
