@@ -87,7 +87,9 @@ export default class DrawTool {
 
         const def = this.route.definitions.get(layer);
 
-        this.route.zoom = def.maxzoom;
+        if (def) {
+            this.route.zoom = def.maxzoom;
+        }
 
         if (this.route.layer === 'No Snapping') {
             if (this.mode === DrawToolMode.SNAPPING) {
@@ -577,6 +579,12 @@ export default class DrawTool {
 
 
     async start(mode: DrawToolMode): Promise<void> {
+        if (mode === DrawToolMode.LINESTRING && this.route.layer !== 'No Snapping') {
+            this.route.layer = 'No Snapping';
+            this.route.tiles.clear();
+            this.route.graph.setNetwork({ type: 'FeatureCollection', features: [] });
+        }
+
         this.mode = mode;
 
         if (mode === DrawToolMode.SNAPPING) {
