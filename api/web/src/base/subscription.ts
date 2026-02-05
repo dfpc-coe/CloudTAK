@@ -438,6 +438,20 @@ export default class Subscription {
         return headers;
     }
 
+    async invite(invitee: string, role = 'MISSION_SUBSCRIBER'): Promise<void> {
+        const url = stdurl(`/api/marti/missions/${this.guid}/invite`);
+        await std(url, {
+            method: 'POST',
+            body: {
+                type: 'userName',
+                invitee: invitee,
+                role: role
+            },
+            token: this.token,
+            headers: Subscription.headers(this.missiontoken)
+        });
+    }
+
     async subscriptions(): Promise<MissionSubscriptions> {
         const url = stdurl(`/api/marti/missions/${encodeURIComponent(this.guid)}/subscriptions/roles`);
 

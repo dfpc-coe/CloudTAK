@@ -113,19 +113,9 @@ async function inviteUser(selection?: { callsign: string } | ContactType) {
     const invitee = selection ? selection.callsign : inviteUsername.value;
     if (!invitee) return;
 
-    try {
-        const url = stdurl(`/api/marti/missions/${props.subscription.guid}/invite`);
-        url.searchParams.append('type', 'userName');
-        url.searchParams.append('invitee', invitee);
+    await props.subscription.invite(invitee);
 
-        await std(url, {
-            method: 'POST'
-        });
-
-        inviteUsername.value = '';
-    } catch (err) {
-        console.error(err);
-    }
+    inviteUsername.value = '';
 }
 
 async function fetchSubscriptions() {
