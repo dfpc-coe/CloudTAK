@@ -27,7 +27,7 @@
                             v-model='inviteUsername'
                             :input='true'
                             placeholder='Username'
-                            :groups='subscription.meta.groups'
+                            :groups='typeof subscription.meta.groups === "string" ? [subscription.meta.groups] : subscription.meta.groups'
                             @select='inviteUser($event)'
                         />
                         <button
@@ -50,7 +50,10 @@
             />
         </div>
 
-        <div v-if='invites.length' class='col-12 px-2 py-2'>
+        <div
+            v-if='invites.length'
+            class='col-12 px-2 py-2'
+        >
             <StandardItem
                 class='d-flex flex-column px-2 py-2'
                 @click='showInvites = !showInvites'
@@ -89,7 +92,10 @@
                         >
                             <div class='d-flex flex-column'>
                                 <div v-text='invite.invitee' />
-                                <div class='small text-muted' v-text='invite.role ? invite.role.name : "Unknown Role"' />
+                                <div
+                                    class='small text-muted'
+                                    v-text='invite.role ? invite.role.name : "Unknown Role"'
+                                />
                             </div>
                             <TablerDelete
                                 label='Revoke Invite'
@@ -108,8 +114,8 @@
             label='No Mission Subscribers'
         />
         <div
-            v-else
             v-for='sub of filteredSubscriptions'
+            v-else
             :key='sub.clientUid'
             class='col-lg-12'
         >
@@ -126,20 +132,17 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { TablerNone, TablerInput, TablerDropdown, TablerIconButton, TablerDelete } from '@tak-ps/vue-tabler';
 import { IconPlus, IconMail, IconChevronDown, IconChevronUp } from '@tabler/icons-vue';
-import { std, stdurl } from '../../../../std.ts';
 import type { MissionSubscriptions, Contact as ContactType, MissionInvite } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import StandardItem from '../../util/StandardItem.vue';
 import UserClientSelect from '../../util/UserClientSelect.vue';
 import Contact from '../../util/Contact.vue';
-import { useMapStore } from '../../../../stores/map.ts';
 
 const props = defineProps<{
     subscription: Subscription
 }>();
 
-const mapStore = useMapStore();
 const router = useRouter();
 const loading = ref(false);
 const filter = ref('');

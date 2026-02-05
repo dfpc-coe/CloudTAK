@@ -26,7 +26,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, computed, watch } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import { TablerInput } from '@tak-ps/vue-tabler';
 import Contact from './Contact.vue';
 import type { Contact as ContactType } from '../../../types.ts';
@@ -56,18 +56,16 @@ const filteredList = computed(() => {
 });
 
 onMounted(async () => {
-    const url = stdurl('/api/marti/clients');
-    url.searchParams.append('secAgo', String(7 * 24 * 60 * 60));
-    
-    if (props.groups) {
-        for (const group of props.groups) {
-            url.searchParams.append('group', group);
+    const { data } = await server.GET('/api/marti/clients', {
+        params: {
+            query: {
+                secAgo: 7 * 24 * 60 * 60,
+                group: props.groups
+            }
         }
-    }
+    });
 
-    const clients = await std(url);
-    
-    contacts.value = clients.data.map((c: any) => {
+    contacts.value = (data || []).map((c) => {
         return {
             uid: c.uid,
             callsign: c.callsign,
