@@ -24758,7 +24758,14 @@ export interface paths {
         /** Helper API to list clients */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Use Connection auth */
+                    connection?: number;
+                    secAgo?: number;
+                    showCurrentlyConnectedClients?: string;
+                    showMostRecentOnly?: string;
+                    group?: string[];
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
