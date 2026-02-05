@@ -23,10 +23,11 @@
                         style='min-width: 250px;'
                     >
                         <span class='strong'>Invite User</span>
-                        <UserSelect
+                        <UserClientSelect
                             v-model='inviteUsername'
                             :input='true'
                             placeholder='Username'
+                            :groups='subscription.meta.groups'
                             @select='inviteUser($event)'
                         />
                         <button
@@ -130,7 +131,7 @@ import type { MissionSubscriptions, Contact as ContactType, MissionInvite } from
 import Subscription from '../../../../base/subscription.ts';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import StandardItem from '../../util/StandardItem.vue';
-import UserSelect from '../../util/UserSelect.vue';
+import UserClientSelect from '../../util/UserClientSelect.vue';
 import Contact from '../../util/Contact.vue';
 import { useMapStore } from '../../../../stores/map.ts';
 

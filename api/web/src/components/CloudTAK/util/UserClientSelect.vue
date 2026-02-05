@@ -25,10 +25,10 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
+import { std, stdurl } from '../../../std.ts';
 import { TablerInput } from '@tak-ps/vue-tabler';
 import Contact from './Contact.vue';
-import { useMapStore } from '../../../stores/map.ts';
 import type { Contact as ContactType } from '../../../types.ts';
 
 const props = defineProps<{
@@ -36,11 +36,11 @@ const props = defineProps<{
     modelValue?: string;
     input?: boolean;
     limit?: number;
+    groups?: string[];
 }>();
 
 const emit = defineEmits(['select', 'update:modelValue']);
 
-const mapStore = useMapStore();
 const contacts = ref<ContactType[]>([]);
 const filter = ref(props.modelValue || '');
 
@@ -56,12 +56,32 @@ const filteredList = computed(() => {
 });
 
 onMounted(async () => {
-    contacts.value = await mapStore.worker.team.list();
-    filter.value = '';
+    const url = stdurl('/api/marti/clients');
+    url.searchParams.append('secAgo', String(7 * 24 * 60 * 60));
+    
+    if (props.groups) {
+        for (const group of props.groups) {
+            url.searchParams.append('group', group);
+        }
+    }
+
+    const res = await std(url);
+    const clients = await res.json();
+    
+    contacts.value = clients.map((c: any) => {
+        return {
+            uid: c.uid,
+            callsign: c.callsign,
+            role: c.role,
+            team: c.team,
+            notes: c.lastStatus,
+            takv: '',
+            filterGroups: null
+        };
+    });
 });
 
 // Sync filter changes back to parent if using v-model
-import { watch } from 'vue';
 watch(filter, (val) => {
     emit('update:modelValue', val);
 });

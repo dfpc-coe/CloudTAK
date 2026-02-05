@@ -7,7 +7,7 @@ import Config from '../lib/config.js';
 import { ConnectionAuth } from '../lib/connection-config.js';
 import { Contact } from '@tak-ps/node-tak/lib/api/contacts'
 import { Group } from '@tak-ps/node-tak/lib/api/groups'
-import { ClientEndpoint, ClientListQuery } from '@tak-ps/node-tak/lib/api/client'
+import { ClientEndpoint } from '@tak-ps/node-tak/lib/api/client'
 import { TAKList } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthPassword, APIAuthCertificate } from '@tak-ps/node-tak';
 
@@ -93,12 +93,14 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Clients',
         group: 'Marti',
         description: 'Helper API to list clients',
-        query: Type.Intersect([
-            Type.Object({
-                connection: Type.Optional(Type.Integer({ description: 'Use Connection auth' }))
+        query: Type.Object({
+            connection: Type.Optional(Type.Integer({ description: 'Use Connection auth' })),
+            segago: Type.Integer({
+                description: 'Number of seconds ago to look back for client updates. Default is 300 (5 minutes)',
+                default: 300
             }),
-            ClientListQuery
-        ]),
+            groups: Type.Optional(Type.String())
+        }),
         res: Type.Array(ClientEndpoint)
     }, async (req, res) => {
         try {
@@ -114,7 +116,10 @@ export default async function router(schema: Schema, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
 
-            const clients = await api.Client.list(req.query);
+            const clients = await api.Client.list({
+                secAgo: req.query.segago,
+                group: req.query.groups ? req.query.groups.split(',') : undefined
+            });
 
             res.json(clients);
         } catch (err) {
