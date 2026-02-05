@@ -17,6 +17,7 @@ export default class AtlasConnection {
     isDestroyed: boolean;
     isOpen: boolean;
     ws: WebSocket | undefined;
+    reconnectAttempts: number;
 
     version: string;
 
@@ -26,8 +27,18 @@ export default class AtlasConnection {
         this.isDestroyed = false;
         this.isOpen = false;
         this.ws = undefined;
+        this.reconnectAttempts = 0;
 
         this.version = version;
+    }
+
+    reconnect(connection: string) {
+        console.log('Forcing WebSocket reconnection...');
+        this.reconnectAttempts = 0;  // Reset counter
+        if (this.ws) {
+            this.ws.close();
+        }
+        this.connect(connection);
     }
 
     // COTs are submitted to pending and picked up by the partial update code every .5s

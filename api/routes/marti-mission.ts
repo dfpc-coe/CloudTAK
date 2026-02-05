@@ -21,7 +21,7 @@ import {
     MissionCreateInput,
     MissionSubscriber
 } from '@tak-ps/node-tak/lib/api/mission';
-import { MissionInvite, MissionInviteType } from '@tak-ps/node-tak/lib/api/mission-invite';
+import { MissionInvite, MissionInviteType, MissionSubscriberRole } from '@tak-ps/node-tak/lib/api/mission-invite';
 import {
     TAKList,
 } from '@tak-ps/node-tak/lib/api/types';
@@ -699,6 +699,49 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(missionContent);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/marti/missions/:guid/invite', {
+        name: 'Create Mission Invite',
+        group: 'MartiMissions',
+        description: 'Create a pending mission invite',
+        params: Type.Object({
+            guid: Type.String()
+        }),
+        query: Type.Object({
+            type: Type.Enum(MissionInviteType),
+            invitee: Type.String(),
+            role: Type.Optional(Type.Enum(MissionSubscriberRole))
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.guid)
+
+            await api.MissionInvite.invite(
+                req.params.guid,
+                req.query.type,
+                req.query.invitee,
+                {
+                    creatorUid: `ANDROID-CloudTAK-${user.email}`,
+                    role: req.query.role
+                },
+                opts
+            );
+
+            res.json({
+                status: 200,
+                message: 'Invite Created'
+            });
         } catch (err) {
              Err.respond(err, res);
         }

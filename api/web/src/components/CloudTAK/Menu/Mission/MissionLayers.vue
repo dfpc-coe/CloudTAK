@@ -45,7 +45,7 @@
                 v-else-if='!layers.length && !orphaned.size'
                 :create='false'
                 :compact='true'
-                label='Layers'
+                label='No Layers'
             />
             <template v-else>
                 <MissionLayerTree
@@ -68,7 +68,7 @@
             v-else-if='!layers.length && !orphaned.size'
             :create='false'
             :compact='true'
-            label='Layers'
+            label='No Layers'
         />
         <MissionLayerTree
             v-else

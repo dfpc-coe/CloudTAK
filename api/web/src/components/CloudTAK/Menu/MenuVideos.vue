@@ -81,27 +81,34 @@
             </div>
 
             <template v-if='mode === "connections"'>
-                <div class='col-12'>
-                    <EmptyInfo v-if='mapStore.hasNoChannels' />
+                <div class='col-12 px-2'>
+                    <TablerInput
+                        v-model='connectionFilter'
+                        icon='search'
+                        placeholder='Stream Search'
+                    />
+                </div>
 
-                    <TablerLoading
-                        v-if='loading.connections'
-                    />
-                    <TablerNone
-                        v-else-if='!videos.size && !connections.videoConnections.length'
-                        label='Video Connections'
-                        :create='false'
-                    />
-                    <TablerAlert
-                        v-else-if='error'
-                        :err='error'
-                    />
-                    <div
-                        v-else
-                        class='col-12 d-flex flex-column gap-2'
-                    >
-                        <StandardItem
-                            v-for='connection in connections.videoConnections'
+                <EmptyInfo v-if='mapStore.hasNoChannels' />
+
+                <TablerLoading
+                    v-if='loading.connections'
+                />
+                <TablerNone
+                    v-else-if='!filteredVideos.size && !filteredConnections.length'
+                    label='Video Connections'
+                    :create='false'
+                />
+                <TablerAlert
+                    v-else-if='error'
+                    :err='error'
+                />
+                <div
+                    v-else
+                    class='col-12 d-flex flex-column gap-2 p-3'
+                >
+                    <StandardItem
+                        v-for='connection in filteredConnections'
                             :key='connection.uuid'
                             class='d-flex align-items-center gap-3 p-2'
                             @click='floatStore.addConnection(connection)'
@@ -139,7 +146,7 @@
                             </div>
                         </StandardItem>
                         <StandardItem
-                            v-for='video in videos'
+                            v-for='video in filteredVideos'
                             :key='video.id'
                             class='d-flex align-items-center gap-3 p-2 cursor-pointer'
                             @click='router.push(`/cot/${video.id}`)'
@@ -165,7 +172,6 @@
                             </div>
                         </StandardItem>
                     </div>
-                </div>
             </template>
             <template v-else-if='mode === "lease"'>
                 <div class='col-12 px-2'>
@@ -291,13 +297,14 @@ import {
     IconDeviceDesktop,
 } from '@tabler/icons-vue';
 
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const mapStore = useMapStore();
 const floatStore = useFloatStore();
 
+const connectionFilter = ref('');
 const leasePaging = ref({
     page: 0,
     filter: '',
@@ -316,6 +323,27 @@ const isSystemAdmin = ref(false);
 const leases = ref<VideoLeaseList>({ total: 0, items: [] });
 const connections = ref<VideoConnectionList>({ videoConnections: [] });
 const videos = ref<Set<COT>>(new Set())
+
+const filteredConnections = computed(() => {
+    if (!connectionFilter.value) return connections.value.videoConnections;
+
+    return connections.value.videoConnections.filter((c) => {
+        return (c.alias || 'Unnamed').toLowerCase().includes(connectionFilter.value.toLowerCase());
+    });
+});
+
+const filteredVideos = computed(() => {
+    if (!connectionFilter.value) return videos.value;
+
+    const filtered = new Set<COT>();
+    for (const v of videos.value) {
+        const name = v.properties.callsign || v.properties.name || 'Unnamed';
+        if (typeof name === 'string' && name.toLowerCase().includes(connectionFilter.value.toLowerCase())) {
+            filtered.add(v);
+        }
+    }
+    return filtered;
+});
 
 watch(leasePaging.value, async () => {
     await fetchLeases();

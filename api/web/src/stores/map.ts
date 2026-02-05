@@ -559,6 +559,18 @@ export const useMapStore = defineStore('cloudtak', {
             this.updateDistanceUnit(this.distanceUnit);
 
             this.isOpen = await this.worker.conn.isOpen;
+
+            document.addEventListener('visibilitychange', async () => {
+                if (!document.hidden) {
+                    const isOpen = await this.worker.conn.isOpen;
+                    if (!isOpen) {
+                        console.log('Tab became visible with closed connection, reconnecting...');
+                        const username = await this.worker.username;
+                        await this.worker.conn.reconnect(username);
+                    }
+                    await this.updateCOT();
+                }
+            });
         },
         startGPSWatch: function(): void {
             if (!("geolocation" in navigator)) return;
