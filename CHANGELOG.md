@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### v12.71.0 - 2026-02-05
+
+- :bug: Ensure Active mission is removed if user deletes mission
+- :bug: Ensure Active mission is removed if user deletes overlay
+- :tada: Support inviting a user to join a mission
+- :tada: Support listing current invites in the context of a mission
+- :tada: Support deleting an invite to a given mission
+- :rocket: Reconnect on visibility changes: Closes: https://github.com/dfpc-coe/CloudTAK/issues/1205
+
 ### v12.70.0 - 2026-02-04
 
 - :tada: Allow hiding a Basemap or Overlay
