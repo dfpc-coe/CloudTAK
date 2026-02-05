@@ -63,7 +63,7 @@ export default async function router(schema: Schema, config: Config) {
                 minzoom?: number;
                 maxzoom?: number;
                 format?: Basemap_Format;
-                serverParts?: boolean;
+                serverParts?: string;
             } = {
                 type: Basemap_Type.RASTER
             };
