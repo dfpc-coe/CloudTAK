@@ -23,16 +23,16 @@
                         style='min-width: 250px;'
                     >
                         <span class='strong'>Invite User</span>
-                        <TablerInput
+                        <UserSelect
                             v-model='inviteUsername'
-                            class='mt-2'
+                            :input='true'
                             placeholder='Username'
-                            @keyup.enter='inviteUser'
+                            @select='inviteUser($event)'
                         />
                         <button
                             class='btn btn-primary w-100 mt-2'
                             :disabled='!inviteUsername'
-                            @click='inviteUser'
+                            @click='inviteUser()'
                         >
                             Invite
                         </button>
@@ -77,12 +77,15 @@ import { std, stdurl } from '../../../../std.ts';
 import type { MissionSubscriptions, Contact as ContactType } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';
 import MenuTemplate from '../../util/MenuTemplate.vue';
+import UserSelect from '../../util/UserSelect.vue';
 import Contact from '../../util/Contact.vue';
+import { useMapStore } from '../../../../stores/map.ts';
 
 const props = defineProps<{
     subscription: Subscription
 }>();
 
+const mapStore = useMapStore();
 const router = useRouter();
 const loading = ref(false);
 const filter = ref('');
@@ -106,13 +109,14 @@ onMounted(async () => {
     await fetchSubscriptions();
 });
 
-async function inviteUser() {
-    if (!inviteUsername.value) return;
+async function inviteUser(selection?: { callsign: string } | ContactType) {
+    const invitee = selection ? selection.callsign : inviteUsername.value;
+    if (!invitee) return;
 
     try {
         const url = stdurl(`/api/marti/missions/${props.subscription.guid}/invite`);
         url.searchParams.append('type', 'userName');
-        url.searchParams.append('invitee', inviteUsername.value);
+        url.searchParams.append('invitee', invitee);
 
         await std(url, {
             method: 'POST'
