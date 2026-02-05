@@ -443,7 +443,7 @@ export default class Subscription {
         await std(url, {
             method: 'POST',
             body: {
-                type: 'userName',
+                type: 'callsign',
                 invitee: invitee,
                 role: role
             },

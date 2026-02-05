@@ -287,6 +287,10 @@ async function deleteMission() {
 
     if (!subscription.value) return;
 
+    if (mapStore.mission && mapStore.mission.guid === subscription.value.guid) {
+        await mapStore.makeActiveMission(undefined);
+    }
+
     await subscription.value.delete();
 
     const overlay = mapStore.getOverlayByMode('mission', String(route.params.mission));
