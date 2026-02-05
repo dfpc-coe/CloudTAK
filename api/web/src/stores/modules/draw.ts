@@ -186,21 +186,6 @@ export default class DrawTool {
             }
         });
 
-        // Monitor for finish event
-        // @ts-expect-error Accessing private property
-        const originalFinish = routeSnapMode.finish.bind(routeSnapMode);
-        // @ts-expect-error Accessing private property
-        routeSnapMode.finish = () => {
-             // @ts-expect-error Accessing private property
-             const id = routeSnapMode.currentId;
-
-             originalFinish();
-
-             if (id && routeSnapMode.onFinish) {
-                 routeSnapMode.onFinish(id, { mode: routeSnapMode.mode, action: 'draw' });
-             }
-        }
-
         this.draw = new terraDraw.TerraDraw({
             adapter: new TerraDrawMapLibreGLAdapter({
                 map: this.mapStore.map,
