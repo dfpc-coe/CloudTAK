@@ -12,7 +12,8 @@ import type {
     MissionLayerList,
     MissionLayer_Create,
     MissionLayer_Update,
-    MissionSubscriptions
+    MissionSubscriptions,
+    MissionInvite
 } from '../types.ts';
 
 export enum SubscriptionEventType {
@@ -436,6 +437,44 @@ export default class Subscription {
         const headers: Record<string, string> = {};
         if (token) headers.MissionAuthorization = token;
         return headers;
+    }
+
+    async invite(invitee: string, role = 'MISSION_SUBSCRIBER'): Promise<void> {
+        const url = stdurl(`/api/marti/missions/${this.guid}/invite`);
+        await std(url, {
+            method: 'POST',
+            body: {
+                type: 'callsign',
+                invitee: invitee,
+                role: role
+            },
+            token: this.token,
+            headers: Subscription.headers(this.missiontoken)
+        });
+    }
+
+    async invites(): Promise<MissionInvite[]> {
+        const url = stdurl(`/api/marti/missions/${this.guid}/invite`);
+
+        const res = await std(url, {
+            method: 'GET',
+            token: this.token,
+            headers: Subscription.headers(this.missiontoken)
+        }) as { data: MissionInvite[] };
+
+        return res.data;
+    }
+
+    async deleteInvite(invite: { type: string, invitee: string }): Promise<void> {
+        const url = stdurl(`/api/marti/missions/${this.guid}/invite`);
+        url.searchParams.append('type', invite.type);
+        url.searchParams.append('invitee', invite.invitee);
+
+        await std(url, {
+            method: 'DELETE',
+            token: this.token,
+            headers: Subscription.headers(this.missiontoken)
+        });
     }
 
     async subscriptions(): Promise<MissionSubscriptions> {

@@ -809,6 +809,16 @@
         "query": false,
         "res": true
     },
+    "GET /marti/missions/:guid/invite": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /marti/missions/:guid/invite": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "DELETE /marti/missions/:guid/invite": {
         "body": false,
         "query": true,
@@ -881,6 +891,11 @@
     },
     "PUT /marti/group": {
         "body": true,
+        "query": true,
+        "res": true
+    },
+    "GET /marti/clients": {
+        "body": false,
         "query": true,
         "res": true
     },
@@ -1194,11 +1209,6 @@
         "query": false,
         "res": true
     },
-    "GET /server/video": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /search": {
         "body": false,
         "query": false,
@@ -1220,6 +1230,11 @@
         "res": true
     },
     "GET /search/suggest": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /server/video": {
         "body": false,
         "query": true,
         "res": true

@@ -72,6 +72,10 @@ export default class AtlasTeam {
         }
     }
 
+    async list(): Promise<Contact[]> {
+        return Array.from(this.contacts.values());
+    }
+
     async load(): Promise<Map<string, Contact>> {
         const url = stdurl('/api/marti/api/contacts/all');
         const contacts = await std(url, {
