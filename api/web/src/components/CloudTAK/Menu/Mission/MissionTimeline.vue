@@ -23,6 +23,7 @@
                 v-for='change in changes'
                 :key='change.contentUid'
                 class='col-12 px-2 py-2 mb-1 d-flex flex-wrap align-items-center'
+                :hover='false'
             >
                 <template v-if='change.type === "CREATE_MISSION"'>
                     <IconSquarePlus
