@@ -49,6 +49,58 @@
             />
         </div>
 
+        <div v-if='invites.length' class='col-12 px-2 py-2'>
+            <StandardItem
+                class='d-flex flex-column px-2 py-2'
+                @click='showInvites = !showInvites'
+            >
+                <div class='d-flex align-items-center gap-2'>
+                    <IconMail
+                        :size='24'
+                        stroke='1'
+                    />
+                    <span class='fw-bold'>Pending Invites</span>
+                    <span class='badge rounded-pill small bg-danger text-white ms-auto'>{{ invites.length }}</span>
+                    <IconChevronDown
+                        v-if='!showInvites'
+                        :size='20'
+                        stroke='1'
+                        class='ms-2'
+                    />
+                    <IconChevronUp
+                        v-else
+                        :size='20'
+                        stroke='1'
+                        class='ms-2'
+                    />
+                </div>
+
+                <transition name='menu-overlays-fade'>
+                    <div
+                        v-if='showInvites'
+                        class='mt-2 pt-2 px-3 rounded-3 border border-white border-opacity-10 bg-black bg-opacity-25'
+                        @click.stop
+                    >
+                        <div
+                            v-for='invite in invites'
+                            :key='invite.invitee'
+                            class='d-flex align-items-center justify-content-between mb-2'
+                        >
+                            <div class='d-flex flex-column'>
+                                <div v-text='invite.invitee' />
+                                <div class='small text-muted' v-text='invite.role ? invite.role.name : "Unknown Role"' />
+                            </div>
+                            <TablerDelete
+                                label='Revoke Invite'
+                                displaytype='icon'
+                                @delete='removeInvite(invite)'
+                            />
+                        </div>
+                    </div>
+                </transition>
+            </StandardItem>
+        </div>
+
         <TablerNone
             v-if='!filteredSubscriptions.length'
             :create='false'
@@ -71,12 +123,13 @@
 <script setup lang='ts'>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { TablerNone, TablerInput, TablerDropdown, TablerIconButton } from '@tak-ps/vue-tabler';
-import { IconPlus } from '@tabler/icons-vue';
+import { TablerNone, TablerInput, TablerDropdown, TablerIconButton, TablerDelete } from '@tak-ps/vue-tabler';
+import { IconPlus, IconMail, IconChevronDown, IconChevronUp } from '@tabler/icons-vue';
 import { std, stdurl } from '../../../../std.ts';
-import type { MissionSubscriptions, Contact as ContactType } from '../../../../types.ts';
+import type { MissionSubscriptions, Contact as ContactType, MissionInvite } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';
 import MenuTemplate from '../../util/MenuTemplate.vue';
+import StandardItem from '../../util/StandardItem.vue';
 import UserSelect from '../../util/UserSelect.vue';
 import Contact from '../../util/Contact.vue';
 import { useMapStore } from '../../../../stores/map.ts';
@@ -90,7 +143,9 @@ const router = useRouter();
 const loading = ref(false);
 const filter = ref('');
 const subscriptions = ref<MissionSubscriptions>([])
+const invites = ref<MissionInvite[]>([]);
 const inviteUsername = ref('');
+const showInvites = ref(false);
 
 const canInvite = computed(() => {
     if (!props.subscription.role) return false;
@@ -116,11 +171,24 @@ async function inviteUser(selection?: { callsign: string } | ContactType) {
     await props.subscription.invite(invitee);
 
     inviteUsername.value = '';
+    await fetchSubscriptions();
+}
+
+async function removeInvite(invite: MissionInvite) {
+    if (!invite.invitee) return;
+    await props.subscription.deleteInvite({
+        type: invite.type || 'callsign',
+        invitee: invite.invitee
+    });
+    await fetchSubscriptions();
 }
 
 async function fetchSubscriptions() {
     loading.value = true;
     subscriptions.value = await props.subscription.subscriptions();
+    if (canInvite.value) {
+        invites.value = await props.subscription.invites();
+    }
     loading.value = false;
 }
 
