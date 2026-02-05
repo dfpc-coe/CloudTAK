@@ -711,10 +711,10 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             guid: Type.String()
         }),
-        query: Type.Object({
+        body: Type.Object({
             type: Type.Enum(MissionInviteType),
             invitee: Type.String(),
-            role: Type.Optional(Type.Enum(MissionSubscriberRole))
+            role: Type.Enum(MissionSubscriberRole)
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -729,11 +729,11 @@ export default async function router(schema: Schema, config: Config) {
 
             await api.MissionInvite.invite(
                 req.params.guid,
-                req.query.type,
-                req.query.invitee,
+                req.body.type,
+                req.body.invitee,
                 {
                     creatorUid: `ANDROID-CloudTAK-${user.email}`,
-                    role: req.query.role
+                    role: req.body.role
                 },
                 opts
             );
