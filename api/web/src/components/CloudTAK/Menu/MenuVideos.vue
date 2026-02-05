@@ -81,90 +81,96 @@
             </div>
 
             <template v-if='mode === "connections"'>
-                <div class='col-12'>
-                    <EmptyInfo v-if='mapStore.hasNoChannels' />
+                <div class='col-12 px-2'>
+                    <TablerInput
+                        v-model='connectionFilter'
+                        icon='search'
+                        placeholder='Stream Search'
+                    />
+                </div>
 
-                    <TablerLoading
-                        v-if='loading.connections'
-                    />
-                    <TablerNone
-                        v-else-if='!videos.size && !connections.videoConnections.length'
-                        label='Video Connections'
-                        :create='false'
-                    />
-                    <TablerAlert
-                        v-else-if='error'
-                        :err='error'
-                    />
-                    <div
-                        v-else
-                        class='col-12 d-flex flex-column gap-2'
+                <EmptyInfo v-if='mapStore.hasNoChannels' />
+
+                <TablerLoading
+                    v-if='loading.connections'
+                />
+                <TablerNone
+                    v-else-if='!filteredVideos.size && !filteredConnections.length'
+                    label='Video Connections'
+                    :create='false'
+                />
+                <TablerAlert
+                    v-else-if='error'
+                    :err='error'
+                />
+                <div
+                    v-else
+                    class='col-12 d-flex flex-column gap-2 p-3'
+                >
+                    <StandardItem
+                        v-for='connection in filteredConnections'
+                        :key='connection.uuid'
+                        class='d-flex align-items-center gap-3 p-2'
+                        @click='floatStore.addConnection(connection)'
                     >
-                        <StandardItem
-                            v-for='connection in connections.videoConnections'
-                            :key='connection.uuid'
-                            class='d-flex align-items-center gap-3 p-2'
-                            @click='floatStore.addConnection(connection)'
+                        <div
+                            class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                            style='width: 3rem; height: 3rem; min-width: 3rem;'
                         >
-                            <div
-                                class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
-                                style='width: 3rem; height: 3rem; min-width: 3rem;'
+                            <IconVideo
+                                :size='24'
+                                stroke='1'
+                            />
+                        </div>
+
+                        <div class='d-flex flex-column'>
+                            <div class='fw-bold'>
+                                <span v-if='connection.alias'>{{ connection.alias }}</span>
+                                <span
+                                    v-else
+                                    class='fst-italic text-secondary'
+                                >Unnamed</span>
+                            </div>
+                        </div>
+
+                        <div class='d-flex btn-list ms-auto'>
+                            <TablerIconButton
+                                title='Edit Lease'
+                                @click.stop='router.push(`/menu/videos/remote/${connection.uuid}`)'
                             >
-                                <IconVideo
+                                <IconPencil
                                     :size='24'
                                     stroke='1'
                                 />
-                            </div>
-
-                            <div class='d-flex flex-column'>
-                                <div class='fw-bold'>
-                                    <span v-if='connection.alias'>{{ connection.alias }}</span>
-                                    <span
-                                        v-else
-                                        class='fst-italic text-secondary'
-                                    >Unnamed</span>
-                                </div>
-                            </div>
-
-                            <div class='d-flex btn-list ms-auto'>
-                                <TablerIconButton
-                                    title='Edit Lease'
-                                    @click.stop='router.push(`/menu/videos/remote/${connection.uuid}`)'
-                                >
-                                    <IconPencil
-                                        :size='24'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
-                            </div>
-                        </StandardItem>
-                        <StandardItem
-                            v-for='video in videos'
-                            :key='video.id'
-                            class='d-flex align-items-center gap-3 p-2 cursor-pointer'
-                            @click='router.push(`/cot/${video.id}`)'
+                            </TablerIconButton>
+                        </div>
+                    </StandardItem>
+                    <StandardItem
+                        v-for='video in filteredVideos'
+                        :key='video.id'
+                        class='d-flex align-items-center gap-3 p-2 cursor-pointer'
+                        @click='router.push(`/cot/${video.id}`)'
+                    >
+                        <div
+                            class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
+                            style='width: 3rem; height: 3rem; min-width: 3rem;'
                         >
-                            <div
-                                class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
-                                style='width: 3rem; height: 3rem; min-width: 3rem;'
-                            >
-                                <IconVideo
-                                    :size='24'
-                                    stroke='1'
-                                />
-                            </div>
+                            <IconVideo
+                                :size='24'
+                                stroke='1'
+                            />
+                        </div>
 
-                            <div class='d-flex flex-column'>
-                                <div class='fw-bold'>
-                                    <span v-if='video.properties.callsign || video.properties.name'>{{ video.properties.callsign || video.properties.name }}</span>
-                                    <span
-                                        v-else
-                                        class='fst-italic text-secondary'
-                                    >Unnamed</span>
-                                </div>
+                        <div class='d-flex flex-column'>
+                            <div class='fw-bold'>
+                                <span v-if='video.properties.callsign || video.properties.name'>{{ video.properties.callsign || video.properties.name }}</span>
+                                <span
+                                    v-else
+                                    class='fst-italic text-secondary'
+                                >Unnamed</span>
                             </div>
-                        </StandardItem>
-                    </div>
+                        </div>
+                    </StandardItem>
                 </div>
             </template>
             <template v-else-if='mode === "lease"'>
@@ -291,13 +297,14 @@ import {
     IconDeviceDesktop,
 } from '@tabler/icons-vue';
 
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const mapStore = useMapStore();
 const floatStore = useFloatStore();
 
+const connectionFilter = ref('');
 const leasePaging = ref({
     page: 0,
     filter: '',
@@ -316,6 +323,27 @@ const isSystemAdmin = ref(false);
 const leases = ref<VideoLeaseList>({ total: 0, items: [] });
 const connections = ref<VideoConnectionList>({ videoConnections: [] });
 const videos = ref<Set<COT>>(new Set())
+
+const filteredConnections = computed(() => {
+    if (!connectionFilter.value) return connections.value.videoConnections;
+
+    return connections.value.videoConnections.filter((c) => {
+        return (c.alias || 'Unnamed').toLowerCase().includes(connectionFilter.value.toLowerCase());
+    });
+});
+
+const filteredVideos = computed(() => {
+    if (!connectionFilter.value) return videos.value;
+
+    const filtered = new Set<COT>();
+    for (const v of videos.value) {
+        const name = v.properties.callsign || v.properties.name || 'Unnamed';
+        if (typeof name === 'string' && name.toLowerCase().includes(connectionFilter.value.toLowerCase())) {
+            filtered.add(v);
+        }
+    }
+    return filtered;
+});
 
 watch(leasePaging.value, async () => {
     await fetchLeases();

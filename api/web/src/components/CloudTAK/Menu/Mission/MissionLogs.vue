@@ -16,7 +16,10 @@
             </TablerIconButton>
         </template>
         <template #default>
-            <div class='col-12 pb-2 px-2'>
+            <div
+                v-if='logs && logs.length'
+                class='col-12 pb-2 px-2'
+            >
                 <TablerInput
                     v-model='paging.filter'
                     icon='search'

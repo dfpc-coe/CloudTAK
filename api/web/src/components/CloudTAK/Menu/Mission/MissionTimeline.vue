@@ -13,15 +13,17 @@
         <TablerNone
             v-else-if='!changes.length'
             :create='false'
+            label='No Timeline Changes'
         />
         <div
             v-else
             class='rows'
         >
-            <div
+            <StandardItem
                 v-for='change in changes'
                 :key='change.contentUid'
-                class='col-12 hover px-2 py-1'
+                class='col-12 px-2 py-2 mb-1 d-flex flex-wrap align-items-center'
+                :hover='false'
             >
                 <template v-if='change.type === "CREATE_MISSION"'>
                     <IconSquarePlus
@@ -106,7 +108,7 @@
                         v-text='change.timestamp'
                     />
                 </div>
-            </div>
+            </StandardItem>
         </div>
     </MenuTemplate>
 </template>
@@ -128,6 +130,7 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
+import StandardItem from '@/components/CloudTAK/util/StandardItem.vue';
 
 const props = defineProps<{
     subscription: Subscription

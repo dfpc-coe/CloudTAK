@@ -7,6 +7,7 @@ import Config from '../lib/config.js';
 import { ConnectionAuth } from '../lib/connection-config.js';
 import { Contact } from '@tak-ps/node-tak/lib/api/contacts'
 import { Group } from '@tak-ps/node-tak/lib/api/groups'
+import { ClientEndpoint } from '@tak-ps/node-tak/lib/api/client'
 import { TAKList } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthPassword, APIAuthCertificate } from '@tak-ps/node-tak';
 
@@ -83,6 +84,44 @@ export default async function router(schema: Schema, config: Config) {
             const groups = await api.Group.list({});
 
             res.json(groups);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/marti/clients', {
+        name: 'List Clients',
+        group: 'Marti',
+        description: 'Helper API to list clients',
+        query: Type.Object({
+            connection: Type.Optional(Type.Integer({ description: 'Use Connection auth' })),
+            segago: Type.Integer({
+                description: 'Number of seconds ago to look back for client updates. Default is 300 (5 minutes)',
+                default: 300
+            }),
+            groups: Type.Optional(Type.String())
+        }),
+        res: TAKList(ClientEndpoint)
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            let api;
+            if (req.query.connection) {
+                const connection = await config.models.Connection.from(parseInt(String(req.query.connection)));
+                api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
+            } else {
+                const user = await Auth.as_user(config, req);
+                const profile = await config.models.Profile.from(user.email);
+                api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            }
+
+            const clients = await api.Client.list({
+                secAgo: req.query.segago,
+                group: req.query.groups ? req.query.groups.split(',') : undefined
+            });
+
+            res.json(clients);
         } catch (err) {
              Err.respond(err, res);
         }

@@ -21,7 +21,7 @@ import {
     MissionCreateInput,
     MissionSubscriber
 } from '@tak-ps/node-tak/lib/api/mission';
-import { MissionInvite, MissionInviteType } from '@tak-ps/node-tak/lib/api/mission-invite';
+import { MissionInvite, MissionInviteType, MissionSubscriberRole } from '@tak-ps/node-tak/lib/api/mission-invite';
 import {
     TAKList,
 } from '@tak-ps/node-tak/lib/api/types';
@@ -699,6 +699,77 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(missionContent);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/marti/missions/:guid/invite', {
+        name: 'List Mission Invites',
+        group: 'MartiMissions',
+        description: 'List pending mission invites',
+        params: Type.Object({
+            guid: Type.String()
+        }),
+        res: Type.Object({
+            data: Type.Array(MissionInvite)
+        })
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.guid)
+
+            const invites = await api.MissionInvite.get(req.params.guid, opts);
+
+            res.json(invites);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/marti/missions/:guid/invite', {
+        name: 'Create Mission Invite',
+        group: 'MartiMissions',
+        description: 'Create a pending mission invite',
+        params: Type.Object({
+            guid: Type.String()
+        }),
+        body: Type.Object({
+            type: Type.Enum(MissionInviteType),
+            invitee: Type.String(),
+            role: Type.Enum(MissionSubscriberRole)
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.guid)
+
+            await api.MissionInvite.invite(
+                req.params.guid,
+                req.body.type,
+                req.body.invitee,
+                {
+                    creatorUid: `ANDROID-CloudTAK-${user.email}`,
+                    role: req.body.role
+                },
+                opts
+            );
+
+            res.json({
+                status: 200,
+                message: 'Invite Created'
+            });
         } catch (err) {
              Err.respond(err, res);
         }
