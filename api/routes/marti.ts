@@ -101,7 +101,7 @@ export default async function router(schema: Schema, config: Config) {
             }),
             groups: Type.Optional(Type.String())
         }),
-        res: Type.Array(ClientEndpoint)
+        res: TAKList(ClientEndpoint)
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);

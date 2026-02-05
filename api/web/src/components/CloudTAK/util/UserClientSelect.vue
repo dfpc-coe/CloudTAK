@@ -65,10 +65,9 @@ onMounted(async () => {
         }
     }
 
-    const res = await std(url);
-    const clients = await res.json();
+    const clients = await std(url);
     
-    contacts.value = clients.map((c: any) => {
+    contacts.value = clients.data.map((c: any) => {
         return {
             uid: c.uid,
             callsign: c.callsign,
