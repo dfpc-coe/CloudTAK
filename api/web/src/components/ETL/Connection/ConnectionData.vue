@@ -160,10 +160,10 @@ async function listData() {
     loading.value = true;
     try {
         const url = stdurl(`/api/connection/${route.params.connectionid}/data`);
-        url.searchParams.append('limit', paging.value.limit);
-        url.searchParams.append('page', paging.value.page);
-        url.searchParams.append('filter', paging.value.filter);
-        url.searchParams.append('connection', route.params.connectionid);
+        url.searchParams.set('limit', paging.value.limit);
+        url.searchParams.set('page', paging.value.page);
+        url.searchParams.set('filter', paging.value.filter);
+        url.searchParams.set('connection', route.params.connectionid);
         list.value = await std(url);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

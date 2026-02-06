@@ -106,7 +106,7 @@ async function fetch() {
     err.value = null;
     try {
         const url = stdurl('/api/config');
-        url.searchParams.append('keys', Object.keys(config.value).join(','));
+        url.searchParams.set('keys', Object.keys(config.value).join(','));
         const res = await std(url);
         for (const key of Object.keys(config.value)) {
              if (res[key] !== undefined) config.value[key] = res[key];

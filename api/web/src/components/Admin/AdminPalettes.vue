@@ -175,10 +175,10 @@ async function fetchList() {
     try {
         const url = stdurl('/api/palette');
 
-        url.searchParams.append('filter', paging.value.filter);
-        url.searchParams.append('limit', String(paging.value.limit));
-        url.searchParams.append('page', String(paging.value.page));
-        url.searchParams.append('sort', paging.value.sort);
+        url.searchParams.set('filter', paging.value.filter);
+        url.searchParams.set('limit', String(paging.value.limit));
+        url.searchParams.set('page', String(paging.value.page));
+        url.searchParams.set('sort', paging.value.sort);
         list.value = await std(url) as PaletteList;
      } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

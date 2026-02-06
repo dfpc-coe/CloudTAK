@@ -168,7 +168,7 @@ async function fetch() {
 async function listData() {
     loading.value.list = true;
     const url = stdurl('/api/agency');
-    url.searchParams.append('filter', filter.value);
+    url.searchParams.set('filter', filter.value);
     const data = await std(url) as ETLAgencyList;
 
     if (!isSystemAdmin.value && data.total === 1) {

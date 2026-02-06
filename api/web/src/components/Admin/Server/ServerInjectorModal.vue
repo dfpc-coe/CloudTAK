@@ -109,8 +109,8 @@ async function deleteInjector() {
 
     try {
         const url = stdurl('/api/server/injector')
-        url.searchParams.append('uid', props.injector.uid);
-        url.searchParams.append('toInject', props.injector.toInject);
+        url.searchParams.set('uid', props.injector.uid);
+        url.searchParams.set('toInject', props.injector.toInject);
 
         await std(url, {
             method: 'DELETE'

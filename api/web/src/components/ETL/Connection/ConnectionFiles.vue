@@ -152,8 +152,8 @@ function uploadURL() {
 
 async function downloadAsset(asset: ETLConnectionAssetList["items"][0]) {
     const url = stdurl(`/api/connection/${route.params.connectionid}/asset/${asset.name}`);
-    url.searchParams.append('token', localStorage.token);
-    url.searchParams.append('download', String(true));
+    url.searchParams.set('token', localStorage.token);
+    url.searchParams.set('download', String(true));
     window.open(url, "_blank")
 }
 

@@ -426,10 +426,10 @@ export default class Subscription {
         if (opts.defaultRole === undefined) opts.defaultRole = true;
 
         const url = stdurl('/api/marti/mission');
-        url.searchParams.append('passwordProtected', String(opts.passwordProtected));
-        url.searchParams.append('defaultRole', String(opts.defaultRole));
-        url.searchParams.append('sort', 'createTime');
-        url.searchParams.append('order', 'desc');
+        url.searchParams.set('passwordProtected', String(opts.passwordProtected));
+        url.searchParams.set('defaultRole', String(opts.defaultRole));
+        url.searchParams.set('sort', 'createTime');
+        url.searchParams.set('order', 'desc');
         return await std(url) as MissionList;
     }
 
@@ -467,8 +467,8 @@ export default class Subscription {
 
     async deleteInvite(invite: { type: string, invitee: string }): Promise<void> {
         const url = stdurl(`/api/marti/missions/${this.guid}/invite`);
-        url.searchParams.append('type', invite.type);
-        url.searchParams.append('invitee', invite.invitee);
+        url.searchParams.set('type', invite.type);
+        url.searchParams.set('invitee', invite.invitee);
 
         await std(url, {
             method: 'DELETE',

@@ -275,7 +275,7 @@ async function fetch() {
 async function Iconlistsets() {
     loading.value.iconsets = true;
     const url = stdurl('/api/iconset');
-    url.searchParams.append('limit', 50);
+    url.searchParams.set('limit', 50);
     sets.value = (await std(url)).items;
     if (sets.value.length) {
         params.value.iconset = sets.value[0].name;
@@ -286,16 +286,16 @@ async function Iconlistsets() {
 async function Iconlists() {
     loading.value.icons = true;
     let url = stdurl(`/api/icon`);
-    url.searchParams.append('limit', 1000);
+    url.searchParams.set('limit', 1000);
     if (params.value.iconset) {
         const id = sets.value.filter((set) => {
             return set.name === params.value.iconset;
         })[0];
 
-        if (id) url.searchParams.append('iconset', id.uid);
+        if (id) url.searchParams.set('iconset', id.uid);
     }
 
-    url.searchParams.append('filter', params.value.filter);
+    url.searchParams.set('filter', params.value.filter);
     list.value = await std(url)
     loading.value.icons = false;
 }

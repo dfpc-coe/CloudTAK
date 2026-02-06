@@ -147,7 +147,7 @@ onMounted(async () => {
             if (match && match[1]) {
                 const name = match[1];
                 const url = stdurl(new URL(config.value.url + `/tiles/public/${name}`));
-                url.searchParams.append('token', localStorage.token);
+                url.searchParams.set('token', localStorage.token);
                 selected.value = await std(url);
             }
         } catch (err) {
@@ -168,7 +168,7 @@ async function select(tile) {
     const name = tile.name.replace(/^public\//, "").replace(/\.pmtiles$/, '');
 
     const url = stdurl(new URL(config.value.url + `/tiles/public/${name}`));
-    url.searchParams.append('token', localStorage.token);
+    url.searchParams.set('token', localStorage.token);
 
     const detail = await std(url);
     selected.value = detail;
@@ -183,10 +183,10 @@ async function listTiles() {
 
     loading.value.list = true;
     const url = stdurl(new URL(config.value.url + '/tiles/public'));
-    url.searchParams.append('token', localStorage.token);
-    url.searchParams.append('filter', paging.value.filter);
-    url.searchParams.append('limit', paging.value.limit);
-    url.searchParams.append('page', paging.value.page);
+    url.searchParams.set('token', localStorage.token);
+    url.searchParams.set('filter', paging.value.filter);
+    url.searchParams.set('limit', paging.value.limit);
+    url.searchParams.set('page', paging.value.page);
     list.value = await std(url);
 
     loading.value.list = false;

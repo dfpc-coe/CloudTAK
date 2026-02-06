@@ -178,11 +178,11 @@ async function fetchSearch(
             })
 
         const url = stdurl('/api/search/suggest');
-        url.searchParams.append('query', query.value.filter);
-        url.searchParams.append('limit', '5');
+        url.searchParams.set('query', query.value.filter);
+        url.searchParams.set('limit', '5');
         const center = mapStore.map.getCenter();
-        url.searchParams.append('longitude', String(center.lng));
-        url.searchParams.append('latitude', String(center.lat));
+        url.searchParams.set('longitude', String(center.lng));
+        url.searchParams.set('latitude', String(center.lat));
 
         results.value = [];
         results.value.push(...((await std(url)) as SearchSuggest).items)
@@ -236,11 +236,11 @@ async function fetchSearch(
             });
         } else {
             const url = stdurl('/api/search/forward');
-            url.searchParams.append('query', queryText);
-            url.searchParams.append('magicKey', magicKey);
+            url.searchParams.set('query', queryText);
+            url.searchParams.set('magicKey', magicKey);
             const center = mapStore.map.getCenter();
-            url.searchParams.append('longitude', String(center.lng));
-            url.searchParams.append('latitude', String(center.lat));
+            url.searchParams.set('longitude', String(center.lng));
+            url.searchParams.set('latitude', String(center.lat));
             const items = ((await std(url)) as SearchForward).items;
 
             if (!items.length) return;

@@ -152,9 +152,9 @@ async function fetch() {
 async function listData() {
     loading.value.list = true;
     const url = stdurl('/api/layer');
-    url.searchParams.append('filter', paging.value.filter);
-    url.searchParams.append('limit', paging.value.limit);
-    url.searchParams.append('page', paging.value.page);
+    url.searchParams.set('filter', paging.value.filter);
+    url.searchParams.set('limit', paging.value.limit);
+    url.searchParams.set('page', paging.value.page);
     list.value = await std(url);
 
     loading.value.list = false;
