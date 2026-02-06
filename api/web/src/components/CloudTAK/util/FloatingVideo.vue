@@ -552,7 +552,7 @@ async function requestLease(): Promise<void> {
     try {
         // Check if stream is already active on the server
         const url = stdurl('/api/video/active');
-        url.searchParams.append('url', video.value.config.url)
+        url.searchParams.set('url', video.value.config.url)
         active.value = await std(url);
 
         if (active.value.metadata) {

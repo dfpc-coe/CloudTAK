@@ -318,10 +318,10 @@ async function createLayer() {
     loading.value = true;
     try {
         const url = stdurl('/api/esri/server/layer');
-        url.searchParams.append('token', props.token.token);
-        url.searchParams.append('expires', props.token.expires);
-        if (props.portal) url.searchParams.append('portal', props.portal);
-        url.searchParams.append('server', stdurl_local(false));
+        url.searchParams.set('token', props.token.token);
+        url.searchParams.set('expires', props.token.expires);
+        if (props.portal) url.searchParams.set('portal', props.portal);
+        url.searchParams.set('server', stdurl_local(false));
 
         await std(url, { method: 'POST' });
 
@@ -337,10 +337,10 @@ async function deleteLayer(l) {
     loading.value = true;
     try {
         const url = stdurl('/api/esri/server/layer');
-        if (props.token) url.searchParams.append('token', props.token.token);
-        if (props.token) url.searchParams.append('expires', props.token.expires);
-        if (props.portal) url.searchParams.append('portal', props.portal);
-        url.searchParams.append('server', stdurl_local(false) + '/' + l.id);
+        if (props.token) url.searchParams.set('token', props.token.token);
+        if (props.token) url.searchParams.set('expires', props.token.expires);
+        if (props.portal) url.searchParams.set('portal', props.portal);
+        url.searchParams.set('server', stdurl_local(false) + '/' + l.id);
 
         await std(url, { method: 'DELETE' });
 
@@ -359,11 +359,11 @@ async function getList() {
         const url = stdurl('/api/esri/server');
 
         if (props.token) {
-            url.searchParams.append('token', props.token.token);
-            url.searchParams.append('expires', props.token.expires);
+            url.searchParams.set('token', props.token.token);
+            url.searchParams.set('expires', props.token.expires);
         }
 
-        url.searchParams.append('server', stdurl_local(false));
+        url.searchParams.set('server', stdurl_local(false));
 
         const res = await std(url);
 

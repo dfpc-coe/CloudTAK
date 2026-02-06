@@ -111,8 +111,8 @@ async function regen() {
 
 async function fetchSchema() {
     const url = await stdurl(`/api/schema`);
-    url.searchParams.append('method', route.params.iconset ? 'PATCH' : 'POST');
-    url.searchParams.append('url', route.params.iconset ? '/iconset/:iconset' : '/iconset');
+    url.searchParams.set('method', route.params.iconset ? 'PATCH' : 'POST');
+    url.searchParams.set('url', route.params.iconset ? '/iconset/:iconset' : '/iconset');
     schema.value = (await std(url)).body;
 }
 </script>

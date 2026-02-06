@@ -186,8 +186,8 @@ async function uploadStaged(ev: { name: string }) {
 
 async function downloadFile(name: string, hash: string): Promise<void> {
     const url = stdurl(`/api/marti/api/files/${hash}`)
-    url.searchParams.append('token', localStorage.token);
-    url.searchParams.append('name', name);
+    url.searchParams.set('token', localStorage.token);
+    url.searchParams.set('name', name);
 
     await std(url, {
         download: true

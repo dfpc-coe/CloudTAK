@@ -142,8 +142,8 @@ export default {
 
                         map.on('click', (e) => {
                             const url = new URL(this.assets.tiles.url + this.asset.name.replace(/.pmtiles$/, ''))
-                            url.searchParams.append('query', `${e.lngLat.lng},${e.lngLat.lat}`);
-                            url.searchParams.append('token', localStorage.token);
+                            url.searchParams.set('query', `${e.lngLat.lng},${e.lngLat.lat}`);
+                            url.searchParams.set('token', localStorage.token);
                             this.geocode.url = url;
                         });
 
@@ -158,7 +158,7 @@ export default {
             if (!this.asset || !map) return;
 
             const url = stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${this.asset.name}/tile`);
-            url.searchParams.append('token', localStorage.token);
+            url.searchParams.set('token', localStorage.token);
 
             map.addSource('vector', {
                 type: 'vector',

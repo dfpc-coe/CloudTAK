@@ -147,11 +147,11 @@ async function fetchList() {
 
     try {
         const url = stdurl('/api/connection');
-        url.searchParams.append('order', 'desc');
-        url.searchParams.append('page', String(paging.value.page));
-        url.searchParams.append('limit', String(paging.value.limit));
-        url.searchParams.append('sort', 'created');
-        url.searchParams.append('filter', paging.value.filter);
+        url.searchParams.set('order', 'desc');
+        url.searchParams.set('page', String(paging.value.page));
+        url.searchParams.set('limit', String(paging.value.limit));
+        url.searchParams.set('sort', 'created');
+        url.searchParams.set('filter', paging.value.filter);
         list.value = await std(url) as ETLConnectionList;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

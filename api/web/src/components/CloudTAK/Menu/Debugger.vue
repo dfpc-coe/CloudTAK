@@ -107,7 +107,7 @@ async function fetchHistory() {
 
     try {
         const url = stdurl(`/api/marti/cot/${uid.value}/all`);
-        url.searchParams.append('track', String(false));
+        url.searchParams.set('track', String(false));
         history.value = await std(url) as FeatureCollection;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err))

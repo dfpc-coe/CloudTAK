@@ -207,7 +207,7 @@ export default {
         },
         downloadAsset: async function(asset) {
             const url = stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${asset.name}`);
-            url.searchParams.append('token', localStorage.token);
+            url.searchParams.set('token', localStorage.token);
             window.open(url, "_blank")
         },
         initTransform: function(asset) {

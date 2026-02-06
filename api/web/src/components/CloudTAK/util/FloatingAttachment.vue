@@ -128,7 +128,7 @@ onMounted(async () => {
 
 function downloadAssetUrl(attachment: Attachment) {
     const url = stdurl(`/api/attachment/${attachment.hash}`);
-    url.searchParams.append('token', localStorage.token);
+    url.searchParams.set('token', localStorage.token);
     return url;
 }
 

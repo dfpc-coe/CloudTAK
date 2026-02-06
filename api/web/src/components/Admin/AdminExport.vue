@@ -98,7 +98,7 @@ export default {
             this.loading = true;
             try {
                 const url = stdurl('/api/marti/export');
-                url.searchParams.append('download', 'true');
+                url.searchParams.set('download', 'true');
                 await std(url, {
                     method: 'POST',
                     download: `export.${this.data.format}`,

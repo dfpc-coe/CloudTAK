@@ -281,8 +281,8 @@ export const useMapStore = defineStore('cloudtak', {
         listTerrain: async function(): Promise<APIList<Basemap>> {
             // Courtesy add terrain data
             const burl = stdurl('/api/basemap');
-            burl.searchParams.append('type', 'raster-dem');
-            burl.searchParams.append('limit', '1');
+            burl.searchParams.set('type', 'raster-dem');
+            burl.searchParams.set('limit', '1');
             const basemaps = await std(burl) as APIList<Basemap>;
 
             return basemaps;
@@ -837,9 +837,9 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             const url = stdurl('/api/profile/overlay');
-            url.searchParams.append('sort', 'pos');
-            url.searchParams.append('order', 'asc');
-            url.searchParams.append('limit', '100');
+            url.searchParams.set('sort', 'pos');
+            url.searchParams.set('order', 'asc');
+            url.searchParams.set('limit', '100');
             const profileOverlays = await std(url) as ProfileOverlayList;
             this.hasTerrain = profileOverlays.available.terrain;
             this.hasSnapping = profileOverlays.available.snapping;
@@ -863,7 +863,7 @@ export const useMapStore = defineStore('cloudtak', {
 
                 if (!defaultBasemap) {
                     const burl = stdurl('/api/basemap');
-                    burl.searchParams.append('type', 'raster');
+                    burl.searchParams.set('type', 'raster');
                     const basemaps = await std(burl) as APIList<Basemap>;
 
                     if (basemaps.items.length > 0) {

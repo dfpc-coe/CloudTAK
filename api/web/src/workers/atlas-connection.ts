@@ -46,9 +46,9 @@ export default class AtlasConnection {
         this.isDestroyed = false;
 
         const url = stdurl('/api');
-        url.searchParams.append('format', 'geojson');
-        url.searchParams.append('connection', connection);
-        url.searchParams.append('token', this.atlas.token);
+        url.searchParams.set('format', 'geojson');
+        url.searchParams.set('connection', connection);
+        url.searchParams.set('token', this.atlas.token);
 
         if (self.location.protocol === 'http:') {
             url.protocol = 'ws:';
