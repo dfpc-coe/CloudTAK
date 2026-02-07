@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.71.0 - 2026-02-04
+
+- :bug: Fix critical bug where a new Basemap could potentially fail, causing the user not to be able to login
+
 ### v12.70.0 - 2026-02-04
 
 - :tada: Allow hiding a Basemap or Overlay
