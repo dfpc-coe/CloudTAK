@@ -1,6 +1,7 @@
 import { db } from './database.ts'
 import { std, stdurl } from '../std.ts';
 import SubscriptionLog from './subscription-log.ts';
+import SubscriptionChanges from './subscription-changes.ts';
 import SubscriptionFeature from './subscription-feature.ts';
 import MissionTemplate from './mission-template.ts';
 import type {
@@ -8,7 +9,6 @@ import type {
     MissionRole,
     MissionList,
     MissionLayer,
-    MissionChanges,
     MissionLayerList,
     MissionLayer_Create,
     MissionLayer_Update,
@@ -51,6 +51,7 @@ export default class Subscription {
     role: MissionRole;
 
     log: SubscriptionLog;
+    change: SubscriptionChanges;
     feature: SubscriptionFeature;
 
     token: string;
@@ -81,6 +82,11 @@ export default class Subscription {
         };
 
         this.log = new SubscriptionLog(mission.guid, {
+            missiontoken: opts.missiontoken,
+            token: opts.token
+        });
+
+        this.change = new SubscriptionChanges(mission.guid, {
             missiontoken: opts.missiontoken,
             token: opts.token
         });
@@ -345,6 +351,7 @@ export default class Subscription {
         await Promise.all([
             this.log.refresh(),
             this.feature.refresh(),
+            this.change.refresh(),
         ]);
     };
 
@@ -489,16 +496,6 @@ export default class Subscription {
         };
 
         return res.data
-    }
-
-    async changes(): Promise<MissionChanges> {
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid) + '/changes');
-
-        return await std(url, {
-            method: 'GET',
-            token: this.token,
-            headers: Subscription.headers(this.missiontoken)
-        }) as MissionChanges;
     }
 
     async layerList(): Promise<MissionLayerList> {

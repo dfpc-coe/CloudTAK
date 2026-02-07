@@ -1,22 +1,22 @@
 <template>
     <MenuTemplate
-        name='Mission Timeline'
+        name='Mission Changes'
         :zindex='0'
         :back='false'
         :border='false'
-        :loading='loading'
+        :loading='!changes'
     >
         <TablerAlert
             v-if='error'
             :error='error'
         />
         <TablerNone
-            v-else-if='!changes.length'
+            v-else-if='changes && !changes.length'
             :create='false'
-            label='No Timeline Changes'
+            label='No Mission Changes'
         />
         <div
-            v-else
+            v-if='changes && changes.length'
             class='rows'
         >
             <StandardItem
@@ -115,8 +115,12 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
+import { from } from 'rxjs';
+import { liveQuery } from "dexie";
+import { useObservable } from "@vueuse/rxjs";
+import type { Ref } from 'vue';
 import Subscription from '../../../../base/subscription.ts';
-import type { MissionChanges } from '../../../../types.ts';
+import type { MissionChange } from '../../../../types.ts';
 import {
     IconSquarePlus,
     IconSquareX,
@@ -137,22 +141,17 @@ const props = defineProps<{
 }>();
 
 const error = ref<Error | undefined>();
-const loading = ref(true);
-const changes = ref<MissionChanges["data"]>([]);
+const changes: Ref<Array<MissionChange>> = useObservable(
+    from(liveQuery(async () => {
+        return await props.subscription.change.list()
+    }))
+)
 
 onMounted(async () => {
-    await fetchChanges();
-});
-
-async function fetchChanges() {
-    loading.value = true;
-    error.value = undefined;
-
     try {
-        changes.value = (await props.subscription.changes()).data;
+        await props.subscription.change.refresh();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
-    loading.value = false;
-}
+});
 </script>

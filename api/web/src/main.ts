@@ -178,7 +178,7 @@ const router = VueRouter.createRouter({
                     },{
                         path: 'timeline',
                         name: 'home-menu-mission-timeline',
-                        component: () => import('./components/CloudTAK/Menu/Mission/MissionTimeline.vue')
+                        component: () => import('./components/CloudTAK/Menu/Mission/MissionChanges.vue')
                     },{
                         path: 'logs',
                         name: 'home-menu-mission-logs',
