@@ -143,7 +143,7 @@
 
 <script setup lang="ts" generic="TFolder extends { name: string, opened: boolean, loading: boolean, count?: number } & Record<string, any>, TFile extends Record<string, any>">
 import { ref, watch, nextTick, onMounted, onBeforeUnmount, computed } from 'vue';
-import Sortable, { SortableEvent } from 'sortablejs';
+import Sortable, { type SortableEvent } from 'sortablejs';
 import StandardItem from './StandardItem.vue';
 import {
     TablerModal,
