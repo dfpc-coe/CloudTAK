@@ -59,13 +59,13 @@ onMounted(async () => {
     const { data } = await server.GET('/api/marti/clients', {
         params: {
             query: {
-                secAgo: 7 * 24 * 60 * 60,
+                secago: 7 * 24 * 60 * 60,
                 group: props.groups
             }
         }
     });
 
-    contacts.value = (data || []).map((c) => {
+    contacts.value = (data?.data || []).map((c) => {
         return {
             uid: c.uid,
             callsign: c.callsign,
