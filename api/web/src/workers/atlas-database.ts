@@ -464,8 +464,10 @@ export default class AtlasDatabase {
                 }
 
                 await db.subscription_changes.put({
+                    serverTime: new Date().toISOString(),
                     ...change,
-                    mission: task.properties.mission.guid
+                    mission: task.properties.mission.guid,
+                    isFederatedChange: change.isFederatedChange === 'true' || change.isFederatedChange === true
                 });
 
                 if (change.type === 'ADD_CONTENT') {
