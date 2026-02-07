@@ -12,7 +12,12 @@
 
 ### Pending Release
 
-### v12.71.0 - 2026-02-04
+### v12.71.1 - 2026-02-07
+
+- :bug: Fix data type that resulted in Missions not being able to invite new users
+- :bug: Fix bug that prevented display of "New Folder" button in the Mission Features tab
+
+### v12.71.0 - 2026-02-06
 
 - :bug: Fix critical bug where a new Basemap could potentially fail, causing the user not to be able to login
 
