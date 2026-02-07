@@ -65,7 +65,7 @@ onMounted(async () => {
         }
     });
 
-    contacts.value = (data || []).map((c) => {
+    contacts.value = data.data.map((c) => {
         return {
             uid: c.uid,
             callsign: c.callsign,
