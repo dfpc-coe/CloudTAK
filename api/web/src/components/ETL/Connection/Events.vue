@@ -65,8 +65,8 @@ onUnmounted(() => {
 
 onMounted(() => {
     const url = stdurl('/api');
-    url.searchParams.append('connection', route.params.connectionid);
-    url.searchParams.append('token', localStorage.token);
+    url.searchParams.set('connection', route.params.connectionid);
+    url.searchParams.set('token', localStorage.token);
     if (window.location.hostname === 'localhost') {
         url.protocol = 'ws:';
     } else {

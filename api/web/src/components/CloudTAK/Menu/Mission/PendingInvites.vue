@@ -98,8 +98,8 @@ async function acceptInvite(invite: MissionInvite) {
 
 async function deleteInvite(invite: MissionInvite) {
     const url = stdurl(`/api/marti/missions/${invite.missionGuid}/invite`);
-    url.searchParams.append('type', String(invite.type));
-    url.searchParams.append('invitee', String(invite.invitee));
+    url.searchParams.set('type', String(invite.type));
+    url.searchParams.set('invitee', String(invite.invitee));
 
     await std(url, {
         method: 'DELETE'

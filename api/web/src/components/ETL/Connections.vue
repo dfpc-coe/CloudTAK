@@ -139,9 +139,9 @@ onMounted(async () => {
 async function fetchList() {
     loading.value = true;
     const url = stdurl('/api/connection');
-    url.searchParams.append('filter', paging.value.filter);
-    url.searchParams.append('limit', String(paging.value.limit));
-    url.searchParams.append('page', String(paging.value.page));
+    url.searchParams.set('filter', paging.value.filter);
+    url.searchParams.set('limit', String(paging.value.limit));
+    url.searchParams.set('page', String(paging.value.page));
     list.value = await std(url) as ETLConnectionList;
     loading.value = false;
 }

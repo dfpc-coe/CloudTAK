@@ -184,11 +184,11 @@ async function fetchList() {
 
     try {
         const url = stdurl('/api/import');
-        url.searchParams.append('order', 'desc');
-        url.searchParams.append('page', String(paging.value.page));
-        url.searchParams.append('limit', String(paging.value.limit));
-        url.searchParams.append('filter', paging.value.filter);
-        url.searchParams.append('sort', 'created');
+        url.searchParams.set('order', 'desc');
+        url.searchParams.set('page', String(paging.value.page));
+        url.searchParams.set('limit', String(paging.value.limit));
+        url.searchParams.set('filter', paging.value.filter);
+        url.searchParams.set('sort', 'created');
         list.value = await std(url) as ImportList;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err))

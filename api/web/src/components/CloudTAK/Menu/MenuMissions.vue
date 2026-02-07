@@ -271,7 +271,7 @@ async function openMission(mission: Mission, usePassword: boolean) {
 
 async function fetchMission(mission: Mission, password?: string): Promise<Mission> {
     const url = stdurl(`/api/marti/missions/${mission.guid}`);
-    if (password) url.searchParams.append('password', password);
+    if (password) url.searchParams.set('password', password);
 
     const m = await std(url) as Mission;
     return m;

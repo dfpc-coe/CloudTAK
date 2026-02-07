@@ -264,8 +264,8 @@ async function downloadFile(): Promise<void> {
     if (!pkg.value) return;
 
     const url = stdurl(`/api/marti/api/files/${pkg.value.hash}`)
-    url.searchParams.append('token', localStorage.token);
-    url.searchParams.append('name', pkg.value.name + '.zip');
+    url.searchParams.set('token', localStorage.token);
+    url.searchParams.set('name', pkg.value.name + '.zip');
 
     await std(url, {
         download: true

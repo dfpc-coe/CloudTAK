@@ -134,7 +134,7 @@ async function fetch() {
         }).data;
     } else {
         const url = stdurl('/api/marti/group');
-        url.searchParams.append('useCache', 'true');
+        url.searchParams.set('useCache', 'true');
         list = ((await std(url)) as {
             data: Group[]
         }).data

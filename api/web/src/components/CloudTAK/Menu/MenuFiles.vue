@@ -347,7 +347,7 @@ function uploadComplete(event: unknown) {
 
 async function downloadAsset(asset: ProfileFile) {
     const url = stdurl(`/api/profile/asset/${asset.id}.${asset.name.split('.').pop()}`);
-    url.searchParams.append('token', localStorage.token);
+    url.searchParams.set('token', localStorage.token);
     window.open(url, "_blank")
 }
 

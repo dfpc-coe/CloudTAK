@@ -277,18 +277,18 @@ async function fetchList() {
     const url = stdurl('/api/basemap');
 
     if (paging.value.type === 'overlay') {
-        url.searchParams.append('overlay', String(true));
+        url.searchParams.set('overlay', String(true));
     }
 
     if (paging.value.scope !== "all") {
-        url.searchParams.append('scope', paging.value.scope);
+        url.searchParams.set('scope', paging.value.scope);
     }
 
-    url.searchParams.append('hidden', paging.value.hidden);
+    url.searchParams.set('hidden', paging.value.hidden);
 
-    url.searchParams.append('filter', paging.value.filter);
-    url.searchParams.append('limit', String(paging.value.limit));
-    url.searchParams.append('page', String(paging.value.page));
+    url.searchParams.set('filter', paging.value.filter);
+    url.searchParams.set('limit', String(paging.value.limit));
+    url.searchParams.set('page', String(paging.value.page));
     list.value = await std(url) as BasemapList;
     loading.value = false;
 }

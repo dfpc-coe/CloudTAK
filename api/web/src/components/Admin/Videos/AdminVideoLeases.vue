@@ -180,13 +180,13 @@ async function fetchList() {
 
     try {
         const url = stdurl('/api/video/lease');
-        url.searchParams.append('impersonate', String(true));
-        url.searchParams.append('expired', 'all');
-        url.searchParams.append('filter', paging.value.filter);
-        url.searchParams.append('limit', String(paging.value.limit));
-        url.searchParams.append('sort', paging.value.sort);
-        url.searchParams.append('order', paging.value.order);
-        url.searchParams.append('page', String(paging.value.page));
+        url.searchParams.set('impersonate', String(true));
+        url.searchParams.set('expired', 'all');
+        url.searchParams.set('filter', paging.value.filter);
+        url.searchParams.set('limit', String(paging.value.limit));
+        url.searchParams.set('sort', paging.value.sort);
+        url.searchParams.set('order', paging.value.order);
+        url.searchParams.set('page', String(paging.value.page));
 
         list.value = await std(url) as VideoLeaseList;
     } catch (err) {

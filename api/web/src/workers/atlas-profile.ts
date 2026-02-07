@@ -278,7 +278,7 @@ export default class AtlasProfile {
 
     async loadChannels(): Promise<Array<Group>> {
         const url = stdurl('/api/marti/group');
-        url.searchParams.append('useCache', 'true');
+        url.searchParams.set('useCache', 'true');
         this.channels = ((await std(url, {
             token: this.atlas.token
         })) as {
