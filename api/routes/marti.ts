@@ -95,7 +95,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Helper API to list clients',
         query: Type.Object({
             connection: Type.Optional(Type.Integer({ description: 'Use Connection auth' })),
-            segago: Type.Integer({
+            secago: Type.Integer({
                 description: 'Number of seconds ago to look back for client updates. Default is 300 (5 minutes)',
                 default: 300
             }),
@@ -117,7 +117,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const clients = await api.Client.list({
-                secAgo: req.query.segago,
+                secAgo: req.query.secago,
                 group: req.query.groups ? req.query.groups.split(',') : undefined
             });
 
