@@ -235,8 +235,8 @@ onUnmounted(() => {
 
 async function downloadImport() {
     const url = stdurl(`/api/import/${route.params.import}/raw`)
-    url.searchParams.append('token', localStorage.token);
-    url.searchParams.append('download', String(true));
+    url.searchParams.set('token', localStorage.token);
+    url.searchParams.set('download', String(true));
     await std(url, {
         download: true
     })

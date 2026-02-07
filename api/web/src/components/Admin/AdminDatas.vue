@@ -151,9 +151,9 @@ export default {
         fetchList: async function() {
             this.loading = true;
             const url = stdurl('/api/data');
-            url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
+            url.searchParams.set('filter', this.paging.filter);
+            url.searchParams.set('limit', this.paging.limit);
+            url.searchParams.set('page', this.paging.page);
             this.list = await std(url);
             this.loading = false;
         },

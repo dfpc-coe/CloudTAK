@@ -149,8 +149,8 @@ async function deletePackage(pkg: PackageList["items"][0]) {
 
 async function downloadPackage(pkg: PackageList["items"][0]) {
     const url = stdurl(`/api/marti/api/files/${pkg.hash}`)
-    url.searchParams.append('token', localStorage.token);
-    url.searchParams.append('name', pkg.name + '.zip');
+    url.searchParams.set('token', localStorage.token);
+    url.searchParams.set('name', pkg.name + '.zip');
 
     await std(url, {
         download: true

@@ -188,8 +188,8 @@ async function listImportSchema() {
 
 async function downloadImport(id: string) {
     const url = stdurl(`/api/import/${id}/raw`)
-    url.searchParams.append('token', localStorage.token);
-    url.searchParams.append('download', String(true));
+    url.searchParams.set('token', localStorage.token);
+    url.searchParams.set('download', String(true));
     await std(url, {
         download: true
     })

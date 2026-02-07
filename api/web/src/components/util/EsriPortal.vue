@@ -342,11 +342,11 @@ async function fetchPortal() {
     try {
         const url = stdurl('/api/esri/portal');
         if (token.value) {
-            url.searchParams.append('token', token.value.token);
-            url.searchParams.append('expires', token.value.expires);
+            url.searchParams.set('token', token.value.token);
+            url.searchParams.set('expires', token.value.expires);
         }
 
-        url.searchParams.append('portal', props.url);
+        url.searchParams.set('portal', props.url);
 
         const res = await std(url);
 
@@ -364,11 +364,11 @@ async function fetchContent() {
     try {
         const url = stdurl('/api/esri/portal/content');
         if (token.value) {
-            url.searchParams.append('token', token.value.token);
-            url.searchParams.append('expires', token.value.expires);
+            url.searchParams.set('token', token.value.token);
+            url.searchParams.set('expires', token.value.expires);
         }
-        url.searchParams.append('portal', props.url);
-        url.searchParams.append('title', contentFilter.value.title);
+        url.searchParams.set('portal', props.url);
+        url.searchParams.set('title', contentFilter.value.title);
 
         const res = await std(url);
 
@@ -384,10 +384,10 @@ async function fetchServers() {
     try {
         const url = stdurl('/api/esri/portal/server');
         if (token.value) {
-            url.searchParams.append('token', token.value.token);
-            url.searchParams.append('expires', token.value.expires);
+            url.searchParams.set('token', token.value.token);
+            url.searchParams.set('expires', token.value.expires);
         }
-        url.searchParams.append('portal', props.url);
+        url.searchParams.set('portal', props.url);
 
         const res = await std(url);
 
@@ -405,9 +405,9 @@ async function createService(body) {
     loading.value.main = true;
     try {
         const url = stdurl('/api/esri/portal/service');
-        url.searchParams.append('token', token.value.token);
-        url.searchParams.append('expires', token.value.expires);
-        url.searchParams.append('portal', props.url);
+        url.searchParams.set('token', token.value.token);
+        url.searchParams.set('expires', token.value.expires);
+        url.searchParams.set('portal', props.url);
 
         const res = await std(url, { method: 'POST', body });
 

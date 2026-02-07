@@ -253,9 +253,9 @@ async function fetchList() {
 
     try {
         const url = stdurl('/api/iconset');
-        url.searchParams.append('page', paging.value.page);
-        url.searchParams.append('filter', paging.value.filter);
-        url.searchParams.append('limit', paging.value.limit);
+        url.searchParams.set('page', paging.value.page);
+        url.searchParams.set('filter', paging.value.filter);
+        url.searchParams.set('limit', paging.value.limit);
         list.value = await std(url);
         loading.value = false;
     } catch (err) {

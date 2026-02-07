@@ -333,10 +333,10 @@ async function fetchList() {
 
     try {
         const url = stdurl('/api/basemap');
-        if (paging.value.filter) url.searchParams.append('filter', paging.value.filter);
-        url.searchParams.append('overlay', 'true');
-        url.searchParams.append('limit', String(paging.value.limit));
-        url.searchParams.append('page', String(paging.value.page));
+        if (paging.value.filter) url.searchParams.set('filter', paging.value.filter);
+        url.searchParams.set('overlay', 'true');
+        url.searchParams.set('limit', String(paging.value.limit));
+        url.searchParams.set('page', String(paging.value.page));
         list.value = await std(url) as BasemapList;
     } finally {
         loading.value = false;

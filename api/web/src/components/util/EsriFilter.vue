@@ -123,9 +123,9 @@ async function fetch() {
 
     try {
         const url = stdurl('/api/esri/server/layer');
-        url.searchParams.append('query', filter.value.query);
-        url.searchParams.append('layer', props.layer);
-        if (props.token) url.searchParams.append('token', props.token);
+        url.searchParams.set('query', filter.value.query);
+        url.searchParams.set('layer', props.layer);
+        if (props.token) url.searchParams.set('token', props.token);
 
         list.value = await std(url, {
             method: 'GET',

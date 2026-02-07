@@ -351,7 +351,7 @@ async function saveOverlay() {
     try {
         if (route.params.overlay === 'new') {
             const url = stdurl(`/api/basemap`);
-            if (body.username) url.searchParams.append('impersonate', body.username);
+            if (body.username) url.searchParams.set('impersonate', body.username);
             const ov = await std(url, { method: 'POST', body });
             ov.bounds = ov.bounds.join(',');
             ov.center = ov.center.join(',');
@@ -361,7 +361,7 @@ async function saveOverlay() {
             router.push(`/admin/overlay/${overlay.value.id}`);
         } else {
             const url = stdurl(`/api/basemap/${overlay.value.id}`);
-            if (body.username) url.searchParams.append('impersonate', body.username);
+            if (body.username) url.searchParams.set('impersonate', body.username);
             const ov = await std(url, { method: 'PATCH', body });
             ov.bounds = ov.bounds.join(',');
             ov.center = ov.center.join(',');

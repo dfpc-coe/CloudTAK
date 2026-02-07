@@ -274,21 +274,21 @@ async function fetchList() {
 
     try {
         const url = stdurl('/api/layer');
-        url.searchParams.append('alarms', 'true');
-        url.searchParams.append('filter', paging.value.filter);
-        url.searchParams.append('limit', String(paging.value.limit));
-        url.searchParams.append('page', String(paging.value.page));
-        url.searchParams.append('sort', paging.value.sort);
-        url.searchParams.append('order', paging.value.order);
+        url.searchParams.set('alarms', 'true');
+        url.searchParams.set('filter', paging.value.filter);
+        url.searchParams.set('limit', String(paging.value.limit));
+        url.searchParams.set('page', String(paging.value.page));
+        url.searchParams.set('sort', paging.value.sort);
+        url.searchParams.set('order', paging.value.order);
 
         if (paging.value.task !== 'All Tasks') {
-            url.searchParams.append('task', paging.value.task);
+            url.searchParams.set('task', paging.value.task);
         }
 
         if (paging.value.template === 'Connection') {
-            url.searchParams.append('template', String(false));
+            url.searchParams.set('template', String(false));
         } else if (paging.value.template === 'Template') {
-            url.searchParams.append('template', String(true));
+            url.searchParams.set('template', String(true));
         }
 
         list.value = await std(url) as ETLLayerList;

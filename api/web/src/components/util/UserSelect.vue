@@ -145,7 +145,7 @@ async function getUser() {
 
 async function listUsers() {
     const url = stdurl(`/api/user`);
-    url.searchParams.append('filter', paging.value.filter);
+    url.searchParams.set('filter', paging.value.filter);
     list.value = await std(url) as UserList;
 }
 </script>

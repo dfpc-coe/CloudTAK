@@ -131,10 +131,10 @@ async function listLayers() {
     loading.value = true;
     try {
         const url = stdurl('/api/layer');
-        url.searchParams.append('data', route.params.dataid);
-        url.searchParams.append('limit', paging.value.limit);
-        url.searchParams.append('page', paging.value.page);
-        url.searchParams.append('filter', paging.value.filter);
+        url.searchParams.set('data', route.params.dataid);
+        url.searchParams.set('limit', paging.value.limit);
+        url.searchParams.set('page', paging.value.page);
+        url.searchParams.set('filter', paging.value.filter);
         list.value = await std(url);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

@@ -302,7 +302,7 @@ export default class Overlay {
 
         if (this.type === 'raster' && this.url) {
             const url = stdurl(this.url);
-            url.searchParams.append('token', localStorage.token);
+            url.searchParams.set('token', localStorage.token);
 
             const tileJSON = await std(url.toString()) as TileJSON
 
@@ -312,7 +312,7 @@ export default class Overlay {
             });
         } else if (this.type === 'vector' && this.url) {
             const url = stdurl(this.url);
-            url.searchParams.append('token', localStorage.token);
+            url.searchParams.set('token', localStorage.token);
 
             mapStore.map.addSource(String(this.id), {
                 type: 'vector',

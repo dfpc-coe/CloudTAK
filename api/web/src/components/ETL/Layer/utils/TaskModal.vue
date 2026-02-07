@@ -68,9 +68,9 @@ async function fetchTasks() {
     loading.tasks = true;
     const url = stdurl('/api/task');
 
-    url.searchParams.append('filter', paging.filter);
-    url.searchParams.append('limit', paging.limit);
-    url.searchParams.append('page', paging.page);
+    url.searchParams.set('filter', paging.filter);
+    url.searchParams.set('limit', paging.limit);
+    url.searchParams.set('page', paging.page);
 
     const res = await std(url);
     list.total = res.total;

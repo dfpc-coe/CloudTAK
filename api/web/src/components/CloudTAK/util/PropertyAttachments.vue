@@ -191,7 +191,7 @@ async function uploadComplete(event) {
     upload.value = false;
 
     const url = stdurl(`/api/attachment`);
-    url.searchParams.append('hash', event.hash);
+    url.searchParams.set('hash', event.hash);
     files.value.push(...(await std(url)).items);
 
     loading.value = false;
@@ -203,7 +203,7 @@ function uploadURL() {
 
 function downloadAssetUrl(file) {
     const url = stdurl(`/api/attachment/${file.hash}`);
-    url.searchParams.append('token', localStorage.token);
+    url.searchParams.set('token', localStorage.token);
     return url;
 }
 

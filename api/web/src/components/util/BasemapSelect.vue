@@ -193,9 +193,9 @@ async function fetchList() {
     loading.value.list = true;
     try {
         const url = stdurl('/api/basemap');
-        url.searchParams.append('limit', paging.value.limit);
-        url.searchParams.append('page', paging.value.page);
-        url.searchParams.append('filter', paging.value.filter);
+        url.searchParams.set('limit', paging.value.limit);
+        url.searchParams.set('page', paging.value.page);
+        url.searchParams.set('filter', paging.value.filter);
         const res = await std(url);
         list.value = res;
     } catch (err) {

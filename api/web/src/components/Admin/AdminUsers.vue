@@ -168,11 +168,11 @@ async function fetchList() {
     try {
         loading.value = true;
         const url = stdurl('/api/user');
-        url.searchParams.append('filter', paging.value.filter);
-        url.searchParams.append('limit', String(paging.value.limit));
-        url.searchParams.append('page', String(paging.value.page));
-        url.searchParams.append('sort', paging.value.sort);
-        url.searchParams.append('order', paging.value.order);
+        url.searchParams.set('filter', paging.value.filter);
+        url.searchParams.set('limit', String(paging.value.limit));
+        url.searchParams.set('page', String(paging.value.page));
+        url.searchParams.set('sort', paging.value.sort);
+        url.searchParams.set('order', paging.value.order);
         list.value = await std(url) as UserList;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
