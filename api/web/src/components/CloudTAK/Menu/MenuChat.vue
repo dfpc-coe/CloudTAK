@@ -40,13 +40,23 @@
                             v-if='item.sender_uid !== id'
                             class='bg-blue px-2 py-2 rounded'
                         >
-                            <span v-text='item.message' />
+                            <div v-text='item.message' />
+                            <div
+                                class='text-end'
+                                style='font-size: 0.75rem; opacity: 0.75;'
+                                v-text='formatTime(item.created)'
+                            />
                         </div>
                         <div
                             v-else
                             class='ms-auto bg-accent px-2 py-2 rounded'
                         >
-                            <span v-text='item.message' />
+                            <div v-text='item.message' />
+                            <div
+                                class='text-end'
+                                style='font-size: 0.75rem; opacity: 0.75;'
+                                v-text='formatTime(item.created)'
+                            />
                         </div>
                     </div>
                 </template>
@@ -97,6 +107,7 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import ProfileConfig from '../../../base/profile.ts';
+import timeDiff from '../../../timediff.ts';
 const mapStore = useMapStore();
 
 const route = useRoute();
@@ -225,5 +236,23 @@ async function fetchChats() {
     }
 
     loading.value = false;
+}
+
+function formatTime(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const now = new Date();
+    const diff = now.getTime() - d.getTime();
+
+    if (diff < 86400000 && diff >= 0) {
+        return timeDiff(iso);
+    }
+
+    const month = d.toLocaleString('en-US', { month: 'short' });
+    const day = d.getDate();
+    const hour = String(d.getHours()).padStart(2, '0');
+    const minute = String(d.getMinutes()).padStart(2, '0');
+
+    return `${month} ${day}, ${hour}:${minute}`;
 }
 </script>
