@@ -39,46 +39,50 @@ export default class SubscriptionFeature {
 
     async refresh(): Promise<void> {
         const channel = new BroadcastChannel('cloudtak');
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.parent.guid) + '/cot');
+        try {
+            const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.parent.guid) + '/cot');
 
-        const list = await std(url, {
-            method: 'GET',
-            token: this.token,
-            headers: this.headers()
-        }) as FeatureCollection;
+            const list = await std(url, {
+                method: 'GET',
+                token: this.token,
+                headers: this.headers()
+            }) as FeatureCollection;
 
-        for (const feat of list.features) {
-            await COT.style(feat);
+            for (const feat of list.features) {
+                await COT.style(feat);
+            }
+
+            await db.transaction('rw', db.subscription_feature, async () => {
+                await db.subscription_feature
+                    .where('mission')
+                    .equals(this.parent.guid)
+                    .delete();
+
+                for (const feature of list.features) {
+                    await db.subscription_feature.put({
+                        id: feature.id,
+                        mission: this.parent.guid,
+                        path: feature.path,
+                        properties: feature.properties,
+                        geometry: feature.geometry,
+                    });
+                }
+            });
+
+            channel.postMessage({
+                type: WorkerMessageType.Mission_Change_Feature,
+                body: {
+                    guid: this.parent.guid
+                }
+            });
+        } finally {
+            channel.close();
         }
-
-        await db.transaction('rw', db.subscription_feature, async () => {
-            await db.subscription_feature
-                .where('mission')
-                .equals(this.parent.guid)
-                .delete();
-
-            for (const feature of list.features) {
-                await db.subscription_feature.put({
-                    id: feature.id,
-                    mission: this.parent.guid,
-                    path: feature.path,
-                    properties: feature.properties,
-                    geometry: feature.geometry,
-                });
-            }
-        });
-
-        channel.postMessage({
-            type: WorkerMessageType.Mission_Change_Feature,
-            body: {
-                guid: this.parent.guid
-            }
-        });
     }
 
     async list(
         opts?: {
-            refresh: false,
+            refresh?: boolean,
         }
     ): Promise<Array<Feature>> {
         if (opts?.refresh) {
