@@ -126,13 +126,15 @@ onMounted(async () => {
     }
 });
 
-function downloadAssetUrl(attachment: Attachment) {
+function downloadAssetUrl(attachment: Attachment & { url?: string }) {
+    if (attachment.url) return new URL(attachment.url);
+
     const url = stdurl(`/api/attachment/${attachment.hash}`);
     url.searchParams.set('token', localStorage.token);
     return url;
 }
 
-async function downloadAsset(attachment: Attachment) {
+async function downloadAsset(attachment: Attachment & { url?: string }) {
     window.open(String(downloadAssetUrl(attachment)), "_blank")
 }
 

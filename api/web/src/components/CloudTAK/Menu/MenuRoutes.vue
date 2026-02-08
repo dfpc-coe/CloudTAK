@@ -35,7 +35,7 @@
             <TablerNone
                 v-else-if='routes.size === 0'
                 :create='false'
-                label='Routes'
+                label='No Routes'
             />
             <template v-else>
                 <div class='col-12 d-flex flex-column gap-2 p-3'>

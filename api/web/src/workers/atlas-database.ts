@@ -3,6 +3,7 @@
 */
 
 import { std } from '../std.ts';
+import { db } from '../base/database.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
@@ -461,6 +462,12 @@ export default class AtlasDatabase {
                     console.error(`Cannot add ${change.contentUid} to ${JSON.stringify(task.properties.mission)} as no guid was included`);
                     continue;
                 }
+
+                await db.subscription_changes.put({
+                    serverTime: new Date().toISOString(),
+                    ...change,
+                    mission: task.properties.mission.guid,
+                });
 
                 if (change.type === 'ADD_CONTENT') {
                     this.subscriptionPending.set(change.contentUid, task.properties.mission.guid);

@@ -65,6 +65,7 @@ export type MissionLayer_Update = paths["/api/marti/missions/{:name}/layer/{:uid
 export type MissionLayerList = paths["/api/marti/missions/{:name}/layer"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type MissionChanges = paths["/api/marti/missions/{:name}/changes"]["get"]["responses"]["200"]["content"]["application/json"];
+export type MissionChange = MissionChanges["data"][0];
 
 export type MissionSubscriptions = paths["/api/marti/missions/{:name}/subscriptions/roles"]["get"]["responses"]["200"]["content"]["application/json"]["data"];
 
