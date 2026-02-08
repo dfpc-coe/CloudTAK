@@ -183,11 +183,8 @@ db.version(1).stores({
     subscription: 'guid, name',
     subscription_log: 'id, [mission+id]',
     subscription_feature: 'id, mission, [mission+id]',
+    subscription_changes: '++id, mission',
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
     profile: 'key'
-});
-
-db.version(2).stores({
-    subscription_changes: '++id, mission'
 });
