@@ -68,7 +68,7 @@ export default class SubscriptionLog {
     async list(
         opts?: {
             filter?: string,
-            refresh: false,
+            refresh?: boolean,
         }
     ): Promise<Array<MissionLog>> {
         if (opts?.refresh) {

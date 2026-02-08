@@ -59,7 +59,7 @@ export default class SubscriptionChanges {
 
     async list(
         opts?: {
-            refresh: false,
+            refresh?: boolean,
         }
     ): Promise<Array<MissionChange>> {
         if (opts?.refresh) {
