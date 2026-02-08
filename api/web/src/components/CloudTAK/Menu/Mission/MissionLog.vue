@@ -6,12 +6,20 @@
         />
         <template v-else>
             <div
-                class='card bg-dark bg-opacity-50 border border-white border-opacity-25 rounded text-white w-100 p-2 d-flex gap-3 align-items-start flex-row shadow-sm'
+                class='card bg-dark bg-opacity-50 border rounded text-white w-100 p-2 d-flex gap-3 align-items-start flex-row'
+                :class='{
+                    "border-white border-opacity-25 shadow-sm": !!log.read,
+                    "border-primary border-2 unread-pulse": !log.read
+                }'
                 role='menuitem'
                 tabindex='0'
             >
                 <div class='d-flex flex-column w-100'>
-                    <div class='d-flex align-items-center flex-wrap w-100 gap-2'>
+                    <div
+                        class='d-flex align-items-center flex-wrap w-100 gap-2'
+                        :class='{ "cursor-pointer": !log.read }'
+                        @click='markAsRead'
+                    >
                         <div class='fw-semibold'>
                             {{ log.creatorUid || 'Unknown Author' }}
                         </div>
@@ -79,6 +87,7 @@ import { ref, computed } from 'vue';
 import type { MissionLog } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';
 import CopyField from '../../util/CopyField.vue';
+import { db } from '../../../../base/database.ts';
 import Keywords from '../../util/Keywords.vue';
 import {
     TablerLoading,
@@ -127,6 +136,12 @@ function formatDtg(dtg?: string) {
     });
 }
 
+async function markAsRead() {
+    if (!props.log.read) {
+        await db.subscription_log.update(props.log.id, { read: true });
+    }
+}
+
 function cancelEdit() {
     dtgEdit.value = null;
     document.body.click();
@@ -168,3 +183,21 @@ async function deleteLog() {
     }
 }
 </script>
+
+<style scoped>
+.unread-pulse {
+    animation: pulse-blue 2s infinite;
+}
+
+@keyframes pulse-blue {
+    0% {
+        box-shadow: 0 0 0 0 rgba(32, 107, 196, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(32, 107, 196, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(32, 107, 196, 0);
+    }
+}
+</style>
