@@ -7,6 +7,7 @@ import { std, stdurl } from '../std.ts';
 import { bbox } from '@turf/bbox';
 import type { BBox, FeatureCollection as GeoJSONFeatureCollection } from 'geojson'
 import type { Feature, FeatureCollection } from '../types.ts';
+import { WorkerMessageType } from './events.ts';
 
 /**
  * High Level Wrapper around the Data/Mission Sync API
@@ -37,6 +38,7 @@ export default class SubscriptionFeature {
     }
 
     async refresh(): Promise<void> {
+        const channel = new BroadcastChannel('cloudtak');
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.parent.guid) + '/cot');
 
         const list = await std(url, {
@@ -62,6 +64,13 @@ export default class SubscriptionFeature {
                     path: feature.path,
                     properties: feature.properties,
                     geometry: feature.geometry,
+                });
+
+                channel.postMessage({
+                    type: WorkerMessageType.Mission_Change_Feature,
+                    body: {
+                        guid: this.parent.guid
+                    }
                 });
             }
         });
