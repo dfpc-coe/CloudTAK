@@ -164,46 +164,7 @@
                 v-if='mode === "Default"'
                 class='position-absolute top-0 beginning-0 text-white'
             >
-                <div
-                    style='
-                        z-index: 1;
-                        height: 40px;
-                        max-width: 400px;
-                        background-color: rgba(0, 0, 0, 0.5);
-                        border-radius: 0px 0px 6px 0px;
-                    '
-                >
-                    <template v-if='!mapStore.mission'>
-                        <div
-                            class='hover-button d-flex align-items-center user-select-none cursor-pointer'
-                            @click='router.push("/menu/missions")'
-                        >
-                            <IconMap
-                                :size='32'
-                                stroke='1'
-                                style='margin: 3px 3px'
-                            />
-                            <div class='me-3'>
-                                No Mission
-                            </div>
-                        </div>
-                    </template>
-                    <template v-else>
-                        <div class='d-flex align-items-center user-select-none'>
-                            <IconAmbulance
-                                :size='32'
-                                stroke='1'
-                                style='margin: 3px 3px'
-                            />
-
-                            <a
-                                class='me-3 text-truncate cursor-pointer text-white'
-                                @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}`)'
-                                v-text='mapStore.mission.meta.name'
-                            />
-                        </div>
-                    </template>
-                </div>
+                <ActiveMission />
                 <div
                     class='border'
                     style='
@@ -487,6 +448,7 @@
 import GeoJSONInput from './GeoJSONInput.vue';
 import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import {useRoute, useRouter } from 'vue-router';
+import ActiveMission from './ActiveMission.vue';
 import FloatingVideo from './util/FloatingVideo.vue';
 import FloatingAttachment from './util/FloatingAttachment.vue';
 import DrawOverlay from './util/DrawOverlay.vue';
@@ -506,8 +468,6 @@ import {
     IconPlus,
     IconMinus,
     IconLockAccess,
-    IconAmbulance,
-    IconMap,
     IconX,
     IconBell,
     IconAngle,
