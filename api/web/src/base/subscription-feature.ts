@@ -65,13 +65,13 @@ export default class SubscriptionFeature {
                     properties: feature.properties,
                     geometry: feature.geometry,
                 });
+            }
+        });
 
-                channel.postMessage({
-                    type: WorkerMessageType.Mission_Change_Feature,
-                    body: {
-                        guid: this.parent.guid
-                    }
-                });
+        channel.postMessage({
+            type: WorkerMessageType.Mission_Change_Feature,
+            body: {
+                guid: this.parent.guid
             }
         });
     }
