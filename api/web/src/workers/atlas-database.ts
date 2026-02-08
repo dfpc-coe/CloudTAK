@@ -467,7 +467,6 @@ export default class AtlasDatabase {
                     serverTime: new Date().toISOString(),
                     ...change,
                     mission: task.properties.mission.guid,
-                    isFederatedChange: change.isFederatedChange === 'true' || change.isFederatedChange === true
                 });
 
                 if (change.type === 'ADD_CONTENT') {
