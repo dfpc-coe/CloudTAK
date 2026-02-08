@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.72.1 - 2026-02-08
+
+- :rocket: Show Date/Time on Chat Messages
+
 ### v12.72.0 - 2026-02-08
 
 - :bug: When a Data Sync Subscription is refreshed, trigger a re-render event
