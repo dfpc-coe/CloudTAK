@@ -158,7 +158,7 @@
                         type='button'
                         class='btn btn-sm'
                     ><IconTimeline
-                        v-tooltip='"Timeline"'
+                        v-tooltip='"Changes"'
                         :size='32'
                         stroke='1'
                     /></label>
