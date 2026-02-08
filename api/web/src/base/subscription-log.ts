@@ -59,7 +59,8 @@ export default class SubscriptionLog {
                     servertime: log.servertime,
                     creatorUid: log.creatorUid,
                     contentHashes: log.contentHashes,
-                    keywords: log.keywords
+                    keywords: log.keywords,
+                    read: false
                 });
             }
         });
@@ -116,7 +117,8 @@ export default class SubscriptionLog {
             servertime: log.data.servertime,
             creatorUid: log.data.creatorUid,
             contentHashes: log.data.contentHashes,
-            keywords: log.data.keywords
+            keywords: log.data.keywords,
+            read: true
         });
 
         return log.data;
@@ -152,7 +154,8 @@ export default class SubscriptionLog {
             content: log.data.content || '',
             creatorUid: log.data.creatorUid,
             contentHashes: log.data.contentHashes,
-            keywords: log.data.keywords
+            keywords: log.data.keywords,
+            read: false
         });
 
         return log.data;

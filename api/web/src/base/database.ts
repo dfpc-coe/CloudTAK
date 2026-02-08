@@ -4,6 +4,7 @@ import type {
     Mission,
     MissionRole,
     MissionChange,
+    MissionLog
 } from '../types.ts';
 
 export interface DBIcon {
@@ -110,17 +111,9 @@ export interface DBSubscription {
     subscribed: boolean;
 }
 
-export interface DBSubscriptionLog {
-    id: string;
-    dtg?: string;
-    missionNames: string[],
-    created: string;
-    servertime: string,
+export interface DBSubscriptionLog extends MissionLog {
     mission: string;
-    content: string;
-    creatorUid: string;
-    contentHashes: unknown[];
-    keywords: string[];
+    read: boolean;
 }
 
 export interface DBMissionTemplate {
