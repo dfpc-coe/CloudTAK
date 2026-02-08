@@ -214,7 +214,7 @@ import { ref, computed, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../std.ts';
 import Subscription from '../../../../base/subscription.ts';
-import type { Import } from '../../../../types.ts';
+import type { Import, Mission, Attachment } from '../../../../types.ts';
 import { useFloatStore } from '../../../../stores/float.ts';
 import {
     IconPlus,
@@ -339,7 +339,7 @@ function downloadAssetUrl(hash: string, name: string) {
     return url.toString();
 }
 
-function openAttachment(content: any) {
+function openAttachment(content: Mission['contents'][number]) {
     const ext = content.data.name.split('.').pop();
     floatStore.addAttachment({
         hash: content.data.hash,
@@ -348,6 +348,6 @@ function openAttachment(content: any) {
         url: downloadAssetUrl(content.data.hash, content.data.name),
         size: content.data.size,
         created: content.data.submissionTime
-    } as any);
+    } as Attachment);
 }
 </script>

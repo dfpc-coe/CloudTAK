@@ -468,8 +468,6 @@ import {
     IconPlus,
     IconMinus,
     IconLockAccess,
-    IconAmbulance,
-    IconMap,
     IconX,
     IconBell,
     IconAngle,
