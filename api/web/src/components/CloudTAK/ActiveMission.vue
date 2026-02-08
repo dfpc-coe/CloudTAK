@@ -50,7 +50,7 @@
 
             <div class='d-flex gap-1 ms-2'>
                 <TablerIconButton
-                    title='Mission Layers'
+                    title='Layers'
                     class='hover-button'
                     :hover='false'
                     @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/layers`)'
@@ -62,10 +62,10 @@
                 </TablerIconButton>
 
                 <TablerIconButton
-                    title='Mission Timeline'
+                    title='Changes'
                     class='hover-button'
                     :hover='false'
-                    @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/timeline`)'
+                    @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/changes`)'
                 >
                     <IconTimeline
                         :size='32'
@@ -74,7 +74,7 @@
                 </TablerIconButton>
 
                 <TablerIconButton
-                    title='Mission Users'
+                    title='Users'
                     class='hover-button'
                     :hover='false'
                     @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/users`)'
@@ -86,7 +86,7 @@
                 </TablerIconButton>
 
                 <TablerIconButton
-                    title='Mission Logs'
+                    title='Logs'
                     class='hover-button'
                     :hover='false'
                     @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/logs`)'
@@ -98,7 +98,7 @@
                 </TablerIconButton>
 
                 <TablerIconButton
-                    title='Mission Files'
+                    title='Files'
                     class='hover-button'
                     :hover='false'
                     @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/contents`)'
