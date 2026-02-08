@@ -85,17 +85,26 @@
                     />
                 </TablerIconButton>
 
-                <TablerIconButton
-                    title='Logs'
-                    class='hover-button'
-                    :hover='false'
-                    @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/logs`)'
-                >
-                    <IconArticle
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                <div class="position-relative">
+                    <TablerIconButton
+                        title='Logs'
+                        class='hover-button'
+                        :hover='false'
+                        @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/logs`)'
+                    >
+                        <IconArticle
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <span
+                        v-if="unreadLogs && unreadLogs > 0"
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-white fw-bold shadow-sm border border-dark"
+                        style="font-size: 0.75rem; z-index: 10;"
+                    >
+                        {{ unreadLogs > 99 ? '99+' : unreadLogs }}
+                    </span>
+                </div>
 
                 <TablerIconButton
                     title='Files'
@@ -116,6 +125,10 @@
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
 import { useMapStore } from '../../stores/map.ts';
+import { db } from '../../base/database.ts';
+import { liveQuery } from 'dexie';
+import { useObservable } from '@vueuse/rxjs';
+import { from } from 'rxjs';
 import { TablerIconButton } from '@tak-ps/vue-tabler';
 import {
     IconAmbulance,
@@ -129,4 +142,15 @@ import {
 
 const mapStore = useMapStore();
 const router = useRouter();
+
+const unreadLogs = useObservable(
+    from(liveQuery(async () => {
+        if (!mapStore.mission) return 0;
+        return await db.subscription_log
+            .where('mission')
+            .equals(mapStore.mission.meta.guid)
+            .filter(l => l.read === false)
+            .count();
+    }))
+);
 </script>

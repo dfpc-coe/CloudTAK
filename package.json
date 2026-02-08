@@ -33,7 +33,7 @@
         "@types/mapbox__tile-cover": "^3.0.4",
         "@types/mapbox__tilebelt": "^1.0.4",
         "@types/xml2js": "^0.4.11",
-        "eslint": "^9.0.0",
+        "eslint": "^10.0.0",
         "eslint-plugin-n": "^17.2.1"
     }
 }
