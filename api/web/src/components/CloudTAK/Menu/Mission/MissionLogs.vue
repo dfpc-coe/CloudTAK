@@ -206,6 +206,8 @@ const selectedTemplateLog = computed(() => {
 });
 
 onMounted(async () => {
+    await props.subscription?.log.read();
+
     if (props.subscription.templateid) {
         try {
             const tLogs = new MissionTemplateLogs(props.subscription.templateid);

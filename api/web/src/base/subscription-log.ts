@@ -43,6 +43,14 @@ export default class SubscriptionLog {
         }) as MissionLogList;
 
         await db.transaction('rw', db.subscription_log, async () => {
+            const readLogs = new Set(
+                await db.subscription_log
+                    .where('mission')
+                    .equals(this.guid)
+                    .filter(l => !!l.read)
+                    .primaryKeys()
+            );
+
             await db.subscription_log
                 .where('mission')
                 .equals(this.guid)
@@ -60,7 +68,7 @@ export default class SubscriptionLog {
                     creatorUid: log.creatorUid,
                     contentHashes: log.contentHashes,
                     keywords: log.keywords,
-                    read: false
+                    read: readLogs.has(log.id)
                 });
             }
         });
@@ -86,6 +94,13 @@ export default class SubscriptionLog {
         }).reverse();
 
         return logs;
+    }
+
+    async read(): Promise<void> {
+        await db.subscription_log
+            .where('mission')
+            .equals(this.guid)
+            .modify({ read: true });
     }
 
     async create(
@@ -155,7 +170,7 @@ export default class SubscriptionLog {
             creatorUid: log.data.creatorUid,
             contentHashes: log.data.contentHashes,
             keywords: log.data.keywords,
-            read: false
+            read: true
         });
 
         return log.data;

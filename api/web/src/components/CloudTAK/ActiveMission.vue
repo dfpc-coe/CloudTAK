@@ -44,11 +44,11 @@
             </div>
 
             <div
-                class='border-start border-white opacity-50 mx-1'
+                class='d-none d-md-block border-start border-white opacity-50 mx-1'
                 style='height: 32px;'
             />
 
-            <div class='d-flex gap-1 ms-2'>
+            <div class='d-none d-md-flex gap-1 ms-2'>
                 <TablerIconButton
                     title='Layers'
                     class='hover-button'
@@ -85,7 +85,7 @@
                     />
                 </TablerIconButton>
 
-                <div class="position-relative">
+                <div class='position-relative'>
                     <TablerIconButton
                         title='Logs'
                         class='hover-button'
@@ -98,9 +98,9 @@
                         />
                     </TablerIconButton>
                     <span
-                        v-if="unreadLogs && unreadLogs > 0"
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-white fw-bold shadow-sm border border-dark"
-                        style="font-size: 0.75rem; z-index: 10;"
+                        v-if='unreadLogs && unreadLogs > 0'
+                        class='position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-white fw-bold shadow-sm border border-dark'
+                        style='font-size: 0.75rem; z-index: 10;'
                     >
                         {{ unreadLogs > 99 ? '99+' : unreadLogs }}
                     </span>

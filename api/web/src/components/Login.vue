@@ -126,43 +126,76 @@
             </div>
         </div>
 
-        <div class="dropup position-absolute" style="bottom: 24px; right: 24px; z-index: 20;">
+        <div
+            class='dropup position-absolute'
+            style='bottom: 24px; right: 24px; z-index: 20;'
+        >
             <div
-                class="cursor-pointer"
-                @click="showSettings = !showSettings"
+                class='cursor-pointer'
+                @click='showSettings = !showSettings'
             >
-                <IconSettings class="text-secondary" />
+                <IconSettings class='text-secondary' />
             </div>
 
-            <div v-if="showSettings" class="dropdown-menu dropdown-menu-card show dropdown-menu-end p-0 shadow" style="min-width: 300px; bottom: 100% !important; top: auto !important; right: 0 !important; left: auto !important;">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Login Settings</h3>
-                    <div class="card-actions">
-                        <button class="btn-close" @click.stop="showSettings = false"></button>
+            <div
+                v-if='showSettings'
+                class='dropdown-menu dropdown-menu-card show dropdown-menu-end p-0 shadow'
+                style='min-width: 300px; bottom: 100% !important; top: auto !important; right: 0 !important; left: auto !important;'
+            >
+                <div class='card'>
+                    <div class='card-header'>
+                        <h3 class='card-title'>
+                            Login Settings
+                        </h3>
+                        <div class='card-actions'>
+                            <button
+                                class='btn-close'
+                                @click.stop='showSettings = false'
+                            />
+                        </div>
                     </div>
-                </div>
-                <div class="card-body p-0">
-                    <div v-if="workers.length === 0" class="p-3 text-muted text-center">
-                        No Service Workers Found
-                    </div>
-                    <div v-else class="list-group list-group-flush">
-                        <div v-for="w in workers" :key="w.url" class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="text-truncate me-2" :title="w.url">
-                                    <div class="fw-bold">Script</div>
-                                    <div class="small text-muted">{{ w.url }}</div>
-                                    <div class="mt-1">
-                                        <span class="badge bg-secondary">{{ w.state }}</span>
+                    <div class='card-body p-0'>
+                        <div
+                            v-if='workers.length === 0'
+                            class='p-3 text-muted text-center'
+                        >
+                            No Service Workers Found
+                        </div>
+                        <div
+                            v-else
+                            class='list-group list-group-flush'
+                        >
+                            <div
+                                v-for='w in workers'
+                                :key='w.url'
+                                class='list-group-item'
+                            >
+                                <div class='d-flex justify-content-between align-items-center'>
+                                    <div
+                                        class='text-truncate me-2'
+                                        :title='w.url'
+                                    >
+                                        <div class='fw-bold'>
+                                            Script
+                                        </div>
+                                        <div class='small text-muted'>
+                                            {{ w.url }}
+                                        </div>
+                                        <div class='mt-1'>
+                                            <span class='badge bg-secondary'>{{ w.state }}</span>
+                                        </div>
                                     </div>
+                                    <button
+                                        class='btn btn-icon btn-danger btn-sm'
+                                        title='Unregister'
+                                        @click='unregister(w.registration)'
+                                    >
+                                        <IconTrash size='16' />
+                                    </button>
                                 </div>
-                                <button class="btn btn-icon btn-danger btn-sm" @click="unregister(w.registration)" title="Unregister">
-                                    <IconTrash size="16"/>
-                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
                 </div>
             </div>
         </div>
