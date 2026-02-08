@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v12.72.0 - 2026-02-08
+
+- :bug: When a Data Sync Subscription is refreshed, trigger a re-render event
+- :tada: Implement SubscriptionChange table and allow liveQuery Menus
+- :tada: Revant "Active Mission" UI to allow quicker access to active mission contents
+- :tada: Revant Mission Files Pane to allow viewing photos inline and standarding file components
+
 ### v12.71.1 - 2026-02-07
 
 - :bug: Fix data type that resulted in Missions not being able to invite new users
