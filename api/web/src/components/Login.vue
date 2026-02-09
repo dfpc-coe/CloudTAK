@@ -278,7 +278,7 @@ const fetchWorkers = async () => {
                 url = u.origin + u.pathname;
                 version = u.searchParams.get('v');
                 build = u.searchParams.get('build');
-            } catch (e) {
+            } catch {
                 url = scriptURL;
             }
         }
