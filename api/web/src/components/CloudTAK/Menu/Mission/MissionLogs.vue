@@ -138,12 +138,11 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { from } from 'rxjs';
 import type { Ref, ComputedRef } from 'vue';
-import type { MissionLog } from '../../../../types.ts';
 import { std } from '../../../../std.ts';
 import TagEntry from '../../util/TagEntry.vue';
 import MissionLogItem from './MissionLog.vue';
 import MissionTemplateLogs from '../../../../base/mission-template-logs.ts';
-import type { DBMissionTemplateLog } from '../../../../base/database.ts';
+import type { DBMissionTemplateLog, DBSubscriptionLog } from '../../../../base/database.ts';
 import {
     TablerNone,
     TablerInput,
@@ -169,7 +168,7 @@ const props = defineProps<{
     subscription: Subscription
 }>();
 
-const logs: Ref<Array<MissionLog>> = useObservable(
+const logs: Ref<Array<DBSubscriptionLog>> = useObservable(
     from(liveQuery(async () => {
         return await props.subscription.log.list()
     }))
@@ -206,6 +205,8 @@ const selectedTemplateLog = computed(() => {
 });
 
 onMounted(async () => {
+    await props.subscription?.log.read();
+
     if (props.subscription.templateid) {
         try {
             const tLogs = new MissionTemplateLogs(props.subscription.templateid);
@@ -220,7 +221,7 @@ const logTypeOptions = computed<Array<string>>(() => {
     return ['Default', ...templateLogs.value.map(l => l.name)];
 });
 
-const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
+const filteredLogs: ComputedRef<Array<DBSubscriptionLog>> = computed(() => {
     const allLogs = logs.value || [];
 
     if (paging.value.filter.trim() === '') {
@@ -228,7 +229,7 @@ const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
     } else {
         const filter = paging.value.filter.toLowerCase();
 
-        return allLogs.filter((log: MissionLog) => {
+        return allLogs.filter((log: DBSubscriptionLog) => {
             return log.content.toLowerCase().includes(filter);
         })
     }

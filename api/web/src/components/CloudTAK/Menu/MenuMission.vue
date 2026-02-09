@@ -146,15 +146,15 @@
                     /></label>
 
                     <input
-                        id='timeline'
+                        id='changes'
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='route.name === "home-menu-mission-timeline"'
-                        @click='router.replace(`/menu/missions/${route.params.mission}/timeline`)'
+                        :checked='route.name === "home-menu-mission-changes"'
+                        @click='router.replace(`/menu/missions/${route.params.mission}/changes`)'
                     >
                     <label
-                        for='timeline'
+                        for='changes'
                         type='button'
                         class='btn btn-sm'
                     ><IconTimeline

@@ -125,12 +125,87 @@
                 </div>
             </div>
         </div>
+
+        <div
+            class='dropup position-absolute'
+            style='bottom: 24px; right: 24px; z-index: 20;'
+        >
+            <div
+                class='cursor-pointer'
+                @click='showSettings = !showSettings'
+            >
+                <IconSettings class='text-secondary' />
+            </div>
+
+            <div
+                v-if='showSettings'
+                class='dropdown-menu dropdown-menu-card show dropdown-menu-end p-0 shadow'
+                style='min-width: 300px; bottom: 100% !important; top: auto !important; right: 0 !important; left: auto !important;'
+            >
+                <div class='card'>
+                    <div class='card-header'>
+                        <h3 class='card-title'>
+                            Login Settings
+                        </h3>
+                        <div class='card-actions'>
+                            <button
+                                class='btn-close'
+                                @click.stop='showSettings = false'
+                            />
+                        </div>
+                    </div>
+                    <div class='card-body p-0'>
+                        <div
+                            v-if='workers.length === 0'
+                            class='p-3 text-muted text-center'
+                        >
+                            No Service Workers Found
+                        </div>
+                        <div
+                            v-else
+                            class='list-group list-group-flush'
+                        >
+                            <div
+                                v-for='w in workers'
+                                :key='w.url'
+                                class='list-group-item'
+                            >
+                                <div class='d-flex justify-content-between align-items-center'>
+                                    <div
+                                        class='text-truncate me-2'
+                                        :title='w.url'
+                                    >
+                                        <div class='fw-bold'>
+                                            Script
+                                        </div>
+                                        <div class='small text-muted'>
+                                            {{ w.url }}
+                                        </div>
+                                        <div class='mt-1'>
+                                            <span class='badge bg-secondary'>{{ w.state }}</span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        class='btn btn-icon btn-danger btn-sm'
+                                        title='Unregister'
+                                        @click='unregister(w.registration)'
+                                    >
+                                        <IconTrash size='16' />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup lang='ts'>
 import type { Login_Create, Login_CreateRes } from '../types.ts'
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { IconSettings, IconTrash } from '@tabler/icons-vue';
 import { useBrandStore } from '../stores/brand.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { std } from '../std.ts';
@@ -167,6 +242,31 @@ const footerLogo = computed(() => {
         return '/CloudTAKLogoText.svg';
     }
 }); 
+
+const showSettings = ref(false);
+const workers = ref<{ url: string; state: string; registration: ServiceWorkerRegistration }[]>([]);
+
+const fetchWorkers = async () => {
+    if (!('serviceWorker' in navigator)) return;
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    workers.value = registrations.map(r => {
+        const worker = r.active || r.waiting || r.installing;
+        return {
+            url: worker?.scriptURL || 'Unknown',
+            state: worker?.state || 'Unknown',
+            registration: r
+        }
+    });
+}
+
+const unregister = async (r: ServiceWorkerRegistration) => {
+    await r.unregister();
+    await fetchWorkers();
+}
+
+watch(showSettings, (val) => {
+    if (val) fetchWorkers();
+});
 
 const loading = ref(false);
 const body = ref<Login_Create>({
