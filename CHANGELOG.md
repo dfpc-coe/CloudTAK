@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v12.73.0 - 2026-02-08
+
+- :rocket: Implement an "Escape Hatch" to delete the Service Worker from the login page via a UI entry @LizDepew 
+- :tada: Show unread Mission Log in the UI via a badge system
+
 ### v12.72.1 - 2026-02-08
 
 - :rocket: Show Date/Time on Chat Messages
