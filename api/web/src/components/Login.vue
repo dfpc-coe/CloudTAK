@@ -176,17 +176,26 @@
                                         :title='w.url'
                                     >
                                         <div class='fw-bold'>
-                                            Script
-                                        </div>
-                                        <div class='small text-muted'>
                                             {{ w.url }}
                                         </div>
-                                        <div class='mt-1'>
-                                            <span class='badge bg-secondary'>{{ w.state }}</span>
+                                        <div class='mt-1 d-flex align-items-center gap-2'>
+                                            <span class='badge bg-green'>{{ w.state }}</span>
+                                            <div
+                                                v-if='w.version'
+                                                class='text-muted small'
+                                            >
+                                                v{{ w.version }}
+                                            </div>
+                                            <div
+                                                v-if='w.build'
+                                                class='text-muted small'
+                                            >
+                                                {{ w.build }}
+                                            </div>
                                         </div>
                                     </div>
                                     <button
-                                        class='btn btn-icon btn-danger btn-sm'
+                                        class='btn btn-icon btn-ghost-danger btn-sm'
                                         title='Unregister'
                                         @click='unregister(w.registration)'
                                     >
@@ -244,16 +253,41 @@ const footerLogo = computed(() => {
 }); 
 
 const showSettings = ref(false);
-const workers = ref<{ url: string; state: string; registration: ServiceWorkerRegistration }[]>([]);
+const workers = ref<{
+    url: string;
+    state: string;
+    version?: string | null;
+    build?: string | null;
+    registration: ServiceWorkerRegistration
+}[]>([]);
 
 const fetchWorkers = async () => {
     if (!('serviceWorker' in navigator)) return;
     const registrations = await navigator.serviceWorker.getRegistrations();
     workers.value = registrations.map(r => {
         const worker = r.active || r.waiting || r.installing;
+        const scriptURL = worker?.scriptURL;
+
+        let url = 'Unknown';
+        let version: string | null = null;
+        let build: string | null = null;
+    
+        if (scriptURL) {
+            try {
+                const u = new URL(scriptURL);
+                url = u.origin + u.pathname;
+                version = u.searchParams.get('v');
+                build = u.searchParams.get('build');
+            } catch (e) {
+                url = scriptURL;
+            }
+        }
+
         return {
-            url: worker?.scriptURL || 'Unknown',
+            url,
             state: worker?.state || 'Unknown',
+            version,
+            build,
             registration: r
         }
     });
