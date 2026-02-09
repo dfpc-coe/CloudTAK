@@ -1,4 +1,5 @@
 import { db } from './database.ts';
+import type { DBSubscriptionLog } from './database.ts';
 import { std, stdurl } from '../std.ts';
 import type {
     MissionLog,
@@ -79,7 +80,7 @@ export default class SubscriptionLog {
             filter?: string,
             refresh?: boolean,
         }
-    ): Promise<Array<MissionLog>> {
+    ): Promise<Array<DBSubscriptionLog>> {
         if (opts?.refresh) {
             await this.refresh();
         }

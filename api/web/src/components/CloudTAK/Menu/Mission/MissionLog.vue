@@ -84,7 +84,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { MissionLog } from '../../../../types.ts';
+import type { DBSubscriptionLog } from '../../../../base/database.ts';
 import Subscription from '../../../../base/subscription.ts';
 import CopyField from '../../util/CopyField.vue';
 import { db } from '../../../../base/database.ts';
@@ -96,7 +96,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 const props = defineProps<{
-    log: MissionLog;
+    log: DBSubscriptionLog;
     subscription: Subscription;
 }>();
 
