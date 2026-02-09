@@ -1,4 +1,5 @@
 import { db } from './database.ts';
+import type { DBSubscriptionLog } from './database.ts';
 import { std, stdurl } from '../std.ts';
 import type {
     MissionLog,
@@ -43,6 +44,14 @@ export default class SubscriptionLog {
         }) as MissionLogList;
 
         await db.transaction('rw', db.subscription_log, async () => {
+            const readLogs = new Set(
+                await db.subscription_log
+                    .where('mission')
+                    .equals(this.guid)
+                    .filter(l => !!l.read)
+                    .primaryKeys()
+            );
+
             await db.subscription_log
                 .where('mission')
                 .equals(this.guid)
@@ -59,7 +68,8 @@ export default class SubscriptionLog {
                     servertime: log.servertime,
                     creatorUid: log.creatorUid,
                     contentHashes: log.contentHashes,
-                    keywords: log.keywords
+                    keywords: log.keywords,
+                    read: readLogs.has(log.id)
                 });
             }
         });
@@ -70,7 +80,7 @@ export default class SubscriptionLog {
             filter?: string,
             refresh?: boolean,
         }
-    ): Promise<Array<MissionLog>> {
+    ): Promise<Array<DBSubscriptionLog>> {
         if (opts?.refresh) {
             await this.refresh();
         }
@@ -85,6 +95,13 @@ export default class SubscriptionLog {
         }).reverse();
 
         return logs;
+    }
+
+    async read(): Promise<void> {
+        await db.subscription_log
+            .where('mission')
+            .equals(this.guid)
+            .modify({ read: true });
     }
 
     async create(
@@ -116,7 +133,8 @@ export default class SubscriptionLog {
             servertime: log.data.servertime,
             creatorUid: log.data.creatorUid,
             contentHashes: log.data.contentHashes,
-            keywords: log.data.keywords
+            keywords: log.data.keywords,
+            read: true
         });
 
         return log.data;
@@ -152,7 +170,8 @@ export default class SubscriptionLog {
             content: log.data.content || '',
             creatorUid: log.data.creatorUid,
             contentHashes: log.data.contentHashes,
-            keywords: log.data.keywords
+            keywords: log.data.keywords,
+            read: true
         });
 
         return log.data;
