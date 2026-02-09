@@ -268,7 +268,7 @@ export default class Subscription {
         await db.subscription.update(this.guid, {
             dirty: this.dirty,
             subscribed: this.subscribed,
-            token: this.token
+            token: this.missiontoken
         });
 
         if (body.description !== undefined) {
