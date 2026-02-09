@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v12.73.1 - 2026-02-09
+
+- :rocket: Improve Login Service Worker UI
+- :bug: CloudTAK API Token would replace Mission API Token if a PATCH request was made to the Dexie Database
+- :bug: When unsubscribing from a Password Protected Mission, return to Data Sync list as you no longer have a token to view the mission which resulted in a frontend error
+- :bug: Avoid posting `template:null` to missions with no templates
+
 ### v12.73.0 - 2026-02-08
 
 - :rocket: Implement an "Escape Hatch" to delete the Service Worker from the login page via a UI entry @LizDepew 
