@@ -346,6 +346,10 @@ async function subscribe(subscribe: boolean) {
 
     await props.subscription.update({ subscribed: subscribe });
 
+    if (!subscribe && props.subscription.meta.passwordProtected) {
+        await router.push({ name: 'home-menu-missions' });
+    }
+
     loading.value.subscribe = false;
 }
 </script>
