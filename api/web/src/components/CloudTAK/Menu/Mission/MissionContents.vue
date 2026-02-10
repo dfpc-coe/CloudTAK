@@ -160,7 +160,7 @@
                     >
                         <div class='col-12'>
                             <div
-                                class='text-truncate'
+                                class='text-break'
                                 v-text='content.data.name'
                             />
                             <div>
