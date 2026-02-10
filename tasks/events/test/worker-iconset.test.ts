@@ -3,7 +3,6 @@ import assert from 'node:assert';
 import path from 'node:path';
 import Worker from '../src/worker.js';
 import fs from 'node:fs';
-import fsp from 'node:fs/promises';
 import Sinon from 'sinon';
 import {
     S3Client,
@@ -103,6 +102,13 @@ test(`Worker Iconset Import: OSM.zip`, async (t) => {
         path: /\/api\/import\/.*\/result/,
         method: 'POST'
     }).reply((req) => {
+        const body = JSON.parse(req.body);
+        assert.deepEqual(body, {
+            name: 'OSM',
+            type: 'Iconset',
+            type_id: '6d781afb-89a6-4c07-b2b9-a89748b6a38f'
+        });
+
         return {
             statusCode: 200,
             data: JSON.stringify({})
