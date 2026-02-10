@@ -304,6 +304,9 @@ export default async function router(schema: Schema, config: Config) {
                     description: 'Property to sort by'
                 }),
                 order: Default.Order,
+                groups: Type.Optional(Type.String({
+                    description: 'Filter by one or more groups (comma separated)'
+                }))
             })
         ]),
         res: Type.Object({
@@ -317,12 +320,22 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const { sort, order, ...query } = req.query;
+            const { sort, order, groups, ...query } = req.query;
 
             const [missions, invites] = await Promise.all([
                 api.Mission.list(query),
                 api.MissionInvite.list('ANDROID-CloudTAK-' + user.email)
             ]);
+
+            if (groups) {
+                const groupList = groups.split(',');
+                missions.data = missions.data.filter((mission) => {
+                    if (!mission.groups) return false;
+                    const missionGroups = Array.isArray(mission.groups) ? mission.groups : [mission.groups];
+
+                    return missionGroups.some((g) => groupList.includes(g));
+                });
+            }
 
             if (sort) {
                 missions.data.sort((a: any, b: any) => {
