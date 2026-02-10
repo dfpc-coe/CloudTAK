@@ -163,7 +163,7 @@ test(`Worker Iconset Import: OSM.zip`, async (t) => {
 
         icons.sort((a, b) => a.name.localeCompare(b.name));
 
-        assert.deepEqual(icons, expectedIcons.slice(0, icons.length), 'Imported icons do not match expected icons');
+        assert.deepEqual(icons.slice(0, expectedIcons.length), expectedIcons, 'Imported icons do not match expected icons');
     });
 
     await worker.process()
