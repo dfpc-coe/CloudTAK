@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.74.0 - 2026-02-10
+
+- :rocket: Add support for filtering by groups in Data Sync List API
+
 ### v12.73.1 - 2026-02-09
 
 - :rocket: Improve Login Service Worker UI
