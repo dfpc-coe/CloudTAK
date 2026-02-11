@@ -48,7 +48,12 @@ export default class Config<K extends keyof FullConfig = keyof FullConfig> {
         return new Config<K>(entry.key as K, entry.value as FullConfig[K]);
     }
 
-    static async list(keys: (keyof FullConfig)[]): Promise<Partial<FullConfig>> {
+    static async list(
+        keys: (keyof FullConfig)[],
+        opts: {
+            defaults?: Partial<FullConfig>
+        } = {}
+    ): Promise<Partial<FullConfig>> {
         const result: Partial<FullConfig> = {};
 
         const db_res = await db.config.bulkGet(keys as string[]);
@@ -57,6 +62,7 @@ export default class Config<K extends keyof FullConfig = keyof FullConfig> {
 
         db_res.forEach((entry, i) => {
             if (entry) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 result[entry.key as keyof FullConfig] = entry.value as any;
             } else {
                 missing.push(keys[i]);
@@ -66,6 +72,25 @@ export default class Config<K extends keyof FullConfig = keyof FullConfig> {
         if (missing.length) {
             const fresh = await this.refresh(missing);
             Object.assign(result, fresh);
+        }
+
+        if (opts.defaults) {
+            const defaultsToSave: DBConfig[] = [];
+            for (const key of keys) {
+                if (result[key] === undefined && opts.defaults[key] !== undefined) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    result[key] = opts.defaults[key] as any;
+                    defaultsToSave.push({
+                        key: String(key),
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        value: opts.defaults[key] as any
+                    });
+                }
+            }
+
+            if (defaultsToSave.length) {
+                await db.config.bulkPut(defaultsToSave);
+            }
         }
 
         return result;
@@ -92,4 +117,5 @@ export default class Config<K extends keyof FullConfig = keyof FullConfig> {
         }
 
         return res;
+    }
 }

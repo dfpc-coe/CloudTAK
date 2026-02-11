@@ -27,6 +27,7 @@ import mapgl from 'maplibre-gl'
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
+import Config from '../base/config.ts';
 
 import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, MapConfig } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
@@ -491,7 +492,30 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             const sprites = await IconManager.sprites();
-            this.mapConfig = await std('/api/config/map') as MapConfig;
+
+            const mapConfig = await Config.list([
+                'map::center',
+                'map::zoom',
+                'map::pitch',
+                'map::bearing',
+                'map::basemap'
+            ], {
+                defaults: {
+                    'map::center': '-100,40',
+                    'map::zoom': 4,
+                    'map::pitch': 0,
+                    'map::bearing': 0,
+                    'map::basemap': null
+                }
+            });
+
+            this.mapConfig = {
+                center: String(mapConfig['map::center']),
+                zoom: Number(mapConfig['map::zoom']),
+                pitch: Number(mapConfig['map::pitch']),
+                bearing: Number(mapConfig['map::bearing']),
+                basemap: mapConfig['map::basemap'] ? Number(mapConfig['map::basemap']) : null
+            };
 
             const init: mapgl.MapOptions = {
                 container: this.container,
