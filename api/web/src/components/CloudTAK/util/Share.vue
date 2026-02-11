@@ -487,8 +487,8 @@ async function fetchMissions() {
     loading.value = false;
 }
 
-async function fetchUserList(loading = true) {
-    loading.value = loading;
+async function fetchUserList(initialLoading = true) {
+    loading.value = initialLoading;
     const url = stdurl('/api/marti/api/contacts/all');
     contacts.value = await std(url) as ContactList;
     loading.value = false;
