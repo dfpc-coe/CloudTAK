@@ -219,8 +219,6 @@ export default async function router(schema: Schema, config: Config) {
                 return final[k.value.key as keyof Static<typeof FullConfig>] = k.value.value as any;
             });
 
-            console.error(final);
-
             res.json(final);
         } catch (err) {
             Err.respond(err, res);
@@ -297,7 +295,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json({
-                name: final.name,
+                name: final.name || 'CloudTAK',
                 logo: final.logo,
                 signup: final.signup,
                 forgot: final.forgot,
