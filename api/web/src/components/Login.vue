@@ -3,7 +3,7 @@
         class='page page-center cloudtak-gradient position-relative'
         style='overflow: auto;'
     >
-        <div 
+        <div
             v-if='customBackgroundColor'
             class='position-absolute w-100 h-100 top-0 start-0 bg-fade-enter'
             style='z-index: 0;'
@@ -173,13 +173,13 @@
                                 <div class='d-flex justify-content-between align-items-center'>
                                     <div
                                         class='text-truncate me-2'
-                                        :title='w.url'
+                                        title='Service Worker'
                                     >
                                         <div class='fw-bold'>
                                             {{ w.url }}
                                         </div>
                                         <div class='mt-1 d-flex align-items-center gap-2'>
-                                            <span class='badge bg-green'>{{ w.state }}</span>
+                                            <span class='badge bg-green text-white'>{{ w.state }}</span>
                                             <div
                                                 v-if='w.version'
                                                 class='text-muted small'
@@ -212,10 +212,10 @@
 </template>
 
 <script setup lang='ts'>
-import type { Login_Create, Login_CreateRes } from '../types.ts'
-import { ref, computed, onMounted, watch } from 'vue';
+import type { Login_Create, Login_CreateRes, LoginConfig } from '../types.ts'
+import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { IconSettings, IconTrash } from '@tabler/icons-vue';
-import { useBrandStore } from '../stores/brand.ts';
+import Config from '../base/config.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { std } from '../std.ts';
 import {
@@ -227,7 +227,14 @@ const emit = defineEmits([ 'login' ]);
 
 const route = useRoute();
 const router = useRouter();
-const brandStore = useBrandStore();
+
+const brandStore = reactive<{
+    loaded: boolean;
+    login: LoginConfig | undefined;
+}>({
+    loaded: false,
+    login: undefined
+});
 
 const footerLogoLoaded = ref(false);
 
@@ -240,7 +247,7 @@ const customBackgroundColor = computed(() => {
 
 const footerLogo = computed(() => {
     if (!brandStore.login) return undefined;
-    
+
     // Check if brand is enabled, if not return undefined (hidden)
     // If enabled or default, check logic below
     if (brandStore.login.brand?.enabled === 'disabled') {
@@ -250,7 +257,7 @@ const footerLogo = computed(() => {
     } else {
         return '/CloudTAKLogoText.svg';
     }
-}); 
+});
 
 const showSettings = ref(false);
 const workers = ref<{
@@ -271,7 +278,7 @@ const fetchWorkers = async () => {
         let url = 'Unknown';
         let version: string | null = null;
         let build: string | null = null;
-    
+
         if (scriptURL) {
             try {
                 const u = new URL(scriptURL);
@@ -309,7 +316,35 @@ const body = ref<Login_Create>({
 });
 
 onMounted(async () => {
-    await brandStore.init();
+    const config = await Config.list([
+        'login::name',
+        'login::logo',
+        'login::signup',
+        'login::forgot',
+        'login::username',
+        'login::brand::enabled',
+        'login::brand::logo',
+        'login::background::enabled',
+        'login::background::color',
+    ]);
+
+    brandStore.login = {
+        name: config['login::name'],
+        logo: config['login::logo'],
+        signup: config['login::signup'],
+        forgot: config['login::forgot'],
+        username: config['login::username'] || 'Username or Email',
+        brand: {
+            enabled: config['login::brand::enabled'] as "default" | "enabled" | "disabled" || 'default',
+            logo: config['login::brand::logo']
+        },
+        background: {
+            enabled: config['login::background::enabled'] === true,
+            color: config['login::background::color']
+        }
+    };
+    brandStore.loaded = true;
+
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then((registrations) => {

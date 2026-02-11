@@ -57,7 +57,7 @@
         "maplibre-gl": "^5.15.0",
         "milsymbol": "^3.0.2",
         "moment": "^2.29.3",
-        "openapi-fetch": "^0.16.0",
+        "openapi-fetch": "^0.17.0",
         "p12-pem": "^1.0.5",
         "phone": "^3.1.59",
         "pinia": "^3.0.0",

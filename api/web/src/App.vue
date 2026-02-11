@@ -7,9 +7,8 @@
             <div class='container-xl'>
                 <div class='col-auto'>
                     <img
-                        v-if='brandStore'
                         alt='Agency Logo'
-                        :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloudTAKLogo.svg"'
+                        :src='loginLogo || "/CloudTAKLogo.svg"'
                         class='cursor-pointer'
                         draggable='false'
                         height='50'
@@ -20,7 +19,7 @@
                 <div class='col mx-2'>
                     <div
                         class='page-pretitle'
-                        v-text='brandStore.login && brandStore.login.name ? brandStore.login.name : ""'
+                        v-text='loginName || ""'
                     />
                     <h2 class='page-title'>
                         CloudTAK
@@ -125,7 +124,7 @@
 import { ref, computed, onErrorCaptured, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router';
 import type { Login, Server } from './types.ts';
-import { useBrandStore } from './stores/brand.ts';
+import Config from './base/config.ts';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
 import {
@@ -146,7 +145,9 @@ import type { WorkerMessage } from './base/events.ts';
 
 const router = useRouter();
 const route = useRoute();
-const brandStore = useBrandStore();
+
+const loginLogo = ref<string>();
+const loginName = ref<string>();
 
 const loading = ref(true);
 const inviteMission = ref<{
@@ -202,7 +203,25 @@ onMounted(async () => {
         status = 'configured';
     }
 
-    await brandStore.init();
+    const config = await Config.list([
+        'login::name',
+        'login::logo',
+        'login::brand::enabled',
+        'login::brand::logo',
+        'login::background::enabled',
+        'login::background::color',
+        'login::signup',
+        'login::forgot',
+        'login::username'
+    ]);
+
+    if (config['login::brand::enabled'] !== 'disabled' && config['login::brand::logo']) {
+        loginLogo.value = config['login::brand::logo'];
+    } else {
+        loginLogo.value = config['login::logo'];
+    }
+
+    loginName.value = config['login::name'];
 
     window.addEventListener('unhandledrejection', (e) => {
         error.value = e.reason;

@@ -88,7 +88,7 @@ test('GET api/config/login', async () => {
         }, true);
 
         assert.deepEqual(res.body, {
-            name: 'Test Runner',
+            name: 'CloudTAK',
             username: 'Username or Email',
             brand: {
                 enabled: 'default'
@@ -134,7 +134,7 @@ test('GET api/config/login', async () => {
         }, true);
 
         assert.deepEqual(res.body, {
-            name: 'Test Runner',
+            name: 'CloudTAK',
             signup: 'https://example.com/signup',
             forgot: 'https://example.com/forgot',
             username: 'Username or Email',
