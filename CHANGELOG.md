@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.75.0 - 2026-02-10
+
+- :rocket: Rewrite config APIs to allow for more flexible configuration management and retrieval in the future, while maintaining backwards compatibility with existing config keys and structures
+- :rocket: Frontend now caches config values to avoid unnecessary API calls and improve performance
+- :bug: Fix bug where contacts list would refresh indefinitely
+
 ### v12.74.0 - 2026-02-10
 
 - :rocket: Add support for filtering by groups in Data Sync List API
@@ -25,7 +31,7 @@
 
 ### v12.73.0 - 2026-02-08
 
-- :rocket: Implement an "Escape Hatch" to delete the Service Worker from the login page via a UI entry @LizDepew 
+- :rocket: Implement an "Escape Hatch" to delete the Service Worker from the login page via a UI entry @LizDepew
 - :tada: Show unread Mission Log in the UI via a badge system
 
 ### v12.72.1 - 2026-02-08
