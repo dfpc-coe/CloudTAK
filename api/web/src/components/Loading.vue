@@ -12,7 +12,7 @@
                                 >
                                     <img
                                         alt='Agency Logo'
-                                        :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloudTAKLogo.svg"'
+                                        :src='logo'
                                         draggable='false'
                                         style='height: 150px;'
                                     >
@@ -28,15 +28,21 @@
 </template>
 
 <script setup lang='ts'>
-import { useBrandStore } from '../stores/brand.ts';
-import { onMounted } from 'vue'
+import Config from '../base/config.ts';
+import { ref, onMounted } from 'vue'
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler'
 
-const brandStore = useBrandStore();
+const logo = ref('/CloudTAKLogo.svg');
 
 onMounted(async () => {
-    await brandStore.init();
+    const config = await Config.list(['login::logo', 'login::brand::enabled', 'login::brand::logo']);
+
+    if (config['login::brand::enabled'] !== 'disabled' && config['login::brand::logo']) {
+        logo.value = config['login::brand::logo'];
+    } else if (config['login::logo']) {
+        logo.value = config['login::logo'];
+    }
 })
 </script>

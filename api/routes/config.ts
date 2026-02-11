@@ -99,6 +99,9 @@ export const FullConfig = Type.Object({
     'login::forgot': Type.String({
         description: 'URL for Forgot Password Page'
     }),
+    'login::name': Type.String({
+        description: 'Login Page Title'
+    }),
     'login::username': Type.String({
         description: 'Custom Label for Username Field'
     }),
@@ -120,6 +123,21 @@ export const FullConfig = Type.Object({
     }),
 });
 
+export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
+    'media::url',
+    'login::signup',
+    'login::forgot',
+    'login::name',
+    'login::username',
+    'login::brand::enabled',
+    'login::brand::logo',
+    'login::background::enabled',
+    'login::background::color',
+    'login::logo',
+    'oidc::enabled',
+    'oidc::enforced',
+];
+
 export default async function router(schema: Schema, config: Config) {
     const profileControl = new ProfileControl(config);
 
@@ -133,10 +151,13 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Partial(FullConfig)
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            const keys = (req.query.keys || '').split(',');
+            if (!keys.every((k: any) => PublicConfigKeys.includes(k))) {
+                await Auth.as_user(config, req, { admin: true });
+            }
 
             const final: Record<string, string> = {};
-            (await Promise.allSettled((req.query.keys.split(',').map((key) => {
+            (await Promise.allSettled((keys.map((key) => {
                 return config.models.Setting.from(key);
             })))).forEach((k) => {
                 if (k.status === 'rejected') return;
