@@ -2064,6 +2064,8 @@ export interface paths {
                             "login::signup"?: string;
                             /** @description URL for Forgot Password Page */
                             "login::forgot"?: string;
+                            /** @description Login Page Title */
+                            "login::name"?: string;
                             /** @description Custom Label for Username Field */
                             "login::username"?: string;
                             /**
@@ -2214,6 +2216,8 @@ export interface paths {
                         "login::signup"?: string;
                         /** @description URL for Forgot Password Page */
                         "login::forgot"?: string;
+                        /** @description Login Page Title */
+                        "login::name"?: string;
                         /** @description Custom Label for Username Field */
                         "login::username"?: string;
                         /**
@@ -2299,6 +2303,8 @@ export interface paths {
                             "login::signup"?: string;
                             /** @description URL for Forgot Password Page */
                             "login::forgot"?: string;
+                            /** @description Login Page Title */
+                            "login::name"?: string;
                             /** @description Custom Label for Username Field */
                             "login::username"?: string;
                             /**

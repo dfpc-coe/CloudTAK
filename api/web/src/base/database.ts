@@ -142,6 +142,11 @@ export interface DBProfileConfig {
     value: unknown;
 }
 
+export interface DBConfig {
+    key: string;
+    value: unknown;
+}
+
 export type DatabaseType = Dexie & {
     icon: EntityTable<DBIcon, 'name'>,
     iconset: EntityTable<DBIconset, 'uid'>,
@@ -157,7 +162,8 @@ export type DatabaseType = Dexie & {
     subscription_feature: EntityTable<DBSubscriptionFeature, 'id'>,
     mission_template: EntityTable<DBMissionTemplate, 'id'>,
     mission_template_log: EntityTable<DBMissionTemplateLog, 'id'>,
-    profile: EntityTable<DBProfileConfig, 'key'>
+    profile: EntityTable<DBProfileConfig, 'key'>,
+    config: EntityTable<DBConfig, 'key'>
 };
 
 export const db = new Dexie('CloudTAK') as DatabaseType;
@@ -168,6 +174,8 @@ db.version(1).stores({
     filter: 'id, external',
     video: 'id, username',
     feature: 'id, path',
+
+    config: 'key',
 
     chatroom: 'id',
     chatroom_chats: 'id, chatroom',

@@ -284,7 +284,7 @@
                         class='cursor-pointer'
                         height='50'
                         width='50'
-                        :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloudTAKLogo.svg"'
+                        :src='logo'
                         @click='returnHome'
                         @keyup.enter='returnHome'
                     >
@@ -341,7 +341,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../stores/map.ts';
 import type { MenuItemConfig } from '../../stores/modules/menu.ts';
-import { useBrandStore } from '../../stores/brand.ts';
+import Config from '../../base/config.ts';
 import { useRouter, useRoute } from 'vue-router';
 import MenuItemCard from './Menu/MenuItemCard.vue';
 import ProfileConfig from '../../base/profile.ts';
@@ -350,7 +350,18 @@ const route = useRoute();
 const router = useRouter();
 
 const mapStore = useMapStore();
-const brandStore = useBrandStore();
+
+const logo = ref('/CloudTAKLogo.svg');
+
+onMounted(async () => {
+    const config = await Config.list(['login::logo', 'login::brand::enabled', 'login::brand::logo']);
+
+    if (config['login::brand::enabled'] !== 'disabled' && config['login::brand::logo']) {
+        logo.value = config['login::brand::logo'];
+    } else if (config['login::logo']) {
+        logo.value = config['login::logo'];
+    }
+});
 
 const emit = defineEmits<{
     (e: 'close'): void;

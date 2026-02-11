@@ -8,7 +8,7 @@
         "test": "StackName='test' tsx --test --test-concurrency=1 test/*.test.ts",
         "precoverage": "mkdir -p dist/test/fixtures/ && mkdir -p dist/test/data/ && cp test/fixtures/* dist/test/fixtures/ && cp test/data/* dist/test/data/ && npm run build",
         "coverage": "StackName='test' c8 --reporter=lcov --reporter html node --test --test-concurrency=1 dist/test/*.test.js",
-        "build": "tsc && cp .env* dist/ || true && cp ./icons dist/icons -r && cp ./fonts dist/fonts -r && cp package.json dist/ && cp migrations/ dist/ -r",
+        "build": "tsc && cp .env* dist/ || true && cp ./icons dist/icons -r && cp ./fonts dist/fonts -r && cp package.json dist/ && cp migrations/ dist/ -r && mkdir -p dist/web/public && cp web/public/CloudTAKLogo.svg dist/web/public/ && cp web/public/CloudTAKLogoText.svg dist/web/public/",
         "lint": "eslint index.ts lib/ routes/ test/",
         "emptydb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql",
         "loaddb": "npm run emptydb && psql tak_ps_etl < ",

@@ -8,6 +8,7 @@ import {
     Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom
 } from '../lib/enums.js'
 import Config from '../lib/config.js';
+import fs from 'node:fs';
 
 export const FullConfig = Type.Object({
     'agol::enabled': Type.Boolean({
@@ -43,7 +44,7 @@ export const FullConfig = Type.Object({
         minimum: 0,
         maximum: 90
     }),
-    'map::bearing': Type.String({
+    'map::bearing': Type.Integer({
         description: 'Default Map Bearing',
         minimum: 0,
         maximum: 360
@@ -99,6 +100,9 @@ export const FullConfig = Type.Object({
     'login::forgot': Type.String({
         description: 'URL for Forgot Password Page'
     }),
+    'login::name': Type.String({
+        description: 'Login Page Title',
+    }),
     'login::username': Type.String({
         description: 'Custom Label for Username Field'
     }),
@@ -120,6 +124,37 @@ export const FullConfig = Type.Object({
     }),
 });
 
+export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
+    'map::center': '-100,40',
+    'map::zoom': 4,
+    'map::pitch': 0,
+    'map::bearing': 0,
+    'login::name': 'CloudTAK',
+    'login::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogo.svg', import.meta.url)).toString('base64')}`,
+    'login::signup': '',
+    'login::forgot': '',
+    'login::username': 'Username or Email',
+    'login::brand::enabled': 'default',
+    'login::background::enabled': false,
+    'login::background::color': '#03384f',
+    'login::brand::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogoText.svg', import.meta.url)).toString('base64')}`
+};
+
+export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
+    'media::url',
+    'login::signup',
+    'login::forgot',
+    'login::name',
+    'login::username',
+    'login::brand::enabled',
+    'login::brand::logo',
+    'login::background::enabled',
+    'login::background::color',
+    'login::logo',
+    'oidc::enabled',
+    'oidc::enforced',
+];
+
 export default async function router(schema: Schema, config: Config) {
     const profileControl = new ProfileControl(config);
 
@@ -133,13 +168,23 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Partial(FullConfig)
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            const keys = (req.query.keys || '').split(',');
+            if (!keys.every((k: any) => PublicConfigKeys.includes(k))) {
+                await Auth.as_user(config, req, { admin: true });
+            }
 
             const final: Record<string, string> = {};
-            (await Promise.allSettled((req.query.keys.split(',').map((key) => {
+            (await Promise.allSettled((keys.map((key) => {
                 return config.models.Setting.from(key);
-            })))).forEach((k) => {
-                if (k.status === 'rejected') return;
+            })))).forEach((k, i) => {
+                if (k.status === 'rejected') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    if (FullConfigDefaults[keys[i] as keyof Static<typeof FullConfig>] !== undefined) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        final[keys[i]] = FullConfigDefaults[keys[i] as keyof Static<typeof FullConfig>] as any;
+                    }
+                    return;
+                }
                 return final[k.value.key] = String(k.value.value);
             });
 
@@ -229,6 +274,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const keys = [
+                'login::name',
                 'login::logo',
                 'login::signup',
                 'login::forgot',
@@ -247,16 +293,12 @@ export default async function router(schema: Schema, config: Config) {
                 return final[k.value.key.replace('login::', '')] = String(k.value.value);
             });
 
-            if (config.server.name) {
-                final.name = config.server.name;
-            }
-
             for (let login of keys) {
                 login = login.replace('login::', '')
             }
 
             res.json({
-                name: final.name,
+                name: final.name || 'CloudTAK',
                 logo: final.logo,
                 signup: final.signup,
                 forgot: final.forgot,
