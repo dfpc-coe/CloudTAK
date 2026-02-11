@@ -8,6 +8,7 @@ import {
     Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom
 } from '../lib/enums.js'
 import Config from '../lib/config.js';
+import fs from 'node:fs';
 
 export const FullConfig = Type.Object({
     'agol::enabled': Type.Boolean({
@@ -131,7 +132,8 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'login::name': 'CloudTAK',
     'login::username': 'Username or Email',
     'login::brand::enabled': 'default',
-    'login::background::enabled': false
+    'login::background::enabled': false,
+    'login::brand::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../../web/public/CloudTAKLogo.svg', import.meta.url)).toString('base64')}`
 };
 
 export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
