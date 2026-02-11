@@ -354,11 +354,9 @@ const mapStore = useMapStore();
 const logo = ref('/CloudTAKLogo.svg');
 
 onMounted(async () => {
-    const config = await Config.list(['login::logo', 'login::brand::enabled', 'login::brand::logo']);
+    const config = await Config.list(['login::logo']);
 
-    if (config['login::brand::enabled'] !== 'disabled' && config['login::brand::logo']) {
-        logo.value = config['login::brand::logo'];
-    } else if (config['login::logo']) {
+    if (config['login::logo']) {
         logo.value = config['login::logo'];
     }
 });
