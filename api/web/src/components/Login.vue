@@ -326,7 +326,7 @@ onMounted(async () => {
         'login::brand::logo',
         'login::background::enabled',
         'login::background::color',
-    });
+    ]);
 
     brandStore.login = {
         name: config['login::name'],

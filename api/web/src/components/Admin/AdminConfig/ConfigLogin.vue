@@ -41,6 +41,13 @@
                 <div class='row'>
                     <div class='col-lg-12'>
                         <TablerInput
+                            v-model='config["login::name"]'
+                            :disabled='!edit'
+                            label='Login Page Title'
+                            placeholder='CloudTAK'
+                        />
+
+                        <TablerInput
                             v-model='config["login::signup"]'
                             :disabled='!edit'
                             :error='validateURL(config["login::signup"])'
@@ -130,6 +137,7 @@ const edit = ref(false);
 const err = ref(null);
 
 const config = ref({
+    'login::name': '',
     'login::logo': '',
     'login::forgot': '',
     'login::signup': '',
