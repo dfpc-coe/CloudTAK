@@ -12,7 +12,11 @@
 
 ### Pending Release
 
-### v12.75.0 - 2026-02-10
+### v12.75.1 - 2026-02-11
+
+- :bug: Use `login::logo` in Main Menu
+
+### v12.75.0 - 2026-02-11
 
 - :rocket: Rewrite config APIs to allow for more flexible configuration management and retrieval in the future, while maintaining backwards compatibility with existing config keys and structures
 - :rocket: Frontend now caches config values to avoid unnecessary API calls and improve performance
