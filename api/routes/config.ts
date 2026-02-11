@@ -133,7 +133,7 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'login::username': 'Username or Email',
     'login::brand::enabled': 'default',
     'login::background::enabled': false,
-    'login::brand::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../../web/public/CloudTAKLogo.svg', import.meta.url)).toString('base64')}`
+    'login::brand::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogo.svg', import.meta.url)).toString('base64')}`
 };
 
 export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
