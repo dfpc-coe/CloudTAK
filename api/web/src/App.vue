@@ -103,7 +103,6 @@
         />
         <router-view
             v-else
-            :user='user'
             @err='error = $event'
             @login='refreshLogin'
         />
@@ -159,7 +158,7 @@ const inviteMission = ref<{
     type: string;
 } | undefined>();
 const mounted = ref(false);
-const user = ref<Login | undefined>();
+const user = ref(false);
 const error = ref<Error | undefined>();
 
 const navShown = computed<boolean>(() => {
@@ -251,7 +250,7 @@ onMounted(async () => {
 });
 
 function logout() {
-    user.value = undefined;
+    user.value = false;
     delete localStorage.token;
 
     window.location.href = '/login';
@@ -272,24 +271,26 @@ function routeLogin() {
 async function refreshLogin() {
     loading.value = true;
 
-    await getLogin();
+    await checkToken();
 
     loading.value = false;
 }
 
-async function getLogin() {
+async function checkToken() {
     try {
-        user.value = await std('/api/login') as Login;
+        const token = localStorage.token;
+        if (!token) throw new Error('No token found');
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expirationDate = payload.exp * 1000; // Convert to milliseconds
+        const now = Date.now();
+
+        if (now > expirationDate) {
+            throw new Error('Token expired');
+        }
     } catch (err) {
         console.error(err);
-        user.value = undefined;
-        delete localStorage.token;
 
-        if (route.name !== 'login') {
-            routeLogin();
-        }
-
-        return false;
+        logout();
     }
 
     return true;
