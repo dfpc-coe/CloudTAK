@@ -131,6 +131,8 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'map::bearing': 0,
     'login::name': 'CloudTAK',
     'login::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogo.svg', import.meta.url)).toString('base64')}`,
+    'login::signup': '',
+    'login::forgot': '',
     'login::username': 'Username or Email',
     'login::brand::enabled': 'default',
     'login::background::enabled': false,
