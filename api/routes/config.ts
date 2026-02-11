@@ -43,7 +43,7 @@ export const FullConfig = Type.Object({
         minimum: 0,
         maximum: 90
     }),
-    'map::bearing': Type.String({
+    'map::bearing': Type.Integer({
         description: 'Default Map Bearing',
         minimum: 0,
         maximum: 360
@@ -100,7 +100,7 @@ export const FullConfig = Type.Object({
         description: 'URL for Forgot Password Page'
     }),
     'login::name': Type.String({
-        description: 'Login Page Title'
+        description: 'Login Page Title',
     }),
     'login::username': Type.String({
         description: 'Custom Label for Username Field'
@@ -122,6 +122,17 @@ export const FullConfig = Type.Object({
         description: 'Base64 encoded PNG for Logo'
     }),
 });
+
+export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
+    'map::center': '-100,40',
+    'map::zoom': 4,
+    'map::pitch': 0,
+    'map::bearing': 0,
+    'login::name': 'CloudTAK',
+    'login::username': 'Username or Email',
+    'login::brand::enabled': 'default',
+    'login::background::enabled': false
+};
 
 export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'media::url',
@@ -159,8 +170,15 @@ export default async function router(schema: Schema, config: Config) {
             const final: Record<string, string> = {};
             (await Promise.allSettled((keys.map((key) => {
                 return config.models.Setting.from(key);
-            })))).forEach((k) => {
-                if (k.status === 'rejected') return;
+            })))).forEach((k, i) => {
+                if (k.status === 'rejected') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    if (FullConfigDefaults[keys[i] as keyof Static<typeof FullConfig>] !== undefined) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        final[keys[i]] = FullConfigDefaults[keys[i] as keyof Static<typeof FullConfig>] as any;
+                    }
+                    return;
+                }
                 return final[k.value.key] = String(k.value.value);
             });
 
@@ -197,6 +215,8 @@ export default async function router(schema: Schema, config: Config) {
                 if (k.status === 'rejected') return;
                 return final[k.value.key as keyof Static<typeof FullConfig>] = k.value.value as any;
             });
+
+            console.error(final);
 
             res.json(final);
         } catch (err) {
@@ -250,6 +270,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const keys = [
+                'login::name',
                 'login::logo',
                 'login::signup',
                 'login::forgot',
@@ -267,10 +288,6 @@ export default async function router(schema: Schema, config: Config) {
                 if (k.status === 'rejected') return;
                 return final[k.value.key.replace('login::', '')] = String(k.value.value);
             });
-
-            if (config.server.name) {
-                final.name = config.server.name;
-            }
 
             for (let login of keys) {
                 login = login.replace('login::', '')
