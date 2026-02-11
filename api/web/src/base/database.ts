@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type {
     Feature,
+    Group,
     Mission,
     MissionRole,
     MissionChange,
@@ -17,6 +18,8 @@ export interface DBFeature {
     properties: Feature["properties"];
     geometry: Feature["geometry"];
 }
+
+export interface DBGroup extends Group { }
 
 export interface DBChatroom {
     id: string;
@@ -150,6 +153,7 @@ export interface DBConfig {
 export type DatabaseType = Dexie & {
     icon: EntityTable<DBIcon, 'name'>,
     iconset: EntityTable<DBIconset, 'uid'>,
+    group: EntityTable<DBGroup, 'name'>,
     video: EntityTable<DBVideo, 'id'>,
     filter: EntityTable<DBFilter, 'id'>,
     feature: EntityTable<DBFeature, 'id'>,
@@ -170,6 +174,7 @@ export const db = new Dexie('CloudTAK') as DatabaseType;
 
 db.version(1).stores({
     icon: 'name',
+    group: 'name, active',
     iconset: 'uid, name',
     filter: 'id, external',
     video: 'id, username',
