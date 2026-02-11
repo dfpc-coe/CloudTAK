@@ -504,7 +504,7 @@ export const useMapStore = defineStore('cloudtak', {
                     'map::center': '-100,40',
                     'map::zoom': 4,
                     'map::pitch': 0,
-                    'map::bearing': 0,
+                    'map::bearing': '0',
                     'map::basemap': null
                 }
             });
