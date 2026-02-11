@@ -322,7 +322,7 @@ channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
     if (!msg || !msg.type) return;
 
     if (msg.type === WorkerMessageType.Contact_Change) {
-        await fetchUserList();
+        await fetchUserList(false);
     }
 }
 
@@ -487,8 +487,8 @@ async function fetchMissions() {
     loading.value = false;
 }
 
-async function fetchUserList() {
-    loading.value = true;
+async function fetchUserList(loading = true) {
+    loading.value = loading;
     const url = stdurl('/api/marti/api/contacts/all');
     contacts.value = await std(url) as ContactList;
     loading.value = false;
