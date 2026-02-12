@@ -58,7 +58,6 @@ export const FullConfig = Type.Object({
         description: 'Default Basemap for New Users'
     }),
 
-
     'display::stale': Type.Enum(Profile_Stale),
     'display::distance': Type.Enum(Profile_Distance),
     'display::elevation': Type.Enum(Profile_Elevation),
@@ -169,7 +168,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const keys = (req.query.keys || '').split(',');
-            if (!keys.every((k: any) => PublicConfigKeys.includes(k))) {
+            if (!keys.every((k: string) => PublicConfigKeys.includes(k))) {
                 await Auth.as_user(config, req, { admin: true });
             }
 
