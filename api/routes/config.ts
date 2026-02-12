@@ -162,7 +162,20 @@ export const UserConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'map::bearing',
     'map::zoom',
     'map::basemap',
-]
+    'group::Yellow',
+    'group::Cyan',
+    'group::Green',
+    'group::Red',
+    'group::Purple',
+    'group::Orange',
+    'group::Blue',
+    'group::Magenta',
+    'group::White',
+    'group::Maroon',
+    'group::Dark Blue',
+    'group::Teal',
+    'group::Dark Green',
+    'group::Brown',]
 
 export default async function router(schema: Schema, config: Config) {
     const profileControl = new ProfileControl(config);
