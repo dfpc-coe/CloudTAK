@@ -128,7 +128,7 @@ async function cloudtak_task(task) {
 
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
-            docker buildx build ./tasks/$\{TASK}/ -t cloudtak-$\{TASK} \
+            docker buildx build --platform linux/amd64 --provenance=false --load ./tasks/$\{TASK}/ -t cloudtak-$\{TASK} \
             && docker tag cloudtak-$\{TASK}:latest "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{TASK}-$\{GITSHA}" \
             && docker push "$\{AWS_ACCOUNT_ID}.dkr.ecr.$\{AWS_REGION}.amazonaws.com/tak-vpc-${process.env.Environment}-cloudtak-api:$\{TASK}-$\{GITSHA}"
         `, (err) => {
