@@ -58,7 +58,6 @@ export const FullConfig = Type.Object({
         description: 'Default Basemap for New Users'
     }),
 
-
     'display::stale': Type.Enum(Profile_Stale),
     'display::distance': Type.Enum(Profile_Distance),
     'display::elevation': Type.Enum(Profile_Elevation),
@@ -140,6 +139,7 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'login::brand::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogoText.svg', import.meta.url)).toString('base64')}`
 };
 
+// Allows Unauthenticated Access to these Config Keys
 export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'media::url',
     'login::signup',
@@ -155,6 +155,28 @@ export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'oidc::enforced',
 ];
 
+// Allow Authenticated but Non-Admin Access to these Config Keys
+export const UserConfigKeys: (keyof Static<typeof FullConfig>)[] = [
+    'map::center',
+    'map::pitch',
+    'map::bearing',
+    'map::zoom',
+    'map::basemap',
+    'group::Yellow',
+    'group::Cyan',
+    'group::Green',
+    'group::Red',
+    'group::Purple',
+    'group::Orange',
+    'group::Blue',
+    'group::Magenta',
+    'group::White',
+    'group::Maroon',
+    'group::Dark Blue',
+    'group::Teal',
+    'group::Dark Green',
+    'group::Brown',]
+
 export default async function router(schema: Schema, config: Config) {
     const profileControl = new ProfileControl(config);
 
@@ -169,8 +191,12 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const keys = (req.query.keys || '').split(',');
-            if (!keys.every((k: any) => PublicConfigKeys.includes(k))) {
-                await Auth.as_user(config, req, { admin: true });
+            if (!keys.every((k: string) => PublicConfigKeys.includes(k))) {
+                if (keys.every((k: string) => PublicConfigKeys.includes(k) || UserConfigKeys.includes(k))) {
+                    await Auth.as_user(config, req);
+                } else {
+                    await Auth.as_user(config, req, { admin: true });
+                }
             }
 
             const final: Record<string, string> = {};
