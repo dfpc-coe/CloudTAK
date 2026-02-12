@@ -7,6 +7,7 @@ const flight = new Flight();
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
+flight.user({ admin: false });
 
 test('GET api/config', async () => {
     try {
@@ -170,5 +171,57 @@ test('GET api/config/map', async () => {
         assert.ifError(err);
     }
 });
+
+test('GET api/config (user - restricted)', async () => {
+    try {
+        const res = await flight.fetch('/api/config?keys=agol::token', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user
+            },
+        }, false);
+
+        assert.equal(res.status, 401);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET api/config (user - map keys)', async () => {
+    try {
+        const res = await flight.fetch('/api/config?keys=map::center', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user
+            },
+        }, false);
+
+        assert.equal(res.status, 200);
+        assert.deepEqual(res.body, {
+            'map::center': '-100,40'
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET api/config (user - group keys)', async () => {
+    try {
+        const res = await flight.fetch('/api/config?keys=group::Yellow', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user
+            },
+        }, false);
+
+        assert.equal(res.status, 200);
+        assert.deepEqual(res.body, {
+            'group::Yellow': 'Wildland Firefighter'
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 
 flight.landing();

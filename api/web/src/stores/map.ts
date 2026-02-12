@@ -493,29 +493,41 @@ export const useMapStore = defineStore('cloudtak', {
 
             const sprites = await IconManager.sprites();
 
-            const mapConfig = await Config.list([
-                'map::center',
-                'map::zoom',
-                'map::pitch',
-                'map::bearing',
-                'map::basemap'
-            ], {
-                defaults: {
-                    'map::center': '-100,40',
-                    'map::zoom': 4,
-                    'map::pitch': 0,
-                    'map::bearing': '0',
-                    'map::basemap': null
-                }
-            });
+            try {
+                const mapConfig = await Config.list([
+                    'map::center',
+                    'map::zoom',
+                    'map::pitch',
+                    'map::bearing',
+                    'map::basemap'
+                ], {
+                    defaults: {
+                        'map::center': '-100,40',
+                        'map::zoom': 4,
+                        'map::pitch': 0,
+                        'map::bearing': 0,
+                        'map::basemap': null
+                    }
+                });
 
-            this.mapConfig = {
-                center: String(mapConfig['map::center']),
-                zoom: Number(mapConfig['map::zoom']),
-                pitch: Number(mapConfig['map::pitch']),
-                bearing: Number(mapConfig['map::bearing']),
-                basemap: mapConfig['map::basemap'] ? Number(mapConfig['map::basemap']) : null
-            };
+                this.mapConfig = {
+                    center: String(mapConfig['map::center']),
+                    zoom: Number(mapConfig['map::zoom']),
+                    pitch: Number(mapConfig['map::pitch']),
+                    bearing: Number(mapConfig['map::bearing']),
+                    basemap: mapConfig['map::basemap'] ? Number(mapConfig['map::basemap']) : null
+                };
+            } catch (err) {
+                console.error('Failed to load map configuration, using defaults', err);
+
+                this.mapConfig = {
+                    center: '-100,40',
+                    zoom: 4,
+                    pitch: 0,
+                    bearing: 0,
+                    basemap: null
+                };
+            }
 
             const init: mapgl.MapOptions = {
                 container: this.container,
