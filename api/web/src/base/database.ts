@@ -5,7 +5,8 @@ import type {
     Mission,
     MissionRole,
     MissionChange,
-    MissionLog
+    MissionLog,
+    Contact
 } from '../types.ts';
 
 export interface DBIcon {
@@ -18,8 +19,6 @@ export interface DBFeature {
     properties: Feature["properties"];
     geometry: Feature["geometry"];
 }
-
-export interface DBGroup extends Group { }
 
 export interface DBChatroom {
     id: string;
@@ -150,10 +149,15 @@ export interface DBConfig {
     value: unknown;
 }
 
+export interface DBCache {
+    key: string;
+    updated: number;
+}
+
 export type DatabaseType = Dexie & {
     icon: EntityTable<DBIcon, 'name'>,
     iconset: EntityTable<DBIconset, 'uid'>,
-    group: EntityTable<DBGroup, 'name'>,
+    group: EntityTable<Group, 'name'>,
     video: EntityTable<DBVideo, 'id'>,
     filter: EntityTable<DBFilter, 'id'>,
     feature: EntityTable<DBFeature, 'id'>,
@@ -167,7 +171,9 @@ export type DatabaseType = Dexie & {
     mission_template: EntityTable<DBMissionTemplate, 'id'>,
     mission_template_log: EntityTable<DBMissionTemplateLog, 'id'>,
     profile: EntityTable<DBProfileConfig, 'key'>,
-    config: EntityTable<DBConfig, 'key'>
+    config: EntityTable<DBConfig, 'key'>,
+    cache: EntityTable<DBCache, 'key'>,
+    contact: EntityTable<Contact, 'uid'>
 };
 
 export const db = new Dexie('CloudTAK') as DatabaseType;
@@ -179,18 +185,21 @@ db.version(1).stores({
     filter: 'id, external',
     video: 'id, username',
     feature: 'id, path',
-
+    profile: 'key',
+    contact: 'uid, callsign',
     config: 'key',
+    cache: 'key',
 
     chatroom: 'id',
     chatroom_chats: 'id, chatroom',
 
     notification: 'id, type, name, body, url, created, toast, read',
+
     subscription: 'guid, name',
     subscription_log: 'id, [mission+id]',
     subscription_feature: 'id, mission, [mission+id]',
     subscription_changes: '++id, mission',
+
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
-    profile: 'key'
 });
