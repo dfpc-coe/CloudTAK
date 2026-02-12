@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.75.2 - 2026-02-12
+
+- :bug: non-admin users would not be able to access the config API and result in a failed login
+
 ### v12.75.1 - 2026-02-11
 
 - :bug: Use `login::logo` in Main Menu
