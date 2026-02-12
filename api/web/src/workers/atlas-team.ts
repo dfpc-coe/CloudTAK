@@ -1,21 +1,18 @@
 import type Atlas from './atlas.ts';
-import { std, stdurl } from '../std.ts';
 import type COT from '../base/cot.ts';
+import ContactManager from '../base/contact.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import {
     WorkerMessageType
 } from '../base/events.ts';
 
-import type { ContactList, Contact } from '../types.ts';
+import type { Contact } from '../types.ts';
 
 export default class AtlasTeam {
     atlas: Atlas;
-    contacts: Map<string, Contact>
 
     constructor(atlas: Atlas) {
         this.atlas = atlas;
-
-        this.contacts = new Map();
     }
 
     async init(): Promise<void> {
@@ -27,7 +24,7 @@ export default class AtlasTeam {
             throw new Error('Contact Marker must have group property');
         }
 
-        const entry = this.contacts.get(cot.id);
+        const entry = await ContactManager.get(cot.id);
 
         if (entry) {
             return entry;
@@ -42,7 +39,7 @@ export default class AtlasTeam {
                 takv: ''
             }
 
-            this.contacts.set(cot.id, contact);
+            await ContactManager.put(contact);
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Contact_Change
@@ -63,32 +60,19 @@ export default class AtlasTeam {
     }
 
     async get(uid: string): Promise<Contact | undefined> {
-        return this.contacts.get(uid);
+        return await ContactManager.get(uid);
     }
 
     async getByCallsign(callsign: string): Promise<Contact | undefined> {
-        for (const contact of this.contacts.values()) {
-            if (contact.callsign === callsign) return contact;
-        }
+        const contacts = await ContactManager.list({ filter: callsign });
+        return contacts.find(c => c.callsign === callsign);
     }
 
     async list(): Promise<Contact[]> {
-        return Array.from(this.contacts.values());
+        return await ContactManager.list();
     }
 
-    async load(): Promise<Map<string, Contact>> {
-        const url = stdurl('/api/marti/api/contacts/all');
-        const contacts = await std(url, {
-            token: this.atlas.token
-        }) as ContactList;
-
-        this.contacts.clear();
-
-        for (const contact of contacts) {
-            if (!contact.uid) continue;
-            this.contacts.set(contact.uid, contact);
-        }
-
-        return this.contacts;
+    async load(): Promise<Contact[]> {
+        return await ContactManager.sync(this.atlas.token);
     }
 }

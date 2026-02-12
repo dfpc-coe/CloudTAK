@@ -122,7 +122,7 @@
 <script setup lang='ts'>
 import { ref, computed, onErrorCaptured, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router';
-import type { Login, Server } from './types.ts';
+import type { Server } from './types.ts';
 import Config from './base/config.ts';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';

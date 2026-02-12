@@ -111,7 +111,11 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
+import type { Ref } from 'vue';
+import { from } from 'rxjs';
+import { useObservable } from '@vueuse/rxjs';
 import type { Group } from '../../../../src/types.ts';
+import GroupManager from '../../../base/group.ts';
 import {
     TablerNone,
     TablerIconButton,
@@ -140,7 +144,10 @@ const paging = ref({
     filter: ''
 });
 
-const channels = ref<Array<Group>>([]);
+const channels = useObservable(
+    from(GroupManager.live()),
+    { initialValue: [] }
+) as Ref<Group[]>;
 
 onMounted(async () => {
     await refresh();
@@ -176,7 +183,7 @@ async function refresh() {
     loading.value = true;
 
     try {
-        channels.value = await mapStore.worker.profile.loadChannels();
+        await mapStore.worker.profile.loadChannels();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
@@ -187,20 +194,22 @@ async function refresh() {
 async function setAllStatus(active=true) {
     // Updating the API takes a perceptable amount of time so
     // we update the UI state to provide immediate feedback
-    channels.value.forEach((ch) => {
-        ch.active = active;
-    })
+    const updates = channels.value.map((ch) => {
+        const char = JSON.parse(JSON.stringify(ch));
+        char.active = active;
+        return char;
+    });
 
-    channels.value = await mapStore.worker.profile.setAllChannels(active);
+    await GroupManager.put(updates);
+
+    await mapStore.worker.profile.setAllChannels(active);
 }
 
 async function setStatus(channel: Group, active=false) {
-    channels.value.forEach((ch) => {
-        if (ch.name === channel.name) {
-            ch.active = active;
-        }
-    })
+    const update = JSON.parse(JSON.stringify(channel));
+    update.active = active;
+    await GroupManager.put(update);
 
-    channels.value = await mapStore.worker.profile.setChannel(channel.name, active);
+    await mapStore.worker.profile.setChannel(channel.name, active);
 }
 </script>
