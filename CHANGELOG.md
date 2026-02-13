@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.75.3 - 2026-02-13
+
+- :bug: Fix Circle Generation when using the Circle Tool
+
 ### v12.75.2 - 2026-02-12
 
 - :bug: non-admin users would not be able to access the config API and result in a failed login
