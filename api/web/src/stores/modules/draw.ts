@@ -353,6 +353,14 @@ export default class DrawTool {
                         feat.properties.type = 'u-d-f';
                     } else if (this.mode === DrawToolMode.CIRCLE) {
                         feat.properties.type = 'u-d-c-c';
+
+                        feat.properties.shape = {
+                            ellipse: {
+                                major: storeFeat.properties.radiusKilometers * 1000,
+                                minor: storeFeat.properties.radiusKilometers * 1000,
+                                angle: 360
+                            }
+                        };
                     } else if (this.mode === DrawToolMode.POINT) {
                         feat.properties.type = this.point.type
                         feat.properties["marker-opacity"] = 1;
