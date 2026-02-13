@@ -354,10 +354,12 @@ export default class DrawTool {
                     } else if (this.mode === DrawToolMode.CIRCLE) {
                         feat.properties.type = 'u-d-c-c';
 
+                        const radius = storeFeat.properties.radiusKilometers ? Number(storeFeat.properties.radiusKilometers) : 0.5;
+
                         feat.properties.shape = {
                             ellipse: {
-                                major: storeFeat.properties.radiusKilometers * 1000,
-                                minor: storeFeat.properties.radiusKilometers * 1000,
+                                major: radius,
+                                minor: radius,
                                 angle: 360
                             }
                         };
