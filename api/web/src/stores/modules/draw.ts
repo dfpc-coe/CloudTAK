@@ -354,7 +354,7 @@ export default class DrawTool {
                     } else if (this.mode === DrawToolMode.CIRCLE) {
                         feat.properties.type = 'u-d-c-c';
 
-                        const radius = storeFeat.properties.radiusKilometers ? Number(storeFeat.properties.radiusKilometers) : 0.5;
+                        const radius = storeFeat.properties.radiusKilometers ? (Number(storeFeat.properties.radiusKilometers) * 1000) : 100;
 
                         feat.properties.shape = {
                             ellipse: {
