@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/cloudtak",
     "type": "module",
-    "version": "12.75.2",
+    "version": "12.75.3",
     "types": "dist/types/plugin.d.ts",
     "files": [
         "dist/types"
