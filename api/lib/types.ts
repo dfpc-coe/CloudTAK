@@ -402,13 +402,21 @@ export const ConnectionResponse = Type.Object({
     enabled: Type.Boolean(),
 });
 
-export const BasemapResponse = createSelectSchema(schemas.Basemap, {
-    id: Type.Integer(),
-    minzoom: Type.Integer(),
-    maxzoom: Type.Integer(),
-    frequency: Type.Union([Type.Null(), Type.Integer()]),
-    styles: Type.Array(Type.Unknown()),
-    collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
-    sharing_token: Type.Optional(Type.Union([Type.Null(), Type.String()])),
-    snapping_layer: Type.Union([Type.Null(), Type.String()]),
-});
+export const BasemapResponse = Type.Composite([
+    createSelectSchema(schemas.Basemap, {
+        id: Type.Integer(),
+        minzoom: Type.Integer(),
+        maxzoom: Type.Integer(),
+        collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+        sharing_token: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+        frequency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
+        scheme: Type.Optional(Type.Enum(Basemap_Scheme))
+    }),
+    Type.Object({
+        styles: Type.Optional(Type.Array(Type.Unknown())),
+        iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+        snapping_enabled: Type.Optional(Type.Boolean()),
+        title: Type.Optional(Type.String()),
+        snapping_layer: Type.Optional(Type.Union([Type.Null(), Type.String()]))
+    })
+])
