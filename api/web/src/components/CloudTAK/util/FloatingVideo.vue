@@ -229,6 +229,11 @@ const active = ref();
 const isBuffering = ref(false);
 const bufferCheckInterval = ref<number | undefined>();
 
+// Buffer monitoring configuration
+const BUFFER_LOW_THRESHOLD = 2; // Pause when buffer falls below 2 seconds
+const BUFFER_RECOVERY_THRESHOLD = 5; // Resume when buffer recovers to 5+ seconds
+const BUFFER_CHECK_INTERVAL_MS = 500; // Check buffer every 500ms
+
 // Computed title - uses stream metadata name if available, falls back to prop
 const title = computed(() => {
     if (active.value && active.value.metadata) {
@@ -254,18 +259,18 @@ function monitorBuffer(): void {
         const bufferedEnd = buffered.end(buffered.length - 1);
         const bufferAhead = bufferedEnd - currentTime;
 
-        // If buffer is low (less than 2 seconds), pause and show overlay
-        if (bufferAhead < 2 && !isBuffering.value) {
+        // If buffer is low (less than threshold), pause and show overlay
+        if (bufferAhead < BUFFER_LOW_THRESHOLD && !isBuffering.value) {
             console.log(`Buffer running low (${bufferAhead.toFixed(2)}s), pausing for buffering...`);
             video.pause();
             isBuffering.value = true;
         }
 
-        // If buffer has recovered (more than 5 seconds), resume
-        if (bufferAhead > 5 && isBuffering.value) {
+        // If buffer has recovered (more than threshold), resume
+        if (bufferAhead > BUFFER_RECOVERY_THRESHOLD && isBuffering.value) {
             console.log(`Buffer recovered (${bufferAhead.toFixed(2)}s), resuming playback...`);
             isBuffering.value = false;
-            video.play().catch(e => console.error("Resume failed:", e));
+            video.play().catch(e => console.error("Failed to resume video playback after buffering:", e));
         }
     } catch (err) {
         console.error('Error monitoring buffer:', err);
@@ -478,7 +483,7 @@ async function createPlayer(): Promise<void> {
                 if (videoTag.value) await videoTag.value.play();
                 
                 // Start buffer monitoring interval
-                bufferCheckInterval.value = window.setInterval(monitorBuffer, 500);
+                bufferCheckInterval.value = window.setInterval(monitorBuffer, BUFFER_CHECK_INTERVAL_MS);
             } catch (err) {
                 console.error("Error playing video:", err);
             }
