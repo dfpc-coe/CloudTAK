@@ -66,7 +66,11 @@ export default async function router(schema: Schema, config: Config) {
                     where: sql`
                         USERNAME IS NULL
                         AND type = 'vector'
-                        AND snapping_enabled = true
+                        AND id IN (
+                            SELECT basemap
+                            FROM basemaps_vector
+                            WHERE snapping_enabled = true
+                        )
                     `
                 })
             ]);
