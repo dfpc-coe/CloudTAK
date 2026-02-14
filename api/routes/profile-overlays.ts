@@ -104,7 +104,8 @@ export default async function router(schema: Schema, config: Config) {
                     total--;
                 } else if (item.mode === 'basemap' || item.mode === 'overlay') {
                     try {
-                        const basemap = await config.models.Basemap.from(item.mode_id);
+                        if (!item.mode_id) throw new Error('mode_id is required');
+                        const basemap = await config.models.Basemap.from(parseInt(item.mode_id));
                         items.push({
                             ...item,
                             opacity: Number(item.opacity),
@@ -155,7 +156,8 @@ export default async function router(schema: Schema, config: Config) {
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot get another\'s overlay');
 
             if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
-                const basemap = await config.models.Basemap.from(overlay.mode_id);
+                if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
+                const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
 
                 res.json({
                     ...overlay,
@@ -224,7 +226,8 @@ export default async function router(schema: Schema, config: Config) {
             overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
 
             if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
-                const basemap = await config.models.Basemap.from(overlay.mode_id);
+                if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
+                const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
 
                 res.json({
                     ...overlay,
@@ -314,7 +317,8 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
-                const basemap = await config.models.Basemap.from(overlay.mode_id);
+                if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
+                const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
 
                 res.json({
                     ...overlay,
