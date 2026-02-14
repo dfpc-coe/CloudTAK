@@ -74,7 +74,7 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    flyTo: {
+    flyToClick: {
         type: Boolean,
         default: true
     },
@@ -111,7 +111,7 @@ async function isChatable(contact) {
 }
 
 async function flyTo(contact) {
-    if (!await isZoomable(contact) || !props.flyTo) return;
+    if (!await isZoomable(contact) || !props.flyToClick) return;
 
     const cot = await mapStore.worker.db.get(contact.uid);
     if (!cot) return;
