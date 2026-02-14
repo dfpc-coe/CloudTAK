@@ -81,8 +81,8 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             snapping_enabled: false,
             title: 'callsign',
             snapping_layer: null,
+            ...specific,
             ...base,
-            ...specific
         };
     }
 
@@ -160,10 +160,10 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             total: pgres[0].count,
             items: pgres.map((row) => {
                 return {
-                    ...row.basemap,
                     ...row.vector,
                     ...row.terrain,
-                    ...row.raster
+                    ...row.raster,
+                    ...row.basemap,
                 }
             })
         };
