@@ -1072,6 +1072,13 @@
       "when": 1770832353023,
       "tag": "0152_living_pixie",
       "breakpoints": true
+    },
+    {
+      "idx": 153,
+      "version": "7",
+      "when": 1771094399458,
+      "tag": "0153_talented_medusa",
+      "breakpoints": true
     }
   ]
 }

@@ -75,7 +75,15 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             specific = res[0];
         }
 
-        return { ...base, ...specific };
+        return {
+            styles: [],
+            iconset: '',
+            snapping_enabled: false,
+            title: 'callsign',
+            snapping_layer: null,
+            ...base,
+            ...specific
+        };
     }
 
     async commit(id: number, input: any): Promise<any> {
