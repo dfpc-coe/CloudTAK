@@ -98,6 +98,26 @@
                         :size='32'
                         stroke='1'
                     />Public Tilesets</label>
+
+                    <input
+                        id='entry-tilejson'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='mode === "tilejson"'
+                        @click='mode = "tilejson"'
+                    >
+
+                    <label
+                        for='entry-tilejson'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconBraces
+                        v-tooltip='"TileJSON"'
+                        class='me-2'
+                        :size='32'
+                        stroke='1'
+                    />TileJSON</label>
                 </div>
 
                 <template v-if='mode === "public"'>
@@ -105,6 +125,28 @@
                         :url='overlay.url'
                         @select='publicTileSelect($event)'
                     />
+                </template>
+                <template v-else-if='mode === "tilejson"'>
+                    <div class='col-12'>
+                        <label class='form-label'>TileJSON URL</label>
+                        <div class='input-group'>
+                            <input
+                                v-model='tilejson_url'
+                                type='text'
+                                class='form-control'
+                                placeholder='https://example.com/tilejson.json'
+                            >
+                            <TablerButton
+                                class='btn-primary'
+                                @click='fetchTileJSON'
+                            >
+                                <IconSearch
+                                    :size='20'
+                                    stroke='1'
+                                />
+                            </TablerButton>
+                        </div>
+                    </div>
                 </template>
 
                 <div class='col-12'>
@@ -181,7 +223,7 @@
                     />
                 </div>
 
-                <template v-if='overlay.type === "vector" && mode === "public"'>
+                <template v-if='overlay.type === "vector" && (mode === "public" || mode === "tilejson")'>
                     <div class='col-12'>
                         <div class='row g-2 my-2 border rounded'>
                             <div class='col-12'>
@@ -241,7 +283,9 @@ import PublicTilesSelect from '../util/PublicTilesSelect.vue';
 import {
     IconTerminal,
     IconList,
-    IconCircleArrowLeft
+    IconCircleArrowLeft,
+    IconBraces,
+    IconSearch
 } from '@tabler/icons-vue';
 import {
     TablerEnum,
@@ -258,6 +302,7 @@ const router = useRouter();
 
 const loading = ref(true);
 const mode = ref('manual');
+const tilejson_url = ref('');
 const overlay = ref({
     name: '',
     url: '',
@@ -304,6 +349,37 @@ async function deleteOverlay() {
     } catch (err) {
         loading.value = false;
         throw err;
+    }
+}
+
+async function fetchTileJSON() {
+    if (!tilejson_url.value) return;
+
+    try {
+        const res = await fetch(tilejson_url.value);
+        if (!res.ok) throw new Error('Failed to fetch TileJSON');
+        const tilejson = await res.json();
+
+        if (tilejson.name && !overlay.value.name) {
+            overlay.value.name = tilejson.name;
+        }
+
+        if (tilejson.tiles && tilejson.tiles.length > 0) {
+            overlay.value.url = tilejson.tiles[0];
+        }
+
+        if (tilejson.minzoom !== undefined) overlay.value.minzoom = tilejson.minzoom;
+        if (tilejson.maxzoom !== undefined) overlay.value.maxzoom = tilejson.maxzoom;
+
+        if (tilejson.bounds) {
+            overlay.value.bounds = tilejson.bounds.join(',');
+        }
+
+        if (tilejson.center) {
+            overlay.value.center = tilejson.center.slice(0, 2).join(',');
+        }
+    } catch (err) {
+        console.error(err);
     }
 }
 
