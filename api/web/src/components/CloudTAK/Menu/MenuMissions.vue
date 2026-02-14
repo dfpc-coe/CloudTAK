@@ -201,14 +201,13 @@ const invites = ref<MissionInvite[]>([]);
 
 onMounted(async () => {
     await fetchMissions();
-    await generateFilteredList()
 });
 
 const subscribed = ref<Set<string>>(new Set())
 const filteredList = ref<Array<Mission>>([]);
 
 watch(paging.value, async () => {
-    generateFilteredList();
+    await generateFilteredList();
 });
 
 async function generateFilteredList() {
@@ -298,6 +297,8 @@ async function fetchMissions() {
         loading.value = false;
         error.value = err instanceof Error ? err : new Error(String(err));
     }
+
+    await generateFilteredList()
 
     loading.value = false;
 }

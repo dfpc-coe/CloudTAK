@@ -124,6 +124,7 @@
                             :contact='a'
                             :button-chat='false'
                             :button-zoom='false'
+                            :flyTo='false'
                             :selected='selectedUsers.has(a)'
                             class='rounded'
                             @click='selectedUsers.has(a) ? selectedUsers.delete(a) : selectedUsers.add(a)'
