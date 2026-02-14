@@ -148,7 +148,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             .leftJoin(BasemapTerrain, eq(Basemap.id, BasemapTerrain.basemap))
             .leftJoin(BasemapRaster, eq(Basemap.id, BasemapRaster.basemap))
             .where(query.where)
-            .orderBy(query.order === 'desc' ? desc(sql.raw(query.sort || 'id')) : sql.raw(query.sort || 'id'))
+            .orderBy(query.order === 'desc' ? desc(sql.raw(query.sort === 'id' || !query.sort ? 'basemaps.id' : query.sort)) : sql.raw(query.sort === 'id' || !query.sort ? 'basemaps.id' : query.sort))
             .limit(query.limit || 10)
             .offset((query.page || 0) * (query.limit || 10))
 

@@ -356,27 +356,31 @@ async function fetchTileJSON() {
     if (!tilejson_url.value) return;
 
     try {
-        const res = await fetch(tilejson_url.value);
-        if (!res.ok) throw new Error('Failed to fetch TileJSON');
-        const tilejson = await res.json();
+        const res = await std('/api/basemap', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'text/plain'
+            },
+            body: tilejson_url.value
+        });
 
-        if (tilejson.name && !overlay.value.name) {
-            overlay.value.name = tilejson.name;
+        if (res.name && !overlay.value.name) overlay.value.name = res.name;
+        if (res.url) overlay.value.url = res.url;
+        if (res.minzoom !== undefined) overlay.value.minzoom = res.minzoom;
+        if (res.maxzoom !== undefined) overlay.value.maxzoom = res.maxzoom;
+        if (res.type) overlay.value.type = res.type;
+        if (res.format) overlay.value.format = res.format;
+
+        if (res.bounds && Array.isArray(res.bounds)) {
+            overlay.value.bounds = res.bounds.join(',');
+        } else if (res.bounds) {
+            overlay.value.bounds = res.bounds;
         }
 
-        if (tilejson.tiles && tilejson.tiles.length > 0) {
-            overlay.value.url = tilejson.tiles[0];
-        }
-
-        if (tilejson.minzoom !== undefined) overlay.value.minzoom = tilejson.minzoom;
-        if (tilejson.maxzoom !== undefined) overlay.value.maxzoom = tilejson.maxzoom;
-
-        if (tilejson.bounds) {
-            overlay.value.bounds = tilejson.bounds.join(',');
-        }
-
-        if (tilejson.center) {
-            overlay.value.center = tilejson.center.slice(0, 2).join(',');
+        if (res.center && Array.isArray(res.center)) {
+            overlay.value.center = res.center.slice(0, 2).join(',');
+        } else if (res.center) {
+            overlay.value.center = res.center;
         }
     } catch (err) {
         console.error(err);
