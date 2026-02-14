@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.75.5 - 2026-02-14
+
+- :bug: Include legacy style properties to avoid color issues in iTAK
+
 ### v12.75.4 - 2026-02-13
 
 - :bug: Fix Circle Colour Parsing
