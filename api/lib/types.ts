@@ -402,21 +402,33 @@ export const ConnectionResponse = Type.Object({
     enabled: Type.Boolean(),
 });
 
-export const BasemapResponse = Type.Composite([
-    createSelectSchema(schemas.Basemap, {
-        id: Type.Integer(),
-        minzoom: Type.Integer(),
-        maxzoom: Type.Integer(),
-        collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
-        sharing_token: Type.Optional(Type.Union([Type.Null(), Type.String()])),
-        frequency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
-        scheme: Type.Optional(Type.Enum(Basemap_Scheme))
-    }),
-    Type.Object({
-        styles: Type.Optional(Type.Array(Type.Unknown())),
-        iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
-        snapping_enabled: Type.Optional(Type.Boolean()),
-        title: Type.Optional(Type.String()),
-        snapping_layer: Type.Optional(Type.Union([Type.Null(), Type.String()]))
-    })
-])
+export const BasemapResponse = Type.Object({
+    id: Type.Integer(),
+    created: Type.String(),
+    updated: Type.String(),
+    name: Type.String(),
+    url: Type.String(),
+    bounds: Type.Any(),
+    center: Type.Any(),
+    minzoom: Type.Integer(),
+    maxzoom: Type.Integer(),
+    format: Type.Enum(Basemap_Format),
+    type: Type.Enum(Basemap_Type),
+    username: Type.Union([Type.Null(), Type.String()]),
+    sharing_enabled: Type.Boolean(),
+    sharing_token: Type.Union([Type.Null(), Type.String()]), // Explicitly Nullable
+    hidden: Type.Boolean(),
+    tilesize: Type.Integer(),
+    attribution: Type.Union([Type.Null(), Type.String()]),
+    collection: Type.Union([Type.Null(), Type.String()]),
+    frequency: Type.Union([Type.Null(), Type.Integer()]),
+    scheme: Type.Enum(Basemap_Scheme),
+    overlay: Type.Boolean(),
+    
+    // Vector
+    styles: Type.Optional(Type.Array(Type.Unknown())),
+    iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+    title: Type.Optional(Type.String()),
+    snapping_enabled: Type.Optional(Type.Boolean()),
+    snapping_layer: Type.Optional(Type.Union([Type.Null(), Type.String()]))
+});

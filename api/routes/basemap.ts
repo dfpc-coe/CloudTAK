@@ -668,7 +668,6 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             return await TileJSON.tile(
-                // @ts-expect-error TODO Fix polygon bounds
                 basemap,
                 req.params.z,
                 req.params.x,
