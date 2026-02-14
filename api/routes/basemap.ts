@@ -225,7 +225,11 @@ export default async function router(schema: Schema, config: Config) {
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
-                        AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
+                        AND (
+                            ${Param(req.query.snapping)}::BOOLEAN IS NULL OR
+                            (${Param(req.query.snapping)}::BOOLEAN = true AND id IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true)) OR
+                            (${Param(req.query.snapping)}::BOOLEAN = false AND id NOT IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true))
+                        )
                         AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                         AND (
                                 (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
@@ -244,7 +248,11 @@ export default async function router(schema: Schema, config: Config) {
                             collection ~* ${Param(req.query.filter)}
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                             AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
-                            AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
+                            AND (
+                                ${Param(req.query.snapping)}::BOOLEAN IS NULL OR
+                                (${Param(req.query.snapping)}::BOOLEAN = true AND id IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true)) OR
+                                (${Param(req.query.snapping)}::BOOLEAN = false AND id NOT IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true))
+                            )
                             AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                             AND ${scope}
                             AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
@@ -263,7 +271,11 @@ export default async function router(schema: Schema, config: Config) {
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
-                        AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
+                        AND (
+                            ${Param(req.query.snapping)}::BOOLEAN IS NULL OR
+                            (${Param(req.query.snapping)}::BOOLEAN = true AND id IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true)) OR
+                            (${Param(req.query.snapping)}::BOOLEAN = false AND id NOT IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true))
+                        )
                         AND (username IS NULL OR username = ${user.email})
                         AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                         AND (
@@ -282,7 +294,11 @@ export default async function router(schema: Schema, config: Config) {
                             collection ~* ${Param(req.query.filter)}
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                             AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
-                            AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
+                            AND (
+                                ${Param(req.query.snapping)}::BOOLEAN IS NULL OR
+                                (${Param(req.query.snapping)}::BOOLEAN = true AND id IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true)) OR
+                                (${Param(req.query.snapping)}::BOOLEAN = false AND id NOT IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true))
+                            )
                             AND (username IS NULL OR username = ${user.email})
                             AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                             AND ${scope}
