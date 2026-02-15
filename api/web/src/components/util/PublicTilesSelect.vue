@@ -136,10 +136,19 @@ watch(paging.value, async () => {
     await listTiles();
 });
 
+watch(() => props.url, async () => {
+    await fetchSelected();
+});
+
 onMounted(async () => {
     await listTiles();
+    await fetchSelected();
 
-    if (props.url) {
+    loading.value.main = false;
+});
+
+async function fetchSelected() {
+    if (props.url && !selected.value) {
         try {
             const u = new URL(props.url);
             const match = u.pathname.match(/\/public\/(.+?)(\/|$)/);
@@ -154,9 +163,7 @@ onMounted(async () => {
             console.error('Failed to parse URL for Public Tile', err);
         }
     }
-
-    loading.value.main = false;
-});
+}
 
 async function select(tile) {
     loading.value.tiles = true;
