@@ -211,34 +211,60 @@ export const Basemap = pgTable('basemaps', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    sharing_enabled: boolean().notNull().default(false),
-    sharing_token: text(),
-    snapping_enabled: boolean().notNull().default(false),
-    snapping_layer: text(),
     name: text().notNull(),
-    title: text().notNull().default('callsign'), // Title of features within the layer
     url: text().notNull(),
-    overlay: boolean().notNull().default(false),
-    hidden: boolean().notNull().default(false),
-    iconset: text().references(() => Iconset.uid),
-    username: text().references(() => Profile.username),
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
-    tilesize: integer().notNull().default(256),
-    frequency: integer(),
-    attribution: text(),
     center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
     minzoom: integer().notNull().default(0),
     maxzoom: integer().notNull().default(16),
-    collection: text(),
     format: text().$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
+    type: text().$type<Basemap_Type>().notNull().default(Basemap_Type.RASTER),
+
+    // Permissions
+    username: text().references(() => Profile.username),
+    sharing_enabled: boolean().notNull().default(false),
+    sharing_token: text(),
+    hidden: boolean().notNull().default(false),
+
+    // Display
+    tilesize: integer().notNull().default(256),
+    attribution: text(),
+    collection: text(),
+    frequency: integer(),
     scheme: text().$type<Basemap_Scheme>().notNull().default(Basemap_Scheme.XYZ),
-    styles: json().$type<Array<unknown>>().notNull().default([]),
-    type: text().$type<Basemap_Type>().notNull().default(Basemap_Type.RASTER)
+    overlay: boolean().notNull().default(false)
 }, (table) => {
     return {
         username_idx: index("basemaps_username_idx").on(table.username),
     }
-})
+});
+
+export const BasemapRaster = pgTable('basemaps_raster', {
+    id: serial().primaryKey(),
+    basemap: integer().notNull().references(() => Basemap.id, { onDelete: 'cascade' }),
+}, (table) => ({
+    basemap_idx: unique().on(table.basemap)
+}));
+
+export const BasemapVector = pgTable('basemaps_vector', {
+    id: serial().primaryKey(),
+    basemap: integer().notNull().references(() => Basemap.id, { onDelete: 'cascade' }),
+
+    styles: json().$type<Array<unknown>>().notNull().default([]),
+    iconset: text().references(() => Iconset.uid),
+    snapping_enabled: boolean().notNull().default(false),
+    title: text().notNull().default('callsign'),
+    snapping_layer: text(),
+}, (table) => ({
+    basemap_idx: unique().on(table.basemap)
+}));
+
+export const BasemapTerrain = pgTable('basemaps_terrain', {
+    id: serial().primaryKey(),
+    basemap: integer().notNull().references(() => Basemap.id, { onDelete: 'cascade' }),
+}, (table) => ({
+    basemap_idx: unique().on(table.basemap)
+}));
 
 export const Errors = pgTable('errors', {
     id: serial().primaryKey(),

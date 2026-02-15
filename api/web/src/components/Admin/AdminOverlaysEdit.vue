@@ -32,19 +32,24 @@
             >
                 <div class='col-12'>
                     <TablerInput
-                        v-model='overlay.name'
+                        v-model='basemaps[mode].name'
                         label='Name'
                         description='The display name of the overlay layer'
                     >
                         <TablerToggle
-                            v-model='overlay.sharing_enabled'
+                            v-model='basemaps[mode].sharing_enabled'
                             label='Enable Sharing'
                             description='Allow this overlay to be shared with other users via invalidatable token'
                         />
                         <TablerToggle
-                            v-model='overlay.hidden'
+                            v-model='basemaps[mode].hidden'
                             label='Hidden'
                             description='Hide this overlay from the default list'
+                        />
+                        <TablerToggle
+                            v-model='basemaps[mode].overlay'
+                            label='Overlay'
+                            description='If true, this layer is treated as an overlay on top of base maps'
                         />
                     </TablerInput>
                 </div>
@@ -52,7 +57,7 @@
                     <label class='mx-2 my-1'>Ownership</label>
                     <div class='border rounded'>
                         <UserSelect
-                            v-model='overlay.username'
+                            v-model='basemaps[mode].username'
                         />
                     </div>
                 </div>
@@ -98,150 +103,210 @@
                         :size='32'
                         stroke='1'
                     />Public Tilesets</label>
+
+                    <input
+                        id='entry-tilejson'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='mode === "tilejson"'
+                        @click='mode = "tilejson"'
+                    >
+
+                    <label
+                        for='entry-tilejson'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconBraces
+                        v-tooltip='"TileJSON"'
+                        class='me-2'
+                        :size='32'
+                        stroke='1'
+                    />TileJSON</label>
                 </div>
 
                 <template v-if='mode === "public"'>
                     <PublicTilesSelect
-                        :url='overlay.url'
+                        :url='basemaps[mode].url'
                         @select='publicTileSelect($event)'
                     />
                 </template>
-
-                <div class='col-12'>
-                    <TablerInput
-                        v-model='overlay.url'
-                        :disabled='mode !== "manual"'
-                        label='Data URL'
-                        description='The URL template of the tile server'
-                    >
-                        <TablerToggle
-                            v-model='overlay.overlay'
-                            label='Overlay'
-                            description='If true, this layer is treated as an overlay on top of base maps'
-                        />
-                    </TablerInput>
-                </div>
-
-                <div class='col-12 col-md-3'>
-                    <TablerInput
-                        v-model='overlay.minzoom'
-                        :disabled='mode !== "manual"'
-                        type='number'
-                        label='Minzoom'
-                        description='The minimum zoom level for which tiles are available'
-                    />
-                </div>
-                <div class='col-12 col-md-3'>
-                    <TablerInput
-                        v-model='overlay.maxzoom'
-                        :disabled='mode !== "manual"'
-                        type='number'
-                        label='Maxzoom'
-                        description='The maximum zoom level for which tiles are available'
-                    />
-                </div>
-                <div class='col-12 col-md-6'>
-                    <TablerInput
-                        v-model='overlay.frequency'
-                        label='Update Frequency (Seconds)'
-                        description='How often to refresh the tiles in seconds'
-                    />
-                </div>
-                <div class='col-12 col-md-6'>
-                    <TablerInput
-                        v-model='overlay.bounds'
-                        :disabled='mode !== "manual"'
-                        label='Bounds'
-                        description='The geographic bounds of the overlay (W,S,E,N)'
-                    />
-                </div>
-                <div class='col-12 col-md-6'>
-                    <TablerInput
-                        v-model='overlay.center'
-                        :disabled='mode !== "manual"'
-                        label='Center'
-                        description='The default center point of the overlay (Lon,Lat)'
-                    />
-                </div>
-                <div class='col-12 col-md-6'>
-                    <TablerEnum
-                        v-model='overlay.type'
-                        label='Type'
-                        :options='["vector", "raster", "raster-dem"]'
-                        description='The type of data served by this overlay'
-                    />
-                </div>
-                <div class='col-12 col-md-6'>
-                    <TablerEnum
-                        v-model='overlay.format'
-                        label='Overlay Format'
-                        :default='formats[0]'
-                        :options='formats'
-                        description='The file format of existing tiles'
-                    />
-                </div>
-
-                <template v-if='overlay.type === "vector" && mode === "public"'>
+                <template v-else-if='mode === "tilejson"'>
                     <div class='col-12'>
-                        <div class='row g-2 my-2 border rounded'>
-                            <div class='col-12'>
-                                <TablerToggle
-                                    v-model='overlay.snapping_enabled'
-                                    label='Enable Snapping'
-                                    description='Allow drawing tools to snap to the underlying vector features'
-                                />
-                            </div>
-
-                            <div
-                                v-if='overlay.snapping_enabled'
-                                class='col-12'
+                        <label class='form-label'>TileJSON URL</label>
+                        <div class='input-group'>
+                            <input
+                                v-model='tilejson_url'
+                                type='text'
+                                class='form-control'
+                                placeholder='https://example.com/tilejson.json'
                             >
-                                <TablerInput
-                                    v-model='overlay.snapping_layer'
-                                    label='Snapping Layer'
-                                    description='The specific layer name within the vector tiles to snap to'
+                            <TablerButton
+                                class='btn-primary'
+                                @click='fetchTileJSON'
+                            >
+                                <IconSearch
+                                    :size='20'
+                                    stroke='1'
                                 />
-                            </div>
+                            </TablerButton>
                         </div>
                     </div>
                 </template>
 
-                <div class='col-12'>
-                    <StyleContainer
-                        v-model='overlay.styles'
-                        :advanced='true'
-                    />
-                </div>
-                <div class='col-12 d-flex py-2'>
-                    <TablerDelete
-                        v-if='overlay.id'
-                        @delete='deleteOverlay'
-                    />
-                    <div class='ms-auto'>
-                        <TablerButton
-                            class='btn-primary'
-                            @click='saveOverlay'
-                        >
-                            Submit
-                        </TablerButton>
+                <template v-if='mode === "manual"'>
+                    <div class='col-12'>
+                        <TablerInput
+                            v-model='basemaps[mode].url'
+                            label='Data URL'
+                            description='The URL template of the tile server'
+                        />
                     </div>
-                </div>
+
+                    <div class='col-12 col-md-3'>
+                        <TablerInput
+                            v-model='basemaps[mode].minzoom'
+                            type='number'
+                            label='Minzoom'
+                            description='The minimum zoom level for which tiles are available'
+                        />
+                    </div>
+                    <div class='col-12 col-md-3'>
+                        <TablerInput
+                            v-model='basemaps[mode].maxzoom'
+                            type='number'
+                            label='Maxzoom'
+                            description='The maximum zoom level for which tiles are available'
+                        />
+                    </div>
+
+                    <div class='col-12 col-md-3'>
+                        <TablerInput
+                            v-model='basemaps[mode].bounds'
+                            label='Bounds'
+                            description='(W,S,E,N)'
+                        />
+                    </div>
+                    <div class='col-12 col-md-3'>
+                        <TablerInput
+                            v-model='basemaps[mode].center'
+                            label='Center'
+                            description='(Lon,Lat)'
+                        />
+                    </div>
+                    <div class='col-12 col-md-6'>
+                        <TablerEnum
+                            v-model='basemaps[mode].type'
+                            label='Type'
+                            :options='["vector", "raster", "raster-dem"]'
+                            description='The type of data served by this overlay'
+                        />
+                    </div>
+                    <div class='col-12 col-md-6'>
+                        <TablerEnum
+                            v-model='basemaps[mode].format'
+                            label='Overlay Format'
+                            :default='formats[0]'
+                            :options='formats'
+                            description='The file format of existing tiles'
+                        />
+                    </div>
+                </template>
+                <template v-else-if="basemaps[mode].url">
+                    <TileJSONView :overlay="basemaps[mode]" />
+                </template>
+
+                <template v-if="mode === 'manual' || basemaps[mode].url">
+                    <div class="col-12">
+                        <TablerInput
+                            v-if="basemaps[mode].frequency !== undefined && basemaps[mode].frequency !== null"
+                            v-model='basemaps[mode].frequency'
+                            label='Update Frequency (Seconds)'
+                            description='How often to refresh the tiles in seconds'
+                        >
+                            <TablerToggle
+                                :model-value="true"
+                                label="Enabled"
+                                @click="basemaps[mode].frequency = null"
+                            />
+                        </TablerInput>
+                        <div v-else
+                            class="mx-2 my-2"
+                        >
+                            <TablerToggle
+                                :model-value="false"
+                                label="Enable Auto-Update Frequency"
+                                description="Automatically refresh the tiles periodically"
+                                @click="basemaps[mode].frequency = 60"
+                            />
+                        </div>
+                    </div>
+
+                    <template v-if='basemaps[mode].type === "vector" && (mode === "public" || mode === "tilejson")'>
+                        <div class='col-12'>
+                            <div class='row g-2 my-2 border rounded'>
+                                <div class='col-12'>
+                                    <TablerToggle
+                                        v-model='basemaps[mode].snapping_enabled'
+                                        label='Enable Snapping'
+                                        description='Allow drawing tools to snap to the underlying vector features'
+                                    />
+                                </div>
+
+                                <div
+                                    v-if='basemaps[mode].snapping_enabled'
+                                    class='col-12'
+                                >
+                                    <TablerInput
+                                        v-model='basemaps[mode].snapping_layer'
+                                        label='Snapping Layer'
+                                        description='The specific layer name within the vector tiles to snap to'
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div class='col-12'>
+                        <StyleContainer
+                            v-model='basemaps[mode].styles'
+                            :advanced='true'
+                        />
+                    </div>
+                    <div class='col-12 d-flex py-2'>
+                        <TablerDelete
+                            v-if='basemaps[mode].id'
+                            @delete='deleteOverlay'
+                        />
+                        <div class='ms-auto'>
+                            <TablerButton
+                                class='btn-primary'
+                                @click='saveOverlay'
+                            >
+                                Submit
+                            </TablerButton>
+                        </div>
+                    </div>
+                </template>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { std, stdurl } from '../../std.ts';
 import StyleContainer from '../ETL/Styling/Style.vue';
 import UserSelect from '../util/UserSelect.vue';
 import PublicTilesSelect from '../util/PublicTilesSelect.vue';
+import TileJSONView from './TileJSONView.vue';
 import {
     IconTerminal,
     IconList,
-    IconCircleArrowLeft
+    IconCircleArrowLeft,
+    IconBraces,
+    IconSearch
 } from '@tabler/icons-vue';
 import {
     TablerEnum,
@@ -258,26 +323,67 @@ const router = useRouter();
 
 const loading = ref(true);
 const mode = ref('manual');
-const overlay = ref({
-    name: '',
-    url: '',
-    type: 'vector',
-    overlay: true,
-    styles: [],
-    minzoom: 0,
-    maxzoom: 16,
-    frequency: 0,
-    sharing_enabled: true,
-    sharing_token: null,
-    hidden: false,
-    bounds: '-180, -90, 180, 90',
-    center: '0, 0',
-    snapping_enabled: false,
-    snapping_layer: ''
+const tilejson_url = ref('');
+
+const basemaps = ref({
+    manual: {
+        name: '',
+        url: '',
+        minzoom: 0,
+        maxzoom: 16,
+        bounds: '-180, -90, 180, 90',
+        center: '0, 0',
+        type: 'vector',
+        format: 'mvt',
+        overlay: true,
+        styles: [],
+        frequency: null,
+        sharing_enabled: true,
+        sharing_token: null,
+        hidden: false,
+        snapping_enabled: false,
+        snapping_layer: ''
+    },
+    public: {
+        name: '',
+        url: '',
+        minzoom: 0,
+        maxzoom: 16,
+        bounds: '-180, -90, 180, 90',
+        center: '0, 0',
+        type: 'vector',
+        format: 'mvt',
+        overlay: true,
+        styles: [],
+        frequency: null,
+        sharing_enabled: true,
+        sharing_token: null,
+        hidden: false,
+        snapping_enabled: false,
+        snapping_layer: ''
+    },
+    tilejson: {
+        name: '',
+        url: '',
+        minzoom: 0,
+        maxzoom: 16,
+        bounds: '-180, -90, 180, 90',
+        center: '0, 0',
+        type: 'vector',
+        format: 'mvt',
+        overlay: true,
+        styles: [],
+        frequency: null,
+        sharing_enabled: true,
+        sharing_token: null,
+        hidden: false,
+        snapping_enabled: false,
+        snapping_layer: ''
+    }
 });
 
 const formats = computed(() => {
-    if (overlay.value.type === 'vector') {
+    if (basemaps.value[mode.value].type === 'vector') {
         return [ "mvt" ];
     } else {
         return [ "jpeg", "png" ];
@@ -296,7 +402,7 @@ async function deleteOverlay() {
     try {
         loading.value = true;
 
-        await std(`/api/basemap/${overlay.value.id}`, {
+        await std(`/api/basemap/${basemaps.value[mode.value].id}`, {
             method: 'DELETE'
         });
 
@@ -307,24 +413,59 @@ async function deleteOverlay() {
     }
 }
 
+async function fetchTileJSON() {
+    if (!tilejson_url.value) return;
+
+    const res = await std('/api/basemap', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'text/plain'
+        },
+        body: tilejson_url.value
+    });
+
+    if (res.name && !basemaps.value[mode.value].name) basemaps.value[mode.value].name = res.name;
+
+    basemaps.value[mode.value].url = tilejson_url.value.replace(/^https?:\/\//, 'tilejson://');
+
+    if (res.minzoom !== undefined) basemaps.value[mode.value].minzoom = res.minzoom;
+    if (res.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = res.maxzoom;
+    if (res.type) basemaps.value[mode.value].type = res.type;
+    if (res.format) basemaps.value[mode.value].format = res.format;
+
+    if (res.bounds && Array.isArray(res.bounds)) {
+        basemaps.value[mode.value].bounds = res.bounds.join(',');
+    } else if (res.bounds) {
+        basemaps.value[mode.value].bounds = res.bounds;
+    }
+
+    if (res.center && Array.isArray(res.center)) {
+        basemaps.value[mode.value].center = res.center.slice(0, 2).join(',');
+    } else if (res.center) {
+        basemaps.value[mode.value].center = res.center;
+    }
+}
+
 function publicTileSelect(tilejson) {
     if (tilejson) {
-        if (!overlay.value.name) {
-            overlay.value.name = tilejson.name.replace(/^public\//, "").replace(/\.pmtiles$/, "");
+        if (!basemaps.value[mode.value].name) {
+            basemaps.value[mode.value].name = tilejson.name.replace(/^public\//, "").replace(/\.pmtiles$/, "");
         }
 
-        overlay.value.url = tilejson.tiles[0].replace(/\?.*$/, '');
-        overlay.value.minzoom = tilejson.minzoom;
-        overlay.value.maxzoom = tilejson.maxzoom;
-        overlay.value.bounds = tilejson.bounds.join(',');
-        overlay.value.center = tilejson.center.slice(0, 2).join(',');
+        const url = new URL(tilejson.url);
+        url.search = '';
+        basemaps.value[mode.value].url = url.toString().replace(/^https?:\/\//, 'tilejson://');
+        if (tilejson.minzoom !== undefined) basemaps.value[mode.value].minzoom = tilejson.minzoom;
+        if (tilejson.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = tilejson.maxzoom;
+        if (tilejson.bounds) basemaps.value[mode.value].bounds = tilejson.bounds.join(',');
+        if (tilejson.center) basemaps.value[mode.value].center = tilejson.center.slice(0, 2).join(',');
     } else {
-        overlay.value.url = '';
+        basemaps.value[mode.value].url = '';
     }
 }
 
 async function saveOverlay() {
-    let body = JSON.parse(JSON.stringify(overlay.value));
+    let body = JSON.parse(JSON.stringify(basemaps.value[mode.value]));
 
     body.bounds = body.bounds.split(',').map((b) => {
         return Number(b);
@@ -356,17 +497,17 @@ async function saveOverlay() {
             ov.bounds = ov.bounds.join(',');
             ov.center = ov.center.join(',');
 
-            overlay.value = ov;
+            basemaps.value[mode.value] = ov;
 
-            router.push(`/admin/overlay/${overlay.value.id}`);
+            router.push(`/admin/overlay/${basemaps.value[mode.value].id}`);
         } else {
-            const url = stdurl(`/api/basemap/${overlay.value.id}`);
+            const url = stdurl(`/api/basemap/${basemaps.value[mode.value].id}`);
             if (body.username) url.searchParams.set('impersonate', body.username);
             const ov = await std(url, { method: 'PATCH', body });
             ov.bounds = ov.bounds.join(',');
             ov.center = ov.center.join(',');
 
-            overlay.value = ov;
+            basemaps.value[mode.value] = ov;
         }
 
         loading.value = false;
@@ -407,7 +548,7 @@ async function fetchOverlay() {
     if (!res.snapping_layer) res.snapping_layer = '';
     if (res.hidden === undefined) res.hidden = false;
 
-    overlay.value = res;
+    basemaps.value[mode.value] = res;
     loading.value = false;
 }
 </script>
