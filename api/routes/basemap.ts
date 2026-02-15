@@ -117,7 +117,12 @@ export default async function router(schema: Schema, config: Config) {
 
                 req.pipe(bb);
             } else if (req.headers['content-type'] && req.headers['content-type'].startsWith('text/plain')) {
-                const url = new URL(String(await stream2buffer(req)));
+                let url: URL;
+                try {
+                    const url = new URL(String(await stream2buffer(req)));
+                } catch (err) {
+                    throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL');
+                }
 
                 if (
                     String(url).match(/\/FeatureServer\/\d+$/)
@@ -359,7 +364,9 @@ export default async function router(schema: Schema, config: Config) {
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number())),
-            styles: Type.Optional(Type.Array(Type.Unknown()))
+            styles: Type.Optional(Type.Array(Type.Unknown())),
+            title: Type.Optional(Type.String()),
+            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
         }),
         res: AugmentedBasemapResponse
     }, async (req, res) => {
@@ -456,6 +463,8 @@ export default async function router(schema: Schema, config: Config) {
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number())),
             styles: Type.Optional(Type.Array(Type.Unknown())),
+            title: Type.Optional(Type.String()),
+            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
         }),
         res: AugmentedBasemapResponse
     }, async (req, res) => {
