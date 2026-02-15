@@ -32,22 +32,22 @@
             >
                 <div class='col-12'>
                     <TablerInput
-                        v-model='overlay.name'
+                        v-model='basemaps[mode].name'
                         label='Name'
                         description='The display name of the overlay layer'
                     >
                         <TablerToggle
-                            v-model='overlay.sharing_enabled'
+                            v-model='basemaps[mode].sharing_enabled'
                             label='Enable Sharing'
                             description='Allow this overlay to be shared with other users via invalidatable token'
                         />
                         <TablerToggle
-                            v-model='overlay.hidden'
+                            v-model='basemaps[mode].hidden'
                             label='Hidden'
                             description='Hide this overlay from the default list'
                         />
                         <TablerToggle
-                            v-model='overlay.overlay'
+                            v-model='basemaps[mode].overlay'
                             label='Overlay'
                             description='If true, this layer is treated as an overlay on top of base maps'
                         />
@@ -57,7 +57,7 @@
                     <label class='mx-2 my-1'>Ownership</label>
                     <div class='border rounded'>
                         <UserSelect
-                            v-model='overlay.username'
+                            v-model='basemaps[mode].username'
                         />
                     </div>
                 </div>
@@ -127,7 +127,7 @@
 
                 <template v-if='mode === "public"'>
                     <PublicTilesSelect
-                        :url='overlay.url'
+                        :url='basemaps[mode].url'
                         @select='publicTileSelect($event)'
                     />
                 </template>
@@ -157,7 +157,7 @@
                 <template v-if='mode === "manual"'>
                     <div class='col-12'>
                         <TablerInput
-                            v-model='overlay.url'
+                            v-model='basemaps[mode].url'
                             label='Data URL'
                             description='The URL template of the tile server'
                         />
@@ -165,7 +165,7 @@
 
                     <div class='col-12 col-md-3'>
                         <TablerInput
-                            v-model='overlay.minzoom'
+                            v-model='basemaps[mode].minzoom'
                             type='number'
                             label='Minzoom'
                             description='The minimum zoom level for which tiles are available'
@@ -173,7 +173,7 @@
                     </div>
                     <div class='col-12 col-md-3'>
                         <TablerInput
-                            v-model='overlay.maxzoom'
+                            v-model='basemaps[mode].maxzoom'
                             type='number'
                             label='Maxzoom'
                             description='The maximum zoom level for which tiles are available'
@@ -182,21 +182,21 @@
 
                     <div class='col-12 col-md-3'>
                         <TablerInput
-                            v-model='overlay.bounds'
+                            v-model='basemaps[mode].bounds'
                             label='Bounds'
                             description='(W,S,E,N)'
                         />
                     </div>
                     <div class='col-12 col-md-3'>
                         <TablerInput
-                            v-model='overlay.center'
+                            v-model='basemaps[mode].center'
                             label='Center'
                             description='(Lon,Lat)'
                         />
                     </div>
                     <div class='col-12 col-md-6'>
                         <TablerEnum
-                            v-model='overlay.type'
+                            v-model='basemaps[mode].type'
                             label='Type'
                             :options='["vector", "raster", "raster-dem"]'
                             description='The type of data served by this overlay'
@@ -204,7 +204,7 @@
                     </div>
                     <div class='col-12 col-md-6'>
                         <TablerEnum
-                            v-model='overlay.format'
+                            v-model='basemaps[mode].format'
                             label='Overlay Format'
                             :default='formats[0]'
                             :options='formats'
@@ -212,22 +212,22 @@
                         />
                     </div>
                 </template>
-                <template v-else-if="overlay.url">
-                    <TileJSONView :overlay="overlay" />
+                <template v-else-if="basemaps[mode].url">
+                    <TileJSONView :overlay="basemaps[mode]" />
                 </template>
 
-                <template v-if="mode === 'manual' || overlay.url">
+                <template v-if="mode === 'manual' || basemaps[mode].url">
                     <div class="col-12">
                         <TablerInput
-                            v-if="overlay.frequency !== undefined && overlay.frequency !== null"
-                            v-model='overlay.frequency'
+                            v-if="basemaps[mode].frequency !== undefined && basemaps[mode].frequency !== null"
+                            v-model='basemaps[mode].frequency'
                             label='Update Frequency (Seconds)'
                             description='How often to refresh the tiles in seconds'
                         >
                             <TablerToggle
                                 :model-value="true"
                                 label="Enabled"
-                                @click="overlay.frequency = null"
+                                @click="basemaps[mode].frequency = null"
                             />
                         </TablerInput>
                         <div v-else
@@ -237,28 +237,28 @@
                                 :model-value="false"
                                 label="Enable Auto-Update Frequency"
                                 description="Automatically refresh the tiles periodically"
-                                @click="overlay.frequency = 60"
+                                @click="basemaps[mode].frequency = 60"
                             />
                         </div>
                     </div>
 
-                    <template v-if='overlay.type === "vector" && (mode === "public" || mode === "tilejson")'>
+                    <template v-if='basemaps[mode].type === "vector" && (mode === "public" || mode === "tilejson")'>
                         <div class='col-12'>
                             <div class='row g-2 my-2 border rounded'>
                                 <div class='col-12'>
                                     <TablerToggle
-                                        v-model='overlay.snapping_enabled'
+                                        v-model='basemaps[mode].snapping_enabled'
                                         label='Enable Snapping'
                                         description='Allow drawing tools to snap to the underlying vector features'
                                     />
                                 </div>
 
                                 <div
-                                    v-if='overlay.snapping_enabled'
+                                    v-if='basemaps[mode].snapping_enabled'
                                     class='col-12'
                                 >
                                     <TablerInput
-                                        v-model='overlay.snapping_layer'
+                                        v-model='basemaps[mode].snapping_layer'
                                         label='Snapping Layer'
                                         description='The specific layer name within the vector tiles to snap to'
                                     />
@@ -269,13 +269,13 @@
 
                     <div class='col-12'>
                         <StyleContainer
-                            v-model='overlay.styles'
+                            v-model='basemaps[mode].styles'
                             :advanced='true'
                         />
                     </div>
                     <div class='col-12 d-flex py-2'>
                         <TablerDelete
-                            v-if='overlay.id'
+                            v-if='basemaps[mode].id'
                             @delete='deleteOverlay'
                         />
                         <div class='ms-auto'>
@@ -325,8 +325,9 @@ const loading = ref(true);
 const mode = ref('manual');
 const tilejson_url = ref('');
 
-const basemaps = {
+const basemaps = ref({
     manual: {
+        name: '',
         url: '',
         minzoom: 0,
         maxzoom: 16,
@@ -334,8 +335,17 @@ const basemaps = {
         center: '0, 0',
         type: 'vector',
         format: 'mvt',
+        overlay: true,
+        styles: [],
+        frequency: null,
+        sharing_enabled: true,
+        sharing_token: null,
+        hidden: false,
+        snapping_enabled: false,
+        snapping_layer: ''
     },
     public: {
+        name: '',
         url: '',
         minzoom: 0,
         maxzoom: 16,
@@ -343,8 +353,17 @@ const basemaps = {
         center: '0, 0',
         type: 'vector',
         format: 'mvt',
+        overlay: true,
+        styles: [],
+        frequency: null,
+        sharing_enabled: true,
+        sharing_token: null,
+        hidden: false,
+        snapping_enabled: false,
+        snapping_layer: ''
     },
     tilejson: {
+        name: '',
         url: '',
         minzoom: 0,
         maxzoom: 16,
@@ -352,39 +371,19 @@ const basemaps = {
         center: '0, 0',
         type: 'vector',
         format: 'mvt',
-    }
-}
-
-const overlay = ref({
-    name: '',
-    url: '',
-    type: 'vector',
-    overlay: true,
-    styles: [],
-    minzoom: 0,
-    maxzoom: 16,
-    frequency: null,
-    sharing_enabled: true,
-    sharing_token: null,
-    hidden: false,
-    bounds: '-180, -90, 180, 90',
-    center: '0, 0',
-    snapping_enabled: false,
-    snapping_layer: ''
-});
-
-watch(mode, (newMode, oldMode) => {
-    for (const key of Object.keys(basemaps[oldMode])) {
-        basemaps[oldMode][key] = overlay.value[key];
-    }
-
-    for (const key of Object.keys(basemaps[newMode])) {
-        overlay.value[key] = basemaps[newMode][key];
+        overlay: true,
+        styles: [],
+        frequency: null,
+        sharing_enabled: true,
+        sharing_token: null,
+        hidden: false,
+        snapping_enabled: false,
+        snapping_layer: ''
     }
 });
 
 const formats = computed(() => {
-    if (overlay.value.type === 'vector') {
+    if (basemaps.value[mode.value].type === 'vector') {
         return [ "mvt" ];
     } else {
         return [ "jpeg", "png" ];
@@ -403,7 +402,7 @@ async function deleteOverlay() {
     try {
         loading.value = true;
 
-        await std(`/api/basemap/${overlay.value.id}`, {
+        await std(`/api/basemap/${basemaps.value[mode.value].id}`, {
             method: 'DELETE'
         });
 
@@ -425,44 +424,44 @@ async function fetchTileJSON() {
         body: tilejson_url.value
     });
 
-    if (res.name && !overlay.value.name) overlay.value.name = res.name;
-    if (res.url) overlay.value.url = res.url;
-    if (res.minzoom !== undefined) overlay.value.minzoom = res.minzoom;
-    if (res.maxzoom !== undefined) overlay.value.maxzoom = res.maxzoom;
-    if (res.type) overlay.value.type = res.type;
-    if (res.format) overlay.value.format = res.format;
+    if (res.name && !basemaps.value[mode.value].name) basemaps.value[mode.value].name = res.name;
+    if (res.url) basemaps.value[mode.value].url = res.url;
+    if (res.minzoom !== undefined) basemaps.value[mode.value].minzoom = res.minzoom;
+    if (res.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = res.maxzoom;
+    if (res.type) basemaps.value[mode.value].type = res.type;
+    if (res.format) basemaps.value[mode.value].format = res.format;
 
     if (res.bounds && Array.isArray(res.bounds)) {
-        overlay.value.bounds = res.bounds.join(',');
+        basemaps.value[mode.value].bounds = res.bounds.join(',');
     } else if (res.bounds) {
-        overlay.value.bounds = res.bounds;
+        basemaps.value[mode.value].bounds = res.bounds;
     }
 
     if (res.center && Array.isArray(res.center)) {
-        overlay.value.center = res.center.slice(0, 2).join(',');
+        basemaps.value[mode.value].center = res.center.slice(0, 2).join(',');
     } else if (res.center) {
-        overlay.value.center = res.center;
+        basemaps.value[mode.value].center = res.center;
     }
 }
 
 function publicTileSelect(tilejson) {
     if (tilejson) {
-        if (!overlay.value.name) {
-            overlay.value.name = tilejson.name.replace(/^public\//, "").replace(/\.pmtiles$/, "");
+        if (!basemaps.value[mode.value].name) {
+            basemaps.value[mode.value].name = tilejson.name.replace(/^public\//, "").replace(/\.pmtiles$/, "");
         }
 
-        overlay.value.url = tilejson.tiles[0].replace(/\?.*$/, '');
-        overlay.value.minzoom = tilejson.minzoom;
-        overlay.value.maxzoom = tilejson.maxzoom;
-        overlay.value.bounds = tilejson.bounds.join(',');
-        overlay.value.center = tilejson.center.slice(0, 2).join(',');
+        basemaps.value[mode.value].url = tilejson.tiles[0].replace(/\?.*$/, '');
+        basemaps.value[mode.value].minzoom = tilejson.minzoom;
+        basemaps.value[mode.value].maxzoom = tilejson.maxzoom;
+        basemaps.value[mode.value].bounds = tilejson.bounds.join(',');
+        basemaps.value[mode.value].center = tilejson.center.slice(0, 2).join(',');
     } else {
-        overlay.value.url = '';
+        basemaps.value[mode.value].url = '';
     }
 }
 
 async function saveOverlay() {
-    let body = JSON.parse(JSON.stringify(overlay.value));
+    let body = JSON.parse(JSON.stringify(basemaps.value[mode.value]));
 
     body.bounds = body.bounds.split(',').map((b) => {
         return Number(b);
@@ -494,17 +493,17 @@ async function saveOverlay() {
             ov.bounds = ov.bounds.join(',');
             ov.center = ov.center.join(',');
 
-            overlay.value = ov;
+            basemaps.value[mode.value] = ov;
 
-            router.push(`/admin/overlay/${overlay.value.id}`);
+            router.push(`/admin/overlay/${basemaps.value[mode.value].id}`);
         } else {
-            const url = stdurl(`/api/basemap/${overlay.value.id}`);
+            const url = stdurl(`/api/basemap/${basemaps.value[mode.value].id}`);
             if (body.username) url.searchParams.set('impersonate', body.username);
             const ov = await std(url, { method: 'PATCH', body });
             ov.bounds = ov.bounds.join(',');
             ov.center = ov.center.join(',');
 
-            overlay.value = ov;
+            basemaps.value[mode.value] = ov;
         }
 
         loading.value = false;
@@ -545,7 +544,7 @@ async function fetchOverlay() {
     if (!res.snapping_layer) res.snapping_layer = '';
     if (res.hidden === undefined) res.hidden = false;
 
-    overlay.value = res;
+    basemaps.value[mode.value] = res;
     loading.value = false;
 }
 </script>
