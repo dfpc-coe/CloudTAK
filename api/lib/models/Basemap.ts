@@ -117,13 +117,20 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             if (input.title !== undefined) vector.title = input.title;
             if (input.snapping_layer !== undefined) vector.snapping_layer = input.snapping_layer;
 
-            await this.pool.insert(BasemapVector).values({
-                basemap: base.id,
-                ...vector
-            }).onConflictDoUpdate({
-                target: BasemapVector.basemap,
-                set: vector
-            });
+            if (Object.keys(vector).length) {
+                await this.pool.insert(BasemapVector).values({
+                    basemap: base.id,
+                    ...vector
+                }).onConflictDoUpdate({
+                    target: BasemapVector.basemap,
+                    set: vector
+                });
+            } else {
+                await this.pool.insert(BasemapVector).values({
+                    basemap: base.id,
+                }).onConflictDoNothing();
+            }
+
             await this.pool.delete(BasemapRaster).where(eq(BasemapRaster.basemap, base.id));
             await this.pool.delete(BasemapTerrain).where(eq(BasemapTerrain.basemap, base.id));
         } else if (base.type === Basemap_Type.TERRAIN) {
