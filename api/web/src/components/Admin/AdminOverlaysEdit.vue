@@ -324,6 +324,37 @@ const router = useRouter();
 const loading = ref(true);
 const mode = ref('manual');
 const tilejson_url = ref('');
+
+const basemaps = {
+    manual: {
+        url: '',
+        minzoom: 0,
+        maxzoom: 16,
+        bounds: '-180, -90, 180, 90',
+        center: '0, 0',
+        type: 'vector',
+        format: 'mvt',
+    },
+    public: {
+        url: '',
+        minzoom: 0,
+        maxzoom: 16,
+        bounds: '-180, -90, 180, 90',
+        center: '0, 0',
+        type: 'vector',
+        format: 'mvt',
+    },
+    tilejson: {
+        url: '',
+        minzoom: 0,
+        maxzoom: 16,
+        bounds: '-180, -90, 180, 90',
+        center: '0, 0',
+        type: 'vector',
+        format: 'mvt',
+    }
+}
+
 const overlay = ref({
     name: '',
     url: '',
@@ -342,14 +373,14 @@ const overlay = ref({
     snapping_layer: ''
 });
 
-watch(mode, () => {
-    overlay.value.url = '';
-    overlay.value.minzoom = 0;
-    overlay.value.maxzoom = 16;
-    overlay.value.bounds = '-180, -90, 180, 90';
-    overlay.value.center = '0, 0';
-    overlay.value.type = 'vector';
-    tilejson_url.value = '';
+watch(mode, (newMode, oldMode) => {
+    for (const key of Object.keys(basemaps[oldMode])) {
+        basemaps[oldMode][key] = overlay.value[key];
+    }
+
+    for (const key of Object.keys(basemaps[newMode])) {
+        overlay.value[key] = basemaps[newMode][key];
+    }
 });
 
 const formats = computed(() => {
