@@ -119,7 +119,7 @@ export default async function router(schema: Schema, config: Config) {
             } else if (req.headers['content-type'] && req.headers['content-type'].startsWith('text/plain')) {
                 let url: URL;
                 try {
-                    const url = new URL(String(await stream2buffer(req)));
+                    url = new URL(String(await stream2buffer(req)));
                 } catch (err) {
                     throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL');
                 }
