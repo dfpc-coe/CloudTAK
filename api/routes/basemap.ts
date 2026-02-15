@@ -124,6 +124,10 @@ export default async function router(schema: Schema, config: Config) {
                     throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL');
                 }
 
+                if (url.protocol === 'tilejson:') {
+                    url.protocol = 'https:';
+                }
+
                 if (
                     String(url).match(/\/FeatureServer\/\d+$/)
                     || String(url).match(/\/MapServer\/\d+$/)

@@ -426,7 +426,7 @@ async function fetchTileJSON() {
 
     if (res.name && !basemaps.value[mode.value].name) basemaps.value[mode.value].name = res.name;
 
-    basemaps.value[mode.value].url = `tilejson://${tilejson_url.value}`;
+    basemaps.value[mode.value].url = tilejson_url.value.replace(/^https?:\/\//, 'tilejson://');
 
     if (res.minzoom !== undefined) basemaps.value[mode.value].minzoom = res.minzoom;
     if (res.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = res.maxzoom;
@@ -454,7 +454,7 @@ function publicTileSelect(tilejson) {
 
         const url = new URL(tilejson.url);
         url.search = '';
-        basemaps.value[mode.value].url = `tilejson://${url}`;
+        basemaps.value[mode.value].url = url.toString().replace(/^https?:\/\//, 'tilejson://');
         if (tilejson.minzoom !== undefined) basemaps.value[mode.value].minzoom = tilejson.minzoom;
         if (tilejson.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = tilejson.maxzoom;
         if (tilejson.bounds) basemaps.value[mode.value].bounds = tilejson.bounds.join(',');
