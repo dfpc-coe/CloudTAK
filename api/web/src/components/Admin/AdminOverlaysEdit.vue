@@ -425,7 +425,9 @@ async function fetchTileJSON() {
     });
 
     if (res.name && !basemaps.value[mode.value].name) basemaps.value[mode.value].name = res.name;
-    if (res.url) basemaps.value[mode.value].url = res.url;
+
+    basemaps.value[mode.value].url = `tilejson://${tilejson_url.value}`;
+
     if (res.minzoom !== undefined) basemaps.value[mode.value].minzoom = res.minzoom;
     if (res.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = res.maxzoom;
     if (res.type) basemaps.value[mode.value].type = res.type;
@@ -450,11 +452,13 @@ function publicTileSelect(tilejson) {
             basemaps.value[mode.value].name = tilejson.name.replace(/^public\//, "").replace(/\.pmtiles$/, "");
         }
 
-        basemaps.value[mode.value].url = tilejson.tiles[0].replace(/\?.*$/, '');
-        basemaps.value[mode.value].minzoom = tilejson.minzoom;
-        basemaps.value[mode.value].maxzoom = tilejson.maxzoom;
-        basemaps.value[mode.value].bounds = tilejson.bounds.join(',');
-        basemaps.value[mode.value].center = tilejson.center.slice(0, 2).join(',');
+        const url = new URL(tilejson.url);
+        url.search = '';
+        basemaps.value[mode.value].url = `tilejson://${url}`;
+        if (tilejson.minzoom !== undefined) basemaps.value[mode.value].minzoom = tilejson.minzoom;
+        if (tilejson.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = tilejson.maxzoom;
+        if (tilejson.bounds) basemaps.value[mode.value].bounds = tilejson.bounds.join(',');
+        if (tilejson.center) basemaps.value[mode.value].center = tilejson.center.slice(0, 2).join(',');
     } else {
         basemaps.value[mode.value].url = '';
     }

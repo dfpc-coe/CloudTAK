@@ -158,6 +158,7 @@ async function fetchSelected() {
                 const url = stdurl(new URL(config.value.url + `/tiles/public/${name}`));
                 url.searchParams.set('token', localStorage.token);
                 selected.value = await std(url);
+                selected.value.url = url.toString();
             }
         } catch (err) {
             console.error('Failed to parse URL for Public Tile', err);
@@ -178,6 +179,7 @@ async function select(tile) {
     url.searchParams.set('token', localStorage.token);
 
     const detail = await std(url);
+    detail.url = url.toString();
     selected.value = detail;
 
     loading.value.tiles = false;
