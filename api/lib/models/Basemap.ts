@@ -110,15 +110,34 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
         });
 
         if (base.type === Basemap_Type.VECTOR) {
-            await this.pool.update(BasemapVector).set({
-                styles: input.styles,
-                iconset: input.iconset,
-                snapping_enabled: input.snapping_enabled,
-                title: input.title,
-                snapping_layer: input.snapping_layer
-            }).where(eq(BasemapVector.basemap, base.id));
+            const vector: any = {};
+            if (input.styles !== undefined) vector.styles = input.styles;
+            if (input.iconset !== undefined) vector.iconset = input.iconset;
+            if (input.snapping_enabled !== undefined) vector.snapping_enabled = input.snapping_enabled;
+            if (input.title !== undefined) vector.title = input.title;
+            if (input.snapping_layer !== undefined) vector.snapping_layer = input.snapping_layer;
+
+            await this.pool.insert(BasemapVector).values({
+                basemap: base.id,
+                ...vector
+            }).onConflictDoUpdate({
+                target: BasemapVector.basemap,
+                set: vector
+            });
+            await this.pool.delete(BasemapRaster).where(eq(BasemapRaster.basemap, base.id));
+            await this.pool.delete(BasemapTerrain).where(eq(BasemapTerrain.basemap, base.id));
         } else if (base.type === Basemap_Type.TERRAIN) {
-             /* NOOP */
+            await this.pool.insert(BasemapTerrain).values({
+                basemap: base.id
+            }).onConflictDoNothing();
+            await this.pool.delete(BasemapRaster).where(eq(BasemapRaster.basemap, base.id));
+            await this.pool.delete(BasemapVector).where(eq(BasemapVector.basemap, base.id));
+        } else {
+            await this.pool.insert(BasemapRaster).values({
+                basemap: base.id
+            }).onConflictDoNothing();
+            await this.pool.delete(BasemapTerrain).where(eq(BasemapTerrain.basemap, base.id));
+            await this.pool.delete(BasemapVector).where(eq(BasemapVector.basemap, base.id));
         }
 
         return this.from(base.id);

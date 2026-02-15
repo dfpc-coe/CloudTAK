@@ -46,6 +46,11 @@
                             label='Hidden'
                             description='Hide this overlay from the default list'
                         />
+                        <TablerToggle
+                            v-model='overlay.overlay'
+                            label='Overlay'
+                            description='If true, this layer is treated as an overlay on top of base maps'
+                        />
                     </TablerInput>
                 </div>
                 <div class='col-12'>
@@ -149,137 +154,153 @@
                     </div>
                 </template>
 
-                <div class='col-12'>
-                    <TablerInput
-                        v-model='overlay.url'
-                        :disabled='mode !== "manual"'
-                        label='Data URL'
-                        description='The URL template of the tile server'
-                    >
-                        <TablerToggle
-                            v-model='overlay.overlay'
-                            label='Overlay'
-                            description='If true, this layer is treated as an overlay on top of base maps'
-                        />
-                    </TablerInput>
-                </div>
-
-                <div class='col-12 col-md-3'>
-                    <TablerInput
-                        v-model='overlay.minzoom'
-                        :disabled='mode !== "manual"'
-                        type='number'
-                        label='Minzoom'
-                        description='The minimum zoom level for which tiles are available'
-                    />
-                </div>
-                <div class='col-12 col-md-3'>
-                    <TablerInput
-                        v-model='overlay.maxzoom'
-                        :disabled='mode !== "manual"'
-                        type='number'
-                        label='Maxzoom'
-                        description='The maximum zoom level for which tiles are available'
-                    />
-                </div>
-                <div class='col-12 col-md-6'>
-                    <TablerInput
-                        v-model='overlay.frequency'
-                        label='Update Frequency (Seconds)'
-                        description='How often to refresh the tiles in seconds'
-                    />
-                </div>
-                <div class='col-12 col-md-6'>
-                    <TablerInput
-                        v-model='overlay.bounds'
-                        :disabled='mode !== "manual"'
-                        label='Bounds'
-                        description='The geographic bounds of the overlay (W,S,E,N)'
-                    />
-                </div>
-                <div class='col-12 col-md-6'>
-                    <TablerInput
-                        v-model='overlay.center'
-                        :disabled='mode !== "manual"'
-                        label='Center'
-                        description='The default center point of the overlay (Lon,Lat)'
-                    />
-                </div>
-                <div class='col-12 col-md-6'>
-                    <TablerEnum
-                        v-model='overlay.type'
-                        label='Type'
-                        :options='["vector", "raster", "raster-dem"]'
-                        description='The type of data served by this overlay'
-                    />
-                </div>
-                <div class='col-12 col-md-6'>
-                    <TablerEnum
-                        v-model='overlay.format'
-                        label='Overlay Format'
-                        :default='formats[0]'
-                        :options='formats'
-                        description='The file format of existing tiles'
-                    />
-                </div>
-
-                <template v-if='overlay.type === "vector" && (mode === "public" || mode === "tilejson")'>
+                <template v-if='mode === "manual"'>
                     <div class='col-12'>
-                        <div class='row g-2 my-2 border rounded'>
-                            <div class='col-12'>
-                                <TablerToggle
-                                    v-model='overlay.snapping_enabled'
-                                    label='Enable Snapping'
-                                    description='Allow drawing tools to snap to the underlying vector features'
-                                />
-                            </div>
+                        <TablerInput
+                            v-model='overlay.url'
+                            label='Data URL'
+                            description='The URL template of the tile server'
+                        />
+                    </div>
 
-                            <div
-                                v-if='overlay.snapping_enabled'
-                                class='col-12'
-                            >
-                                <TablerInput
-                                    v-model='overlay.snapping_layer'
-                                    label='Snapping Layer'
-                                    description='The specific layer name within the vector tiles to snap to'
-                                />
+                    <div class='col-12 col-md-3'>
+                        <TablerInput
+                            v-model='overlay.minzoom'
+                            type='number'
+                            label='Minzoom'
+                            description='The minimum zoom level for which tiles are available'
+                        />
+                    </div>
+                    <div class='col-12 col-md-3'>
+                        <TablerInput
+                            v-model='overlay.maxzoom'
+                            type='number'
+                            label='Maxzoom'
+                            description='The maximum zoom level for which tiles are available'
+                        />
+                    </div>
+
+                    <div class='col-12 col-md-3'>
+                        <TablerInput
+                            v-model='overlay.bounds'
+                            label='Bounds'
+                            description='(W,S,E,N)'
+                        />
+                    </div>
+                    <div class='col-12 col-md-3'>
+                        <TablerInput
+                            v-model='overlay.center'
+                            label='Center'
+                            description='(Lon,Lat)'
+                        />
+                    </div>
+                    <div class='col-12 col-md-6'>
+                        <TablerEnum
+                            v-model='overlay.type'
+                            label='Type'
+                            :options='["vector", "raster", "raster-dem"]'
+                            description='The type of data served by this overlay'
+                        />
+                    </div>
+                    <div class='col-12 col-md-6'>
+                        <TablerEnum
+                            v-model='overlay.format'
+                            label='Overlay Format'
+                            :default='formats[0]'
+                            :options='formats'
+                            description='The file format of existing tiles'
+                        />
+                    </div>
+                </template>
+                <template v-else-if="overlay.url">
+                    <TileJSONView :overlay="overlay" />
+                </template>
+
+                <template v-if="mode === 'manual' || overlay.url">
+                    <div class="col-12">
+                        <TablerInput
+                            v-if="overlay.frequency !== undefined && overlay.frequency !== null"
+                            v-model='overlay.frequency'
+                            label='Update Frequency (Seconds)'
+                            description='How often to refresh the tiles in seconds'
+                        >
+                            <TablerToggle
+                                :model-value="true"
+                                label="Enabled"
+                                @click="overlay.frequency = null"
+                            />
+                        </TablerInput>
+                        <div v-else
+                            class="mx-2 my-2"
+                        >
+                            <TablerToggle
+                                :model-value="false"
+                                label="Enable Auto-Update Frequency"
+                                description="Automatically refresh the tiles periodically"
+                                @click="overlay.frequency = 60"
+                            />
+                        </div>
+                    </div>
+
+                    <template v-if='overlay.type === "vector" && (mode === "public" || mode === "tilejson")'>
+                        <div class='col-12'>
+                            <div class='row g-2 my-2 border rounded'>
+                                <div class='col-12'>
+                                    <TablerToggle
+                                        v-model='overlay.snapping_enabled'
+                                        label='Enable Snapping'
+                                        description='Allow drawing tools to snap to the underlying vector features'
+                                    />
+                                </div>
+
+                                <div
+                                    v-if='overlay.snapping_enabled'
+                                    class='col-12'
+                                >
+                                    <TablerInput
+                                        v-model='overlay.snapping_layer'
+                                        label='Snapping Layer'
+                                        description='The specific layer name within the vector tiles to snap to'
+                                    />
+                                </div>
                             </div>
+                        </div>
+                    </template>
+
+                    <div class='col-12'>
+                        <StyleContainer
+                            v-model='overlay.styles'
+                            :advanced='true'
+                        />
+                    </div>
+                    <div class='col-12 d-flex py-2'>
+                        <TablerDelete
+                            v-if='overlay.id'
+                            @delete='deleteOverlay'
+                        />
+                        <div class='ms-auto'>
+                            <TablerButton
+                                class='btn-primary'
+                                @click='saveOverlay'
+                            >
+                                Submit
+                            </TablerButton>
                         </div>
                     </div>
                 </template>
-
-                <div class='col-12'>
-                    <StyleContainer
-                        v-model='overlay.styles'
-                        :advanced='true'
-                    />
-                </div>
-                <div class='col-12 d-flex py-2'>
-                    <TablerDelete
-                        v-if='overlay.id'
-                        @delete='deleteOverlay'
-                    />
-                    <div class='ms-auto'>
-                        <TablerButton
-                            class='btn-primary'
-                            @click='saveOverlay'
-                        >
-                            Submit
-                        </TablerButton>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { std, stdurl } from '../../std.ts';
 import StyleContainer from '../ETL/Styling/Style.vue';
 import UserSelect from '../util/UserSelect.vue';
 import PublicTilesSelect from '../util/PublicTilesSelect.vue';
+import TileJSONView from './TileJSONView.vue';
 import {
     IconTerminal,
     IconList,
@@ -311,7 +332,7 @@ const overlay = ref({
     styles: [],
     minzoom: 0,
     maxzoom: 16,
-    frequency: 0,
+    frequency: null,
     sharing_enabled: true,
     sharing_token: null,
     hidden: false,
@@ -319,6 +340,16 @@ const overlay = ref({
     center: '0, 0',
     snapping_enabled: false,
     snapping_layer: ''
+});
+
+watch(mode, () => {
+    overlay.value.url = '';
+    overlay.value.minzoom = 0;
+    overlay.value.maxzoom = 16;
+    overlay.value.bounds = '-180, -90, 180, 90';
+    overlay.value.center = '0, 0';
+    overlay.value.type = 'vector';
+    tilejson_url.value = '';
 });
 
 const formats = computed(() => {
@@ -355,35 +386,31 @@ async function deleteOverlay() {
 async function fetchTileJSON() {
     if (!tilejson_url.value) return;
 
-    try {
-        const res = await std('/api/basemap', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
-            body: tilejson_url.value
-        });
+    const res = await std('/api/basemap', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'text/plain'
+        },
+        body: tilejson_url.value
+    });
 
-        if (res.name && !overlay.value.name) overlay.value.name = res.name;
-        if (res.url) overlay.value.url = res.url;
-        if (res.minzoom !== undefined) overlay.value.minzoom = res.minzoom;
-        if (res.maxzoom !== undefined) overlay.value.maxzoom = res.maxzoom;
-        if (res.type) overlay.value.type = res.type;
-        if (res.format) overlay.value.format = res.format;
+    if (res.name && !overlay.value.name) overlay.value.name = res.name;
+    if (res.url) overlay.value.url = res.url;
+    if (res.minzoom !== undefined) overlay.value.minzoom = res.minzoom;
+    if (res.maxzoom !== undefined) overlay.value.maxzoom = res.maxzoom;
+    if (res.type) overlay.value.type = res.type;
+    if (res.format) overlay.value.format = res.format;
 
-        if (res.bounds && Array.isArray(res.bounds)) {
-            overlay.value.bounds = res.bounds.join(',');
-        } else if (res.bounds) {
-            overlay.value.bounds = res.bounds;
-        }
+    if (res.bounds && Array.isArray(res.bounds)) {
+        overlay.value.bounds = res.bounds.join(',');
+    } else if (res.bounds) {
+        overlay.value.bounds = res.bounds;
+    }
 
-        if (res.center && Array.isArray(res.center)) {
-            overlay.value.center = res.center.slice(0, 2).join(',');
-        } else if (res.center) {
-            overlay.value.center = res.center;
-        }
-    } catch (err) {
-        console.error(err);
+    if (res.center && Array.isArray(res.center)) {
+        overlay.value.center = res.center.slice(0, 2).join(',');
+    } else if (res.center) {
+        overlay.value.center = res.center;
     }
 }
 

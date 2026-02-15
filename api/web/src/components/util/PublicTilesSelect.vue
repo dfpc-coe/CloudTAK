@@ -142,7 +142,7 @@ onMounted(async () => {
     if (props.url) {
         try {
             const u = new URL(props.url);
-            const match = u.pathname.match(/\/public\/(.+?)\//);
+            const match = u.pathname.match(/\/public\/(.+?)(\/|$)/);
 
             if (match && match[1]) {
                 const name = match[1];
