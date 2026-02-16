@@ -1,9 +1,10 @@
-import AWSS3 from '@aws-sdk/client-s3';
+import { ListObjectsV2Command, ListObjectsV2CommandInput } from '@aws-sdk/client-s3';
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
 import { FileTiles, TileJSON, QueryResponse, FeaturesResponse } from '../lib/tiles.js'
 import auth from '../lib/auth.js';
+import s3client from '../lib/s3.js';
 
 export default async function router(schema: Schema) {
     schema.get('/tiles/public', {
@@ -26,13 +27,13 @@ export default async function router(schema: Schema) {
         try {
             auth(req.query.token);
 
-            const client = new AWSS3.S3Client();
+            const client = s3client();
 
             const Contents = [];
 
             let s3res;
             do {
-                const req: AWSS3.ListObjectsV2CommandInput = {
+                const req: ListObjectsV2CommandInput = {
                     Bucket: process.env.ASSET_BUCKET,
                     Prefix: 'public/'
                 };
@@ -41,7 +42,7 @@ export default async function router(schema: Schema) {
                     req.ContinuationToken = s3res.NextContinuationToken;
                 }
 
-                s3res = await client.send(new AWSS3.ListObjectsV2Command(req))
+                s3res = await client.send(new ListObjectsV2Command(req))
 
                 Contents.push(...((s3res.Contents || []).filter((Content) => {
                     return (Content.Key || '').endsWith('.pmtiles')

@@ -150,8 +150,11 @@ onMounted(async () => {
 async function fetchSelected() {
     if (props.url && !selected.value) {
         try {
-                // If the URL contains tiles.map.cotak.gov we can assume it is a public tile
-                // and we can extract the name from the path
+            // If the URL contains tiles.map.cotak.gov we can assume it is a public tile
+            // and we can extract the name from the path
+            const u = new URL(props.url);
+            const match = u.pathname.match(/\/tiles\/public\/([a-zA-Z0-9._-]+)/);
+
             if (match && match[1]) {
                 const name = match[1];
                 const url = stdurl(new URL(config.value.url + `/tiles/public/${name}`));
