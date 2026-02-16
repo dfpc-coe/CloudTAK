@@ -639,6 +639,15 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
+            if (basemap.tilejson) {
+                const tj = await fetch(basemap.tilejson);
+                const json = await tj.json();
+                return res.json({
+                    ...json,
+                    actions: TileJSON.actions(basemap.url)
+                });
+            }
+
             let url: string;
 
             if (basemap.url.includes(new URL(config.PMTILES_URL || "http://localhost:5001").hostname)) {
