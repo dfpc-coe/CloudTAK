@@ -236,21 +236,23 @@ export default class TileJSON {
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL provided');
         }
 
-        if (!['http:', 'https:'].includes(url.protocol)) {
+        if (!['http:', 'https:', 'tilejson:'].includes(url.protocol)) {
             throw new Err(400, null, 'Only HTTP and HTTPS Protocols are supported');
         }
 
-        // Consistent Mapbox Style XYZ Endpoints: {z} vs TAK: {$z}
-        const pathname = decodeURIComponent(str).replace(/\{\$/g, '{');
+        if (url.protocol !== 'tilejson:') {
+            // Consistent Mapbox Style XYZ Endpoints: {z} vs TAK: {$z}
+            const pathname = decodeURIComponent(str).replace(/\{\$/g, '{');
 
-        if (
-            !(pathname.includes('{z}') && pathname.includes('{x}') && pathname.includes('{y}'))
-            && !pathname.includes('{q}')
-            && !pathname.match(/\/FeatureServer\/\d+$/)
-            && !pathname.match(/\/MapServer\/\d+$/)
-            && !pathname.includes('/ImageServer')
-        ) {
-            throw new Err(400, null, 'Either XYZ, Quadkey variables OR ESRI FeatureServer/ImageServer must be used');
+            if (
+                !(pathname.includes('{z}') && pathname.includes('{x}') && pathname.includes('{y}'))
+                && !pathname.includes('{q}')
+                && !pathname.match(/\/FeatureServer\/\d+$/)
+                && !pathname.match(/\/MapServer\/\d+$/)
+                && !pathname.includes('/ImageServer')
+            ) {
+                throw new Err(400, null, 'Either XYZ, Quadkey variables OR ESRI FeatureServer/ImageServer must be used');
+            }
         }
     }
 
