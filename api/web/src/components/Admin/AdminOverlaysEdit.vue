@@ -469,31 +469,35 @@ function publicTileSelect(tilejson) {
 }
 
 async function saveOverlay() {
-    let body = JSON.parse(JSON.stringify(basemaps.value[mode.value]));
-
-    body.bounds = body.bounds.split(',').map((b) => {
-        return Number(b);
-    })
-
-    body.center = body.center.split(',').map((b) => {
-        return Number(b);
-    })
-
-    if (body.username) {
-        body.scope = 'user'
-    } else {
-        body.scope = 'server'
-    }
-
-    if (body.frequency) {
-        body.frequency = Number(body.frequency);
-    } else {
-        body.frequency = null;
-    }
-
     loading.value = true;
 
     try {
+        if (mode.value === 'tilejson' && tilejson_url.value) {
+            await fetchTileJSON();
+        }
+
+        let body = JSON.parse(JSON.stringify(basemaps.value[mode.value]));
+
+        body.bounds = body.bounds.split(',').map((b) => {
+            return Number(b);
+        })
+
+        body.center = body.center.split(',').map((b) => {
+            return Number(b);
+        })
+
+        if (body.username) {
+            body.scope = 'user'
+        } else {
+            body.scope = 'server'
+        }
+
+        if (body.frequency) {
+            body.frequency = Number(body.frequency);
+        } else {
+            body.frequency = null;
+        }
+
         if (route.params.overlay === 'new') {
             const url = stdurl(`/api/basemap`);
             if (body.username) url.searchParams.set('impersonate', body.username);
@@ -530,6 +534,7 @@ async function fetchOverlay() {
     try {
         if (res.tilejson) {
             mode.value = 'tilejson';
+            tilejson_url.value = res.tilejson;
             const u = new URL(res.tilejson);
             if (u.hostname === 'tiles.map.cotak.gov') {
                 mode.value = 'public';
