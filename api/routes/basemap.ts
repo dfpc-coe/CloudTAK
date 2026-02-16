@@ -117,7 +117,12 @@ export default async function router(schema: Schema, config: Config) {
 
                 req.pipe(bb);
             } else if (req.headers['content-type'] && req.headers['content-type'].startsWith('text/plain')) {
-                const url = new URL(String(await stream2buffer(req)));
+                let url: URL;
+                try {
+                    url = new URL(String(await stream2buffer(req)));
+                } catch (err) {
+                    throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL');
+                }
 
                 if (
                     String(url).match(/\/FeatureServer\/\d+$/)
@@ -225,7 +230,11 @@ export default async function router(schema: Schema, config: Config) {
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
-                        AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
+                        AND (
+                            ${Param(req.query.snapping)}::BOOLEAN IS NULL OR
+                            (${Param(req.query.snapping)}::BOOLEAN = true AND "basemaps"."id" IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true)) OR
+                            (${Param(req.query.snapping)}::BOOLEAN = false AND "basemaps"."id" NOT IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true))
+                        )
                         AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                         AND (
                                 (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
@@ -244,7 +253,11 @@ export default async function router(schema: Schema, config: Config) {
                             collection ~* ${Param(req.query.filter)}
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                             AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
-                            AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
+                            AND (
+                                ${Param(req.query.snapping)}::BOOLEAN IS NULL OR
+                                (${Param(req.query.snapping)}::BOOLEAN = true AND "basemaps"."id" IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true)) OR
+                                (${Param(req.query.snapping)}::BOOLEAN = false AND "basemaps"."id" NOT IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true))
+                            )
                             AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                             AND ${scope}
                             AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
@@ -263,7 +276,11 @@ export default async function router(schema: Schema, config: Config) {
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
-                        AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
+                        AND (
+                            ${Param(req.query.snapping)}::BOOLEAN IS NULL OR
+                            (${Param(req.query.snapping)}::BOOLEAN = true AND "basemaps"."id" IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true)) OR
+                            (${Param(req.query.snapping)}::BOOLEAN = false AND "basemaps"."id" NOT IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true))
+                        )
                         AND (username IS NULL OR username = ${user.email})
                         AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                         AND (
@@ -282,7 +299,11 @@ export default async function router(schema: Schema, config: Config) {
                             collection ~* ${Param(req.query.filter)}
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                             AND (${Param(hidden)}::BOOLEAN IS NULL OR ${Param(hidden)}::BOOLEAN = hidden)
-                            AND (${Param(req.query.snapping)}::BOOLEAN IS NULL OR ${Param(req.query.snapping)}::BOOLEAN = snapping_enabled)
+                            AND (
+                                ${Param(req.query.snapping)}::BOOLEAN IS NULL OR
+                                (${Param(req.query.snapping)}::BOOLEAN = true AND "basemaps"."id" IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true)) OR
+                                (${Param(req.query.snapping)}::BOOLEAN = false AND "basemaps"."id" NOT IN (SELECT basemap FROM basemaps_vector WHERE snapping_enabled = true))
+                            )
                             AND (username IS NULL OR username = ${user.email})
                             AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                             AND ${scope}
@@ -343,7 +364,10 @@ export default async function router(schema: Schema, config: Config) {
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number())),
-            styles: Type.Optional(Type.Array(Type.Unknown()))
+            styles: Type.Optional(Type.Array(Type.Unknown())),
+            title: Type.Optional(Type.String()),
+            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            tilejson: Type.Optional(Type.String())
         }),
         res: AugmentedBasemapResponse
     }, async (req, res) => {
@@ -377,8 +401,11 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Snapping can only be enabled on Vector basemaps');
             } else if (req.body.snapping_enabled && !req.body.snapping_layer) {
                 throw new Err(400, null, 'A snapping_layer must be provided when enabling snapping');
-            } else if (req.body.snapping_enabled && !req.body.url.startsWith(config.PMTILES_URL)) {
-                throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
+            } else if (req.body.snapping_enabled) {
+                const url = new URL(config.PMTILES_URL);
+                if (!req.body.url.includes(url.hostname)) {
+                    throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
+                }
             }
 
             let basemap = await config.models.Basemap.generate({
@@ -440,6 +467,9 @@ export default async function router(schema: Schema, config: Config) {
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number())),
             styles: Type.Optional(Type.Array(Type.Unknown())),
+            title: Type.Optional(Type.String()),
+            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            tilejson: Type.Optional(Type.String())
         }),
         res: AugmentedBasemapResponse
     }, async (req, res) => {
@@ -482,8 +512,11 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Snapping can only be enabled on Vector basemaps');
             } else if (req.body.snapping_enabled && !req.body.snapping_layer) {
                 throw new Err(400, null, 'A snapping_layer must be provided when enabling snapping');
-            } else if (req.body.snapping_enabled && !url.startsWith(config.PMTILES_URL)) {
-                throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
+            } else if (req.body.snapping_enabled) {
+                const u = new URL(Object.keys(config.PMTILES_URL || "").length ? config.PMTILES_URL : 'http://localhost:5001');
+                if (!url.includes(u.hostname)) {
+                    throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
+                }
             }
 
             let basemap = await config.models.Basemap.commit(req.params.basemapid, {
@@ -606,8 +639,18 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
+            if (basemap.tilejson) {
+                const tj = await fetch(basemap.tilejson);
+                const json = await tj.json();
+                return res.json({
+                    ...json,
+                    actions: TileJSON.actions(basemap.url)
+                });
+            }
+
             let url: string;
-            if (basemap.url.startsWith(config.PMTILES_URL)) {
+
+            if (basemap.url.includes(new URL(config.PMTILES_URL || "http://localhost:5001").hostname)) {
                 url = basemap.url;
                 if (req.query.token) url = url + `?token=${req.query.token}`;
             } else {
@@ -668,7 +711,6 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             return await TileJSON.tile(
-                // @ts-expect-error TODO Fix polygon bounds
                 basemap,
                 req.params.z,
                 req.params.x,

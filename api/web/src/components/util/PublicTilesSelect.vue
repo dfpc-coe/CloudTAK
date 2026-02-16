@@ -136,27 +136,37 @@ watch(paging.value, async () => {
     await listTiles();
 });
 
+watch(() => props.url, async () => {
+    await fetchSelected();
+});
+
 onMounted(async () => {
     await listTiles();
+    await fetchSelected();
 
-    if (props.url) {
+    loading.value.main = false;
+});
+
+async function fetchSelected() {
+    if (props.url && !selected.value) {
         try {
+            // If the URL contains tiles.map.cotak.gov we can assume it is a public tile
+            // and we can extract the name from the path
             const u = new URL(props.url);
-            const match = u.pathname.match(/\/public\/(.+?)\//);
+            const match = u.pathname.match(/\/tiles\/public\/([a-zA-Z0-9._-]+)/);
 
             if (match && match[1]) {
                 const name = match[1];
                 const url = stdurl(new URL(config.value.url + `/tiles/public/${name}`));
                 url.searchParams.set('token', localStorage.token);
                 selected.value = await std(url);
+                selected.value.url = url.toString();
             }
         } catch (err) {
             console.error('Failed to parse URL for Public Tile', err);
         }
     }
-
-    loading.value.main = false;
-});
+}
 
 async function select(tile) {
     loading.value.tiles = true;
@@ -171,6 +181,7 @@ async function select(tile) {
     url.searchParams.set('token', localStorage.token);
 
     const detail = await std(url);
+    detail.url = url.toString();
     selected.value = detail;
 
     loading.value.tiles = false;
