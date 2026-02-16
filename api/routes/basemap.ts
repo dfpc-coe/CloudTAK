@@ -404,8 +404,11 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Snapping can only be enabled on Vector basemaps');
             } else if (req.body.snapping_enabled && !req.body.snapping_layer) {
                 throw new Err(400, null, 'A snapping_layer must be provided when enabling snapping');
-            } else if (req.body.snapping_enabled && !req.body.url.startsWith(config.PMTILES_URL)) {
-                throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
+            } else if (req.body.snapping_enabled) {
+                const url = new URL(config.PMTILES_URL);
+                if (!req.body.url.includes(url.hostname)) {
+                    throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
+                }
             }
 
             let basemap = await config.models.Basemap.generate({
@@ -511,8 +514,11 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Snapping can only be enabled on Vector basemaps');
             } else if (req.body.snapping_enabled && !req.body.snapping_layer) {
                 throw new Err(400, null, 'A snapping_layer must be provided when enabling snapping');
-            } else if (req.body.snapping_enabled && !url.startsWith(config.PMTILES_URL)) {
-                throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
+            } else if (req.body.snapping_enabled) {
+                const u = new URL(Object.keys(config.PMTILES_URL || "").length ? config.PMTILES_URL : 'http://localhost:5001');
+                if (!url.includes(u.hostname)) {
+                    throw new Err(400, null, 'Snapping can only be enabled on S3 hosted Basemaps');
+                }
             }
 
             let basemap = await config.models.Basemap.commit(req.params.basemapid, {
@@ -636,7 +642,8 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             let url: string;
-            if (basemap.url.startsWith(config.PMTILES_URL)) {
+
+            if (basemap.url.includes(new URL(config.PMTILES_URL || "http://localhost:5001").hostname)) {
                 url = basemap.url;
                 if (req.query.token) url = url + `?token=${req.query.token}`;
             } else {
