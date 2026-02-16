@@ -342,7 +342,8 @@ const basemaps = ref({
         sharing_token: null,
         hidden: false,
         snapping_enabled: false,
-        snapping_layer: ''
+        snapping_layer: '',
+        tilejson: ''
     },
     public: {
         name: '',
@@ -360,7 +361,8 @@ const basemaps = ref({
         sharing_token: null,
         hidden: false,
         snapping_enabled: false,
-        snapping_layer: ''
+        snapping_layer: '',
+        tilejson: ''
     },
     tilejson: {
         name: '',
@@ -378,7 +380,8 @@ const basemaps = ref({
         sharing_token: null,
         hidden: false,
         snapping_enabled: false,
-        snapping_layer: ''
+        snapping_layer: '',
+        tilejson: ''
     }
 });
 
@@ -426,7 +429,8 @@ async function fetchTileJSON() {
 
     if (res.name && !basemaps.value[mode.value].name) basemaps.value[mode.value].name = res.name;
 
-    basemaps.value[mode.value].url = tilejson_url.value.replace(/^https?:\/\//, 'tilejson://');
+    basemaps.value[mode.value].tilejson = tilejson_url.value;
+    if (res.url) basemaps.value[mode.value].url = res.url;
 
     if (res.minzoom !== undefined) basemaps.value[mode.value].minzoom = res.minzoom;
     if (res.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = res.maxzoom;
@@ -452,9 +456,9 @@ function publicTileSelect(tilejson) {
             basemaps.value[mode.value].name = tilejson.name.replace(/^public\//, "").replace(/\.pmtiles$/, "");
         }
 
-        const url = new URL(tilejson.url);
-        url.search = '';
-        basemaps.value[mode.value].url = url.toString().replace(/^https?:\/\//, 'tilejson://');
+        basemaps.value[mode.value].tilejson = tilejson.url;
+        basemaps.value[mode.value].url = tilejson.tiles[0].replace(/\?.*$/, '');
+
         if (tilejson.minzoom !== undefined) basemaps.value[mode.value].minzoom = tilejson.minzoom;
         if (tilejson.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = tilejson.maxzoom;
         if (tilejson.bounds) basemaps.value[mode.value].bounds = tilejson.bounds.join(',');
@@ -524,9 +528,12 @@ async function fetchOverlay() {
 
     // If the URL is hosted on the S3 CloudTAK site assume it is a public tile
     try {
-        const u = new URL(res.url);
-        if (u.hostname === 'tiles.map.cotak.gov') {
-            mode.value = 'public';
+        if (res.tilejson) {
+            mode.value = 'tilejson';
+            const u = new URL(res.tilejson);
+            if (u.hostname === 'tiles.map.cotak.gov') {
+                mode.value = 'public';
+            }
         }
     } catch {
         // pass
