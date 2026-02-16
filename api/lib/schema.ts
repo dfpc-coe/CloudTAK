@@ -232,7 +232,8 @@ export const Basemap = pgTable('basemaps', {
     collection: text(),
     frequency: integer(),
     scheme: text().$type<Basemap_Scheme>().notNull().default(Basemap_Scheme.XYZ),
-    overlay: boolean().notNull().default(false)
+    overlay: boolean().notNull().default(false),
+    tilejson: text()
 }, (table) => {
     return {
         username_idx: index("basemaps_username_idx").on(table.username),
