@@ -295,7 +295,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { std, stdurl } from '../../std.ts';
 import StyleContainer from '../ETL/Styling/Style.vue';
@@ -383,6 +383,20 @@ const basemaps = ref({
         snapping_enabled: false,
         snapping_layer: '',
         tilejson: ''
+    }
+});
+
+watch(mode, (newMode, oldMode) => {
+    if (basemaps.value[oldMode].id) {
+        basemaps.value[newMode].id = basemaps.value[oldMode].id;
+    }
+
+    if (basemaps.value[oldMode].name && !basemaps.value[newMode].name) {
+        basemaps.value[newMode].name = basemaps.value[oldMode].name;
+    }
+
+    if (basemaps.value[oldMode].username && !basemaps.value[newMode].username) {
+        basemaps.value[newMode].username = basemaps.value[oldMode].username;
     }
 });
 
@@ -510,6 +524,7 @@ async function saveOverlay() {
 
             router.push(`/admin/overlay/${basemaps.value[mode.value].id}`);
         } else {
+            if (!basemaps.value[mode.value].id) throw new Error('Overlay ID is missing');
             const url = stdurl(`/api/basemap/${basemaps.value[mode.value].id}`);
             if (body.username) url.searchParams.set('impersonate', body.username);
             const ov = await std(url, { method: 'PATCH', body });

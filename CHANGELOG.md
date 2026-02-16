@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.76.2 - 2026-02-16
+
+- :bug: Ensure `id`, `name` and `ownership` are copied if PATCHing an existing Basemap  and changing the mode
+
 ### v12.76.1 - 2026-02-16
 
 - :bug: Fix bug where users switching from vector to raster basemap would have an error due to the styles object not getting reset
