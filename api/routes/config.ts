@@ -191,8 +191,8 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const keys = (req.query.keys || '').split(',');
-            if (!keys.every((k: string) => PublicConfigKeys.includes(k))) {
-                if (keys.every((k: string) => PublicConfigKeys.includes(k) || UserConfigKeys.includes(k))) {
+            if (!keys.every((k: string) => (PublicConfigKeys as readonly string[]).includes(k))) {
+                if (keys.every((k: string) => (PublicConfigKeys as readonly string[]).includes(k) || (UserConfigKeys as readonly string[]).includes(k))) {
                     await Auth.as_user(config, req);
                 } else {
                     await Auth.as_user(config, req, { admin: true });
