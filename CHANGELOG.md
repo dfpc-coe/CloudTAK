@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.76.0 - 2026-02-16
+
+- :rocket: Rewrite Basemap API to allow for more flexible basemap management in the future, while maintaining backwards compatibility with existing basemap keys and structures
+- :rocket: Allow setting a TileJSON URL that can be used for retrieving basemap metadata and tiles for basemaps that support it
+- :bug: Fix public tiles list API in non-AWS environments
+
 ### v12.75.5 - 2026-02-14
 
 - :bug: Include legacy style properties to avoid color issues in iTAK
