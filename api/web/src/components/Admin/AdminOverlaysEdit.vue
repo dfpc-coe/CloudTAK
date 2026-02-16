@@ -212,32 +212,33 @@
                         />
                     </div>
                 </template>
-                <template v-else-if="basemaps[mode].url">
-                    <TileJSONView :overlay="basemaps[mode]" />
+                <template v-else-if='basemaps[mode].url'>
+                    <TileJSONView :overlay='basemaps[mode]' />
                 </template>
 
-                <template v-if="mode === 'manual' || basemaps[mode].url">
-                    <div class="col-12">
+                <template v-if='mode === "manual" || basemaps[mode].url'>
+                    <div class='col-12'>
                         <TablerInput
-                            v-if="basemaps[mode].frequency !== undefined && basemaps[mode].frequency !== null"
+                            v-if='basemaps[mode].frequency !== undefined && basemaps[mode].frequency !== null'
                             v-model='basemaps[mode].frequency'
                             label='Update Frequency (Seconds)'
                             description='How often to refresh the tiles in seconds'
                         >
                             <TablerToggle
-                                :model-value="true"
-                                label="Enabled"
-                                @click="basemaps[mode].frequency = null"
+                                :model-value='true'
+                                label='Enabled'
+                                @click='basemaps[mode].frequency = null'
                             />
                         </TablerInput>
-                        <div v-else
-                            class="mx-2 my-2"
+                        <div
+                            v-else
+                            class='mx-2 my-2'
                         >
                             <TablerToggle
-                                :model-value="false"
-                                label="Enable Auto-Update Frequency"
-                                description="Automatically refresh the tiles periodically"
-                                @click="basemaps[mode].frequency = 60"
+                                :model-value='false'
+                                label='Enable Auto-Update Frequency'
+                                description='Automatically refresh the tiles periodically'
+                                @click='basemaps[mode].frequency = 60'
                             />
                         </div>
                     </div>
@@ -294,7 +295,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { std, stdurl } from '../../std.ts';
 import StyleContainer from '../ETL/Styling/Style.vue';
