@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.76.1 - 2026-02-16
+
+- :bug: Fix bug where users switching from vector to raster basemap would have an error due to the styles object not getting reset
+
 ### v12.76.0 - 2026-02-16
 
 - :rocket: Rewrite Basemap API to allow for more flexible basemap management in the future, while maintaining backwards compatibility with existing basemap keys and structures
