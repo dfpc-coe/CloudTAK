@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.77.1 - 2026-02-17
+
+- :bug: Potentially fix bug where a race condition could result in snapping not being available despite it being configured
+- :bug: Ensure snapping MapLibre layer is removed if user turns off snapping
+- :rocket: Add draw support to creating circles for use on touch screens
+
 ### v12.77.0 - 2026-02-16
 
 - :rocket: Upgrade PMTiles Task to TileJSON@3 to support full OpenMapTiles spec
