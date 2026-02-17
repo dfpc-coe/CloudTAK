@@ -642,33 +642,35 @@ export default async function router(schema: Schema, config: Config) {
             if (basemap.tilejson) {
                 const tj = await fetch(basemap.tilejson);
                 const json = await tj.json();
-                return res.json({
+
+                res.json({
                     ...json,
+                    type: basemap.type,
                     actions: TileJSON.actions(basemap.url)
                 });
-            }
-
-            let url: string;
-
-            if (basemap.url.includes(new URL(config.PMTILES_URL || "http://localhost:5001").hostname)) {
-                url = basemap.url;
-                if (req.query.token) url = url + `?token=${req.query.token}`;
             } else {
-                url = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
-                if (req.query.token) url = url + `?token=${req.query.token}`;
+                let url: string;
+
+                if (basemap.url.includes(new URL(config.PMTILES_URL || "http://localhost:5001").hostname)) {
+                    url = basemap.url;
+                    if (req.query.token) url = url + `?token=${req.query.token}`;
+                } else {
+                    url = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
+                    if (req.query.token) url = url + `?token=${req.query.token}`;
+                }
+
+                const json = TileJSON.json({
+                    ...basemap,
+                    bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                    center: basemap.center ? basemap.center.coordinates : undefined,
+                    url,
+                });
+
+                res.json({
+                    ...json,
+                    actions: TileJSON.actions(basemap.url),
+                });
             }
-
-            const json = TileJSON.json({
-                ...basemap,
-                bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
-                center: basemap.center ? basemap.center.coordinates : undefined,
-                url,
-            });
-
-            res.json({
-                ...json,
-                actions: TileJSON.actions(basemap.url),
-            });
         } catch (err) {
             Err.respond(err, res);
         }

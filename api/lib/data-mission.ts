@@ -52,7 +52,7 @@ export default class DataMission {
                 data.mission_groups = groups.data.map((group) => { return group.name });
             }
 
-            let mission = await api.Mission.create({
+            const mission = await api.Mission.create({
                 name: data.name,
                 creatorUid: `connection-${data.connection}-data-${data.id}`,
                 description: data.description,
@@ -72,12 +72,6 @@ export default class DataMission {
                     token: mission.token || undefined
                 });
             }
-
-            // The groups property isn't returned by Create
-            // Make this second call to get the groups - TODO Talk to Josh
-            mission = await api.Mission.get(data.name, {}, {
-                token: data.mission_token || undefined
-            });
         }
 
         const layers = await config.models.Layer.augmented_list({
