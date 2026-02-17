@@ -14,7 +14,7 @@ import vtquery from '@mapbox/vtquery';
 import { pointToTile } from '@mapbox/tilebelt';
 
 export const TileJSON = Type.Object({
-    tilejson: Type.Literal('2.2.0'),
+    tilejson: Type.Literal('3.0.0'),
     name: Type.String(),
     description: Type.String(),
     version: Type.Literal('1.0.0'),
