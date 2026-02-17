@@ -449,7 +449,14 @@ async function fetchTileJSON() {
 
     if (res.minzoom !== undefined) basemaps.value[mode.value].minzoom = res.minzoom;
     if (res.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = res.maxzoom;
-    if (res.type) basemaps.value[mode.value].type = res.type;
+    if (res.type) {
+        basemaps.value[mode.value].type = res.type;
+    } else if (res.vector_layers) {
+        basemaps.value[mode.value].type = 'vector';
+    } else {
+        basemaps.value[mode.value].type = 'raster';
+    }
+
     if (res.format) basemaps.value[mode.value].format = res.format;
 
     if (res.bounds && Array.isArray(res.bounds)) {
