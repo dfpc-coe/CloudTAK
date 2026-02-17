@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.77.0 - 2026-02-16
+
+- :rocket: Upgrade PMTiles Task to TileJSON@3 to support full OpenMapTiles spec
+
 ### v12.76.2 - 2026-02-16
 
 - :bug: Ensure `id`, `name` and `ownership` are copied if PATCHing an existing Basemap  and changing the mode
