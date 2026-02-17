@@ -259,9 +259,6 @@ import {
 const mapStore = useMapStore();
 
 const opened = ref(false);
-const loading = ref({
-    snapping: false
-});
 
 onMounted(async () => {
     if (mapStore.hasSnapping && (mapStore.draw.mode === DrawToolMode.LINESTRING || mapStore.draw.mode === DrawToolMode.SNAPPING)) {
