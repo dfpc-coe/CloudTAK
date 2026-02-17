@@ -29,6 +29,7 @@
         "vinyl": "^3.0.0"
     },
     "devDependencies": {
+        "@eslint/js": "^10.0.1",
         "@types/jsonwebtoken": "^9.0.5",
         "@types/node": "^25.0.0",
         "@types/sinon": "^21.0.0",
