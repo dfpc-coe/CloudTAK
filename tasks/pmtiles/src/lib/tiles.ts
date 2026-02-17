@@ -107,7 +107,7 @@ export class FileTiles {
         }
 
         return {
-            tilejson: "2.2.0",
+            tilejson: "3.0.0",
             name: `${this.path}.pmtiles`,
             description: "Hosted by CloudTAK",
             version: "1.0.0",

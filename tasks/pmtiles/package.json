@@ -40,7 +40,7 @@
         "@types/cors": "^2.8.17",
         "@types/jsonwebtoken": "^9.0.2",
         "@types/node": "^25.0.0",
-        "eslint": "^9.0.0",
+        "eslint": "^10.0.0",
         "tsup": "^8.0.0",
         "typescript": "^5.0.0",
         "typescript-eslint": "^8.0.0"
