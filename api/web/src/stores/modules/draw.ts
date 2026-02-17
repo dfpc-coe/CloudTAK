@@ -219,7 +219,9 @@ export default class DrawTool {
                 new terraDraw.TerraDrawAngledRectangleMode(),
                 new terraDraw.TerraDrawFreehandMode(),
                 new terraDraw.TerraDrawSectorMode(),
-                new terraDraw.TerraDrawCircleMode(),
+                new terraDraw.TerraDrawCircleMode({
+                    drawInteraction: 'click-move-or-drag',
+                }),
                 new terraDraw.TerraDrawSelectMode({
                     flags: {
                         polygon: {
@@ -599,6 +601,10 @@ export default class DrawTool {
 
 
     async start(mode: DrawToolMode): Promise<void> {
+        if (mode !== DrawToolMode.SNAPPING) {
+            this.removeNetwork();
+        }
+
         if (mode === DrawToolMode.LINESTRING && this.route.layer !== 'No Snapping') {
             this.route.layer = 'No Snapping';
             this.route.tiles.clear();
@@ -630,13 +636,7 @@ export default class DrawTool {
     async stop(refresh = true): Promise<void> {
         this.mode = DrawToolMode.STATIC;
 
-        if (this.mapStore.map.getLayer('snapping-graph-layer')) {
-            this.mapStore.map.removeLayer('snapping-graph-layer');
-        }
-
-        if (this.mapStore.map.getSource('snapping-graph-source')) {
-            this.mapStore.map.removeSource('snapping-graph-source');
-        }
+        this.removeNetwork();
 
         // Reset cursor to default BEFORE stopping draw operations
         this.mapStore.map.getCanvas().style.cursor = '';
