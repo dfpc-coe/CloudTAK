@@ -602,7 +602,7 @@ export default class DrawTool {
 
     async start(mode: DrawToolMode): Promise<void> {
         if (mode !== DrawToolMode.SNAPPING) {
-            this.removeNetwork();
+            await this.removeNetwork();
         }
 
         if (mode === DrawToolMode.LINESTRING && this.route.layer !== 'No Snapping') {
@@ -636,7 +636,7 @@ export default class DrawTool {
     async stop(refresh = true): Promise<void> {
         this.mode = DrawToolMode.STATIC;
 
-        this.removeNetwork();
+        await this.removeNetwork();
 
         // Reset cursor to default BEFORE stopping draw operations
         this.mapStore.map.getCanvas().style.cursor = '';
