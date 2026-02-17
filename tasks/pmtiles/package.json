@@ -36,6 +36,7 @@
         "pmtiles": "^4.0.0"
     },
     "devDependencies": {
+        "@eslint/js": "^10.0.1",
         "@types/aws-lambda": "^8.10.108",
         "@types/cors": "^2.8.17",
         "@types/jsonwebtoken": "^9.0.2",
