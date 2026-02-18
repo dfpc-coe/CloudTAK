@@ -434,11 +434,18 @@ export default class Overlay {
     ): Promise<void> {
         this.remove();
 
+        const oldType = this.type;
+
         if (overlay.name) this.name = overlay.name;
         if (overlay.active !== undefined) this.active = overlay.active;
         if (overlay.username) this.username = overlay.username;
         if (overlay.actions) this.actions = overlay.actions || { feature: [] };
         if (overlay.type) this.type = overlay.type;
+
+        if (this.type === 'raster' && oldType !== 'raster' && !overlay.styles) {
+            this.styles = [];
+        }
+
         if (overlay.opacity) this.opacity = overlay.opacity;
         if (overlay.visible) this.visible = overlay.visible;
         if (overlay.mode) this.mode = overlay.mode;

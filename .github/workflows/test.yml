@@ -28,13 +28,13 @@ jobs:
         run: docker compose build events
 
       - name: Docker Events Lint
-        run: docker run cloudtak-events:latest sh -c "npm install --include=dev && npm run lint"
+        run: docker run cloudtak-events:latest npm run lint
 
       - name: Docker Events Check
-        run: docker run cloudtak-events:latest sh -c "npm install --include=dev && npm run check"
+        run: docker run cloudtak-events:latest npm run check
 
       - name: Docker Events Test
-        run: docker run cloudtak-events:latest sh -c "npm install --include=dev && npm run test"
+        run: docker run cloudtak-events:latest npm run test
 
   pmtiles:
     if: github.event.pull_request.draft == false
@@ -82,7 +82,7 @@ jobs:
         run: docker compose build api
 
       - name: Docker API Lint
-        run: docker run cloudtak-api:latest sh -c "npm install --include=dev && npm run lint"
+        run: docker run cloudtak-api:latest npm run lint
 
       - name: Docker Test & Coverage
         run: docker run --network cloudtak_default -v ./coverage/:/home/etl/api/coverage -e "POSTGRES=postgres://docker:docker@postgis:5432/gis" cloudtak-api:latest npm run coverage

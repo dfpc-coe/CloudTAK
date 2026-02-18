@@ -219,7 +219,9 @@ export default class DrawTool {
                 new terraDraw.TerraDrawAngledRectangleMode(),
                 new terraDraw.TerraDrawFreehandMode(),
                 new terraDraw.TerraDrawSectorMode(),
-                new terraDraw.TerraDrawCircleMode(),
+                new terraDraw.TerraDrawCircleMode({
+                    drawInteraction: 'click-move-or-drag',
+                }),
                 new terraDraw.TerraDrawSelectMode({
                     flags: {
                         polygon: {
@@ -353,6 +355,16 @@ export default class DrawTool {
                         feat.properties.type = 'u-d-f';
                     } else if (this.mode === DrawToolMode.CIRCLE) {
                         feat.properties.type = 'u-d-c-c';
+
+                        const radius = storeFeat.properties.radiusKilometers ? (Number(storeFeat.properties.radiusKilometers) * 1000) : 100;
+
+                        feat.properties.shape = {
+                            ellipse: {
+                                major: radius,
+                                minor: radius,
+                                angle: 360
+                            }
+                        };
                     } else if (this.mode === DrawToolMode.POINT) {
                         feat.properties.type = this.point.type
                         feat.properties["marker-opacity"] = 1;
@@ -589,6 +601,10 @@ export default class DrawTool {
 
 
     async start(mode: DrawToolMode): Promise<void> {
+        if (mode !== DrawToolMode.SNAPPING) {
+            await this.removeNetwork();
+        }
+
         if (mode === DrawToolMode.LINESTRING && this.route.layer !== 'No Snapping') {
             this.route.layer = 'No Snapping';
             this.route.tiles.clear();
@@ -620,13 +636,7 @@ export default class DrawTool {
     async stop(refresh = true): Promise<void> {
         this.mode = DrawToolMode.STATIC;
 
-        if (this.mapStore.map.getLayer('snapping-graph-layer')) {
-            this.mapStore.map.removeLayer('snapping-graph-layer');
-        }
-
-        if (this.mapStore.map.getSource('snapping-graph-source')) {
-            this.mapStore.map.removeSource('snapping-graph-source');
-        }
+        await this.removeNetwork();
 
         // Reset cursor to default BEFORE stopping draw operations
         this.mapStore.map.getCanvas().style.cursor = '';

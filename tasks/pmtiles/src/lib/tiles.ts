@@ -14,7 +14,7 @@ import vtquery from '@mapbox/vtquery';
 import { pointToTile } from '@mapbox/tilebelt';
 
 export const TileJSON = Type.Object({
-    tilejson: Type.Literal('2.2.0'),
+    tilejson: Type.Literal('3.0.0'),
     name: Type.String(),
     description: Type.String(),
     version: Type.Literal('1.0.0'),
@@ -24,7 +24,14 @@ export const TileJSON = Type.Object({
     maxzoom: Type.Integer(),
     bounds: Type.Array(Type.Number()),
     meta: Type.Unknown(),
-    center: Type.Array(Type.Number())
+    center: Type.Array(Type.Number()),
+    vector_layers: Type.Optional(Type.Array(Type.Object({
+        id: Type.String(),
+        description: Type.Optional(Type.String()),
+        minzoom: Type.Optional(Type.Integer()),
+        maxzoom: Type.Optional(Type.Integer()),
+        fields: Type.Optional(Type.Record(Type.String(), Type.String()))
+    })))
 });
 
 export const QueryResponse = Type.Object({
@@ -84,6 +91,7 @@ export class FileTiles {
     ): Promise<Static<typeof TileJSON>> {
         const p = new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
         const header = await p.getHeader();
+        const metadata = await p.getMetadata() as any;
 
         let format = 'mvt';
         for (const pair of [
@@ -99,7 +107,7 @@ export class FileTiles {
         }
 
         return {
-            tilejson: "2.2.0",
+            tilejson: "3.0.0",
             name: `${this.path}.pmtiles`,
             description: "Hosted by CloudTAK",
             version: "1.0.0",
@@ -109,7 +117,8 @@ export class FileTiles {
             maxzoom: header.maxZoom,
             bounds: [ header.minLon, header.minLat, header.maxLon, header.maxLat ],
             meta: header,
-            center: [ header.centerLon, header.centerLat, header.centerZoom ]
+            center: [ header.centerLon, header.centerLat, header.centerZoom ],
+            vector_layers: metadata.vector_layers
         };
     }
 

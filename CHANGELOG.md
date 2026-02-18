@@ -12,6 +12,42 @@
 
 ### Pending Release
 
+### v12.77.1 - 2026-02-17
+
+- :bug: Potentially fix bug where a race condition could result in snapping not being available despite it being configured
+- :bug: Ensure snapping MapLibre layer is removed if user turns off snapping
+- :rocket: Add draw support to creating circles for use on touch screens
+
+### v12.77.0 - 2026-02-16
+
+- :rocket: Upgrade PMTiles Task to TileJSON@3 to support full OpenMapTiles spec
+
+### v12.76.2 - 2026-02-16
+
+- :bug: Ensure `id`, `name` and `ownership` are copied if PATCHing an existing Basemap  and changing the mode
+
+### v12.76.1 - 2026-02-16
+
+- :bug: Fix bug where users switching from vector to raster basemap would have an error due to the styles object not getting reset
+
+### v12.76.0 - 2026-02-16
+
+- :rocket: Rewrite Basemap API to allow for more flexible basemap management in the future, while maintaining backwards compatibility with existing basemap keys and structures
+- :rocket: Allow setting a TileJSON URL that can be used for retrieving basemap metadata and tiles for basemaps that support it
+- :bug: Fix public tiles list API in non-AWS environments
+
+### v12.75.5 - 2026-02-14
+
+- :bug: Include legacy style properties to avoid color issues in iTAK
+
+### v12.75.4 - 2026-02-13
+
+- :bug: Fix Circle Colour Parsing
+
+### v12.75.3 - 2026-02-13
+
+- :bug: Fix Circle Generation when using the Circle Tool
+
 ### v12.75.2 - 2026-02-12
 
 - :bug: non-admin users would not be able to access the config API and result in a failed login

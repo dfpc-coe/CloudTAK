@@ -1,0 +1,1 @@
+ALTER TABLE "basemaps" ADD COLUMN IF NOT EXISTS "tilejson" text;

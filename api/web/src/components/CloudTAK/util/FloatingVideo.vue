@@ -122,13 +122,28 @@
                 />
             </template>
             <template v-else>
-                <video
-                    ref='videoTag'
-                    class='w-100 h-100 live-video'
-                    controls
-                    autoplay
-                    muted
-                />
+                <div class='position-relative w-100 h-100'>
+                    <video
+                        ref='videoTag'
+                        class='w-100 h-100 live-video'
+                        controls
+                        autoplay
+                        muted
+                    />
+                    
+                    <!-- Buffering Overlay -->
+                    <div
+                        v-if='isBuffering'
+                        class='buffering-overlay'
+                    >
+                        <div class='buffering-icon'>
+                            <IconPlayerPauseFilled :size='64' />
+                            <div class='mt-2 fw-bold'>
+                                Buffering...
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </template>
         </div>
     </div>
@@ -153,7 +168,8 @@ import type { VideoPane } from '../../../stores/float.ts';
 import {
     IconX,
     IconUsersGroup,
-    IconGripVertical
+    IconGripVertical,
+    IconPlayerPauseFilled
 } from '@tabler/icons-vue';
 import {
     TablerNone,
@@ -209,6 +225,15 @@ const lastPosition = ref({ top: 0, left: 0 }) // Last mouse position during drag
 // Active stream metadata
 const active = ref();
 
+// Buffer monitoring state
+const isBuffering = ref(false);
+const bufferCheckInterval = ref<number | undefined>();
+
+// Buffer monitoring configuration
+const BUFFER_LOW_THRESHOLD = 2; // Pause when buffer falls below 2 seconds
+const BUFFER_RECOVERY_THRESHOLD = 5; // Resume when buffer recovers to 5+ seconds
+const BUFFER_CHECK_INTERVAL_MS = 500; // Check buffer every 500ms
+
 // Computed title - uses stream metadata name if available, falls back to prop
 const title = computed(() => {
     if (active.value && active.value.metadata) {
@@ -218,8 +243,48 @@ const title = computed(() => {
     }
 });
 
+/**
+ * Monitor video buffer levels and pause/resume playback as needed
+ * Prevents reaching the end of buffer which causes refresh loops
+ */
+function monitorBuffer(): void {
+    const video = videoTag.value;
+    if (!video || video.paused) return;
+
+    try {
+        const buffered = video.buffered;
+        if (buffered.length === 0) return;
+
+        const currentTime = video.currentTime;
+        const bufferedEnd = buffered.end(buffered.length - 1);
+        const bufferAhead = bufferedEnd - currentTime;
+
+        // If buffer is low (less than threshold), pause and show overlay
+        if (bufferAhead < BUFFER_LOW_THRESHOLD && !isBuffering.value) {
+            console.log(`Buffer running low (${bufferAhead.toFixed(2)}s), pausing for buffering...`);
+            video.pause();
+            isBuffering.value = true;
+        }
+
+        // If buffer has recovered (more than threshold), resume
+        if (bufferAhead > BUFFER_RECOVERY_THRESHOLD && isBuffering.value) {
+            console.log(`Buffer recovered (${bufferAhead.toFixed(2)}s), resuming playback...`);
+            isBuffering.value = false;
+            video.play().catch(e => console.error("Failed to resume video playback after buffering:", e));
+        }
+    } catch (err) {
+        console.error('Error monitoring buffer:', err);
+    }
+}
+
 // Cleanup when component is unmounted
 onUnmounted(async () => {
+    // Stop buffer monitoring
+    if (bufferCheckInterval.value) {
+        clearInterval(bufferCheckInterval.value);
+        bufferCheckInterval.value = undefined;
+    }
+    
     // Stop observing resize events
     if (observer.value) {
         observer.value.disconnect();
@@ -416,6 +481,9 @@ async function createPlayer(): Promise<void> {
         player.value.on(Hls.Events.MANIFEST_PARSED, async () => {
             try {
                 if (videoTag.value) await videoTag.value.play();
+                
+                // Start buffer monitoring interval
+                bufferCheckInterval.value = window.setInterval(monitorBuffer, BUFFER_CHECK_INTERVAL_MS);
             } catch (err) {
                 console.error("Error playing video:", err);
             }
@@ -479,6 +547,12 @@ async function createPlayer(): Promise<void> {
 
     console.log('Handling HLS stream restart (muxer restart detected)');
 
+    // Clear buffer monitoring before restarting player
+    if (bufferCheckInterval.value) {
+        clearInterval(bufferCheckInterval.value);
+        bufferCheckInterval.value = undefined;
+    }
+
     try {
         hls.recoverMediaError();
         hls.stopLoad();
@@ -504,6 +578,12 @@ async function createPlayer(): Promise<void> {
  * Implements 3-attempt retry system with increasing delays: 1s, 2s, 4s
  */
 function handleStreamError(streamError: Error): void {
+    // Clear buffer monitoring before destroying player
+    if (bufferCheckInterval.value) {
+        clearInterval(bufferCheckInterval.value);
+        bufferCheckInterval.value = undefined;
+    }
+
     if (retryCount.value < maxRetries.value) {
         // Calculate exponential backoff delay
         const delay = 1000 * Math.pow(2, retryCount.value); // 1s, 2s, 4s
@@ -650,5 +730,38 @@ async function requestLease(): Promise<void> {
 
 .live-video::-webkit-media-controls-time-remaining-display {
     display: none;
+}
+
+.buffering-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
+    backdrop-filter: blur(2px);
+}
+
+.buffering-icon {
+    color: white;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
 }
 </style>
