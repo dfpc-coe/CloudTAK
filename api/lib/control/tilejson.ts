@@ -1,5 +1,5 @@
 import undici from 'undici';
-import { geoJSONToTile } from '@tak-ps/geojson-vt';
+import geojsonvt from '@maplibre/geojson-vt';
 import { tileToBBOX } from '../tilebelt.js';
 // @ts-expect-error No Type Defs
 import vtpbf from 'vt-pbf';
@@ -466,18 +466,22 @@ export default class TileJSON {
                     return;
                 }
 
-                const tileFeatures = geoJSONToTile({
-                    type: 'FeatureCollection',
+                const geojson = {
+                    type: 'FeatureCollection' as const,
                     features: fc.features.map((feat) => {
                         feat.id = Number(feat.id);
                         return feat;
                     })
-                }, z, x, y, {
+                };
+
+                const tileIndex = geojsonvt(geojson, {
                     maxZoom: 24,
                     tolerance: 3,
                     extent: 4096,
                     buffer: 64,
                 });
+
+                const tileFeatures = tileIndex.getTile(z, x, y);
 
                 if (!tileFeatures) throw new Err(404, null, 'No Features Found in Tile');
 
