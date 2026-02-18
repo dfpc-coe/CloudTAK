@@ -640,6 +640,12 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (basemap.tilejson) {
+                const url = new URL(basemap.tilejson);
+
+                if (url.hostname === new URL(config.PMTILES_URL).hostname) {
+                    url.searchParams.set('token', auth.token);
+                }
+
                 const tj = await fetch(basemap.tilejson);
                 const json = await tj.json();
 
