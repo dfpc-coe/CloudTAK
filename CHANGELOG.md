@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.77.2 - 2026-02-18
+
+- :bug: Use User's token in Basemap Tile requests to avoid 400 errors
+
 ### v12.77.1 - 2026-02-17
 
 - :bug: Potentially fix bug where a race condition could result in snapping not being available despite it being configured
