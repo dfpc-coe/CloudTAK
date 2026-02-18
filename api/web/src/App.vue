@@ -141,6 +141,7 @@ import { std } from './std.ts';
 import MissionInviteModal from './components/CloudTAK/Menu/Mission/MissionInviteModal.vue';
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
+import { db } from './base/database.ts';
 
 const router = useRouter();
 const route = useRoute();
@@ -194,12 +195,19 @@ onErrorCaptured((err) => {
 
 onMounted(async () => {
     let status;
-    try {
-        const server = await std('/api/server') as Server;
-        status = server.status;
-    } catch (err) {
-        console.warn('Server Error (Likely the server is in a configured state)', err);
+
+    const username = await db.profile.get('username');
+
+    if (username) {
         status = 'configured';
+    } else {
+        try {
+            const server = await std('/api/server') as Server;
+            status = server.status;
+        } catch (err) {
+            console.warn('Server Error (Likely the server is in a configured state)', err);
+            status = 'configured';
+        }
     }
 
     const config = await Config.list([
