@@ -68,13 +68,15 @@ export class AuthResource {
 export class AuthUser {
     access: AuthUserAccess;
     email: string;
+    token: string;
 
     // Username of admin doing the impersonating - if this value is populated the calling user is guarenteed to be an admin
     impersonate?: string;
 
-    constructor(access: AuthUserAccess, email: string) {
+    constructor(access: AuthUserAccess, email: string, token: string) {
         this.access = access;
         this.email = email;
+        this.token = token;
     }
 
     is_admin(): boolean {
@@ -233,7 +235,7 @@ export default class Auth {
         if (imp.agency_admin) access = AuthUserAccess.AGENCY;
         if (imp.system_admin) access = AuthUserAccess.ADMIN;
 
-        const resolved = new AuthUser(access, impersonate);
+        const resolved = new AuthUser(access, impersonate, adminUser.token);
         resolved.impersonate = adminUser.email;
         return resolved;
     }
@@ -329,11 +331,11 @@ export async function tokenParser(
             const profile = await config.models.Profile.from(decoded.id);
 
             if (profile.system_admin) {
-                return new AuthUser(AuthUserAccess.ADMIN, profile.username);
+                return new AuthUser(AuthUserAccess.ADMIN, profile.username, `etl.${token}`);
             } else if (profile.agency_admin.length) {
-                return new AuthUser(AuthUserAccess.AGENCY, profile.username);
+                return new AuthUser(AuthUserAccess.AGENCY, profile.username, `etl.${token}`);
             } else {
-                return new AuthUser(AuthUserAccess.USER, profile.username);
+                return new AuthUser(AuthUserAccess.USER, profile.username, `etl.${token}`);
             }
         } else {
             return new AuthResource(`etl.${token}`, access, decoded.id, decoded.internal);
@@ -355,7 +357,7 @@ export async function tokenParser(
             access
         };
 
-        return new AuthUser(auth.access, auth.email);
+        return new AuthUser(auth.access, auth.email, token);
     }
 }
 
