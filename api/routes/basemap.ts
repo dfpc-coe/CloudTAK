@@ -640,7 +640,18 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (basemap.tilejson) {
-                const tj = await fetch(basemap.tilejson);
+                const url = new URL(basemap.tilejson);
+
+                if (url.hostname === new URL(config.PMTILES_URL).hostname) {
+                    url.searchParams.set('token', auth.token);
+                }
+
+                const tj = await fetch(url);
+
+                if (!tj.ok) {
+                    throw new Err(400, null, 'Unable to fetch TileJSON from source URL');
+                }
+
                 const json = await tj.json();
 
                 res.json({
