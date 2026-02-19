@@ -75,16 +75,5 @@ export default class GroupManager {
 
         return dbGroups;
     }
-
-    static async updateConnection(connection: string, groups: Group[], token?: string): Promise<void> {
-        const url = stdurl('/api/marti/group');
-        url.searchParams.set('connection', connection);
-
-        await std(url, {
-            method: 'PUT',
-            token,
-            body: groups
-        });
-    }
 }
 

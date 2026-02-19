@@ -104,8 +104,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router';
-import { std } from '../../../std.ts';
-import GroupManager from '../../../base/group.ts';
+import { std, stdurl } from '../../../std.ts';
 import {
     IconEye,
     IconEyeOff,
@@ -172,6 +171,11 @@ async function setStatus(channel, active=false) {
         return ch;
     });
 
-    await GroupManager.updateConnection(String(route.params.connectionid), rawChannels.value);
+    const url = stdurl('/api/marti/group');
+    url.searchParams.set('connection', String(route.params.connectionid));
+    await std(url, {
+        method: 'PUT',
+        body: rawChannels.value
+    });
 }
 </script>
