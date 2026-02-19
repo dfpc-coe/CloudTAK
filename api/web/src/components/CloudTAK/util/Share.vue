@@ -168,7 +168,7 @@
                         v-if='loading'
                     />
                     <TablerNone
-                        v-else-if='!Object.keys(visibleChannels).length'
+                        v-else-if='!visibleMissions.length'
                         :create='false'
                     />
                     <template v-else>
