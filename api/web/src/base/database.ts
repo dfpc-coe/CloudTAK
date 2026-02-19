@@ -1,10 +1,13 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type {
     Feature,
+    Group,
     Mission,
     MissionRole,
     MissionChange,
-    MissionLog
+    MissionLog,
+    Contact,
+    Server
 } from '../types.ts';
 
 export interface DBIcon {
@@ -147,9 +150,19 @@ export interface DBConfig {
     value: unknown;
 }
 
+export interface DBServer extends Server {
+    _id: string;
+}
+
+export interface DBCache {
+    key: string;
+    updated: number;
+}
+
 export type DatabaseType = Dexie & {
     icon: EntityTable<DBIcon, 'name'>,
     iconset: EntityTable<DBIconset, 'uid'>,
+    group: EntityTable<Group, 'name'>,
     video: EntityTable<DBVideo, 'id'>,
     filter: EntityTable<DBFilter, 'id'>,
     feature: EntityTable<DBFeature, 'id'>,
@@ -158,34 +171,42 @@ export type DatabaseType = Dexie & {
     notification: EntityTable<DBNotification, 'id'>,
     subscription: EntityTable<DBSubscription, 'guid'>,
     subscription_changes: EntityTable<DBSubscriptionChanges, 'id'>,
+    server: EntityTable<DBServer, '_id'>,
     subscription_log: EntityTable<DBSubscriptionLog, 'id'>,
     subscription_feature: EntityTable<DBSubscriptionFeature, 'id'>,
     mission_template: EntityTable<DBMissionTemplate, 'id'>,
     mission_template_log: EntityTable<DBMissionTemplateLog, 'id'>,
     profile: EntityTable<DBProfileConfig, 'key'>,
-    config: EntityTable<DBConfig, 'key'>
+    config: EntityTable<DBConfig, 'key'>,
+    cache: EntityTable<DBCache, 'key'>,
+    contact: EntityTable<Contact, 'uid'>
 };
 
 export const db = new Dexie('CloudTAK') as DatabaseType;
 
 db.version(1).stores({
     icon: 'name',
+    server: '_id',
+    group: 'name, active',
     iconset: 'uid, name',
     filter: 'id, external',
     video: 'id, username',
     feature: 'id, path',
-
+    profile: 'key',
+    contact: 'uid, callsign',
     config: 'key',
+    cache: 'key',
 
     chatroom: 'id',
     chatroom_chats: 'id, chatroom',
 
     notification: 'id, type, name, body, url, created, toast, read',
+
     subscription: 'guid, name',
     subscription_log: 'id, [mission+id]',
     subscription_feature: 'id, mission, [mission+id]',
     subscription_changes: '++id, mission',
+
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
-    profile: 'key'
 });

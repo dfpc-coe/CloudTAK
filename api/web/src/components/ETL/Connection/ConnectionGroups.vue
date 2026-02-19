@@ -172,7 +172,7 @@ async function setStatus(channel, active=false) {
     });
 
     const url = stdurl('/api/marti/group');
-    url.searchParams.set('connection', route.params.connectionid);
+    url.searchParams.set('connection', String(route.params.connectionid));
     await std(url, {
         method: 'PUT',
         body: rawChannels.value

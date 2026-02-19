@@ -81,6 +81,7 @@ import {
     IconInfoCircle,
     IconCircleFilled
 } from '@tabler/icons-vue';
+import GroupManager from '../../base/group.ts';
 
 const props = defineProps<{
     disabled?: boolean,
@@ -133,11 +134,7 @@ async function fetch() {
             data: Group[]
         }).data;
     } else {
-        const url = stdurl('/api/marti/group');
-        url.searchParams.set('useCache', 'true');
-        list = ((await std(url)) as {
-            data: Group[]
-        }).data
+        list = await GroupManager.list();
     }
 
     const channels: Record<string, Group> = {};
