@@ -2,7 +2,7 @@
     <MenuTemplate name='Channels'>
         <template #buttons>
             <TablerIconButton
-                v-if='!loading && mapStore.hasNoChannels'
+                v-if='channels.length && mapStore.hasNoChannels'
                 title='All Channels On'
                 @click='setAllStatus(true)'
             >
@@ -12,7 +12,7 @@
                 />
             </TablerIconButton>
             <TablerIconButton
-                v-if='!loading && !mapStore.hasNoChannels'
+                v-if='channels.length && !mapStore.hasNoChannels'
                 title='All Channels Off'
                 @click='setAllStatus(false)'
             >
@@ -23,15 +23,12 @@
             </TablerIconButton>
 
             <TablerRefreshButton
-                :loading='loading'
+                :loading='syncing'
                 @click='refresh'
             />
         </template>
         <template #default>
-            <div
-                v-if='!loading'
-                class='col-12 px-2 pb-2 pt-2'
-            >
+            <div class='col-12 px-2 pb-2 pt-2'>
                 <TablerInput
                     v-model='paging.filter'
                     icon='search'
@@ -44,13 +41,8 @@
                 :button='false'
             />
 
-            <TablerLoading v-if='loading' />
-            <TablerAlert
-                v-else-if='error'
-                :err='error'
-            />
             <TablerNone
-                v-else-if='!Object.keys(processChannels).length'
+                v-if='!Object.keys(processChannels).length'
                 :create='false'
             />
             <div
@@ -121,7 +113,6 @@ import {
     TablerIconButton,
     TablerRefreshButton,
     TablerInput,
-    TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -138,8 +129,7 @@ import {
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
-const error = ref<Error | undefined>();
-const loading = ref(true);
+const syncing = ref(false);
 const paging = ref({
     filter: ''
 });
@@ -180,15 +170,12 @@ const processChannels = computed<Record<string, Group>>(() => {
 });
 
 async function refresh() {
-    loading.value = true;
-
+    syncing.value = true;
     try {
         await mapStore.worker.profile.loadChannels();
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        syncing.value = false;
     }
-
-    loading.value = false;
 }
 
 async function setAllStatus(active=true) {
