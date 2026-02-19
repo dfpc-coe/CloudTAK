@@ -65,10 +65,7 @@ export default class Atlas {
         this.username = await this.profile.init();
         await this.conn.connect(this.username)
 
-        await Promise.all([
-            this.db.init(),
-            this.team.init()
-        ])
+        await this.db.init();
     }
 
     destroy() {
