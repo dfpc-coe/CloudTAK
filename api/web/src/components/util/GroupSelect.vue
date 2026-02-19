@@ -70,7 +70,7 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import { std, stdurl } from '../../../src/std.ts';
-import type { Group } from '../../../src/types.ts';
+import type { Group, GroupChannel } from '../../../src/types.ts';
 import {
     TablerLoading,
     TablerInput,
@@ -98,7 +98,7 @@ const emit = defineEmits([
 const filter = ref('');
 const loading = ref(true);
 const selected = ref<Set<string>>(new Set(props.modelValue))
-const groups = ref<Record<string, Group>>({});
+const groups = ref<Record<string, GroupChannel>>({});
 
 const filtered = computed(() => {
     return Object.keys(groups.value).filter((g) => {
@@ -134,26 +134,19 @@ async function fetch() {
             data: Group[]
         }).data;
     } else {
-        list = await GroupManager.list();
+        list = GroupManager.explode(await GroupManager.list());
     }
 
-    const channels: Record<string, Group> = {};
+    const channels: Record<string, GroupChannel> = {};
 
-    JSON.parse(JSON.stringify(list)).sort((a: Group, b: Group) => {
+    GroupManager.merge(list).sort((a: GroupChannel, b: GroupChannel) => {
         return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
-    }).forEach((channel: Group) => {
+    }).forEach((channel: GroupChannel) => {
         if (props.active && !channel.active) {
             return;
         }
 
-        if (channels[channel.name]) {
-            // @ts-expect-error Need to make these human readable strings instead of array to sync with type
-            channels[channel.name].direction.push(channel.direction);
-        } else {
-            // @ts-expect-error Need to make these human readable strings instead of array to sync with type
-            channel.direction = [channel.direction];
-            channels[channel.name] = channel;
-        }
+        channels[channel.name] = channel;
     });
 
     groups.value = channels;

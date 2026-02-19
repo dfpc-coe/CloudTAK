@@ -1,7 +1,7 @@
 import type Atlas from './atlas.ts';
 import { std } from '../std.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts'
-import type { Feature, Group, Server, Profile_Update, FeaturePropertyCreator } from '../types.ts';
+import type { Feature, Group, GroupChannel, Server, Profile_Update, FeaturePropertyCreator } from '../types.ts';
 import ProfileConfig from '../base/profile.ts';
 import ServerManager from '../base/server.ts';
 import GroupManager from '../base/group.ts';
@@ -225,7 +225,7 @@ export default class AtlasProfile {
         }
     }
 
-    async setChannel(name: string, active: boolean): Promise<Array<Group>> {
+    async setChannel(name: string, active: boolean): Promise<Array<GroupChannel>> {
         const channels = await GroupManager.list();
         channels.forEach((ch) => {
             if (ch.name === name) ch.active = active;
@@ -239,7 +239,7 @@ export default class AtlasProfile {
         return await this.updateChannels(channels);
     }
 
-    async setAllChannels(active: boolean): Promise<Array<Group>> {
+    async setAllChannels(active: boolean): Promise<Array<GroupChannel>> {
         const channels = await GroupManager.list();
         channels.forEach((ch) => {
             ch.active = active;
@@ -253,7 +253,7 @@ export default class AtlasProfile {
         return await this.updateChannels(channels);
     }
 
-    async updateChannels(channels: Array<Group>): Promise<Array<Group>> {
+    async updateChannels(channels: Array<GroupChannel>): Promise<Array<GroupChannel>> {
         await this.postChannelStatus();
 
         await GroupManager.update(channels, this.atlas.token);
@@ -269,7 +269,7 @@ export default class AtlasProfile {
         }
     }
 
-    async loadChannels(): Promise<Array<Group>> {
+    async loadChannels(): Promise<Array<GroupChannel>> {
         const channels = await GroupManager.list({ token: this.atlas.token });
 
         await this.postChannelStatus();

@@ -106,7 +106,7 @@ import { ref, computed, onMounted } from 'vue';
 import type { Ref } from 'vue';
 import { from } from 'rxjs';
 import { useObservable } from '@vueuse/rxjs';
-import type { Group } from '../../../../src/types.ts';
+import type { GroupChannel } from '../../../../src/types.ts';
 import GroupManager from '../../../base/group.ts';
 import {
     TablerNone,
@@ -136,27 +136,20 @@ const paging = ref({
 const channels = useObservable(
     from(GroupManager.live()),
     { initialValue: [] }
-) as Ref<Group[]>;
+) as Ref<GroupChannel[]>;
 
 onMounted(async () => {
     await refresh();
 });
 
-const processChannels = computed<Record<string, Group>>(() => {
-    const filteredChannels: Record<string, Group> = {};
+const processChannels = computed<Record<string, GroupChannel>>(() => {
+    const filteredChannels: Record<string, GroupChannel> = {};
 
     JSON.parse(JSON.stringify(channels.value))
-        .sort((a: Group, b: Group) => {
+        .sort((a: GroupChannel, b: GroupChannel) => {
             return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
-        }).forEach((channel: Group) => {
-            if (filteredChannels[channel.name]) {
-                // @ts-expect-error Type as an array eventually
-                filteredChannels[channel.name].direction.push(channel.direction);
-            } else {
-                // @ts-expect-error Type as an array eventually
-                channel.direction = [channel.direction];
-                filteredChannels[channel.name] = channel;
-            }
+        }).forEach((channel: GroupChannel) => {
+            filteredChannels[channel.name] = channel;
         })
 
     for (const key of Object.keys(filteredChannels)) {
@@ -191,12 +184,9 @@ async function setAllStatus(active=true) {
     await mapStore.worker.profile.setAllChannels(active);
 }
 
-async function setStatus(channel: Group, active=false) {
-    const updates = channels.value
-        .filter((ch) => ch.name === channel.name)
-        .map((ch) => ({ ...ch, active }));
-
-    await GroupManager.put(updates);
+async function setStatus(channel: GroupChannel, active=false) {
+    const update: GroupChannel = { ...channel, active };
+    await GroupManager.put(update);
 
     await mapStore.worker.profile.setChannel(channel.name, active);
 }

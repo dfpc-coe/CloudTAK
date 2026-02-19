@@ -85,8 +85,9 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
-import type { Group } from '../../../types.ts';
+import type { GroupChannel } from '../../../types.ts';
 import type COT from '../../../base/cot.ts';
+import GroupManager from '../../../base/group.ts';
 import {
     TablerNone,
     TablerAlert,
@@ -107,7 +108,7 @@ const props = defineProps<{
 const error = ref<Error | undefined>();
 const loading = ref(true)
 const shown = ref<Record<string, boolean>>({});
-const channels = ref<Group[]>([]);
+const channels = ref<GroupChannel[]>([]);
 const paging = ref({
     filter: ''
 });
@@ -115,7 +116,7 @@ const paging = ref({
 onMounted(async () => {
     try {
         const sub = await props.cot.subscription();
-        channels.value = sub.groups.sort((a, b) => {
+        channels.value = GroupManager.merge(sub.groups).sort((a, b) => {
             return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
         });
     } catch (err) {
@@ -126,18 +127,11 @@ onMounted(async () => {
 });
 
 const processChannels = computed(() => {
-    const channelsFiltered: Record<string, Group> = {};
+    const channelsFiltered: Record<string, GroupChannel> = {};
 
     channels.value
-        .forEach((channel: Group) => {
-            if (channelsFiltered[channel.name]) {
-                // @ts-expect-error Change to string eventually
-                channelsFiltered[channel.name].direction.push(channel.direction);
-            } else {
-                // @ts-expect-error Change to string eventually
-                channel.direction = [channel.direction];
-                channelsFiltered[channel.name] = channel;
-            }
+        .forEach((channel: GroupChannel) => {
+            channelsFiltered[channel.name] = channel;
         })
 
     for (const key of Object.keys(channelsFiltered)) {
