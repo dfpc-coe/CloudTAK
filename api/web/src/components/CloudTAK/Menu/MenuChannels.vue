@@ -113,7 +113,6 @@ import {
     TablerIconButton,
     TablerRefreshButton,
     TablerInput,
-    TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
