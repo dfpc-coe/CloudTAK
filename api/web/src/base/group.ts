@@ -42,6 +42,13 @@ export default class GroupManager {
 
     static async put(groups: Group[] | Group): Promise<void> {
         if (!Array.isArray(groups)) groups = [groups];
+
+        for (const group of groups) {
+            if (Array.isArray(group.direction)) {
+                throw new Error('Group direction must be a string, not an array');
+            }
+        }
+
         await db.group.bulkPut(groups);
     }
 

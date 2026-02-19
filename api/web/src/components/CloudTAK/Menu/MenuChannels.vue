@@ -171,7 +171,7 @@ const processChannels = computed<Record<string, Group>>(() => {
 async function refresh() {
     syncing.value = true;
     try {
-        await mapStore.worker.profile.loadChannels();
+        await GroupManager.sync();
     } finally {
         syncing.value = false;
     }
@@ -192,9 +192,11 @@ async function setAllStatus(active=true) {
 }
 
 async function setStatus(channel: Group, active=false) {
-    const update = JSON.parse(JSON.stringify(channel));
-    update.active = active;
-    await GroupManager.put(update);
+    const updates = channels.value
+        .filter((ch) => ch.name === channel.name)
+        .map((ch) => ({ ...ch, active }));
+
+    await GroupManager.put(updates);
 
     await mapStore.worker.profile.setChannel(channel.name, active);
 }
