@@ -1,8 +1,10 @@
 import type Atlas from './atlas.ts';
-import { std, stdurl } from '../std.ts';
+import { std } from '../std.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts'
 import type { Feature, Group, Server, Profile_Update, FeaturePropertyCreator } from '../types.ts';
 import ProfileConfig from '../base/profile.ts';
+import ServerManager from '../base/server.ts';
+import GroupManager from '../base/group.ts';
 
 export type ProfileLocationState = {
     source: LocationState
@@ -156,9 +158,7 @@ export default class AtlasProfile {
 
     async loadServer(): Promise<Server> {
         if (!this.server) {
-            this.server = await std('/api/server', {
-                token: this.atlas.token
-            }) as Server;
+            this.server = await ServerManager.get(this.atlas.token);
         }
 
         return this.server;
@@ -258,12 +258,7 @@ export default class AtlasProfile {
 
         this.postChannelStatus();
 
-        const url = stdurl('/api/marti/group');
-        await std(url, {
-            method: 'PUT',
-            token: this.atlas.token,
-            body: this.channels
-        });
+        await GroupManager.update(this.channels, this.atlas.token);
 
         return this.channels;
     }
@@ -277,17 +272,11 @@ export default class AtlasProfile {
     }
 
     async loadChannels(): Promise<Array<Group>> {
-        const url = stdurl('/api/marti/group');
-        url.searchParams.set('useCache', 'true');
-        this.channels = ((await std(url, {
-            token: this.atlas.token
-        })) as {
-            data: Group[]
-        }).data
+        this.channels = await GroupManager.list({ token: this.atlas.token });
 
         this.postChannelStatus();
 
-        return this.channels
+        return this.channels;
     }
 
     async update(body: Profile_Update): Promise<void> {

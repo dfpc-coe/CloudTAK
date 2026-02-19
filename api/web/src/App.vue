@@ -122,8 +122,8 @@
 <script setup lang='ts'>
 import { ref, computed, onErrorCaptured, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router';
-import type { Server } from './types.ts';
 import Config from './base/config.ts';
+import ServerManager from './base/server.ts';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
 import {
@@ -137,7 +137,6 @@ import Loading from './components/Loading.vue';
 import {
     TablerError
 } from '@tak-ps/vue-tabler';
-import { std } from './std.ts';
 import MissionInviteModal from './components/CloudTAK/Menu/Mission/MissionInviteModal.vue';
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
@@ -202,7 +201,7 @@ onMounted(async () => {
         status = 'configured';
     } else {
         try {
-            const server = await std('/api/server') as Server;
+            const server = await ServerManager.get();
             status = server.status;
         } catch (err) {
             console.warn('Server Error (Likely the server is in a configured state)', err);

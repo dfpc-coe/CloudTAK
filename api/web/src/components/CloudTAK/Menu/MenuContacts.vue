@@ -120,6 +120,7 @@ import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Ref } from 'vue';
 import { std } from '../../../std.ts';
+import ContactManager from '../../../base/contact.ts';
 import type { ContactList, ConfigGroups } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
@@ -229,8 +230,7 @@ async function fetchList(loading: Ref<boolean>) {
     loading.value = true;
 
     try {
-        const team = await mapStore.worker.team.load();
-        contacts.value = Array.from(team.values())
+        contacts.value = await ContactManager.list();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err))
     }
