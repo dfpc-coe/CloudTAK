@@ -217,7 +217,7 @@ async function deleteChats() {
         await room.value.deleteChats(Array.from(selected.values()));
     } catch (err) {
         loading.value = false;
-        throw new Error(err.message);
+        throw new Error(err.message, { cause: err });
     }
 
     await fetchChats();

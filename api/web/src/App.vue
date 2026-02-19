@@ -103,7 +103,6 @@
         />
         <router-view
             v-else
-            :user='user'
             @err='error = $event'
             @login='refreshLogin'
         />
@@ -123,8 +122,8 @@
 <script setup lang='ts'>
 import { ref, computed, onErrorCaptured, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router';
-import type { Login, Server } from './types.ts';
 import Config from './base/config.ts';
+import ServerManager from './base/server.ts';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
 import {
@@ -138,10 +137,10 @@ import Loading from './components/Loading.vue';
 import {
     TablerError
 } from '@tak-ps/vue-tabler';
-import { std } from './std.ts';
 import MissionInviteModal from './components/CloudTAK/Menu/Mission/MissionInviteModal.vue';
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
+import { db } from './base/database.ts';
 
 const router = useRouter();
 const route = useRoute();
@@ -159,7 +158,7 @@ const inviteMission = ref<{
     type: string;
 } | undefined>();
 const mounted = ref(false);
-const user = ref<Login | undefined>();
+const user = ref(false);
 const error = ref<Error | undefined>();
 
 const navShown = computed<boolean>(() => {
@@ -195,12 +194,19 @@ onErrorCaptured((err) => {
 
 onMounted(async () => {
     let status;
-    try {
-        const server = await std('/api/server') as Server;
-        status = server.status;
-    } catch (err) {
-        console.warn('Server Error (Likely the server is in a configured state)', err);
+
+    const username = await db.profile.get('username');
+
+    if (username) {
         status = 'configured';
+    } else {
+        try {
+            const server = await ServerManager.get();
+            status = server.status;
+        } catch (err) {
+            console.warn('Server Error (Likely the server is in a configured state)', err);
+            status = 'configured';
+        }
     }
 
     const config = await Config.list([
@@ -251,7 +257,7 @@ onMounted(async () => {
 });
 
 function logout() {
-    user.value = undefined;
+    user.value = false;
     delete localStorage.token;
 
     window.location.href = '/login';
@@ -272,24 +278,26 @@ function routeLogin() {
 async function refreshLogin() {
     loading.value = true;
 
-    await getLogin();
+    await checkToken();
 
     loading.value = false;
 }
 
-async function getLogin() {
+async function checkToken() {
     try {
-        user.value = await std('/api/login') as Login;
+        const token = localStorage.token;
+        if (!token) throw new Error('No token found');
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expirationDate = payload.exp * 1000; // Convert to milliseconds
+        const now = Date.now();
+
+        if (now > expirationDate) {
+            throw new Error('Token expired');
+        }
     } catch (err) {
         console.error(err);
-        user.value = undefined;
-        delete localStorage.token;
 
-        if (route.name !== 'login') {
-            routeLogin();
-        }
-
-        return false;
+        logout();
     }
 
     return true;

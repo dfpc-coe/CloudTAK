@@ -34,15 +34,13 @@
 import { ref, onMounted } from 'vue';
 import timediff from '../../../timediff.ts';
 import ContactRow from './Contact.vue';
-import { useMapStore } from '../../../stores/map.ts';
+import ContactManager from '../../../base/contact.ts';
 import type { Contact, FeaturePropertyCreator } from '../../../types.ts';
 import { useRouter } from 'vue-router';
 import SlideDownHeader from './SlideDownHeader.vue';
 import {
     IconUser
 } from '@tabler/icons-vue';
-
-const mapStore = useMapStore();
 
 const props = defineProps<{
     creator: FeaturePropertyCreator
@@ -54,7 +52,7 @@ const expanded = ref(false);
 const contact = ref<Contact | undefined>();
 
 onMounted(async () => {
-    contact.value = await mapStore.worker.team.get(props.creator.uid);
+    contact.value = await ContactManager.get(props.creator.uid);
 });
 </script>
 

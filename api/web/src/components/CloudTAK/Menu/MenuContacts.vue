@@ -2,15 +2,12 @@
     <MenuTemplate name='Contacts'>
         <template #buttons>
             <TablerRefreshButton
-                :loading='loading || refresh'
+                :loading='syncing'
                 @click='refreshList'
             />
         </template>
         <template #default>
-            <div
-                v-if='!loading'
-                class='col-12 px-2 py-2'
-            >
+            <div class='col-12 px-2 py-2'>
                 <TablerInput
                     v-model='paging.filter'
                     icon='search'
@@ -20,12 +17,7 @@
 
             <EmptyInfo v-if='mapStore.hasNoChannels' />
 
-            <TablerLoading v-if='loading' />
-            <TablerAlert
-                v-else-if='error'
-                title='Contacts Error'
-                :err='error'
-            />
+            <TablerLoading v-if='!contacts' />
             <TablerNone
                 v-else-if='!visibleActiveContacts.length && !visibleOfflineContacts.length'
                 label='No Contacts'
@@ -116,18 +108,21 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Ref } from 'vue';
+import { liveQuery } from 'dexie';
+import { useObservable } from '@vueuse/rxjs';
+import { from } from 'rxjs';
 import { std } from '../../../std.ts';
-import type { ContactList, ConfigGroups } from '../../../types.ts';
+import ContactManager from '../../../base/contact.ts';
+import type { Contact as ContactType, ContactList, ConfigGroups } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
 import {
     TablerNone,
-    TablerAlert,
     TablerInput,
     TablerLoading,
     TablerRefreshButton
@@ -135,14 +130,9 @@ import {
 import Contact from '../util/Contact.vue';
 import ContactPuck from '../util/ContactPuck.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
-import type { WorkerMessage } from '../../../base/events.ts';
-import { WorkerMessageType } from '../../../base/events.ts';
 
 const router = useRouter();
-const error = ref<Error | undefined>();
-const loading = ref(true);
-const refresh = ref(false);
-const contacts = ref<ContactList>([])
+const syncing = ref(false);
 const showOffline = ref(false);
 const paging = ref({
     filter: ''
@@ -160,36 +150,18 @@ const self = ref<string>('');
 const visibleActiveContacts = ref<ContactList>([]);
 const visibleOfflineContacts = ref<ContactList>([]);
 
-const channel = new BroadcastChannel("cloudtak");
-
-channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
-    const msg = event.data;
-    if (!msg || !msg.type) return;
-
-    if (msg.type === WorkerMessageType.Contact_Change) {
-        await fetchList(refresh);
-        await updateContacts();
-    }
-}
+const contacts: Ref<ContactType[] | undefined> = useObservable(
+    from(liveQuery(async () => {
+        return await ContactManager.list();
+    }))
+);
 
 onMounted(async () => {
     self.value = await mapStore.worker.profile.uid();
-
-    await Promise.all([
-        fetchList(loading),
-        fetchConfig()
-    ]);
-
-    await updateContacts();
+    await fetchConfig();
 });
 
-onBeforeUnmount(() => {
-    if (channel) {
-        channel.close();
-    }
-})
-
-watch(paging.value, async () => {
+watch([contacts, paging.value], async () => {
     await updateContacts();
 });
 
@@ -198,13 +170,16 @@ async function fetchConfig() {
 }
 
 async function updateContacts() {
+    if (!contacts.value) return;
+
+    const filter = paging.value.filter.toLowerCase();
     const newOpened = new Set<string>();
     const newTeams = new Set<string>();
     const newVisibleActive: ContactList = [];
     const newVisibleOffline: ContactList = [];
 
     for (const contact of contacts.value) {
-        if (!contact.callsign.toLowerCase().includes(paging.value.filter.toLowerCase())) continue;
+        if (filter && !contact.callsign.toLowerCase().includes(filter)) continue;
         if (contact.uid === self.value) continue;
 
         if (await mapStore.worker.db.has(contact.uid)) {
@@ -225,21 +200,12 @@ async function updateContacts() {
     visibleOfflineContacts.value = newVisibleOffline;
 }
 
-async function fetchList(loading: Ref<boolean>) {
-    loading.value = true;
-
-    try {
-        const team = await mapStore.worker.team.load();
-        contacts.value = Array.from(team.values())
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err))
-    }
-
-    loading.value = false;
-}
-
 async function refreshList() {
-    await fetchList(refresh);
-    await updateContacts();
+    syncing.value = true;
+    try {
+        await ContactManager.sync();
+    } finally {
+        syncing.value = false;
+    }
 }
 </script>

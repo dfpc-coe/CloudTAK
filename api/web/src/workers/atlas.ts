@@ -7,7 +7,6 @@ import type { WorkerMessage } from '../base/events.ts';
 import * as Comlink from 'comlink';
 import AtlasProfile from './atlas-profile.ts';
 import type { ProfileLocationState } from './atlas-profile.ts';
-import AtlasTeam from './atlas-team.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
@@ -20,7 +19,6 @@ export default class Atlas {
     username: string;
 
     db = Comlink.proxy(new AtlasDatabase(this));
-    team = Comlink.proxy(new AtlasTeam(this));
     conn = Comlink.proxy(new AtlasConnection(this));
     profile = Comlink.proxy(new AtlasProfile(this));
 
@@ -65,10 +63,7 @@ export default class Atlas {
         this.username = await this.profile.init();
         await this.conn.connect(this.username)
 
-        await Promise.all([
-            this.db.init(),
-            this.team.init()
-        ])
+        await this.db.init();
     }
 
     destroy() {

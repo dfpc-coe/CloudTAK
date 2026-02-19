@@ -41,7 +41,7 @@ const router = VueRouter.createRouter({
         {
             path: '/',
             name: 'home',
-            component: () => import('./components/Home.vue'),
+            component: () => import('./components/CloudTAK/Map.vue'),
             children: [{
                 path: 'query/:coords',
                 name: 'home-menu-query',

@@ -10,11 +10,13 @@ import type Atlas from './atlas.ts';
 import Subscription from '../base/subscription.ts';
 import { coordEach } from '@turf/meta'
 import COT, { OriginMode } from '../base/cot.ts';
+import ContactManager from '../base/contact.ts';
+import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../base/events.ts';
 import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import type { Polygon } from 'geojson';
-import type { InputFeature, Feature, APIList } from '../types.ts';
+import type { InputFeature, Feature, APIList, Contact } from '../types.ts';
 import ProfileConfig from '../base/profile.ts';
 
 type NestedArray = {
@@ -637,7 +639,35 @@ export default class AtlasDatabase {
             }
 
             if (exists.is_skittle) {
-                await this.atlas.team.set(exists);
+                if (!exists.properties.group) {
+                    throw new Error('Contact Marker must have group property');
+                }
+
+                const entry = await ContactManager.get(exists.id);
+
+                if (!entry) {
+                    const contact: Contact = {
+                        uid: exists.id,
+                        notes: '',
+                        filterGroups: null,
+                        callsign: exists.properties.callsign,
+                        team: exists.properties.group.name,
+                        role: exists.properties.group.role,
+                        takv: ''
+                    }
+
+                    await ContactManager.put(contact);
+
+                    if (this.atlas.profile.uid() !== exists.id) {
+                        await TAKNotification.create(
+                            NotificationType.Contact,
+                            'Online Contact',
+                            `${exists.properties.callsign} is now Online`,
+                            `/cot/${exists.id}`,
+                            false
+                        );
+                    }
+                }
             }
 
             return exists;

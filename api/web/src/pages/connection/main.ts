@@ -121,6 +121,10 @@ const router = VueRouter.createRouter({
                 name: 'connection-videos',
                 component: () => import('../../components/ETL/Connection/ConnectionVideos.vue')
             },{
+                path: 'features',
+                name: 'connection-features',
+                component: () => import('../../components/ETL/Connection/ConnectionFeatures.vue')
+            },{
                 path: 'tokens',
                 name: 'connection-tokens',
                 component: () => import('../../components/ETL/Connection/ConnectionTokens.vue')

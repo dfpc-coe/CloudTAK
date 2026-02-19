@@ -76,7 +76,7 @@
         "yaml": "^2.8.2"
     },
     "devDependencies": {
-        "@eslint/js": "^9.18.0",
+        "@eslint/js": "^10.0.0",
         "@testing-library/vue": "^8.1.0",
         "@types/mapbox__tile-cover": "^3.0.4",
         "@types/sortablejs": "^1.15.8",

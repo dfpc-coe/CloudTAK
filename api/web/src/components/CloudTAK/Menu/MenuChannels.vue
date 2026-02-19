@@ -2,7 +2,7 @@
     <MenuTemplate name='Channels'>
         <template #buttons>
             <TablerIconButton
-                v-if='!loading && mapStore.hasNoChannels'
+                v-if='channels.length && mapStore.hasNoChannels'
                 title='All Channels On'
                 @click='setAllStatus(true)'
             >
@@ -12,7 +12,7 @@
                 />
             </TablerIconButton>
             <TablerIconButton
-                v-if='!loading && !mapStore.hasNoChannels'
+                v-if='channels.length && !mapStore.hasNoChannels'
                 title='All Channels Off'
                 @click='setAllStatus(false)'
             >
@@ -23,15 +23,12 @@
             </TablerIconButton>
 
             <TablerRefreshButton
-                :loading='loading'
+                :loading='syncing'
                 @click='refresh'
             />
         </template>
         <template #default>
-            <div
-                v-if='!loading'
-                class='col-12 px-2 pb-2 pt-2'
-            >
+            <div class='col-12 px-2 pb-2 pt-2'>
                 <TablerInput
                     v-model='paging.filter'
                     icon='search'
@@ -44,13 +41,8 @@
                 :button='false'
             />
 
-            <TablerLoading v-if='loading' />
-            <TablerAlert
-                v-else-if='error'
-                :err='error'
-            />
             <TablerNone
-                v-else-if='!Object.keys(processChannels).length'
+                v-if='!Object.keys(processChannels).length'
                 :create='false'
             />
             <div
@@ -111,14 +103,16 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
+import type { Ref } from 'vue';
+import { from } from 'rxjs';
+import { useObservable } from '@vueuse/rxjs';
 import type { Group } from '../../../../src/types.ts';
+import GroupManager from '../../../base/group.ts';
 import {
     TablerNone,
     TablerIconButton,
     TablerRefreshButton,
     TablerInput,
-    TablerAlert,
-    TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
@@ -134,13 +128,15 @@ import {
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
-const error = ref<Error | undefined>();
-const loading = ref(true);
+const syncing = ref(false);
 const paging = ref({
     filter: ''
 });
 
-const channels = ref<Array<Group>>([]);
+const channels = useObservable(
+    from(GroupManager.live()),
+    { initialValue: [] }
+) as Ref<Group[]>;
 
 onMounted(async () => {
     await refresh();
@@ -173,34 +169,33 @@ const processChannels = computed<Record<string, Group>>(() => {
 });
 
 async function refresh() {
-    loading.value = true;
-
+    syncing.value = true;
     try {
-        channels.value = await mapStore.worker.profile.loadChannels();
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
+        await mapStore.worker.profile.loadChannels();
+    } finally {
+        syncing.value = false;
     }
-
-    loading.value = false;
 }
 
 async function setAllStatus(active=true) {
     // Updating the API takes a perceptable amount of time so
     // we update the UI state to provide immediate feedback
-    channels.value.forEach((ch) => {
-        ch.active = active;
-    })
+    const updates = channels.value.map((ch) => {
+        const char = JSON.parse(JSON.stringify(ch));
+        char.active = active;
+        return char;
+    });
 
-    channels.value = await mapStore.worker.profile.setAllChannels(active);
+    await GroupManager.put(updates);
+
+    await mapStore.worker.profile.setAllChannels(active);
 }
 
 async function setStatus(channel: Group, active=false) {
-    channels.value.forEach((ch) => {
-        if (ch.name === channel.name) {
-            ch.active = active;
-        }
-    })
+    const update = JSON.parse(JSON.stringify(channel));
+    update.active = active;
+    await GroupManager.put(update);
 
-    channels.value = await mapStore.worker.profile.setChannel(channel.name, active);
+    await mapStore.worker.profile.setChannel(channel.name, active);
 }
 </script>
