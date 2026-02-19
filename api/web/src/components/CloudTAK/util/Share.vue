@@ -237,7 +237,11 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
+import type { Ref } from 'vue';
+import { liveQuery } from 'dexie';
+import { useObservable } from '@vueuse/rxjs';
+import { from } from 'rxjs';
 import { OriginMode } from '../../../base/cot.ts';
 import { v4 as randomUUID } from 'uuid';
 import { std } from '../../../std.ts';
@@ -259,10 +263,8 @@ import {
 } from '@tabler/icons-vue';
 import Subscription from '../../../base/subscription.ts';
 import type { Contact, ContactList, Feature, Group } from '../../../types.ts'
-import type { WorkerMessage } from '../../../base/events.ts';
 import COTContact from '../util/Contact.vue';
 import { useMapStore } from '../../../stores/map.ts';
-import { WorkerMessageType } from '../../../base/events.ts';
 
 const mapStore = useMapStore();
 
@@ -287,7 +289,11 @@ const selectedMissions = ref<Set<{
 }>>(new Set())
 const selectedUsers = ref<Set<Contact>>(new Set())
 
-const contacts = ref<ContactList>([]);
+const contacts: Ref<ContactList | undefined> = useObservable(
+    from(liveQuery(async () => {
+        return await ContactManager.list();
+    }))
+);
 const channels = ref<Array<Group>>([]);
 const missions = ref<Array<{
     name: string
@@ -310,6 +316,7 @@ const visibleMissions = computed<Array<{
 });
 
 const visibleContacts = computed<ContactList>(() => {
+    if (!contacts.value) return [];
     return contacts.value.filter((contact) => {
         return contact.callsign;
     }).filter((contact) => {
@@ -317,27 +324,9 @@ const visibleContacts = computed<ContactList>(() => {
     })
 });
 
-const channel = new BroadcastChannel("cloudtak");
-
-channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
-    const msg = event.data;
-    if (!msg || !msg.type) return;
-
-    if (msg.type === WorkerMessageType.Contact_Change) {
-        await fetchUserList(false);
-    }
-}
-
 onMounted(async () => {
-    await fetchUserList();
     await fetchChannelList();
     await fetchMissions();
-});
-
-onBeforeUnmount(() => {
-    if (channel) {
-        channel.close();
-    }
 });
 
 watch(mode, () => {
@@ -489,9 +478,4 @@ async function fetchMissions() {
     loading.value = false;
 }
 
-async function fetchUserList(initialLoading = true) {
-    loading.value = initialLoading;
-    contacts.value = await ContactManager.list();
-    loading.value = false;
-}
 </script>
