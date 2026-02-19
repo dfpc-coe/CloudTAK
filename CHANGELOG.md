@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v12.78.0 - 2026-02-19
+
+- :tada: Basic Connection Feature Support in the UI
+- :rocket: Complete implementation of the Group Cache Manager in DexieDB
+- :rocket: Complete implementation of the Contacts Cache Manager in DexieDB
+- :rocket: Signican increases in refresh speed when logged in by avoiding sync calls to the backend and instead relying on the DexieDB cache for Contacts and Groups
+
 ### v12.77.3 - 2026-02-18
 
 - :bug: Use the constructed URL in the TileJSON
