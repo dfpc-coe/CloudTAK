@@ -188,8 +188,8 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import { std } from '../../../std.ts';
 import type { Server, Server_Update } from '../../../types.ts';
+import ServerManager from '../../../base/server.ts';
 import Upload from '../../util/UploadP12.vue';
 import {
     TablerIconButton,
@@ -250,7 +250,7 @@ onMounted(async () => {
 
 async function fetch() {
     loading.value = true;
-    server.value = await std(`/api/server`) as Server;
+    server.value = await ServerManager.get();
     if (!server.value.auth) regen.value = true;
     loading.value = false;
 }
@@ -304,13 +304,9 @@ async function postServer() {
     }
 
     if (server.value.status === 'unconfigured') {
-        server.value = await std(`/api/server`, {
-            method: 'POST', body
-        }) as Server;
+        server.value = await ServerManager.create(body);
     } else {
-        server.value = await std(`/api/server`, {
-            method: 'PATCH', body
-        }) as Server;
+        server.value = await ServerManager.update(body);
     }
 
     auth.value.cert = '';

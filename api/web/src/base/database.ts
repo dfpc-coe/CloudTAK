@@ -6,7 +6,8 @@ import type {
     MissionRole,
     MissionChange,
     MissionLog,
-    Contact
+    Contact,
+    Server
 } from '../types.ts';
 
 export interface DBIcon {
@@ -149,6 +150,10 @@ export interface DBConfig {
     value: unknown;
 }
 
+export interface DBServer extends Server {
+    _id: string;
+}
+
 export interface DBCache {
     key: string;
     updated: number;
@@ -166,6 +171,7 @@ export type DatabaseType = Dexie & {
     notification: EntityTable<DBNotification, 'id'>,
     subscription: EntityTable<DBSubscription, 'guid'>,
     subscription_changes: EntityTable<DBSubscriptionChanges, 'id'>,
+    server: EntityTable<DBServer, '_id'>,
     subscription_log: EntityTable<DBSubscriptionLog, 'id'>,
     subscription_feature: EntityTable<DBSubscriptionFeature, 'id'>,
     mission_template: EntityTable<DBMissionTemplate, 'id'>,
@@ -180,6 +186,7 @@ export const db = new Dexie('CloudTAK') as DatabaseType;
 
 db.version(1).stores({
     icon: 'name',
+    server: '_id',
     group: 'name, active',
     iconset: 'uid, name',
     filter: 'id, external',

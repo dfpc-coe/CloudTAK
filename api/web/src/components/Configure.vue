@@ -152,8 +152,8 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { std } from '../std.ts';
-import type { Server, Server_Update } from '../types.ts';
+import type { Server_Update } from '../types.ts';
+import ServerManager from '../base/server.ts';
 import CertificateP12 from './ETL/Connection/CertificateP12.vue';
 import {
     TablerLoading,
@@ -198,7 +198,7 @@ const body = ref<Server_Update>({
 onMounted(async () => {
     let server;
     try {
-        server = await std('/api/server') as Server;
+        server = await ServerManager.get();
     } catch (err) {
         console.error(err);
     }
@@ -245,10 +245,7 @@ async function updateServer() {
     loading.value = true;
 
     try {
-        await std('/api/server', {
-            method: 'PATCH',
-            body: body.value
-        })
+        await ServerManager.update(body.value);
 
         router.push('/login');
     } catch (err) {

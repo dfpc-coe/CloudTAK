@@ -240,7 +240,8 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { OriginMode } from '../../../base/cot.ts';
 import { v4 as randomUUID } from 'uuid';
-import { std, stdurl } from '../../../std.ts';
+import { std } from '../../../std.ts';
+import ContactManager from '../../../base/contact.ts';
 import {
     TablerNone,
     TablerInput,
@@ -490,8 +491,7 @@ async function fetchMissions() {
 
 async function fetchUserList(initialLoading = true) {
     loading.value = initialLoading;
-    const url = stdurl('/api/marti/api/contacts/all');
-    contacts.value = await std(url) as ContactList;
+    contacts.value = await ContactManager.list();
     loading.value = false;
 }
 </script>

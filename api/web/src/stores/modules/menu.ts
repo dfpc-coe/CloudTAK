@@ -20,6 +20,7 @@ import {
     IconAffiliate,
 } from '@tabler/icons-vue';
 import ProfileConfig from '../../base/profile.ts';
+import ContactManager from '../../base/contact.ts';
 import type { Profile } from '../../types.ts';
 
 export type MenuItemConfig = {
@@ -80,7 +81,9 @@ export default class MenuManager {
             console.error('Failed to load menu order', e);
         }
 
-        await this.updateContactsCount();
+        ContactManager.liveCount().subscribe((count) => {
+            this.onlineContactsCount.value = count;
+        });
     }
 
     get baseMenuItems(): MenuItemConfig[] {
@@ -295,19 +298,6 @@ export default class MenuManager {
         if (typeof window !== 'undefined') {
             localStorage.setItem('cloudtak-menu-layout', mode);
         }
-    }
-
-    async updateContactsCount() {
-        const team = await this.mapStore.worker.team.load();
-        const self = await this.mapStore.worker.profile.uid();
-        let count = 0;
-        for (const contact of team.values()) {
-            if (contact.uid === self) continue;
-            if (await this.mapStore.worker.db.has(contact.uid)) {
-                count++;
-            }
-        }
-        this.onlineContactsCount.value = count;
     }
 
     addMenuItem(item: MenuItemConfig) {

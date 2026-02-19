@@ -319,7 +319,7 @@ export default class DrawTool {
                         } catch (err) {
                             this.lasso.loading = false;
                             console.error(err);
-                            throw new Error('Error fetching lasso features');
+                            throw new Error('Error fetching lasso features', { cause: err });
                         }
                     }
                 } else {

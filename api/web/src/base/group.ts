@@ -14,9 +14,15 @@ export default class GroupManager {
     }
 
     static async list(opts: {
+        token?: string;
         active?: boolean;
         direction?: string;
     } = {}): Promise<Group[]> {
+        const cache = await db.cache.get('group');
+        if (!cache) {
+            await GroupManager.sync(opts.token);
+        }
+
         let collection = db.group.toCollection();
 
         if (opts.active !== undefined) {
@@ -69,4 +75,16 @@ export default class GroupManager {
 
         return dbGroups;
     }
+
+    static async updateConnection(connection: string, groups: Group[], token?: string): Promise<void> {
+        const url = stdurl('/api/marti/group');
+        url.searchParams.set('connection', connection);
+
+        await std(url, {
+            method: 'PUT',
+            token,
+            body: groups
+        });
+    }
 }
+

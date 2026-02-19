@@ -451,8 +451,6 @@ export const useMapStore = defineStore('cloudtak', {
                     this.hasNoChannels = false;
                 } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
                     await this.loadMission(msg.body.guid);
-                } else if (msg.type === WorkerMessageType.Contact_Change) {
-                    if (this._menu) await this._menu.updateContactsCount();
                 }
             }
 
