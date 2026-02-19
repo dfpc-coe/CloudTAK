@@ -51,6 +51,10 @@ export default class ContactManager {
         return await db.contact.get(uid);
     }
 
+    static async getByCallsign(callsign: string): Promise<Contact | undefined> {
+        return await db.contact.where('callsign').equals(callsign).first();
+    }
+
     static async put(contact: Contact): Promise<void> {
         await db.contact.put(contact);
     }

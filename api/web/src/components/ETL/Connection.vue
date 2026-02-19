@@ -122,6 +122,20 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
+                                                    "active": route.name === "connection-features",
+                                                    "cursor-pointer": route.name !== "connection-features"
+                                                }'
+                                                @click='router.push(`/connection/${route.params.connectionid}/features`)'
+                                            ><IconMapPin
+                                                :size='32'
+                                                stroke='1'
+                                            /><span class='mx-3'>Features</span></span>
+                                            <span
+                                                v-if='!connection.readonly'
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
                                                     "active": route.name === "connection-tokens",
                                                     "cursor-pointer": route.name !== "connection-tokens"
                                                 }'
@@ -162,6 +176,7 @@ import {
     IconVideo,
     IconDatabase,
     IconAffiliate,
+    IconMapPin,
     IconBuildingBroadcastTower,
 } from '@tabler/icons-vue'
 import {

@@ -6,6 +6,7 @@ import type {
 } from '../types.ts'
 import type { DBChatroomChat } from './database.ts';
 import type Atlas from '../workers/atlas.ts';
+import ContactManager from './contact.ts';
 
 export default class ChatroomChats {
     chatroom: string;
@@ -92,7 +93,7 @@ export default class ChatroomChats {
                     callsign: single.sender
                 }
             } else {
-                const contact = await worker.team.getByCallsign(this.chatroom);
+                const contact = await ContactManager.getByCallsign(this.chatroom);
                 if (contact) {
                     recipient = {
                         uid: contact.uid,
