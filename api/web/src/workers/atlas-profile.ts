@@ -1,7 +1,7 @@
 import type Atlas from './atlas.ts';
 import { std } from '../std.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts'
-import type { Feature, Group, GroupChannel, Server, Profile_Update, FeaturePropertyCreator } from '../types.ts';
+import type { Feature, GroupChannel, Server, Profile_Update, FeaturePropertyCreator } from '../types.ts';
 import ProfileConfig from '../base/profile.ts';
 import ServerManager from '../base/server.ts';
 import GroupManager from '../base/group.ts';
