@@ -10,13 +10,26 @@ export default class ContactManager {
         });
     }
 
+    static liveList(filter?: string): Observable<Contact[]> {
+        return liveQuery(async () => {
+            let collection = db.contact.toCollection();
+
+            if (filter) {
+                const f = filter.toLowerCase();
+                collection = collection.filter((c) => {
+                    return c.callsign.toLowerCase().includes(f);
+                });
+            }
+
+            return await collection.toArray();
+        });
+    }
+
     static async list(opts: {
         token?: string;
         filter?: string;
     } = {}): Promise<Contact[]> {
         const cache = await db.cache.get('contact');
-
-        console.error('CACHE', cache);
 
         if (!cache) {
             await ContactManager.sync(opts.token);
