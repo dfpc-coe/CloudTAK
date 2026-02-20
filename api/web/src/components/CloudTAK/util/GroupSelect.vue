@@ -67,7 +67,7 @@
 import { ref, computed, onMounted } from 'vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import { useMapStore } from '../../../stores/map.ts';
-import type { Group } from '../../../types.ts';
+import type { GroupChannel } from '../../../types.ts';
 import {
     TablerLoading,
     TablerInput,
@@ -96,7 +96,7 @@ const emit = defineEmits([
 const filter = ref('');
 const loading = ref(true);
 const selected = ref<Set<string>>(new Set(props.modelValue))
-const groups = ref<Array<Group>>([])
+const groups = ref<Array<GroupChannel>>([])
 
 const filtered = computed(() => {
     return groups.value.filter((g) => {
@@ -108,12 +108,12 @@ onMounted(async () => {
     groups.value = (await mapStore.worker.profile.loadChannels()).filter((group) => {
         return props.active ? group.active : true;
     }).filter((group) => {
-        return props.direction ? group.direction === props.direction : true;
+        return props.direction ? group.direction.includes(props.direction) : true;
     });
     loading.value = false;
 });
 
-function updateGroup(group: Group) {
+function updateGroup(group: GroupChannel) {
     if (selected.value.has(group.name)) {
         selected.value.delete(group.name)
     } else {

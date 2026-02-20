@@ -168,7 +168,7 @@
                         v-if='loading'
                     />
                     <TablerNone
-                        v-else-if='!Object.keys(visibleChannels).length'
+                        v-else-if='!visibleMissions.length'
                         :create='false'
                     />
                     <template v-else>
@@ -262,7 +262,7 @@ import {
     IconShare2
 } from '@tabler/icons-vue';
 import Subscription from '../../../base/subscription.ts';
-import type { Contact, ContactList, Feature, Group } from '../../../types.ts'
+import type { Contact, ContactList, Feature, GroupChannel } from '../../../types.ts'
 import COTContact from '../util/Contact.vue';
 import { useMapStore } from '../../../stores/map.ts';
 
@@ -282,7 +282,7 @@ const loading = ref(true);
 const filter = ref('');
 const mode = ref('users');
 
-const selectedGroups = ref<Set<Group>>(new Set())
+const selectedGroups = ref<Set<GroupChannel>>(new Set())
 const selectedMissions = ref<Set<{
     name: string
     guid: string
@@ -294,13 +294,13 @@ const contacts: Ref<ContactList | undefined> = useObservable(
         return await ContactManager.list();
     }))
 );
-const channels = ref<Array<Group>>([]);
+const channels = ref<Array<GroupChannel>>([]);
 const missions = ref<Array<{
     name: string
     guid: string
 }>>([]);
 
-const visibleChannels = computed<Array<Group>>(() => {
+const visibleChannels = computed<Array<GroupChannel>>(() => {
     return channels.value.filter((channel) => {
         return channel.name.toLowerCase().includes(filter.value.toLowerCase());
     });
@@ -461,7 +461,7 @@ async function fetchChannelList() {
 
     channels.value = (await mapStore.worker.profile.loadChannels()).filter((channel) => {
         if (!channel.active) return false;
-        if (channel.direction !== 'IN') return false;
+        if (!channel.direction.includes('IN')) return false;
         return true;
     });
 

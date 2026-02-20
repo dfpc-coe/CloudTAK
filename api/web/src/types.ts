@@ -36,6 +36,10 @@ export type Subscription = paths["/api/marti/subscription/{:clientuid}"]["get"][
 
 export type Group = paths["/api/marti/group"]["get"]["responses"]["200"]["content"]["application/json"]["data"][0]
 
+export type GroupChannel = Omit<Group, 'direction'> & {
+    direction: string[];
+}
+
 export type User = paths["/api/user/{:username}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type UserList = paths["/api/user"]["get"]["responses"]["200"]["content"]["application/json"];
 
