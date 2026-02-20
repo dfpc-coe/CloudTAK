@@ -12,6 +12,16 @@
 
 ### Pending Release
 
+### v12.80.0 - 2026-02-20
+
+- :rocket: Dynamic updates of Data Sync contents pane
+- :rocket: Update node-cot types to support file change notifications
+- :rocket: Improved content-type detection in FloatingAttachment pane
+- :rocket: Show nice preview not available message in FloatingAttachment pane
+- :rocket: Retain aspect ratio in displayed images
+- :bug: Use lowercase extension matching in events handler
+- :tada: Add a notification toast when a file is added
+
 ### v12.79.0 - 2026-02-19
 
 - :rocket: Consistent use of single channel regardless of "Directions" in frontend UI
