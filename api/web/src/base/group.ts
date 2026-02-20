@@ -1,13 +1,55 @@
 import { db } from './database.ts';
 import { liveQuery, type Observable } from 'dexie';
 import { std, stdurl } from '../std.ts';
-import type { Group } from '../types.ts';
+import type { Group, GroupChannel } from '../types.ts';
 
 export default class GroupManager {
+    /**
+     * Merge an array of API Group entries (each with a single direction string)
+     * into GroupChannel entries keyed by name with direction as a string array
+     */
+    static merge(groups: Group[]): GroupChannel[] {
+        const map: Record<string, GroupChannel> = {};
+
+        for (const group of groups) {
+            if (map[group.name]) {
+                if (!map[group.name].direction.includes(group.direction)) {
+                    map[group.name].direction.push(group.direction);
+                }
+            } else {
+                map[group.name] = {
+                    ...group,
+                    direction: [group.direction]
+                };
+            }
+        }
+
+        return Object.values(map);
+    }
+
+    /**
+     * Explode a GroupChannel (with direction array) back into individual
+     * API Group entries (each with a single direction string)
+     */
+    static explode(channels: GroupChannel[]): Group[] {
+        const groups: Group[] = [];
+
+        for (const channel of channels) {
+            for (const dir of channel.direction) {
+                groups.push({
+                    ...channel,
+                    direction: dir
+                });
+            }
+        }
+
+        return groups;
+    }
+
     static live(opts: {
         active?: boolean;
         direction?: string;
-    } = {}): Observable<Group[]> {
+    } = {}): Observable<GroupChannel[]> {
         return liveQuery(async () => {
             return await GroupManager.list(opts);
         });
@@ -17,7 +59,7 @@ export default class GroupManager {
         token?: string;
         active?: boolean;
         direction?: string;
-    } = {}): Promise<Group[]> {
+    } = {}): Promise<GroupChannel[]> {
         const cache = await db.cache.get('group');
         if (!cache) {
             await GroupManager.sync(opts.token);
@@ -30,50 +72,53 @@ export default class GroupManager {
         }
 
         if (opts.direction !== undefined) {
-            collection = collection.filter((g) => g.direction === opts.direction);
+            collection = collection.filter((g) => g.direction.includes(opts.direction as string));
         }
 
         return await collection.toArray();
     }
 
-    static async get(name: string): Promise<Group | undefined> {
+    static async get(name: string): Promise<GroupChannel | undefined> {
         return await db.group.get(name);
     }
 
-    static async put(groups: Group[] | Group): Promise<void> {
-        if (!Array.isArray(groups)) groups = [groups];
-        await db.group.bulkPut(groups);
+    static async put(channels: GroupChannel[] | GroupChannel): Promise<void> {
+        if (!Array.isArray(channels)) channels = [channels];
+        await db.group.bulkPut(channels);
     }
 
-    static async sync(token?: string): Promise<Group[]> {
+    static async sync(token?: string): Promise<GroupChannel[]> {
         const url = stdurl('/api/marti/group');
         url.searchParams.set('useCache', 'true');
 
         const res = await std(url, { token }) as { data: Group[] };
 
-        const groups = res.data as Group[];
+        const channels = GroupManager.merge(res.data);
 
         await db.group.clear();
-        await db.group.bulkPut(groups);
+        await db.group.bulkPut(channels);
         await db.cache.put({ key: 'group', updated: Date.now() });
 
-        return groups;
+        return channels;
     }
 
-    static async update(groups: Group[], token?: string): Promise<Group[]> {
+    static async update(channels: GroupChannel[], token?: string): Promise<GroupChannel[]> {
         const url = stdurl('/api/marti/group');
+
+        // Explode merged channels back to individual direction entries for the API
+        const apiGroups = GroupManager.explode(channels);
+
         await std(url, {
             method: 'PUT',
             token,
-            body: groups
+            body: apiGroups
         });
 
-        const dbGroups = groups as Group[];
         await db.group.clear();
-        await db.group.bulkPut(dbGroups);
+        await db.group.bulkPut(channels);
         await db.cache.put({ key: 'group', updated: Date.now() });
 
-        return dbGroups;
+        return channels;
     }
 }
 

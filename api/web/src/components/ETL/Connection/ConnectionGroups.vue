@@ -105,6 +105,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router';
 import { std, stdurl } from '../../../std.ts';
+import GroupManager from '../../../base/group.ts';
 import {
     IconEye,
     IconEyeOff,
@@ -130,18 +131,15 @@ const paging = ref({
 })
 
 const processChannels = computed(() => {
+    const merged = GroupManager.merge(rawChannels.value);
+
     const channels = {};
 
-    JSON.parse(JSON.stringify(rawChannels.value)).sort((a, b) => {
+    merged.sort((a, b) => {
         return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
     }).forEach((channel) => {
         if (channel.name.toLowerCase().includes(paging.value.filter.toLowerCase())) {
-            if (channels[channel.name]) {
-                channels[channel.name].direction.push(channel.direction);
-            } else {
-                channel.direction = [channel.direction];
-                channels[channel.name] = channel;
-            }
+            channels[channel.name] = channel;
         }
     });
 

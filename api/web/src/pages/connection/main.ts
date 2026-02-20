@@ -16,7 +16,7 @@ const router = VueRouter.createRouter({
         {
             path: '/connection/:connectionid/layer/:layerid',
             name: 'layer',
-            component: () => import('../../components/ETL/Layer.vue'),
+            component: () => import('../../components/ETL/ConnectionLayer.vue'),
             children: [{
                 path: '',
                 name: `layer-default`,

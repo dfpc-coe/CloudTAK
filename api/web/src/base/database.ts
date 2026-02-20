@@ -1,7 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type {
     Feature,
-    Group,
+    GroupChannel,
     Mission,
     MissionRole,
     MissionChange,
@@ -162,7 +162,7 @@ export interface DBCache {
 export type DatabaseType = Dexie & {
     icon: EntityTable<DBIcon, 'name'>,
     iconset: EntityTable<DBIconset, 'uid'>,
-    group: EntityTable<Group, 'name'>,
+    group: EntityTable<GroupChannel, 'name'>,
     video: EntityTable<DBVideo, 'id'>,
     filter: EntityTable<DBFilter, 'id'>,
     feature: EntityTable<DBFeature, 'id'>,
