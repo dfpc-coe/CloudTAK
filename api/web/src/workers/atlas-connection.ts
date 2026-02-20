@@ -145,7 +145,7 @@ export default class AtlasConnection {
                         );
                     } else if (
                         task.properties.type === 't-x-m-c'
-                        && task.properties.mission?.missionChanges.length === 1
+                        && task.properties.mission?.missionChanges?.length === 1
                         && task.properties.mission?.missionChanges?.[0].contentResource?.name
                     ) {
                         if (task.properties.mission.missionChanges[0].type === 'ADD_CONTENT') {
