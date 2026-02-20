@@ -260,14 +260,6 @@ const contents: Ref<Array<DBSubscriptionContent>> = useObservable(
     }))
 );
 
-onMounted(async () => {
-    try {
-        await props.subscription.contents.refresh(props.subscription.meta.contents);
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
-    }
-});
-
 const filteredContents = computed(() => {
     return (contents.value || []).filter((c) => {
         const isPhoto = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(c.name)
