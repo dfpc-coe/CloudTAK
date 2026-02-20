@@ -33,7 +33,8 @@ export default class Worker extends EventEmitter {
             const s3 = s3client();
 
             const tmpdir = fs.mkdtempSync(path.resolve(os.tmpdir(), 'cloudtak-'));
-            const { ext } = path.parse(this.msg.job.name);
+            let { ext } = path.parse(this.msg.job.name);
+            ext = ext.toLowerCase();
             const name = `${this.msg.job.id}${ext}`;
 
             local = {
