@@ -353,7 +353,7 @@ export default class Subscription {
     }): Promise<void> {
         if (opts?.refreshMission) {
             const meta = await this.fetch();
-            this.contents.refresh(meta.contents);
+            await this.contents.refresh(meta.contents);
         }
 
         await Promise.all([
@@ -363,7 +363,7 @@ export default class Subscription {
         ]);
     };
 
-    async fetch(): Promise<void> {
+    async fetch(): Promise<Mission> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid));
 
         const meta = await std(url, {
