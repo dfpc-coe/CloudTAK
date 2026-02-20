@@ -44,7 +44,7 @@
         </div>
 
         <TablerNone
-            v-else-if='!contents.length'
+            v-else-if='!contents || !contents.length'
             label='No Files'
             :create='false'
         />
