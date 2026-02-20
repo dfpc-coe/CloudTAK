@@ -4,6 +4,7 @@
 
 import { std } from '../std.ts';
 import { db } from '../base/database.ts';
+import type { DBSubscriptionChanges } from '../base/database.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
@@ -458,6 +459,7 @@ export default class AtlasDatabase {
     async subChange(task: Feature): Promise<void> {
         if (task.properties.type === 't-x-m-c' && task.properties.mission && task.properties.mission.missionChanges) {
             let updateGuid;
+            let doMissionRefresh = false;
 
             for (const change of task.properties.mission.missionChanges) {
                 if (!task.properties.mission.guid) {
@@ -469,10 +471,14 @@ export default class AtlasDatabase {
                     serverTime: new Date().toISOString(),
                     ...change,
                     mission: task.properties.mission.guid,
-                });
+                } as DBSubscriptionChanges);
+
+                if (change.contentResource) {
+                    doMissionRefresh = true;
+                }
 
                 if (change.type === 'ADD_CONTENT') {
-                    this.subscriptionPending.set(change.contentUid, task.properties.mission.guid);
+                    if (change.contentUid) this.subscriptionPending.set(change.contentUid, task.properties.mission.guid);
                 } else if (change.type === 'REMOVE_CONTENT') {
                     const sub = await Subscription.from(task.properties.mission.guid, this.atlas.token, {
                         subscribed: true
@@ -482,12 +488,24 @@ export default class AtlasDatabase {
                         continue;
                     }
 
+                    if (!change.contentUid) continue;
+
                     await sub.feature.delete(this.atlas, change.contentUid, {
                         // This is critical to ensure a recursive loop of doesn't occur
                         skipNetwork: true
                     });
 
                     updateGuid = task.properties.mission.guid;
+                }
+            }
+
+            if (doMissionRefresh && task.properties.mission.guid) {
+                const sub = await Subscription.from(task.properties.mission.guid, this.atlas.token, {
+                    subscribed: true
+                });
+
+                if (sub) {
+                    await sub.fetch();
                 }
             }
 

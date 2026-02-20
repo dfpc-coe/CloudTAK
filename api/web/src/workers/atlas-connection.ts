@@ -143,6 +143,28 @@ export default class AtlasConnection {
                             `/menu/missions/${task.properties.mission.guid}/logs`,
                             true
                         );
+                    } else if (
+                        task.properties.type === 't-x-m-c'
+                        && task.properties.mission?.missionChanges?.length === 1
+                        && task.properties.mission?.missionChanges?.[0].contentResource?.name
+                    ) {
+                        if (task.properties.mission.missionChanges[0].type === 'ADD_CONTENT') {
+                            await TAKNotification.create(
+                                NotificationType.Mission,
+                                `${task.properties.mission.name} File Added`,
+                                `File ${task.properties.mission.missionChanges[0].contentResource.name}`,
+                                `/menu/missions/${task.properties.mission.guid}/content`,
+                                true
+                            );
+                        } else if (task.properties.mission.missionChanges[0].type === 'REMOVE_CONTENT') {
+                            await TAKNotification.create(
+                                NotificationType.Mission,
+                                `${task.properties.mission.name} File Removed`,
+                                `File ${task.properties.mission.missionChanges[0].contentResource.name}`,
+                                `/menu/missions/${task.properties.mission.guid}/content`,
+                                true
+                            );
+                        }
                     }
 
                     // Mission Change Tasking
