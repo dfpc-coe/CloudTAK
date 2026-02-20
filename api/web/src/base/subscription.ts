@@ -352,8 +352,7 @@ export default class Subscription {
         refreshMission?: boolean
     }): Promise<void> {
         if (opts?.refreshMission) {
-            const meta = await this.fetch();
-            await this.contents.refresh(meta.contents);
+            await this.fetch();
         }
 
         await Promise.all([
@@ -370,6 +369,8 @@ export default class Subscription {
             headers: Subscription.headers(this.missiontoken),
             token: this.token
         }) as Mission;
+
+        await this.contents.refresh(meta.contents);
 
         this.meta = meta;
 
