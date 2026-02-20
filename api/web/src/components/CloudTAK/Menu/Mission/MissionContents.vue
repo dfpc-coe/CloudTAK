@@ -44,13 +44,13 @@
         </div>
 
         <TablerNone
-            v-else-if='!props.subscription.meta.contents.length'
+            v-else-if='!contents.length'
             label='No Files'
             :create='false'
         />
         <template v-else>
             <div
-                v-if='props.subscription.meta.contents.length'
+                v-if='contents.length'
                 class='px-2 py-2'
             >
                 <div class='px-2 py-2 round btn-group w-100'>
@@ -101,7 +101,7 @@
             >
                 <div
                     v-for='content in filteredContents'
-                    :key='content.data.uid'
+                    :key='content.uid'
                     class='px-2 py-2 hover rounded'
                 >
                     <div
@@ -114,7 +114,7 @@
                         <img
                             class='cursor-pointer'
                             style='max-height: 180px; max-width: 100%; object-fit: contain;'
-                            :src='downloadAssetUrl(content.data.hash, content.data.name)'
+                            :src='downloadAssetUrl(content.hash, content.name)'
                             @click='openAttachment(content)'
                         >
                     </div>
@@ -129,13 +129,13 @@
                         <span
                             class='mx-2 text-truncate'
                             style='max-width: 140px;'
-                            v-text='content.data.name'
+                            v-text='content.name'
                         />
 
                         <div class='ms-auto'>
                             <TablerIconButton
                                 title='Download Asset'
-                                @click='downloadFile(content.data.name, content.data.hash)'
+                                @click='downloadFile(content.name, content.hash)'
                             >
                                 <IconDownload
                                     :size='24'
@@ -152,7 +152,7 @@
             <template v-else>
                 <StandardItem
                     v-for='content in filteredContents'
-                    :key='content.data.uid'
+                    :key='content.uid'
                     class='col-12 d-flex px-2 py-2 mb-2'
                 >
                     <div
@@ -161,15 +161,15 @@
                         <div class='col-12'>
                             <div
                                 class='text-break'
-                                v-text='content.data.name'
+                                v-text='content.name'
                             />
                             <div>
                                 <span
                                     class='subheader'
-                                    v-text='content.data.submitter'
+                                    v-text='content.submitter'
                                 /> - <span
                                     class='subheader'
-                                    v-text='content.data.submissionTime'
+                                    v-text='content.submissionTime'
                                 />
                             </div>
                         </div>
@@ -179,11 +179,11 @@
                             <TablerDelete
                                 v-if='props.subscription.role && props.subscription.role.permissions.includes("MISSION_WRITE")'
                                 displaytype='icon'
-                                @delete='deleteFile(content.data.hash)'
+                                @delete='deleteFile(content.hash)'
                             />
                             <TablerIconButton
                                 title='Import File'
-                                @click='importFile(content.data.name, content.data.hash)'
+                                @click='importFile(content.name, content.hash)'
                             >
                                 <IconFileImport
                                     :size='32'
@@ -192,7 +192,7 @@
                             </TablerIconButton>
                             <TablerIconButton
                                 title='Download Asset'
-                                @click='downloadFile(content.data.name, content.data.hash)'
+                                @click='downloadFile(content.name, content.hash)'
                             >
                                 <IconDownload
                                     :size='32'
@@ -210,11 +210,16 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, useTemplateRef } from 'vue';
+import { ref, computed, useTemplateRef, onMounted } from 'vue';
+import { from } from 'rxjs';
+import { liveQuery } from 'dexie';
+import { useObservable } from '@vueuse/rxjs';
+import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../std.ts';
 import Subscription from '../../../../base/subscription.ts';
-import type { Import, Mission, Attachment } from '../../../../types.ts';
+import type { DBSubscriptionContent } from '../../../../base/database.ts';
+import type { Import, Attachment } from '../../../../types.ts';
 import { useFloatStore } from '../../../../stores/float.ts';
 import {
     IconPlus,
@@ -249,10 +254,24 @@ const error = ref<Error | undefined>();
 
 const mode = ref('photos');
 
+const contents: Ref<Array<DBSubscriptionContent>> = useObservable(
+    from(liveQuery(async () => {
+        return await props.subscription.contents.list();
+    }))
+);
+
+onMounted(async () => {
+    try {
+        await props.subscription.contents.refresh(props.subscription.meta.contents);
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+});
+
 const filteredContents = computed(() => {
-    return props.subscription.meta.contents.filter((c) => {
-        const isPhoto = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(c.data.name)
-            || (c.data.mimeType && c.data.mimeType.startsWith('image/'));
+    return (contents.value || []).filter((c) => {
+        const isPhoto = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(c.name)
+            || (c.mimeType && c.mimeType.startsWith('image/'));
 
         if (mode.value === 'photos') {
             return isPhoto;
@@ -339,15 +358,15 @@ function downloadAssetUrl(hash: string, name: string) {
     return url.toString();
 }
 
-function openAttachment(content: Mission['contents'][number]) {
-    const ext = content.data.name.split('.').pop();
+function openAttachment(content: DBSubscriptionContent) {
+    const ext = content.name.split('.').pop();
     floatStore.addAttachment({
-        hash: content.data.hash,
-        name: content.data.name,
+        hash: content.hash,
+        name: content.name,
         ext: ext ? `.${ext}` : '',
-        url: downloadAssetUrl(content.data.hash, content.data.name),
-        size: content.data.size,
-        created: content.data.submissionTime
+        url: downloadAssetUrl(content.hash, content.name),
+        size: content.size,
+        created: content.submissionTime
     } as Attachment);
 }
 </script>

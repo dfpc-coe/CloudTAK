@@ -2,6 +2,7 @@ import { db } from './database.ts'
 import { std, stdurl } from '../std.ts';
 import SubscriptionLog from './subscription-log.ts';
 import SubscriptionChanges from './subscription-changes.ts';
+import SubscriptionContents from './subscription-contents.ts';
 import SubscriptionFeature from './subscription-feature.ts';
 import MissionTemplate from './mission-template.ts';
 import type {
@@ -52,6 +53,7 @@ export default class Subscription {
 
     log: SubscriptionLog;
     change: SubscriptionChanges;
+    contents: SubscriptionContents;
     feature: SubscriptionFeature;
 
     token: string;
@@ -87,6 +89,11 @@ export default class Subscription {
         });
 
         this.change = new SubscriptionChanges(mission.guid, {
+            missiontoken: opts.missiontoken,
+            token: opts.token
+        });
+
+        this.contents = new SubscriptionContents(mission.guid, {
             missiontoken: opts.missiontoken,
             token: opts.token
         });
@@ -352,6 +359,7 @@ export default class Subscription {
             this.log.refresh(),
             this.feature.refresh(),
             this.change.refresh(),
+            this.contents.refresh(this.meta.contents),
         ]);
     };
 

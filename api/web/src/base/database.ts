@@ -98,6 +98,21 @@ export interface DBSubscriptionFeature {
     geometry: Feature["geometry"];
 }
 
+export interface DBSubscriptionContent {
+    uid: string;
+    mission: string;
+    timestamp: string;
+    creatorUid?: string;
+    keywords: string[];
+    name: string;
+    hash: string;
+    submissionTime: string;
+    size: number;
+    mimeType?: string;
+    submitter?: string;
+    expiration: number;
+}
+
 export interface DBSubscriptionChanges extends MissionChange {
     id?: number;
     mission: string;
@@ -170,6 +185,7 @@ export type DatabaseType = Dexie & {
     chatroom_chats: EntityTable<DBChatroomChat, 'id'>,
     notification: EntityTable<DBNotification, 'id'>,
     subscription: EntityTable<DBSubscription, 'guid'>,
+    subscription_contents: EntityTable<DBSubscriptionContent, 'uid'>,
     subscription_changes: EntityTable<DBSubscriptionChanges, 'id'>,
     server: EntityTable<DBServer, '_id'>,
     subscription_log: EntityTable<DBSubscriptionLog, 'id'>,
@@ -205,6 +221,7 @@ db.version(1).stores({
     subscription: 'guid, name',
     subscription_log: 'id, [mission+id]',
     subscription_feature: 'id, mission, [mission+id]',
+    subscription_contents: 'uid, mission, [mission+uid]',
     subscription_changes: '++id, mission',
 
     mission_template: 'id, name',
