@@ -71,7 +71,7 @@ export default class GroupManager {
             collection = collection.filter((g) => g.active === opts.active);
         }
 
-        if (opts.direction !== undefined) {
+        if (opts.direction !== undefined && typeof opts.direction === 'string') {
             collection = collection.filter((g) => g.direction.includes(opts.direction));
         }
 
