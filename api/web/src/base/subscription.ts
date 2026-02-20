@@ -352,24 +352,28 @@ export default class Subscription {
         refreshMission?: boolean
     }): Promise<void> {
         if (opts?.refreshMission) {
-            await this.fetch();
+            const meta = await this.fetch();
+            this.contents.refresh(meta.contents);
         }
 
         await Promise.all([
             this.log.refresh(),
             this.feature.refresh(),
             this.change.refresh(),
-            this.contents.refresh(this.meta.contents),
         ]);
     };
 
     async fetch(): Promise<void> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.guid));
 
-        this.meta = await std(url, {
+        const meta = await std(url, {
             headers: Subscription.headers(this.missiontoken),
             token: this.token
         }) as Mission;
+
+        this.meta = meta;
+
+        return meta;
     }
 
     /**
