@@ -51,13 +51,29 @@
             :style='`height: calc(100% - 40px)`'
         >
             <img
-                v-if='[".png", ".jpg", "jpeg", "webp"].includes(pane.config.attachment.ext)'
+                v-if='[".png", ".jpg", ".jpeg", ".webp"].includes(pane.config.attachment.ext)'
                 :src='String(downloadAssetUrl(pane.config.attachment))'
                 style='
                     width: 100%;
                     height: 100%;
                 }'
             >
+            <template
+                    v-else
+            >
+                <div
+                    class='d-flex flex-column align-items-center justify-content-center text-muted h-100'
+                >
+                    <IconEyeOff
+                        :size='48'
+                        stroke='1'
+                        class='mb-2'
+                    />
+                    <div
+                        v-text='`No preview available for ${pane.config.attachment.ext} files.`'
+                    />
+                </div>
+            </template>
         </div>
     </div>
 </template>
@@ -70,6 +86,7 @@ import { useFloatStore } from '../../../stores/float.ts';
 import type { AttachmentPane } from '../../../stores/float.ts';
 import {
     IconX,
+    IconEyeOff,
     IconDownload,
     IconGripVertical
 } from '@tabler/icons-vue';
