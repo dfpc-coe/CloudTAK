@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.79.0 - 2026-02-19
+
+- :rocket: Consistent use of single channel regardless of "Directions" in frontend UI
+- :bug: Update Type Defs in node-cot to support Mission Content Changes
+- :Rocket: Continue consolidating offline functionality into base classes
+
 ### v12.78.0 - 2026-02-19
 
 - :tada: Basic Connection Feature Support in the UI
