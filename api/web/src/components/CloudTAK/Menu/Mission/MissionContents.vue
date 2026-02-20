@@ -210,7 +210,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, useTemplateRef, onMounted } from 'vue';
+import { ref, computed, useTemplateRef } from 'vue';
 import { from } from 'rxjs';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
