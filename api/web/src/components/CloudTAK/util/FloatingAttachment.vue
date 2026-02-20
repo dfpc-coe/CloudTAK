@@ -51,7 +51,7 @@
             :style='`height: calc(100% - 40px)`'
         >
             <img
-                v-if='[".png", ".jpg", ".jpeg", ".webp"].includes(pane.config.attachment.ext)'
+                v-if='[".png", ".jpg", ".jpeg", ".webp"].includes(pane.config.attachment.ext.toLowerCase())'
                 :src='String(downloadAssetUrl(pane.config.attachment))'
                 style='
                     width: 100%;
