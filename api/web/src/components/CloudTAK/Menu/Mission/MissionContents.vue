@@ -132,7 +132,13 @@
                             v-text='content.name'
                         />
 
-                        <div class='ms-auto'>
+                        <div class='ms-auto d-flex'>
+                            <TablerDelete
+                                v-if='props.subscription.role && props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                displaytype='icon'
+                                :size='24'
+                                @delete='deleteFile(content.hash)'
+                            />
                             <TablerIconButton
                                 title='Download Asset'
                                 @click='downloadFile(content.name, content.hash)'
@@ -246,8 +252,6 @@ const props = defineProps<{
 
 const floatStore = useFloatStore();
 
-const emit = defineEmits([ 'refresh' ]);
-
 const router = useRouter();
 
 const error = ref<Error | undefined>();
@@ -279,11 +283,7 @@ const upload = ref(false);
 const loading = ref(false)
 
 async function deleteFile(hash: string) {
-    await std(`/api/marti/missions/${props.subscription.guid}/upload/${hash}`, {
-        method: 'DELETE'
-    });
-
-    emit("refresh");
+    await props.subscription.contents.delete(hash);
 }
 
 const uploadHeaders = computed(() => {
@@ -300,7 +300,7 @@ const uploadHeaders = computed(() => {
 
 async function doneUpload() {
     upload.value = false;
-    emit("refresh");
+    await props.subscription.fetch();
 }
 
 async function uploadStaged(ev: { name: string }) {
@@ -315,7 +315,7 @@ async function uploadStaged(ev: { name: string }) {
         throw new Error("Upload Not Found");
     }
 
-    emit("refresh");
+    await props.subscription.fetch();
 }
 
 async function downloadFile(name: string, hash: string): Promise<void> {

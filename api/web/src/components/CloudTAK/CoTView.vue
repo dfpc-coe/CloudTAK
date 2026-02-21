@@ -497,6 +497,7 @@
                 <PropertyAttachments
                     :key='cot.properties.id'
                     :model-value='cot.properties.attachments || []'
+                    :subscription='subscription'
                     @update:model-value='updatePropertyAttachment($event)'
                 />
             </template>

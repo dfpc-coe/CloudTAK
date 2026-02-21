@@ -3,50 +3,42 @@
 */
 
 import { defineStore } from 'pinia'
+import { markRaw, defineAsyncComponent } from 'vue';
+import type { Component } from 'vue';
 import { useMapStore } from './map.ts';
 import type { VideoConnection, Attachment } from '../types.ts';
-const mapStore = useMapStore();
 
-export enum PaneType {
-    VIDEO = 'video',
-    ATTACHMENT = 'attachment'
-}
+const FloatingVideo = defineAsyncComponent(() => import('../components/CloudTAK/util/FloatingVideo.vue'));
+const FloatingAttachment = defineAsyncComponent(() => import('../components/CloudTAK/util/FloatingAttachment.vue'));
 
 export enum VideoStoreType {
     COT = 'cot',
     CONNECTION = 'connection'
 }
 
-export type VideoPane = {
-    uid: string,
-    name?: string,
-    type: PaneType.VIDEO,
-    config: {
-        type: VideoStoreType,
-        url: string,
-        height: number,
-        width: number,
-        x: number,
-        y: number,
-    }
+export type PaneVideoConfig = {
+    type: VideoStoreType,
+    url: string,
 }
 
-export type AttachmentPane = {
+export type PaneAttachmentConfig = {
+    attachment: Attachment,
+}
+
+export type Pane<C extends PaneVideoConfig | PaneAttachmentConfig = PaneVideoConfig | PaneAttachmentConfig> = {
     uid: string,
     name?: string,
-    type: PaneType.ATTACHMENT,
-    config: {
-        attachment: Attachment,
-        height: number,
-        width: number,
-        x: number,
-        y: number,
-    }
+    component: Component,
+    config: C,
+    height: number,
+    width: number,
+    x: number,
+    y: number,
 }
 
 export const useFloatStore = defineStore('float', {
     state: (): {
-        panes: Map<string, VideoPane | AttachmentPane>
+        panes: Map<string, Pane>
     } => {
         return {
             panes: new Map()
@@ -59,14 +51,14 @@ export const useFloatStore = defineStore('float', {
         addAttachment(attachment: Attachment) {
             this.panes.set(attachment.hash, {
                 uid: attachment.hash,
-                type: PaneType.ATTACHMENT,
+                component: markRaw(FloatingAttachment),
                 config: {
                     attachment,
-                    height: 300,
-                    width: 400,
-                    x: 60, // The width of the Nav Toolbar
-                    y: 0
-                }
+                },
+                height: 300,
+                width: 400,
+                x: 50,
+                y: 60
             })
         },
         addConnection(connection: VideoConnection): void {
@@ -75,18 +67,19 @@ export const useFloatStore = defineStore('float', {
             this.panes.set(connection.uuid, {
                 uid: connection.uuid,
                 name: connection.alias,
-                type: PaneType.VIDEO,
+                component: markRaw(FloatingVideo),
                 config: {
                     type: VideoStoreType.CONNECTION,
                     url: connection.feeds[0].url,
-                    height: 300,
-                    width: 400,
-                    x: 60, // The width of the Nav Toolbar
-                    y: 0
-                }
+                },
+                height: 300,
+                width: 400,
+                x: 60, // The width of the Nav Toolbar
+                y: 40 // The height of the Active Mission / Search Toolbar
             })
         },
         async addCOT(uid: string): Promise<void> {
+            const mapStore = useMapStore();
             const cot = await mapStore.worker.db.get(uid, {
                 mission: true
             });
@@ -98,15 +91,15 @@ export const useFloatStore = defineStore('float', {
             this.panes.set(uid, {
                 uid,
                 name: cot.properties.callsign,
-                type: PaneType.VIDEO,
+                component: markRaw(FloatingVideo),
                 config: {
                     type: VideoStoreType.COT,
                     url: cot.properties.video.url,
-                    height: 300,
-                    width: 400,
-                    x: 60, // The width of the Nav Toolbar
-                    y: 0
-                }
+                },
+                height: 300,
+                width: 400,
+                x: 60, // The width of the Nav Toolbar
+                y: 40 // The height of the Active Mission / Search Toolbar
             })
         }
     }

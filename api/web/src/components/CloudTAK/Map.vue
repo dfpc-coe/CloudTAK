@@ -408,14 +408,8 @@
                 v-for='float in floatStore.panes.values()'
                 :key='float.uid'
             >
-                <FloatingVideo
-                    v-if='float.type === PaneType.VIDEO'
-                    :title='float.name || "Video Stream"'
-                    :uid='float.uid'
-                    @close='floatStore.panes.delete(float.uid)'
-                />
-                <FloatingAttachment
-                    v-if='float.type === PaneType.ATTACHMENT'
+                <component
+                    :is='float.component'
                     :uid='float.uid'
                     @close='floatStore.panes.delete(float.uid)'
                 />
@@ -449,8 +443,6 @@ import GeoJSONInput from './GeoJSONInput.vue';
 import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import {useRoute, useRouter } from 'vue-router';
 import ActiveMission from './ActiveMission.vue';
-import FloatingVideo from './util/FloatingVideo.vue';
-import FloatingAttachment from './util/FloatingAttachment.vue';
 import DrawOverlay from './util/DrawOverlay.vue';
 import WarnChannels from './util/WarnChannels.vue';
 import Notifications from './Notifications.vue';
@@ -492,7 +484,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
-import { useFloatStore, PaneType } from '../../stores/float.ts';
+import { useFloatStore } from '../../stores/float.ts';
 import { liveQuery } from 'dexie';
 import UploadImport from './util/UploadImport.vue';
 import ProfileConfig from '../../base/profile.ts';
