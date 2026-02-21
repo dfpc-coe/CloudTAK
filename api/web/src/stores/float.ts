@@ -16,11 +16,20 @@ export enum VideoStoreType {
     CONNECTION = 'connection'
 }
 
-export type Pane = {
+export type PaneVideoConfig = {
+    type: VideoStoreType,
+    url: string,
+}
+
+export type PaneAttachmentConfig = {
+    attachment: Attachment,
+}
+
+export type Pane<C extends PaneVideoConfig | PaneAttachmentConfig = PaneVideoConfig | PaneAttachmentConfig> = {
     uid: string,
     name?: string,
     component: Component,
-    config: any,
+    config: C,
     height: number,
     width: number,
     x: number,
