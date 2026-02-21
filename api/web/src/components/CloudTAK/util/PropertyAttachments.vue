@@ -91,7 +91,12 @@
                                                 v-text='file.name'
                                             />
 
-                                            <div class='ms-auto'>
+                                            <div class='ms-auto d-flex'>
+                                                <TablerDelete
+                                                    v-if='subscription && subscription.role && subscription.role.permissions.includes("MISSION_WRITE")'
+                                                    displaytype='icon'
+                                                    @delete='deleteAttachment(file)'
+                                                />
                                                 <TablerIconButton
                                                     title='Download Asset'
                                                     @click='downloadAsset(file)'
@@ -130,13 +135,18 @@ import {
 import {
     TablerIconButton,
     TablerLoading,
-    TablerNone
+    TablerNone,
+    TablerDelete,
 } from '@tak-ps/vue-tabler'
 
 const props = defineProps({
     modelValue: {
         type: Array,
         required: true
+    },
+    subscription: {
+        type: Object,
+        default: null
     }
 });
 
@@ -167,6 +177,14 @@ onMounted(async () => {
 
 function attachmentPane(file) {
     floatStore.addAttachment(file);
+}
+
+async function deleteAttachment(file) {
+    if (!props.subscription) return;
+
+    await props.subscription.contents.delete(file.hash);
+
+    files.value = files.value.filter(f => f.hash !== file.hash);
 }
 
 async function refresh() {
