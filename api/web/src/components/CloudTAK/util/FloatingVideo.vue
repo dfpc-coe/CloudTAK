@@ -1,22 +1,10 @@
 <template>
-    <div
-        ref='container'
-        class='position-absolute bg-dark rounded border resizable-content text-white video-container'
+    <FloatingPane
+        :uid='uid'
+        @close='emit("close")'
+        class='video-container'
     >
-        <div
-            style='height: 50px;'
-            class='d-flex align-items-center px-2 py-2 border-bottom border-secondary'
-        >
-            <div
-                ref='drag-handle'
-                class='cursor-pointer'
-            >
-                <IconGripVertical
-                    :size='24'
-                    stroke='1'
-                />
-            </div>
-
+        <template #header>
             <StatusDot
                 v-if='active && active.metadata'
                 :status='active.metadata.active ? "success" : "unknown"'
@@ -45,42 +33,32 @@
                     v-text='active.metadata.source_model'
                 />
             </div>
+        </template>
 
-            <div class='btn-list ms-auto'>
+        <template #actions>
+            <span
+                v-if='active && active.metadata'
+                class='watchers-info'
+            >
+                <IconUsersGroup
+                    :size='24'
+                    stroke='1'
+                />
+                <span v-text='active.metadata.watchers + 1' />
                 <span
-                    v-if='active && active.metadata'
-                    class='watchers-info'
-                >
-                    <IconUsersGroup
-                        :size='24'
-                        stroke='1'
-                    />
-                    <span v-text='active.metadata.watchers + 1' />
-                    <span
-                        class='ms-1 watcher-text'
-                        v-text='active.metadata.watchers + 1 > 1 ? "Watchers" : "Watcher"'
-                    />
-                </span>
+                    class='ms-1 watcher-text'
+                    v-text='active.metadata.watchers + 1 > 1 ? "Watchers" : "Watcher"'
+                />
+            </span>
+        </template>
 
-                <TablerIconButton
-                    title='Close Video Player'
-                    @click='emit("close")'
-                >
-                    <IconX
-                        :size='24'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-            </div>
-        </div>
         <div
-            class='modal-body'
+            class='h-100 w-100'
             :class='{ "modal-body--error": !!error }'
-            :style='`height: calc(100% - 50px)`'
         >
             <div
                 v-if='loading'
-                class='col-12 d-flex align-items-center justify-content-center'
+                class='col-12 d-flex align-items-center justify-content-center h-100'
             >
                 <TablerLoading label='Loading Stream' />
             </div>
@@ -146,7 +124,7 @@
                 </div>
             </template>
         </div>
-    </div>
+    </FloatingPane>
 </template>
 
 <script setup lang='ts'>
@@ -161,14 +139,13 @@ import { ref, computed, onMounted, onUnmounted, nextTick, useTemplateRef } from 
 import { std, stdurl } from '../../../../src/std.ts';
 import StatusDot from './../../util/StatusDot.vue';
 import VideoLeaseSourceType from './VideoLeaseSourceType.vue';
+import FloatingPane from './FloatingPane.vue';
 import type { VideoLeaseResponse, VideoLeaseMetadata } from '../../../types.ts';
 import Hls from 'hls.js'
 import { useFloatStore } from '../../../stores/float.ts';
-import type { VideoPane } from '../../../stores/float.ts';
+import type { Pane } from '../../../stores/float.ts';
 import {
-    IconX,
     IconUsersGroup,
-    IconGripVertical,
     IconPlayerPauseFilled
 } from '@tabler/icons-vue';
 import {
@@ -176,7 +153,6 @@ import {
     TablerAlert,
     TablerLoading,
     TablerButton,
-    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
 // Store for managing floating panes
@@ -196,8 +172,6 @@ const props = defineProps({
 
 // Template refs for DOM elements
 const videoTag = useTemplateRef<HTMLVideoElement>('videoTag');
-const container = useTemplateRef<HTMLElement>('container');
-const dragHandle = useTemplateRef<HTMLElement>('drag-handle');
 
 // Component events
 const emit = defineEmits(['close']);
@@ -214,13 +188,9 @@ const maxRetries = ref(3); // Maximum retry attempts before giving up
 const player = ref<Hls | undefined>()
 
 // Video streaming data
-const video = ref(floatStore.panes.get(props.uid) as VideoPane);
+const video = ref(floatStore.panes.get(props.uid) as Pane);
 const videoLease = ref<VideoLeaseResponse | undefined>(); // CloudTAK video lease
 const videoProtocols = ref<VideoLeaseMetadata["protocols"] | undefined>(); // Available streaming protocols
-
-// Drag and resize functionality
-const observer = ref<ResizeObserver | undefined>(); // Watches for container resize events
-const lastPosition = ref({ top: 0, left: 0 }) // Last mouse position during drag
 
 // Active stream metadata
 const active = ref();
@@ -284,11 +254,6 @@ onUnmounted(async () => {
         clearInterval(bufferCheckInterval.value);
         bufferCheckInterval.value = undefined;
     }
-    
-    // Stop observing resize events
-    if (observer.value) {
-        observer.value.disconnect();
-    }
 
     // Destroy HLS player instance
     if (player.value) {
@@ -301,132 +266,9 @@ onUnmounted(async () => {
 
 // Initialize component when mounted
 onMounted(async () => {
-    // Set up resize observer to sync container size with store
-    observer.value = new ResizeObserver((entries) => {
-        if (!entries.length) return;
-
-        // Use requestAnimationFrame for smooth resize updates
-        window.requestAnimationFrame(() => {
-            if (video.value && video.value && container.value) {
-                video.value.config.height = entries[0].contentRect.height;
-                video.value.config.width = entries[0].contentRect.width;
-            }
-        });
-    })
-
-    // Initialize container position and size from stored config
-    if (container.value && video.value) {
-        container.value.style.top = video.value.config.y + 'px';
-        container.value.style.left = video.value.config.x + 'px';
-
-        container.value.style.height = video.value.config.height + 'px';
-        container.value.style.width = video.value.config.width + 'px';
-
-        // Start observing container for resize events
-        observer.value.observe(container.value);
-    }
-
-    // Set up drag functionality
-    if (dragHandle.value) {
-        dragHandle.value.addEventListener('mousedown', dragStart);
-        dragHandle.value.addEventListener('touchstart', touchStart, { passive: false });
-    }
-
     // Start the video lease request process
     await requestLease();
 });
-
-/**
- * Drag functionality - allows user to move the video player around the screen
- */
-function dragStart(event: MouseEvent) {
-    if (!container.value || !dragHandle.value) return;
-
-    // Store initial mouse position
-    lastPosition.value.left = event.clientX;
-    lastPosition.value.top = event.clientY;
-
-    // Add visual feedback for dragging state
-    dragHandle.value.classList.add('dragging');
-
-    // Attach drag event listeners
-    container.value.addEventListener('mousemove', dragMove);
-    container.value.addEventListener('mouseleave', dragEnd);
-    container.value.addEventListener('mouseup', dragEnd);
-}
-
-function dragMove(event: MouseEvent) {
-    if (!container.value || !dragHandle.value || !video.value) return;
-
-    // Calculate new position based on mouse movement
-    const dragElRect = container.value.getBoundingClientRect();
-
-    // Update stored position in video config
-    video.value.config.x = dragElRect.left + event.clientX - lastPosition.value.left;
-    video.value.config.y = dragElRect.top + event.clientY - lastPosition.value.top;
-
-    // Update last position for next move calculation
-    lastPosition.value.left = event.clientX;
-    lastPosition.value.top = event.clientY;
-
-    // Apply new position to DOM element
-    container.value.style.top = video.value.config.y + 'px';
-    container.value.style.left = video.value.config.x + 'px';
-}
-
-function dragEnd() {
-    if (!container.value || !dragHandle.value) return;
-
-    // Remove drag event listeners
-    container.value.removeEventListener('mousemove', dragMove);
-    container.value.removeEventListener('mouseleave', dragEnd);
-    container.value.removeEventListener('mouseup', dragEnd);
-
-    // Remove visual feedback for dragging state
-    dragHandle.value.classList.remove('dragging');
-}
-
-function touchStart(event: TouchEvent) {
-    if (!container.value || !dragHandle.value) return;
-    event.preventDefault();
-
-    const touch = event.touches[0];
-    lastPosition.value.left = touch.clientX;
-    lastPosition.value.top = touch.clientY;
-
-    dragHandle.value.classList.add('dragging');
-
-    container.value.addEventListener('touchmove', touchMove, { passive: false });
-    container.value.addEventListener('touchend', touchEnd);
-    container.value.addEventListener('touchcancel', touchEnd);
-}
-
-function touchMove(event: TouchEvent) {
-    if (!container.value || !dragHandle.value || !video.value) return;
-    event.preventDefault();
-
-    const touch = event.touches[0];
-    const dragElRect = container.value.getBoundingClientRect();
-
-    video.value.config.x = dragElRect.left + touch.clientX - lastPosition.value.left;
-    video.value.config.y = dragElRect.top + touch.clientY - lastPosition.value.top;
-
-    lastPosition.value.left = touch.clientX;
-    lastPosition.value.top = touch.clientY;
-
-    container.value.style.top = video.value.config.y + 'px';
-    container.value.style.left = video.value.config.x + 'px';
-}
-
-function touchEnd() {
-    if (!container.value || !dragHandle.value) return;
-
-    container.value.removeEventListener('touchmove', touchMove);
-    container.value.removeEventListener('touchend', touchEnd);
-    container.value.removeEventListener('touchcancel', touchEnd);
-
-    dragHandle.value.classList.remove('dragging');
-}
 
 /**
  * Clean up video lease from CloudTAK server when component is destroyed
@@ -677,17 +519,6 @@ async function requestLease(): Promise<void> {
 </script>
 
 <style>
-.dragging {
-    cursor: move !important;
-}
-
-.resizable-content {
-    min-height: 300px;
-    min-width: 400px;
-    resize: both;
-    overflow: hidden;
-}
-
 .video-container {
     container-type: inline-size;
 }
