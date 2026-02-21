@@ -20,7 +20,7 @@
         "check": "vue-tsc",
         "build:types": "vue-tsc -p tsconfig.build.json",
         "build": "vite build",
-        "lint": "eslint ./src/ ./public/ ./plugins/",
+        "lint": "eslint --config eslint.config.js ./src/ ./public/ ./plugins/",
         "test": "exit 0"
     },
     "dependencies": {
