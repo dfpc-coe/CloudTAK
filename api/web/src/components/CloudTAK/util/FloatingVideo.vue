@@ -143,7 +143,7 @@ import FloatingPane from './FloatingPane.vue';
 import type { VideoLeaseResponse, VideoLeaseMetadata } from '../../../types.ts';
 import Hls from 'hls.js'
 import { useFloatStore } from '../../../stores/float.ts';
-import type { Pane } from '../../../stores/float.ts';
+import type { Pane, PaneVideoConfig } from '../../../stores/float.ts';
 import {
     IconUsersGroup,
     IconPlayerPauseFilled
@@ -188,7 +188,7 @@ const maxRetries = ref(3); // Maximum retry attempts before giving up
 const player = ref<Hls | undefined>()
 
 // Video streaming data
-const video = ref(floatStore.panes.get(props.uid) as Pane);
+const video = ref(floatStore.panes.get(props.uid) as Pane<PaneVideoConfig>);
 const videoLease = ref<VideoLeaseResponse | undefined>(); // CloudTAK video lease
 const videoProtocols = ref<VideoLeaseMetadata["protocols"] | undefined>(); // Available streaming protocols
 

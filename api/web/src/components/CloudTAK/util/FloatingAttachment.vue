@@ -62,7 +62,7 @@ import { ref } from 'vue'
 import { stdurl } from '../../../std.ts';
 import type { Attachment } from '../../../types.ts';
 import { useFloatStore } from '../../../stores/float.ts';
-import type { Pane } from '../../../stores/float.ts';
+import type { Pane, PaneAttachmentConfig } from '../../../stores/float.ts';
 import FloatingPane from './FloatingPane.vue';
 import {
     IconEyeOff,
@@ -83,7 +83,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const pane = ref(floatStore.panes.get(props.uid) as Pane);
+const pane = ref(floatStore.panes.get(props.uid) as Pane<PaneAttachmentConfig>);
 
 function downloadAssetUrl(attachment: Attachment & { url?: string }) {
     if (attachment.url) return new URL(attachment.url);
