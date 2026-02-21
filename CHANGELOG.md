@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.81.0 - 2026-02-21
+
+- :tada: Allow removing files from a Mission
+- :rocket: Migrate to a generic Floating Store class to centralize float operations and then update each existing floating store to simply provide content
+- :bug: Use original ext to download file on import processing in events task
+
 ### v12.80.0 - 2026-02-20
 
 - :rocket: Dynamic updates of Data Sync contents pane
