@@ -11,7 +11,8 @@ export default ts.config(
         languageOptions: {
             sourceType: 'module',
             parserOptions: {
-                parser: '@typescript-eslint/parser'
+                parser: '@typescript-eslint/parser',
+                tsconfigRootDir: import.meta.dirname
             },
             globals: {
                 ...globals.browser
