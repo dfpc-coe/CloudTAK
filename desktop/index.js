@@ -7,6 +7,8 @@ app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('no-sandbox');
 
 const configPath = path.join(app.getPath('userData'), 'config.json');
+const preloadPath = path.join(__dirname, 'preload.js');
+const setupIndexPath = path.join(__dirname, 'dist-setup', 'index.html');
 
 let mainWindow;
 let setupWindow;
@@ -37,17 +39,25 @@ function createSetupWindow() {
     }
 
     setupWindow = new BrowserWindow({
-        width: 500,
-        height: 300,
+        width: 520,
+        height: 640,
         webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
+            nodeIntegration: false,
+            contextIsolation: true,
+            preload: preloadPath,
         },
         title: 'CloudTAK Setup',
         autoHideMenuBar: true,
     });
 
-    setupWindow.loadFile('setup.html');
+    if (fs.existsSync(setupIndexPath)) {
+        setupWindow.loadFile(setupIndexPath);
+    } else {
+        dialog.showErrorBox('Setup UI not built', 'Run "npm run build" inside desktop/setup-ui to generate dist-setup before launching the desktop app.');
+        setupWindow.close();
+        setupWindow = null;
+        return;
+    }
 
     setupWindow.on('closed', () => {
         setupWindow = null;
@@ -82,6 +92,7 @@ function createMainWindow(url) {
             nodeIntegration: false,
             contextIsolation: true,
             backgroundThrottling: false,
+            preload: preloadPath,
         },
         title: 'CloudTAK',
     });

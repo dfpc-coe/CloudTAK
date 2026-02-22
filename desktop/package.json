@@ -5,7 +5,8 @@
     "main": "index.js",
     "scripts": {
         "start": "electron . --no-sandbox",
-        "build": "electron-builder",
+        "build:setup-ui": "cd setup-ui && npm install && npm run build",
+        "build": "npm run build:setup-ui && electron-builder",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "build": {
