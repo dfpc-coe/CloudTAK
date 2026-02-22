@@ -11,7 +11,7 @@
     },
     "build": {
         "appId": "com.cloudtak.desktop",
-        "productName": "CloudTAK",
+        "productName": "cloudtak",
         "directories": {
             "output": "dist"
         },

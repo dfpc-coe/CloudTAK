@@ -26,9 +26,18 @@
                                     Connect to Server
                                 </h2>
                                 <div v-if='viewMode === "providers"' class='mt-2'>
-                                    <div class='d-flex align-items-center justify-content-end mb-2'>
-                                        <span class='text-muted small' v-if='loading'>Loading…</span>
+                                    <div class='d-flex align-items-center justify-content-between mb-3'>
+                                        <h3 class='h4 mb-0'>Known Providers</h3>
+                                        <TablerLoading v-if='loading' desc='Loading providers' />
                                     </div>
+
+                                    <TablerAlert
+                                        v-if='error'
+                                        class='mb-3'
+                                        title='Unable to load providers'
+                                        :err='error'
+                                        :compact='true'
+                                    />
 
                                     <TablerInput
                                         v-model='searchTerm'
@@ -38,21 +47,14 @@
                                         class='mb-3'
                                     />
 
-                                    <div
-                                        v-if='error'
-                                        class='alert alert-danger'
-                                    >
-                                        {{ error }}
-                                    </div>
+                                    <TablerNone
+                                        v-if='!loading && !error && filteredProviders.length === 0'
+                                        label='No Providers'
+                                        :compact='true'
+                                        :create='false'
+                                    />
 
-                                    <div
-                                        v-if='!loading && filteredProviders.length === 0'
-                                        class='text-muted'
-                                    >
-                                        No providers found.
-                                    </div>
-
-                                    <div class='row g-3 mb-3'>
+                                    <div class='row g-3 mb-4'>
                                         <div
                                             v-for='provider in filteredProviders'
                                             :key='provider.url'
@@ -133,7 +135,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { TablerInput } from '@tak-ps/vue-tabler'
+import { TablerAlert, TablerInput, TablerLoading, TablerNone } from '@tak-ps/vue-tabler'
 import logo from './assets/CloudTAKLogo.svg'
 
 type ProviderLogo = {
@@ -152,7 +154,7 @@ const serverUrl = ref('')
 const providers = ref<Provider[]>([])
 const searchTerm = ref('')
 const loading = ref(false)
-const error = ref('')
+const error = ref<Error | null>(null)
 const viewMode = ref<'providers' | 'manual'>('providers')
 
 const filteredProviders = computed(() => {
@@ -169,14 +171,14 @@ function providerLogo(provider: Provider) {
 
 async function loadProviders() {
     loading.value = true
-    error.value = ''
+    error.value = null
     try {
         const response = await fetch('http://api.cloudtak.io/')
         if (!response.ok) throw new Error(`Request failed: ${response.status}`)
         const data = await response.json()
         providers.value = Array.isArray(data?.servers) ? data.servers : []
     } catch (err) {
-        error.value = err instanceof Error ? err.message : 'Failed to load providers'
+        error.value = err instanceof Error ? err : new Error('Failed to load providers')
     } finally {
         loading.value = false
     }
@@ -250,5 +252,11 @@ body {
 .corner-logo img {
     width: 64px;
     height: auto;
+}
+
+@media (max-width: 768px) {
+    .corner-logo {
+        display: none;
+    }
 }
 </style>
