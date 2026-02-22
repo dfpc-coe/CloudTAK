@@ -6,6 +6,8 @@
     "scripts": {
         "lint": "eslint bin/ cloudformation/",
         "build": "node bin/build.js",
+        "build:desktop": "cd desktop && npm install && npm run build",
+        "start:desktop": "cd desktop && npm install && npm start",
         "test": "echo \"Error: no test specified\" && exit 1",
         "postversion": "node bin/version.js && git commit -am \"Sync Versions\" && git push"
     },
@@ -16,7 +18,7 @@
         "type": "git",
         "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
     },
-    "author": "Nick Ingalls <nick@ingalls.ca>",
+    "author": "Nick Ingalls <nicholas.ingalls@state.co.us>",
     "license": "AGPL",
     "bugs": {
         "url": "https://github.com/dfpc-coe/CloudTAK/issues"

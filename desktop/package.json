@@ -1,0 +1,49 @@
+{
+    "name": "@tak-ps/cloudtak-desktop",
+    "version": "1.0.0",
+    "description": "CloudTAK Desktop Application",
+    "main": "index.js",
+    "scripts": {
+        "start": "electron . --no-sandbox",
+        "build": "electron-builder",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "build": {
+        "appId": "com.cloudtak.desktop",
+        "productName": "CloudTAK",
+        "directories": {
+            "output": "dist"
+        },
+        "mac": {
+            "category": "public.app-category.utilities",
+            "extendInfo": {
+                "NSLocationWhenInUseUsageDescription": "CloudTAK needs your location to show your position on the map.",
+                "NSLocationAlwaysAndWhenInUseUsageDescription": "CloudTAK needs your location to show your position on the map."
+            }
+        },
+        "win": {
+            "target": "nsis"
+        },
+        "linux": {
+            "target": [
+                "AppImage",
+                "deb"
+            ]
+        }
+    },
+    "keywords": [],
+    "author": {
+        "name": "Nick Ingalls",
+        "email": "nick@ingalls.ca"
+    },
+    "homepage": "https://github.com/dfpc-coe/CloudTAK",
+    "license": "AGPL",
+    "type": "commonjs",
+    "devDependencies": {
+        "electron": "^40.6.0",
+        "electron-builder": "^26.8.1"
+    },
+    "dependencies": {
+        "electron-serve": "^3.0.1"
+    }
+}
