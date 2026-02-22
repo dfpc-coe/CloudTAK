@@ -2,8 +2,8 @@ const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-// Disable hardware acceleration and sandbox for Linux compatibility
-app.disableHardwareAcceleration();
+// Allow GPU acceleration (needed for WebGL); sandbox remains disabled for current packaging
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
 app.commandLine.appendSwitch('no-sandbox');
 
 const configPath = path.join(app.getPath('userData'), 'config.json');
