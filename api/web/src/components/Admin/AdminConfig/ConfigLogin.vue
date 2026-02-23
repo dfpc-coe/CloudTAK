@@ -113,6 +113,12 @@
                         />
 
                         <template v-if='config["oidc::enabled"]'>
+                            <TablerInlineAlert
+                                class='mt-2 mb-2'
+                                title='Beta Feature'
+                                description='OIDC SSO is currently in beta and may not be fully functional.'
+                                severity='warning'
+                            />
                             <TablerInput
                                 v-model='config["oidc::name"]'
                                 label='Provider Name'
@@ -172,6 +178,7 @@ import {
     TablerEnum,
     TablerIconButton,
     TablerAlert,
+    TablerInlineAlert,
     TablerToggle
 } from '@tak-ps/vue-tabler';
 import UploadLogo from '../../util/UploadLogo.vue';
