@@ -37,7 +37,7 @@
         />
         <TablerNone
             v-else-if='sets.length === 0'
-            label='Iconsets Loaded'
+            label='No Iconsets Loaded'
             :compact='true'
             :create='false'
         />

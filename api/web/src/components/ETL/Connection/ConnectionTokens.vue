@@ -36,7 +36,7 @@
             <TablerNone
                 v-else-if='!list.items.length'
                 :create='false'
-                label='Tokens'
+                label='No Tokens'
             />
             <div
                 v-else

@@ -60,7 +60,7 @@
         />
         <TablerNone
             v-else-if='!enabled'
-            label='Style Overrides'
+            label='No Style Overrides'
             :create='false'
         />
         <template v-else>

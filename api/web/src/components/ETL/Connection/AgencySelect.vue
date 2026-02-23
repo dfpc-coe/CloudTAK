@@ -17,7 +17,7 @@
                 <TablerNone
                     :create='false'
                     :compact='true'
-                    label='Agency - System Admin Access Only'
+                    label='No Agency - System Admin Access Only'
                 />
             </template>
             <template v-else>
@@ -61,7 +61,7 @@
                             v-else-if='list.total === 0'
                             :create='false'
                             :compact='true'
-                            label='Agencies'
+                            label='No Agencies'
                         />
                         <template v-else>
                             <div

@@ -107,7 +107,7 @@
             <template v-else>
                 <TablerNone
                     v-if='Object.keys(capabilities[direction].schema.input.properties).length === 0'
-                    label='Schema'
+                    label='No Schema'
                     :create='false'
                 />
                 <Schema

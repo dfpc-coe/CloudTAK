@@ -50,7 +50,7 @@
                 />
                 <TablerNone
                     v-else-if='!list.items.length'
-                    label='Packages'
+                    label='No Packages'
                     :create='false'
                 />
                 <div

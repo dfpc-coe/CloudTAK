@@ -82,7 +82,7 @@
                         v-else
                         :compact='true'
                         :create='false'
-                        label='Features'
+                        label='No Features'
                     />
                 </div>
 

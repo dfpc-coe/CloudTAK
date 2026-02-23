@@ -27,7 +27,7 @@
         />
         <TablerNone
             v-else-if='!filtered.length'
-            label='Groups'
+            label='No Groups'
             :create='false'
         />
         <template v-else>
