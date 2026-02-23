@@ -174,6 +174,9 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(403, null, 'Only System Admins can refresh all connections');
             }
 
+            if (!config.server) {
+                throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
+            }
             for await (const conn of config.models.Connection.iter({
                 where: sql`enabled = true`
             })) {
