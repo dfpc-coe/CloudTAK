@@ -72,7 +72,7 @@
             />
             <TablerNone
                 v-else-if='!list.items.length && !list.collections.length'
-                label='Basemaps'
+                label='No Basemaps'
                 @create='editModal = {}'
             />
             <template v-else>

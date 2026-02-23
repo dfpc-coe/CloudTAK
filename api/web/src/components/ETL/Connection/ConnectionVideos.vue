@@ -35,7 +35,7 @@
             <TablerNone
                 v-else-if='list.total === 0'
                 :create='false'
-                label='Videos'
+                label='No Videos'
             />
             <div
                 v-else

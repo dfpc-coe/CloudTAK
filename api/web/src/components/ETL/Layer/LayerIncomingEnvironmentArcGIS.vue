@@ -202,7 +202,7 @@
 
                     <TablerNone
                         v-if='!environment.ARCGIS_PARAMS || environment.ARCGIS_PARAMS.length === 0'
-                        label='Custom Params'
+                        label='No Custom Params'
                         :compact='true'
                         :create='false'
                     />

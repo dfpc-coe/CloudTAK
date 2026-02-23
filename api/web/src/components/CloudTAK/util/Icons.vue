@@ -18,7 +18,7 @@
             />
             <TablerNone
                 v-else-if='!list.items.length'
-                label='Icons'
+                label='No Icons'
                 :create='false'
             />
             <template v-else>

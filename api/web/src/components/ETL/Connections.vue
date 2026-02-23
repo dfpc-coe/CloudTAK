@@ -54,7 +54,7 @@
                     <template v-else>
                         <TablerNone
                             v-if='!list.items.length'
-                            label='Connections'
+                            label='No Connections'
                             @create='router.push("/connection/new")'
                         />
                         <template v-else>

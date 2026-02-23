@@ -7,7 +7,7 @@
         </div>
         <TablerNone
             v-if='!data.mission_groups.length'
-            label='Channels'
+            label='No Channels'
             :create='false'
         />
         <div

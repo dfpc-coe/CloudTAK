@@ -71,7 +71,7 @@
                         v-else-if='list.total === 0'
                         :create='false'
                         :compact='true'
-                        label='Tasks'
+                        label='No Tasks'
                     />
                     <div
                         v-else
