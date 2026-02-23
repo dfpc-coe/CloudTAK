@@ -51,7 +51,7 @@
                     v-else-if='filteredChannels.length === 0'
                     :compact='true'
                     :create='false'
-                    label='Channels'
+                    label='No Channels'
                 />
                 <template
                     v-for='channel in filteredChannels'

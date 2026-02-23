@@ -86,7 +86,7 @@
                     />
                     <TablerNone
                         v-else-if='list.total === 0'
-                        label='Types Found'
+                        label='No Types Found'
                         :create='false'
                     />
                     <template v-else>

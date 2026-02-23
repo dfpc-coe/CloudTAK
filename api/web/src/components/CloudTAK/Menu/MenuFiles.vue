@@ -48,7 +48,7 @@
             />
             <TablerNone
                 v-else-if='!list.items.length'
-                label='Uploaded Files'
+                label='No Uploaded Files'
                 :create='false'
             />
             <template v-else>

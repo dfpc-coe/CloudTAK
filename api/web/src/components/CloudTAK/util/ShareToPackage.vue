@@ -76,7 +76,7 @@
                         v-else
                         :compact='true'
                         :create='false'
-                        label='Contents'
+                        label='No Contents'
                     />
                 </div>
 

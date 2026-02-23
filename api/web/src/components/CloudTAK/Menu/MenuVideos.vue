@@ -96,7 +96,7 @@
                 />
                 <TablerNone
                     v-else-if='!filteredVideos.size && !filteredConnections.length'
-                    label='Video Connections'
+                    label='No Video Connections'
                     :create='false'
                 />
                 <TablerAlert
@@ -186,7 +186,7 @@
                 />
                 <TablerNone
                     v-else-if='leases.total === 0'
-                    label='Video Leases'
+                    label='No Video Leases'
                     :create='false'
                 />
                 <TablerAlert

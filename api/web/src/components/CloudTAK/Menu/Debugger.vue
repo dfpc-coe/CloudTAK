@@ -31,7 +31,7 @@
             />
             <TablerNone
                 v-else-if='!history.features.length'
-                label='Features'
+                label='No Features'
                 :create='false'
             />
             <template v-else>

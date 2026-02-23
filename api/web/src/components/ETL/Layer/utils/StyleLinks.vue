@@ -21,7 +21,7 @@
             v-if='!links.length'
             :create='false'
             :compact='true'
-            label='Link Overrides'
+            label='No Link Overrides'
         />
         <div
             v-else

@@ -46,7 +46,7 @@
                         v-else-if='list.total === 0'
                         :create='false'
                         :compact='true'
-                        label='Tasks'
+                        label='No Tasks'
                     />
                     <template
                         v-for='task in list.items'

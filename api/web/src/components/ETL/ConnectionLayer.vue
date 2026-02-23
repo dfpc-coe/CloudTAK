@@ -324,7 +324,7 @@
                                                 />
                                                 <TablerNone
                                                     v-else-if='!layer.outgoing'
-                                                    label='Outgoing Config'
+                                                    label='No Outgoing Config'
                                                     :create='capabilities && capabilities.outgoing !== undefined'
                                                     @create='createOutgoing'
                                                 />
