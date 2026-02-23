@@ -104,6 +104,56 @@
                             label='Background Colour'
                             :disabled='!edit'
                         />
+
+                        <TablerToggle
+                            class='mt-3'
+                            v-model='config["oidc::enabled"]'
+                            label='Enable OIDC SSO'
+                            :disabled='!edit'
+                        />
+
+                        <template v-if='config["oidc::enabled"]'>
+                            <TablerInput
+                                v-model='config["oidc::name"]'
+                                label='Provider Name'
+                                placeholder='SSO'
+                                :disabled='!edit'
+                            />
+                            <TablerInput
+                                v-model='config["oidc::discovery"]'
+                                label='OIDC Discovery URL'
+                                placeholder='https://...'
+                                :disabled='!edit'
+                            />
+                            <TablerInput
+                                v-model='config["oidc::client"]'
+                                label='Client ID'
+                                :disabled='!edit'
+                            />
+                            <TablerInput
+                                v-model='config["oidc::secret"]'
+                                label='Client Secret'
+                                type='password'
+                                :disabled='!edit'
+                            />
+                            <TablerInput
+                                v-model='config["oidc::redirect"]'
+                                label='Redirect URI'
+                                placeholder='/api/auth/callback'
+                                :disabled='!edit'
+                            />
+                            <TablerInput
+                                v-model='config["oidc::scopes"]'
+                                label='Scopes'
+                                placeholder='openid profile email'
+                                :disabled='!edit'
+                            />
+                            <UploadLogo
+                                v-model='config["oidc::logo"]'
+                                label='OIDC Logo'
+                                :disabled='!edit'
+                            />
+                        </template>
                     </div>
                 </div>
             </template>
@@ -146,6 +196,14 @@ const config = ref({
     'login::brand::logo': '',
     'login::background::enabled': false,
     'login::background::color': '#000000',
+    'oidc::enabled': false,
+    'oidc::name': '',
+    'oidc::client': '',
+    'oidc::secret': '',
+    'oidc::discovery': '',
+    'oidc::redirect': '',
+    'oidc::scopes': '',
+    'oidc::logo': '',
 });
 
 onMounted(() => {
