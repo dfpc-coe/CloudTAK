@@ -6,7 +6,7 @@
     "scripts": {
         "start": "electron . --no-sandbox",
         "build:setup-ui": "cd setup-ui && npm install && npm run build",
-        "build": "npm run build:setup-ui && electron-builder",
+        "build": "npm run build:setup-ui && electron-builder -mwl",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "build": {
@@ -29,7 +29,8 @@
             "target": [
                 "AppImage",
                 "deb"
-            ]
+            ],
+            "artifactName": "cloudtak-desktop_${version}_${arch}.${ext}"
         }
     },
     "keywords": [],
