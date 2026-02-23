@@ -58,7 +58,7 @@
             >
                 <TablerNone
                     :compact='true'
-                    label='Layout Properties'
+                    label='No Layout Properties'
                     :create='false'
                 />
             </div>
@@ -93,7 +93,7 @@
             >
                 <TablerNone
                     :compact='true'
-                    label='Paint Properties'
+                    label='No Paint Properties'
                     :create='false'
                 />
             </div>

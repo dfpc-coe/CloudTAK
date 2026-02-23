@@ -27,7 +27,7 @@
                 <label class='subheader mx-2'>Online</label>
                 <TablerNone
                     v-if='visibleActiveContacts.length === 0'
-                    label='Online Contacts'
+                    label='No Online Contacts'
                     :compact='true'
                     :create='false'
                 />
@@ -83,7 +83,7 @@
                         <div class='mx-2 pt-2'>
                             <TablerNone
                                 v-if='visibleOfflineContacts.length === 0'
-                                label='Offline Contacts'
+                                label='No Offline Contacts'
                                 :compact='true'
                                 :create='false'
                             />

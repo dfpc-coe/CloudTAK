@@ -29,7 +29,7 @@
             <TablerNone
                 v-else-if='!Object.keys(processChannels).length'
                 :create='false'
-                label='Channels'
+                label='No Channels'
             />
             <div
                 v-else

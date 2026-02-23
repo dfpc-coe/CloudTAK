@@ -101,7 +101,7 @@
                     />
                     <TablerNone
                         v-else-if='!list.items.length'
-                        label='Iconsets'
+                        label='No Iconsets'
                         :create='false'
                     />
                     <div class='col-12 d-flex flex-column gap-2 p-3'>

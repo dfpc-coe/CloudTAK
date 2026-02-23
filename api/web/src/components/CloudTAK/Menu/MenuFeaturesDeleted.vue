@@ -59,7 +59,7 @@
             <TablerNone
                 v-else-if='filteredList.length === 0'
                 :create='false'
-                label='Archived Features'
+                label='No Archived Features'
             />
             <template v-else>
                 <GenericSelect

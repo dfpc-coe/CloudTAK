@@ -49,7 +49,7 @@
                 <div class='col-12 border rounded'>
                     <TablerNone
                         v-if='!outgoing.filters || !outgoing.filters.queries || outgoing.filters.queries.length === 0'
-                        label='Exclusion Filters'
+                        label='No Exclusion Filters'
                         :compact='true'
                         :create='false'
                     />

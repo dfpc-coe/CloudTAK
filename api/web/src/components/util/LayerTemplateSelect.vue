@@ -42,7 +42,7 @@
                         v-else-if='list.total === 0'
                         :create='false'
                         :compact='true'
-                        label='Templates'
+                        label='No Templates'
                     />
                     <template
                         v-for='layer in list.items'

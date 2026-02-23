@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v12.81.2 - 2026-02-23
+
+- :bug: Consistent TablerNone labels
+
 ### v12.81.1 - 2026-02-23
 
 - :bug: Fix Connection Tracking in Pool as the `destroyed` boolean is now used for close status and not user intent

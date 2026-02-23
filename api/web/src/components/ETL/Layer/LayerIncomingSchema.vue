@@ -18,7 +18,7 @@
         />
         <TablerNone
             v-else-if='!schema.length'
-            label='Schema'
+            label='No Schema'
             :create='false'
         />
         <div
