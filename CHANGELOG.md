@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v12.82.2 - 2026-02-23
+
+- :bug: Reconnect on `close` event of TAK Server connection
+- :tada: Add a reconnect all button on the Admin Connection UI
+- :rocket: Beta: surface OIDC settings in Config UI
+
 ### v12.81.2 - 2026-02-23
 
 - :bug: Consistent TablerNone labels
