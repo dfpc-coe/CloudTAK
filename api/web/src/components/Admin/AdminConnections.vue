@@ -18,6 +18,7 @@
 
                 <TablerIconButton
                     title='Reconnect All'
+                    :disabled='loading'
                     @click='reconnectConnections'
                 >
                     <IconPlugConnected
@@ -175,6 +176,7 @@ async function listLayerSchema() {
 
 async function reconnectConnections() {
     loading.value = true;
+    error.value = false;
     try {
         await std('/api/connection/refresh', {
             method: 'POST'

@@ -176,9 +176,6 @@ export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'oidc::enabled',
     'oidc::enforced',
     'oidc::name',
-    'oidc::client',
-    'oidc::redirect',
-    'oidc::discovery',
     'oidc::logo',
 ];
 
@@ -231,7 +228,7 @@ export default async function router(schema: Schema, config: Config) {
                 return config.models.Setting.from(key);
             })))).forEach((k, i) => {
                 if (k.status === 'rejected') {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                     
                     if (FullConfigDefaults[keys[i] as keyof Static<typeof FullConfig>] !== undefined) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         final[keys[i]] = FullConfigDefaults[keys[i] as keyof Static<typeof FullConfig>] as any;
