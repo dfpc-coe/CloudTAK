@@ -16,6 +16,17 @@
                     />
                 </TablerIconButton>
 
+                <TablerIconButton
+                    title='Reconnect All'
+                    :disabled='loading'
+                    @click='reconnectConnections'
+                >
+                    <IconPlugConnected
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
                 <TablerRefreshButton
                     :loading='loading'
                     @click='fetchList'
@@ -115,6 +126,7 @@ import {
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {
+    IconPlugConnected,
     IconPlus,
 } from '@tabler/icons-vue'
 
@@ -160,6 +172,21 @@ async function listLayerSchema() {
         }
         return true;
     }));
+}
+
+async function reconnectConnections() {
+    loading.value = true;
+    error.value = false;
+    try {
+        await std('/api/connection/refresh', {
+            method: 'POST'
+        });
+
+        await fetchList();
+    } catch (err) {
+        loading.value = false;
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
 }
 
 async function fetchList() {

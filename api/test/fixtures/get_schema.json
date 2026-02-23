@@ -404,6 +404,11 @@
         "query": false,
         "res": true
     },
+    "POST /connection/refresh": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "PATCH /connection/:connectionid": {
         "body": true,
         "query": false,
