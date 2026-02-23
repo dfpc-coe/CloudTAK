@@ -82,11 +82,33 @@ export const FullConfig = Type.Object({
     'group::Dark Green': Type.String(),
     'group::Brown': Type.String(),
 
-    'oidc::enabled': Type.Boolean(),
-    'oidc::enforced': Type.Boolean(),
-    'oidc::name': Type.String(),
-    'oidc::discovery': Type.String(),
-    'oidc::client': Type.String(),
+    'oidc::enabled': Type.Boolean({
+        description: 'Enable OIDC Authentication'
+    }),
+    'oidc::enforced': Type.Boolean({
+        description: 'Disable Username/Password Login'
+    }),
+    'oidc::name': Type.String({
+        description: 'OIDC Provider Name'
+    }),
+    'oidc::discovery': Type.String({
+        description: 'OIDC Discovery URL'
+    }),
+    'oidc::client': Type.String({
+        description: 'OIDC Client ID'
+    }),
+    'oidc::secret': Type.String({
+        description: 'OIDC Client Secret',
+    }),
+    'oidc::redirect': Type.String({
+        description: 'OIDC App Redirect URL',
+    }),
+    'oidc::scopes': Type.String({
+        description: 'OIDC Scopes',
+    }),
+    'oidc::logo': Type.String({
+        description: 'Base64 encoded PNG for OIDC Logo'
+    }),
 
     // COTAK Specific Properties
     'provider::url': Type.String(),
@@ -153,6 +175,11 @@ export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'login::logo',
     'oidc::enabled',
     'oidc::enforced',
+    'oidc::name',
+    'oidc::client',
+    'oidc::redirect',
+    'oidc::discovery',
+    'oidc::logo',
 ];
 
 // Allow Authenticated but Non-Admin Access to these Config Keys
