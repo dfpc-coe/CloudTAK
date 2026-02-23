@@ -296,10 +296,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 } while (retry)
             }
         }).on('close', async () => {
-             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ close`);
-             if (this.isTracked(connClient)) {
-                 this.retry(connClient);
-             }
+            console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ close`);
+            if (this.isTracked(connClient)) {
+                this.retry(connClient);
+            }
         }).on('end', async () => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ end`);
             if (this.isTracked(connClient)) {
