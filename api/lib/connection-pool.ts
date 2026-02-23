@@ -297,22 +297,29 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             }
         }).on('end', async () => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ end`);
-            if (!tak.destroyed) {
+            if (this.isTracked(connClient)) {
                 this.retry(connClient);
             }
         }).on('timeout', async () => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ timeout`);
-            if (!tak.destroyed) {
+            if (this.isTracked(connClient)) {
                 this.retry(connClient);
             }
         }).on('error', async (err) => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ error:${err}`);
-            if (!tak.destroyed) {
+            if (this.isTracked(connClient)) {
                 this.retry(connClient);
             }
         });
 
         return connClient;
+    }
+
+    /**
+     * Determine whether a connection is still managed by the pool.
+     */
+    private isTracked(connClient: ConnectionClient): boolean {
+        return this.has(connClient.config.id);
     }
 
     async retry(connClient: ConnectionClient): Promise<void> {
@@ -322,26 +329,44 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         } else if (this.closed) {
             console.error(`ok - Not Retrying: ${connClient.config.id} - ${connClient.config.name} - Connection Pool Closed`);
             return;
-        } else if (connClient.tak.destroyed) {
-            console.error(`ok - Not Retrying: ${connClient.config.id} - ${connClient.config.name} - Connection Destroyed`);
-            return;
         }
 
         connClient.retrying = true;
 
-        const retryms = Math.min(connClient.retry * 1000, 15000);
-        if (connClient.retry <= 15) connClient.retry++
-        console.log(`not ok - ${connClient.config.uid()} - ${connClient.config.name} - retrying in ${retryms}ms`)
-        await sleep(retryms);
+        const isFirstRetry = connClient.retry === 0;
+        const nextRetry = Math.min(connClient.retry + 1, 15);
+        const retryms = isFirstRetry ? 0 : Math.min(nextRetry * 1000, 15000);
+        connClient.retry = nextRetry;
 
-        if (connClient.tak.destroyed) {
-            console.log('ok - TAK Client has been closed - not retrying');
+        console.log(`not ok - ${connClient.config.uid()} - ${connClient.config.name} - retrying in ${retryms}ms`)
+        if (retryms > 0) await sleep(retryms);
+
+        if (this.closed) {
+            console.error(`ok - Not Retrying: ${connClient.config.id} - ${connClient.config.name} - Connection Pool Closed`);
             connClient.retrying = false;
             return;
-        } else {
-            connClient.retrying = false
-            await connClient.tak.reconnect();
         }
+
+        if (!this.isTracked(connClient)) {
+            console.log('ok - Connection no longer tracked - not retrying');
+            connClient.retrying = false;
+            return;
+        }
+
+        try {
+            await connClient.tak.reconnect();
+        } catch (err) {
+            console.error(`not ok - ${connClient.config.id} - ${connClient.config.name} - reconnect failed: ${err instanceof Error ? err.message : String(err)}`);
+            connClient.retrying = false;
+
+            if (!this.closed && this.isTracked(connClient)) {
+                await this.retry(connClient);
+            }
+
+            return;
+        }
+
+        connClient.retrying = false;
     }
 
     delete(id: number | string): boolean {
