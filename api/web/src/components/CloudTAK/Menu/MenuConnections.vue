@@ -31,7 +31,7 @@
             />
             <TablerNone
                 v-else-if='!list.items.length'
-                label='Connections'
+                label='No Connections'
                 :create='false'
             />
             <template v-else>

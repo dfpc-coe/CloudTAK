@@ -2,7 +2,7 @@
     <TablerNone
         v-if='!cot'
         :create='false'
-        label='CoT Marker'
+        label='No CoT Marker'
     />
     <template v-else>
         <div

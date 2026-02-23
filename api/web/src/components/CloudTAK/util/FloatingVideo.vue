@@ -95,7 +95,7 @@
             </template>
             <template v-else-if='!video || !videoProtocols || !videoProtocols.hls'>
                 <TablerNone
-                    label='HLS Streaming Protocol'
+                    label='No HLS Streaming Protocol'
                     :create='false'
                 />
             </template>

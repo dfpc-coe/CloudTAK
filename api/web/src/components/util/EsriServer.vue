@@ -50,7 +50,7 @@
                 <TablerNone
                     :compact='true'
                     :create='false'
-                    label='Services'
+                    label='No Services'
                 />
             </template>
             <template v-else>
@@ -125,7 +125,7 @@
                 <TablerNone
                     :compact='true'
                     :create='!disabled'
-                    label='Layers'
+                    label='No Layers'
                     @create='createLayer'
                 />
             </template>

@@ -93,7 +93,7 @@
             <TablerNone
                 v-else-if='cots.size === 0 && paths.length === 0'
                 :create='false'
-                label='Archived Features'
+                label='No Archived Features'
             />
             <template v-else>
                 <div class='px-2 pb-2'>

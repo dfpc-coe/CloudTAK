@@ -83,7 +83,7 @@
                             <TablerNone
                                 :compact='true'
                                 :create='false'
-                                label='ArcGIS Servers'
+                                label='No ArcGIS Servers'
                             />
                         </template>
                         <template v-else>
@@ -148,7 +148,7 @@
                     <TablerNone
                         v-else-if='content.total === 0'
                         :create='false'
-                        label='Content Items'
+                        label='No Content Items'
                     />
                     <div
                         v-else

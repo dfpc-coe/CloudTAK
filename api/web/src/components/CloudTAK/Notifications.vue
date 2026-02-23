@@ -69,7 +69,7 @@
         </div>
         <TablerNone
             v-if='!filteredList || filteredList.length === 0'
-            label='Notifications'
+            label='No Notifications'
             :create='false'
         />
         <div
