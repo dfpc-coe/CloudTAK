@@ -161,6 +161,44 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.post('/connection/refresh', {
+        name: 'Refresh Connections',
+        group: 'Connection',
+        description: 'Refresh all enabled connections',
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            if (user.access !== 'admin') {
+                throw new Err(403, null, 'Only System Admins can refresh all connections');
+            }
+
+            if (!config.server) {
+                throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
+            }
+            for await (const conn of config.models.Connection.iter({
+                where: sql`enabled = true`
+            })) {
+                try {
+                    if (config.conns.has(conn.id)) {
+                        await config.conns.delete(conn.id);
+                    }
+                    await config.conns.add(new MachineConnConfig(config, conn));
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            res.json({
+                status: 200,
+                message: 'Connections Refreshed'
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.patch('/connection/:connectionid', {
         name: 'Update Connection',
         group: 'Connection',
