@@ -58,7 +58,7 @@
                         v-if='connection.feeds.length === 0'
                         :create='false'
                         :compact='true'
-                        label='Feeds'
+                        label='No Feeds'
                     />
                     <template v-else>
                         <template

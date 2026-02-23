@@ -40,7 +40,7 @@
             <TablerNone
                 v-else-if='!list.items.length'
                 :create='false'
-                label='Data Syncs'
+                label='No Data Syncs'
             />
             <div
                 v-else
