@@ -171,7 +171,9 @@ export default class DrawTool {
         };
 
         const routeSnapMode = new TerraDrawRouteSnapMode({
-            straightLineFallback: true,
+            straightLineFallback: {
+                canSnapBackToNetwork: true
+            },
             routing: this.route.graph,
             maxPoints: 9999,
             styles: {
