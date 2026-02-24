@@ -1,5 +1,5 @@
 import undici from 'undici';
-import geojsonvt from '@maplibre/geojson-vt';
+import { GeoJSONVT } from '@maplibre/geojson-vt';
 import { tileToBBOX } from '../tilebelt.js';
 // @ts-expect-error No Type Defs
 import vtpbf from 'vt-pbf';
@@ -474,7 +474,7 @@ export default class TileJSON {
                     })
                 };
 
-                const tileIndex = geojsonvt(geojson, {
+                const tileIndex = new GeoJSONVT(geojson, {
                     maxZoom: 24,
                     tolerance: 3,
                     extent: 4096,
