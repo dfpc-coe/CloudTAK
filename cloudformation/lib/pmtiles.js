@@ -83,7 +83,7 @@ export default {
                 MemorySize: 128,
                 Timeout: 900,
                 Description: 'Cleanup old files from EFS',
-                Runtime: 'nodejs20.x',
+                Runtime: 'nodejs24.x',
                 Handler: 'index.handler',
                 Role: cf.getAtt('EFSCleanupLambdaRole', 'Arn'),
                 Code: {
