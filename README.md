@@ -26,7 +26,7 @@ by running the provided Docker Compose services
 ### Docker Compose
 
 > [!WARNING]
-> For detailed install instructions please visit https://cloudtak.io/deploy/
+> For detailed install instructions please visit https://docs.cloudtak.io/docs/index.html#deploy
 
 If running on Ubuntu this will install the necessary dependencies
 
