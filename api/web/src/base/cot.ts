@@ -2,12 +2,11 @@ import Icon from './icon.ts';
 import { v4 as randomUUID } from 'uuid';
 import { std } from '../std.ts';
 import { db } from './database.ts';
+import { liveQuery } from 'dexie';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
 import { isEqual } from '@react-hookz/deep-equal';
 import { WorkerMessageType } from'./events.ts'
-import type { Remote } from 'comlink';
-import type Atlas from '../workers/atlas.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature, Subscription } from '../types.ts'
 import type {
@@ -57,16 +56,17 @@ export default class COT {
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
-    _remote: BroadcastChannel | null;
+    _remote: boolean;
 
-    _atlas: Atlas | Remote<Atlas>;
+    _liveQuerySubscription: { unsubscribe: () => void } | null;
+
+    static selfUid: string | null = null;
 
     _username?: string;
 
     origin: Origin
 
     static async load(
-        atlas: Atlas,
         feat: Feature,
         origin?: Origin,
         opts?: {
@@ -74,11 +74,9 @@ export default class COT {
             remote?: boolean
         }
     ) {
-        const a = atlas as Atlas;
         await COT.style(feat);
 
         return new COT(
-            a,
             feat,
             origin,
             opts
@@ -86,7 +84,6 @@ export default class COT {
     }
 
     constructor(
-        atlas: Atlas | Remote<Atlas>,
         feat: Feature,
         origin?: Origin,
         opts?: {
@@ -100,23 +97,12 @@ export default class COT {
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
-        this._remote = (opts && opts.remote === true) ? new BroadcastChannel('sync') : null
-        this._atlas = atlas;
+        this._remote = !!(opts && opts.remote === true)
+        this._liveQuerySubscription = null;
 
         this.instance = this._remote ? `remote:${randomUUID()}` : `db:${randomUUID()}`
 
         this.origin = origin || { mode: OriginMode.CONNECTION };
-        if (this.origin.mode === OriginMode.CONNECTION && !this._remote) {
-            const atlas = this._atlas as Atlas;
-
-            if (!atlas.db.cots.has(this.id)) {
-                atlas.db.pendingCreate.set(this.id, this);
-            } else {
-                atlas.db.pendingUpdate.set(this.id, this);
-            }
-
-            atlas.db.cots.set(this.id, this);
-        }
 
         if (!opts || (opts && opts.skipSave !== true)) {
             this.save();
@@ -124,21 +110,17 @@ export default class COT {
     }
 
     /**
-     * Begin listening for remote updates
+     * Begin listening for remote updates via a DexieDB live query
      * This is a seperate function due to the issues outlined in: https://stackoverflow.com/q/70184129
      */
     reactivity() {
         if (this._remote) {
-            // The sync BroadcastChannel will post a message anytime the underlying
-            // Atlas database has a COT update, resulting in a sync with the frontend
-            this._remote.onmessage = async (ev) => {
-                if (ev.data.id === this.id) {
-                    this._path = ev.data.path;
-                    this.origin = ev.data.origin;
-                    Object.assign(this._properties, ev.data.properties);
-                    Object.assign(this._geometry, ev.data.geometry);
-                }
-            };
+            this._liveQuerySubscription = liveQuery(() => db.feature.get(this.id)).subscribe((feat) => {
+                if (!feat) return;
+                this._path = feat.path;
+                Object.assign(this._properties, feat.properties);
+                Object.assign(this._geometry, feat.geometry);
+            });
         } else {
             throw new Error('Only Remote instances can listen for updates');
         }
@@ -182,27 +164,24 @@ export default class COT {
         }
     ): Promise<boolean> {
         if (this._remote) {
-            const atlas = this._atlas as Remote<Atlas>;
-
             if (update.path) this._path = update.path;
             if (update.properties) this._properties = update.properties;
             if (update.geometry) this._geometry = update.geometry;
 
             // We do the parse/stringify to ensure that deep Proxies created with Vue3 ref/reactive are removed
             // As they cannot be Cloned accross the ComLink Bridge
-            await atlas.db.add(JSON.parse(JSON.stringify(this.as_feature())), {
-                // Changes that are remote (from the frontend are always user-authored),
-                // this is important to trigger submission for Mission Syncs
-                authored: true
+            const channel = new BroadcastChannel('cloudtak');
+            channel.postMessage({
+                type: WorkerMessageType.Feature_Update,
+                body: JSON.parse(JSON.stringify(this.as_feature()))
             });
+            channel.close();
 
             return false;
         } else {
             if (!update.geometry && !update.properties && !update.path) {
                 return false;
             }
-
-            const atlas = this._atlas as Atlas;
 
             if (update.path) {
                 this._path = update.path;
@@ -240,7 +219,6 @@ export default class COT {
             }
 
             if (this.origin.mode === OriginMode.CONNECTION) {
-                atlas.db.pendingUpdate.set(this.id, this);
                 await db.feature.put({
                     id: this.id,
                     path: this._path,
@@ -249,22 +227,7 @@ export default class COT {
                 });
             }
 
-            atlas.sync.postMessage(this.as_feature());
-
-            if (this.is_self) {
-                const remarks = atlas.profile.profile_remarks?.value;
-                const callsign = atlas.profile.profile_callsign?.value;
-
-                if (
-                    (remarks !== undefined && this.properties.remarks !== remarks) // Remarks were updated locally
-                    || (callsign !== undefined && this.properties.callsign !== callsign) // Callsign was updated locally
-                ) {
-                    await atlas.profile.update({
-                        tak_callsign: this.properties.callsign,
-                        tak_remarks: this.properties.remarks
-                    })
-                }
-            } else if (!opts || (opts && opts.skipSave !== false)) {
+            if (!this.is_self && (!opts || (opts && opts.skipSave !== false))) {
                 await this.save();
             }
 
@@ -282,11 +245,12 @@ export default class COT {
             && this.properties.archived
             && this.origin.mode === OriginMode.CONNECTION
         ) {
-            const atlas = this._atlas as Atlas;
+            const tokenEntry = await db.config.get('token');
+            if (!tokenEntry) return;
 
             await std('/api/profile/feature', {
                 method: 'PUT',
-                token: atlas.token,
+                token: tokenEntry.value as string,
                 body: this.as_feature()
             })
         }
@@ -297,11 +261,7 @@ export default class COT {
     }
 
     get is_self(): boolean {
-        if (this._atlas) {
-            return this._atlas.profile.uid() === this.id;
-        } else {
-            return false;
-        }
+        return COT.selfUid === this.id;
     }
 
     get is_archivable(): boolean {
@@ -460,13 +420,15 @@ export default class COT {
     }
 
     async flyTo(): Promise<void> {
+        const channel = new BroadcastChannel('cloudtak');
+
         if (this.geometry.type === 'Point') {
             let zoom = 16
             if (this.properties.minzoom) {
                 zoom = this.properties.minzoom;
             }
 
-            await this._atlas.postMessage({
+            channel.postMessage({
                 type: WorkerMessageType.Map_FlyTo,
                 body: {
                     center: [this.properties.center[0], this.properties.center[1]],
@@ -475,7 +437,7 @@ export default class COT {
                 }
             })
         } else {
-            await this._atlas.postMessage({
+            channel.postMessage({
                 type: WorkerMessageType.Map_FitBounds,
                 body: {
                     bounds: this.bounds(),
@@ -492,6 +454,8 @@ export default class COT {
                 }
             })
         }
+
+        channel.close();
     }
 
     static async style(

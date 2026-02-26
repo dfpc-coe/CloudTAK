@@ -108,19 +108,37 @@
                     </div>
                     <div class='ms-auto btn-list mx-2'>
                         <TablerDropdown
-                            v-if='cot.is_skittle'
+                            v-if='cot.geometry.type === "Point"'
                         >
                             <TablerIconButton
                                 title='Load Breadcrumb'
                             >
-                                <IconRoute
-                                    size='32'
-                                    stroke='1'
-                                />
+                                <div style='position: relative; display: inline-flex;'>
+                                    <IconRoute
+                                        size='32'
+                                        stroke='1'
+                                    />
+                                    <span
+                                        v-if='breadcrumbLive'
+                                        style='
+                                            position: absolute;
+                                            top: 0;
+                                            right: 0;
+                                            width: 9px;
+                                            height: 9px;
+                                            border-radius: 50%;
+                                            background: #e74c3c;
+                                            border: 2px solid var(--tblr-body-bg, #1a1a2e);
+                                        '
+                                    />
+                                </div>
                             </TablerIconButton>
 
                             <template #dropdown>
-                                <Breadcrumb :uid='cot.id' />
+                                <Breadcrumb
+                                    :uid='cot.id'
+                                    @live='breadcrumbLive = $event'
+                                />
                             </template>
                         </TablerDropdown>
 
@@ -172,6 +190,7 @@
                                                 cot.properties.attachments !== undefined
                                                     && cot.properties.video !== undefined
                                                     && cot.properties.sensor !== undefined
+                                                    && (cot.geometry.type !== "Polygon" || cot.properties.geofence !== undefined)
                                             '
                                         >
                                             No Properties to add
@@ -214,6 +233,19 @@
                                                     :size='32'
                                                 /><div class='mx-2'>
                                                     Add Sensor
+                                                </div>
+                                            </div>
+                                            <div
+                                                v-if='cot.properties.geofence === undefined && cot.geometry.type === "Polygon"'
+                                                role='button'
+                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                @click='updateProperty("geofence", { elevationMonitored: false, tracking: false })'
+                                            >
+                                                <IconFence
+                                                    stroke='1'
+                                                    :size='32'
+                                                /><div class='mx-2'>
+                                                    Add Geofence
                                                 </div>
                                             </div>
                                         </template>
@@ -502,52 +534,10 @@
                 />
             </template>
 
-            <div
+            <PropertyGeofence
                 v-if='cot.properties.geofence'
-                class='col-12 py-2'
-            >
-                <div class='col-12'>
-                    <IconFence
-                        :size='18'
-                        stroke='1'
-                        color='#6b7990'
-                        class='ms-2 me-1'
-                    />
-                    <label class='subheader user-select-none'>Geofence</label>
-                </div>
-
-                <div class='mx-2 bg-accent row user-select-none'>
-                    <TablerToggle
-                        label='Elevation Monitored'
-                        :model-value='cot.properties.geofence.elevationMonitored'
-                        :disabled='true'
-                    />
-
-                    <div
-                        v-if='cot.properties.geofence.trigger === "Both" || cot.properties.geofence.trigger === "Enter"'
-                        class='col-6 py-2'
-                    >
-                        <IconDoorEnter
-                            :size='32'
-                            stroke='1'
-                            class='mx-2'
-                        />
-                        <span>Alarm on Enter</span>
-                    </div>
-                    <div
-                        v-if='cot.properties.geofence.trigger === "Both" || cot.properties.geofence.trigger === "Exit"'
-                        class='col-6 py-2'
-                    >
-                        <IconDoorExit
-                            :size='32'
-                            stroke='1'
-                            class='mx-2'
-                        />
-
-                        <span>Alarm on Exit</span>
-                    </div>
-                </div>
-            </div>
+                :geofence='cot.properties.geofence'
+            />
 
             <PropertyLinks
                 v-if='cot.properties.links'
@@ -637,7 +627,6 @@ import Subscription from '../../base/subscription.ts'
 import {
     TablerNone,
     TablerDelete,
-    TablerToggle,
     TablerDropdown,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
@@ -664,15 +653,13 @@ import PropertyLinks from './util/PropertyLinks.vue';
 import PropertyTimes from './util/PropertyTimes.vue';
 import PropertyMetadata from './util/PropertyMetadata.vue';
 import PropertyStyle from './util/PropertyStyle.vue';
+import PropertyGeofence from './util/PropertyGeofence.vue';
 import {
     IconPencil,
-    IconFence,
     IconMovie,
     IconRoute,
     IconCone,
     IconStar,
-    IconDoorEnter,
-    IconDoorExit,
     IconStarFilled,
     IconMessage,
     IconBlockquote,
@@ -686,6 +673,7 @@ import {
     IconAffiliate,
     IconInfoCircle,
     IconPaperclip,
+    IconFence,
     IconLock,
     IconLockOpen,
 } from '@tabler/icons-vue';
@@ -715,6 +703,7 @@ const units = ref({
 const username = ref<string | undefined>();
 const type = ref<COTType | undefined>();
 const mode = ref('default');
+const breadcrumbLive = ref(false);
 const remarksExpanded = ref(true);
 
 const currentTime = ref(new Date());
@@ -732,11 +721,18 @@ watch(cot, async () => {
 
 watch(route, async () => {
     mode.value = 'default'
+    breadcrumbLive.value = false;
     await load_cot();
+    if (cot.value) {
+        breadcrumbLive.value = await mapStore.worker.db.breadcrumb.get(cot.value.id);
+    }
 });
 
 onMounted(async () => {
     await load_cot();
+    if (cot.value) {
+        breadcrumbLive.value = await mapStore.worker.db.breadcrumb.get(cot.value.id);
+    }
 
     const displaySpeed = await ProfileConfig.get('display_speed');
     if (displaySpeed && displaySpeed.value) {
