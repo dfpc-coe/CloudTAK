@@ -3,20 +3,16 @@
 */
 
 import COT from '../base/cot.ts';
-import type Atlas from '../workers/atlas.ts';
-import type { Remote, TransferHandler } from 'comlink'
+import type { TransferHandler } from 'comlink'
 import type { Feature } from '../types.ts';
 
 export class CloudTAKTransferHandler {
-    atlas: Atlas | Remote<Atlas>;
     remote: boolean;
 
     constructor(
-        atlas: Atlas | Remote<Atlas>,
         transferHandlers: Map<string, TransferHandler<unknown, unknown>>,
         remote: boolean
     ) {
-        this.atlas = atlas;
         this.remote = remote;
 
         transferHandlers.set("cot", this.cot);
@@ -41,7 +37,7 @@ export class CloudTAKTransferHandler {
         deserialize: (feats) => {
             const set = new Set<COT>;
             for (const feat of feats) {
-                set.add(new COT(this.atlas, feat, feat.origin, {
+                set.add(new COT(feat, feat.origin, {
                     remote: this.remote
                 }));
             }
@@ -59,7 +55,7 @@ export class CloudTAKTransferHandler {
             return [feat, []];
         },
         deserialize: (feat: Feature): COT => {
-            return new COT(this.atlas, feat, feat.origin, {
+            return new COT(feat, feat.origin, {
                 remote: true
             });
         }

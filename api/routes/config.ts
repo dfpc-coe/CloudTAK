@@ -11,6 +11,18 @@ import Config from '../lib/config.js';
 import fs from 'node:fs';
 
 export const FullConfig = Type.Object({
+    'geofence::enabled': Type.Boolean({
+        description: 'Enable Geofence Server Integration'
+    }),
+
+    'geofence::url': Type.String({
+        description: 'Geofence Server URL'
+    }),
+
+    'geofence::password': Type.String({
+        description: 'Geofence Server Password'
+    }),
+
     'agol::enabled': Type.Boolean({
         description: 'Enable ArcGIS Online Integration'
     }),
@@ -146,6 +158,7 @@ export const FullConfig = Type.Object({
 });
 
 export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
+    'geofence::enabled': false,
     'map::center': '-100,40',
     'map::zoom': 4,
     'map::pitch': 0,
