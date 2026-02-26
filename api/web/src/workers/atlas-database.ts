@@ -86,7 +86,8 @@ export default class AtlasDatabase {
     }
 
     async init(): Promise<void> {
-        await this.loadArchive()
+        await this.loadArchive();
+        await this.breadcrumb.load();
     }
 
     /**
