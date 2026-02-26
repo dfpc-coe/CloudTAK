@@ -20,6 +20,7 @@ import { booleanWithin } from '@turf/boolean-within';
 import type { Polygon } from 'geojson';
 import type { InputFeature, Feature, APIList, Contact } from '../types.ts';
 import ProfileConfig from '../base/profile.ts';
+import * as Comlink from 'comlink';
 import AtlasBreadcrumb from './atlas-breadcrumb.ts';
 
 type NestedArray = {
@@ -44,7 +45,7 @@ export default class AtlasDatabase {
 
     subscriptionPending: Map<string, string>;
 
-    breadcrumb: AtlasBreadcrumb;
+    breadcrumb: AtlasBreadcrumb & Comlink.ProxyMarked;
 
     constructor(atlas: Atlas) {
         this.atlas = atlas;
@@ -59,7 +60,7 @@ export default class AtlasDatabase {
 
         this.subscriptionPending = new Map(); // UID, Mission Guid
 
-        this.breadcrumb = new AtlasBreadcrumb(this);
+        this.breadcrumb = Comlink.proxy(new AtlasBreadcrumb(this));
     }
 
     async makeActiveMission(guid? : string): Promise<void> {
