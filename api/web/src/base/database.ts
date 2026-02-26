@@ -17,6 +17,7 @@ export interface DBIcon {
 export interface DBFeature {
     id: string;
     path: string;
+    breadcrumb?: boolean;
     properties: Feature["properties"];
     geometry: Feature["geometry"];
 }
@@ -94,6 +95,7 @@ export interface DBSubscriptionFeature {
     id: string;
     path: string;
     mission: string;
+    breadcrumb?: boolean;
     properties: Feature["properties"];
     geometry: Feature["geometry"];
 }
@@ -226,4 +228,9 @@ db.version(1).stores({
 
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
+});
+
+db.version(2).stores({
+    feature: 'id, path, breadcrumb',
+    subscription_feature: 'id, mission, [mission+id], breadcrumb',
 });
