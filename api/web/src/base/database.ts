@@ -21,6 +21,14 @@ export interface DBFeature {
     geometry: Feature["geometry"];
 }
 
+export interface DBBreadcrumb {
+    id: string;          // `${uid}.track`
+    uid: string;         // the source CoT UID being tracked
+    path: string;
+    callsign: string;
+    coordinates: number[][];
+}
+
 export interface DBChatroom {
     id: string;
     name: string;
@@ -181,6 +189,7 @@ export type DatabaseType = Dexie & {
     video: EntityTable<DBVideo, 'id'>,
     filter: EntityTable<DBFilter, 'id'>,
     feature: EntityTable<DBFeature, 'id'>,
+    breadcrumb: EntityTable<DBBreadcrumb, 'id'>,
     chatroom: EntityTable<DBChatroom, 'id'>,
     chatroom_chats: EntityTable<DBChatroomChat, 'id'>,
     notification: EntityTable<DBNotification, 'id'>,
@@ -212,6 +221,8 @@ db.version(1).stores({
     contact: 'uid, callsign',
     config: 'key',
     cache: 'key',
+
+    breadcrumb: 'id, uid',
 
     chatroom: 'id',
     chatroom_chats: 'id, chatroom',
