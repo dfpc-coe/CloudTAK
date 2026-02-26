@@ -2,6 +2,7 @@ import type COT from '../base/cot.ts';
 import type { Point, LineString } from 'geojson';
 import type { InputFeature } from '../types.ts';
 import type AtlasDatabase from './atlas-database.ts';
+import { db } from '../base/database.ts';
 
 export default class AtlasBreadcrumb {
     db: AtlasDatabase;
@@ -43,6 +44,59 @@ export default class AtlasBreadcrumb {
     }
 
     /**
+     * On startup, restore all persisted breadcrumb LineStrings from Dexie
+     * into the in-memory cots Map so they are rendered on the map.
+     */
+    async load(): Promise<void> {
+        const all = await db.breadcrumb.toArray();
+
+        for (const entry of all) {
+            if (entry.coordinates.length < 2) continue;
+
+            const feature: InputFeature = this._buildFeature(
+                entry.id,
+                entry.uid,
+                entry.path,
+                entry.callsign,
+                entry.coordinates,
+            );
+
+            await this.db.add(feature, { skipSave: true });
+        }
+    }
+
+    /**
+     * Build the InputFeature used to add/update a breadcrumb in the cots Map.
+     */
+    private _buildFeature(
+        id: string,
+        uid: string,
+        path: string,
+        callsign: string,
+        coordinates: number[][],
+    ): InputFeature {
+        return {
+            id,
+            type: 'Feature',
+            path,
+            properties: {
+                callsign: `${callsign} Track`,
+                type: 'u-d-f-m',
+                breadcrumb: true,
+                uid,
+                stroke: '#ff0000',
+                'stroke-width': 2,
+                'stroke-opacity': 1,
+                'stroke-style': 'dashed',
+            } as unknown as InputFeature['properties'],
+            geometry: {
+                type: 'LineString',
+                coordinates,
+            } as LineString,
+        };
+    }
+
+    /**
      * Merge a set of historical coordinates into the `<uid>.track` LineString.
      * Historical coordinates are prepended so the trail reads oldest → newest.
      *
@@ -68,18 +122,23 @@ export default class AtlasBreadcrumb {
         if (coordinates.length < 2) return;
 
         const trackId = `${uid}.track`;
-        const existing = this.db.cots.get(trackId);
+        const existing = await db.breadcrumb.get(trackId);
 
         if (existing) {
             // Live trail already exists — prepend history before it
-            const geom = existing.geometry as LineString;
+            const merged = [...coordinates, ...existing.coordinates];
 
-            await existing.update({
-                geometry: {
-                    type: 'LineString',
-                    coordinates: [...coordinates, ...geom.coordinates],
-                } as LineString,
-            }, { skipSave: true });
+            await db.breadcrumb.put({ ...existing, coordinates: merged });
+
+            const cotEntry = this.db.cots.get(trackId);
+            if (cotEntry) {
+                await cotEntry.update({
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: merged,
+                    } as LineString,
+                }, { skipSave: true });
+            }
         } else {
             // No live trail yet — seed from history.
             // Flush any single buffered live coord so it is not silently dropped.
@@ -91,27 +150,20 @@ export default class AtlasBreadcrumb {
 
             const trackedCot = this.db.cots.get(uid);
             const callsign = trackedCot?.properties.callsign ?? uid;
+            const path = trackedCot?.path ?? '/';
 
-            const breadcrumbFeature: InputFeature = {
+            await db.breadcrumb.put({
                 id: trackId,
-                type: 'Feature',
-                path: trackedCot?.path ?? '/',
-                properties: {
-                    callsign: `${callsign} Track`,
-                    type: 'u-d-f-m',
-                    breadcrumb: true,
-                    stroke: '#ff0000',
-                    'stroke-width': 2,
-                    'stroke-opacity': 1,
-                    'stroke-style': 'dashed',
-                } as unknown as InputFeature['properties'],
-                geometry: {
-                    type: 'LineString',
-                    coordinates: seedCoords,
-                } as LineString,
-            };
+                uid,
+                path,
+                callsign,
+                coordinates: seedCoords,
+            });
 
-            await this.db.add(breadcrumbFeature, { skipSave: true });
+            await this.db.add(
+                this._buildFeature(trackId, uid, path, callsign, seedCoords),
+                { skipSave: true },
+            );
         }
     }
 
@@ -125,7 +177,7 @@ export default class AtlasBreadcrumb {
 
         const coord = (cot.geometry as Point).coordinates;
         const breadcrumbId = `${cot.id}.track`;
-        const existing = this.db.cots.get(breadcrumbId);
+        const existing = await db.breadcrumb.get(breadcrumbId);
 
         if (!existing) {
             const pendingCoord = this.pending.get(cot.id);
@@ -136,38 +188,36 @@ export default class AtlasBreadcrumb {
             } else {
                 // We now have two distinct positions: create the LineString
                 this.pending.delete(cot.id);
+                const coordinates = [pendingCoord, coord];
 
-                const breadcrumbFeature: InputFeature = {
+                await db.breadcrumb.put({
                     id: breadcrumbId,
-                    type: 'Feature',
+                    uid: cot.id,
                     path: cot.path,
-                    properties: {
-                        callsign: `${cot.properties.callsign} Track`,
-                        type: 'u-d-f-m',
-                        breadcrumb: true,
-                        stroke: '#ff0000',
-                        'stroke-width': 2,
-                        'stroke-opacity': 1,
-                        'stroke-style': 'dashed',
-                    } as unknown as InputFeature['properties'],
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: [pendingCoord, coord],
-                    } as LineString,
-                };
+                    callsign: cot.properties.callsign,
+                    coordinates,
+                });
 
-                await this.db.add(breadcrumbFeature, { skipSave: true });
+                await this.db.add(
+                    this._buildFeature(breadcrumbId, cot.id, cot.path, cot.properties.callsign, coordinates),
+                    { skipSave: true },
+                );
             }
         } else {
             // Append the new coordinate to the existing LineString
-            const geom = existing.geometry as LineString;
+            const coordinates = [...existing.coordinates, coord];
 
-            await existing.update({
-                geometry: {
-                    type: 'LineString',
-                    coordinates: [...geom.coordinates, coord],
-                } as LineString,
-            }, { skipSave: true });
+            await db.breadcrumb.put({ ...existing, coordinates });
+
+            const cotEntry = this.db.cots.get(breadcrumbId);
+            if (cotEntry) {
+                await cotEntry.update({
+                    geometry: {
+                        type: 'LineString',
+                        coordinates,
+                    } as LineString,
+                }, { skipSave: true });
+            }
         }
     }
 }

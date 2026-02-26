@@ -17,9 +17,16 @@ export interface DBIcon {
 export interface DBFeature {
     id: string;
     path: string;
-    breadcrumb?: boolean;
     properties: Feature["properties"];
     geometry: Feature["geometry"];
+}
+
+export interface DBBreadcrumb {
+    id: string;          // `${uid}.track`
+    uid: string;         // the source CoT UID being tracked
+    path: string;
+    callsign: string;
+    coordinates: number[][];
 }
 
 export interface DBChatroom {
@@ -95,7 +102,6 @@ export interface DBSubscriptionFeature {
     id: string;
     path: string;
     mission: string;
-    breadcrumb?: boolean;
     properties: Feature["properties"];
     geometry: Feature["geometry"];
 }
@@ -183,6 +189,7 @@ export type DatabaseType = Dexie & {
     video: EntityTable<DBVideo, 'id'>,
     filter: EntityTable<DBFilter, 'id'>,
     feature: EntityTable<DBFeature, 'id'>,
+    breadcrumb: EntityTable<DBBreadcrumb, 'id'>,
     chatroom: EntityTable<DBChatroom, 'id'>,
     chatroom_chats: EntityTable<DBChatroomChat, 'id'>,
     notification: EntityTable<DBNotification, 'id'>,
@@ -228,4 +235,10 @@ db.version(1).stores({
 
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
+});
+
+db.version(2).stores({
+    feature: 'id, path',
+    subscription_feature: 'id, mission, [mission+id]',
+    breadcrumb: 'id, uid',
 });
