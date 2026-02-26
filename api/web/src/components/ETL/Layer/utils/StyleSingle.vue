@@ -145,11 +145,17 @@
                     <IconServer :size='20' stroke='1' /> Global Marti
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='enabled.marti' :disabled='disabled' label='Enabled' />
+                    <TablerToggle v-model='enabled.marti' :disabled='disabled || props.disableMarti' label='Enabled' />
                 </div>
             </div>
+            <TablerInlineAlert
+                v-if='props.disableMarti'
+                type='info'
+                class='mt-2'
+                description='Marti routing is unavailable when a Data Sync destination is configured. Use Groups routing via Styles to set routing destinations.'
+            />
             <StyleMarti
-                v-if='enabled.marti'
+                v-else-if='enabled.marti'
                 v-model='filters.marti'
                 :disabled='disabled'
             />
@@ -545,7 +551,8 @@ import {
     TablerRange,
     TablerInput,
     TablerToggle,
-    TablerEnum
+    TablerEnum,
+    TablerInlineAlert
 } from '@tak-ps/vue-tabler';
 
 const props = defineProps({
@@ -560,6 +567,10 @@ const props = defineProps({
         required: true
     },
     disabled: {
+        type: Boolean,
+        default: false
+    },
+    disableMarti: {
         type: Boolean,
         default: false
     }

@@ -69,6 +69,7 @@
                     v-model='style'
                     :schema='capabilities.incoming.schema.output || { properties: {} }'
                     :disabled='disabled'
+                    :disable-marti='!!props.layer.incoming.data'
                 />
             </div>
 
@@ -237,6 +238,7 @@
                             v-model='queries[query].styles'
                             :schema='capabilities.incoming.schema.output'
                             :disabled='disabled'
+                            :disable-marti='!!props.layer.incoming.data'
                         />
                     </template>
                 </div>
