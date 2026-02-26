@@ -91,6 +91,18 @@ export const StyleLink = Type.Object({
     url: Type.String()
 });
 
+export const StyleMartiDest = Type.Object({
+    group: Type.Optional(Type.String({ description: 'TAK Server channel (group) name to route this CoT to' })),
+    mission: Type.Optional(Type.String({ description: 'TAK Server Data Sync (mission) name to route this CoT to' })),
+    uid: Type.Optional(Type.String({ description: 'Individual client UID to route this CoT to' })),
+    callsign: Type.Optional(Type.String({ description: 'Individual client callsign to route this CoT to' })),
+});
+
+export const StyleMarti = Type.Object({
+    archive: Type.Optional(Type.Boolean({ description: 'Whether the CoT should be archived by the TAK Server' })),
+    dest: Type.Optional(Type.Array(StyleMartiDest, { description: 'One or more routing destinations (channels, data syncs, or individual clients)' })),
+});
+
 export const StylePoint = Type.Object({
     'marker-color': Type.Optional(Type.String()),
     'marker-opacity': Type.Optional(Type.String()),
@@ -105,7 +117,8 @@ export const StylePoint = Type.Object({
     maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     callsign: Type.Optional(Type.String()),
     links: Type.Optional(Type.Array(StyleLink)),
-    icon: Type.Optional(Type.String())
+    icon: Type.Optional(Type.String()),
+    marti: Type.Optional(StyleMarti)
 });
 
 export const StyleLine = Type.Object({
@@ -120,6 +133,7 @@ export const StyleLine = Type.Object({
     maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     callsign: Type.Optional(Type.String()),
     links: Type.Optional(Type.Array(StyleLink)),
+    marti: Type.Optional(StyleMarti)
 });
 
 export const StylePolygon = Type.Object({
@@ -136,6 +150,7 @@ export const StylePolygon = Type.Object({
     minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     links: Type.Optional(Type.Array(StyleLink)),
+    marti: Type.Optional(StyleMarti)
 });
 
 export const StyleSingle = Type.Object({
@@ -146,6 +161,7 @@ export const StyleSingle = Type.Object({
     minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     links: Type.Optional(Type.Array(StyleLink)),
+    marti: Type.Optional(StyleMarti),
     line: Type.Optional(StyleLine),
     point: Type.Optional(StylePoint),
     polygon: Type.Optional(StylePolygon)
@@ -170,6 +186,7 @@ export const StyleContainer = Type.Object({
     minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     links: Type.Optional(Type.Array(StyleLink)),
+    marti: Type.Optional(StyleMarti),
     queries: Type.Optional(Type.Array(StyleSingleContainer))
 })
 
@@ -400,6 +417,10 @@ export default class Style {
                 this.#links(this.style.styles.links, feature);
             }
 
+            if (this.style.styles.marti) {
+                this.#applyMarti(this.style.styles.marti, feature);
+            }
+
             this.#by_geom(this.style.styles, feature);
 
             if (!this.style.styles.queries) {
@@ -432,6 +453,10 @@ export default class Style {
                                 feature.properties.stale = q.styles.stale * 1000;
                             }
 
+                            if (q.styles.marti) {
+                                this.#applyMarti(q.styles.marti, feature);
+                            }
+
                             this.#by_geom(q.styles, feature);
                         }
                     }
@@ -448,6 +473,21 @@ export default class Style {
             } else {
                 throw new Err(400, new Error(String(err)), String(err));
             }
+        }
+    }
+
+    #applyMarti(
+        marti: Static<typeof StyleMarti>,
+        feature: Static<typeof Feature.InputFeature>
+    ): void {
+        if (!feature.properties) feature.properties = {};
+
+        if (marti.archive !== undefined) {
+            feature.properties.marti_archive = marti.archive;
+        }
+
+        if (marti.dest !== undefined && marti.dest.length > 0) {
+            feature.properties.dest = marti.dest;
         }
     }
 
@@ -516,6 +556,7 @@ export default class Style {
             if (style.point['marker-opacity']) feature.properties['marker-opacity'] = Number(style.point['marker-opacity']);
             if (style.point.rotate !== undefined) feature.properties.rotate = style.point.rotate;
             if (style.point.icon) feature.properties.icon = style.point.icon;
+            if (style.point.marti) this.#applyMarti(style.point.marti, feature);
         } else if (feature.geometry.type === 'LineString' && style.line) {
             if (style.line.id) feature.id = this.compile(style.line.id, feature.properties.metadata);
             if (style.line.remarks) feature.properties.remarks = this.compile(style.line.remarks, feature.properties.metadata);
@@ -539,6 +580,7 @@ export default class Style {
             if (style.line['stroke-style']) feature.properties['stroke-style'] = style.line['stroke-style'];
             if (style.line['stroke-opacity']) feature.properties['stroke-opacity'] = Number(style.line['stroke-opacity']);
             if (style.line['stroke-width']) feature.properties['stroke-width'] = Number(style.line['stroke-width']);
+            if (style.line.marti) this.#applyMarti(style.line.marti, feature);
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
             if (style.polygon.id) feature.id = this.compile(style.polygon.id, feature.properties.metadata);
             if (style.polygon.remarks) feature.properties.remarks = this.compile(style.polygon.remarks, feature.properties.metadata);
@@ -565,6 +607,7 @@ export default class Style {
 
             if (style.polygon.fill) feature.properties.fill = style.polygon.fill;
             if (style.polygon['fill-opacity']) feature.properties['fill-opacity'] = Number(style.polygon['fill-opacity']);
+            if (style.polygon.marti) this.#applyMarti(style.polygon.marti, feature);
         }
     }
 }

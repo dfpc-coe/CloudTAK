@@ -99,9 +99,9 @@ export default async function router(schema: Schema, config: Config) {
                     throw new Err(202, null, 'Recieved but Data Mission Sync Disabled');
                 }
 
-                // Mission Sync Features are always archived
+                // Mission Sync Features are always archived unless the style has already set a specific dest
                 for (const cot of cots.values()) {
-                    cot.archived(true);
+                    if (!cot.detail().marti?.dest) cot.archived(true);
                 }
 
                 if (data.mission_diff) {
@@ -178,7 +178,9 @@ export default async function router(schema: Schema, config: Config) {
                             }
                         }
 
-                        cot.addDest({ mission: data.name, path: pathMapEntryLast.uid, after: '' });
+                        if (!cot.detail().marti?.dest) {
+                            cot.addDest({ mission: data.name, path: pathMapEntryLast.uid, after: '' });
+                        }
                         if (!pathMapEntryLast.uids) pathMapEntryLast.uids = [];
                         pathMapEntryLast.uids.push({ data: cot.uid(), timestamp: new Date().toISOString(), creatorUid: `connection-${data.connection}-data-${data.id}` });
                     }
@@ -222,7 +224,7 @@ export default async function router(schema: Schema, config: Config) {
                     cots = filtered;
                 } else {
                     for (const cot of cots) {
-                        cot.addDest({ mission: data.name });
+                        if (!cot.detail().marti?.dest) cot.addDest({ mission: data.name });
                     }
                 }
             } else {
@@ -231,6 +233,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 if (layer.incoming.groups.length) {
                     for (const cot of cots) {
+                        if (cot.detail().marti?.dest) continue;
                         for (const group of layer.incoming.groups) {
                             cot.addDest({ group });
                         }
