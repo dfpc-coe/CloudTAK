@@ -216,11 +216,13 @@ db.version(1).stores({
     iconset: 'uid, name',
     filter: 'id, external',
     video: 'id, username',
-    feature: 'id, path, breadcrumb',
+    feature: 'id, path',
     profile: 'key',
     contact: 'uid, callsign',
     config: 'key',
     cache: 'key',
+
+    breadcrumb: 'id, uid',
 
     chatroom: 'id',
     chatroom_chats: 'id, chatroom',
@@ -229,16 +231,10 @@ db.version(1).stores({
 
     subscription: 'guid, name',
     subscription_log: 'id, [mission+id]',
-    subscription_feature: 'id, mission, [mission+id], breadcrumb',
+    subscription_feature: 'id, mission, [mission+id]',
     subscription_contents: 'uid, mission, [mission+uid]',
     subscription_changes: '++id, mission',
 
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
-});
-
-db.version(2).stores({
-    feature: 'id, path',
-    subscription_feature: 'id, mission, [mission+id]',
-    breadcrumb: 'id, uid',
 });
