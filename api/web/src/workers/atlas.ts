@@ -10,10 +10,10 @@ import type { ProfileLocationState } from './atlas-profile.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
+import { db } from '../base/database.ts';
 
 export default class Atlas {
     channel: BroadcastChannel;
-    sync: BroadcastChannel;
 
     token: string;
     username: string;
@@ -24,7 +24,6 @@ export default class Atlas {
 
     constructor() {
         this.channel = new BroadcastChannel('cloudtak');
-        this.sync = new BroadcastChannel('sync');
         this.token = '';
         this.username = '';
 
@@ -47,6 +46,10 @@ export default class Atlas {
                         ...msg.body
                     } as ProfileLocationState;
                 }
+            } else if (msg.type === WorkerMessageType.Feature_Update) {
+                this.db.add(msg.body, { authored: true });
+            } else if (msg.type === WorkerMessageType.Profile_Update) {
+                this.profile.update(msg.body);
             }
         }
     }
@@ -59,6 +62,8 @@ export default class Atlas {
         if (this.token) return;
 
         this.token = authToken;
+
+        await db.config.put({ key: 'token', value: authToken });
 
         this.username = await this.profile.init();
         await this.conn.connect(this.username)
@@ -73,6 +78,6 @@ export default class Atlas {
 
 const atlas = new Atlas()
 
-new CloudTAKTransferHandler(atlas, Comlink.transferHandlers, false);
+new CloudTAKTransferHandler(Comlink.transferHandlers, false);
 
 Comlink.expose(Comlink.proxy(atlas));
