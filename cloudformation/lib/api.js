@@ -398,7 +398,7 @@ export default {
         },
         TaskDefinition: {
             Type: 'AWS::ECS::TaskDefinition',
-            DependsOn: ['SigningSecret'],
+            DependsOn: ['SigningSecret', 'GeofenceSecret'],
             Properties: {
                 Family: cf.stackName,
                 Cpu: cf.ref('ComputeCpu'),
