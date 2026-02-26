@@ -86,6 +86,7 @@ export default class AtlasDatabase {
     }
 
     async init(): Promise<void> {
+        COT.selfUid = this.atlas.profile.uid();
         await this.loadArchive();
         await this.breadcrumb.load();
     }
@@ -278,7 +279,7 @@ export default class AtlasDatabase {
 
                 for (const feat of await store.feature.list()) {
                     if (await expression.evaluate(feat) === true) {
-                        cots.add(await COT.load(this.atlas, feat, {
+                        cots.add(await COT.load(feat, {
                             mode: OriginMode.MISSION,
                             mode_id: sub.guid
                         }));
@@ -621,7 +622,7 @@ export default class AtlasDatabase {
             }
 
             if (!exists) {
-                exists = await COT.load(this.atlas, feat, {
+                exists = await COT.load(feat, {
                     mode: OriginMode.MISSION,
                     mode_id: mission_guid
                 }, opts);
@@ -654,10 +655,31 @@ export default class AtlasDatabase {
                     properties: feat.properties,
                     geometry: feat.geometry
                 }, { skipSave: opts.skipSave })
+
+                this.pendingUpdate.set(exists.id, exists);
+
+                // Sync profile if this is the user's own COT
+                if (exists.is_self) {
+                    const remarks = this.atlas.profile.profile_remarks?.value;
+                    const callsign = this.atlas.profile.profile_callsign?.value;
+
+                    if (
+                        (remarks !== undefined && exists.properties.remarks !== remarks)
+                        || (callsign !== undefined && exists.properties.callsign !== callsign)
+                    ) {
+                        await this.atlas.profile.update({
+                            tak_callsign: exists.properties.callsign,
+                            tak_remarks: exists.properties.remarks
+                        });
+                    }
+                }
             } else {
-                exists = await COT.load(this.atlas, feat, {
+                exists = await COT.load(feat, {
                     mode: OriginMode.CONNECTION
                 }, opts);
+
+                this.pendingCreate.set(exists.id, exists);
+                this.cots.set(exists.id, exists);
 
                 if (opts.skipBroadcast !== true && exists.properties.archived) {
                     this.atlas.postMessage({
@@ -741,7 +763,7 @@ export default class AtlasDatabase {
 
                 if (!feat) continue;
 
-                cot = await COT.load(this.atlas, feat, {
+                cot = await COT.load(feat, {
                     mode: OriginMode.MISSION,
                     mode_id: sub.guid
                 });
