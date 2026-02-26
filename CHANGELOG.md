@@ -12,7 +12,7 @@
 
 ### Pending Release
 
-### v12.83.0 - 2026-02-26
+### v12.84.0 - 2026-02-26
 
 - :rocket: Imrovements to route snapping mode, allowing you to snap back into the route network
 - :arrow_up: Update AWS PMTiles disk cleaner to node@24
@@ -21,6 +21,10 @@
 - :tada: (MVP) Add the ability to live track any Point Cursor on Target Feature
 - :tada: Add the ability to add a geofence to any polygon feature
 - :rocket: Rewrite Geofence component to match other property styles
+
+### v12.83.0 - 2026-02-26
+
+- Empty Release
 
 ### v12.82.2 - 2026-02-23
 
