@@ -16,7 +16,7 @@
                 <div class='rounded bg-accent px-2 py-2 row user-select-none'>
                     <TablerToggle
                         label='Elevation Monitored'
-                        :model-value='geofence.elevationMonitored === "true"'
+                        :model-value='geofence.elevationMonitored'
                         :disabled='true'
                     />
 
@@ -56,7 +56,8 @@ import { TablerToggle } from '@tak-ps/vue-tabler';
 
 defineProps<{
     geofence: {
-        elevationMonitored?: string;
+        elevationMonitored?: boolean;
+        tracking?: boolean;
         trigger?: string;
     }
 }>();
