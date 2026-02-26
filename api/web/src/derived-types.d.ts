@@ -4672,12 +4672,12 @@ export interface paths {
                                     };
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -5009,12 +5009,12 @@ export interface paths {
                             };
                             archived?: boolean;
                             geofence?: {
-                                elevationMonitored?: string;
+                                elevationMonitored?: boolean;
                                 minElevation?: string;
                                 maxElevation?: string;
                                 monitor?: string;
                                 trigger?: string;
-                                tracking?: string;
+                                tracking?: boolean;
                                 boundingSphere?: number;
                             };
                             contact?: {
@@ -5277,12 +5277,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -5724,12 +5724,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -6172,12 +6172,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -6446,12 +6446,12 @@ export interface paths {
                                         };
                                         archived?: boolean;
                                         geofence?: {
-                                            elevationMonitored?: string;
+                                            elevationMonitored?: boolean;
                                             minElevation?: string;
                                             maxElevation?: string;
                                             monitor?: string;
                                             trigger?: string;
-                                            tracking?: string;
+                                            tracking?: boolean;
                                             boundingSphere?: number;
                                         };
                                         contact?: {
@@ -6807,12 +6807,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -7177,12 +7177,12 @@ export interface paths {
                                     };
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -18749,12 +18749,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -19117,12 +19117,12 @@ export interface paths {
                                     };
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -21170,12 +21170,12 @@ export interface paths {
                                     };
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -28777,12 +28777,12 @@ export interface paths {
                                     };
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -29117,12 +29117,12 @@ export interface paths {
                             };
                             archived?: boolean;
                             geofence?: {
-                                elevationMonitored?: string;
+                                elevationMonitored?: boolean;
                                 minElevation?: string;
                                 maxElevation?: string;
                                 monitor?: string;
                                 trigger?: string;
-                                tracking?: string;
+                                tracking?: boolean;
                                 boundingSphere?: number;
                             };
                             contact?: {
@@ -29385,12 +29385,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -29829,12 +29829,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -36410,12 +36410,12 @@ export interface paths {
                                     };
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
