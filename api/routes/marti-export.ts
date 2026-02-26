@@ -95,7 +95,9 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.track) {
                 let composite: Static<typeof Feature.Feature> | undefined = undefined;
 
-                for (const feat of feats) {
+                // Marti returns events newest-first; reverse so the LineString
+                // coordinates run oldest → newest (chronological order).
+                for (const feat of feats.reverse()) {
                     if (feat.geometry.type !== 'Point') {
                         features.push(feat);
                     } else if (composite === undefined) {

@@ -439,7 +439,8 @@ export default {
                         { Name: 'VpcId', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])) },
                         { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
                         { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },
-                        { Name: 'MediaSecurityGroup', Value: cf.ref('MediaSecurityGroup') }
+                        { Name: 'MediaSecurityGroup', Value: cf.ref('MediaSecurityGroup') },
+                        { Name: 'CLOUDTAK_Config_geofence_password', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/geofence}}') }
                     ],
                     RestartPolicy: {
                         Enabled: true,
