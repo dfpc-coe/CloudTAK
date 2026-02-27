@@ -229,14 +229,6 @@ export default async function router(schema: Schema, config: Config) {
                 // Don't push already stale data as they will instantly disappear on the device
                 cots = cots.filter(cot => cot.is_stale);
 
-                if (layer.incoming.groups.length) {
-                    for (const cot of cots) {
-                        for (const group of layer.incoming.groups) {
-                            cot.addDest({ group });
-                        }
-                    }
-                }
-
                 const insertValues = [];
                 for (const cot of cots) {
                     insertValues.push({

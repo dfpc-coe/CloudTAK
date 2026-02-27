@@ -2,7 +2,6 @@ import { Type } from '@sinclair/typebox'
 import sleep from '../lib/sleep.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
 import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
@@ -234,7 +233,6 @@ export default async function router(schema: Schema, config: Config) {
             cron: Type.Optional(Type.String()),
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Integer()),
-            groups: Type.Optional(Type.Array(Type.String())),
             enabled_styles: Type.Optional(Type.Boolean()),
             styles: Type.Optional(StyleContainer),
             config: Type.Optional(Layer_Config),
@@ -250,21 +248,6 @@ export default async function router(schema: Schema, config: Config) {
             }, req.params.connectionid);
 
             let layer = await layerControl.from(connection, req.params.layerid);
-
-            if (req.body.data && req.body.groups && req.body.groups.length) {
-                throw new Err(400, null, 'Layer cannot have both Data and Groups set');
-            } else if (req.body.groups) {
-                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
-                const list = await api.Group.list({ useCache: true });
-
-                for (const group of req.body.groups) {
-                    if (!list.data.find((g) => {
-                        return g.name === group && g.direction === 'IN';
-                    })) {
-                        throw new Err(400, null, `Group "${group}" does not exist on TAK Server`);
-                    }
-                }
-            }
 
             if (req.body.styles) {
                 await Style.validate(req.body.styles);
@@ -325,7 +308,10 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            res.json(incoming);
+            res.json({
+                ...incoming,
+                groups: (incoming.styles.marti?.dest || []).filter((d) => d.group).map((d) => d.group as string)
+            });
         } catch (err) {
             Err.respond(err, res);
         }
@@ -346,7 +332,6 @@ export default async function router(schema: Schema, config: Config) {
             styles: Type.Optional(StyleContainer),
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
-            groups: Type.Optional(Type.Array(Type.String())),
             environment: Type.Optional(Type.Any()),
             config: Type.Optional(Layer_Config),
         }),
@@ -366,21 +351,6 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             } else if (!layer.incoming) {
                 throw new Err(400, null, 'Layer does not have incoming config');
-            }
-
-            if (req.body.data && req.body.groups && req.body.groups.length) {
-                throw new Err(400, null, 'Layer cannot have both Data and Groups set');
-            } else if (req.body.groups) {
-                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
-                const list = await api.Group.list({ useCache: true });
-
-                for (const group of req.body.groups) {
-                    if (!list.data.find((g) => {
-                        return g.name === group && g.direction === 'IN';
-                    })) {
-                        throw new Err(400, null, `Group "${group}" does not exist on TAK Server`);
-                    }
-                }
             }
 
             if (req.body.data) {
@@ -477,7 +447,10 @@ export default async function router(schema: Schema, config: Config) {
                 await Lambda.invoke(config, layer.id, 'environment:incoming')
             }
 
-            res.json(incoming);
+            res.json({
+                ...incoming,
+                groups: (incoming.styles.marti?.dest || []).filter((d) => d.group).map((d) => d.group as string)
+            });
         } catch (err) {
             Err.respond(err, res);
         }
