@@ -236,10 +236,6 @@ export default async function server(config: Config): Promise<ServerManager> {
                 if (!webClients) webClients = [];
                 webClients.push(connClient);
                 config.wsClients.set(parsedParams.connection, webClients);
-                ws.send(JSON.stringify({ type: 'connected' }));
-
-                if (awaitSecure) await awaitSecure;
-                ws.send(JSON.stringify({ type: 'connected' }));
 
                 ws.on('close', () => {
                     const conns = config.wsClients.get(parsedParams.connection);
@@ -256,6 +252,9 @@ export default async function server(config: Config): Promise<ServerManager> {
 
                     config.conns.delete(parsedParams.connection);
                 })
+
+                if (awaitSecure) await awaitSecure;
+                ws.send(JSON.stringify({ type: 'connected' }));
             } else {
                 throw new Error('Unauthorized');
             }
