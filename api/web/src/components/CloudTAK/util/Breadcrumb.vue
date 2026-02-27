@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
 import {
     IconRoute,
@@ -100,6 +100,10 @@ const liveEnabled = ref(false);
 
 onMounted(async () => {
     liveEnabled.value = await mapStore.worker.db.breadcrumb.get(props.uid);
+});
+
+watch(() => props.uid, async (uid) => {
+    liveEnabled.value = await mapStore.worker.db.breadcrumb.get(uid);
 });
 
 async function onLiveToggle(enabled: boolean): Promise<void> {
