@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.87.1 - 2026-02-27
+
+- :arrow_up: Migrate to vite@8 for blazing fast builds
+
 ### v12.87.0 - 2026-02-27
 
 - :rocket: Allow Updating the service worker from the login page
