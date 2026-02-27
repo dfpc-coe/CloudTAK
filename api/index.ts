@@ -7,6 +7,7 @@ import Bulldozer from './lib/initialization.js';
 import history, {Context} from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
 import { ProfileConnConfig } from './lib/connection-config.js';
+import { ConnectionClient } from './lib/connection-pool.js';
 import minimist from 'minimist';
 import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
@@ -213,15 +214,20 @@ export default async function server(config: Config): Promise<ServerManager> {
                 if (!webClients) webClients = [];
                 webClients.push(new ConnectionWebSocket(ws, parsedParams.format));
                 config.wsClients.set(parsedParams.connection, webClients);
+                ws.send(JSON.stringify({ type: 'connected' }));
             } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
-                let client;
+                let client: ConnectionClient | undefined;
+                let awaitSecure: Promise<void> | undefined;
                 if (!config.conns.has(parsedParams.connection)) {
                     const profile = await config.models.Profile.from(parsedParams.connection);
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
                     client = await config.conns.add(new ProfileConnConfig(config, parsedParams.connection, profile.auth));
+                    if (client.tak.client && !client.tak.client.authorized) {
+                        awaitSecure = new Promise<void>((resolve) => (client as ConnectionClient).tak.once('secureConnect', resolve));
+                    }
                 } else {
-                    client = config.conns.get(parsedParams.connection);
+                    client = config.conns.get(parsedParams.connection) as ConnectionClient;
                 }
 
                 const connClient = new ConnectionWebSocket(ws, parsedParams.format, client);
@@ -246,6 +252,9 @@ export default async function server(config: Config): Promise<ServerManager> {
 
                     config.conns.delete(parsedParams.connection);
                 })
+
+                if (awaitSecure) await awaitSecure;
+                ws.send(JSON.stringify({ type: 'connected' }));
             } else {
                 throw new Error('Unauthorized');
             }
