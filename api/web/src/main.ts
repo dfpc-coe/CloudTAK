@@ -79,13 +79,17 @@ window.addEventListener('error', async (e) => {
         sessionStorage.setItem('sw-cache-purged', '1');
         console.warn('Purging service worker cache and reloading due to resource load failure');
 
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(registrations.map((r) => r.unregister()));
+        try {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map((r) => r.unregister()));
 
-        const cacheKeys = await caches.keys();
-        await Promise.all(cacheKeys.map((k) => caches.delete(k)));
-
-        window.location.reload();
+            const cacheKeys = await caches.keys();
+            await Promise.all(cacheKeys.map((k) => caches.delete(k)));
+        } catch (err) {
+            console.error('Error while purging service worker cache:', err);
+        } finally {
+            window.location.reload();
+        }
     }
 }, true);
 
