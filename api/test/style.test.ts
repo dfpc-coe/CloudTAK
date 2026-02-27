@@ -1298,3 +1298,258 @@ test('Style: Combined {{replace}} and {{round}} - Earthquake Data', async () => 
         },
     });
 });
+
+test('Style: Marti - archive:true sets marti_archive on Point (top-level marti)', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            marti: { archive: true }
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Point', coordinates: [0, 0] }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+    assert.equal(feat.properties.marti_archive, true);
+    assert.equal(feat.properties.archived, undefined, 'archived must not be set by the style engine');
+});
+
+test('Style: Marti - archive:false sets marti_archive on Point (top-level marti)', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            marti: { archive: false }
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Point', coordinates: [0, 0] }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+    assert.equal(feat.properties.marti_archive, false);
+    assert.equal(feat.properties.archived, undefined, 'archived must not be set by the style engine');
+});
+
+test('Style: Marti - no archive field leaves marti_archive absent', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            marti: { dest: [{ group: 'ops' }] }
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Point', coordinates: [0, 0] }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+    assert.equal(feat.properties.marti_archive, undefined);
+});
+
+test('Style: Marti - archive:true via point-specific marti', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            point: {
+                marti: { archive: true }
+            }
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Point', coordinates: [0, 0] }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+    assert.equal(feat.properties.marti_archive, true);
+    assert.equal(feat.properties.archived, undefined, 'archived must not be set by the style engine');
+});
+
+test('Style: Marti - archive:true via line-specific marti', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            line: {
+                marti: { archive: true }
+            }
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'LineString', coordinates: [[0, 0], [1, 1]] }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+    assert.equal(feat.properties.marti_archive, true);
+    assert.equal(feat.properties.archived, undefined, 'archived must not be set by the style engine');
+});
+
+test('Style: Marti - archive:true via polygon-specific marti', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            polygon: {
+                marti: { archive: true }
+            }
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Polygon', coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+    assert.equal(feat.properties.marti_archive, true);
+    assert.equal(feat.properties.archived, undefined, 'archived must not be set by the style engine');
+});
+
+test('Style: Marti - archive:true via query-level top-level marti', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            queries: [{
+                query: 'properties.metadata.doArchive = true',
+                styles: {
+                    marti: { archive: true }
+                }
+            }]
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: { metadata: { doArchive: true } },
+        geometry: { type: 'Point', coordinates: [0, 0] }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+    assert.equal(feat.properties.marti_archive, true);
+    assert.equal(feat.properties.archived, undefined, 'archived must not be set by the style engine');
+});
+
+test('Style: Marti - archive:true via query-level point marti', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            queries: [{
+                query: 'properties.metadata.doArchive = true',
+                styles: {
+                    point: {
+                        marti: { archive: true }
+                    }
+                }
+            }]
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: { metadata: { doArchive: true } },
+        geometry: { type: 'Point', coordinates: [0, 0] }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+    assert.equal(feat.properties.marti_archive, true);
+    assert.equal(feat.properties.archived, undefined, 'archived must not be set by the style engine');
+});
+
+test('Style: Marti - query not matched leaves marti_archive absent', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            queries: [{
+                query: 'properties.metadata.doArchive = true',
+                styles: {
+                    marti: { archive: true }
+                }
+            }]
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: { metadata: { doArchive: false } },
+        geometry: { type: 'Point', coordinates: [0, 0] }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+    assert.equal(feat.properties.marti_archive, undefined);
+});
+
+test('Style: Marti - archive and dest can be set together', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            marti: {
+                archive: true,
+                dest: [{ group: 'ops' }, { mission: 'mission-1' }]
+            }
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Point', coordinates: [0, 0] }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+    assert.equal(feat.properties.marti_archive, true);
+    assert.deepEqual(feat.properties.dest, [{ group: 'ops' }, { mission: 'mission-1' }]);
+    assert.equal(feat.properties.archived, undefined, 'archived must not be set by the style engine');
+});
+
+test('Style: Marti - pre-existing client-side archived property is not overwritten', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            marti: { archive: true }
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: { archived: true },
+        geometry: { type: 'Point', coordinates: [0, 0] }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    // archived is a client-side field; the style engine must not touch it
+    assert.equal(feat.properties.archived, true);
+    // server-side archive instruction goes to marti_archive
+    assert.equal(feat.properties.marti_archive, true);
+});
+
+test('Style: Marti - styles disabled prevents marti_archive from being applied', async () => {
+    const style = new Style({
+        enabled_styles: false,
+        styles: {
+            marti: { archive: true }
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Point', coordinates: [0, 0] }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+    assert.equal(feat.properties.marti_archive, undefined);
+});

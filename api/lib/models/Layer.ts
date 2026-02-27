@@ -36,7 +36,7 @@ export const AugmentedLayerIncoming = Type.Object({
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.Any()),
     data: Type.Union([Type.Null(), Type.Integer()]),
-    groups: Type.Array(Type.String())
+    groups: Type.Array(Type.String(), { description: 'Deprecated: derived from styles.marti.dest for backwards compatibility' })
 })
 
 export const AugmentedLayer = Type.Object({
@@ -103,6 +103,11 @@ export default class LayerModel extends Modeler<typeof Layer> {
             if (typeof l.incoming.styles === 'string') l.incoming.styles = JSON.parse(l.incoming.styles)
             if (typeof l.incoming.ephemeral === 'string') l.incoming.ephemeral = JSON.parse(l.incoming.ephemeral)
             if (typeof l.incoming.environment === 'string') l.incoming.environment = JSON.parse(l.incoming.environment)
+
+            // Derive groups from styles.marti.dest for backwards compatibility with ETLs
+            l.incoming.groups = (l.incoming.styles.marti?.dest || [])
+                .filter((d) => d.group)
+                .map((d) => d.group as string);
         } else {
             delete l.incoming;
         }
@@ -178,7 +183,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     ephemeral: LayerIncoming.ephemeral,
                     config: LayerIncoming.config,
                     data: LayerIncoming.data,
-                    groups: LayerIncoming.groups,
                     enabled_styles: LayerIncoming.enabled_styles,
                     styles: LayerIncoming.styles,
                 }),
@@ -260,7 +264,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     ephemeral: LayerIncoming.ephemeral,
                     config: LayerIncoming.config,
                     data: LayerIncoming.data,
-                    groups: LayerIncoming.groups,
                     enabled_styles: LayerIncoming.enabled_styles,
                     styles: LayerIncoming.styles,
                 }),

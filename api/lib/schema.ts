@@ -448,8 +448,6 @@ export const LayerIncoming = pgTable('layers_incoming', {
 
     // Data Destinations
     data: integer().references(() => Data.id),
-    // Empty Array = All Groups
-    groups: text().array().notNull().default([]),
 });
 
 export const Setting = pgTable('settings', {

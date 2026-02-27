@@ -10,6 +10,11 @@
 
 ## Version History
 
+### Deprecation Notice
+
+- `v12.85.0` Moved the Layer Incoming `groups` property to the Style Object for increased flexibility in desination management
+  This array has been retained but in the next major release it will be removed
+
 ### Pending Release
 
 ### v12.84.0 - 2026-02-26

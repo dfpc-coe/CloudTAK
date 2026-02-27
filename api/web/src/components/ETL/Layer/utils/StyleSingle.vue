@@ -5,7 +5,7 @@
             <span class='text-muted subheader'>Global Defaults</span>
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconLicense :size='20' stroke='1' /> Global ID
@@ -24,7 +24,7 @@
             />
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconBlockquote :size='20' stroke='1' /> Global Callsign
@@ -43,7 +43,7 @@
             />
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconClock :size='20' stroke='1' /> Global Stale
@@ -67,7 +67,7 @@
             />
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconEye :size='20' stroke='1' /> Global Min Zoom
@@ -86,7 +86,7 @@
             />
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconEye :size='20' stroke='1' /> Global Max Zoom
@@ -105,7 +105,7 @@
             />
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconBlockquote :size='20' stroke='1' /> Global Remarks
@@ -122,7 +122,7 @@
             />
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconLink :size='20' stroke='1' /> Global Links
@@ -136,6 +136,29 @@
                 v-model='filters.links'
                 :disabled='disabled'
                 :schema='props.schema'
+            />
+        </div>
+
+        <div class='col-12 style-item px-2 py-2'>
+            <div class='d-flex align-items-center'>
+                <label class='user-select-none subheader'>
+                    <IconServer :size='20' stroke='1' /> Global Marti
+                </label>
+                <div class='ms-auto'>
+                    <TablerToggle v-model='enabled.marti' :disabled='disabled || props.disableMarti' label='Enabled' />
+                </div>
+            </div>
+            <TablerInlineAlert
+                v-if='props.disableMarti'
+                type='info'
+                class='mt-2'
+                description='Marti routing is unavailable when a Data Sync destination is configured. Use Groups routing via Styles to set routing destinations.'
+            />
+            <StyleMarti
+                v-else-if='enabled.marti'
+                v-model='filters.marti'
+                :disabled='disabled'
+                :connection='props.connection'
             />
         </div>
 
@@ -164,7 +187,7 @@
             </div>
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconLicense :size='20' stroke='1' /> ID Override
@@ -182,7 +205,7 @@
             />
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconBlockquote :size='20' stroke='1' /> Callsign Override
@@ -200,7 +223,7 @@
             />
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconClock :size='20' stroke='1' /> Stale Override
@@ -224,7 +247,7 @@
             />
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconEye :size='20' stroke='1' /> Min Zoom Override
@@ -243,7 +266,7 @@
             />
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconEye :size='20' stroke='1' /> Max Zoom Override
@@ -262,7 +285,7 @@
             />
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconBlockquote :size='20' stroke='1' /> Remarks Override
@@ -280,7 +303,7 @@
             />
         </div>
 
-        <div class='col-12 hover rounded px-2 py-2'>
+        <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
                     <IconLink :size='20' stroke='1' /> Links Override
@@ -299,7 +322,7 @@
         </div>
 
         <template v-if='mode === "point"'>
-            <div class='col-12 hover rounded px-2 py-2'>
+            <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconCategory :size='20' stroke='1' /> Point Type
@@ -318,7 +341,7 @@
                 />
             </div>
 
-            <div class='col-12 hover rounded px-2 py-2'>
+            <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconPhoto :size='20' stroke='1' /> Point Icon
@@ -335,7 +358,7 @@
                 />
             </div>
 
-            <div class='col-12 hover rounded px-2 py-2'>
+            <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconPaint :size='20' stroke='1' /> Point Color
@@ -352,7 +375,7 @@
                 />
             </div>
 
-            <div class='col-12 hover rounded px-2 py-2'>
+            <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconGhost :size='20' stroke='1' /> Point Opacity
@@ -378,7 +401,7 @@
         </template>
 
         <template v-else>
-            <div class='col-12 hover rounded px-2 py-2'>
+            <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconPaint :size='20' stroke='1' /> Line Color
@@ -395,7 +418,7 @@
                 />
             </div>
 
-            <div class='col-12 hover rounded px-2 py-2'>
+            <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconBorderStyle2 :size='20' stroke='1' /> Line Style
@@ -412,7 +435,7 @@
                 />
             </div>
 
-            <div class='col-12 hover rounded px-2 py-2'>
+            <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconRuler2 :size='20' stroke='1' /> Line Width
@@ -431,7 +454,7 @@
                 />
             </div>
 
-            <div class='col-12 hover rounded px-2 py-2'>
+            <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconGhost :size='20' stroke='1' /> Line Opacity
@@ -457,7 +480,7 @@
         </template>
 
         <template v-if='mode === "polygon"'>
-            <div class='col-12 hover rounded px-2 py-2'>
+            <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconPaint :size='20' stroke='1' /> Fill Color
@@ -474,7 +497,7 @@
                 />
             </div>
 
-            <div class='col-12 hover rounded px-2 py-2'>
+            <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconGhost :size='20' stroke='1' /> Fill Opacity
@@ -505,8 +528,10 @@
 import { ref, watch, onMounted } from 'vue';
 import { humanSeconds } from '../../../../std.js';
 import StyleTemplate from './StyleTemplate.vue';
+import StyleMarti from './StyleMarti.vue';
 import {
     IconLink,
+    IconServer,
     IconPaint,
     IconGhost,
     IconPoint,
@@ -527,7 +552,8 @@ import {
     TablerRange,
     TablerInput,
     TablerToggle,
-    TablerEnum
+    TablerEnum,
+    TablerInlineAlert
 } from '@tak-ps/vue-tabler';
 
 const props = defineProps({
@@ -544,6 +570,14 @@ const props = defineProps({
     disabled: {
         type: Boolean,
         default: false
+    },
+    disableMarti: {
+        type: Boolean,
+        default: false
+    },
+    connection: {
+        type: Number,
+        default: undefined
     }
 });
 
@@ -559,6 +593,7 @@ const enabled = ref({
     remarks: false,
     callsign: false,
     links: false,
+    marti: false,
 });
 
 const filters = ref({
@@ -569,6 +604,7 @@ const filters = ref({
     minzoom: 0,
     maxzoom: 24,
     links: [],
+    marti: {},
     point: {
         enabled: {
             id: false,
@@ -670,6 +706,11 @@ onMounted(() => {
         enabled.value[prop] = true;
     }
 
+    if (props.modelValue.marti && Object.keys(props.modelValue.marti).length > 0) {
+        filters.value.marti = JSON.parse(JSON.stringify(props.modelValue.marti));
+        enabled.value.marti = true;
+    }
+
     for (const key of ['point', 'line', 'polygon']) {
         if (!props.modelValue[key]) continue;
         for (const prop in props.modelValue[key]) {
@@ -700,6 +741,10 @@ function format() {
         }
     }
 
+    if (enabled.value.marti && styles.marti && Object.keys(styles.marti).length > 0) {
+        res.marti = styles.marti;
+    }
+
     for (const geom of ['point', 'line', 'polygon']) {
         res[geom] = {};
         for (const key in styles[geom].enabled) {
@@ -720,3 +765,15 @@ function format() {
     emit('update:modelValue', res);
 }
 </script>
+
+<style scoped>
+.style-item {
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: border-color 0.15s ease;
+}
+
+.style-item:hover {
+    border-color: var(--tblr-border-color, #e6e7e9);
+}
+</style>

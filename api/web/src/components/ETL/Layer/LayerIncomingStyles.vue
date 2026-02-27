@@ -69,6 +69,8 @@
                     v-model='style'
                     :schema='capabilities.incoming.schema.output || { properties: {} }'
                     :disabled='disabled'
+                    :disable-marti='!!props.layer.incoming.data'
+                    :connection='Number(route.params.connectionid)'
                 />
             </div>
 
@@ -237,6 +239,8 @@
                             v-model='queries[query].styles'
                             :schema='capabilities.incoming.schema.output'
                             :disabled='disabled'
+                            :disable-marti='!!props.layer.incoming.data'
+                            :connection='Number(route.params.connectionid)'
                         />
                     </template>
                 </div>
