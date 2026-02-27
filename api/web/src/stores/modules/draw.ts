@@ -1,3 +1,4 @@
+import router from '../../router.ts';
 import * as terraDraw from 'terra-draw';
 import * as tilecover from '@mapbox/tile-cover';
 import {
@@ -387,6 +388,8 @@ export default class DrawTool {
                     });
 
                     await this.mapStore.refresh();
+
+                    router.push(`/cot/${feat.properties.id}`);
                 }
             }
         })
