@@ -18,8 +18,14 @@ if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
 
         navigator.serviceWorker.addEventListener("controllerchange", () => {
             if (!refreshing) {
-                window.location.reload()
-                refreshing = true
+                refreshing = true;
+                // Dispatch a cancelable event so that page components (e.g. Login)
+                // can call preventDefault() to show their own upgrade prompt instead
+                // of reloading silently.  When nothing cancels the event, reload.
+                const notCancelled = window.dispatchEvent(new CustomEvent('sw:updated', { cancelable: true }));
+                if (notCancelled) {
+                    window.location.reload();
+                }
             }
         })
     });
