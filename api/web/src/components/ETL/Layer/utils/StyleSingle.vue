@@ -158,6 +158,7 @@
                 v-else-if='enabled.marti'
                 v-model='filters.marti'
                 :disabled='disabled'
+                :connection='props.connection'
             />
         </div>
 
@@ -573,6 +574,10 @@ const props = defineProps({
     disableMarti: {
         type: Boolean,
         default: false
+    },
+    connection: {
+        type: Number,
+        default: undefined
     }
 });
 
