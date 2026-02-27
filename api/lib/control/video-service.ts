@@ -344,15 +344,9 @@ export default class VideoServiceControl {
         }
 
         if (c.config && c.config.hls) {
-            // For native mediamtx streams (no proxy), request HLS directly from mediamtx at its
-            // HLS port.  For external proxied sources, route through the NodeJS HLS proxy which
-            // rewrites the manifest and segments so the browser never needs to reach the origin.
-            const isProxied = !!lease.proxy;
-            const url = isProxied
-                ? new URL(`/stream/${lease.path}/index.m3u8`, c.external)
-                : new URL(`/${lease.path}/index.m3u8`, c.external);
-
-            url.port = isProxied ? '9997' : c.config.hlsAddress.replace(':', '');
+            // Format: http://localhost:9997/mystream/index.m3u8 - Proxied
+            const url = new URL(`/stream/${lease.path}/index.m3u8`, c.external);
+            url.port = '9997'
 
             if (lease.stream_user && lease.read_user) {
                 if (populated === ProtocolPopulation.READ && lease.read_user && lease.read_pass) {
