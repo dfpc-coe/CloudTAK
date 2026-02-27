@@ -179,7 +179,6 @@ import LayerTaskSelect from '../util/LayerTaskSelect.vue';
 import {
     TablerBreadCrumb,
     TablerDelete,
-    TablerInlineAlert,
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
