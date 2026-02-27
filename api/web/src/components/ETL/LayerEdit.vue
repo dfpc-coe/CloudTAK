@@ -34,6 +34,16 @@
                                     <div class='d-flex'>
                                         <div class='btn-list'>
                                             <div class='d-flex'>
+                                                <span class='px-2'>Protected</span>
+                                                <label class='form-check form-switch'>
+                                                    <input
+                                                        v-model='layer.protected'
+                                                        class='form-check-input'
+                                                        type='checkbox'
+                                                    >
+                                                </label>
+                                            </div>
+                                            <div class='d-flex'>
                                                 <span class='px-2'>Logging</span>
                                                 <label class='form-check form-switch'>
                                                     <input
@@ -59,6 +69,12 @@
                             </div>
                             <div class='card-body'>
                                 <div class='row row-cards'>
+                                    <TablerInlineAlert
+                                        v-if='layer.protected'
+                                        title='Protected Layer'
+                                        description='This layer is protected. Configuration changes may be overwritten by the managing system.'
+                                        severity='warning'
+                                    />
                                     <div class='col-md-12'>
                                         <TablerInput
                                             v-model='layer.name'
@@ -169,6 +185,7 @@ import LayerTaskSelect from '../util/LayerTaskSelect.vue';
 import {
     TablerBreadCrumb,
     TablerDelete,
+    TablerInlineAlert,
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -199,6 +216,7 @@ const layer = ref({
     task: '',
     enabled: true,
     logging: false,
+    protected: false,
 })
 
 onMounted(async () => {
@@ -248,6 +266,7 @@ async function create() {
                     description: layer.value.description,
                     enabled: layer.value.enabled,
                     logging: layer.value.logging,
+                    protected: layer.value.protected,
                 }
             });
         } else {
