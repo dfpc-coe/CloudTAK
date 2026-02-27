@@ -37,32 +37,28 @@ test('Streaming: TAK Chat Message', async () => {
     const conn = new ws(url);
 
     await new Promise<void>((resolve, reject) => {
-        conn.on('open', async () => {
-            try {
-                // Wait 1 second
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-
-                const chat = new DirectChat({
-                    to: {
-                        uid: 'ANDROID-CloudTAK-admin@example.com',
-                        callsign: 'admin@example.com'
-                    },
-                    from: {
-                        uid: 'ANDROID-CloudTAK-user@example.com',
-                        callsign: 'user@example.com'
-                    },
-                    message: 'Wilco',
-                });
-
-                flight.tak.write(chat);
-            } catch (err) {
-                reject(err);
-            }
-        }).on('error', (err) => {
+        conn.on('error', (err) => {
             reject(err);
-        }).on('message', (data) => {
+        }).on('message', async (data) => {
             try {
                 const res = JSON.parse(String(data));
+
+                if (res.type === 'connected') {
+                    const chat = new DirectChat({
+                        to: {
+                            uid: 'ANDROID-CloudTAK-admin@example.com',
+                            callsign: 'admin@example.com'
+                        },
+                        from: {
+                            uid: 'ANDROID-CloudTAK-user@example.com',
+                            callsign: 'user@example.com'
+                        },
+                        message: 'Wilco',
+                    });
+
+                    flight.tak.write(chat);
+                    return;
+                }
 
                 if (res.type === 'status') return;
 
