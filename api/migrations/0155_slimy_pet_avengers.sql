@@ -4,11 +4,21 @@
 -- For each row with a non-empty groups array, build a marti.dest entry per
 -- group and enable styles so the new routing config takes effect.
 
+-- Step 1: un-stringify any styles value that was stored as a JSON string
+--         (the app sometimes jsonb_stringify-encodes the object before saving)
+UPDATE "layers_incoming"
+    SET styles = (styles #>> '{}')::JSON
+    WHERE jsonb_typeof("layers_incoming"."styles"::jsonb) = 'string';
+
+-- Step 2: populate marti.dest from the groups array
 UPDATE layers_incoming
 SET
     styles = jsonb_set(
         jsonb_set(
-            styles::jsonb,
+            CASE
+                WHEN jsonb_typeof(styles::jsonb) = 'object' THEN styles::jsonb
+                ELSE '{}'::jsonb
+            END,
             '{marti}',
             COALESCE(styles::jsonb -> 'marti', '{}'::jsonb),
             true
