@@ -99,9 +99,9 @@ export default async function router(schema: Schema, config: Config) {
                     throw new Err(202, null, 'Recieved but Data Mission Sync Disabled');
                 }
 
-                // Mission Sync Features are always archived unless the style has already set a specific dest
+                // Mission Sync Features are always archived
                 for (const cot of cots.values()) {
-                    if (!cot.detail().marti?.dest) cot.archived(true);
+                    cot.archived(true);
                 }
 
                 if (data.mission_diff) {
@@ -178,9 +178,7 @@ export default async function router(schema: Schema, config: Config) {
                             }
                         }
 
-                        if (!cot.detail().marti?.dest) {
-                            cot.addDest({ mission: data.name, path: pathMapEntryLast.uid, after: '' });
-                        }
+                        cot.addDest({ mission: data.name, path: pathMapEntryLast.uid, after: '' });
                         if (!pathMapEntryLast.uids) pathMapEntryLast.uids = [];
                         pathMapEntryLast.uids.push({ data: cot.uid(), timestamp: new Date().toISOString(), creatorUid: `connection-${data.connection}-data-${data.id}` });
                     }
@@ -224,7 +222,7 @@ export default async function router(schema: Schema, config: Config) {
                     cots = filtered;
                 } else {
                     for (const cot of cots) {
-                        if (!cot.detail().marti?.dest) cot.addDest({ mission: data.name });
+                        cot.addDest({ mission: data.name });
                     }
                 }
             } else {

@@ -2,7 +2,6 @@ import { Type } from '@sinclair/typebox'
 import sleep from '../lib/sleep.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
 import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
@@ -309,7 +308,10 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            res.json(incoming);
+            res.json({
+                ...incoming,
+                groups: (incoming.styles.marti?.dest || []).filter((d) => d.group).map((d) => d.group as string)
+            });
         } catch (err) {
             Err.respond(err, res);
         }
@@ -445,7 +447,10 @@ export default async function router(schema: Schema, config: Config) {
                 await Lambda.invoke(config, layer.id, 'environment:incoming')
             }
 
-            res.json(incoming);
+            res.json({
+                ...incoming,
+                groups: (incoming.styles.marti?.dest || []).filter((d) => d.group).map((d) => d.group as string)
+            });
         } catch (err) {
             Err.respond(err, res);
         }
