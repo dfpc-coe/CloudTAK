@@ -193,6 +193,11 @@ onErrorCaptured((err) => {
 });
 
 onMounted(async () => {
+    // Register before any awaits so early promise rejections are captured
+    window.addEventListener('unhandledrejection', (e) => {
+        error.value = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
+    });
+
     let status;
 
     const username = await db.profile.get('username');
@@ -228,10 +233,6 @@ onMounted(async () => {
     }
 
     loginName.value = config['login::name'];
-
-    window.addEventListener('unhandledrejection', (e) => {
-        error.value = e.reason;
-    });
 
     const channel = new BroadcastChannel('cloudtak');
     channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
