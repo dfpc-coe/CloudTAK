@@ -3,6 +3,34 @@
         class='page page-center cloudtak-gradient position-relative'
         style='overflow: auto;'
     >
+        <!-- New-version upgrade banner -->
+        <div
+            v-if='updateAvailable'
+            class='position-sticky top-0 d-flex align-items-center justify-content-center flex-wrap gap-2 px-3 py-2'
+            style='background: rgba(20,20,20,0.88); backdrop-filter: blur(6px); z-index: 50;'
+        >
+            <IconRefresh size='16' class='text-success flex-shrink-0' />
+            <span class='text-white small'>
+                A new version of CloudTAK is ready
+                <template v-if='updatedSW.version && updatedSW.version !== version'>
+                    &mdash; v{{ version }} &rarr; v{{ updatedSW.version }}
+                </template>
+                <template v-else-if='!updatedSW.version'>
+                    (new build)
+                </template>.
+            </span>
+            <button
+                class='btn btn-sm btn-success py-0'
+                @click='applyUpdate'
+            >
+                Update Now
+            </button>
+            <button
+                class='btn-close btn-close-white'
+                style='font-size: 0.65rem;'
+                @click='updateAvailable = false'
+            />
+        </div>
         <div
             v-if='customBackgroundColor'
             class='position-absolute w-100 h-100 top-0 start-0 bg-fade-enter'
@@ -155,6 +183,11 @@
                         </div>
                     </div>
                     <div class='card-body p-0'>
+                        <div class='px-3 pt-2 pb-1 border-bottom'>
+                            <span class='text-muted small'>Running </span>
+                            <code class='small'>v{{ version }}</code>
+                            <span class='text-muted small'> (build: {{ buildHash }})</span>
+                        </div>
                         <div
                             v-if='workers.length === 0'
                             class='p-3 text-muted text-center'
@@ -213,8 +246,9 @@
 
 <script setup lang='ts'>
 import type { Login_Create, Login_CreateRes, LoginConfig } from '../types.ts'
-import { ref, computed, onMounted, reactive, watch } from 'vue';
-import { IconSettings, IconTrash } from '@tabler/icons-vue';
+import { ref, computed, onMounted, onUnmounted, reactive, watch } from 'vue';
+import { IconSettings, IconTrash, IconRefresh } from '@tabler/icons-vue';
+import { version } from '../../package.json';
 import Config from '../base/config.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { std } from '../std.ts';
@@ -258,6 +292,41 @@ const footerLogo = computed(() => {
         return '/CloudTAKLogoText.svg';
     }
 });
+
+const updateAvailable = ref(false);
+const updatedSW = ref<{ version: string | null; build: string | null }>({ version: null, build: null });
+const buildHash = import.meta.env.HASH;
+
+const applyUpdate = () => {
+    window.location.reload();
+};
+
+/**
+ * Called when the service worker `controllerchange` event fires (main.ts
+ * dispatches `sw:updated` instead of reloading so that this page can show
+ * a user-facing upgrade prompt).
+ */
+const onSwUpdated = async (e: Event) => {
+    // Prevent main.ts from auto-reloading — we handle the prompt here.
+    e.preventDefault();
+
+    try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const reg of regs) {
+            const worker = reg.active;
+            if (worker?.scriptURL) {
+                const u = new URL(worker.scriptURL);
+                updatedSW.value = {
+                    version: u.searchParams.get('v'),
+                    build: u.searchParams.get('build')
+                };
+                break;
+            }
+        }
+    } catch { /* ignore */ }
+
+    updateAvailable.value = true;
+};
 
 const showSettings = ref(false);
 const workers = ref<{
@@ -347,11 +416,34 @@ onMounted(async () => {
 
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
+        navigator.serviceWorker.getRegistrations().then(async (registrations) => {
             for (const registration of registrations) {
                 registration.update();
             }
+
+            // Detect stale page: the active SW was updated in a prior session and
+            // now carries a build hash that differs from this page's compile-time
+            // hash.  The user is running old JS against a new service worker cache.
+            try {
+                for (const reg of registrations) {
+                    const worker = reg.active;
+                    if (worker?.scriptURL) {
+                        const u = new URL(worker.scriptURL);
+                        const swBuild = u.searchParams.get('build');
+                        const swVersion = u.searchParams.get('v');
+                        if (swBuild && swBuild !== import.meta.env.HASH) {
+                            updatedSW.value = { version: swVersion, build: swBuild };
+                            updateAvailable.value = true;
+                        }
+                        break;
+                    }
+                }
+            } catch { /* ignore */ }
         });
+
+        // Listen for the event dispatched by main.ts when a new SW takes control
+        // (replaces the silent auto-reload so the user can choose when to update).
+        window.addEventListener('sw:updated', onSwUpdated);
     }
 
     const deleteDB = indexedDB.deleteDatabase('CloudTAK');
@@ -359,7 +451,11 @@ onMounted(async () => {
     deleteDB.onerror = (event) => {
         console.error('Failed to delete existing database', event);
     };
-})
+});
+
+onUnmounted(() => {
+    window.removeEventListener('sw:updated', onSwUpdated);
+});
 
 async function createLogin() {
     loading.value = true;
