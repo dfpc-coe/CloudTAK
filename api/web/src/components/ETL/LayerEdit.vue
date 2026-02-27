@@ -69,12 +69,6 @@
                             </div>
                             <div class='card-body'>
                                 <div class='row row-cards'>
-                                    <TablerInlineAlert
-                                        v-if='layer.protected'
-                                        title='Protected Layer'
-                                        description='This layer is protected. Configuration changes may be overwritten by the managing system.'
-                                        severity='warning'
-                                    />
                                     <div class='col-md-12'>
                                         <TablerInput
                                             v-model='layer.name'
