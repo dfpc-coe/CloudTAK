@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.87.2 - 2026-02-27
+
+- :white_check_mark: Deterministic WebSocket Tests
+
 ### v12.87.1 - 2026-02-27
 
 - :arrow_up: Migrate to vite@8 for blazing fast builds
