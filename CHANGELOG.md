@@ -17,9 +17,13 @@
 
 ### Pending Release
 
+### v12.85.0 - 2026-02-27
+
+- :rocket: Migrate ETL Layer Group Selection to the Styling Component for increased flexibility
+
 ### v12.84.0 - 2026-02-26
 
-- :rocket: Imrovements to route snapping mode, allowing you to snap back into the route network
+- :rocket: Improvements to route snapping mode, allowing you to snap back into the route network
 - :arrow_up: Update AWS PMTiles disk cleaner to node@24
 - :arrow_up: Update to latest GeoJSONVT Version
 - :rocket: Automatically open the drawn feature's CoTView after it is drawn
