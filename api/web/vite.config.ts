@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => {
         },
         build: {
             manifest: true,
-            rollupOptions: {
+            rolldownOptions: {
                 input: {
                     main: path.resolve(__dirname, 'index.html'),
                     docs: path.resolve(__dirname, 'docs.html'),
