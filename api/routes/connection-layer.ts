@@ -196,6 +196,7 @@ export default async function router(schema: Schema, config: Config) {
             alarm_period: Type.Optional(Type.Integer()),
             alarm_evals: Type.Optional(Type.Integer()),
             alarm_points: Type.Optional(Type.Integer()),
+            protected: Type.Boolean({ default: false }),
         }),
         res: LayerResponse
     }, async (req, res) => {
