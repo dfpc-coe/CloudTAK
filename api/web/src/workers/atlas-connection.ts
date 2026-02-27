@@ -248,6 +248,8 @@ export default class AtlasConnection {
                         console.log('No Service Worker available');
                     }
                 }
+            } else if (body.type === 'connected') {
+                // Server has finished registering the WebSocket client - no client action needed
             } else {
                 console.log('UNKNOWN', body.data);
             }

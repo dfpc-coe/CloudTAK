@@ -58,28 +58,24 @@ test(`PATCH: api/import/<id> - Success`, async () => {
     const conn = new ws(url);
 
     await new Promise<void>((resolve, reject) => {
-        conn.on('open', async () => {
-            try {
-                // Wait 1 second
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-
-                await flight.fetch(`/api/import/${id}`, {
-                    method: 'PATCH',
-                    auth: {
-                        bearer: flight.token.admin
-                    },
-                    body: {
-                        status: 'Success'
-                    }
-                }, true);
-            } catch (err) {
-                reject(err);
-            }
-        }).on('error', (err) => {
+        conn.on('error', (err) => {
             reject(err);
-        }).on('message', (data) => {
+        }).on('message', async (data) => {
             try {
                 const res = JSON.parse(String(data));
+
+                if (res.type === 'connected') {
+                    await flight.fetch(`/api/import/${id}`, {
+                        method: 'PATCH',
+                        auth: {
+                            bearer: flight.token.admin
+                        },
+                        body: {
+                            status: 'Success'
+                        }
+                    }, true);
+                    return;
+                }
 
                 assert.ok(res.properties.created, 'has created');
                 res.properties.created = '2025-09-12T00:12:46.016Z';

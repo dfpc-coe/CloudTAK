@@ -213,6 +213,7 @@ export default async function server(config: Config): Promise<ServerManager> {
                 if (!webClients) webClients = [];
                 webClients.push(new ConnectionWebSocket(ws, parsedParams.format));
                 config.wsClients.set(parsedParams.connection, webClients);
+                ws.send(JSON.stringify({ type: 'connected' }));
             } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
                 let client;
                 if (!config.conns.has(parsedParams.connection)) {
@@ -230,6 +231,7 @@ export default async function server(config: Config): Promise<ServerManager> {
                 if (!webClients) webClients = [];
                 webClients.push(connClient);
                 config.wsClients.set(parsedParams.connection, webClients);
+                ws.send(JSON.stringify({ type: 'connected' }));
 
                 ws.on('close', () => {
                     const conns = config.wsClients.get(parsedParams.connection);
