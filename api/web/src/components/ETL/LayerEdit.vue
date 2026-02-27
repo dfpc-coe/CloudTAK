@@ -34,6 +34,16 @@
                                     <div class='d-flex'>
                                         <div class='btn-list'>
                                             <div class='d-flex'>
+                                                <span class='px-2'>Protected</span>
+                                                <label class='form-check form-switch'>
+                                                    <input
+                                                        v-model='layer.protected'
+                                                        class='form-check-input'
+                                                        type='checkbox'
+                                                    >
+                                                </label>
+                                            </div>
+                                            <div class='d-flex'>
                                                 <span class='px-2'>Logging</span>
                                                 <label class='form-check form-switch'>
                                                     <input
@@ -199,6 +209,7 @@ const layer = ref({
     task: '',
     enabled: true,
     logging: false,
+    protected: false,
 })
 
 onMounted(async () => {
@@ -248,6 +259,7 @@ async function create() {
                     description: layer.value.description,
                     enabled: layer.value.enabled,
                     logging: layer.value.logging,
+                    protected: layer.value.protected,
                 }
             });
         } else {

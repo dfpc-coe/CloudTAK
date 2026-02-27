@@ -46,7 +46,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER }
+                ]
             }, req.params.connectionid);
 
             const list = await config.models.ConnectionFeature.list({
@@ -137,7 +140,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER }
+                ]
             }, req.params.connectionid);
 
             if (req.query.path) {
@@ -172,7 +178,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER }
+                ]
             }, req.params.connectionid);
 
             coordEach(req.body.geometry, (coords) => {
@@ -219,7 +228,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER }
+                ]
             }, req.params.connectionid);
 
             await config.models.ConnectionFeature.delete(sql`
@@ -250,7 +262,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER }
+                ]
             }, req.params.connectionid);
 
             const feat = await config.models.ConnectionFeature.from(sql`
