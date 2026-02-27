@@ -17,6 +17,13 @@
 
 ### Pending Release
 
+### v12.87.0 - 2026-02-27
+
+- :rocket: Allow Updating the service worker from the login page
+- :tada: Add the ability to set a protected status on ETL Layers, preventing them from being deleted
+- :bug: Reset breadcrumb modal state on new CoT in view
+- :rocket: Allow Layer Auth tokens to call ConnectionFeature APIs
+
 ### v12.86.0 - 2026-02-27
 
 - :rocket: Protect against Cache Poisoning with a refresh strategy
