@@ -70,6 +70,7 @@
                     :schema='capabilities.incoming.schema.output || { properties: {} }'
                     :disabled='disabled'
                     :disable-marti='!!props.layer.incoming.data'
+                    :connection='Number(route.params.connectionid)'
                 />
             </div>
 
@@ -239,6 +240,7 @@
                             :schema='capabilities.incoming.schema.output'
                             :disabled='disabled'
                             :disable-marti='!!props.layer.incoming.data'
+                            :connection='Number(route.params.connectionid)'
                         />
                     </template>
                 </div>

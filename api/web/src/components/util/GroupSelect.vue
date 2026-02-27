@@ -2,29 +2,27 @@
     <div>
         <!-- Compact single-selected display when limit=1 and a channel is chosen -->
         <template v-if='props.limit === 1 && selected.size === 1'>
-            <div class='d-flex align-items-center gap-2 pb-1'>
-                <IconCircleFilled
-                    :size='20'
-                    stroke='1'
-                    class='flex-shrink-0'
-                />
+            <div
+                class='d-flex align-items-center gap-2 px-3 form-select'
+                style='cursor: default;'
+            >
                 <span
-                    class='flex-grow-1 user-select-none'
+                    class='flex-grow-1 user-select-none text-truncate'
                     v-text='Array.from(selected)[0]'
                 />
                 <IconX
                     v-if='!props.disabled'
-                    :size='18'
+                    :size='16'
                     stroke='1'
                     class='cursor-pointer flex-shrink-0 text-muted'
-                    @click='clearSelection'
+                    @click.stop='clearSelection'
                 />
             </div>
         </template>
 
         <template v-else>
             <div
-                class='sticky-top py-2 border-bottom'
+                class='sticky-top pb-2 border-bottom'
                 style='background-color: var(--tblr-bg-surface, #fff)'
             >
                 <TablerInput

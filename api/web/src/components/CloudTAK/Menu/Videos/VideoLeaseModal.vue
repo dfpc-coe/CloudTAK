@@ -472,7 +472,7 @@
                         description='Create a seperate Read/Write user to ensure unauthorized users cannot publish to a stream'
                     />
                 </div>
-                <div class='col-12 col-md-6'>
+                <div class='col-12'>
                     <TablerToggle
                         v-model='editLease.share'
                         description='By default only the user that created a Lease can manage it. If you are operating as part of an agency, turn on Lease Sharing to allow all users in your Channel to manage the lease'

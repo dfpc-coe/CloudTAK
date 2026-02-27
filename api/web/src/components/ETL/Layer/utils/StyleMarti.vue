@@ -72,13 +72,18 @@
                 />
             </div>
             <div class='flex-grow-1'>
-                <GroupSelect
+                <div
                     v-if='dest.type === "group"'
-                    :model-value='dest.value ? [dest.value] : []'
-                    :limit='1'
-                    :disabled='props.disabled'
-                    @update:model-value='dest.value = $event[0] ?? ""; format()'
-                />
+                    style='max-height: 20vh; overflow-y: auto;'
+                >
+                    <GroupSelect
+                        :model-value='dest.value ? [dest.value] : []'
+                        :limit='1'
+                        :disabled='props.disabled'
+                        :connection='props.connection'
+                        @update:model-value='dest.value = $event[0] ?? ""; format()'
+                    />
+                </div>
                 <TablerInput
                     v-else
                     v-model='dest.value'
@@ -87,13 +92,14 @@
                     @update:model-value='format'
                 />
             </div>
-            <IconTrash
+            <button
                 v-if='!props.disabled'
-                :size='20'
-                stroke='1'
-                class='cursor-pointer mt-2'
+                type='button'
+                class='btn btn-outline-danger flex-shrink-0'
                 @click='removeDest(it)'
-            />
+            >
+                <IconTrash :size='20' stroke='1' />
+            </button>
         </div>
     </div>
 </template>
@@ -123,6 +129,10 @@ const props = defineProps({
     disabled: {
         type: Boolean,
         default: false
+    },
+    connection: {
+        type: Number,
+        default: undefined
     }
 });
 
