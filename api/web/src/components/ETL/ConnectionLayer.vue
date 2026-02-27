@@ -34,6 +34,11 @@
                                     v-text='layer.name'
                                 />
 
+                                <span
+                                    v-if='layer.protected'
+                                    class='badge bg-red text-white ms-2'
+                                >Protected</span>
+
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
                                         <TablerIconButton
