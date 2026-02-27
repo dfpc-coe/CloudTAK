@@ -2015,6 +2015,12 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
+                            /** @description Enable Geofence Server Integration */
+                            "geofence::enabled"?: boolean;
+                            /** @description Geofence Server URL */
+                            "geofence::url"?: string;
+                            /** @description Geofence Server Password */
+                            "geofence::password"?: string;
                             /** @description Enable ArcGIS Online Integration */
                             "agol::enabled"?: boolean;
                             /**
@@ -2062,11 +2068,24 @@ export interface paths {
                             "group::Teal"?: string;
                             "group::Dark Green"?: string;
                             "group::Brown"?: string;
+                            /** @description Enable OIDC Authentication */
                             "oidc::enabled"?: boolean;
+                            /** @description Disable Username/Password Login */
                             "oidc::enforced"?: boolean;
+                            /** @description OIDC Provider Name */
                             "oidc::name"?: string;
+                            /** @description OIDC Discovery URL */
                             "oidc::discovery"?: string;
+                            /** @description OIDC Client ID */
                             "oidc::client"?: string;
+                            /** @description OIDC Client Secret */
+                            "oidc::secret"?: string;
+                            /** @description OIDC App Redirect URL */
+                            "oidc::redirect"?: string;
+                            /** @description OIDC Scopes */
+                            "oidc::scopes"?: string;
+                            /** @description Base64 encoded PNG for OIDC Logo */
+                            "oidc::logo"?: string;
                             "provider::url"?: string;
                             "provider::secret"?: string;
                             "provider::client"?: string;
@@ -2167,6 +2186,12 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        /** @description Enable Geofence Server Integration */
+                        "geofence::enabled"?: boolean;
+                        /** @description Geofence Server URL */
+                        "geofence::url"?: string;
+                        /** @description Geofence Server Password */
+                        "geofence::password"?: string;
                         /** @description Enable ArcGIS Online Integration */
                         "agol::enabled"?: boolean;
                         /**
@@ -2214,11 +2239,24 @@ export interface paths {
                         "group::Teal"?: string;
                         "group::Dark Green"?: string;
                         "group::Brown"?: string;
+                        /** @description Enable OIDC Authentication */
                         "oidc::enabled"?: boolean;
+                        /** @description Disable Username/Password Login */
                         "oidc::enforced"?: boolean;
+                        /** @description OIDC Provider Name */
                         "oidc::name"?: string;
+                        /** @description OIDC Discovery URL */
                         "oidc::discovery"?: string;
+                        /** @description OIDC Client ID */
                         "oidc::client"?: string;
+                        /** @description OIDC Client Secret */
+                        "oidc::secret"?: string;
+                        /** @description OIDC App Redirect URL */
+                        "oidc::redirect"?: string;
+                        /** @description OIDC Scopes */
+                        "oidc::scopes"?: string;
+                        /** @description Base64 encoded PNG for OIDC Logo */
+                        "oidc::logo"?: string;
                         "provider::url"?: string;
                         "provider::secret"?: string;
                         "provider::client"?: string;
@@ -2254,6 +2292,12 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
+                            /** @description Enable Geofence Server Integration */
+                            "geofence::enabled"?: boolean;
+                            /** @description Geofence Server URL */
+                            "geofence::url"?: string;
+                            /** @description Geofence Server Password */
+                            "geofence::password"?: string;
                             /** @description Enable ArcGIS Online Integration */
                             "agol::enabled"?: boolean;
                             /**
@@ -2301,11 +2345,24 @@ export interface paths {
                             "group::Teal"?: string;
                             "group::Dark Green"?: string;
                             "group::Brown"?: string;
+                            /** @description Enable OIDC Authentication */
                             "oidc::enabled"?: boolean;
+                            /** @description Disable Username/Password Login */
                             "oidc::enforced"?: boolean;
+                            /** @description OIDC Provider Name */
                             "oidc::name"?: string;
+                            /** @description OIDC Discovery URL */
                             "oidc::discovery"?: string;
+                            /** @description OIDC Client ID */
                             "oidc::client"?: string;
+                            /** @description OIDC Client Secret */
+                            "oidc::secret"?: string;
+                            /** @description OIDC App Redirect URL */
+                            "oidc::redirect"?: string;
+                            /** @description OIDC Scopes */
+                            "oidc::scopes"?: string;
+                            /** @description Base64 encoded PNG for OIDC Logo */
+                            "oidc::logo"?: string;
                             "provider::url"?: string;
                             "provider::secret"?: string;
                             "provider::client"?: string;
@@ -4615,12 +4672,12 @@ export interface paths {
                                     };
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -4667,13 +4724,13 @@ export interface paths {
                                             type: string;
                                             contentResource?: {
                                                 expiration: string;
-                                                filename: string;
+                                                filename?: string;
                                                 hash: string;
                                                 name: string;
                                                 size: number;
                                                 submissionTime: string;
                                                 submitter: string;
-                                                tool: string;
+                                                tool?: string;
                                                 uid: string;
                                             };
                                             details?: {
@@ -4952,12 +5009,12 @@ export interface paths {
                             };
                             archived?: boolean;
                             geofence?: {
-                                elevationMonitored?: string;
+                                elevationMonitored?: boolean;
                                 minElevation?: string;
                                 maxElevation?: string;
                                 monitor?: string;
                                 trigger?: string;
-                                tracking?: string;
+                                tracking?: boolean;
                                 boundingSphere?: number;
                             };
                             contact?: {
@@ -5004,13 +5061,13 @@ export interface paths {
                                     type: string;
                                     contentResource?: {
                                         expiration: string;
-                                        filename: string;
+                                        filename?: string;
                                         hash: string;
                                         name: string;
                                         size: number;
                                         submissionTime: string;
                                         submitter: string;
-                                        tool: string;
+                                        tool?: string;
                                         uid: string;
                                     };
                                     details?: {
@@ -5220,12 +5277,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -5272,13 +5329,13 @@ export interface paths {
                                         type: string;
                                         contentResource?: {
                                             expiration: string;
-                                            filename: string;
+                                            filename?: string;
                                             hash: string;
                                             name: string;
                                             size: number;
                                             submissionTime: string;
                                             submitter: string;
-                                            tool: string;
+                                            tool?: string;
                                             uid: string;
                                         };
                                         details?: {
@@ -5667,12 +5724,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -5719,13 +5776,13 @@ export interface paths {
                                         type: string;
                                         contentResource?: {
                                             expiration: string;
-                                            filename: string;
+                                            filename?: string;
                                             hash: string;
                                             name: string;
                                             size: number;
                                             submissionTime: string;
                                             submitter: string;
-                                            tool: string;
+                                            tool?: string;
                                             uid: string;
                                         };
                                         details?: {
@@ -6115,12 +6172,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -6167,13 +6224,13 @@ export interface paths {
                                         type: string;
                                         contentResource?: {
                                             expiration: string;
-                                            filename: string;
+                                            filename?: string;
                                             hash: string;
                                             name: string;
                                             size: number;
                                             submissionTime: string;
                                             submitter: string;
-                                            tool: string;
+                                            tool?: string;
                                             uid: string;
                                         };
                                         details?: {
@@ -6389,12 +6446,12 @@ export interface paths {
                                         };
                                         archived?: boolean;
                                         geofence?: {
-                                            elevationMonitored?: string;
+                                            elevationMonitored?: boolean;
                                             minElevation?: string;
                                             maxElevation?: string;
                                             monitor?: string;
                                             trigger?: string;
-                                            tracking?: string;
+                                            tracking?: boolean;
                                             boundingSphere?: number;
                                         };
                                         contact?: {
@@ -6441,13 +6498,13 @@ export interface paths {
                                                 type: string;
                                                 contentResource?: {
                                                     expiration: string;
-                                                    filename: string;
+                                                    filename?: string;
                                                     hash: string;
                                                     name: string;
                                                     size: number;
                                                     submissionTime: string;
                                                     submitter: string;
-                                                    tool: string;
+                                                    tool?: string;
                                                     uid: string;
                                                 };
                                                 details?: {
@@ -6750,12 +6807,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -6802,13 +6859,13 @@ export interface paths {
                                         type: string;
                                         contentResource?: {
                                             expiration: string;
-                                            filename: string;
+                                            filename?: string;
                                             hash: string;
                                             name: string;
                                             size: number;
                                             submissionTime: string;
                                             submitter: string;
-                                            tool: string;
+                                            tool?: string;
                                             uid: string;
                                         };
                                         details?: {
@@ -7120,12 +7177,12 @@ export interface paths {
                                     };
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -7172,13 +7229,13 @@ export interface paths {
                                             type: string;
                                             contentResource?: {
                                                 expiration: string;
-                                                filename: string;
+                                                filename?: string;
                                                 hash: string;
                                                 name: string;
                                                 size: number;
                                                 submissionTime: string;
                                                 submitter: string;
-                                                tool: string;
+                                                tool?: string;
                                                 uid: string;
                                             };
                                             details?: {
@@ -12416,6 +12473,105 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/connection/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh all enabled connections */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/connection/{:connectionid}": {
         parameters: {
             query?: never;
@@ -15770,6 +15926,928 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all layer templates */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description No Description */
+                    data?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                status?: string;
+                                created: string;
+                                updated: string;
+                                template: boolean;
+                                connection: null | number;
+                                username: null | string;
+                                uuid: string;
+                                name: string;
+                                description: string;
+                                enabled: boolean;
+                                logging: boolean;
+                                task: string;
+                                memory: number;
+                                timeout: number;
+                                priority: "high" | "low" | "off";
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                parent?: {
+                                    id: number;
+                                    name: string;
+                                    enabled: boolean;
+                                };
+                                incoming?: {
+                                    layer: number;
+                                    created: string;
+                                    updated: string;
+                                    config: {
+                                        timezone?: {
+                                            timezone: string;
+                                        };
+                                    };
+                                    cron: null | string;
+                                    webhooks: boolean;
+                                    enabled_styles: boolean;
+                                    styles: {
+                                        line?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            stale?: number | string;
+                                            minzoom?: number | string;
+                                            maxzoom?: number | string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        point?: {
+                                            "marker-color"?: string;
+                                            "marker-opacity"?: string;
+                                            id?: string;
+                                            type?: string;
+                                            remarks?: string;
+                                            stale?: number | string;
+                                            /** @default true */
+                                            rotate: boolean;
+                                            minzoom?: number | string;
+                                            maxzoom?: number | string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            icon?: string;
+                                        };
+                                        polygon?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            fill?: string;
+                                            "fill-opacity"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            stale?: number | string;
+                                            minzoom?: number | string;
+                                            maxzoom?: number | string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        stale?: number | string;
+                                        minzoom?: number | string;
+                                        maxzoom?: number | string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        queries?: {
+                                            query: string;
+                                            delete?: boolean;
+                                            styles?: {
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                stale?: number | string;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                line?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    stale?: number | string;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                };
+                                                point?: {
+                                                    "marker-color"?: string;
+                                                    "marker-opacity"?: string;
+                                                    id?: string;
+                                                    type?: string;
+                                                    remarks?: string;
+                                                    stale?: number | string;
+                                                    /** @default true */
+                                                    rotate: boolean;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    icon?: string;
+                                                };
+                                                polygon?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    fill?: string;
+                                                    "fill-opacity"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    stale?: number | string;
+                                                    minzoom?: number | string;
+                                                    maxzoom?: number | string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                };
+                                            };
+                                        }[];
+                                    };
+                                    environment: unknown;
+                                    ephemeral: {
+                                        [key: string]: unknown;
+                                    };
+                                    data: null | number;
+                                    groups: string[];
+                                };
+                                outgoing?: {
+                                    layer: number;
+                                    created: string;
+                                    updated: string;
+                                    environment: unknown;
+                                    ephemeral: {
+                                        [key: string]: unknown;
+                                    };
+                                    filters: {
+                                        queries?: {
+                                            name?: string;
+                                            query: string;
+                                        }[];
+                                    };
+                                };
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new Layer Template */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        /** @description Human readable description */
+                        description: string;
+                        /** @description Layer ID to create template from */
+                        id: number;
+                        connection?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status?: string;
+                            created: string;
+                            updated: string;
+                            template: boolean;
+                            connection: null | number;
+                            username: null | string;
+                            uuid: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            logging: boolean;
+                            task: string;
+                            memory: number;
+                            timeout: number;
+                            priority: "high" | "low" | "off";
+                            alarm_period: number;
+                            alarm_evals: number;
+                            alarm_points: number;
+                            parent?: {
+                                id: number;
+                                name: string;
+                                enabled: boolean;
+                            };
+                            incoming?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
+                                };
+                                cron: null | string;
+                                webhooks: boolean;
+                                enabled_styles: boolean;
+                                styles: {
+                                    line?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        stale?: number | string;
+                                        minzoom?: number | string;
+                                        maxzoom?: number | string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        id?: string;
+                                        type?: string;
+                                        remarks?: string;
+                                        stale?: number | string;
+                                        /** @default true */
+                                        rotate: boolean;
+                                        minzoom?: number | string;
+                                        maxzoom?: number | string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        stale?: number | string;
+                                        minzoom?: number | string;
+                                        maxzoom?: number | string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    id?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    stale?: number | string;
+                                    minzoom?: number | string;
+                                    maxzoom?: number | string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    queries?: {
+                                        query: string;
+                                        delete?: boolean;
+                                        styles?: {
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            stale?: number | string;
+                                            minzoom?: number | string;
+                                            maxzoom?: number | string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            line?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                stale?: number | string;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                id?: string;
+                                                type?: string;
+                                                remarks?: string;
+                                                stale?: number | string;
+                                                /** @default true */
+                                                rotate: boolean;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                stale?: number | string;
+                                                minzoom?: number | string;
+                                                maxzoom?: number | string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                        };
+                                    }[];
+                                };
+                                environment: unknown;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
+                                data: null | number;
+                                groups: string[];
+                            };
+                            outgoing?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                environment: unknown;
+                                ephemeral: {
+                                    [key: string]: unknown;
+                                };
+                                filters: {
+                                    queries?: {
+                                        name?: string;
+                                        query: string;
+                                    }[];
+                                };
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ldap/channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Channels by proxy */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    agency?: number;
+                    /** @description No Description */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                rdn: string;
+                                name: string;
+                                description: unknown;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ldap/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a machine user */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        description: string;
+                        /** @default true */
+                        locking?: boolean;
+                        agency_id?: number;
+                        channels: {
+                            id: number;
+                            access: "write" | "read" | "duplex";
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            integrationId?: number;
+                            auth: {
+                                ca?: string[];
+                                /** @description PEM formatted client certificate */
+                                cert: string;
+                                /** @description PEM formatted private key */
+                                key: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ldap/user/{:email}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reset the password on an existing user and regen a certificate */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":email": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            integrationId?: number;
+                            auth: {
+                                ca?: string[];
+                                /** @description PEM formatted client certificate */
+                                cert: string;
+                                /** @description PEM formatted private key */
+                                key: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/iconset": {
         parameters: {
             query?: never;
@@ -17185,928 +18263,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/template": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all layer templates */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                    /** @description No Description */
-                    data?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                status?: string;
-                                created: string;
-                                updated: string;
-                                template: boolean;
-                                connection: null | number;
-                                username: null | string;
-                                uuid: string;
-                                name: string;
-                                description: string;
-                                enabled: boolean;
-                                logging: boolean;
-                                task: string;
-                                memory: number;
-                                timeout: number;
-                                priority: "high" | "low" | "off";
-                                alarm_period: number;
-                                alarm_evals: number;
-                                alarm_points: number;
-                                parent?: {
-                                    id: number;
-                                    name: string;
-                                    enabled: boolean;
-                                };
-                                incoming?: {
-                                    layer: number;
-                                    created: string;
-                                    updated: string;
-                                    config: {
-                                        timezone?: {
-                                            timezone: string;
-                                        };
-                                    };
-                                    cron: null | string;
-                                    webhooks: boolean;
-                                    enabled_styles: boolean;
-                                    styles: {
-                                        line?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            stale?: number | string;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
-                                        point?: {
-                                            "marker-color"?: string;
-                                            "marker-opacity"?: string;
-                                            id?: string;
-                                            type?: string;
-                                            remarks?: string;
-                                            stale?: number | string;
-                                            /** @default true */
-                                            rotate: boolean;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            icon?: string;
-                                        };
-                                        polygon?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            fill?: string;
-                                            "fill-opacity"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            stale?: number | string;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
-                                        id?: string;
-                                        remarks?: string;
-                                        callsign?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        queries?: {
-                                            query: string;
-                                            delete?: boolean;
-                                            styles?: {
-                                                id?: string;
-                                                remarks?: string;
-                                                callsign?: string;
-                                                stale?: number | string;
-                                                minzoom?: number | string;
-                                                maxzoom?: number | string;
-                                                links?: {
-                                                    remarks: string;
-                                                    url: string;
-                                                }[];
-                                                line?: {
-                                                    stroke?: string;
-                                                    "stroke-style"?: string;
-                                                    "stroke-opacity"?: string;
-                                                    "stroke-width"?: string;
-                                                    id?: string;
-                                                    remarks?: string;
-                                                    stale?: number | string;
-                                                    minzoom?: number | string;
-                                                    maxzoom?: number | string;
-                                                    callsign?: string;
-                                                    links?: {
-                                                        remarks: string;
-                                                        url: string;
-                                                    }[];
-                                                };
-                                                point?: {
-                                                    "marker-color"?: string;
-                                                    "marker-opacity"?: string;
-                                                    id?: string;
-                                                    type?: string;
-                                                    remarks?: string;
-                                                    stale?: number | string;
-                                                    /** @default true */
-                                                    rotate: boolean;
-                                                    minzoom?: number | string;
-                                                    maxzoom?: number | string;
-                                                    callsign?: string;
-                                                    links?: {
-                                                        remarks: string;
-                                                        url: string;
-                                                    }[];
-                                                    icon?: string;
-                                                };
-                                                polygon?: {
-                                                    stroke?: string;
-                                                    "stroke-style"?: string;
-                                                    "stroke-opacity"?: string;
-                                                    "stroke-width"?: string;
-                                                    fill?: string;
-                                                    "fill-opacity"?: string;
-                                                    id?: string;
-                                                    remarks?: string;
-                                                    callsign?: string;
-                                                    stale?: number | string;
-                                                    minzoom?: number | string;
-                                                    maxzoom?: number | string;
-                                                    links?: {
-                                                        remarks: string;
-                                                        url: string;
-                                                    }[];
-                                                };
-                                            };
-                                        }[];
-                                    };
-                                    environment: unknown;
-                                    ephemeral: {
-                                        [key: string]: unknown;
-                                    };
-                                    data: null | number;
-                                    groups: string[];
-                                };
-                                outgoing?: {
-                                    layer: number;
-                                    created: string;
-                                    updated: string;
-                                    environment: unknown;
-                                    ephemeral: {
-                                        [key: string]: unknown;
-                                    };
-                                    filters: {
-                                        queries?: {
-                                            name?: string;
-                                            query: string;
-                                        }[];
-                                    };
-                                };
-                            }[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create a new Layer Template */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        /** @description Human readable description */
-                        description: string;
-                        /** @description Layer ID to create template from */
-                        id: number;
-                        connection?: number;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            status?: string;
-                            created: string;
-                            updated: string;
-                            template: boolean;
-                            connection: null | number;
-                            username: null | string;
-                            uuid: string;
-                            name: string;
-                            description: string;
-                            enabled: boolean;
-                            logging: boolean;
-                            task: string;
-                            memory: number;
-                            timeout: number;
-                            priority: "high" | "low" | "off";
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            parent?: {
-                                id: number;
-                                name: string;
-                                enabled: boolean;
-                            };
-                            incoming?: {
-                                layer: number;
-                                created: string;
-                                updated: string;
-                                config: {
-                                    timezone?: {
-                                        timezone: string;
-                                    };
-                                };
-                                cron: null | string;
-                                webhooks: boolean;
-                                enabled_styles: boolean;
-                                styles: {
-                                    line?: {
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                    };
-                                    point?: {
-                                        "marker-color"?: string;
-                                        "marker-opacity"?: string;
-                                        id?: string;
-                                        type?: string;
-                                        remarks?: string;
-                                        stale?: number | string;
-                                        /** @default true */
-                                        rotate: boolean;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        icon?: string;
-                                    };
-                                    polygon?: {
-                                        stroke?: string;
-                                        "stroke-style"?: string;
-                                        "stroke-opacity"?: string;
-                                        "stroke-width"?: string;
-                                        fill?: string;
-                                        "fill-opacity"?: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        callsign?: string;
-                                        stale?: number | string;
-                                        minzoom?: number | string;
-                                        maxzoom?: number | string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                    };
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    stale?: number | string;
-                                    minzoom?: number | string;
-                                    maxzoom?: number | string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    queries?: {
-                                        query: string;
-                                        delete?: boolean;
-                                        styles?: {
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            stale?: number | string;
-                                            minzoom?: number | string;
-                                            maxzoom?: number | string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            line?: {
-                                                stroke?: string;
-                                                "stroke-style"?: string;
-                                                "stroke-opacity"?: string;
-                                                "stroke-width"?: string;
-                                                id?: string;
-                                                remarks?: string;
-                                                stale?: number | string;
-                                                minzoom?: number | string;
-                                                maxzoom?: number | string;
-                                                callsign?: string;
-                                                links?: {
-                                                    remarks: string;
-                                                    url: string;
-                                                }[];
-                                            };
-                                            point?: {
-                                                "marker-color"?: string;
-                                                "marker-opacity"?: string;
-                                                id?: string;
-                                                type?: string;
-                                                remarks?: string;
-                                                stale?: number | string;
-                                                /** @default true */
-                                                rotate: boolean;
-                                                minzoom?: number | string;
-                                                maxzoom?: number | string;
-                                                callsign?: string;
-                                                links?: {
-                                                    remarks: string;
-                                                    url: string;
-                                                }[];
-                                                icon?: string;
-                                            };
-                                            polygon?: {
-                                                stroke?: string;
-                                                "stroke-style"?: string;
-                                                "stroke-opacity"?: string;
-                                                "stroke-width"?: string;
-                                                fill?: string;
-                                                "fill-opacity"?: string;
-                                                id?: string;
-                                                remarks?: string;
-                                                callsign?: string;
-                                                stale?: number | string;
-                                                minzoom?: number | string;
-                                                maxzoom?: number | string;
-                                                links?: {
-                                                    remarks: string;
-                                                    url: string;
-                                                }[];
-                                            };
-                                        };
-                                    }[];
-                                };
-                                environment: unknown;
-                                ephemeral: {
-                                    [key: string]: unknown;
-                                };
-                                data: null | number;
-                                groups: string[];
-                            };
-                            outgoing?: {
-                                layer: number;
-                                created: string;
-                                updated: string;
-                                environment: unknown;
-                                ephemeral: {
-                                    [key: string]: unknown;
-                                };
-                                filters: {
-                                    queries?: {
-                                        name?: string;
-                                        query: string;
-                                    }[];
-                                };
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/ldap/channel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Channels by proxy */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    agency?: number;
-                    /** @description No Description */
-                    filter: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                rdn: string;
-                                name: string;
-                                description: unknown;
-                            }[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/ldap/user": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create a machine user */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name: string;
-                        description: string;
-                        /** @default true */
-                        locking?: boolean;
-                        agency_id?: number;
-                        channels: {
-                            id: number;
-                            access: "write" | "read" | "duplex";
-                        }[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            integrationId?: number;
-                            auth: {
-                                ca?: string[];
-                                /** @description PEM formatted client certificate */
-                                cert: string;
-                                /** @description PEM formatted private key */
-                                key: string;
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/ldap/user/{:email}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Reset the password on an existing user and regen a certificate */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":email": string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            integrationId?: number;
-                            auth: {
-                                ca?: string[];
-                                /** @description PEM formatted client certificate */
-                                cert: string;
-                                /** @description PEM formatted private key */
-                                key: string;
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/login": {
         parameters: {
             query?: never;
@@ -18593,12 +18749,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -18645,13 +18801,13 @@ export interface paths {
                                         type: string;
                                         contentResource?: {
                                             expiration: string;
-                                            filename: string;
+                                            filename?: string;
                                             hash: string;
                                             name: string;
                                             size: number;
                                             submissionTime: string;
                                             submitter: string;
-                                            tool: string;
+                                            tool?: string;
                                             uid: string;
                                         };
                                         details?: {
@@ -18961,12 +19117,12 @@ export interface paths {
                                     };
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -19013,13 +19169,13 @@ export interface paths {
                                             type: string;
                                             contentResource?: {
                                                 expiration: string;
-                                                filename: string;
+                                                filename?: string;
                                                 hash: string;
                                                 name: string;
                                                 size: number;
                                                 submissionTime: string;
                                                 submitter: string;
-                                                tool: string;
+                                                tool?: string;
                                                 uid: string;
                                             };
                                             details?: {
@@ -21014,12 +21170,12 @@ export interface paths {
                                     };
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -21066,13 +21222,13 @@ export interface paths {
                                             type: string;
                                             contentResource?: {
                                                 expiration: string;
-                                                filename: string;
+                                                filename?: string;
                                                 hash: string;
                                                 name: string;
                                                 size: number;
                                                 submissionTime: string;
                                                 submitter: string;
-                                                tool: string;
+                                                tool?: string;
                                                 uid: string;
                                             };
                                             details?: {
@@ -28621,12 +28777,12 @@ export interface paths {
                                     };
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -28673,13 +28829,13 @@ export interface paths {
                                             type: string;
                                             contentResource?: {
                                                 expiration: string;
-                                                filename: string;
+                                                filename?: string;
                                                 hash: string;
                                                 name: string;
                                                 size: number;
                                                 submissionTime: string;
                                                 submitter: string;
-                                                tool: string;
+                                                tool?: string;
                                                 uid: string;
                                             };
                                             details?: {
@@ -28961,12 +29117,12 @@ export interface paths {
                             };
                             archived?: boolean;
                             geofence?: {
-                                elevationMonitored?: string;
+                                elevationMonitored?: boolean;
                                 minElevation?: string;
                                 maxElevation?: string;
                                 monitor?: string;
                                 trigger?: string;
-                                tracking?: string;
+                                tracking?: boolean;
                                 boundingSphere?: number;
                             };
                             contact?: {
@@ -29013,13 +29169,13 @@ export interface paths {
                                     type: string;
                                     contentResource?: {
                                         expiration: string;
-                                        filename: string;
+                                        filename?: string;
                                         hash: string;
                                         name: string;
                                         size: number;
                                         submissionTime: string;
                                         submitter: string;
-                                        tool: string;
+                                        tool?: string;
                                         uid: string;
                                     };
                                     details?: {
@@ -29229,12 +29385,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -29281,13 +29437,13 @@ export interface paths {
                                         type: string;
                                         contentResource?: {
                                             expiration: string;
-                                            filename: string;
+                                            filename?: string;
                                             hash: string;
                                             name: string;
                                             size: number;
                                             submissionTime: string;
                                             submitter: string;
-                                            tool: string;
+                                            tool?: string;
                                             uid: string;
                                         };
                                         details?: {
@@ -29673,12 +29829,12 @@ export interface paths {
                                 };
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -29725,13 +29881,13 @@ export interface paths {
                                         type: string;
                                         contentResource?: {
                                             expiration: string;
-                                            filename: string;
+                                            filename?: string;
                                             hash: string;
                                             name: string;
                                             size: number;
                                             submissionTime: string;
                                             submitter: string;
-                                            tool: string;
+                                            tool?: string;
                                             uid: string;
                                         };
                                         details?: {
@@ -36254,12 +36410,12 @@ export interface paths {
                                     };
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -36306,13 +36462,13 @@ export interface paths {
                                             type: string;
                                             contentResource?: {
                                                 expiration: string;
-                                                filename: string;
+                                                filename?: string;
                                                 hash: string;
                                                 name: string;
                                                 size: number;
                                                 submissionTime: string;
                                                 submitter: string;
-                                                tool: string;
+                                                tool?: string;
                                                 uid: string;
                                             };
                                             details?: {

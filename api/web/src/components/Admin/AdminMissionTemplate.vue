@@ -154,7 +154,9 @@
                                         v-for='log in template.logs'
                                         :key='log.id'
                                         class='cursor-pointer'
-                                        @click='router.push(`/admin/template/${route.params.template}/log/${log.id}`)'
+                                        tabindex='0'
+                                        @keyup.enter='stdclick(router, $event, `/admin/template/${route.params.template}/log/${log.id}`)'
+                                        @click='stdclick(router, $event, `/admin/template/${route.params.template}/log/${log.id}`)'
                                     >
                                         <td class='w-1'>
                                             <div
@@ -191,7 +193,7 @@
 import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { std } from '../../../src/std.ts';
+import { std, stdclick } from '../../../src/std.ts';
 import type { MissionTemplate } from '../../../src/types.ts';
 import Keywords from '../CloudTAK/util/Keywords.vue';
 import TagEntry from '../CloudTAK/util/TagEntry.vue';
