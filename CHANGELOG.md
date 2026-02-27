@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.86.0 - 2026-02-27
+
+- :rocket: Protect against Cache Poisoning with a refresh strategy
+
 ### v12.85.0 - 2026-02-27
 
 - :rocket: Migrate ETL Layer Group Selection to the Styling Component for increased flexibility
