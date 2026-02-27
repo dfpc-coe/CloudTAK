@@ -196,6 +196,7 @@ export default async function router(schema: Schema, config: Config) {
             alarm_period: Type.Optional(Type.Integer()),
             alarm_evals: Type.Optional(Type.Integer()),
             alarm_points: Type.Optional(Type.Integer()),
+            protected: Type.Boolean({ default: false }),
         }),
         res: LayerResponse
     }, async (req, res) => {
@@ -693,6 +694,7 @@ export default async function router(schema: Schema, config: Config) {
                 maximum: 900
             })),
             enabled: Type.Optional(Type.Boolean()),
+            protected: Type.Optional(Type.Boolean()),
             task: Type.Optional(Type.String()),
             logging: Type.Optional(Type.Boolean()),
 
@@ -926,6 +928,8 @@ export default async function router(schema: Schema, config: Config) {
                 const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
                 layer = await layerControl.from(connection, req.params.layerid);
             }
+
+            if (layer.protected) throw new Err(400, null, 'Layer is protected and cannot be deleted');
 
             const status = (await CloudFormation.status(config, req.params.layerid)).status;
             if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before deleting')

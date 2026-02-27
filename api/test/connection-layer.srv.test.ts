@@ -127,6 +127,7 @@ test('POST: api/connection/1/layer', async () => {
              name: 'Test Layer',
              description: 'This is a test layer',
              enabled: true,
+             protected: false,
              logging: true,
              task: 'etl-test-v1.0.0',
              template: false,
@@ -178,6 +179,7 @@ test('GET: api/connection/1/layer/1', async () => {
              name: 'Test Layer',
              description: 'This is a test layer',
              enabled: true,
+             protected: false,
              logging: true,
              task: 'etl-test-v1.0.0',
              template: false,
@@ -192,6 +194,162 @@ test('GET: api/connection/1/layer/1', async () => {
                  name: 'Test Connection',
                  enabled: true
              }
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    Sinon.restore();
+});
+
+test('PATCH: api/connection/1/layer/1 - set protected', async () => {
+    try {
+        const res = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                protected: true
+            }
+        }, true);
+
+        assert.ok(res.body.uuid, 'has uuid');
+        res.body.uuid = '123'
+
+        assert.ok(res.body.created, 'has created');
+        res.body.created = '2025-06-26'
+
+        assert.ok(res.body.updated, 'has updated');
+        res.body.updated = '2025-06-26'
+
+        assert.deepEqual(res.body, {
+            status: 'unknown',
+            id: 1,
+            uuid: '123',
+            priority: 'off',
+            created: '2025-06-26',
+            updated: '2025-06-26',
+            username: 'admin@example.com',
+            name: 'Test Layer',
+            description: 'This is a test layer',
+            enabled: true,
+            protected: true,
+            logging: true,
+            task: 'etl-test-v1.0.0',
+            template: false,
+            connection: 1,
+            memory: 256,
+            timeout: 120,
+            alarm_period: 30,
+            alarm_evals: 5,
+            alarm_points: 4,
+            parent: {
+                id: 1,
+                name: 'Test Connection',
+                enabled: true
+            }
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('DELETE: api/connection/1/layer/1 - protected layer should fail', async () => {
+    try {
+        const res = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.admin
+            },
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Layer is protected and cannot be deleted');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/connection/1/layer/1 - unset protected', async () => {
+    try {
+        const res = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                protected: false
+            }
+        }, true);
+
+        assert.ok(res.body.uuid, 'has uuid');
+        res.body.uuid = '123'
+
+        assert.ok(res.body.created, 'has created');
+        res.body.created = '2025-06-26'
+
+        assert.ok(res.body.updated, 'has updated');
+        res.body.updated = '2025-06-26'
+
+        assert.deepEqual(res.body, {
+            status: 'unknown',
+            id: 1,
+            uuid: '123',
+            priority: 'off',
+            created: '2025-06-26',
+            updated: '2025-06-26',
+            username: 'admin@example.com',
+            name: 'Test Layer',
+            description: 'This is a test layer',
+            enabled: true,
+            protected: false,
+            logging: true,
+            task: 'etl-test-v1.0.0',
+            template: false,
+            connection: 1,
+            memory: 256,
+            timeout: 120,
+            alarm_period: 30,
+            alarm_evals: 5,
+            alarm_points: 4,
+            parent: {
+                id: 1,
+                name: 'Test Connection',
+                enabled: true
+            }
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('DELETE: api/connection/1/layer/1', async () => {
+    try {
+        Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
+            if (command instanceof DescribeStacksCommand) {
+                return Promise.resolve({
+                    Stacks: [{
+                        StackName: 'test',
+                        StackStatus: 'UPDATE_COMPLETE',
+                        CreationTime: new Date()
+                    }]
+                });
+            } else {
+                return Promise.resolve({});
+            }
+        });
+
+        const res = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.admin
+            },
+        }, true);
+
+        assert.deepEqual(res.body, {
+            status: 200,
+            message: 'Layer Deleted'
         });
     } catch (err) {
         assert.ifError(err);

@@ -184,6 +184,7 @@ export default class Auth {
 
             if (auth_resource.access === AuthResourceAccess.LAYER) {
                 const layer = await config.models.Layer.from(auth_resource.id);
+                if (layer.connection !== connectionid) throw new Err(401, null, 'Layer does not belong to this Connection');
                 return { auth, connection, layer };
             } else {
                 return { auth, connection };

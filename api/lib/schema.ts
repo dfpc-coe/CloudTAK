@@ -405,6 +405,7 @@ export const Layer = pgTable('layers', {
     username: text().references(() => Profile.username),
     name: text().notNull(),
     enabled: boolean().notNull().default(true),
+    protected: boolean().notNull().default(false),
     description: text().notNull().default(''),
     priority: text().$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
     template: boolean().notNull().default(false),

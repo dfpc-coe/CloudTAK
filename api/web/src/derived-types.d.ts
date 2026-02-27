@@ -4670,6 +4670,7 @@ export interface paths {
                                     metadata?: {
                                         [key: string]: unknown;
                                     };
+                                    /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
                                     geofence?: {
                                         elevationMonitored?: boolean;
@@ -4846,7 +4847,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
@@ -5009,6 +5010,7 @@ export interface paths {
                             metadata?: {
                                 [key: string]: unknown;
                             };
+                            /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                             archived?: boolean;
                             geofence?: {
                                 elevationMonitored?: boolean;
@@ -5185,7 +5187,7 @@ export interface paths {
                                 after?: string;
                                 path?: string;
                             }[];
-                            /** @description Whether the TAK Server should archive this message (marti.archive) */
+                            /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                             marti_archive?: boolean;
                             icon?: string;
                             droid?: string;
@@ -5279,6 +5281,7 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
@@ -5455,7 +5458,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -5728,6 +5731,7 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
@@ -5904,7 +5908,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -6178,6 +6182,7 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
@@ -6354,7 +6359,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -6454,6 +6459,7 @@ export interface paths {
                                         metadata?: {
                                             [key: string]: unknown;
                                         };
+                                        /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                         archived?: boolean;
                                         geofence?: {
                                             elevationMonitored?: boolean;
@@ -6630,7 +6636,7 @@ export interface paths {
                                             after?: string;
                                             path?: string;
                                         }[];
-                                        /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                        /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                         marti_archive?: boolean;
                                         icon?: string;
                                         droid?: string;
@@ -6817,6 +6823,7 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
@@ -6993,7 +7000,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -7189,6 +7196,7 @@ export interface paths {
                                     metadata?: {
                                         [key: string]: unknown;
                                     };
+                                    /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
                                     geofence?: {
                                         elevationMonitored?: boolean;
@@ -7365,7 +7373,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
@@ -8446,7 +8454,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -8487,6 +8495,7 @@ export interface paths {
                                 name: string;
                                 description: string;
                                 enabled: boolean;
+                                protected: boolean;
                                 logging: boolean;
                                 task: string;
                                 memory: number;
@@ -8896,6 +8905,8 @@ export interface paths {
                         alarm_period?: number;
                         alarm_evals?: number;
                         alarm_points?: number;
+                        /** @default false */
+                        protected: boolean;
                     };
                 };
             };
@@ -8918,6 +8929,7 @@ export interface paths {
                             name: string;
                             description: string;
                             enabled: boolean;
+                            protected: boolean;
                             logging: boolean;
                             task: string;
                             memory: number;
@@ -11012,6 +11024,7 @@ export interface paths {
                             name: string;
                             description: string;
                             enabled: boolean;
+                            protected: boolean;
                             logging: boolean;
                             task: string;
                             memory: number;
@@ -11499,6 +11512,7 @@ export interface paths {
                         /** @description Timeout in seconds for this Layer */
                         timeout?: number;
                         enabled?: boolean;
+                        protected?: boolean;
                         task?: string;
                         logging?: boolean;
                         alarm_period?: number;
@@ -11526,6 +11540,7 @@ export interface paths {
                             name: string;
                             description: string;
                             enabled: boolean;
+                            protected: boolean;
                             logging: boolean;
                             task: string;
                             memory: number;
@@ -16312,7 +16327,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -16356,6 +16371,7 @@ export interface paths {
                                 name: string;
                                 description: string;
                                 enabled: boolean;
+                                protected: boolean;
                                 logging: boolean;
                                 task: string;
                                 memory: number;
@@ -16775,6 +16791,7 @@ export interface paths {
                             name: string;
                             description: string;
                             enabled: boolean;
+                            protected: boolean;
                             logging: boolean;
                             task: string;
                             memory: number;
@@ -17166,7 +17183,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -17198,6 +17215,7 @@ export interface paths {
                                 name: string;
                                 description: string;
                                 enabled: boolean;
+                                protected: boolean;
                                 logging: boolean;
                                 task: string;
                                 memory: number;
@@ -17605,6 +17623,7 @@ export interface paths {
                             name: string;
                             description: string;
                             enabled: boolean;
+                            protected: boolean;
                             logging: boolean;
                             task: string;
                             memory: number;
@@ -20211,6 +20230,7 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
@@ -20387,7 +20407,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -20581,6 +20601,7 @@ export interface paths {
                                     metadata?: {
                                         [key: string]: unknown;
                                     };
+                                    /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
                                     geofence?: {
                                         elevationMonitored?: boolean;
@@ -20757,7 +20778,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
@@ -22636,6 +22657,7 @@ export interface paths {
                                     metadata?: {
                                         [key: string]: unknown;
                                     };
+                                    /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
                                     geofence?: {
                                         elevationMonitored?: boolean;
@@ -22812,7 +22834,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
@@ -30245,6 +30267,7 @@ export interface paths {
                                     metadata?: {
                                         [key: string]: unknown;
                                     };
+                                    /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
                                     geofence?: {
                                         elevationMonitored?: boolean;
@@ -30421,7 +30444,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
@@ -30587,6 +30610,7 @@ export interface paths {
                             metadata?: {
                                 [key: string]: unknown;
                             };
+                            /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                             archived?: boolean;
                             geofence?: {
                                 elevationMonitored?: boolean;
@@ -30763,7 +30787,7 @@ export interface paths {
                                 after?: string;
                                 path?: string;
                             }[];
-                            /** @description Whether the TAK Server should archive this message (marti.archive) */
+                            /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                             marti_archive?: boolean;
                             icon?: string;
                             droid?: string;
@@ -30857,6 +30881,7 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
@@ -31033,7 +31058,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -31303,6 +31328,7 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
                                     elevationMonitored?: boolean;
@@ -31479,7 +31505,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -37886,6 +37912,7 @@ export interface paths {
                                     metadata?: {
                                         [key: string]: unknown;
                                     };
+                                    /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
                                     geofence?: {
                                         elevationMonitored?: boolean;
@@ -38062,7 +38089,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Whether the TAK Server should archive this message (marti.archive) */
+                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
