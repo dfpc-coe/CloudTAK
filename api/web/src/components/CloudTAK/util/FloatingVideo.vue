@@ -1,8 +1,8 @@
 <template>
     <FloatingPane
         :uid='uid'
-        @close='emit("close")'
         class='video-container'
+        @close='emit("close")'
     >
         <template #header>
             <StatusDot

@@ -106,8 +106,8 @@
                         />
 
                         <TablerToggle
-                            class='mt-3'
                             v-model='config["oidc::enabled"]'
+                            class='mt-3'
                             label='Enable OIDC SSO'
                             :disabled='!edit'
                         />
