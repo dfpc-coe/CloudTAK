@@ -22,7 +22,7 @@ export default class GeoJSON implements Transform {
     }
 
     async convert(): Promise<ConvertResponse> {
-        const inputFile = path.resolve(this.local.tmpdir, `${this.local.id}${this.local.ext}`);
+        const inputFile = this.local.raw;
         const outputFile = path.resolve(this.local.tmpdir, `output-${this.local.id}.geojsonld`);
 
         let isFeatureCollection = false;
