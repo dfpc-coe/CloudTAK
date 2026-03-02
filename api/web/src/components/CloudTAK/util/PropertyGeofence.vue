@@ -13,34 +13,38 @@
                 />
             </template>
             <div class='mx-2 py-2'>
-                <div class='rounded bg-accent px-2 py-2 row user-select-none'>
-                    <TablerToggle
-                        label='Elevation Monitored'
-                        :model-value='geofence.elevationMonitored'
-                        :disabled='true'
-                    />
+                <div class='rounded bg-accent px-2 py-2 user-select-none'>
+                    <div class='row g-2'>
+                        <div class='col-12'>
+                            <TablerToggle
+                                label='Elevation Monitored'
+                                :model-value='geofence.elevationMonitored'
+                                :disabled='true'
+                            />
+                        </div>
 
-                    <div
-                        v-if='geofence.trigger === "Both" || geofence.trigger === "Enter"'
-                        class='col-6 py-2'
-                    >
-                        <IconDoorEnter
-                            :size='32'
-                            stroke='1'
-                            class='mx-2'
-                        />
-                        <span>Alarm on Enter</span>
-                    </div>
-                    <div
-                        v-if='geofence.trigger === "Both" || geofence.trigger === "Exit"'
-                        class='col-6 py-2'
-                    >
-                        <IconDoorExit
-                            :size='32'
-                            stroke='1'
-                            class='mx-2'
-                        />
-                        <span>Alarm on Exit</span>
+                        <div
+                            v-if='geofence.trigger === "Both" || geofence.trigger === "Enter"'
+                            class='col-6 py-2 d-flex align-items-center'
+                        >
+                            <IconDoorEnter
+                                :size='32'
+                                stroke='1'
+                                class='mx-2'
+                            />
+                            <span>Alarm on Enter</span>
+                        </div>
+                        <div
+                            v-if='geofence.trigger === "Both" || geofence.trigger === "Exit"'
+                            class='col-6 py-2 d-flex align-items-center'
+                        >
+                            <IconDoorExit
+                                :size='32'
+                                stroke='1'
+                                class='mx-2'
+                            />
+                            <span>Alarm on Exit</span>
+                        </div>
                     </div>
                 </div>
             </div>
