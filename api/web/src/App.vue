@@ -144,6 +144,10 @@
             :mission='inviteMission'
             @close='inviteMission = undefined'
         />
+        <ChannelChangeModal
+            v-if='channelChange'
+            @close='channelChange = false'
+        />
     </div>
 </template>
 
@@ -168,6 +172,7 @@ import {
     TablerError
 } from '@tak-ps/vue-tabler';
 import MissionInviteModal from './components/CloudTAK/Menu/Mission/MissionInviteModal.vue';
+import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vue';
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
 import { db } from './base/database.ts';
@@ -215,6 +220,7 @@ const inviteMission = ref<{
     tool: string;
     type: string;
 } | undefined>();
+const channelChange = ref(false);
 const mounted = ref(false);
 const user = ref(false);
 const error = ref<Error | undefined>();
@@ -297,6 +303,8 @@ onMounted(async () => {
         const msg = event.data;
         if (msg && msg.type === WorkerMessageType.Mission_Invite) {
             inviteMission.value = msg.body;
+        } else if (msg && msg.type === WorkerMessageType.Channel_Change) {
+            channelChange.value = true;
         }
     };
 

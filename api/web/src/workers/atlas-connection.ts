@@ -185,6 +185,10 @@ export default class AtlasConnection {
                         type: WorkerMessageType.Mission_Invite,
                         body: task.properties.mission
                     });
+                } else if (task.properties.type === 't-x-g-c') {
+                    this.atlas.postMessage({
+                        type: WorkerMessageType.Channel_Change
+                    });
                 } else {
                     console.warn('Unknown Task', JSON.stringify(task));
                 }
