@@ -119,6 +119,11 @@
                                 description='OIDC SSO is currently in beta and may not be fully functional.'
                                 severity='warning'
                             />
+                            <TablerToggle
+                                v-model='config["oidc::enforced"]'
+                                label='Enforce SSO (Disable Username/Password Login)'
+                                :disabled='!edit'
+                            />
                             <TablerInput
                                 v-model='config["oidc::name"]'
                                 label='Provider Name'
@@ -204,6 +209,7 @@ const config = ref({
     'login::background::enabled': false,
     'login::background::color': '#000000',
     'oidc::enabled': false,
+    'oidc::enforced': false,
     'oidc::name': '',
     'oidc::client': '',
     'oidc::secret': '',

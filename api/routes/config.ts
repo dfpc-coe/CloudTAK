@@ -189,6 +189,7 @@ export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'oidc::enabled',
     'oidc::enforced',
     'oidc::name',
+    'oidc::discovery',
     'oidc::logo',
 ];
 

@@ -425,10 +425,12 @@
                         @click='upload.shown = false'
                     />
                     <div class='modal-body text-white'>
-                        <UploadImport
-                            :dragging='upload.dragging'
-                            :cancel-button='false'
-                            @close='upload.shown = false'
+                        <Upload
+                            :url='stdurl("/api/import")'
+                            :headers='{ Authorization: `Bearer ${localStorage.token}` }'
+                            method='PUT'
+                            :cancel='false'
+                            @cancel='upload.shown = false'
                             @done='fileUpload($event)'
                         />
                     </div>
@@ -486,7 +488,8 @@ import { useMapStore } from '../../stores/map.ts';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore } from '../../stores/float.ts';
 import { liveQuery } from 'dexie';
-import UploadImport from './util/UploadImport.vue';
+import Upload from '../util/Upload.vue';
+import { stdurl } from '../../std.ts';
 import ProfileConfig from '../../base/profile.ts';
 
 const mapStore = useMapStore();
@@ -787,10 +790,10 @@ async function exitManualMode() {
 
 
 
-function fileUpload(event: string) {
+function fileUpload(event: unknown) {
     upload.value.shown = false;
-    const imp = JSON.parse(event) as { id: string };
-    router.push(`/menu/imports/${imp.id}`)
+    const imp = event as { imports: Array<{ uid: string }> };
+    router.push(`/menu/imports/${imp.imports[0].uid}`)
 }
 
 async function handleRadial(event: string): Promise<void> {

@@ -228,7 +228,8 @@ export default class Worker extends EventEmitter {
             body: JSON.stringify({
                 id,
                 // It is important that the ext of the name is the same as the uploaded file
-                name: local.name,
+                // local.ext is always lowercase - normalize the name ext to match the S3 key
+                name: path.parse(local.name).name + local.ext,
                 // TODO Use Data Package Prefix
                 path: '/',
             })
