@@ -1,5 +1,5 @@
 import { createSelectSchema } from 'drizzle-typebox';
-import { Type } from '@sinclair/typebox'
+import { Type, Static } from '@sinclair/typebox'
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text } from './enums.js';
@@ -432,3 +432,65 @@ export const BasemapResponse = Type.Object({
     snapping_enabled: Type.Optional(Type.Boolean()),
     snapping_layer: Type.Optional(Type.Union([Type.Null(), Type.String()]))
 });
+
+export const FullConfig = Type.Object({
+    'geofence::enabled': Type.Boolean({ description: 'Enable Geofence Server Integration' }),
+    'geofence::url': Type.String({ description: 'Geofence Server URL' }),
+    'geofence::password': Type.String({ description: 'Geofence Server Password' }),
+    'agol::enabled': Type.Boolean({ description: 'Enable ArcGIS Online Integration' }),
+    'agol::auth_method': Type.String({ description: 'AGOL Auth Type', enum: ['oauth2', 'legacy'] }),
+    'agol::token': Type.String({ description: 'AGOL Legacy Token' }),
+    'agol::client_id': Type.String({ description: 'AGOL OAuth2 Client ID' }),
+    'agol::client_secret': Type.String({ description: 'AGOL OAuth2 Client Secret' }),
+    'media::url': Type.String({ description: 'Base URL for Media Service' }),
+    'map::center': Type.String({ description: 'Map Center Coordinates (lng,lat)' }),
+    'map::pitch': Type.Integer({ description: 'Default Map Pitch Angle', minimum: 0, maximum: 90 }),
+    'map::bearing': Type.Integer({ description: 'Default Map Bearing', minimum: 0, maximum: 360 }),
+    'map::zoom': Type.Number({ description: 'Default Map Zoom Level', minimum: 0, maximum: 20 }),
+    'map::basemap': Type.Union([Type.Null(), Type.Integer()], { description: 'Default Basemap for New Users' }),
+    'display::stale': Type.Enum(Profile_Stale),
+    'display::distance': Type.Enum(Profile_Distance),
+    'display::elevation': Type.Enum(Profile_Elevation),
+    'display::speed': Type.Enum(Profile_Speed),
+    'display::projection': Type.Enum(Profile_Projection),
+    'display::zoom': Type.Enum(Profile_Zoom),
+    'display::text': Type.Enum(Profile_Text),
+    'display::icon_rotation': Type.Boolean(),
+    'group::Yellow': Type.String(),
+    'group::Cyan': Type.String(),
+    'group::Green': Type.String(),
+    'group::Red': Type.String(),
+    'group::Purple': Type.String(),
+    'group::Orange': Type.String(),
+    'group::Blue': Type.String(),
+    'group::Magenta': Type.String(),
+    'group::White': Type.String(),
+    'group::Maroon': Type.String(),
+    'group::Dark Blue': Type.String(),
+    'group::Teal': Type.String(),
+    'group::Dark Green': Type.String(),
+    'group::Brown': Type.String(),
+    'oidc::enabled': Type.Boolean({ description: 'Enable OIDC Authentication' }),
+    'oidc::enforced': Type.Boolean({ description: 'Disable Username/Password Login' }),
+    'oidc::name': Type.String({ description: 'OIDC Provider Name' }),
+    'oidc::discovery': Type.String({ description: 'OIDC Discovery URL' }),
+    'oidc::client': Type.String({ description: 'OIDC Client ID' }),
+    'oidc::secret': Type.String({ description: 'OIDC Client Secret' }),
+    'oidc::redirect': Type.String({ description: 'OIDC App Redirect URL' }),
+    'oidc::scopes': Type.String({ description: 'OIDC Scopes' }),
+    'oidc::logo': Type.String({ description: 'Base64 encoded PNG for OIDC Logo' }),
+    'provider::url': Type.String(),
+    'provider::secret': Type.String(),
+    'provider::client': Type.String(),
+    'login::signup': Type.String({ description: 'URL for Signup Page' }),
+    'login::forgot': Type.String({ description: 'URL for Forgot Password Page' }),
+    'login::name': Type.String({ description: 'Login Page Title' }),
+    'login::username': Type.String({ description: 'Custom Label for Username Field' }),
+    'login::brand::enabled': Type.String({ description: 'Enable Custom Branding on Login Page', enum: ['default', 'enabled', 'disabled'] }),
+    'login::brand::logo': Type.String({ description: 'Show or Hide the CloudTAK Branding' }),
+    'login::background::enabled': Type.Boolean({ description: 'Enable or Disable Custom Background on Login Page' }),
+    'login::background::color': Type.String({ description: 'Hex Color Code for Login Background' }),
+    'login::logo': Type.String({ description: 'Base64 encoded PNG for Logo' }),
+});
+
+export type FullConfigType = Static<typeof FullConfig>;

@@ -66,6 +66,19 @@
                                     v-if='loading'
                                     desc='Logging in'
                                 />
+                                <template v-else-if='brandStore.oidc.enabled && brandStore.oidc.enforced'>
+                                    <div class='text-center text-muted py-3'>
+                                        <div class='mb-2'>
+                                            <IconLock
+                                                :size='32'
+                                                stroke='1.5'
+                                            />
+                                        </div>
+                                        <p class='mb-0'>
+                                            This instance only supports Single Sign-On (SSO). Please use the SSO login button below.
+                                        </p>
+                                    </div>
+                                </template>
                                 <template v-else>
                                     <div class='mb-3'>
                                         <TablerInput
@@ -107,6 +120,36 @@
                                             Sign In
                                         </button>
                                     </div>
+                                </template>
+                                <template v-if='brandStore.oidc.enabled'>
+                                    <div
+                                        v-if='!brandStore.oidc.enforced'
+                                        class='my-3 d-flex align-items-center'
+                                    >
+                                        <hr class='flex-grow-1 m-0'>
+                                        <span class='mx-2 text-muted small'>or</span>
+                                        <hr class='flex-grow-1 m-0'>
+                                    </div>
+                                    <TablerInlineAlert
+                                        v-if='!brandStore.oidc.discovery'
+                                        class='mb-2'
+                                        title='OIDC Misconfigured'
+                                        description='The administrator has not configured OIDC correctly. Please contact your system administrator.'
+                                        severity='warning'
+                                    />
+                                    <a
+                                        v-else
+                                        class='btn btn-secondary w-100 d-flex align-items-center justify-content-center gap-2'
+                                        href='/api/login/oidc'
+                                    >
+                                        <img
+                                            v-if='brandStore.oidc.logo'
+                                            :src='brandStore.oidc.logo'
+                                            style='height: 20px; width: 20px; object-fit: contain;'
+                                            alt=''
+                                        >
+                                        Sign in with {{ brandStore.oidc.name || 'SSO' }}
+                                    </a>
                                 </template>
                             </div>
                         </div>
@@ -220,13 +263,14 @@
 import type { Login_Create, Login_CreateRes, LoginConfig } from '../types.ts'
 import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { version } from '../../package.json';
-import { IconSettings, IconTrash } from '@tabler/icons-vue';
+import { IconSettings, IconTrash, IconLock } from '@tabler/icons-vue';
 import Config from '../base/config.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { std } from '../std.ts';
 import {
     TablerLoading,
-    TablerInput
+    TablerInput,
+    TablerInlineAlert
 } from '@tak-ps/vue-tabler'
 
 const emit = defineEmits([ 'login' ]);
@@ -237,9 +281,23 @@ const router = useRouter();
 const brandStore = reactive<{
     loaded: boolean;
     login: LoginConfig | undefined;
+    oidc: {
+        enforced: boolean;
+        enabled: boolean;
+        discovery: string;
+        name: string;
+        logo: string;
+    };
 }>({
     loaded: false,
-    login: undefined
+    login: undefined,
+    oidc: {
+        enforced: false,
+        enabled: false,
+        discovery: '',
+        name: '',
+        logo: ''
+    }
 });
 
 const footerLogoLoaded = ref(false);
@@ -334,6 +392,11 @@ onMounted(async () => {
         'login::brand::logo',
         'login::background::enabled',
         'login::background::color',
+        'oidc::enforced',
+        'oidc::enabled',
+        'oidc::discovery',
+        'oidc::name',
+        'oidc::logo',
     ]);
 
     brandStore.login = {
@@ -351,6 +414,11 @@ onMounted(async () => {
             color: config['login::background::color']
         }
     };
+    brandStore.oidc.enforced = config['oidc::enforced'] === true;
+    brandStore.oidc.enabled = config['oidc::enabled'] === true;
+    brandStore.oidc.discovery = config['oidc::discovery'] as string || '';
+    brandStore.oidc.name = config['oidc::name'] as string || '';
+    brandStore.oidc.logo = config['oidc::logo'] as string || '';
     brandStore.loaded = true;
 
 

@@ -23,6 +23,15 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
+            const oidc = await config.models.Setting.typedMany({
+                'oidc::enabled': false,
+                'oidc::enforced': false,
+            });
+
+            if (oidc['oidc::enabled'] && oidc['oidc::enforced']) {
+                throw new Err(403, null, 'Username/Password login is disabled - Please use SSO');
+            }
+
             let profile;
 
             if (config.server.auth.key && config.server.auth.cert && config.server.webtak) {
