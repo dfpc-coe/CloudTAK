@@ -4,6 +4,51 @@ SUBCOMMAND=${1:-}
 
 set -euo pipefail
 
+# ── Terminal helpers ────────────────────────────────────────────────────────────
+BOLD=$(tput bold 2>/dev/null || true)
+GREEN=$(tput setaf 2 2>/dev/null || true)
+RED=$(tput setaf 1 2>/dev/null || true)
+DIM=$(tput dim 2>/dev/null || true)
+RESET=$(tput sgr0 2>/dev/null || true)
+
+# run_step <label> <cmd> [args…]
+#   Runs <cmd> in the background, shows a spinner, prints ✔/✘ on completion.
+#   On failure the captured output is printed so the user can diagnose.
+run_step() {
+    local label=$1; shift
+    local log; log=$(mktemp)
+    local spin_chars='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local i=0
+
+    "$@" >"$log" 2>&1 &
+    local pid=$!
+
+    while kill -0 "$pid" 2>/dev/null; do
+        printf "\r  %s  %b%s%b " \
+            "${spin_chars:$i:1}" "$DIM" "$label" "$RESET"
+        i=$(( (i + 1) % ${#spin_chars} ))
+        sleep 0.1
+    done
+
+    local rc=0
+    wait "$pid" || rc=$?
+
+    if [[ $rc -eq 0 ]]; then
+        printf "\r  %b✔%b  %s\n" "$GREEN$BOLD" "$RESET" "$label"
+    else
+        printf "\r  %b✘%b  %s\n" "$RED$BOLD" "$RESET" "$label"
+        echo
+        echo "${RED}--- Error output ---${RESET}"
+        cat "$log"
+        echo "${RED}--- End of output ---${RESET}"
+        rm -f "$log"
+        exit $rc
+    fi
+
+    rm -f "$log"
+}
+# ────────────────────────────────────────────────────────────────────────────────
+
 if [[ "$SUBCOMMAND" == "install" ]]; then
     if [ -f /etc/os-release ]; then
         . /etc/os-release
@@ -21,13 +66,19 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
         exit 1
     fi
 
-    sudo apt update
-    sudo apt install -y git jq ca-certificates curl caddy dnsutils
+    run_step "Updating package lists" sudo apt-get update -qq
+    run_step "Installing base packages (git, jq, curl, caddy…)" \
+        sudo apt-get install -y git jq ca-certificates curl caddy dnsutils
 
-    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+    run_step "Removing conflicting Docker packages" \
+        sudo apt-get remove -y --ignore-missing \
+            docker.io docker-doc docker-compose docker-compose-v2 \
+            podman-docker containerd runc
 
     sudo install -m 0755 -d /etc/apt/keyrings
-    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    run_step "Fetching Docker GPG key" \
+        sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+            -o /etc/apt/keyrings/docker.asc
     sudo chmod a+r /etc/apt/keyrings/docker.asc
 
     echo \
@@ -35,11 +86,14 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
       $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
       sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-    sudo apt-get update
+    run_step "Updating package lists (Docker repo)" sudo apt-get update -qq
 
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    run_step "Installing Docker Engine" \
+        sudo apt-get install -y \
+            docker-ce docker-ce-cli containerd.io \
+            docker-buildx-plugin docker-compose-plugin
 
-    sudo systemctl start docker
+    run_step "Starting Docker service" sudo systemctl start docker
 
     # if the following command fails, check if the user is part of the docker group
     if ! docker run hello-world > /dev/null 2>&1; then
@@ -123,7 +177,7 @@ EOF
         echo "You may need to manually set API_URL and PMTILES_URL in your .env file before running the application."
     fi
 
-    docker compose build
+    run_step "Building CloudTAK Docker images" docker compose build
 
 elif [[ "$SUBCOMMAND" == "backup" ]]; then
     if [ ! -f .env ]; then
