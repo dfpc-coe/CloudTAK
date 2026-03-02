@@ -17,6 +17,14 @@
 
 ### Pending Release
 
+### v12.89.0
+
+- :tada: Rewrite Login component to support display of OIDC options
+- :rocket: Add `oidc::enforced` toggle to AdminConfig
+- :rocket: Disable login endpoints if OIDC is enforced
+- :bug: Fix uppercase extension matching in S3 Profile Asset calls
+- :rocket: `Internal` Add stronger typing and coercion to the `config` object in the API to prevent bugs and ensure type safety
+
 ### v12.88.0
 
 - :tada: Channel Change Notification
