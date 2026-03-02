@@ -15,6 +15,9 @@ import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector/', import.meta.url))) {
     const { ext } = path.parse(fixturename);
 
+    // .zip files that contain a vector file (e.g. JSON) are tested by worker-json-zip.test.ts
+    if (ext.toLowerCase() === '.zip') continue;
+
     test(`Worker Data Transform Vector: ${fixturename}`, async (t) => {
         let id: string;
 

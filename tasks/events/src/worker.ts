@@ -156,17 +156,18 @@ export default class Worker extends EventEmitter {
 
         for (const file of files) {
             const { ext, base } = path.parse(file);
+            const extLower = ext.toLowerCase();
 
-            if (base !== 'MANIFEST.xml' && ext === '.xml') {
+            if (base !== 'MANIFEST.xml' && extLower === '.xml') {
                 indexes.push(file);
             } else {
                 if (base === 'MANIFEST.xml') continue;
-                if (['.png', '.xml'].includes(ext)) continue;
+                if (['.png', '.xml'].includes(extLower)) continue;
 
                 await this.processFile({
                     id: randomUUID(),
                     tmpdir: pkg.path,
-                    ext: ext,
+                    ext: extLower,
                     name: base,
                     raw: path.resolve(pkg.path, './raw/', file)
                 });
