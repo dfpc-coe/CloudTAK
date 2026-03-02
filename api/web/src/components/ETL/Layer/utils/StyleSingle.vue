@@ -8,10 +8,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconLicense :size='20' stroke='1' /> Global ID
+                    <IconLicense
+                        :size='20'
+                        stroke='1'
+                    /> Global ID
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='enabled.id' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='enabled.id'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleTemplate
@@ -27,10 +34,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconBlockquote :size='20' stroke='1' /> Global Callsign
+                    <IconBlockquote
+                        :size='20'
+                        stroke='1'
+                    /> Global Callsign
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='enabled.callsign' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='enabled.callsign'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleTemplate
@@ -46,10 +60,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconClock :size='20' stroke='1' /> Global Stale
+                    <IconClock
+                        :size='20'
+                        stroke='1'
+                    /> Global Stale
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='enabled.stale' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='enabled.stale'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleTemplate
@@ -70,10 +91,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconEye :size='20' stroke='1' /> Global Min Zoom
+                    <IconEye
+                        :size='20'
+                        stroke='1'
+                    /> Global Min Zoom
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='enabled.minzoom' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='enabled.minzoom'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleTemplate
@@ -89,10 +117,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconEye :size='20' stroke='1' /> Global Max Zoom
+                    <IconEye
+                        :size='20'
+                        stroke='1'
+                    /> Global Max Zoom
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='enabled.maxzoom' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='enabled.maxzoom'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleTemplate
@@ -108,10 +143,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconBlockquote :size='20' stroke='1' /> Global Remarks
+                    <IconBlockquote
+                        :size='20'
+                        stroke='1'
+                    /> Global Remarks
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='enabled.remarks' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='enabled.remarks'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleTemplate
@@ -125,10 +167,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconLink :size='20' stroke='1' /> Global Links
+                    <IconLink
+                        :size='20'
+                        stroke='1'
+                    /> Global Links
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='enabled.links' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='enabled.links'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleLinks
@@ -142,10 +191,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconServer :size='20' stroke='1' /> Global Marti
+                    <IconServer
+                        :size='20'
+                        stroke='1'
+                    /> Global Marti
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='enabled.marti' :disabled='disabled || props.disableMarti' label='Enabled' />
+                    <TablerToggle
+                        v-model='enabled.marti'
+                        :disabled='disabled || props.disableMarti'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <TablerInlineAlert
@@ -172,17 +228,56 @@
                 class='btn-group'
                 role='group'
             >
-                <input id='geom-point' v-model='mode' type='radio' class='btn-check' name='geom-toolbar' value='point'>
-                <label class='btn btn-icon px-3' for='geom-point'>
-                    <IconPoint :size='32' stroke='1' /> Points
+                <input
+                    id='geom-point'
+                    v-model='mode'
+                    type='radio'
+                    class='btn-check'
+                    name='geom-toolbar'
+                    value='point'
+                >
+                <label
+                    class='btn btn-icon px-3'
+                    for='geom-point'
+                >
+                    <IconPoint
+                        :size='32'
+                        stroke='1'
+                    /> Points
                 </label>
-                <input id='geom-line' v-model='mode' type='radio' class='btn-check' name='geom-toolbar' value='line'>
-                <label class='btn btn-icon px-3' for='geom-line'>
-                    <IconLine :size='32' stroke='1' /> Lines
+                <input
+                    id='geom-line'
+                    v-model='mode'
+                    type='radio'
+                    class='btn-check'
+                    name='geom-toolbar'
+                    value='line'
+                >
+                <label
+                    class='btn btn-icon px-3'
+                    for='geom-line'
+                >
+                    <IconLine
+                        :size='32'
+                        stroke='1'
+                    /> Lines
                 </label>
-                <input id='geom-polygon' v-model='mode' type='radio' class='btn-check' name='geom-toolbar' value='polygon'>
-                <label class='btn btn-icon px-3' for='geom-polygon'>
-                    <IconPolygon :size='32' stroke='1' /> Polygons
+                <input
+                    id='geom-polygon'
+                    v-model='mode'
+                    type='radio'
+                    class='btn-check'
+                    name='geom-toolbar'
+                    value='polygon'
+                >
+                <label
+                    class='btn btn-icon px-3'
+                    for='geom-polygon'
+                >
+                    <IconPolygon
+                        :size='32'
+                        stroke='1'
+                    /> Polygons
                 </label>
             </div>
         </div>
@@ -190,10 +285,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconLicense :size='20' stroke='1' /> ID Override
+                    <IconLicense
+                        :size='20'
+                        stroke='1'
+                    /> ID Override
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled.id' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='filters[mode].enabled.id'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleTemplate
@@ -208,10 +310,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconBlockquote :size='20' stroke='1' /> Callsign Override
+                    <IconBlockquote
+                        :size='20'
+                        stroke='1'
+                    /> Callsign Override
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled.callsign' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='filters[mode].enabled.callsign'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleTemplate
@@ -226,10 +335,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconClock :size='20' stroke='1' /> Stale Override
+                    <IconClock
+                        :size='20'
+                        stroke='1'
+                    /> Stale Override
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled.stale' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='filters[mode].enabled.stale'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleTemplate
@@ -250,10 +366,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconEye :size='20' stroke='1' /> Min Zoom Override
+                    <IconEye
+                        :size='20'
+                        stroke='1'
+                    /> Min Zoom Override
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled.minzoom' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='filters[mode].enabled.minzoom'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleTemplate
@@ -269,10 +392,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconEye :size='20' stroke='1' /> Max Zoom Override
+                    <IconEye
+                        :size='20'
+                        stroke='1'
+                    /> Max Zoom Override
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled.maxzoom' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='filters[mode].enabled.maxzoom'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleTemplate
@@ -288,10 +418,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconBlockquote :size='20' stroke='1' /> Remarks Override
+                    <IconBlockquote
+                        :size='20'
+                        stroke='1'
+                    /> Remarks Override
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled.remarks' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='filters[mode].enabled.remarks'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleTemplate
@@ -306,10 +443,17 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
-                    <IconLink :size='20' stroke='1' /> Links Override
+                    <IconLink
+                        :size='20'
+                        stroke='1'
+                    /> Links Override
                 </label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled.links' :disabled='disabled' label='Enabled' />
+                    <TablerToggle
+                        v-model='filters[mode].enabled.links'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
             <StyleLinks
@@ -325,10 +469,17 @@
             <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
-                        <IconCategory :size='20' stroke='1' /> Point Type
+                        <IconCategory
+                            :size='20'
+                            stroke='1'
+                        /> Point Type
                     </label>
                     <div class='ms-auto'>
-                        <TablerToggle v-model='filters[mode].enabled.type' :disabled='disabled' label='Enabled' />
+                        <TablerToggle
+                            v-model='filters[mode].enabled.type'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
                     </div>
                 </div>
                 <StyleTemplate
@@ -344,10 +495,17 @@
             <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
-                        <IconPhoto :size='20' stroke='1' /> Point Icon
+                        <IconPhoto
+                            :size='20'
+                            stroke='1'
+                        /> Point Icon
                     </label>
                     <div class='ms-auto'>
-                        <TablerToggle v-model='filters[mode].enabled.icon' :disabled='disabled' label='Enabled' />
+                        <TablerToggle
+                            v-model='filters[mode].enabled.icon'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
                     </div>
                 </div>
                 <IconSelect
@@ -361,10 +519,17 @@
             <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
-                        <IconPaint :size='20' stroke='1' /> Point Color
+                        <IconPaint
+                            :size='20'
+                            stroke='1'
+                        /> Point Color
                     </label>
                     <div class='ms-auto'>
-                        <TablerToggle v-model='filters[mode].enabled["marker-color"]' :disabled='disabled' label='Enabled' />
+                        <TablerToggle
+                            v-model='filters[mode].enabled["marker-color"]'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
                     </div>
                 </div>
                 <TablerInput
@@ -378,7 +543,10 @@
             <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
-                        <IconGhost :size='20' stroke='1' /> Point Opacity
+                        <IconGhost
+                            :size='20'
+                            stroke='1'
+                        /> Point Opacity
                     </label>
                     <span
                         v-if='filters[mode].enabled["marker-opacity"]'
@@ -386,7 +554,11 @@
                         v-text='`(${Math.round(filters[mode].properties["marker-opacity"] * 100)}%)`'
                     />
                     <div class='ms-auto'>
-                        <TablerToggle v-model='filters[mode].enabled["marker-opacity"]' :disabled='disabled' label='Enabled' />
+                        <TablerToggle
+                            v-model='filters[mode].enabled["marker-opacity"]'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
                     </div>
                 </div>
                 <TablerRange
@@ -404,10 +576,17 @@
             <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
-                        <IconPaint :size='20' stroke='1' /> Line Color
+                        <IconPaint
+                            :size='20'
+                            stroke='1'
+                        /> Line Color
                     </label>
                     <div class='ms-auto'>
-                        <TablerToggle v-model='filters[mode].enabled.stroke' :disabled='disabled' label='Enabled' />
+                        <TablerToggle
+                            v-model='filters[mode].enabled.stroke'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
                     </div>
                 </div>
                 <TablerInput
@@ -421,10 +600,17 @@
             <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
-                        <IconBorderStyle2 :size='20' stroke='1' /> Line Style
+                        <IconBorderStyle2
+                            :size='20'
+                            stroke='1'
+                        /> Line Style
                     </label>
                     <div class='ms-auto'>
-                        <TablerToggle v-model='filters[mode].enabled["stroke-style"]' :disabled='disabled' label='Enabled' />
+                        <TablerToggle
+                            v-model='filters[mode].enabled["stroke-style"]'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
                     </div>
                 </div>
                 <TablerEnum
@@ -438,10 +624,17 @@
             <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
-                        <IconRuler2 :size='20' stroke='1' /> Line Width
+                        <IconRuler2
+                            :size='20'
+                            stroke='1'
+                        /> Line Width
                     </label>
                     <div class='ms-auto'>
-                        <TablerToggle v-model='filters[mode].enabled["stroke-width"]' :disabled='disabled' label='Enabled' />
+                        <TablerToggle
+                            v-model='filters[mode].enabled["stroke-width"]'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
                     </div>
                 </div>
                 <TablerRange
@@ -457,7 +650,10 @@
             <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
-                        <IconGhost :size='20' stroke='1' /> Line Opacity
+                        <IconGhost
+                            :size='20'
+                            stroke='1'
+                        /> Line Opacity
                     </label>
                     <span
                         v-if='filters[mode].enabled["stroke-opacity"]'
@@ -465,7 +661,11 @@
                         v-text='`(${Math.round(filters[mode].properties["stroke-opacity"] * 100)}%)`'
                     />
                     <div class='ms-auto'>
-                        <TablerToggle v-model='filters[mode].enabled["stroke-opacity"]' :disabled='disabled' label='Enabled' />
+                        <TablerToggle
+                            v-model='filters[mode].enabled["stroke-opacity"]'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
                     </div>
                 </div>
                 <TablerRange
@@ -483,10 +683,17 @@
             <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
-                        <IconPaint :size='20' stroke='1' /> Fill Color
+                        <IconPaint
+                            :size='20'
+                            stroke='1'
+                        /> Fill Color
                     </label>
                     <div class='ms-auto'>
-                        <TablerToggle v-model='filters[mode].enabled.fill' :disabled='disabled' label='Enabled' />
+                        <TablerToggle
+                            v-model='filters[mode].enabled.fill'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
                     </div>
                 </div>
                 <TablerInput
@@ -500,7 +707,10 @@
             <div class='col-12 style-item px-2 py-2'>
                 <div class='d-flex align-items-center'>
                     <label class='user-select-none subheader'>
-                        <IconGhost :size='20' stroke='1' /> Fill Opacity
+                        <IconGhost
+                            :size='20'
+                            stroke='1'
+                        /> Fill Opacity
                     </label>
                     <span
                         v-if='filters[mode].enabled["fill-opacity"]'
@@ -508,7 +718,11 @@
                         v-text='`(${Math.round(filters[mode].properties["fill-opacity"] * 100)}%)`'
                     />
                     <div class='ms-auto'>
-                        <TablerToggle v-model='filters[mode].enabled["fill-opacity"]' :disabled='disabled' label='Enabled' />
+                        <TablerToggle
+                            v-model='filters[mode].enabled["fill-opacity"]'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
                     </div>
                 </div>
                 <TablerRange

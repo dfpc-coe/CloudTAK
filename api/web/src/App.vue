@@ -1,5 +1,33 @@
 <template>
     <div class='page h-100 cloudtak-gradient'>
+        <!-- New-version upgrade banner -->
+        <div
+            v-if='updateAvailable'
+            class='d-flex align-items-center justify-content-center flex-wrap gap-2 px-3 py-2'
+            style='background: rgba(20,20,20,0.88); backdrop-filter: blur(6px);'
+        >
+            <IconRefresh
+                size='16'
+                class='text-success flex-shrink-0'
+            />
+            <span class='text-white small'>
+                A new version of CloudTAK is ready
+                <template v-if='updatedSW.version && updatedSW.version !== version'>
+                    &mdash; v{{ version }} &rarr; v{{ updatedSW.version }}
+                </template>
+            </span>
+            <button
+                class='btn btn-sm btn-success py-0'
+                @click='applyUpdate'
+            >
+                Update Now
+            </button>
+            <button
+                class='btn-close btn-close-white'
+                style='font-size: 0.65rem;'
+                @click='updateAvailable = false'
+            />
+        </div>
         <header
             v-if='navShown'
             class='navbar navbar-expand-md d-print-none'
@@ -120,7 +148,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onErrorCaptured, onMounted } from 'vue'
+import { ref, computed, onErrorCaptured, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router';
 import Config from './base/config.ts';
 import ServerManager from './base/server.ts';
@@ -132,7 +160,9 @@ import {
     IconUser,
     IconNetwork,
     IconSettings,
+    IconRefresh,
 } from '@tabler/icons-vue';
+import { version } from '../package.json';
 import Loading from './components/Loading.vue';
 import {
     TablerError
@@ -147,6 +177,34 @@ const route = useRoute();
 
 const loginLogo = ref<string>();
 const loginName = ref<string>();
+
+const updateAvailable = ref(false);
+const updatedSW = ref<{ version: string | null; build: string | null }>({ version: null, build: null });
+
+const applyUpdate = () => {
+    window.location.reload();
+};
+
+const onSwUpdated = async (e: Event) => {
+    e.preventDefault();
+
+    try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const reg of regs) {
+            const worker = reg.active;
+            if (worker?.scriptURL) {
+                const u = new URL(worker.scriptURL);
+                updatedSW.value = {
+                    version: u.searchParams.get('v'),
+                    build: u.searchParams.get('build')
+                };
+                break;
+            }
+        }
+    } catch { /* ignore */ }
+
+    updateAvailable.value = true;
+};
 
 const loading = ref(true);
 const inviteMission = ref<{
@@ -253,8 +311,38 @@ onMounted(async () => {
         }
     }
 
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+            for (const registration of registrations) {
+                registration.update();
+            }
+
+            try {
+                for (const reg of registrations) {
+                    const worker = reg.active;
+                    if (worker?.scriptURL) {
+                        const u = new URL(worker.scriptURL);
+                        const swBuild = u.searchParams.get('build');
+                        const swVersion = u.searchParams.get('v');
+                        if (swBuild && swBuild !== import.meta.env.HASH) {
+                            updatedSW.value = { version: swVersion, build: swBuild };
+                            updateAvailable.value = true;
+                        }
+                        break;
+                    }
+                }
+            } catch { /* ignore */ }
+        });
+
+        window.addEventListener('sw:updated', onSwUpdated);
+    }
+
     loading.value = false;
     mounted.value = true;
+});
+
+onUnmounted(() => {
+    window.removeEventListener('sw:updated', onSwUpdated);
 });
 
 function logout() {

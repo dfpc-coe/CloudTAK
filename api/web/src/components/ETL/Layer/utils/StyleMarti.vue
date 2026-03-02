@@ -2,7 +2,10 @@
     <div class='col-12'>
         <div class='col-12 d-flex align-items-center py-2'>
             <label class='user-select-none subheader'>
-                <IconArchive :size='20' stroke='1' /> Archive CoT
+                <IconArchive
+                    :size='20'
+                    stroke='1'
+                /> Archive CoT
             </label>
             <div class='ms-auto'>
                 <div
@@ -15,28 +18,37 @@
                         :class='marti.archive === undefined ? "btn-secondary" : "btn-outline-secondary"'
                         :disabled='props.disabled'
                         @click='marti.archive = undefined'
-                    >Default</button>
+                    >
+                        Default
+                    </button>
                     <button
                         type='button'
                         class='btn'
                         :class='marti.archive === true ? "btn-secondary" : "btn-outline-secondary"'
                         :disabled='props.disabled'
                         @click='marti.archive = true'
-                    >On</button>
+                    >
+                        On
+                    </button>
                     <button
                         type='button'
                         class='btn'
                         :class='marti.archive === false ? "btn-secondary" : "btn-outline-secondary"'
                         :disabled='props.disabled'
                         @click='marti.archive = false'
-                    >Off</button>
+                    >
+                        Off
+                    </button>
                 </div>
             </div>
         </div>
 
         <div class='col-12 d-flex align-items-center py-2'>
             <label class='user-select-none subheader'>
-                <IconSend :size='20' stroke='1' /> Routing Destinations
+                <IconSend
+                    :size='20'
+                    stroke='1'
+                /> Routing Destinations
             </label>
             <div
                 v-if='!props.disabled'
@@ -98,7 +110,10 @@
                 class='btn btn-outline-danger flex-shrink-0'
                 @click='removeDest(it)'
             >
-                <IconTrash :size='20' stroke='1' />
+                <IconTrash
+                    :size='20'
+                    stroke='1'
+                />
             </button>
         </div>
     </div>
