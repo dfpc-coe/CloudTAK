@@ -427,7 +427,7 @@
                     <div class='modal-body text-white'>
                         <Upload
                             :url='stdurl("/api/import")'
-                            :headers='{ Authorization: `Bearer ${localStorage.token}` }'
+                                                        :headers='{ Authorization: `Bearer ${token}` }'
                             method='PUT'
                             :cancel='false'
                             @cancel='upload.shown = false'
@@ -494,6 +494,7 @@ import ProfileConfig from '../../base/profile.ts';
 
 const mapStore = useMapStore();
 const floatStore = useFloatStore();
+const token = computed(() => String(localStorage.token ?? ''));
 const router = useRouter();
 const route = useRoute();
 
