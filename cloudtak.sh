@@ -66,6 +66,10 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
         exit 1
     fi
 
+    # Prompt for sudo credentials upfront so background run_step calls
+    # never need to show an interactive password prompt mid-spinner.
+    sudo -v
+
     run_step "Updating package lists" sudo apt-get update -qq
     run_step "Installing base packages (git, jq, curl, caddy…)" \
         sudo apt-get install -y git jq ca-certificates curl caddy dnsutils
