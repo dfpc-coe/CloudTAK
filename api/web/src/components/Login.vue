@@ -71,7 +71,7 @@
                                         <div class='mb-2'>
                                             <IconLock
                                                 :size='32'
-                                                :stroke='1.5'
+                                                stroke='1.5'
                                             />
                                         </div>
                                         <p class='mb-0'>
