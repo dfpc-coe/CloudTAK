@@ -7,9 +7,19 @@ set -euo pipefail
 # ── Terminal helpers ────────────────────────────────────────────────────────────
 BOLD=$(tput bold 2>/dev/null || true)
 GREEN=$(tput setaf 2 2>/dev/null || true)
+YELLOW=$(tput setaf 3 2>/dev/null || true)
 RED=$(tput setaf 1 2>/dev/null || true)
 DIM=$(tput dim 2>/dev/null || true)
 RESET=$(tput sgr0 2>/dev/null || true)
+
+# log_info  – neutral, indented to align with ✔/✘ lines
+log_info() { printf "     %s\n" "$*"; }
+# log_ok    – green ✔
+log_ok()   { printf "  %b✔%b  %s\n" "$GREEN$BOLD" "$RESET" "$*"; }
+# log_warn  – yellow ⚠
+log_warn() { printf "  %b⚠%b  %s\n" "$YELLOW$BOLD" "$RESET" "$*"; }
+# log_err   – red ✘  (does NOT exit; caller decides)
+log_err()  { printf "  %b✘%b  %s\n" "$RED$BOLD" "$RESET" "$*"; }
 
 # run_step <label> <cmd> [args…]
 #   Runs <cmd> in the background, shows a spinner, prints ✔/✘ on completion.
@@ -37,10 +47,9 @@ run_step() {
         printf "\r  %b✔%b  %s\n" "$GREEN$BOLD" "$RESET" "$label"
     else
         printf "\r  %b✘%b  %s\n" "$RED$BOLD" "$RESET" "$label"
-        echo
-        echo "${RED}--- Error output ---${RESET}"
+        printf "\n  %b--- Error output ---%b\n" "$RED" "$RESET"
         cat "$log"
-        echo "${RED}--- End of output ---${RESET}"
+        printf "  %b--- End of output ---%b\n" "$RED" "$RESET"
         rm -f "$log"
         exit $rc
     fi
@@ -54,15 +63,13 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
         . /etc/os-release
 
         if [ "$ID" = "ubuntu" ]; then
-            echo "This is an Ubuntu system. ✅"
-            echo "Details: $PRETTY_NAME"
+            printf "  %b✔%b  Ubuntu detected: %s\n" "$GREEN$BOLD" "$RESET" "$PRETTY_NAME"
         else
-            echo "This is not an Ubuntu system. ❌"
-            echo "OS Identified: $PRETTY_NAME"
+            printf "  %b✘%b  Not Ubuntu: %s\n" "$RED$BOLD" "$RESET" "$PRETTY_NAME"
             exit 1
         fi
     else
-        echo "Cannot determine the OS, the /etc/os-release file is missing."
+        printf "  %b✘%b  Cannot determine OS: /etc/os-release is missing\n" "$RED$BOLD" "$RESET"
         exit 1
     fi
 
@@ -101,56 +108,55 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
 
     # if the following command fails, check if the user is part of the docker group
     if ! docker run hello-world > /dev/null 2>&1; then
-        echo "Docker run failed - Checking for 'docker' group"
+        log_warn "Docker run failed - Checking for 'docker' group"
 
         if getent group docker > /dev/null 2>&1; then
-            echo "ok - 'docker' group exists."
+            log_ok "'docker' group exists"
         else
-            echo "ok - 'docker' group does not exist. Creating 'docker' group..."
+            log_info "'docker' group does not exist - creating it..."
             sudo groupadd docker
         fi
 
         # check if user is a member of docker group
         if id -nG "$USER" | grep -qw docker; then
-            echo "User '$USER' is already a member of 'docker' group."
+            log_ok "User '$USER' is already a member of 'docker' group"
         else
-            echo "User '$USER' is not a member of 'docker' group. Adding user to 'docker' group..."
+            log_info "Adding user '$USER' to 'docker' group..."
             sudo usermod -aG docker $USER
         fi
     fi
 
     if ! docker run hello-world > /dev/null 2>&1; then
-        echo "Docker run still failed - Please log out and log back in, then re-run './cloudtak.sh install'"
+        log_err "Docker run still failed - please log out and back in, then re-run './cloudtak.sh install'"
         exit 1
     fi
 
     if [[ ! -f .env ]]; then
-        echo "Generating a new .env file with default settings..."
+        log_info "Generating a new .env file from defaults..."
         cp .env.example .env
-        echo ".env file created. Please review and modify it as needed."
-
-        echo "Generating Random SigningSecret"
+        log_info "Generating random SigningSecret"
         sed -i "s/^SigningSecret=.*/SigningSecret=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)/" .env
+        log_ok ".env created - please review it before starting"
     else
-        echo ".env file already exists. Skipping creation."
+        log_ok ".env already exists - skipping creation"
     fi
 
     read -p "Enter the API_URL (e.g. map.example.com): " API_URL
     if [[ -n "$API_URL" ]]; then
-        echo "Checking DNS records for $API_URL..."
+        log_info "Checking DNS for $API_URL..."
         if dig +short "$API_URL" A | grep -q .; then
-            echo "DNS check passed: A records found for $API_URL."
+            log_ok "DNS check passed for $API_URL"
             sed -i "s|^API_URL=.*|API_URL=https://$API_URL|" .env
-            echo "Updated API_URL in .env"
+            log_ok "Updated API_URL in .env"
 
             PMTILES_URL="tiles.$API_URL"
-            echo "Checking DNS records for $PMTILES_URL..."
+            log_info "Checking DNS for $PMTILES_URL..."
             if dig +short "$PMTILES_URL" A | grep -q .; then
-                echo "DNS check passed: A records found for $PMTILES_URL."
+                log_ok "DNS check passed for $PMTILES_URL"
                 sed -i "s|^PMTILES_URL=.*|PMTILES_URL=https://$PMTILES_URL|" .env
-                echo "Updated PMTILES_URL in .env"
+                log_ok "Updated PMTILES_URL in .env"
 
-                echo "Generating Caddyfile..."
+                log_info "Generating Caddyfile..."
                 cat <<EOF | sudo tee /etc/caddy/Caddyfile > /dev/null
 # CloudTAK app
 $API_URL {
@@ -162,62 +168,60 @@ $PMTILES_URL {
         reverse_proxy localhost:5002
 }
 EOF
-                echo "Caddyfile generated at /etc/caddy/Caddyfile"
+                log_ok "Caddyfile written to /etc/caddy/Caddyfile"
                 sudo systemctl reload caddy
             else
-                echo "DNS check failed: No A records found for $PMTILES_URL."
-                echo "Please ensure your DNS is configured correctly."
-                echo "Run ./cloudtak.sh install again after fixing DNS."
+                log_err "DNS check failed: no A records found for $PMTILES_URL"
+                log_info "Ensure DNS is configured correctly, then re-run './cloudtak.sh install'"
                 exit 1
             fi
         else
-            echo "DNS check failed: No A records found for $API_URL."
-            echo "Please ensure your DNS is configured correctly."
-            echo "Run ./cloudtak.sh install again after fixing DNS."
+            log_err "DNS check failed: no A records found for $API_URL"
+            log_info "Ensure DNS is configured correctly, then re-run './cloudtak.sh install'"
             exit 1
         fi
     else
-        echo "WARNING: No API_URL provided. Skipping DNS validation and .env updates for API_URL and PMTILES_URL."
-        echo "You may need to manually set API_URL and PMTILES_URL in your .env file before running the application."
+        log_warn "No API_URL provided - skipping DNS validation and .env updates"
+        log_info "Set API_URL and PMTILES_URL in .env manually before starting"
     fi
 
     run_step "Building CloudTAK Docker images" docker compose build
 
 elif [[ "$SUBCOMMAND" == "backup" ]]; then
     if [ ! -f .env ]; then
-        echo ".env file not found. Please run 'install' first."
+        log_err ".env file not found - please run './cloudtak.sh install' first"
         exit 1
     fi
 
     # Check if postgres container is running
     if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
-        echo "PostgreSQL container is not running. Please start the services first."
+        log_err "PostgreSQL container is not running - please start services first"
         exit 1
     fi
 
     mkdir -p ~/cloudtak-backups
     BACKUP_FILE=~/cloudtak-backups/cloudtak-$(date +%Y%m%d_%H%M%S).sql
-    echo "Backing up PostgreSQL database to ${BACKUP_FILE}"
+    log_info "Backing up PostgreSQL database to ${BACKUP_FILE}"
     docker exec cloudtak-postgis-1 pg_dump -d $(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/') > $BACKUP_FILE
 elif [[ "$SUBCOMMAND" == "restore" ]]; then
     TARGET_FILE=${2:-}
     FORCE=${3:-}
 
     if [ ! -f .env ]; then
-        echo ".env file not found. Please run 'install' first."
+        log_err ".env file not found - please run './cloudtak.sh install' first"
         exit 1
     fi
 
     if [[ -n "$TARGET_FILE" ]]; then
         BACKUP_FILE="$TARGET_FILE"
         if [ ! -f "$BACKUP_FILE" ]; then
-            echo "Backup file $BACKUP_FILE does not exist."
+            log_err "Backup file $BACKUP_FILE does not exist"
             exit 1
         fi
     else
         BACKUP_DIR=~/cloudtak-backups
         if [ ! -d "$BACKUP_DIR" ]; then
-            echo "Backup directory $BACKUP_DIR does not exist."
+            log_err "Backup directory $BACKUP_DIR does not exist"
             exit 1
         fi
 
@@ -226,63 +230,63 @@ elif [[ "$SUBCOMMAND" == "restore" ]]; then
         shopt -u nullglob
 
         if [ ${#FILES[@]} -eq 0 ]; then
-            echo "No backup files found in $BACKUP_DIR"
+            log_err "No backup files found in $BACKUP_DIR"
             exit 1
         fi
 
-        echo "Available backups:"
+        log_info "Available backups:"
         PS3="Select a backup number to restore (or 'q' to quit): "
         select BACKUP_FILE in "${FILES[@]}"; do
             if [[ -n "$BACKUP_FILE" ]]; then
                 break
             fi
             if [[ "$REPLY" == "q" || "$REPLY" == "quit" ]]; then
-                echo "Cancelled."
+                log_info "Cancelled"
                 exit 0
             fi
-            echo "Invalid selection. Please try again."
+            log_warn "Invalid selection - please try again"
         done
-        echo "You selected: $BACKUP_FILE"
+        log_ok "Selected: $BACKUP_FILE"
     fi
 
     if [[ "$FORCE" != "--force" ]]; then
         read -p "WARNING: This will OVERWRITE the current database. Are you sure? (y/n): " CONFIRM
         if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
-            echo "Restore cancelled."
+            log_info "Restore cancelled"
             exit 0
         fi
     fi
 
     if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
-        echo "PostgreSQL container is not running. Starting it..."
+        log_warn "PostgreSQL container is not running - starting it..."
         docker compose up -d postgis
         sleep 5
     fi
 
     DB_URL=$(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/')
 
-    echo "Dropping existing public schema..."
+    log_info "Dropping existing public schema..."
     docker exec cloudtak-postgis-1 psql -d "$DB_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
-    echo "Restoring database from $BACKUP_FILE..."
+    log_info "Restoring database from $BACKUP_FILE..."
     cat "$BACKUP_FILE" | docker exec -i cloudtak-postgis-1 psql -d "$DB_URL"
 
-    echo "Restore complete."
+    log_ok "Restore complete"
 elif [[ "$SUBCOMMAND" == "connect" ]]; then
     if [ ! -f .env ]; then
-        echo ".env file not found. Please run 'install' first."
+        log_err ".env file not found - please run './cloudtak.sh install' first"
         exit 1
     fi
 
     if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
-        echo "PostgreSQL container is not running. Please start the services first."
+        log_err "PostgreSQL container is not running - please start services first"
         exit 1
     fi
 
     DB_URL=$(grep "^POSTGRES=postgres:" .env | sed 's/^POSTGRES=//' | sed 's/@postgis:5432/@localhost:5432/')
 
-    echo "Connection String: $DB_URL"
-    echo "Connecting to PostgreSQL database..."
+    log_info "Connection string: $DB_URL"
+    log_info "Connecting to PostgreSQL database..."
     docker exec -it cloudtak-postgis-1 psql -d "$DB_URL"
 elif [[ "$SUBCOMMAND" == "start" ]]; then
     if ! docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
@@ -298,28 +302,27 @@ elif [[ "$SUBCOMMAND" == "stop" ]]; then
     docker compose stop
 elif [[ "$SUBCOMMAND" == "clean" ]]; then
     if ! command -v jq &> /dev/null; then
-        echo "jq could not be found, please install jq first."
-        echo "On Ubuntu: sudo apt-get install jq"
+        log_err "jq not found - install it first"
+        log_info "On Ubuntu: sudo apt-get install jq"
         exit 1
     fi
 
     PROJECT_NAME=$(docker compose config --format json | jq -r .name)
-    echo "Cleaning up unused Docker images for project: $PROJECT_NAME..."
+    log_info "Cleaning up unused Docker images for project: $PROJECT_NAME..."
     docker image prune --filter label=com.docker.compose.project=$PROJECT_NAME
 elif [[ "$SUBCOMMAND" == "update" ]]; then
     if ! command -v git &> /dev/null; then
-        echo "git could not be found, please install git first."
-        echo "On Ubuntu: sudo apt-get install git"
+        log_err "git not found - install it first"
+        log_info "On Ubuntu: sudo apt-get install git"
         exit 1
     fi
 
     if [ ! -d .git ]; then
-        echo "This directory is not a git repository. Please run './cloudtak.sh install' first."
+        log_err "This directory is not a git repository - please run './cloudtak.sh install' first"
         exit 1
     fi
 
-    # Always backup database
-    echo "Backing up database..."
+    log_info "Backing up database before update..."
     $0 backup
     LATEST_BACKUP=$(ls -t ~/cloudtak-backups/cloudtak-*.sql 2>/dev/null | head -n1)
 
@@ -330,7 +333,7 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
 
     $0 start
 
-    echo "Verifying database integrity..."
+    log_info "Verifying database integrity..."
     sleep 10
 
     if docker compose ps | grep "cloudtak-postgis" &> /dev/null; then
@@ -338,25 +341,25 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
 
         # Check table count
         if TABLE_COUNT=$(docker exec cloudtak-postgis-1 psql -d "$DB_URL" -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | xargs); then
-            echo "Found $TABLE_COUNT tables in public schema."
+            log_info "Found $TABLE_COUNT tables in public schema"
 
             if [[ "$TABLE_COUNT" -eq 0 ]]; then
-                echo "Database appears empty!"
+                log_warn "Database appears empty!"
                 if [[ -n "$LATEST_BACKUP" && -f "$LATEST_BACKUP" ]]; then
-                    echo "Attempting automatic restore from $LATEST_BACKUP..."
+                    log_warn "Attempting automatic restore from $LATEST_BACKUP..."
                     $0 restore "$LATEST_BACKUP" --force
-                    echo "Automatic restore complete."
+                    log_ok "Automatic restore complete"
                 else
-                    echo "No backup available to restore from!"
+                    log_err "No backup available to restore from!"
                 fi
             else
-                echo "Database seems intact."
+                log_ok "Database integrity check passed"
             fi
         else
-            echo "Failed to check database table count."
+            log_err "Failed to check database table count"
         fi
     else
-        echo "PostGIS container is not running. Skipping database check."
+        log_warn "PostGIS container is not running - skipping database check"
     fi
 
     read -p "Cleanup unused docker images? (y/n): " CLEAN_CHOICE
@@ -364,6 +367,6 @@ elif [[ "$SUBCOMMAND" == "update" ]]; then
         $0 clean
     fi
 else
-    echo "Usage: $0 install|start|update|stop|backup|restore|clean|connect"
+    log_info "Usage: $0 install|start|update|stop|backup|restore|clean|connect"
     exit 0
 fi
