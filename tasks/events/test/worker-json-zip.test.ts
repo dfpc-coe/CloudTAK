@@ -42,7 +42,8 @@ test(`Worker Data Transform Vector: JSON File within ZIP`, async (t) => {
         id = body.id;
 
         assert.ok(id, 'Asset id is set');
-        assert.ok(body.name.toLowerCase().endsWith('.json'), 'Asset name has .json extension');
+        // The name ext must be lowercase to match the lowercased S3 key used during upload
+        assert.ok(body.name.endsWith('.json'), 'Asset name has lowercase .json extension (not .JSON)');
 
         return {
             statusCode: 200,

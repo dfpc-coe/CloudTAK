@@ -151,7 +151,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
 
-            const head = await S3.head(`profile/${user.email}/${req.body.id}${path.parse(req.body.name).ext}`)
+            const head = await S3.head(`profile/${user.email}/${req.body.id}${path.parse(req.body.name).ext.toLowerCase()}`)
 
             const artifacts = [];
             for (const artifact of req.body.artifacts) {
