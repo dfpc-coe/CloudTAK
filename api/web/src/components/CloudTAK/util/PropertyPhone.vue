@@ -29,7 +29,7 @@
 <script setup lang='ts'>
 import { ref, watch } from 'vue';
 import CopyField from './CopyField.vue';
-import phoneFormat from 'phone';
+import { phone as phoneFormat } from 'phone';
 import {
     IconPhone
 } from '@tabler/icons-vue';
