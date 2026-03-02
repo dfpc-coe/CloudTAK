@@ -25,6 +25,8 @@ export enum WorkerMessageType {
     Mission_Change_Feature = 'mission:change:feature',
     Mission_Invite = 'mission:invite',
 
+    Channel_Change = 'channel:change',
+
     Feature_Update = 'cloudtak:feature:update',
     Profile_Update = 'cloudtak:profile:update',
 }
