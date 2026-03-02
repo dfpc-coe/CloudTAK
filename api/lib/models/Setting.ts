@@ -9,6 +9,26 @@ import { FullConfigDefaults } from '../defaults.js';
 
 type FullConfigType = Static<typeof FullConfig>;
 
+/**
+ * Coerce a raw DB text value into the type declared by the FullConfig schema
+ * for the given key. Settings are stored as text, so booleans arrive as
+ * 'true'/'false' and numbers as '4', etc.
+ */
+function coerceRawValue<K extends keyof FullConfigType>(key: K, raw: string): FullConfigType[K] {
+    const schema = FullConfig.properties[key] as any;
+
+    if (schema.type === 'boolean') return (raw === 'true') as FullConfigType[K];
+    if (schema.type === 'integer' || schema.type === 'number') return Number(raw) as FullConfigType[K];
+
+    // Handle union types e.g. Type.Union([Type.Null(), Type.Integer()])
+    if (Array.isArray(schema.anyOf)) {
+        const hasNumber = schema.anyOf.some((s: any) => s.type === 'integer' || s.type === 'number');
+        if (hasNumber) return Number(raw) as FullConfigType[K];
+    }
+
+    return raw as FullConfigType[K];
+}
+
 export default class SettingModel extends Modeler<typeof Setting> {
     constructor(
         pool: PostgresJsDatabase<Record<string, unknown>>,
@@ -42,7 +62,7 @@ export default class SettingModel extends Modeler<typeof Setting> {
 
         return {
             key,
-            value: pgres[0].value as FullConfigType[K]
+            value: coerceRawValue(key, pgres[0].value)
         };
     }
 
@@ -62,7 +82,7 @@ export default class SettingModel extends Modeler<typeof Setting> {
         const result = { ...defaults };
         for (const key of keys) {
             if (found.has(key as string)) {
-                result[key] = found.get(key as string) as Pick<FullConfigType, K>[K];
+                result[key] = coerceRawValue(key, found.get(key as string) as string) as Pick<FullConfigType, K>[K];
             } else if (FullConfigDefaults[key] !== undefined) {
                 result[key] = FullConfigDefaults[key] as Pick<FullConfigType, K>[K];
             }
