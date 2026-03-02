@@ -66,6 +66,30 @@ export default class SettingModel extends Modeler<typeof Setting> {
         };
     }
 
+    async typedKeys<K extends keyof FullConfigType>(keys: K[]): Promise<Partial<Pick<FullConfigType, K>>> {
+        const pgres = await this.pool
+            .select({
+                key: Setting.key,
+                value: Setting.value,
+            })
+            .from(Setting)
+            .where(inArray(Setting.key, keys as string[]));
+
+        const found = new Map(pgres.map((r) => [r.key, r.value]));
+
+        const result: Partial<Pick<FullConfigType, K>> = {};
+        for (const key of keys) {
+            if (found.has(key as string)) {
+                result[key] = coerceRawValue(key, found.get(key as string) as string);
+            } else if (FullConfigDefaults[key] !== undefined) {
+                result[key] = FullConfigDefaults[key] as FullConfigType[K];
+            }
+            // absent from both DB and defaults → omit from result
+        }
+
+        return result;
+    }
+
     async typedMany<K extends keyof FullConfigType>(defaults: Pick<FullConfigType, K>): Promise<Pick<FullConfigType, K>> {
         const keys = Object.keys(defaults) as K[];
 
