@@ -64,31 +64,16 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Partial(FullConfig)
     }, async (req, res) => {
         try {
-            const keys = (req.query.keys || '').split(',');
-            if (!keys.every((k: string) => (PublicConfigKeys as readonly string[]).includes(k))) {
-                if (keys.every((k: string) => (PublicConfigKeys as readonly string[]).includes(k) || (UserConfigKeys as readonly string[]).includes(k))) {
+            const keys = (req.query.keys || '').split(',') as (keyof Static<typeof FullConfig>)[];
+            if (!keys.every((k) => (PublicConfigKeys as readonly string[]).includes(k))) {
+                if (keys.every((k) => (PublicConfigKeys as readonly string[]).includes(k) || (UserConfigKeys as readonly string[]).includes(k))) {
                     await Auth.as_user(config, req);
                 } else {
                     await Auth.as_user(config, req, { admin: true });
                 }
             }
 
-            const final: Record<string, string> = {};
-            (await Promise.allSettled((keys.map((key) => {
-                return config.models.Setting.from(key);
-            })))).forEach((k, i) => {
-                if (k.status === 'rejected') {
-                     
-                    if (FullConfigDefaults[keys[i] as keyof Static<typeof FullConfig>] !== undefined) {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        final[keys[i]] = FullConfigDefaults[keys[i] as keyof Static<typeof FullConfig>] as any;
-                    }
-                    return;
-                }
-                return final[k.value.key] = String(k.value.value);
-            });
-
-            res.json(final);
+            res.json(await config.models.Setting.typedKeys(keys));
         } catch (err) {
             Err.respond(err, res);
         }
