@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.88.0
+
+- :tada: Channel Change Notification
+- :white_check_mark: `.JSON` in `.zip` Unit test in events runner
+
 ### v12.87.4
 
 - :bug: A fix for a memory leak issue caused reconnection bugs when the TAK server was unexpectedly restarted, this handles reconnects gracefully.
