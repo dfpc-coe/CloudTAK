@@ -23,7 +23,11 @@ export default class MockTAKServer {
     webtak: ReturnType<typeof http.createServer>;
     marti: ReturnType<typeof https.createServer>;
 
-    sockets: Set<tls.TLSSocket | import('net').Socket>
+    /** All sockets across all three servers (streaming + HTTP) */
+    sockets: Set<tls.TLSSocket | import('net').Socket>;
+
+    /** Only the TLS sockets connected to the TAK streaming port (8089) */
+    streamingSockets: Set<tls.TLSSocket>
 
     defaultMartiResponses: boolean;
     defaultWebtakResponses: boolean;
@@ -54,6 +58,7 @@ export default class MockTAKServer {
         this.mockWebtak = [];
 
         this.sockets = new Set();
+        this.streamingSockets = new Set();
 
         if (opts.defaultMartiResponses) {
             this.mockMartiDefaultResponses();
@@ -73,8 +78,10 @@ export default class MockTAKServer {
             ca: fs.readFileSync(this.keys.cert)
         }, (socket) => {
             this.sockets.add(socket);
+            this.streamingSockets.add(socket);
             socket.on('close', () => {
-                this.sockets.delete(socket)
+                this.sockets.delete(socket);
+                this.streamingSockets.delete(socket);
             });
         });
 
@@ -274,6 +281,29 @@ export default class MockTAKServer {
     write(cot: CoT): void {
         for (const socket of this.sockets) {
             socket.write(CoTParser.to_xml(cot));
+        }
+    }
+
+    /**
+     * Write a raw XML string only to the TAK streaming (TLS port 8089) sockets.
+     * Use this to inject CoT messages directly into the TAK data stream without
+     * affecting the Marti/WebTAK HTTP servers.
+     */
+    streamingWrite(xml: string): void {
+        for (const socket of this.streamingSockets) {
+            socket.write(xml);
+        }
+    }
+
+    /**
+     * Abruptly destroy every active TAK streaming TLS socket, simulating the
+     * kind of hard connection reset that clients experience when a TAK server
+     * is restarted.  The TLS listener itself stays up so that the node-tak
+     * client can reconnect immediately.
+     */
+    restartStreaming(): void {
+        for (const socket of this.streamingSockets) {
+            socket.destroy();
         }
     }
 
