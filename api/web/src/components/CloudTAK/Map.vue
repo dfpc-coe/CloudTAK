@@ -427,7 +427,7 @@
                     <div class='modal-body text-white'>
                         <Upload
                             :url='stdurl("/api/import")'
-                                                        :headers='{ Authorization: `Bearer ${token}` }'
+                            :headers='{ Authorization: `Bearer ${token}` }'
                             method='PUT'
                             :cancel='false'
                             @cancel='upload.shown = false'
