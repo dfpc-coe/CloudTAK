@@ -410,12 +410,12 @@ onMounted(async () => {
             logo: config['login::brand::logo']
         },
         background: {
-            enabled: config['login::background::enabled'] === true,
+            enabled: String(config['login::background::enabled'] ?? false) === 'true',
             color: config['login::background::color']
         }
     };
-    brandStore.oidc.enforced = config['oidc::enforced'] === true;
-    brandStore.oidc.enabled = config['oidc::enabled'] === true;
+    brandStore.oidc.enforced = String(config['oidc::enforced'] ?? false) === 'true';
+    brandStore.oidc.enabled = String(config['oidc::enabled'] ?? false) === 'true';
     brandStore.oidc.discovery = config['oidc::discovery'] as string || '';
     brandStore.oidc.name = config['oidc::name'] as string || '';
     brandStore.oidc.logo = config['oidc::logo'] as string || '';
