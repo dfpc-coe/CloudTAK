@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.87.3 - 2026-03-02
+
+- :rocket: Move SW Upgrade header to App.vue so it can be shown across the entire application
+
 ### v12.87.2 - 2026-02-27
 
 - :white_check_mark: Deterministic WebSocket Tests
