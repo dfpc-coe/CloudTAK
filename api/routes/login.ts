@@ -23,8 +23,14 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const oidcEnforced = await config.models.Setting.typed<boolean>('oidc::enforced', false);
-            if (oidcEnforced.value) throw new Err(403, null, 'Username/Password login is disabled - Please use SSO');
+            const oidc = await config.models.Setting.typedMany({
+                'oidc::enabled': false,
+                'oidc::enforced': false,
+            });
+
+            if (oidc['oidc::enabled'] && oidc['oidc::enforced']) {
+                throw new Err(403, null, 'Username/Password login is disabled - Please use SSO');
+            }
 
             let profile;
 

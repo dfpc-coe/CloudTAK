@@ -114,14 +114,32 @@ export default class ProfileControl {
     ): Promise<InferSelectModel<typeof Profile>> {
         const profile = await this.config.models.Profile.generate(input);
 
-        // Create a new ProfileConfig for each default setting
+        // Create a new ProfileConfig for each default setting.
+        // For display settings (present in FullConfig) check for admin-configured system defaults;
+        // for all other settings (tak::*, menu::*) use the ProfileConfigDefaults directly.
+        const displayDefaults = {
+            'display::stale': ProfileConfigDefaults['display::stale'],
+            'display::distance': ProfileConfigDefaults['display::distance'],
+            'display::elevation': ProfileConfigDefaults['display::elevation'],
+            'display::speed': ProfileConfigDefaults['display::speed'],
+            'display::projection': ProfileConfigDefaults['display::projection'],
+            'display::zoom': ProfileConfigDefaults['display::zoom'],
+            'display::text': ProfileConfigDefaults['display::text'],
+            'display::icon_rotation': ProfileConfigDefaults['display::icon_rotation'],
+        };
+
+        const systemDisplayDefaults = await this.config.models.Setting.typedMany(displayDefaults);
+
         const configs: Array<Promise<any>> = [];
 
-        for (const [key, value] of Object.entries(ProfileConfigDefaults)) {
-            configs.push(this.config.models.Setting.typed(key, value).then((setting) => {
-                return this.config.models.ProfileConfig.commit(profile.username, {
-                    [key]: setting.value
-                })
+        for (const [key, value] of Object.entries(systemDisplayDefaults)) {
+            configs.push(this.config.models.ProfileConfig.commit(profile.username, { [key]: value }));
+        }
+
+        for (const key of Object.keys(ProfileConfigDefaults) as (keyof typeof ProfileConfigDefaults)[]) {
+            if (key in displayDefaults) continue;
+            configs.push(this.config.models.ProfileConfig.commit(profile.username, {
+                [key]: ProfileConfigDefaults[key]
             }));
         }
 
