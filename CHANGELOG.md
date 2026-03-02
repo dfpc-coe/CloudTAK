@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.87.4
+
+- :bug: A fix for a memory leak issue caused reconnection bugs when the TAK server was unexpectedly restarted, this handles reconnects gracefully.
+- :bug: Width of PropertyGeofence was larger than header
+
 ### v12.87.3 - 2026-03-02
 
 - :rocket: Move SW Upgrade header to App.vue so it can be shown across the entire application
