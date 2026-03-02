@@ -17,13 +17,18 @@
                 <div class='rounded px-2 bg-accent pb-2'>
                     <div class='row g-2'>
                         <div class='col-6'>
-                            <label class='subheader user-select-none'>Type</label>
-
-                            <div v-text='sensor.type || "Unknown"' />
+                            <TablerInput
+                                v-model='sensor.type'
+                                label='Type'
+                                placeholder='Unknown'
+                            />
                         </div>
                         <div class='col-6'>
-                            <label class='subheader user-select-none'>Model</label>
-                            <div v-text='sensor.model || "Unknown"' />
+                            <TablerInput
+                                v-model='sensor.model'
+                                label='Model'
+                                placeholder='Unknown'
+                            />
                         </div>
 
                         <TablerRange
