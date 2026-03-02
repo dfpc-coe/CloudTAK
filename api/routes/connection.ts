@@ -76,7 +76,8 @@ export default async function router(schema: Schema, config: Config) {
 
             for (const conn of config.conns.values()) {
                 if (!conn.tak) json.status.unknown++;
-                else json.status.live++;
+                else if (conn.tak.open) json.status.live++;
+                else json.status.dead++;
             }
 
             res.json(json);
