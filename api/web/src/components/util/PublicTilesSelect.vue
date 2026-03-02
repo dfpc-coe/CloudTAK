@@ -97,7 +97,8 @@ const emit = defineEmits([
 
 const props = defineProps({
     url: {
-        type: String
+        type: String,
+        default: undefined
     }
 });
 

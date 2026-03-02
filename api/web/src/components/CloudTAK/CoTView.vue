@@ -523,16 +523,13 @@
                 </div>
             </div>
 
-            <template
+            <PropertyAttachments
                 v-if='!cot.properties.contact'
-            >
-                <PropertyAttachments
-                    :key='cot.properties.id'
-                    :model-value='cot.properties.attachments || []'
-                    :subscription='subscription'
-                    @update:model-value='updatePropertyAttachment($event)'
-                />
-            </template>
+                :key='cot.properties.id'
+                :model-value='cot.properties.attachments || []'
+                :subscription='subscription'
+                @update:model-value='updatePropertyAttachment($event)'
+            />
 
             <PropertyGeofence
                 v-if='cot.properties.geofence'
@@ -583,29 +580,27 @@
                 :cot='cot'
             />
         </div>
-        <template v-else-if='mode === "channels"'>
-            <div
-                style='height: calc(100vh - 225px)'
-                class='overflow-auto overflow-x-hidden'
-            >
-                <Subscriptions :cot='cot' />
-            </div>
-        </template>
-        <template v-else-if='mode === "raw"'>
-            <div
-                style='height: calc(100vh - 225px)'
-                class='overflow-auto col-12'
-            >
-                <CopyField
-                    mode='pre'
-                    style='
-                        width: calc(100% - 100px);
-                        height: calc(100vh - 225px);
-                    '
-                    :model-value='JSON.stringify(cot.as_feature(), null, 4)'
-                />
-            </div>
-        </template>
+        <div
+            v-else-if='mode === "channels"'
+            style='height: calc(100vh - 225px)'
+            class='overflow-auto overflow-x-hidden'
+        >
+            <Subscriptions :cot='cot' />
+        </div>
+        <div
+            v-else-if='mode === "raw"'
+            style='height: calc(100vh - 225px)'
+            class='overflow-auto col-12'
+        >
+            <CopyField
+                mode='pre'
+                style='
+                    width: calc(100% - 100px);
+                    height: calc(100vh - 225px);
+                '
+                :model-value='JSON.stringify(cot.as_feature(), null, 4)'
+            />
+        </div>
     </template>
 
     <Share
@@ -617,7 +612,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import FeatureIcon from './util/FeatureIcon.vue';
 import type COT from '../../base/cot.ts';
@@ -758,6 +753,13 @@ onMounted(async () => {
     }, 1000)
 });
 
+onUnmounted(() => {
+    if (interval.value) clearInterval(interval.value);
+    if (cot.value && cot.value._liveQuerySubscription) {
+        cot.value._liveQuerySubscription.unsubscribe();
+    }
+});
+
 const is_editable = computed(() => {
     if (!cot.value || !cot.value.is_editable) return false;
 
@@ -812,6 +814,10 @@ async function load_cot() {
     }
 
     if (baseCOT) {
+        if (cot.value && cot.value._liveQuerySubscription) {
+            cot.value._liveQuerySubscription.unsubscribe();
+        }
+
         cot.value = baseCOT
 
         cot.value.reactivity();
