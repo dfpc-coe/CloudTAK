@@ -68,23 +68,23 @@ export default class ArcGISConfigService {
 
     private async loadConfig(): Promise<ArcGISConfig> {
         try {
-            const authMethod = await this.appConfig.models.Setting.typed<string>('agol::auth_method', 'oauth2');
-            
-            if (authMethod.value === 'oauth2') {
-                const clientId = await this.appConfig.models.Setting.typed<string>('agol::client_id', '');
-                const clientSecret = await this.appConfig.models.Setting.typed<string>('agol::client_secret', '');
-                
+            const settings = await this.appConfig.models.Setting.typedMany({
+                'agol::auth_method': 'oauth2',
+                'agol::client_id': '',
+                'agol::client_secret': '',
+                'agol::token': '',
+            });
+
+            if (settings['agol::auth_method'] === 'oauth2') {
                 return {
                     authMethod: 'oauth2',
-                    clientId: clientId.value || undefined,
-                    clientSecret: clientSecret.value || undefined
+                    clientId: settings['agol::client_id'] || undefined,
+                    clientSecret: settings['agol::client_secret'] || undefined
                 };
             } else {
-                const legacyToken = await this.appConfig.models.Setting.typed<string>('agol::token', '');
-                
                 return {
                     authMethod: 'legacy',
-                    legacyToken: legacyToken.value || undefined
+                    legacyToken: settings['agol::token'] || undefined
                 };
             }
         } catch {
