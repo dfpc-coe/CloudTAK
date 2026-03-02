@@ -1,0 +1,20 @@
+import { Static } from '@sinclair/typebox';
+import fs from 'node:fs';
+import { FullConfig } from './types.js';
+
+export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
+    'geofence::enabled': false,
+    'map::center': '-100,40',
+    'map::zoom': 4,
+    'map::pitch': 0,
+    'map::bearing': 0,
+    'login::name': 'CloudTAK',
+    'login::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogo.svg', import.meta.url)).toString('base64')}`,
+    'login::signup': '',
+    'login::forgot': '',
+    'login::username': 'Username or Email',
+    'login::brand::enabled': 'default',
+    'login::background::enabled': false,
+    'login::background::color': '#03384f',
+    'login::brand::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogoText.svg', import.meta.url)).toString('base64')}`
+};

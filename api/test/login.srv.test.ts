@@ -45,7 +45,7 @@ test('POST: api/login', async () => {
                 password: 'password123'
             }
         }, false);
-        
+
         assert.ok(res.body.token);
         delete res.body.token;
 
