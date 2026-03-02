@@ -69,7 +69,10 @@
                                 <template v-else-if='brandStore.oidc.enabled && brandStore.oidc.enforced'>
                                     <div class='text-center text-muted py-3'>
                                         <div class='mb-2'>
-                                            <IconLock :size='32' :stroke='1.5' />
+                                            <IconLock
+                                                :size='32'
+                                                :stroke='1.5'
+                                            />
                                         </div>
                                         <p class='mb-0'>
                                             This instance only supports Single Sign-On (SSO). Please use the SSO login button below.
