@@ -243,7 +243,19 @@ export default class AtlasConnection {
                     if ('serviceWorker' in self.navigator) {
                         const regs = await self.navigator.serviceWorker.getRegistrations()
 
-                        if (!regs.some(reg => reg.active?.scriptURL.includes(`v=${status.version}`))) {
+                        if (!regs.some(reg => {
+                            try {
+                                const scriptURL = reg.active?.scriptURL;
+                                if (!scriptURL) {
+                                    return false;
+                                }
+                                const url = new URL(scriptURL);
+                                return url.searchParams.get('v') === status.version;
+                            } catch (err) {
+                                console.error('Error parsing service worker script URL', err);
+                                return false;
+                            }
+                        })) {
                             console.log(`Service Worker out of date, updating to version ${status.version}`);
                             const registration = await self.navigator.serviceWorker.ready;
                             registration.update();
