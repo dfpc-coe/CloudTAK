@@ -5,8 +5,6 @@ const BUILD  = params.get('build') || Math.random().toString(36).substring(2, 8)
 const CACHE_NAME = `cloudtak-cache-${VERSION}-${BUILD}`;
 
 self.addEventListener('install', (event) => {
-    self.skipWaiting();
-
     event.waitUntil((async () => {
         const cache = await caches.open(CACHE_NAME);
 
@@ -24,7 +22,10 @@ self.addEventListener('install', (event) => {
                     }
 
                     for (const imported of entry.imports || []) {
-                        assets.add(imported);
+                        const dep = manifest[imported];
+                        if (dep?.file && !dep.file.endsWith('.html')) {
+                            assets.add(dep.file);
+                        }
                     }
 
                     for (const cssFile of entry.css || []) {
@@ -51,6 +52,10 @@ self.addEventListener('install', (event) => {
         } else {
             console.log('All resources cached successfully.');
         }
+
+        // skipWaiting only after the cache is populated so that when this SW
+        // takes control the full new cache is already in place.
+        self.skipWaiting();
     })());
 });
 
