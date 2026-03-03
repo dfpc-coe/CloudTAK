@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.90.0
+
+- :tada: Render NetworkLinks when processing KML files
+- :rocket: Show tiffs in Mission Syncs as importable files Closes: https://github.com/dfpc-coe/CloudTAK/issues/1289
+
 ### v12.89.1
 
 - :bug: Fix version check in ServiceWorker
