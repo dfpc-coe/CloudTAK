@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.89.1
+
+- :bug: Fix version check in ServiceWorker
+
 ### v12.89.0
 
 - :tada: Rewrite Login component to support display of OIDC options
