@@ -15,8 +15,8 @@ if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
 
         navigator.serviceWorker.addEventListener("controllerchange", () => {
             if (!refreshing) {
-                window.location.reload()
-                refreshing = true
+                refreshing = true;
+                window.location.reload();
             }
         })
     });
