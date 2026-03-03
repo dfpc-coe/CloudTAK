@@ -243,7 +243,7 @@ export default class AtlasConnection {
                     if ('serviceWorker' in self.navigator) {
                         const regs = await self.navigator.serviceWorker.getRegistrations()
 
-                        if (!regs.some(reg => reg.active?.scriptURL.includes(`version=${status.version}`))) {
+                        if (!regs.some(reg => reg.active?.scriptURL.includes(`v=${status.version}`))) {
                             console.log(`Service Worker out of date, updating to version ${status.version}`);
                             const registration = await self.navigator.serviceWorker.ready;
                             registration.update();
