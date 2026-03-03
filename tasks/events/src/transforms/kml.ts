@@ -116,13 +116,17 @@ export default class KML implements Transform {
                     }
                 }
 
-                const { safe, url, reason } = isSafeUrl(href);
+                const { safe, url, reason } = await isSafeUrl(href);
                 if (!safe || !url) {
                     console.warn(`NetworkLink ${href} skipped — ${reason}`);
                     continue;
                 }
 
                 // Normalise the URL for deduplication (strip trailing slash, lowercase host)
+                url.hostname = url.hostname.toLowerCase();
+                if (url.pathname.length > 1 && url.pathname.endsWith('/')) {
+                    url.pathname = url.pathname.replace(/\/+$/, '');
+                }
                 const normalized = url.toString();
                 if (visited.has(normalized)) {
                     console.warn(`NetworkLink ${normalized} already visited, skipping`);
