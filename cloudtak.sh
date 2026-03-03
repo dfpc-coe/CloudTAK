@@ -12,13 +12,9 @@ RED=$(tput setaf 1 2>/dev/null || true)
 DIM=$(tput dim 2>/dev/null || true)
 RESET=$(tput sgr0 2>/dev/null || true)
 
-# log_info  – neutral, indented to align with ✔/✘ lines
 log_info() { printf "     %s\n" "$*"; }
-# log_ok    – green ✔
 log_ok()   { printf "  %b✔%b  %s\n" "$GREEN$BOLD" "$RESET" "$*"; }
-# log_warn  – yellow ⚠
 log_warn() { printf "  %b⚠%b  %s\n" "$YELLOW$BOLD" "$RESET" "$*"; }
-# log_err   – red ✘  (does NOT exit; caller decides)
 log_err()  { printf "  %b✘%b  %s\n" "$RED$BOLD" "$RESET" "$*"; }
 
 # run_step <label> <cmd> [args…]
@@ -156,20 +152,39 @@ if [[ "$SUBCOMMAND" == "install" ]]; then
                 sed -i "s|^PMTILES_URL=.*|PMTILES_URL=https://$PMTILES_URL|" .env
                 log_ok "Updated PMTILES_URL in .env"
 
-                log_info "Generating Caddyfile..."
-                cat <<EOF | sudo tee /etc/caddy/Caddyfile > /dev/null
+                CADDY_BLOCK=$(cat <<EOF
+
 # CloudTAK app
 $API_URL {
         reverse_proxy localhost:5000
 }
 
-#CloudTAK Tiles
+# CloudTAK Tiles
 $PMTILES_URL {
         reverse_proxy localhost:5002
 }
 EOF
-                log_ok "Caddyfile written to /etc/caddy/Caddyfile"
-                sudo systemctl reload caddy
+)
+                if [[ -f /etc/caddy/Caddyfile ]]; then
+                    log_warn "/etc/caddy/Caddyfile already exists"
+                    printf "     %b[a]%b Append CloudTAK block to existing Caddyfile\n" "$BOLD" "$RESET"
+                    printf "     %b[s]%b Skip – leave Caddyfile unchanged\n" "$BOLD" "$RESET"
+                    read -p "     Choice [a/s]: " CADDY_CHOICE
+                    case "${CADDY_CHOICE,,}" in
+                        a)
+                            printf '%s\n' "$CADDY_BLOCK" | sudo tee -a /etc/caddy/Caddyfile > /dev/null
+                            log_ok "CloudTAK block appended to /etc/caddy/Caddyfile"
+                            sudo systemctl reload caddy
+                            ;;
+                        *)
+                            log_warn "Skipping Caddyfile update - configure it manually if needed"
+                            ;;
+                    esac
+                else
+                    printf '%s\n' "$CADDY_BLOCK" | sudo tee /etc/caddy/Caddyfile > /dev/null
+                    log_ok "Caddyfile written to /etc/caddy/Caddyfile"
+                    sudo systemctl reload caddy
+                fi
             else
                 log_err "DNS check failed: no A records found for $PMTILES_URL"
                 log_info "Ensure DNS is configured correctly, then re-run './cloudtak.sh install'"
