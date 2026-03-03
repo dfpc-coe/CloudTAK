@@ -266,8 +266,15 @@ const contents: Ref<Array<DBSubscriptionContent>> = useObservable(
 
 const filteredContents = computed(() => {
     return (contents.value || []).filter((c) => {
-        const isPhoto = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(c.name)
-            || (c.mimeType && c.mimeType.startsWith('image/'));
+        // If is Photo and not a tif or image/tiff
+
+        const isPhoto = (
+            /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(c.name)
+            || (c.mimeType && c.mimeType.startsWith('image/'))
+        ) && (
+            !/\.(tif|tiff)$/i.test(c.name)
+            && c.mimeType !== 'image/tiff'
+        );
 
         if (mode.value === 'photos') {
             return isPhoto;
