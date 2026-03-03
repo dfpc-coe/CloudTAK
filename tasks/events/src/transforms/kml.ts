@@ -6,8 +6,10 @@ import { glob } from 'glob';
 import StreamZip from 'node-stream-zip';
 import { kml } from '@tmcw/togeojson';
 import { DOMParser } from '@xmldom/xmldom';
+import { isSafeUrl } from '../safeurl.ts';
 
 const MAX_NETWORK_LINK_DEPTH = 3;
+const NETWORK_LINK_FETCH_TIMEOUT_MS = 10_000;
 
 export default class KML implements Transform {
     static register() {
@@ -30,7 +32,10 @@ export default class KML implements Transform {
     async fetchFeatures(
         kmlContent: string,
         icons: Map<string, Buffer>,
-        depth: number
+        depth: number,
+        baseUrl: string | null = null,
+        localDir: string | null = null,
+        visited: Set<string> = new Set()
     ): Promise<ReturnType<typeof kml>['features']> {
         const dom = new DOMParser().parseFromString(kmlContent, 'text/xml');
         const allFeatures = kml(dom).features;
@@ -46,23 +51,97 @@ export default class KML implements Transform {
                     continue;
                 }
 
-                const href = feat.properties.href as string | undefined;
+                let href = feat.properties.href as string | undefined;
 
                 if (!href) {
                     console.warn('NetworkLink has no href, skipping');
                     continue;
                 }
 
+                // Reject any explicit URI scheme other than http / https before local-path handling
+                if (href.includes('://') && !href.startsWith('http://') && !href.startsWith('https://')) {
+                    console.warn(`NetworkLink ${href} skipped — unsupported protocol`);
+                    continue;
+                }
+
+                if (!href.startsWith('http://') && !href.startsWith('https://')) {
+                    if (localDir) {
+                        // Local relative resolution — path must stay within tmpdir
+                        const resolved = path.resolve(localDir, href);
+                        const tmpdirSafe = path.resolve(this.local.tmpdir);
+
+                        if (resolved !== tmpdirSafe && !resolved.startsWith(tmpdirSafe + path.sep)) {
+                            console.warn(`NetworkLink ${href} would escape data directory, skipping`);
+                            continue;
+                        }
+
+                        if (visited.has(resolved)) {
+                            console.warn(`NetworkLink ${resolved} already visited, skipping`);
+                            continue;
+                        }
+                        visited.add(resolved);
+
+                        try {
+                            const localContent = await fs.readFile(resolved, 'utf8');
+                            const linkedFeatures = await this.fetchFeatures(
+                                localContent, icons, depth + 1, null, path.dirname(resolved), visited
+                            );
+                            features.push(...linkedFeatures);
+                        } catch (err) {
+                            console.warn(`NetworkLink local file ${href} not readable (${err})`);
+                        }
+
+                        continue;
+                    } else if (baseUrl) {
+                        // HTTP relative resolution — resolved URL must stay on the same origin
+                        let resolved: URL;
+                        try {
+                            resolved = new URL(href, baseUrl);
+                        } catch {
+                            console.warn(`NetworkLink href ${href} could not be resolved relative to ${baseUrl}, skipping`);
+                            continue;
+                        }
+
+                        const base = new URL(baseUrl);
+                        if (resolved.origin !== base.origin) {
+                            console.warn(`NetworkLink ${href} resolved to a different origin (${resolved.origin}), skipping`);
+                            continue;
+                        }
+
+                        href = resolved.toString();
+                        // fall through to SSRF check and fetch below
+                    } else {
+                        console.warn(`NetworkLink ${href} is relative but no base URL or local directory is available, skipping`);
+                        continue;
+                    }
+                }
+
+                const { safe, url, reason } = isSafeUrl(href);
+                if (!safe || !url) {
+                    console.warn(`NetworkLink ${href} skipped — ${reason}`);
+                    continue;
+                }
+
+                // Normalise the URL for deduplication (strip trailing slash, lowercase host)
+                const normalized = url.toString();
+                if (visited.has(normalized)) {
+                    console.warn(`NetworkLink ${normalized} already visited, skipping`);
+                    continue;
+                }
+                visited.add(normalized);
+
                 try {
-                    const res = await fetch(href);
+                    const res = await fetch(normalized, {
+                        signal: AbortSignal.timeout(NETWORK_LINK_FETCH_TIMEOUT_MS)
+                    });
 
                     if (!res.ok) throw new Error(`HTTP ${res.status} ${await res.text()}`);
 
                     const linked = await res.text();
-                    const linkedFeatures = await this.fetchFeatures(linked, icons, depth + 1);
+                    const linkedFeatures = await this.fetchFeatures(linked, icons, depth + 1, normalized, null, visited);
                     features.push(...linkedFeatures);
                 } catch (err) {
-                    console.warn(`NetworkLink ${href} not retrievable (${err})`);
+                    console.warn(`NetworkLink ${normalized} not retrievable (${err})`);
                 }
 
                 continue;
@@ -122,7 +201,7 @@ export default class KML implements Transform {
             asset = path.resolve(this.local.raw);
         }
 
-        const features = await this.fetchFeatures(String(await fs.readFile(asset)), icons, 0);
+        const features = await this.fetchFeatures(String(await fs.readFile(asset)), icons, 0, null, path.dirname(asset));
 
         console.error('ok - converted to GeoJSON');
 
