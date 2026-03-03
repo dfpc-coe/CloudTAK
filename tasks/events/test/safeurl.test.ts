@@ -1,71 +1,71 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { isSafeUrl, isPrivateIPv4 } from '../src/safeurl.js';
+import { isSafeUrl, isPrivateIPv4, isPrivateIPv6 } from '../src/safeurl.js';
 
 // ---------------------------------------------------------------------------
 // isSafeUrl
 // ---------------------------------------------------------------------------
 
 test('isSafeUrl — valid public URLs', async (t) => {
-    await t.test('http public URL is safe', () => {
-        const r = isSafeUrl('http://example.com/path');
+    await t.test('http public URL is safe', async () => {
+        const r = await isSafeUrl('http://example.com/path');
         assert.strictEqual(r.safe, true);
         assert.ok(r.url instanceof URL);
         assert.strictEqual(r.reason, undefined);
     });
 
-    await t.test('https public URL is safe', () => {
-        const r = isSafeUrl('https://example.com/path');
+    await t.test('https public URL is safe', async () => {
+        const r = await isSafeUrl('https://example.com/path');
         assert.strictEqual(r.safe, true);
     });
 
-    await t.test('URL with port is safe', () => {
-        const r = isSafeUrl('https://example.com:8443/api');
+    await t.test('URL with port is safe', async () => {
+        const r = await isSafeUrl('https://example.com:8443/api');
         assert.strictEqual(r.safe, true);
     });
 
-    await t.test('URL with query string and fragment is safe', () => {
-        const r = isSafeUrl('https://example.com/search?q=foo&page=1#section');
+    await t.test('URL with query string and fragment is safe', async () => {
+        const r = await isSafeUrl('https://example.com/search?q=foo&page=1#section');
         assert.strictEqual(r.safe, true);
     });
 
-    await t.test('URL with credentials on a safe host is safe', () => {
-        const r = isSafeUrl('https://user:pass@example.com/');
+    await t.test('URL with credentials on a safe host is safe', async () => {
+        const r = await isSafeUrl('https://user:pass@example.com/');
         assert.strictEqual(r.safe, true);
     });
 
-    await t.test('subdomain of public host is safe', () => {
-        const r = isSafeUrl('https://api.example.com/v2');
+    await t.test('subdomain of public host is safe', async () => {
+        const r = await isSafeUrl('https://api.example.com/v2');
         assert.strictEqual(r.safe, true);
     });
 
-    await t.test('well-known public IPs are safe', () => {
-        assert.strictEqual(isSafeUrl('http://8.8.8.8/').safe, true);
-        assert.strictEqual(isSafeUrl('http://1.1.1.1/').safe, true);
-        assert.strictEqual(isSafeUrl('http://93.184.216.34/').safe, true);
+    await t.test('well-known public IPs are safe', async () => {
+        assert.strictEqual((await isSafeUrl('http://8.8.8.8/')).safe, true);
+        assert.strictEqual((await isSafeUrl('http://1.1.1.1/')).safe, true);
+        assert.strictEqual((await isSafeUrl('http://93.184.216.34/')).safe, true);
     });
 });
 
 test('isSafeUrl — invalid / unparseable URLs', async (t) => {
-    await t.test('empty string is unsafe', () => {
-        const r = isSafeUrl('');
+    await t.test('empty string is unsafe', async () => {
+        const r = await isSafeUrl('');
         assert.strictEqual(r.safe, false);
         assert.ok(r.reason?.includes('invalid URL'));
     });
 
-    await t.test('bare hostname is unsafe', () => {
-        const r = isSafeUrl('example.com');
+    await t.test('bare hostname is unsafe', async () => {
+        const r = await isSafeUrl('example.com');
         assert.strictEqual(r.safe, false);
         assert.ok(r.reason?.includes('invalid URL'));
     });
 
-    await t.test('path-only string is unsafe', () => {
-        const r = isSafeUrl('/etc/passwd');
+    await t.test('path-only string is unsafe', async () => {
+        const r = await isSafeUrl('/etc/passwd');
         assert.strictEqual(r.safe, false);
     });
 
-    await t.test('random garbage string is unsafe', () => {
-        const r = isSafeUrl('not a url at all!!');
+    await t.test('random garbage string is unsafe', async () => {
+        const r = await isSafeUrl('not a url at all!!');
         assert.strictEqual(r.safe, false);
     });
 });
@@ -85,8 +85,8 @@ test('isSafeUrl — blocked schemes', async (t) => {
     ];
 
     for (const href of blocked) {
-        await t.test(`scheme blocked: ${href.split(':')[0]}://`, () => {
-            const r = isSafeUrl(href);
+        await t.test(`scheme blocked: ${href.split(':')[0]}://`, async () => {
+            const r = await isSafeUrl(href);
             assert.strictEqual(r.safe, false, `expected ${href} to be unsafe`);
             assert.ok(r.reason?.includes('unsupported protocol'), `expected protocol reason for ${href}`);
         });
@@ -94,38 +94,38 @@ test('isSafeUrl — blocked schemes', async (t) => {
 });
 
 test('isSafeUrl — blocked hostnames', async (t) => {
-    await t.test('localhost is blocked', () => {
-        const r = isSafeUrl('http://localhost/');
+    await t.test('localhost is blocked', async () => {
+        const r = await isSafeUrl('http://localhost/');
         assert.strictEqual(r.safe, false);
         assert.ok(r.reason?.includes('blocked hostname'));
     });
 
-    await t.test('LOCALHOST (uppercase) is blocked', () => {
+    await t.test('LOCALHOST (uppercase) is blocked', async () => {
         // URL constructor normalises hostname to lowercase
-        const r = isSafeUrl('http://LOCALHOST/');
+        const r = await isSafeUrl('http://LOCALHOST/');
         assert.strictEqual(r.safe, false);
         assert.ok(r.reason?.includes('blocked hostname'));
     });
 
-    await t.test('localhost with port is blocked', () => {
-        const r = isSafeUrl('http://localhost:8080/admin');
+    await t.test('localhost with port is blocked', async () => {
+        const r = await isSafeUrl('http://localhost:8080/admin');
         assert.strictEqual(r.safe, false);
         assert.ok(r.reason?.includes('blocked hostname'));
     });
 
-    await t.test('IPv6 loopback ::1 is blocked', () => {
-        const r = isSafeUrl('http://[::1]/');
+    await t.test('IPv6 loopback ::1 is blocked', async () => {
+        const r = await isSafeUrl('http://[::1]/');
         assert.strictEqual(r.safe, false);
         assert.ok(r.reason?.includes('blocked hostname'));
     });
 
-    await t.test('IPv6 loopback ::1 with port is blocked', () => {
-        const r = isSafeUrl('http://[::1]:9200/');
+    await t.test('IPv6 loopback ::1 with port is blocked', async () => {
+        const r = await isSafeUrl('http://[::1]:9200/');
         assert.strictEqual(r.safe, false);
     });
 
-    await t.test('0.0.0.0 is blocked', () => {
-        const r = isSafeUrl('http://0.0.0.0/');
+    await t.test('0.0.0.0 is blocked', async () => {
+        const r = await isSafeUrl('http://0.0.0.0/');
         assert.strictEqual(r.safe, false);
         assert.ok(r.reason?.includes('blocked hostname'));
     });
@@ -160,8 +160,8 @@ test('isSafeUrl — RFC 1918 / loopback / special ranges blocked', async (t) => 
     ];
 
     for (const [url, label] of blocked) {
-        await t.test(`${label} is blocked`, () => {
-            const r = isSafeUrl(url);
+        await t.test(`${label} is blocked`, async () => {
+            const r = await isSafeUrl(url);
             assert.strictEqual(r.safe, false, `expected ${label} to be blocked`);
             assert.ok(r.reason?.includes('blocked private IP'), `expected private IP reason for ${label}`);
         });
@@ -185,9 +185,87 @@ test('isSafeUrl — IPs just outside private ranges are allowed', async (t) => {
     ];
 
     for (const [url, label] of allowed) {
-        await t.test(`${label} is NOT in a private range`, () => {
-            const r = isSafeUrl(url);
+        await t.test(`${label} is NOT in a private range`, async () => {
+            const r = await isSafeUrl(url);
             assert.strictEqual(r.safe, true, `expected ${label} to be safe`);
+        });
+    }
+});
+
+test('isSafeUrl — private IPv6 literal addresses blocked', async (t) => {
+    const blocked: Array<[string, string]> = [
+        // ULA fc00::/7
+        ['http://[fc00::1]/', 'fc00::1'],
+        ['http://[fd00::1]/', 'fd00::1'],
+        ['http://[fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]/', 'fdff:ffff:…'],
+        // link-local fe80::/10
+        ['http://[fe80::1]/', 'fe80::1'],
+        ['http://[fe80::1%25eth0]/', 'fe80::1%eth0 (zone id)'],
+        ['http://[febf::1]/', 'febf::1'],
+        // IPv4-mapped private address
+        ['http://[::ffff:10.0.0.1]/', '::ffff:10.0.0.1 (IPv4-mapped private)'],
+        ['http://[::ffff:192.168.1.1]/', '::ffff:192.168.1.1 (IPv4-mapped RFC1918)'],
+    ];
+
+    for (const [url, label] of blocked) {
+        await t.test(`${label} is blocked`, async () => {
+            const r = await isSafeUrl(url);
+            assert.strictEqual(r.safe, false, `expected ${label} to be blocked`);
+        });
+    }
+
+    await t.test('public IPv6 address is safe', async () => {
+        // 2606:4700:4700::1111 is Cloudflare public DNS
+        const r = await isSafeUrl('http://[2606:4700:4700::1111]/');
+        assert.strictEqual(r.safe, true);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// isPrivateIPv6
+// ---------------------------------------------------------------------------
+
+test('isPrivateIPv6 — loopback and unspecified', async (t) => {
+    await t.test('::1 is private', () => assert.strictEqual(isPrivateIPv6('::1'), true));
+    await t.test(':: is private', () => assert.strictEqual(isPrivateIPv6('::'), true));
+});
+
+test('isPrivateIPv6 — ULA fc00::/7', async (t) => {
+    await t.test('fc00::1', () => assert.strictEqual(isPrivateIPv6('fc00::1'), true));
+    await t.test('fd00::1', () => assert.strictEqual(isPrivateIPv6('fd00::1'), true));
+    await t.test('fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff', () =>
+        assert.strictEqual(isPrivateIPv6('fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'), true));
+    await t.test('fe00:: is NOT ULA (just above fc00::/7)', () =>
+        assert.strictEqual(isPrivateIPv6('fe00::'), false));
+});
+
+test('isPrivateIPv6 — link-local fe80::/10', async (t) => {
+    await t.test('fe80::1', () => assert.strictEqual(isPrivateIPv6('fe80::1'), true));
+    await t.test('fe80::1%eth0 (zone id stripped)', () =>
+        assert.strictEqual(isPrivateIPv6('fe80::1%eth0'), true));
+    await t.test('febf::1', () => assert.strictEqual(isPrivateIPv6('febf::1'), true));
+    await t.test('fec0:: is NOT link-local', () =>
+        assert.strictEqual(isPrivateIPv6('fec0::'), false));
+});
+
+test('isPrivateIPv6 — IPv4-mapped ::ffff:0:0/96', async (t) => {
+    await t.test('::ffff:10.0.0.1 (private v4)', () =>
+        assert.strictEqual(isPrivateIPv6('::ffff:a00:1'), true));
+    await t.test('::ffff:192.168.1.1 (private v4)', () =>
+        assert.strictEqual(isPrivateIPv6('::ffff:c0a8:101'), true));
+    await t.test('::ffff:8.8.8.8 (public v4)', () =>
+        assert.strictEqual(isPrivateIPv6('::ffff:808:808'), false));
+});
+
+test('isPrivateIPv6 — public addresses', async (t) => {
+    const publicAddrs = [
+        '2606:4700:4700::1111',  // Cloudflare DNS
+        '2001:4860:4860::8888',  // Google DNS
+        '2001:db8::1',           // documentation prefix (not a reserved private range)
+    ];
+    for (const addr of publicAddrs) {
+        await t.test(`${addr} is NOT private`, () => {
+            assert.strictEqual(isPrivateIPv6(addr), false, `expected ${addr} to be public`);
         });
     }
 });

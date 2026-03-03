@@ -1,4 +1,4 @@
-import test from 'node:test';
+import test, { type TestContext } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -36,9 +36,13 @@ const LINKED_KML = `<?xml version="1.0" encoding="UTF-8"?>
   </Document>
 </kml>`;
 
-// Helper to build a minimal Message / LocalMessage pointing at a temp .kml file
-async function makeTransform(content: string): Promise<{ transform: KML; tmpdir: string }> {
+// Helper to build a minimal Message / LocalMessage pointing at a temp .kml file.
+// Registers an after-hook on the provided test context to remove the tmpdir on completion.
+async function makeTransform(t: TestContext, content: string): Promise<{ transform: KML; tmpdir: string }> {
     const tmpdir = await fs.mkdtemp('/tmp/kml-test-');
+
+    t.after(() => fs.rm(tmpdir, { recursive: true, force: true }));
+
     const raw = path.join(tmpdir, 'test.kml');
     await fs.writeFile(raw, content);
 
@@ -57,13 +61,13 @@ async function makeTransform(content: string): Promise<{ transform: KML; tmpdir:
 }
 
 test('KML Transform — NetworkLink', async (t) => {
-    await t.test('linked features are fetched and merged; NetworkLink itself is excluded', async () => {
+    await t.test('linked features are fetched and merged; NetworkLink itself is excluded', async (st) => {
         const mockAgent = new MockAgent();
         const originalDispatcher = getGlobalDispatcher();
         mockAgent.disableNetConnect();
         setGlobalDispatcher(mockAgent);
 
-        t.after(() => {
+        st.after(() => {
             setGlobalDispatcher(originalDispatcher);
             mockAgent.close();
         });
@@ -73,7 +77,7 @@ test('KML Transform — NetworkLink', async (t) => {
             .intercept({ path: '/linked.kml', method: 'GET' })
             .reply(200, LINKED_KML, { headers: { 'content-type': 'application/vnd.google-earth.kml+xml' } });
 
-        const { transform } = await makeTransform(ROOT_KML);
+        const { transform } = await makeTransform(t, ROOT_KML);
         const result = await transform.convert();
 
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
@@ -89,7 +93,7 @@ test('KML Transform — NetworkLink', async (t) => {
         assert.ok(!hasNetworkLink, 'NetworkLink meta feature must not appear in output');
     });
 
-    await t.test('duplicate NetworkLink href is only fetched once', async () => {
+    await t.test('duplicate NetworkLink href is only fetched once', async (st) => {
         const dupKml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
@@ -107,7 +111,7 @@ test('KML Transform — NetworkLink', async (t) => {
         mockAgent.disableNetConnect();
         setGlobalDispatcher(mockAgent);
 
-        t.after(() => {
+        st.after(() => {
             setGlobalDispatcher(originalDispatcher);
             mockAgent.close();
         });
@@ -122,13 +126,13 @@ test('KML Transform — NetworkLink', async (t) => {
             })
             .persist();
 
-        const { transform } = await makeTransform(dupKml);
+        const { transform } = await makeTransform(t, dupKml);
         await transform.convert();
 
         assert.strictEqual(fetchCount, 1, 'duplicate href should only be fetched once');
     });
 
-    await t.test('depth cap is enforced — deep chains are truncated at MAX_NETWORK_LINK_DEPTH', async () => {
+    await t.test('depth cap is enforced — deep chains are truncated at MAX_NETWORK_LINK_DEPTH', async (st) => {
         // Depth-0 KML links to depth-1 which links to depth-2, etc.
         // MAX_NETWORK_LINK_DEPTH is 3, so depth-3 link must be skipped.
         const makeDepthKml = (nextHref: string | null) => `<?xml version="1.0" encoding="UTF-8"?>
@@ -147,7 +151,7 @@ test('KML Transform — NetworkLink', async (t) => {
         mockAgent.disableNetConnect();
         setGlobalDispatcher(mockAgent);
 
-        t.after(() => {
+        st.after(() => {
             setGlobalDispatcher(originalDispatcher);
             mockAgent.close();
         });
@@ -168,7 +172,7 @@ test('KML Transform — NetworkLink', async (t) => {
             .reply(200, makeDepthKml(null));
 
         const rootKml = makeDepthKml('http://example.com/depth1.kml');
-        const { transform } = await makeTransform(rootKml);
+        const { transform } = await makeTransform(t, rootKml);
         const result = await transform.convert();
 
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
@@ -176,7 +180,16 @@ test('KML Transform — NetworkLink', async (t) => {
         assert.strictEqual(lines.length, 4, 'should have 4 features (depths 0-3), depth 4 truncated');
     });
 
-    await t.test('SSRF — localhost is blocked', async () => {
+    await t.test('SSRF — localhost is blocked', async (st) => {
+        const mockAgent = new MockAgent();
+        const originalDispatcher = getGlobalDispatcher();
+        mockAgent.disableNetConnect();
+        setGlobalDispatcher(mockAgent);
+        st.after(() => {
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+        });
+
         const ssrfKml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
@@ -186,14 +199,23 @@ test('KML Transform — NetworkLink', async (t) => {
   </Document>
 </kml>`;
 
-        const { transform } = await makeTransform(ssrfKml);
+        const { transform } = await makeTransform(st, ssrfKml);
         // Should complete without throwing — SSRF URL is silently skipped
         const result = await transform.convert();
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
         assert.strictEqual(lines.length, 0, 'no features — SSRF link must be blocked and skipped');
     });
 
-    await t.test('SSRF — private IP range 10.x.x.x is blocked', async () => {
+    await t.test('SSRF — private IP range 10.x.x.x is blocked', async (st) => {
+        const mockAgent = new MockAgent();
+        const originalDispatcher = getGlobalDispatcher();
+        mockAgent.disableNetConnect();
+        setGlobalDispatcher(mockAgent);
+        st.after(() => {
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+        });
+
         const ssrfKml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
@@ -203,13 +225,22 @@ test('KML Transform — NetworkLink', async (t) => {
   </Document>
 </kml>`;
 
-        const { transform } = await makeTransform(ssrfKml);
+        const { transform } = await makeTransform(st, ssrfKml);
         const result = await transform.convert();
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
         assert.strictEqual(lines.length, 0, 'no features — private IP link must be blocked');
     });
 
-    await t.test('SSRF — non-http scheme (file://) is blocked', async () => {
+    await t.test('SSRF — non-http scheme (file://) is blocked', async (st) => {
+        const mockAgent = new MockAgent();
+        const originalDispatcher = getGlobalDispatcher();
+        mockAgent.disableNetConnect();
+        setGlobalDispatcher(mockAgent);
+        st.after(() => {
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+        });
+
         const ssrfKml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
@@ -219,13 +250,13 @@ test('KML Transform — NetworkLink', async (t) => {
   </Document>
 </kml>`;
 
-        const { transform } = await makeTransform(ssrfKml);
+        const { transform } = await makeTransform(st, ssrfKml);
         const result = await transform.convert();
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
         assert.strictEqual(lines.length, 0, 'no features — file:// scheme must be blocked');
     });
 
-    await t.test('relative href is resolved against base URL', async () => {
+    await t.test('relative href is resolved against base URL', async (st) => {
         const relativeKml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
@@ -264,7 +295,7 @@ test('KML Transform — NetworkLink', async (t) => {
         mockAgent.disableNetConnect();
         setGlobalDispatcher(mockAgent);
 
-        t.after(() => {
+        st.after(() => {
             setGlobalDispatcher(originalDispatcher);
             mockAgent.close();
         });
@@ -273,7 +304,7 @@ test('KML Transform — NetworkLink', async (t) => {
         pool.intercept({ path: '/linked.kml', method: 'GET' }).reply(200, linkedWithRelative);
         pool.intercept({ path: '/sibling.kml', method: 'GET' }).reply(200, siblingKml);
 
-        const { transform } = await makeTransform(relativeKml);
+        const { transform } = await makeTransform(t, relativeKml);
         const result = await transform.convert();
 
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
@@ -282,7 +313,7 @@ test('KML Transform — NetworkLink', async (t) => {
         assert.ok(names.includes('Sibling Feature'), 'sibling feature resolved from relative href');
     });
 
-    await t.test('HTTP relative href resolving to a different origin is blocked', async () => {
+    await t.test('HTTP relative href resolving to a different origin is blocked', async (st) => {
         // //other.com/path resolves to http://other.com/path against http://example.com/...
         const linkedWithCrossOrigin = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -321,7 +352,7 @@ test('KML Transform — NetworkLink', async (t) => {
         mockAgent.disableNetConnect();
         setGlobalDispatcher(mockAgent);
 
-        t.after(() => {
+        st.after(() => {
             setGlobalDispatcher(originalDispatcher);
             mockAgent.close();
         });
@@ -336,7 +367,7 @@ test('KML Transform — NetworkLink', async (t) => {
             .intercept({ path: '/cross-origin.kml', method: 'GET' })
             .reply(200, crossOriginKml);
 
-        const { transform } = await makeTransform(relativeKml);
+        const { transform } = await makeTransform(t, relativeKml);
         const result = await transform.convert();
 
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
@@ -345,7 +376,16 @@ test('KML Transform — NetworkLink', async (t) => {
         assert.ok(!names.includes('Cross-Origin Feature'), 'cross-origin feature must be blocked');
     });
 
-    await t.test('local relative NetworkLink within tmpdir is resolved', async () => {
+    await t.test('local relative NetworkLink within tmpdir is resolved', async (st) => {
+        const mockAgent = new MockAgent();
+        const originalDispatcher = getGlobalDispatcher();
+        mockAgent.disableNetConnect();
+        setGlobalDispatcher(mockAgent);
+        st.after(() => {
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+        });
+
         const rootKml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
@@ -369,7 +409,7 @@ test('KML Transform — NetworkLink', async (t) => {
   </Document>
 </kml>`;
 
-        const { transform, tmpdir } = await makeTransform(rootKml);
+        const { transform, tmpdir } = await makeTransform(st, rootKml);
         // Place the linked KML inside tmpdir/sub/ to simulate a multi-file KMZ extraction
         await fs.mkdir(path.join(tmpdir, 'sub'), { recursive: true });
         await fs.writeFile(path.join(tmpdir, 'sub', 'linked.kml'), linkedKml);
@@ -382,7 +422,16 @@ test('KML Transform — NetworkLink', async (t) => {
         assert.ok(names.includes('Sub Feature'), 'local relative linked feature present');
     });
 
-    await t.test('local relative NetworkLink path traversal outside tmpdir is blocked', async () => {
+    await t.test('local relative NetworkLink path traversal outside tmpdir is blocked', async (st) => {
+        const mockAgent = new MockAgent();
+        const originalDispatcher = getGlobalDispatcher();
+        mockAgent.disableNetConnect();
+        setGlobalDispatcher(mockAgent);
+        st.after(() => {
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+        });
+
         const traversalKml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
@@ -392,7 +441,7 @@ test('KML Transform — NetworkLink', async (t) => {
   </Document>
 </kml>`;
 
-        const { transform } = await makeTransform(traversalKml);
+        const { transform } = await makeTransform(st, traversalKml);
         const result = await transform.convert();
 
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
