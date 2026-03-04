@@ -6,6 +6,12 @@
             </h3>
 
             <div class='ms-auto btn-list'>
+                <TablerDelete
+                    v-if='!error && !loading && list.items.length'
+                    v-tooltip='"Delete All Features"'
+                    displaytype='icon'
+                    @delete='deleteAll'
+                />
                 <TablerRefreshButton
                     title='Refresh'
                     :loading='loading'
@@ -185,6 +191,22 @@ async function fetchList() {
         url.searchParams.set('page', String(paging.value.page));
         if (paging.value.filter) url.searchParams.set('filter', paging.value.filter);
         list.value = await std(url) as typeof list.value;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+
+    loading.value = false;
+}
+
+async function deleteAll() {
+    loading.value = true;
+    error.value = undefined;
+
+    try {
+        await std(`/api/connection/${route.params.connectionid}/feature`, {
+            method: 'DELETE'
+        });
+        await fetchList();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
