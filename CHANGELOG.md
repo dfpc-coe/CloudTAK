@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.90.1
+
+- :rocket: Increase support for KML NetworkLinks to include remote KMZ files in addition to the existing KML support
+
 ### v12.90.0
 
 - :tada: Render NetworkLinks when processing KML files
