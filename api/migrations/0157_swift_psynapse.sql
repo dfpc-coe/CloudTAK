@@ -1,0 +1,3 @@
+ALTER TABLE "connection_features" ADD COLUMN "layer" integer;--> statement-breakpoint
+ALTER TABLE "connection_features" ADD CONSTRAINT "connection_features_layer_layers_id_fk" FOREIGN KEY ("layer") REFERENCES "public"."layers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "connection_features_connection_layer_idx" ON "connection_features" USING btree ("connection","layer");
