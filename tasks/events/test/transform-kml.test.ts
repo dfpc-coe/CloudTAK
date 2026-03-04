@@ -447,4 +447,50 @@ test('KML Transform — NetworkLink', async (t) => {
         const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
         assert.strictEqual(lines.length, 0, 'no features — path traversal outside tmpdir must be blocked');
     });
+
+    await t.test('NetworkLink URL that returns a KMZ is unpacked and features extracted', async (st) => {
+        // Google Maps d/kml URLs return application/vnd.google-earth.kmz — a ZIP that
+        // contains both doc.kml AND any icon assets bundled in the archive.
+        const kmzBytes = await fs.readFile(new URL('./fixtures/networklink-linked.kmz', import.meta.url));
+
+        const rootKml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <NetworkLink>
+      <Link><href>http://example.com/linked.kmz</href></Link>
+    </NetworkLink>
+  </Document>
+</kml>`;
+
+        const mockAgent = new MockAgent();
+        const originalDispatcher = getGlobalDispatcher();
+        mockAgent.disableNetConnect();
+        setGlobalDispatcher(mockAgent);
+
+        st.after(() => {
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+        });
+
+        mockAgent
+            .get('http://example.com')
+            .intercept({ path: '/linked.kmz', method: 'GET' })
+            .reply(200, kmzBytes, { headers: { 'content-type': 'application/vnd.google-earth.kmz' } });
+
+        const { transform } = await makeTransform(t, rootKml);
+        const result = await transform.convert();
+
+        const lines = (await fs.readFile(result.asset, 'utf8')).trim().split('\n').filter(Boolean);
+        const features = lines.map((l) => JSON.parse(l));
+
+        // The KMZ fixture has one Placemark with an embedded icon.png.
+        // If the icon was NOT extracted, the feature would be silently dropped.
+        assert.strictEqual(features.length, 1, 'should have 1 feature extracted from linked KMZ (dropped = icon not found)');
+        assert.strictEqual(features[0].properties?.name, 'KMZ Feature', 'feature from KMZ doc.kml is present');
+
+        // The bundled icon must be present in the convert result icons set.
+        assert.ok(result.icons && result.icons.size > 0, 'icon set from linked KMZ must not be empty');
+        const iconNames = result.icons ? [...result.icons].map((i) => i.name) : [];
+        assert.ok(iconNames.some((n) => n.endsWith('.png')), `icon.png from linked KMZ must be in result icons (got: ${iconNames.join(', ')})`);
+    });
 });
