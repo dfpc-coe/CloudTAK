@@ -59,6 +59,7 @@ export default class AtlasBreadcrumb {
                 entry.path,
                 entry.callsign,
                 entry.coordinates,
+                entry.color,
             );
 
             await this.db.add(feature, { skipSave: true });
@@ -74,6 +75,7 @@ export default class AtlasBreadcrumb {
         path: string,
         callsign: string,
         coordinates: number[][],
+        color?: string,
     ): InputFeature {
         return {
             id,
@@ -84,7 +86,7 @@ export default class AtlasBreadcrumb {
                 type: 'u-d-f-m',
                 breadcrumb: true,
                 uid,
-                stroke: '#ff0000',
+                stroke: color || '#ff0000',
                 'stroke-width': 2,
                 'stroke-opacity': 1,
                 'stroke-style': 'dashed',
@@ -151,17 +153,19 @@ export default class AtlasBreadcrumb {
             const trackedCot = this.db.cots.get(uid);
             const callsign = trackedCot?.properties.callsign ?? uid;
             const path = trackedCot?.path ?? '/';
+            const color = (trackedCot?.properties['marker-color'] as string | undefined) || undefined;
 
             await db.breadcrumb.put({
                 id: trackId,
                 uid,
                 path,
                 callsign,
+                color,
                 coordinates: seedCoords,
             });
 
             await this.db.add(
-                this._buildFeature(trackId, uid, path, callsign, seedCoords),
+                this._buildFeature(trackId, uid, path, callsign, seedCoords, color),
                 { skipSave: true },
             );
         }
@@ -189,17 +193,19 @@ export default class AtlasBreadcrumb {
                 // We now have two distinct positions: create the LineString
                 this.pending.delete(cot.id);
                 const coordinates = [pendingCoord, coord];
+                const color = (cot.properties['marker-color'] as string | undefined) || undefined;
 
                 await db.breadcrumb.put({
                     id: breadcrumbId,
                     uid: cot.id,
                     path: cot.path,
                     callsign: cot.properties.callsign,
+                    color,
                     coordinates,
                 });
 
                 await this.db.add(
-                    this._buildFeature(breadcrumbId, cot.id, cot.path, cot.properties.callsign, coordinates),
+                    this._buildFeature(breadcrumbId, cot.id, cot.path, cot.properties.callsign, coordinates, color),
                     { skipSave: true },
                 );
             }

@@ -26,6 +26,7 @@ export interface DBBreadcrumb {
     uid: string;         // the source CoT UID being tracked
     path: string;
     callsign: string;
+    color?: string;
     coordinates: number[][];
 }
 
