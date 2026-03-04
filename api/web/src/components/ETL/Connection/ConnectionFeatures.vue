@@ -14,6 +14,14 @@
             </div>
         </div>
 
+        <div class='col-12 px-2 py-2'>
+            <TablerInput
+                v-model='paging.filter'
+                icon='search'
+                placeholder='Filter Callsign'
+            />
+        </div>
+
         <div
             v-if='!error && !loading && list.items.length'
             class='table-responsive'
@@ -22,41 +30,59 @@
                 <thead>
                     <tr>
                         <th>ID</th>
+                        <th>Callsign</th>
                         <th>Path</th>
                         <th>Properties</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr
+                    <template
                         v-for='feature in list.items'
                         :key='feature.id'
                     >
-                        <td>
-                            <div class='d-flex align-items-center'>
-                                <IconMapPin
-                                    :size='32'
-                                    stroke='1'
+                        <tr
+                            class='cursor-pointer'
+                            @click='selected = selected?.id === feature.id ? null : feature'
+                        >
+                            <td>
+                                <div class='d-flex align-items-center'>
+                                    <IconMapPin
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    <span
+                                        class='mx-2'
+                                        v-text='feature.id'
+                                    />
+                                </div>
+                            </td>
+                            <td v-text='feature.properties?.callsign' />
+                            <td v-text='feature.path' />
+                            <td>
+                                <span v-text='Object.keys(feature.properties || {}).length + " properties"' />
+                            </td>
+                            <td class='d-flex align-items-center'>
+                                <div class='ms-auto btn-list'>
+                                    <TablerDelete
+                                        v-tooltip='"Delete Feature"'
+                                        displaytype='icon'
+                                        @delete='deleteFeature(feature)'
+                                    />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr v-if='selected?.id === feature.id'>
+                            <td
+                                colspan='5'
+                                style='max-width: 0; overflow-x: auto;'
+                            >
+                                <CopyField
+                                    mode='pre'
+                                    :model-value='JSON.stringify(feature, null, 4)'
                                 />
-                                <span
-                                    class='mx-2'
-                                    v-text='feature.id'
-                                />
-                            </div>
-                        </td>
-                        <td v-text='feature.path' />
-                        <td>
-                            <span v-text='Object.keys(feature.properties || {}).length + " properties"' />
-                        </td>
-                        <td class='d-flex align-items-center'>
-                            <div class='ms-auto btn-list'>
-                                <TablerDelete
-                                    v-tooltip='"Delete Feature"'
-                                    displaytype='icon'
-                                    @delete='deleteFeature(feature)'
-                                />
-                            </div>
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>
@@ -84,10 +110,10 @@
             class='card-footer'
         >
             <TablerPager
-                :page='page'
+                :page='paging.page'
                 :total='list.total'
-                :limit='limit'
-                @page='page = $event'
+                :limit='paging.limit'
+                @page='paging.page = $event'
             />
         </div>
     </div>
@@ -96,7 +122,8 @@
 <script setup lang='ts'>
 import { useRoute } from 'vue-router';
 import { ref, watch, onMounted } from 'vue';
-import { std } from '../../../std.ts';
+import { std, stdurl } from '../../../std.ts';
+import CopyField from '../../CloudTAK/util/CopyField.vue';
 import {
     IconMapPin,
 } from '@tabler/icons-vue'
@@ -105,6 +132,7 @@ import {
     TablerAlert,
     TablerNone,
     TablerDelete,
+    TablerInput,
     TablerLoading,
     TablerPager,
 } from '@tak-ps/vue-tabler';
@@ -112,8 +140,18 @@ import {
 const route = useRoute();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
-const page = ref(0);
-const limit = ref(20);
+const selected = ref<{
+    id: number | string;
+    path: string;
+    type: string;
+    properties: Record<string, unknown>;
+    geometry: unknown;
+} | null>(null);
+const paging = ref({
+    filter: '',
+    limit: 20,
+    page: 0
+});
 
 const list = ref<{
     total: number;
@@ -129,7 +167,7 @@ const list = ref<{
     items: []
 });
 
-watch([page], async () => {
+watch(paging.value, async () => {
     await fetchList();
 });
 
@@ -142,7 +180,11 @@ async function fetchList() {
     error.value = undefined;
 
     try {
-        list.value = await std(`/api/connection/${route.params.connectionid}/feature?limit=${limit.value}&page=${page.value}`) as typeof list.value;
+        const url = stdurl(`/api/connection/${route.params.connectionid}/feature`);
+        url.searchParams.set('limit', String(paging.value.limit));
+        url.searchParams.set('page', String(paging.value.page));
+        if (paging.value.filter) url.searchParams.set('filter', paging.value.filter);
+        list.value = await std(url) as typeof list.value;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

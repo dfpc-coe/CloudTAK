@@ -234,6 +234,7 @@ export default async function router(schema: Schema, config: Config) {
                     insertValues.push({
                         path: '/',
                         connection: layer.connection,
+                        layer: layer.id,
                         ...(await CoTParser.to_geojson(cot))
                     })
                 }
