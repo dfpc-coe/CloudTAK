@@ -31,6 +31,13 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'Set Content-Disposition to download the file'
             }),
             limit: Type.Integer({ default: 1000 }),
+            filter: Type.String({
+                default: '',
+                description: 'Filter features by callsign'
+            }),
+            layer: Type.Optional(Type.Integer({
+                description: 'Filter features by layer ID'
+            })),
             sort: Type.String({
                 default: 'id',
                 enum: Object.keys(ConnectionFeature)
@@ -59,6 +66,8 @@ export default async function router(schema: Schema, config: Config) {
                 sort: req.query.sort,
                 where: sql`
                     connection = ${req.params.connectionid}
+                    ${req.query.layer !== undefined ? sql`AND layer = ${req.query.layer}` : sql``}
+                    ${req.query.filter ? sql`AND properties->>'callsign' ILIKE ${'%' + req.query.filter + '%'}` : sql``}
                 `
             });
 

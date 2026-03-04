@@ -322,16 +322,25 @@ async function download() {
     });
 }
 
+function normalizeEditing(data) {
+    for (const field of ['tilesize', 'collection', 'attribution']) {
+        if (data[field] === null || data[field] === undefined) {
+            data[field] = '';
+        }
+    }
+    return data;
+}
+
 async function fetchTileJSON() {
     loading.value = true;
     try {
-        editing.value = await std('/api/basemap', {
+        editing.value = normalizeEditing(await std('/api/basemap', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'text/plain'
             },
             body: tilejson.value.url
-        });
+        }));
         mode.value.tilejson = false;
         loading.value = false;
     } catch (err) {
@@ -342,7 +351,7 @@ async function fetchTileJSON() {
 
 function processUpload(body) {
     mode.value.upload = false;
-    editing.value = body;
+    editing.value = normalizeEditing(body);
 }
 
 function uploadHeaders() {
@@ -357,7 +366,7 @@ function uploadURL() {
 
 async function fetch() {
     loading.value = true;
-    editing.value = await std(`/api/basemap/${props.basemap.id}`);
+    editing.value = normalizeEditing(await std(`/api/basemap/${props.basemap.id}`));
     loading.value = false;
 }
 
@@ -377,6 +386,10 @@ async function create() {
 
         if (!body.bounds || !body.bounds.length) delete body.bounds;
         if (!body.center || !body.center.length) delete body.center;
+
+        if (!body.tilesize && body.tilesize !== 0) {
+            body.tilesize = null;
+        }
 
         if (!body.collection || body.collection.trim().length === 0) {
             body.collection = null;
