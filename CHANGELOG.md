@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.91.1 - 2026-03-04
+
+- :rocket: Breadcrumbs inherit their parent color
+- :rocket: Add ability to skip archiving in ETL Submission
+
 ### v12.91.0 - 2026-03-04
 
 - :bug: Treat null values as strings in Basemap Editor during editing context
