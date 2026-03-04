@@ -36,37 +36,53 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr
+                    <template
                         v-for='feature in list.items'
                         :key='feature.id'
                     >
-                        <td>
-                            <div class='d-flex align-items-center'>
-                                <IconMapPin
-                                    :size='32'
-                                    stroke='1'
+                        <tr
+                            class='cursor-pointer'
+                            @click='selected = selected?.id === feature.id ? null : feature'
+                        >
+                            <td>
+                                <div class='d-flex align-items-center'>
+                                    <IconMapPin
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    <span
+                                        class='mx-2'
+                                        v-text='feature.id'
+                                    />
+                                </div>
+                            </td>
+                            <td v-text='feature.properties?.callsign' />
+                            <td v-text='feature.path' />
+                            <td>
+                                <span v-text='Object.keys(feature.properties || {}).length + " properties"' />
+                            </td>
+                            <td class='d-flex align-items-center'>
+                                <div class='ms-auto btn-list'>
+                                    <TablerDelete
+                                        v-tooltip='"Delete Feature"'
+                                        displaytype='icon'
+                                        @delete='deleteFeature(feature)'
+                                    />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr v-if='selected?.id === feature.id'>
+                            <td
+                                colspan='5'
+                                style='max-width: 0; overflow-x: auto;'
+                            >
+                                <CopyField
+                                    mode='pre'
+                                    :model-value='JSON.stringify(feature, null, 4)'
                                 />
-                                <span
-                                    class='mx-2'
-                                    v-text='feature.id'
-                                />
-                            </div>
-                        </td>
-                        <td v-text='feature.properties?.callsign' />
-                        <td v-text='feature.path' />
-                        <td>
-                            <span v-text='Object.keys(feature.properties || {}).length + " properties"' />
-                        </td>
-                        <td class='d-flex align-items-center'>
-                            <div class='ms-auto btn-list'>
-                                <TablerDelete
-                                    v-tooltip='"Delete Feature"'
-                                    displaytype='icon'
-                                    @delete='deleteFeature(feature)'
-                                />
-                            </div>
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>
@@ -107,6 +123,7 @@
 import { useRoute } from 'vue-router';
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../../std.ts';
+import CopyField from '../../CloudTAK/util/CopyField.vue';
 import {
     IconMapPin,
 } from '@tabler/icons-vue'
@@ -123,6 +140,13 @@ import {
 const route = useRoute();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
+const selected = ref<{
+    id: number | string;
+    path: string;
+    type: string;
+    properties: Record<string, unknown>;
+    geometry: unknown;
+} | null>(null);
 const paging = ref({
     filter: '',
     limit: 20,
