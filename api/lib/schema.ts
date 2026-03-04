@@ -24,7 +24,6 @@ export const SpatialRefSys = pgTable('spatial_ref_sys', {
     proj4text: varchar({ length: 2048 })
 });
 
-
 export const Palette = pgTable('palette', {
     uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
     name: text().notNull(),
@@ -369,6 +368,7 @@ export const Connection = pgTable('connections', {
 export const ConnectionFeature = pgTable('connection_features', {
     id: text().notNull(),
     path: text().notNull().default('/'),
+    layer: integer().references(() => Layer.id),
     connection: integer().notNull().references(() => Connection.id),
     properties: json().notNull().default({}),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
@@ -378,6 +378,7 @@ export const ConnectionFeature = pgTable('connection_features', {
             columns: [table.connection, table.id]
         }),
         connection_idx: index("connection_features_connection_idx").on(table.connection),
+        connection_layer_idx: index("connection_features_connection_layer_idx").on([table.connection, table.layer]),
     }
 })
 
