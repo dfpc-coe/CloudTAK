@@ -378,7 +378,7 @@ export const ConnectionFeature = pgTable('connection_features', {
             columns: [table.connection, table.id]
         }),
         connection_idx: index("connection_features_connection_idx").on(table.connection),
-        connection_layer_idx: index("connection_features_connection_layer_idx").on([table.connection, table.layer]),
+        connection_layer_idx: index("connection_features_connection_layer_idx").on(table.connection, table.layer),
     }
 })
 
