@@ -17,11 +17,18 @@
 
 ### Pending Release
 
-### v12.90.1
+### v12.91.0 - 2026-03-04
+
+- :bug: Treat null values as strings in Basemap Editor during editing context
+- :tada: Allow showing the full feature JSON in the ETL Connection Feature UI
+- :rocket: Show callsign field in the full feature JSON in the ETL Connection Feature UI
+- :rocket: Add an optional ConnectionFeature.layer & associated API Params to allow getting features provided by a certain layer
+
+### v12.90.1 - 2026-03-03
 
 - :rocket: Increase support for KML NetworkLinks to include remote KMZ files in addition to the existing KML support
 
-### v12.90.0
+### v12.90.0 - 2026-03-03
 
 - :tada: Render NetworkLinks when processing KML files
 - :rocket: Show tiffs in Mission Syncs as importable files Closes: https://github.com/dfpc-coe/CloudTAK/issues/1289
