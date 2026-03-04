@@ -141,8 +141,41 @@ export default class KML implements Transform {
 
                     if (!res.ok) throw new Error(`HTTP ${res.status} ${await res.text()}`);
 
-                    const linked = await res.text();
-                    const linkedFeatures = await this.fetchFeatures(linked, icons, depth + 1, normalized, null, visited);
+                    const buf = Buffer.from(await res.arrayBuffer());
+                    // Detect KMZ by ZIP magic bytes (PK\x03\x04) since content-type is unreliable
+                    const isKmz = buf.length >= 4
+                        && buf[0] === 0x50 && buf[1] === 0x4B
+                        && buf[2] === 0x03 && buf[3] === 0x04;
+
+                    let linkedFeatures: ReturnType<typeof kml>['features'];
+
+                    if (isKmz) {
+                        const tmpKmzPath = path.join(this.local.tmpdir, `nl-${Date.now()}.kmz`);
+                        const extractDir = tmpKmzPath.replace(/\.kmz$/, '');
+                        await fs.writeFile(tmpKmzPath, buf);
+                        await fs.mkdir(extractDir, { recursive: true });
+                        const zip = new StreamZip.async({ file: tmpKmzPath, skipEntryNameValidation: true });
+                        try {
+                            const entries = await zip.entries();
+                            if (!entries['doc.kml']) {
+                                console.warn(`NetworkLink ${normalized} KMZ has no doc.kml, skipping`);
+                                continue;
+                            }
+                            // Extract everything so icon assets bundled in the linked KMZ are
+                            // available on disk for the glob-based icon resolver.
+                            await zip.extract(null, extractDir);
+                            const kmlContent = await fs.readFile(path.join(extractDir, 'doc.kml'), 'utf8');
+                            // Use extractDir as localDir so relative paths (icon refs, nested
+                            // NetworkLinks) in the extracted doc.kml resolve within the KMZ.
+                            linkedFeatures = await this.fetchFeatures(kmlContent, icons, depth + 1, normalized, extractDir, visited);
+                        } finally {
+                            await zip.close();
+                            await fs.unlink(tmpKmzPath).catch(() => { /* ignore */ });
+                        }
+                    } else {
+                        linkedFeatures = await this.fetchFeatures(buf.toString('utf8'), icons, depth + 1, normalized, null, visited);
+                    }
+
                     features.push(...linkedFeatures);
                 } catch (err) {
                     console.warn(`NetworkLink ${normalized} not retrievable (${err})`);
