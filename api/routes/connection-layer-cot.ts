@@ -22,7 +22,11 @@ export default async function router(schema: Schema, config: Config) {
             layerid: Type.Integer({ minimum: 1 })
         }),
         query: Type.Object({
-            logging: Type.Optional(Type.Boolean({ "description": "If logging is enabled for the layer, allow callers to skip logging for a particular CoT payload" }))
+            logging: Type.Optional(Type.Boolean({ "description": "If logging is enabled for the layer, allow callers to skip logging for a particular CoT payload" })),
+            archive: Type.Boolean({
+                description: 'Save features to ConnectionFeature table',
+                default: true
+            })
         }),
         body: Type.Object({
             type: Type.Literal('FeatureCollection'),
@@ -240,7 +244,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
 
                 try {
-                    if (insertValues.length) {
+                    if (insertValues.length && req.query.archive) {
                         await config.models.ConnectionFeature.generate(insertValues, {
                             upsert: GenerateUpsert.UPDATE,
                             upsertTarget: [ ConnectionFeature.connection, ConnectionFeature.id ]
