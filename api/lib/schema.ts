@@ -221,7 +221,6 @@ export const Basemap = pgTable('basemaps', {
 
     // Permissions
     username: text().references(() => Profile.username),
-    channel: text().default(sql`null`),
     sharing_enabled: boolean().notNull().default(false),
     sharing_token: text(),
     hidden: boolean().notNull().default(false),
