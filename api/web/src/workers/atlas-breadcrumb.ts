@@ -44,6 +44,13 @@ export default class AtlasBreadcrumb {
     }
 
     /**
+     * Returns all CoT UIDs that currently have live breadcrumb recording enabled.
+     */
+    async listEnabled(): Promise<string[]> {
+        return Array.from(this.enabled);
+    }
+
+    /**
      * On startup, restore all persisted breadcrumb LineStrings from Dexie
      * into the in-memory cots Map so they are rendered on the map.
      */
