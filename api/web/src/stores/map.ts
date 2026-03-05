@@ -45,6 +45,9 @@ export const useMapStore = defineStore('cloudtak', {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _menu?: any;
 
+        _boundOnOnline?: () => void;
+        _boundOnOffline?: () => void;
+
         db: DatabaseType;
         channel: BroadcastChannel;
 
@@ -82,6 +85,7 @@ export const useMapStore = defineStore('cloudtak', {
         isTerrainEnabled: boolean;
         isLoaded: boolean;
         isOpen: boolean;
+        isOnline: boolean;
         pitch: number;
         bearing: number;
         selected: Map<string, COT>;
@@ -131,6 +135,7 @@ export const useMapStore = defineStore('cloudtak', {
             isTerrainEnabled: false,
             isOpen: false,
             isLoaded: false,
+            isOnline: navigator.onLine,
             pitch: 0,
             bearing: 0,
             mission: undefined,
@@ -183,6 +188,9 @@ export const useMapStore = defineStore('cloudtak', {
         destroy: function() {
             this.channel.close();
 
+            if (this._boundOnOnline) window.removeEventListener('online', this._boundOnOnline);
+            if (this._boundOnOffline) window.removeEventListener('offline', this._boundOnOffline);
+
             // Clean up GPS watch
             if (this.gpsWatchId !== null) {
                 navigator.geolocation.clearWatch(this.gpsWatchId);
@@ -198,6 +206,19 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
             this.$reset();
+        },
+        getOverlayBeforeId: function(): string | undefined {
+            if (this.overlays.length > 1 && this.overlays[1].styles.length > 0) {
+                return String(this.overlays[1].styles[0].id);
+            }
+            return undefined;
+        },
+        addOverlay: function(overlay: Overlay): void {
+            if (this.overlays.length > 0) {
+                (this.overlays as unknown as Overlay[]).splice(1, 0, overlay);
+            } else {
+                (this.overlays as unknown as Overlay[]).push(overlay);
+            }
         },
         removeOverlay: async function(overlay: Overlay) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -406,6 +427,12 @@ export const useMapStore = defineStore('cloudtak', {
         },
         init: async function(container: HTMLElement) {
             this.container = container;
+
+            this.isOnline = navigator.onLine;
+            this._boundOnOnline = (): void => { this.isOnline = true; };
+            this._boundOnOffline = (): void => { this.isOnline = false; };
+            window.addEventListener('online', this._boundOnOnline);
+            window.addEventListener('offline', this._boundOnOffline);
 
             await this.worker.init(localStorage.token);
 

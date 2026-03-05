@@ -67,11 +67,13 @@ import {
     IconUserCog,
     IconAdjustments,
 } from '@tabler/icons-vue';
+import { useMapStore } from '../../../stores/map.ts';
 
+const mapStore = useMapStore();
 const router = useRouter();
 
 async function refreshApp() {
-    if (!navigator.onLine) {
+    if (!mapStore.isOnline) {
         throw new Error('Cannot refresh app while offline.');
     }
 
