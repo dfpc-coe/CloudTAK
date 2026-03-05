@@ -309,22 +309,26 @@ async function createOverlay(asset: ProfileFile) {
     };
 
     if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
-        await mapStore.overlays.push(await Overlay.create({
+        mapStore.addOverlay(await Overlay.create({
             url: String(url),
             name: asset.name,
             mode: 'profile',
             mode_id: asset.name,
             iconset: asset.iconset,
             type: 'vector',
+        }, {
+            before: mapStore.getOverlayBeforeId()
         }));
     } else {
-        await mapStore.overlays.push(await Overlay.create({
+        mapStore.addOverlay(await Overlay.create({
             url: String(url),
             name: asset.name,
             mode: 'profile',
             mode_id: asset.name,
             iconset: asset.iconset,
             type: 'raster',
+        }, {
+            before: mapStore.getOverlayBeforeId()
         }));
     }
 

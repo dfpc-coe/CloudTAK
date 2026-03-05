@@ -371,9 +371,11 @@ async function createMission() {
             mode: 'mission',
             token: res.data.token,
             mode_id: res.data.guid,
+        }, {
+            before: mapStore.getOverlayBeforeId()
         })
 
-        mapStore.overlays.push(missionOverlay);
+        mapStore.addOverlay(missionOverlay);
 
         await mapStore.loadMission(res.data.guid);
 
