@@ -17,7 +17,7 @@
             :err='new Error(props.capabilities.incoming.schema.outputError.message) || new Error("Layer failed to return an output schema on the Capabilities object")'
         />
         <TablerNone
-            v-else-if='!schema.length'
+            v-else-if='!hasProperties'
             label='No Schema'
             :create='false'
         />
@@ -35,51 +35,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr
-                        v-for='field in schema'
-                        :key='field.name'
-                    >
-                        <td>
-                            <div class='d-flex align-items-center'>
-                                <span class='mx-3'>
-                                    <template v-if='field.type === "string"'>
-                                        <IconAlphabetLatin
-                                            :size='32'
-                                            stroke='1'
-                                        />
-                                    </template>
-                                    <template v-else-if='field.type === "number"'>
-                                        <IconDecimal
-                                            :size='32'
-                                            stroke='1'
-                                        />
-                                    </template>
-                                    <template v-else-if='field.type === "integer"'>
-                                        <IconSort09
-                                            :size='32'
-                                            stroke='1'
-                                        />
-                                    </template>
-                                    <template v-else>
-                                        <IconBinary
-                                            :size='32'
-                                            stroke='1'
-                                        />
-                                    </template>
-                                </span>
-                                <span v-text='field.name' />
-                            </div>
-                        </td>
-                        <td v-text='field.type' />
-                        <td v-text='field.format' />
-                        <td>
-                            <span
-                                v-if='field.required'
-                                style='height: 20px;'
-                                class='badge mx-1 mb-1 bg-red text-white'
-                            >Required</span>
-                        </td>
-                    </tr>
+                    <SchemaRows
+                        :properties='props.capabilities.incoming.schema.output.properties'
+                        :required='props.capabilities.incoming.schema.output.required || []'
+                        :depth='0'
+                        parent-path=''
+                        :expanded='expanded'
+                        @toggle='toggleExpand'
+                    />
                 </tbody>
             </table>
         </div>
@@ -87,17 +50,12 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted} from 'vue';
+import { ref, computed } from 'vue';
 import {
     TablerNone,
     TablerAlert
 } from '@tak-ps/vue-tabler';
-import {
-    IconAlphabetLatin,
-    IconSort09,
-    IconDecimal,
-    IconBinary,
-} from '@tabler/icons-vue'
+import SchemaRows from './utils/SchemaRows.vue';
 
 const props = defineProps({
     layer: {
@@ -110,29 +68,26 @@ const props = defineProps({
     }
 });
 
-const schema = ref([]);
+const expanded = ref(new Set());
 
-watch(props.capabilities, () => {
-    processCapabilities();
-})
-
-onMounted(() => {
-    processCapabilities();
+const hasProperties = computed(() => {
+    return props.capabilities
+        && props.capabilities.incoming.schema.output
+        && props.capabilities.incoming.schema.output.properties
+        && Object.keys(props.capabilities.incoming.schema.output.properties).length > 0;
 });
 
-function processCapabilities() {
-    schema.value.splice(0, schema.value.length);
-    if (!props.capabilities) return;
-
-    if (props.capabilities.incoming.schema.output) {
-    console.error(props.capabilities.incoming.schema.output);
-        for (const name in props.capabilities.incoming.schema.output.properties) {
-            schema.value.push({
-                name,
-                required: props.capabilities.incoming.schema.output.required.includes(name),
-                ...props.capabilities.incoming.schema.output.properties[name]
-            });
+function toggleExpand(path) {
+    const next = new Set(expanded.value);
+    if (next.has(path)) {
+        for (const p of next) {
+            if (p === path || p.startsWith(path + '.')) {
+                next.delete(p);
+            }
         }
+    } else {
+        next.add(path);
     }
+    expanded.value = next;
 }
 </script>

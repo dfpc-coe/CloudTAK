@@ -71,6 +71,7 @@ interface validateStyleGeometry {
     id?: string;
     type?: string;
     remarks?: string;
+    phone?: string;
     rotate?: boolean;
     minzoom?: number | string;
     maxzoom?: number | string;
@@ -109,6 +110,7 @@ export const StylePoint = Type.Object({
     id: Type.Optional(Type.String()),
     type: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
+    phone: Type.Optional(Type.String()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     rotate: Type.Optional(Type.Boolean({
         default: true
@@ -128,6 +130,7 @@ export const StyleLine = Type.Object({
     'stroke-width': Type.Optional(Type.String()),
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
+    phone: Type.Optional(Type.String()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     maxzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
@@ -145,6 +148,7 @@ export const StylePolygon = Type.Object({
     'fill-opacity': Type.Optional(Type.String()),
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
+    phone: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
@@ -156,6 +160,7 @@ export const StylePolygon = Type.Object({
 export const StyleSingle = Type.Object({
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
+    phone: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
@@ -181,6 +186,7 @@ export const StyleContainer = Type.Object({
     polygon: Type.Optional(StylePolygon),
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
+    phone: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
     stale: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     minzoom: Type.Optional(Type.Union([Type.Number(), Type.String()])),
@@ -263,6 +269,13 @@ export default class Style {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Remarks Template: ${style.remarks}`)
             }
         }
+        if (style.phone) {
+            try {
+                handlebars.compile(style.phone)({});
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Phone Template: ${style.phone}`)
+            }
+        }
 
         this.#validateZoom(style.minzoom, style.maxzoom);
 
@@ -309,6 +322,14 @@ export default class Style {
                 handlebars.compile(style.remarks)({});
             } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Remarks Template: ${style.remarks}`)
+            }
+        }
+
+        if (style.phone) {
+            try {
+                handlebars.compile(style.phone)({});
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Phone Template: ${style.phone}`)
             }
         }
     }
@@ -399,6 +420,10 @@ export default class Style {
             if (this.style.styles.id) feature.id = this.compile(this.style.styles.id, feature.properties.metadata);
             if (this.style.styles.callsign) feature.properties.callsign = this.compile(this.style.styles.callsign, feature.properties.metadata);
             if (this.style.styles.remarks) feature.properties.remarks = this.compile(this.style.styles.remarks, feature.properties.metadata);
+            if (this.style.styles.phone) {
+                if (!feature.properties.contact) feature.properties.contact = {};
+                feature.properties.contact.phone = this.compile(this.style.styles.phone, feature.properties.metadata);
+            }
 
             if (this.style.styles.maxzoom !== undefined) feature.properties.maxzoom = this.#numberTemplateString(feature, this.style.styles.maxzoom, feature.properties.maxzoom);
             if (this.style.styles.minzoom !== undefined) feature.properties.minzoom = this.#numberTemplateString(feature, this.style.styles.minzoom, feature.properties.minzoom);
@@ -438,6 +463,10 @@ export default class Style {
                             if (q.styles.id) feature.id = this.compile(q.styles.id, feature.properties.metadata);
                             if (q.styles.callsign) feature.properties.callsign = this.compile(q.styles.callsign, feature.properties.metadata);
                             if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
+                            if (q.styles.phone) {
+                                if (!feature.properties.contact) feature.properties.contact = {};
+                                feature.properties.contact.phone = this.compile(q.styles.phone, feature.properties.metadata);
+                            }
                             if (q.styles.links) this.#links(q.styles.links, feature);
 
                             if (q.styles.maxzoom !== undefined) feature.properties.maxzoom = this.#numberTemplateString(feature, q.styles.maxzoom, feature.properties.maxzoom);
@@ -536,6 +565,10 @@ export default class Style {
             if (style.point.id) feature.id = this.compile(style.point.id, feature.properties.metadata);
             if (style.point.type) feature.properties.type = this.compile(style.point.type, feature.properties.metadata);
             if (style.point.remarks) feature.properties.remarks = this.compile(style.point.remarks, feature.properties.metadata);
+            if (style.point.phone) {
+                if (!feature.properties.contact) feature.properties.contact = {};
+                feature.properties.contact.phone = this.compile(style.point.phone, feature.properties.metadata);
+            }
             if (style.point.callsign) feature.properties.callsign = this.compile(style.point.callsign, feature.properties.metadata);
             if (style.point.links) this.#links(style.point.links, feature);
 
@@ -560,6 +593,10 @@ export default class Style {
         } else if (feature.geometry.type === 'LineString' && style.line) {
             if (style.line.id) feature.id = this.compile(style.line.id, feature.properties.metadata);
             if (style.line.remarks) feature.properties.remarks = this.compile(style.line.remarks, feature.properties.metadata);
+            if (style.line.phone) {
+                feature.properties.contact = feature.properties.contact || {};
+                feature.properties.contact.phone = this.compile(style.line.phone, feature.properties.metadata);
+            }
             if (style.line.callsign) feature.properties.callsign = this.compile(style.line.callsign, feature.properties.metadata);
             if (style.line.links) this.#links(style.line.links, feature);
 
@@ -584,6 +621,10 @@ export default class Style {
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
             if (style.polygon.id) feature.id = this.compile(style.polygon.id, feature.properties.metadata);
             if (style.polygon.remarks) feature.properties.remarks = this.compile(style.polygon.remarks, feature.properties.metadata);
+            if (style.polygon.phone) {
+                feature.properties.contact = feature.properties.contact || {};
+                feature.properties.contact.phone = this.compile(style.polygon.phone, feature.properties.metadata);
+            }
             if (style.polygon.callsign) feature.properties.callsign = this.compile(style.polygon.callsign, feature.properties.metadata);
             if (style.polygon.links) this.#links(style.polygon.links, feature);
 
