@@ -593,7 +593,10 @@ export default class Style {
         } else if (feature.geometry.type === 'LineString' && style.line) {
             if (style.line.id) feature.id = this.compile(style.line.id, feature.properties.metadata);
             if (style.line.remarks) feature.properties.remarks = this.compile(style.line.remarks, feature.properties.metadata);
-            if (style.line.phone) feature.properties.phone = this.compile(style.line.phone, feature.properties.metadata);
+            if (style.line.phone) {
+                feature.properties.contact = feature.properties.contact || {};
+                feature.properties.contact.phone = this.compile(style.line.phone, feature.properties.metadata);
+            }
             if (style.line.callsign) feature.properties.callsign = this.compile(style.line.callsign, feature.properties.metadata);
             if (style.line.links) this.#links(style.line.links, feature);
 
@@ -618,7 +621,10 @@ export default class Style {
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
             if (style.polygon.id) feature.id = this.compile(style.polygon.id, feature.properties.metadata);
             if (style.polygon.remarks) feature.properties.remarks = this.compile(style.polygon.remarks, feature.properties.metadata);
-            if (style.polygon.phone) feature.properties.phone = this.compile(style.polygon.phone, feature.properties.metadata);
+            if (style.polygon.phone) {
+                feature.properties.contact = feature.properties.contact || {};
+                feature.properties.contact.phone = this.compile(style.polygon.phone, feature.properties.metadata);
+            }
             if (style.polygon.callsign) feature.properties.callsign = this.compile(style.polygon.callsign, feature.properties.metadata);
             if (style.polygon.links) this.#links(style.polygon.links, feature);
 
