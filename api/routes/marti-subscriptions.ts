@@ -39,7 +39,7 @@ export default async function router(schema: Schema, config: Config) {
             const subs = await api.Subscription.list(req.query);
 
             subs.data.forEach((sub) => {
-                return sub.groups.filter((group) => {
+                sub.groups = (sub.groups || []).filter((group) => {
                     return channels.has(group.bitpos);
                 })
             });
@@ -88,7 +88,7 @@ export default async function router(schema: Schema, config: Config) {
             let done = false;
             for (const sub of subs.data) {
                 if (sub.clientUid === req.params.clientuid) {
-                    sub.groups = sub.groups.filter((group) => {
+                    sub.groups = (sub.groups || []).filter((group) => {
                         return channels.has(group.bitpos);
                     });
 
