@@ -586,14 +586,9 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.query.impersonate) {
                 await Auth.as_user(config, req, { admin: true });
-            } else if (pkg.SubmissionUser !== user.email) {
-                throw new Err(403, null, 'Insufficient Acces to delete Package');
-                if (user.access !== AuthUserAccess.ADMIN) {
-                    throw new Err(403, null, 'Insufficient Access to delete Package');
-                }
             } else if (
-                user.access !== AuthUserAccess.ADMIN
-                || pkg.SubmissionUser !== user.email
+                pkg.SubmissionUser !== user.email
+                && user.access !== AuthUserAccess.ADMIN
             ) {
                 throw new Err(403, null, 'Insufficient Access to delete Package');
             }
