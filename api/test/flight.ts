@@ -419,8 +419,15 @@ export default class Flight {
      */
     landing() {
         test('test server landing - api', async () => {
+            if (this._tak) {
+                assert.equal(
+                    this._tak.unhandledMartiRequests.length, 0,
+                    `Unhandled Marti requests detected: ${this._tak.unhandledMartiRequests.join(', ')}`
+                );
+            }
+
             if (this.srv) await this.srv.close();
-            if (this.tak) await this.tak.close();
+            if (this._tak) await this._tak.close();
         });
     }
 }
