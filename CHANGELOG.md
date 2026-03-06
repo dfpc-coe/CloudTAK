@@ -17,6 +17,13 @@
 
 ### Pending Release
 
+### v12.92.0 - 2026-03-06
+
+- :rocket: Track current channel membership on pool object to make channel based object responses cheap as they won't have to hit TAK server to get a current list of active channels
+- :rocket: Make `/api/feature` call in frontend optional so not to prevent the map from loading if it fails 
+- :rocket: Surface online/offline tracking in mapStore
+- :rocket: Default to overlays being added under CoT layer - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1294
+
 ### v12.91.1 - 2026-03-04
 
 - :rocket: Breadcrumbs inherit their parent color
