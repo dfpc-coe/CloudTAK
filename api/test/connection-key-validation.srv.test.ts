@@ -30,6 +30,7 @@ test('POST: api/connection - Invalid Private Key', async () => {
 
     assert.equal(res.status, 400);
     assert.equal(res.body.message, 'Invalid Private Key Provided');
+    assert.equal(flight.tak.martiRequests.length, 0, 'No calls should be made to the TAK server for an invalid key');
 });
 
 test('PATCH: api/connection/:id - Invalid Private Key', async () => {
@@ -59,7 +60,7 @@ test('PATCH: api/connection/:id - Invalid Private Key', async () => {
     const validKey = String(fs.readFileSync('/tmp/cloudtak-test-patch.key'));
     const validCert = String(fs.readFileSync('/tmp/cloudtak-test-patch.cert'));
 
-    // Create Connection
+    // Create Connection with enabled=false to avoid auto-connecting to TAK server
     const createRes = await flight.fetch('/api/connection', {
         method: 'POST',
         auth: {
@@ -68,6 +69,7 @@ test('PATCH: api/connection/:id - Invalid Private Key', async () => {
         body: {
             name: 'Patch Connection',
             description: 'test',
+            enabled: false,
             auth: {
                 cert: validCert,
                 key: validKey
@@ -93,6 +95,7 @@ test('PATCH: api/connection/:id - Invalid Private Key', async () => {
 
     assert.equal(res.status, 400);
     assert.equal(res.body.message, 'Invalid Private Key Provided');
+    assert.equal(flight.tak.martiRequests.length, 0, 'No calls should be made to the TAK server for an invalid key');
 });
 
 flight.landing();

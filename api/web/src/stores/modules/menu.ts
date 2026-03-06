@@ -18,6 +18,7 @@ import {
     IconBoxMultiple,
     IconFileImport,
     IconAffiliate,
+    IconHistory,
 } from '@tabler/icons-vue';
 import ProfileConfig from '../../base/profile.ts';
 import ContactManager from '../../base/contact.ts';
@@ -222,6 +223,14 @@ export default class MenuManager {
                 icon: IconServerCog,
                 badge: 'A',
                 requiresSystemAdmin: true,
+            },
+            {
+                key: 'history',
+                label: 'History',
+                route: '/menu/history',
+                tooltip: 'History',
+                description: 'Breadcrumb trails and track history',
+                icon: IconHistory,
             },
             {
                 key: 'settings',

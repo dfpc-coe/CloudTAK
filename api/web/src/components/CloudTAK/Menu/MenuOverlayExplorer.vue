@@ -318,9 +318,11 @@ async function createOverlay(overlay: Basemap) {
             frequency: overlay.frequency,
             type: overlay.type,
             styles: overlay.styles
+        }, {
+            before: mapStore.getOverlayBeforeId()
         });
 
-        (mapStore.overlays as unknown as Overlay[]).push(createdOverlay);
+        mapStore.addOverlay(createdOverlay);
 
         router.push('/menu/overlays');
     } finally {

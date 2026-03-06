@@ -20,20 +20,50 @@ const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.ur
 export class ConnectionClient {
     config: ConnectionConfig;
     tak: TAK;
+    api: TAKAPI;
     retry: number;
     initial: boolean;
 
     retrying: boolean;
 
+    /**
+     * Set of bitpos integers representing the active channels
+     * this connection is currently bound to
+     */
+    channels: Set<number>;
+
     constructor(
         config: ConnectionConfig,
         tak: TAK,
+        api: TAKAPI,
     ) {
         this.tak = tak;
+        this.api = api;
         this.config = config;
         this.retry = 0;
         this.initial = true;
         this.retrying = false;
+        this.channels = new Set();
+    }
+
+    /**
+     * Refresh the set of active channel bitpos integers
+     * by querying the group list API
+     */
+    async refreshChannels(): Promise<void> {
+        try {
+            const list = await this.api.Group.list({ useCache: false });
+            const active = new Set<number>();
+            for (const group of list.data) {
+                if (group.active) {
+                    active.add(group.bitpos);
+                }
+            }
+            this.channels = active;
+            console.log(`ok - ${this.config.id} - ${this.config.name} - refreshed channels: [${[...active].join(', ')}]`);
+        } catch (err) {
+            console.error(`not ok - ${this.config.id} - ${this.config.name} - failed to refresh channels: ${err instanceof Error ? err.message : String(err)}`);
+        }
     }
 
     destroy(): void {
@@ -259,17 +289,21 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             });
         }
 
-        const connClient = new ConnectionClient(connConfig, tak);
-
         const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(connConfig.auth.cert, connConfig.auth.key));
+        const connClient = new ConnectionClient(connConfig, tak, api);
         this.set(connConfig.id, connClient);
 
         tak.on('cot', async (cot: CoT) => {
             connClient.retry = 0;
             connClient.initial = false;
 
+            if (cot.type() === 't-x-g-c') {
+                await connClient.refreshChannels();
+            }
+
             this.cots(connConfig, [cot]);
         }).on('secureConnect', async () => {
+            await connClient.refreshChannels();
             for (const sub of await connConfig.subscriptions()) {
                 let retry = true;
                 do {
