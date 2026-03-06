@@ -136,13 +136,14 @@ test('Style: Basic Point: Stale only applied if stale is undefined on root featu
     });
 });
 
-test('Style: Global Remarks & Callsign', async () => {
+test('Style: Global Remarks & Callsign & Phone', async () => {
     const style = new Style({
         enabled_styles: true,
         styles: {
             stale: 123,
             remarks: '{{override}}',
-            callsign: '{{override_callsign}}'
+            callsign: '{{override_callsign}}',
+            phone: '{{override_phone}}'
         }
     });
 
@@ -151,7 +152,8 @@ test('Style: Global Remarks & Callsign', async () => {
         properties: {
             metadata: {
                 override: 'OVERRIDE',
-                override_callsign: 'OVERRIDE_CALLSIGN'
+                override_callsign: 'OVERRIDE_CALLSIGN',
+                override_phone: '+1-555-1234'
             }
         },
         geometry: {
@@ -166,23 +168,27 @@ test('Style: Global Remarks & Callsign', async () => {
         stale: 123000,
         remarks: 'OVERRIDE',
         callsign: 'OVERRIDE_CALLSIGN',
+        phone: '+1-555-1234',
         metadata: {
             override: 'OVERRIDE',
-            override_callsign: 'OVERRIDE_CALLSIGN'
+            override_callsign: 'OVERRIDE_CALLSIGN',
+            override_phone: '+1-555-1234'
         }
     });
 });
 
-test('Style: Global Remarks & Callsign - Override by Point', async () => {
+test('Style: Global Remarks & Callsign & Phone - Override by Point', async () => {
     const style = new Style({
         enabled_styles: true,
         styles: {
             stale: 123,
             remarks: '{{override}}',
             callsign: '{{override_callsign}}',
+            phone: '{{override_phone}}',
             point: {
                 remarks: '{{override_point}}',
                 callsign: '{{override_point_callsign}}',
+                phone: '{{override_point_phone}}',
             }
         }
     });
@@ -193,8 +199,10 @@ test('Style: Global Remarks & Callsign - Override by Point', async () => {
             metadata: {
                 override: 'OVERRIDE',
                 override_callsign: 'OVERRIDE_CALLSIGN',
+                override_phone: '+1-555-0000',
                 override_point: 'OVERRIDE_POINT',
-                override_point_callsign: 'OVERRIDE_POINT_CALLSIGN'
+                override_point_callsign: 'OVERRIDE_POINT_CALLSIGN',
+                override_point_phone: '+1-555-1111'
             }
         },
         geometry: {
@@ -209,87 +217,37 @@ test('Style: Global Remarks & Callsign - Override by Point', async () => {
         stale: 123000,
         remarks: 'OVERRIDE_POINT',
         callsign: 'OVERRIDE_POINT_CALLSIGN',
+        phone: '+1-555-1111',
         metadata: {
             override: 'OVERRIDE',
             override_callsign: 'OVERRIDE_CALLSIGN',
+            override_phone: '+1-555-0000',
             override_point: 'OVERRIDE_POINT',
-            override_point_callsign: 'OVERRIDE_POINT_CALLSIGN'
+            override_point_callsign: 'OVERRIDE_POINT_CALLSIGN',
+            override_point_phone: '+1-555-1111'
         }
     });
 });
 
-test('Style: Global Phone', async () => {
-    const style = new Style({
-        enabled_styles: true,
-        styles: {
-            phone: '{{phone_number}}'
-        }
-    });
-
-    const feat = await style.feat({
-        type: 'Feature',
-        properties: {
-            metadata: {
-                phone_number: '+1-555-1234'
-            }
-        },
-        geometry: {
-            type: 'Point',
-            coordinates: [0, 0]
-        }
-    });
-
-    if (!feat) assert.fail('Feature marked as null');
-
-    assert.deepEqual(feat.properties.phone, '+1-555-1234');
-});
-
-test('Style: Phone Override by Point', async () => {
-    const style = new Style({
-        enabled_styles: true,
-        styles: {
-            phone: '{{global_phone}}',
-            point: {
-                phone: '{{point_phone}}'
-            }
-        }
-    });
-
-    const feat = await style.feat({
-        type: 'Feature',
-        properties: {
-            metadata: {
-                global_phone: '+1-555-0000',
-                point_phone: '+1-555-9999'
-            }
-        },
-        geometry: {
-            type: 'Point',
-            coordinates: [0, 0]
-        }
-    });
-
-    if (!feat) assert.fail('Feature marked as null');
-
-    assert.deepEqual(feat.properties.phone, '+1-555-9999');
-});
-
-test('Style: Global Remarks & Callsign - Override by Global Query', async () => {
+test('Style: Global Remarks & Callsign & Phone - Override by Global Query', async () => {
     const style = new Style({
         enabled_styles: true,
         styles: {
             stale: 123,
             remarks: '{{override}}',
             callsign: '{{override_callsign}}',
+            phone: '{{override_phone}}',
             point: {
                 remarks: '{{override_point}}',
                 callsign: '{{override_point_callsign}}',
+                phone: '{{override_point_phone}}',
             },
             queries: [{
                 query: 'properties.metadata.override = "OVERRIDE"',
                 styles: {
                     remarks: '{{override_query}}',
                     callsign: '{{override_query_callsign}}',
+                    phone: '{{override_query_phone}}',
                 }
             }]
         }
@@ -301,10 +259,13 @@ test('Style: Global Remarks & Callsign - Override by Global Query', async () => 
             metadata: {
                 override: 'OVERRIDE',
                 override_callsign: 'OVERRIDE_CALLSIGN',
+                override_phone: '+1-555-0000',
                 override_point: 'OVERRIDE_POINT',
                 override_point_callsign: 'OVERRIDE_POINT_CALLSIGN',
+                override_point_phone: '+1-555-1111',
                 override_query: 'OVERRIDE_QUERY',
-                override_query_callsign: 'OVERRIDE_QUERY_CALLSIGN'
+                override_query_callsign: 'OVERRIDE_QUERY_CALLSIGN',
+                override_query_phone: '+1-555-2222'
             }
         },
         geometry: {
@@ -319,36 +280,44 @@ test('Style: Global Remarks & Callsign - Override by Global Query', async () => 
         stale: 123000,
         remarks: 'OVERRIDE_QUERY',
         callsign: 'OVERRIDE_QUERY_CALLSIGN',
+        phone: '+1-555-2222',
         metadata: {
             override: 'OVERRIDE',
             override_callsign: 'OVERRIDE_CALLSIGN',
+            override_phone: '+1-555-0000',
             override_point: 'OVERRIDE_POINT',
             override_point_callsign: 'OVERRIDE_POINT_CALLSIGN',
+            override_point_phone: '+1-555-1111',
             override_query: 'OVERRIDE_QUERY',
-            override_query_callsign: 'OVERRIDE_QUERY_CALLSIGN'
+            override_query_callsign: 'OVERRIDE_QUERY_CALLSIGN',
+            override_query_phone: '+1-555-2222'
         }
     });
 });
 
-test('Style: Global Remarks & Callsign - Override by Query Point', async () => {
+test('Style: Global Remarks & Callsign & Phone - Override by Query Point', async () => {
     const style = new Style({
         enabled_styles: true,
         styles: {
             stale: 123,
             remarks: '{{override}}',
             callsign: '{{override_callsign}}',
+            phone: '{{override_phone}}',
             point: {
                 remarks: '{{override_point}}',
                 callsign: '{{override_point_callsign}}',
+                phone: '{{override_point_phone}}',
             },
             queries: [{
                 query: 'properties.metadata.override = "OVERRIDE"',
                 styles: {
                     remarks: '{{override_query}}',
                     callsign: '{{override_query_callsign}}',
+                    phone: '{{override_query_phone}}',
                     point: {
                         remarks: '{{override_query_point}}',
                         callsign: '{{override_query_point_callsign}}',
+                        phone: '{{override_query_point_phone}}',
                     }
                 }
             }]
@@ -361,12 +330,16 @@ test('Style: Global Remarks & Callsign - Override by Query Point', async () => {
             metadata: {
                 override: 'OVERRIDE',
                 override_callsign: 'OVERRIDE_CALLSIGN',
+                override_phone: '+1-555-0000',
                 override_point: 'OVERRIDE_POINT',
                 override_point_callsign: 'OVERRIDE_POINT_CALLSIGN',
+                override_point_phone: '+1-555-1111',
                 override_query: 'OVERRIDE_QUERY',
                 override_query_callsign: 'OVERRIDE_QUERY_CALLSIGN',
+                override_query_phone: '+1-555-2222',
                 override_query_point: 'OVERRIDE_QUERY_POINT',
-                override_query_point_callsign: 'OVERRIDE_QUERY_POINT_CALLSIGN'
+                override_query_point_callsign: 'OVERRIDE_QUERY_POINT_CALLSIGN',
+                override_query_point_phone: '+1-555-3333'
             }
         },
         geometry: {
@@ -381,15 +354,20 @@ test('Style: Global Remarks & Callsign - Override by Query Point', async () => {
         stale: 123000,
         remarks: 'OVERRIDE_QUERY_POINT',
         callsign: 'OVERRIDE_QUERY_POINT_CALLSIGN',
+        phone: '+1-555-3333',
         metadata: {
             override: 'OVERRIDE',
             override_callsign: 'OVERRIDE_CALLSIGN',
+            override_phone: '+1-555-0000',
             override_point: 'OVERRIDE_POINT',
             override_point_callsign: 'OVERRIDE_POINT_CALLSIGN',
+            override_point_phone: '+1-555-1111',
             override_query: 'OVERRIDE_QUERY',
             override_query_callsign: 'OVERRIDE_QUERY_CALLSIGN',
+            override_query_phone: '+1-555-2222',
             override_query_point: 'OVERRIDE_QUERY_POINT',
-            override_query_point_callsign: 'OVERRIDE_QUERY_POINT_CALLSIGN'
+            override_query_point_callsign: 'OVERRIDE_QUERY_POINT_CALLSIGN',
+            override_query_point_phone: '+1-555-3333'
         }
     });
 });
@@ -405,6 +383,7 @@ test('Style: Lowest Level Remarks', async () => {
                     point: {
                         remarks: '{{override_query_point}}',
                         callsign: '{{override_query_point_callsign}}',
+                        phone: '{{override_query_point_phone}}',
                     }
                 }
             }]
@@ -416,7 +395,8 @@ test('Style: Lowest Level Remarks', async () => {
         properties: {
             metadata: {
                 override_query_point: 'LOWEST_REMARKS',
-                override_query_point_callsign: 'LOWEST_CALLSIGN'
+                override_query_point_callsign: 'LOWEST_CALLSIGN',
+                override_query_point_phone: '+1-555-9999'
             }
         },
         geometry: {
@@ -431,9 +411,11 @@ test('Style: Lowest Level Remarks', async () => {
         stale: 123000,
         remarks: 'LOWEST_REMARKS',
         callsign: 'LOWEST_CALLSIGN',
+        phone: '+1-555-9999',
         metadata: {
             override_query_point: 'LOWEST_REMARKS',
-            override_query_point_callsign: 'LOWEST_CALLSIGN'
+            override_query_point_callsign: 'LOWEST_CALLSIGN',
+            override_query_point_phone: '+1-555-9999'
         }
     });
 });
@@ -448,6 +430,12 @@ test('Style: Invalid Templates', async () => {
     assert.throws(() => {
         Style.validate({
             callsign: '{{{test}'
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            phone: '{{{test}'
         })
     }, /Expecting/);
 
@@ -487,6 +475,14 @@ test('Style: Invalid Templates', async () => {
 
     assert.throws(() => {
         Style.validate({
+            point: {
+                phone: '{{{test}'
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
             line: {
                 remarks: '{{{test}'
             }
@@ -503,6 +499,14 @@ test('Style: Invalid Templates', async () => {
 
     assert.throws(() => {
         Style.validate({
+            line: {
+                phone: '{{{test}'
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
             polygon: {
                 remarks: '{{{test}'
             }
@@ -513,6 +517,14 @@ test('Style: Invalid Templates', async () => {
         Style.validate({
             polygon: {
                 callsign: '{{{test}'
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            polygon: {
+                phone: '{{{test}'
             }
         })
     }, /Expecting/);
@@ -612,6 +624,17 @@ test('Style: Invalid Templates', async () => {
             queries: [{
                 query: '1 = 1',
                 styles: {
+                    phone: '{{{test}'
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
                     links: [{
                         remarks: 'TEST',
                         url: '{{{test}'
@@ -666,6 +689,19 @@ test('Style: Invalid Templates', async () => {
             queries: [{
                 query: '1 = 1',
                 styles: {
+                    point: {
+                        phone: '{{{test}'
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
                     line: {
                         remarks: '{{{test}'
                     }
@@ -692,6 +728,19 @@ test('Style: Invalid Templates', async () => {
             queries: [{
                 query: '1 = 1',
                 styles: {
+                    line: {
+                        phone: '{{{test}'
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
                     polygon: {
                         remarks: '{{{test}'
                     }
@@ -707,6 +756,19 @@ test('Style: Invalid Templates', async () => {
                 styles: {
                     polygon: {
                         callsign: '{{{test}'
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    polygon: {
+                        phone: '{{{test}'
                     }
                 }
             }]
