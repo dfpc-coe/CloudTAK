@@ -272,4 +272,166 @@ test('POST api/marti/package - Upload KML', async () => {
     flight.tak.reset();
 });
 
+flight.user({ username: 'pkgowner', admin: false });
+
+test('DELETE api/marti/package/:uid - Owner can delete own package', async () => {
+    try {
+        flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
+            if (!request.method || !request.url) {
+                return false;
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    resultCount: 1,
+                    results: [{
+                        UID: 'owner-pkg-uid',
+                        SubmissionDateTime: new Date().toISOString(),
+                        Keywords: ['test'],
+                        Tool: 'public',
+                        Size: 123,
+                        MIMEType: 'application/zip',
+                        EXPIRATION: -1,
+                        SubmissionUser: 'pkgowner@example.com',
+                        PrimaryKey: '456',
+                        Hash: 'owner-hash-123',
+                        CreatorUid: 'pkgowner',
+                        Name: 'Owner Package',
+                    }]
+                }));
+                response.end();
+
+                return true;
+            } else if (request.method === 'DELETE' && request.url.includes('/Marti/api/files/owner-hash-123')) {
+                response.writeHead(200);
+                response.end();
+
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        const res = await flight.fetch('/api/marti/package/owner-pkg-uid?hash=owner-hash-123', {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.pkgowner
+            }
+        }, true);
+
+        assert.equal(res.status, 200);
+        assert.deepEqual(res.body, {
+            status: 200,
+            message: 'Package Deleted'
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    flight.tak.reset();
+});
+
+test('DELETE api/marti/package/:uid - Non-owner non-admin cannot delete', async () => {
+    try {
+        flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
+            if (!request.method || !request.url) {
+                return false;
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    resultCount: 1,
+                    results: [{
+                        UID: 'other-pkg-uid',
+                        SubmissionDateTime: new Date().toISOString(),
+                        Keywords: ['test'],
+                        Tool: 'public',
+                        Size: 123,
+                        MIMEType: 'application/zip',
+                        EXPIRATION: -1,
+                        SubmissionUser: 'someone-else@example.com',
+                        PrimaryKey: '789',
+                        Hash: 'other-hash-456',
+                        CreatorUid: 'someone-else',
+                        Name: 'Other Package',
+                    }]
+                }));
+                response.end();
+
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        const res = await flight.fetch('/api/marti/package/other-pkg-uid?hash=other-hash-456', {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.pkgowner
+            }
+        }, false);
+
+        assert.equal(res.status, 403);
+        assert.equal(res.body.message, 'Insufficient Access to delete Package');
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    flight.tak.reset();
+});
+
+test('DELETE api/marti/package/:uid - Admin can delete any package', async () => {
+    try {
+        flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
+            if (!request.method || !request.url) {
+                return false;
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search')) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    resultCount: 1,
+                    results: [{
+                        UID: 'any-pkg-uid',
+                        SubmissionDateTime: new Date().toISOString(),
+                        Keywords: ['test'],
+                        Tool: 'public',
+                        Size: 123,
+                        MIMEType: 'application/zip',
+                        EXPIRATION: -1,
+                        SubmissionUser: 'someone-else@example.com',
+                        PrimaryKey: '999',
+                        Hash: 'any-hash-789',
+                        CreatorUid: 'someone-else',
+                        Name: 'Any Package',
+                    }]
+                }));
+                response.end();
+
+                return true;
+            } else if (request.method === 'DELETE' && request.url.includes('/Marti/api/files/any-hash-789')) {
+                response.writeHead(200);
+                response.end();
+
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        const res = await flight.fetch('/api/marti/package/any-pkg-uid?hash=any-hash-789', {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        assert.equal(res.status, 200);
+        assert.deepEqual(res.body, {
+            status: 200,
+            message: 'Package Deleted'
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    flight.tak.reset();
+});
+
 flight.landing();
