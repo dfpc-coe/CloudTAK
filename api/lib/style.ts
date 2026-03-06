@@ -420,7 +420,10 @@ export default class Style {
             if (this.style.styles.id) feature.id = this.compile(this.style.styles.id, feature.properties.metadata);
             if (this.style.styles.callsign) feature.properties.callsign = this.compile(this.style.styles.callsign, feature.properties.metadata);
             if (this.style.styles.remarks) feature.properties.remarks = this.compile(this.style.styles.remarks, feature.properties.metadata);
-            if (this.style.styles.phone) feature.properties.phone = this.compile(this.style.styles.phone, feature.properties.metadata);
+            if (this.style.styles.phone) {
+                if (!feature.properties.contact) feature.properties.contact = {};
+                feature.properties.contact.phone = this.compile(this.style.styles.phone, feature.properties.metadata);
+            }
 
             if (this.style.styles.maxzoom !== undefined) feature.properties.maxzoom = this.#numberTemplateString(feature, this.style.styles.maxzoom, feature.properties.maxzoom);
             if (this.style.styles.minzoom !== undefined) feature.properties.minzoom = this.#numberTemplateString(feature, this.style.styles.minzoom, feature.properties.minzoom);
@@ -460,7 +463,10 @@ export default class Style {
                             if (q.styles.id) feature.id = this.compile(q.styles.id, feature.properties.metadata);
                             if (q.styles.callsign) feature.properties.callsign = this.compile(q.styles.callsign, feature.properties.metadata);
                             if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
-                            if (q.styles.phone) feature.properties.phone = this.compile(q.styles.phone, feature.properties.metadata);
+                            if (q.styles.phone) {
+                                if (!feature.properties.contact) feature.properties.contact = {};
+                                feature.properties.contact.phone = this.compile(q.styles.phone, feature.properties.metadata);
+                            }
                             if (q.styles.links) this.#links(q.styles.links, feature);
 
                             if (q.styles.maxzoom !== undefined) feature.properties.maxzoom = this.#numberTemplateString(feature, q.styles.maxzoom, feature.properties.maxzoom);
@@ -559,7 +565,10 @@ export default class Style {
             if (style.point.id) feature.id = this.compile(style.point.id, feature.properties.metadata);
             if (style.point.type) feature.properties.type = this.compile(style.point.type, feature.properties.metadata);
             if (style.point.remarks) feature.properties.remarks = this.compile(style.point.remarks, feature.properties.metadata);
-            if (style.point.phone) feature.properties.phone = this.compile(style.point.phone, feature.properties.metadata);
+            if (style.point.phone) {
+                if (!feature.properties.contact) feature.properties.contact = {};
+                feature.properties.contact.phone = this.compile(style.point.phone, feature.properties.metadata);
+            }
             if (style.point.callsign) feature.properties.callsign = this.compile(style.point.callsign, feature.properties.metadata);
             if (style.point.links) this.#links(style.point.links, feature);
 
