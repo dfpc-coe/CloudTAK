@@ -168,7 +168,7 @@ test('Style: Global Remarks & Callsign & Phone', async () => {
         stale: 123000,
         remarks: 'OVERRIDE',
         callsign: 'OVERRIDE_CALLSIGN',
-        phone: '+1-555-1234',
+        contact: { phone: '+1-555-1234' },
         metadata: {
             override: 'OVERRIDE',
             override_callsign: 'OVERRIDE_CALLSIGN',
@@ -217,7 +217,7 @@ test('Style: Global Remarks & Callsign & Phone - Override by Point', async () =>
         stale: 123000,
         remarks: 'OVERRIDE_POINT',
         callsign: 'OVERRIDE_POINT_CALLSIGN',
-        phone: '+1-555-1111',
+        contact: { phone: '+1-555-1111' },
         metadata: {
             override: 'OVERRIDE',
             override_callsign: 'OVERRIDE_CALLSIGN',
@@ -280,7 +280,7 @@ test('Style: Global Remarks & Callsign & Phone - Override by Global Query', asyn
         stale: 123000,
         remarks: 'OVERRIDE_QUERY',
         callsign: 'OVERRIDE_QUERY_CALLSIGN',
-        phone: '+1-555-2222',
+        contact: { phone: '+1-555-2222' },
         metadata: {
             override: 'OVERRIDE',
             override_callsign: 'OVERRIDE_CALLSIGN',
@@ -354,7 +354,7 @@ test('Style: Global Remarks & Callsign & Phone - Override by Query Point', async
         stale: 123000,
         remarks: 'OVERRIDE_QUERY_POINT',
         callsign: 'OVERRIDE_QUERY_POINT_CALLSIGN',
-        phone: '+1-555-3333',
+        contact: { phone: '+1-555-3333' },
         metadata: {
             override: 'OVERRIDE',
             override_callsign: 'OVERRIDE_CALLSIGN',
@@ -411,7 +411,7 @@ test('Style: Lowest Level Remarks', async () => {
         stale: 123000,
         remarks: 'LOWEST_REMARKS',
         callsign: 'LOWEST_CALLSIGN',
-        phone: '+1-555-9999',
+        contact: { phone: '+1-555-9999' },
         metadata: {
             override_query_point: 'LOWEST_REMARKS',
             override_query_point_callsign: 'LOWEST_CALLSIGN',
