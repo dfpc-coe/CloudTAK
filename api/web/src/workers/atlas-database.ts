@@ -87,7 +87,11 @@ export default class AtlasDatabase {
 
     async init(): Promise<void> {
         COT.selfUid = this.atlas.profile.uid();
-        await this.loadArchive();
+        try {
+            await this.loadArchive();
+        } catch (err) {
+            console.error('Failed to load archived features:', err);
+        }
         await this.breadcrumb.load();
     }
 

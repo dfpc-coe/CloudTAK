@@ -328,9 +328,11 @@ async function subscribe(subscribe: boolean) {
             mode: 'mission',
             token: props.subscription.missiontoken,
             mode_id: props.subscription.guid,
+        }, {
+            before: mapStore.getOverlayBeforeId()
         })
 
-        mapStore.overlays.push(missionOverlay);
+        mapStore.addOverlay(missionOverlay);
         await mapStore.loadMission(props.subscription.guid);
 
         emit('refresh');
