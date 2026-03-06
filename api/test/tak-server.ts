@@ -35,6 +35,12 @@ export default class MockTAKServer {
     mockMarti: Array<(request: IncomingMessage, response: ServerResponse) => Promise<boolean>>;
     mockWebtak: Array<(request: IncomingMessage, response: ServerResponse) => Promise<boolean>>;
 
+    /** Log of all incoming Marti API requests for test assertions */
+    martiRequests: Array<string>;
+
+    /** Log of Marti requests that had no matching handler */
+    unhandledMartiRequests: Array<string>;
+
     constructor(opts: {
         defaultMartiResponses?: boolean,
         defaultWebtakResponses?: boolean
@@ -56,6 +62,8 @@ export default class MockTAKServer {
 
         this.mockMarti = [];
         this.mockWebtak = [];
+        this.martiRequests = [];
+        this.unhandledMartiRequests = [];
 
         this.sockets = new Set();
         this.streamingSockets = new Set();
@@ -97,6 +105,7 @@ export default class MockTAKServer {
             ca: fs.readFileSync(this.keys.cert)
         }, async (request, response) => {
             console.log(`ok - Mock TAK Request: ${request.method} ${request.url}`);
+            this.martiRequests.push(`${request.method} ${request.url}`);
 
             try {
                 let handled = false;
@@ -108,6 +117,7 @@ export default class MockTAKServer {
                 }
 
                 if (!handled) {
+                    this.unhandledMartiRequests.push(`${request.method} ${request.url}`);
                     throw new Error(`Unhandled TAK API Operation: ${request.method} ${request.url}`);
                 }
             } catch (err) {
@@ -258,6 +268,11 @@ export default class MockTAKServer {
                 response.write(JSON.stringify([]))
                 response.end();
                 return true;
+            } else if (request.method === 'GET' && request.url?.startsWith('/Marti/api/groups/all')) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({ data: [] }))
+                response.end();
+                return true;
             } else {
                 return false;
             }
@@ -276,6 +291,9 @@ export default class MockTAKServer {
         } else {
             this.mockWebtak = []
         }
+
+        this.martiRequests = [];
+        this.unhandledMartiRequests = [];
     }
 
     write(cot: CoT): void {
