@@ -17,6 +17,12 @@
 
 ### Pending Release
 
+### v12.93.0 - 2026-03-06
+
+- :tada: Add support for adding phone numbers or handlebar templates referencing a phone number field to the ETL system - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1302
+- :bug: Ensure channels are present before comparison in marti-subscription.
+- :rocket: Improve Layer Schema display to show the contents of `object` fields if present
+
 ### v12.92.0 - 2026-03-06
 
 - :rocket: Track current channel membership on pool object to make channel based object responses cheap as they won't have to hit TAK server to get a current list of active channels
