@@ -229,6 +229,110 @@ test('Style: Global Remarks & Callsign & Phone - Override by Point', async () =>
     });
 });
 
+test('Style: Global Remarks & Callsign & Phone - Override by Line', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            stale: 123,
+            remarks: '{{override}}',
+            callsign: '{{override_callsign}}',
+            phone: '{{override_phone}}',
+            line: {
+                remarks: '{{override_line}}',
+                callsign: '{{override_line_callsign}}',
+                phone: '{{override_line_phone}}',
+            }
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                override: 'OVERRIDE',
+                override_callsign: 'OVERRIDE_CALLSIGN',
+                override_phone: '+1-555-0000',
+                override_line: 'OVERRIDE_LINE',
+                override_line_callsign: 'OVERRIDE_LINE_CALLSIGN',
+                override_line_phone: '+1-555-1111'
+            }
+        },
+        geometry: {
+            type: 'LineString',
+            coordinates: [[0, 0], [1, 1]]
+        }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    assert.deepEqual(feat.properties, {
+        stale: 123000,
+        remarks: 'OVERRIDE_LINE',
+        callsign: 'OVERRIDE_LINE_CALLSIGN',
+        contact: { phone: '+1-555-1111' },
+        metadata: {
+            override: 'OVERRIDE',
+            override_callsign: 'OVERRIDE_CALLSIGN',
+            override_phone: '+1-555-0000',
+            override_line: 'OVERRIDE_LINE',
+            override_line_callsign: 'OVERRIDE_LINE_CALLSIGN',
+            override_line_phone: '+1-555-1111'
+        }
+    });
+});
+
+test('Style: Global Remarks & Callsign & Phone - Override by Polygon', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            stale: 123,
+            remarks: '{{override}}',
+            callsign: '{{override_callsign}}',
+            phone: '{{override_phone}}',
+            polygon: {
+                remarks: '{{override_polygon}}',
+                callsign: '{{override_polygon_callsign}}',
+                phone: '{{override_polygon_phone}}',
+            }
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                override: 'OVERRIDE',
+                override_callsign: 'OVERRIDE_CALLSIGN',
+                override_phone: '+1-555-0000',
+                override_polygon: 'OVERRIDE_POLYGON',
+                override_polygon_callsign: 'OVERRIDE_POLYGON_CALLSIGN',
+                override_polygon_phone: '+1-555-2222'
+            }
+        },
+        geometry: {
+            type: 'Polygon',
+            coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]]
+        }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    assert.deepEqual(feat.properties, {
+        stale: 123000,
+        remarks: 'OVERRIDE_POLYGON',
+        callsign: 'OVERRIDE_POLYGON_CALLSIGN',
+        contact: { phone: '+1-555-2222' },
+        metadata: {
+            override: 'OVERRIDE',
+            override_callsign: 'OVERRIDE_CALLSIGN',
+            override_phone: '+1-555-0000',
+            override_polygon: 'OVERRIDE_POLYGON',
+            override_polygon_callsign: 'OVERRIDE_POLYGON_CALLSIGN',
+            override_polygon_phone: '+1-555-2222'
+        }
+    });
+});
+
 test('Style: Global Remarks & Callsign & Phone - Override by Global Query', async () => {
     const style = new Style({
         enabled_styles: true,
