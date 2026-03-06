@@ -69,6 +69,11 @@
                         class='badge mx-1 mb-1 bg-red text-white'
                     >Required</span>
                     <span
+                        v-if='field.nullable'
+                        style='height: 20px;'
+                        class='badge mx-1 mb-1 bg-yellow text-dark'
+                    >Nullable</span>
+                    <span
                         v-if='field.expandable'
                         class='d-flex align-items-center ms-auto'
                     >
@@ -142,11 +147,27 @@ function toggleExpand(path) {
     emit('toggle', path);
 }
 
+function resolveAnyOf(prop) {
+    if (!prop.anyOf || !Array.isArray(prop.anyOf)) return prop;
+
+    const nullable = prop.anyOf.some(s => s.type === 'null');
+    const nonNull = prop.anyOf.filter(s => s.type !== 'null');
+    const resolved = nonNull.length === 1 ? nonNull[0] : nonNull[0] || {};
+    const type = nonNull.map(s => s.type).filter(Boolean).join(' | ');
+
+    return {
+        ...resolved,
+        type: type || resolved.type,
+        nullable,
+    };
+}
+
 const fields = computed(() => {
     if (!props.properties) return [];
 
     return Object.keys(props.properties).map(name => {
-        const prop = props.properties[name];
+        const rawProp = props.properties[name];
+        const prop = resolveAnyOf(rawProp);
         const path = props.parentPath ? `${props.parentPath}.${name}` : name;
         const isRequired = Array.isArray(props.required) && props.required.includes(name);
 
@@ -171,6 +192,7 @@ const fields = computed(() => {
             name,
             path,
             required: isRequired,
+            nullable: prop.nullable || false,
             expandable,
             childProperties,
             childRequired,
