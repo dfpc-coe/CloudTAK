@@ -317,7 +317,7 @@ async function deleteFile(pkg: Package) {
         router.push(`/menu/packages`)
     } catch (err) {
         loading.value = false;
-        throw err;
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
 
 }
