@@ -167,6 +167,32 @@
         <div class='col-12 style-item px-2 py-2'>
             <div class='d-flex align-items-center'>
                 <label class='user-select-none subheader'>
+                    <IconBlockquote
+                        :size='20'
+                        stroke='1'
+                    /> Global Phone
+                </label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='enabled.phone'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+            <StyleTemplate
+                v-if='enabled.phone'
+                v-model='filters.phone'
+                placeholder='Global Phone Field'
+                :rows='1'
+                :disabled='disabled'
+                :schema='props.schema'
+            />
+        </div>
+
+        <div class='col-12 style-item px-2 py-2'>
+            <div class='d-flex align-items-center'>
+                <label class='user-select-none subheader'>
                     <IconLink
                         :size='20'
                         stroke='1'
@@ -435,6 +461,31 @@
                 v-if='filters[mode].enabled.remarks'
                 v-model='filters[mode].properties.remarks'
                 placeholder='Remarks Override'
+                :disabled='disabled'
+                :schema='props.schema'
+            />
+        </div>
+
+        <div class='col-12 style-item px-2 py-2'>
+            <div class='d-flex align-items-center'>
+                <label class='user-select-none subheader'>
+                    <IconBlockquote
+                        :size='20'
+                        stroke='1'
+                    /> Phone Override
+                </label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='filters[mode].enabled.phone'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+            <StyleTemplate
+                v-if='filters[mode].enabled.phone'
+                v-model='filters[mode].properties.phone'
+                placeholder='Phone Override'
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -805,6 +856,7 @@ const enabled = ref({
     minzoom: false,
     maxzoom: false,
     remarks: false,
+    phone: false,
     callsign: false,
     links: false,
     marti: false,
@@ -814,6 +866,7 @@ const filters = ref({
     id: '',
     callsign: '',
     remarks: '',
+    phone: '',
     stale: '20',
     minzoom: 0,
     maxzoom: 24,
@@ -830,6 +883,7 @@ const filters = ref({
             'marker-color': false,
             'marker-opacity': false,
             remarks: false,
+            phone: false,
             callsign: false
         },
         properties: {
@@ -841,6 +895,7 @@ const filters = ref({
             'marker-color': '#d63939',
             'marker-opacity': 1,
             remarks: '',
+            phone: '',
             callsign: '',
             links: []
         }
@@ -857,6 +912,7 @@ const filters = ref({
             maxzoom: false,
             links: false,
             remarks: false,
+            phone: false,
             callsign: false
         },
         properties: {
@@ -869,6 +925,7 @@ const filters = ref({
             minzoom: 0,
             maxzoom: 24,
             remarks: '',
+            phone: '',
             callsign: '',
             links: []
         }
@@ -887,6 +944,7 @@ const filters = ref({
             links: false,
             'fill-opacity': false,
             remarks: false,
+            phone: false,
             callsign: false,
         },
         properties: {
@@ -901,6 +959,7 @@ const filters = ref({
             minzoom: 0,
             maxzoom: 24,
             remarks: '',
+            phone: '',
             callsign: '',
             links: []
         }
@@ -911,7 +970,7 @@ watch(enabled, format, { deep: true });
 watch(filters, format, { deep: true });
 
 onMounted(() => {
-    for (const prop of ['id', 'remarks', 'callsign', 'links', 'minzoom', 'maxzoom', 'stale']) {
+    for (const prop of ['id', 'remarks', 'phone', 'callsign', 'links', 'minzoom', 'maxzoom', 'stale']) {
         if (props.modelValue[prop] === undefined || (Array.isArray(props.modelValue[prop]) && props.modelValue[prop].length === 0)) {
             continue;
         }
@@ -945,7 +1004,7 @@ function format() {
 
     const res = {};
 
-    for (const prop of ['id', 'remarks', 'callsign', 'links', 'minzoom', 'maxzoom', 'stale']) {
+    for (const prop of ['id', 'remarks', 'phone', 'callsign', 'links', 'minzoom', 'maxzoom', 'stale']) {
         if (!enabled.value[prop]) continue;
 
         if (['minzoom', 'maxzoom', 'stale'].includes(prop) && !isNaN(Number(styles[prop]))) {
@@ -968,7 +1027,7 @@ function format() {
                 styles[geom][key] = Number(styles[geom][key]);
             } else if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
                 if (styles[geom].properties[key] !== undefined) res[geom][key] = Number(styles[geom].properties[key])
-            } else if (['remarks', 'callsign'].includes(key)) {
+            } else if (['remarks', 'callsign', 'phone'].includes(key)) {
                 if (styles[geom].properties[key]) res[geom][key] = styles[geom].properties[key];
             } else {
                 res[geom][key] = styles[geom].properties[key];
