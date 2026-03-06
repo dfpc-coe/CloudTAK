@@ -218,6 +218,62 @@ test('Style: Global Remarks & Callsign - Override by Point', async () => {
     });
 });
 
+test('Style: Global Phone', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            phone: '{{phone_number}}'
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                phone_number: '+1-555-1234'
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    assert.deepEqual(feat.properties.phone, '+1-555-1234');
+});
+
+test('Style: Phone Override by Point', async () => {
+    const style = new Style({
+        enabled_styles: true,
+        styles: {
+            phone: '{{global_phone}}',
+            point: {
+                phone: '{{point_phone}}'
+            }
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                global_phone: '+1-555-0000',
+                point_phone: '+1-555-9999'
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    assert.deepEqual(feat.properties.phone, '+1-555-9999');
+});
+
 test('Style: Global Remarks & Callsign - Override by Global Query', async () => {
     const style = new Style({
         enabled_styles: true,
