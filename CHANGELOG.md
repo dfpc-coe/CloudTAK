@@ -17,6 +17,12 @@
 
 ### Pending Release
 
+### v12.95.0 - 2026-03-07
+
+- :rocket: Allow `FloatingPane` access via CloudTAK Plugin API
+- :rocket: Range Rings creation now respects user's preferred distance unit
+- :rocket: Check for existing Overlays before creating File Overlays to avoid error
+
 ### v12.94.0 - 2026-03-07
 
 - :rocket: Allow IPV6 Internal RDS Ingress
