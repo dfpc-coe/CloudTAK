@@ -221,7 +221,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            if (req.body.agency && await Auth.is_user(config, req)) {
+            if (req.body.agency !== undefined && req.body.agency !== connection.agency && await Auth.is_user(config, req)) {
                 const user = await Auth.as_user(config, req, { admin: true });
                 if (!user) throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
             }
