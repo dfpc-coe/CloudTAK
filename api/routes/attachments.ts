@@ -1,12 +1,14 @@
 import path from 'path';
 import busboy from 'busboy';
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import AttachmentControl from '../lib/control/attachment.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Config from '../lib/config.js';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 
 export default async function router(schema: Schema, config: Config) {
     const attachmentControl = new AttachmentControl(config);
@@ -60,12 +62,17 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Upload Attachment',
         group: 'Attachments',
         description: 'Upload an attachment that is assigned to a given CoT',
+        query: Type.Object({
+            mission: Type.Optional(Type.String({
+                description: 'GUID of a mission to also upload the attachment to'
+            }))
+        }),
         res: Type.Object({
             hash: Type.String()
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
 
             if (
                 !req.headers['content-type']
@@ -88,9 +95,39 @@ export default async function router(schema: Schema, config: Config) {
             }).on('finish', async () => {
                 try {
                     const files = await Promise.all(uploads);
+                    const result = files[0];
+
+                    if (!result) throw new Err(400, null, 'No file uploaded');
+
+                    if (req.query.mission) {
+                        const profile = await config.models.Profile.from(user.email);
+                        const auth = profile.auth;
+                        const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+                        const attachment = await S3.list(`attachment/${result.hash}/`);
+                        if (attachment.length < 1 || !attachment[0].Key) throw new Err(400, null, 'Could not find uploaded attachment');
+
+                        const parsed = path.parse(attachment[0].Key);
+                        const stream = await S3.get(attachment[0].Key);
+
+                        const content = await api.Files.upload({
+                            name: parsed.base,
+                            contentLength: attachment[0].Size || 0,
+                            keywords: [],
+                            creatorUid: profile.username,
+                        }, stream);
+
+                        const opts: Static<typeof MissionOptions> = await config.conns.subscription(user.email, req.query.mission);
+
+                        await api.Mission.attachContents(
+                            req.query.mission,
+                            { hashes: [content.Hash] },
+                            opts
+                        );
+                    }
 
                     res.json({
-                        ...files[0]
+                        ...result
                     })
                 } catch (err) {
                     Err.respond(err, res);
