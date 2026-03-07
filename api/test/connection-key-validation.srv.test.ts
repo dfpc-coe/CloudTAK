@@ -10,6 +10,29 @@ flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
 
+test('POST: api/connection - Invalid X509 Certificate', async () => {
+    const key = String(fs.readFileSync(flight.tak.keys.key));
+
+    const res = await flight.fetch('/api/connection', {
+        method: 'POST',
+        auth: {
+            bearer: flight.token.admin
+        },
+        body: {
+            name: 'Bad Cert Connection',
+            description: 'test',
+            auth: {
+                cert: '-----BEGIN CERTIFICATE-----\nINVALID\n-----END CERTIFICATE-----',
+                key: key
+            }
+        }
+    }, false);
+
+    assert.equal(res.status, 400);
+    assert.equal(res.body.message, 'Invalid X509 Certificate Provided');
+    assert.equal(flight.tak.martiRequests.length, 0, 'No calls should be made to the TAK server for an invalid cert');
+});
+
 test('POST: api/connection - Invalid Private Key', async () => {
     const cert = String(fs.readFileSync(flight.tak.keys.cert));
 
@@ -78,6 +101,23 @@ test('PATCH: api/connection/:id - Invalid Private Key', async () => {
     }, true);
     
     const connId = createRes.body.id;
+
+    // PATCH with invalid cert
+    const certRes = await flight.fetch(`/api/connection/${connId}`, {
+        method: 'PATCH',
+        auth: {
+            bearer: flight.token.admin
+        },
+        body: {
+            auth: {
+                cert: '-----BEGIN CERTIFICATE-----\nINVALID\n-----END CERTIFICATE-----',
+                key: validKey
+            }
+        }
+    }, false);
+
+    assert.equal(certRes.status, 400);
+    assert.equal(certRes.body.message, 'Invalid X509 Certificate Provided');
 
     // PATCH with invalid key
     const res = await flight.fetch(`/api/connection/${connId}`, {

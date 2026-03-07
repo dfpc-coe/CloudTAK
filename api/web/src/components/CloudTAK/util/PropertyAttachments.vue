@@ -216,7 +216,11 @@ async function uploadComplete(event) {
 }
 
 function uploadURL() {
-    return stdurl(`/api/attachment`);
+    const url = stdurl(`/api/attachment`);
+    if (props.subscription && props.subscription.meta && props.subscription.meta.guid) {
+        url.searchParams.set('mission', props.subscription.meta.guid);
+    }
+    return url;
 }
 
 function downloadAssetUrl(file) {
