@@ -97,6 +97,8 @@ export default async function router(schema: Schema, config: Config) {
                     const files = await Promise.all(uploads);
                     const result = files[0];
 
+                    if (!result) throw new Err(400, null, 'No file uploaded');
+
                     if (req.query.mission) {
                         const profile = await config.models.Profile.from(user.email);
                         const auth = profile.auth;
