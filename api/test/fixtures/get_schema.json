@@ -26,7 +26,7 @@
     },
     "PUT /attachment": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "GET /attachment/:hash": {
@@ -1204,16 +1204,6 @@
         "query": true,
         "res": true
     },
-    "GET /server/repeater": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /server/repeater/:uid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /search": {
         "body": false,
         "query": false,
@@ -1237,6 +1227,16 @@
     "GET /search/suggest": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "GET /server/repeater": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /server/repeater/:uid": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "GET /server/video": {
