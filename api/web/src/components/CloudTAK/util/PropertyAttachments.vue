@@ -95,6 +95,7 @@
                                                 <TablerDelete
                                                     v-if='subscription && subscription.role && subscription.role.permissions.includes("MISSION_WRITE")'
                                                     displaytype='icon'
+                                                    :size='24'
                                                     @delete='deleteAttachment(file)'
                                                 />
                                                 <TablerIconButton

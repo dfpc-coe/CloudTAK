@@ -3,9 +3,6 @@ import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
 import Sinon from 'sinon';
-import {
-    S3Client
-} from '@aws-sdk/client-s3';
 import { Readable } from 'node:stream';
 import S3 from '../lib/aws/s3.js';
 import { DataPackage } from '@tak-ps/node-cot';
@@ -27,7 +24,7 @@ test('PUT: api/attachment?mission= - uploads to S3 and attaches to mission', asy
     let attachContentsCalled = false;
 
     const s3PutStub = Sinon.stub(S3, 'put').resolves();
-    const hashStub = Sinon.stub(DataPackage, 'hash').resolves(fakeHash);
+    Sinon.stub(DataPackage, 'hash').resolves(fakeHash);
 
     const s3ListStub = Sinon.stub(S3, 'list').resolves([{
         Key: `attachment/${fakeHash}/image.png`,
@@ -120,7 +117,7 @@ test('PUT: api/attachment (no mission param) - does NOT call TAK server', async 
     const fakeHash = 'hash-no-mission-789';
 
     const s3PutStub = Sinon.stub(S3, 'put').resolves();
-    const hashStub = Sinon.stub(DataPackage, 'hash').resolves(fakeHash);
+    Sinon.stub(DataPackage, 'hash').resolves(fakeHash);
 
     try {
         const body = new FormData();
@@ -152,10 +149,10 @@ test('PUT: api/attachment?mission= - fails gracefully if S3 file not found', asy
     const missionGuid = 'fail-guid-1111-2222-333333333333';
     const fakeHash = 'hash-missing-file';
 
-    const s3PutStub = Sinon.stub(S3, 'put').resolves();
-    const hashStub = Sinon.stub(DataPackage, 'hash').resolves(fakeHash);
+    Sinon.stub(S3, 'put').resolves();
+    Sinon.stub(DataPackage, 'hash').resolves(fakeHash);
 
-    const s3ListStub = Sinon.stub(S3, 'list').resolves([]);
+    Sinon.stub(S3, 'list').resolves([]);
 
     try {
         const body = new FormData();
@@ -186,17 +183,17 @@ test('PUT: api/attachment?mission= - fails gracefully if mission not in user ove
     const fakeHash = 'hash-no-overlay';
     const takServerHash = 'tak-hash-no-overlay';
 
-    const s3PutStub = Sinon.stub(S3, 'put').resolves();
-    const hashStub = Sinon.stub(DataPackage, 'hash').resolves(fakeHash);
+    Sinon.stub(S3, 'put').resolves();
+    Sinon.stub(DataPackage, 'hash').resolves(fakeHash);
 
-    const s3ListStub = Sinon.stub(S3, 'list').resolves([{
+    Sinon.stub(S3, 'list').resolves([{
         Key: `attachment/${fakeHash}/photo.jpg`,
         Size: 50,
         LastModified: new Date(),
         ETag: '"def"'
     }]);
 
-    const s3GetStub = Sinon.stub(S3, 'get').resolves(Readable.from(['photo-data']));
+    Sinon.stub(S3, 'get').resolves(Readable.from(['photo-data']));
 
     flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
         if (!request.method || !request.url) return false;
