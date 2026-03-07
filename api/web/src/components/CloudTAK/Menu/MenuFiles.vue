@@ -98,17 +98,21 @@
                         <template #expanded>
                             <div
                                 v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
-                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                :class='[
+                                    "rounded col-12 d-flex align-items-center px-2 py-2 user-select-none",
+                                    assetOverlayExists(asset) ? "opacity-50 pe-none" : "cursor-pointer hover"
+                                ]'
                                 role='menuitem'
-                                tabindex='0'
-                                @click.stop.prevent='createOverlay(asset)'
-                                @keyup.enter='createOverlay(asset)'
+                                :tabindex='assetOverlayExists(asset) ? -1 : 0'
+                                :aria-disabled='assetOverlayExists(asset)'
+                                @click.stop.prevent='!assetOverlayExists(asset) && createOverlay(asset)'
+                                @keyup.enter='!assetOverlayExists(asset) && createOverlay(asset)'
                             >
                                 <IconMapPlus
                                     :size='32'
                                     stroke='1'
                                 />
-                                <span class='mx-2'>Add to Map as Overlay</span>
+                                <span class='mx-2'>{{ assetOverlayExists(asset) ? "Overlay already added" : "Add to Map as Overlay" }}</span>
                             </div>
                             <div
                                 v-else
@@ -230,7 +234,7 @@
 
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import type { ProfileFile, ProfileFileList } from '../../../types.ts';
 import { std, stdurl, server } from '../../../std.ts';
 import {
@@ -263,6 +267,19 @@ import Overlay from '../../../base/overlay.ts';
 import Upload from '../../util/Upload.vue';
 
 const mapStore = useMapStore();
+
+const overlayUrls = computed<Set<string>>(() => {
+    return new Set(
+        mapStore.overlays
+            .filter((overlay) => overlay.mode === 'profile' && overlay.url)
+            .map((overlay) => overlay.url as string)
+    );
+});
+
+function assetOverlayExists(asset: ProfileFile): boolean {
+    const url = `/api/profile/asset/${encodeURIComponent(asset.id)}.pmtiles/tile`;
+    return overlayUrls.value.has(url);
+}
 
 const router = useRouter();
 const upload = ref(false)
