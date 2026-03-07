@@ -56,6 +56,7 @@
                             v-model='ring.distance'
                             class='py-2'
                             label='Ring Diameter'
+                            :unit='distanceUnit'
                             :edit='true'
                             :hover='true'
                         />
@@ -125,9 +126,10 @@
 
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
-import { ref, toRaw, computed } from 'vue'
+import { ref, toRaw, computed, onMounted } from 'vue'
 import Coordinate from './util/Coordinate.vue';
 import PropertyDistance from './util/PropertyDistance.vue';
+import ProfileConfig from '../../base/profile.ts';
 import Ellipse from '@turf/ellipse'
 import {
     IconPlus,
@@ -147,6 +149,12 @@ import { useMapStore } from '../../stores/map.ts';
 const mapStore = useMapStore();
 
 const emit = defineEmits([ 'close' ]);
+
+const distanceUnit = ref('mile');
+
+onMounted(async () => {
+    distanceUnit.value = (await ProfileConfig.get('display_distance'))?.value || 'mile';
+});
 
 const center = mapStore.map.getCenter();
 
