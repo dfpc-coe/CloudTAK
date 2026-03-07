@@ -5,7 +5,6 @@ import fs from 'fs';
 import CP from 'node:child_process';
 import Sinon from 'sinon';
 import S3 from '../lib/aws/s3.js';
-import { sql } from 'drizzle-orm';
 
 const flight = new Flight();
 
