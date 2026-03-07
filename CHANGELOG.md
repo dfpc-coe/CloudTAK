@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.94.0 - 2026-03-07
+
+- :rocket: Allow IPV6 Internal RDS Ingress
+- :rocket: Automatically associate attachments added to a MissionCoT with the Mission
+
 ### v12.93.0 - 2026-03-06
 
 - :tada: Add support for adding phone numbers or handlebar templates referencing a phone number field to the ETL system - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1302
