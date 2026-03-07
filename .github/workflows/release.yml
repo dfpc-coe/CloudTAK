@@ -5,12 +5,32 @@ on:
     tags:
       - '*'
 
+permissions:
+  id-token: write  # Required for OIDC
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: npm install
+        run: cd api/web && npm install
+
+      - name: Build Types
+        run: cd api/web && npm run build:types
+
+      - name: npm publish
+        run: cd api/web && npm publish --provenance --access public
 
       - name: Get tag
         id: tag
