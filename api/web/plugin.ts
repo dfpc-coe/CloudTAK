@@ -1,12 +1,17 @@
 import type { App } from 'vue';
+import type { Component } from 'vue';
+import { markRaw, defineAsyncComponent } from 'vue';
 import type { Router, RouteRecordRaw } from 'vue-router';
 import type { Pinia } from 'pinia';
 import { useMapStore } from './src/stores/map.ts';
+import { useFloatStore, type PaneConfig } from './src/stores/float.ts';
 import type { MenuItemConfig } from './src/stores/modules/menu.ts';
 import { db, type DBFeature } from './src/base/database.ts';
 import { liveQuery } from 'dexie';
 import { from, type Observable } from 'rxjs';
 import mapgl from 'maplibre-gl';
+
+const FloatingGeneric = defineAsyncComponent(() => import('./src/components/CloudTAK/util/FloatingGeneric.vue'));
 
 export type { MenuItemConfig };
 
@@ -152,6 +157,7 @@ export class PluginAPI {
                 }
                 return db.feature.toArray();
             },
+
             /**
              * Stream features from the local database
              * @param opts Filter options
@@ -165,6 +171,59 @@ export class PluginAPI {
                     }
                     return db.feature.toArray();
                 })) as Observable<DBFeature[]>;
+            }
+        }
+    }
+
+    /**
+     * Manage Floating Panes on top of the Map View
+     */
+    get float() {
+        const floatStore = useFloatStore(this.pinia);
+        return {
+            /**
+             * Add a new floating pane
+             * @param opts Floating pane configuration
+             */
+            add: (opts: {
+                uid: string,
+                name?: string,
+                component: Component,
+                actions?: Component,
+                props?: Record<string, unknown>,
+                height?: number,
+                width?: number,
+                x?: number,
+                y?: number,
+            }) => {
+                return floatStore.add({
+                    uid: opts.uid,
+                    name: opts.name,
+                    component: FloatingGeneric,
+                    config: {
+                        _component: markRaw(opts.component),
+                        _actions: opts.actions ? markRaw(opts.actions) : undefined,
+                        _props: opts.props ? markRaw(opts.props) : {},
+                    },
+                    height: opts.height,
+                    width: opts.width,
+                    x: opts.x,
+                    y: opts.y,
+                });
+            },
+            /**
+             * Remove a floating pane
+             * @param uid The unique identifier of the pane to remove
+             */
+            remove: (uid: string) => {
+                floatStore.delete(uid);
+            },
+            /**
+             * Check if a floating pane exists
+             * @param uid The unique identifier to check
+             */
+            has: (uid: string): boolean => {
+                return floatStore.panes.has(uid);
             }
         }
     }

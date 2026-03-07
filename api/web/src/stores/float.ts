@@ -25,7 +25,9 @@ export type PaneAttachmentConfig = {
     attachment: Attachment,
 }
 
-export type Pane<C extends PaneVideoConfig | PaneAttachmentConfig = PaneVideoConfig | PaneAttachmentConfig> = {
+export type PaneConfig = Record<string, unknown>;
+
+export type Pane<C extends PaneConfig = PaneConfig> = {
     uid: string,
     name?: string,
     component: Component,
@@ -47,6 +49,29 @@ export const useFloatStore = defineStore('float', {
     actions: {
         delete(uid: string): void {
             this.panes.delete(uid);
+        },
+        add(opts: {
+            uid: string,
+            name?: string,
+            component: Component,
+            config?: PaneConfig,
+            height?: number,
+            width?: number,
+            x?: number,
+            y?: number,
+        }): Pane {
+            const pane: Pane = {
+                uid: opts.uid,
+                name: opts.name,
+                component: markRaw(opts.component),
+                config: opts.config || {},
+                height: opts.height ?? 300,
+                width: opts.width ?? 400,
+                x: opts.x ?? 60,
+                y: opts.y ?? 40,
+            };
+            this.panes.set(opts.uid, pane);
+            return pane;
         },
         addAttachment(attachment: Attachment) {
             this.panes.set(attachment.hash, {
