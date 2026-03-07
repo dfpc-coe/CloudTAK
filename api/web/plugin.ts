@@ -189,6 +189,7 @@ export class PluginAPI {
                 uid: string,
                 name?: string,
                 component: Component,
+                actions?: Component,
                 props?: Record<string, unknown>,
                 height?: number,
                 width?: number,
@@ -201,6 +202,7 @@ export class PluginAPI {
                     component: FloatingGeneric,
                     config: {
                         _component: markRaw(opts.component),
+                        _actions: opts.actions ? markRaw(opts.actions) : undefined,
                         _props: opts.props ? markRaw(opts.props) : {},
                     },
                     height: opts.height,
