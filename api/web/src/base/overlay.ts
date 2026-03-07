@@ -306,18 +306,22 @@ export default class Overlay {
 
             const tileJSON = await std(url.toString()) as TileJSON
 
-            mapStore.map.addSource(String(this.id), {
-                ...tileJSON,
-                type: 'raster',
-            });
+            if (!mapStore.map.getSource(String(this.id))) {
+                mapStore.map.addSource(String(this.id), {
+                    ...tileJSON,
+                    type: 'raster',
+                });
+            }
         } else if (this.type === 'vector' && this.url) {
             const url = stdurl(this.url);
             url.searchParams.set('token', localStorage.token);
 
-            mapStore.map.addSource(String(this.id), {
-                type: 'vector',
-                url: String(url)
-            });
+            if (!mapStore.map.getSource(String(this.id))) {
+                mapStore.map.addSource(String(this.id), {
+                    type: 'vector',
+                    url: String(url)
+                });
+            }
         } else if (this.type === 'geojson') {
             if (!mapStore.map.getSource(String(this.id))) {
                 const data: FeatureCollection = { type: 'FeatureCollection', features: [] };
