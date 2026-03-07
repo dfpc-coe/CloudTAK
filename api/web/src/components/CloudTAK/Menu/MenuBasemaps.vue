@@ -143,15 +143,19 @@
                                             <span class='mx-2'>Edit Basemap</span>
                                         </div>
                                         <div
-                                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
-                                            @click.stop.prevent='addOverlay(basemap)'
+                                            :class='[
+                                                "col-12 d-flex align-items-center px-2 py-2",
+                                                basemapOverlayExists(basemap) ? "opacity-50 pe-none" : "cursor-pointer hover"
+                                            ]'
+                                            :aria-disabled='basemapOverlayExists(basemap)'
+                                            @click.stop.prevent='!basemapOverlayExists(basemap) && addOverlay(basemap)'
                                         >
                                             <IconBoxMultiple
-                                                v-tooltip='"Add Overlay"'
+                                                v-tooltip='basemapOverlayExists(basemap) ? "Overlay already added" : "Add Overlay"'
                                                 :size='32'
                                                 stroke='1'
                                             />
-                                            <span class='mx-2'>Add as Overlay</span>
+                                            <span class='mx-2'>{{ basemapOverlayExists(basemap) ? "Overlay already added" : "Add as Overlay" }}</span>
                                         </div>
                                         <div
                                             v-if='basemap.sharing_enabled'
@@ -206,7 +210,7 @@
 </template>
 
 <script setup lang='ts'>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, computed } from 'vue';
 import StandardItem from '../util/StandardItem.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import ProfileConfig from '../../../base/profile.ts';
@@ -240,6 +244,18 @@ import type { LayerSpecification } from 'maplibre-gl'
 import { useRouter } from 'vue-router';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
+
+const overlayBasemapIds = computed<Set<string>>(() => {
+    return new Set(
+        mapStore.overlays
+            .filter((overlay) => overlay.mode === 'overlay' && overlay.mode_id)
+            .map((overlay) => String(overlay.mode_id))
+    );
+});
+
+function basemapOverlayExists(basemap: Basemap): boolean {
+    return overlayBasemapIds.value.has(String(basemap.id));
+}
 
 const router = useRouter();
 const isSystemAdmin = ref<boolean>(false);
