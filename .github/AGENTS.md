@@ -16,3 +16,7 @@ and always avoid the use of `any` type. The project is structured to promote mod
 *   `npm run lint` - Run ESLint checks.
 *   `npm run check` - Run TypeScript type checks.
 
+## Testing
+
+The user usually runs a dev server for development and testing, if you are getting 401 errors when trying to run tests, 
+this is likely due to the dev server running. If this is the case, prompt the user to ensure it is shut down before running tests.
