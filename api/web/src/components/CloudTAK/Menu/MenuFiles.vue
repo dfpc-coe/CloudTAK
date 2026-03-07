@@ -272,7 +272,7 @@ const overlayUrls = computed<Set<string>>(() => {
     return new Set(
         mapStore.overlays
             .filter((overlay) => overlay.mode === 'profile' && overlay.url)
-            .map((overlay) => overlay.url)
+            .map((overlay) => overlay.url as string)
     );
 });
 
