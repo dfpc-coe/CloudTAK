@@ -258,6 +258,46 @@ test('PUT: api/attachment?mission= - fails gracefully if mission not in user ove
     flight.tak.reset();
 });
 
+test('PUT: api/attachment?mission= - fails with 400 if no file uploaded', async () => {
+    const missionGuid = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+
+    try {
+        const body = new FormData();
+
+        const res = await flight.fetch(`/api/attachment?mission=${missionGuid}`, {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'No file uploaded');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PUT: api/attachment - fails with 400 if no file uploaded (no mission)', async () => {
+    try {
+        const body = new FormData();
+
+        const res = await flight.fetch('/api/attachment', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'No file uploaded');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('PUT: api/attachment?mission= - unauthenticated request fails', async () => {
     const missionGuid = 'unauth-guid';
 
