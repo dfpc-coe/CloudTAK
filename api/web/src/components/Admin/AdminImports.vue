@@ -14,12 +14,20 @@
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
             <div class='row col-12 mx-1 my-2'>
-                <div class='col-md-12'>
+                <div class='col-md-9 col-lg-9'>
                     <TablerInput
                         v-model='paging.filter'
                         icon='search'
                         label='Name Filter'
                         placeholder='Filter...'
+                    />
+                </div>
+                <div class='col-md-3 col-lg-3'>
+                    <TablerEnum
+                        v-model='paging.status'
+                        label='Status'
+                        :options='statusOptions'
+                        default='All Statuses'
                     />
                 </div>
             </div>
@@ -127,6 +135,7 @@ import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
     TablerInput,
+    TablerEnum,
     TablerAlert,
     TablerIconButton,
     TablerRefreshButton,
@@ -144,11 +153,21 @@ const header = ref<Array<Header>>([]);
 
 const paging = ref({
     filter: '',
+    status: 'All',
     sort: 'created',
     order: 'desc',
     limit: 100,
     page: 0
 });
+
+const statusOptions = [
+    'All',
+    'Empty',
+    'Pending',
+    'Running',
+    'Success',
+    'Fail'
+];
 
 const list = ref<ImportList>({
     total: 0,
@@ -198,18 +217,25 @@ async function downloadImport(id: string) {
 async function fetchList() {
     loading.value = true;
 
+    const params: any = {
+        impersonate: true,
+        filter: paging.value.filter,
+        // @ts-expect-error - Sort should be string list, not string
+        sort: paging.value.sort,
+        // @ts-expect-error - Order should be string list, not string
+        order: paging.value.order,
+        limit: paging.value.limit,
+        page: paging.value.page,
+    };
+
+    // Only add status filter if it's not 'All'
+    if (paging.value.status && paging.value.status !== 'All') {
+        params.status = paging.value.status;
+    }
+
     const res = await server.GET('/api/import', {
         params: {
-            query: {
-                impersonate: true,
-                filter: paging.value.filter,
-                // @ts-expect-error - Sort should be string list, not string
-                sort: paging.value.sort,
-                // @ts-expect-error - Order should be string list, not string
-                order: paging.value.order,
-                limit: paging.value.limit,
-                page: paging.value.page,
-            }
+            query: params
         }
     });
 
