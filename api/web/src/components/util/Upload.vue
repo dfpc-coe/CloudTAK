@@ -54,10 +54,25 @@
             </div>
         </div>
         <div
-            v-else-if='file && progress > 0 && progress < 101'
+            v-else-if='file && progress > 0 && progress < 100'
         >
-            <TablerLoading :desc='`Uploading ${file.name}`' />
+            <TablerLoading :desc='`Uploading ${file.name} (${progress}%)`' />
             <TablerProgress :percent='progress / 100' />
+        </div>
+        <div
+            v-else-if='file && progress === 100'
+            class='row'
+        >
+            <div class='d-flex align-items-center px-3 py-2 text-success'>
+                <IconFile
+                    :size='24'
+                    stroke='1'
+                />
+                <span
+                    class='mx-2 user-select-none'
+                    v-text='`${file.name} - Upload Complete`'
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -163,52 +178,76 @@ async function upload(opts: {
         });
     }
 
-    let response;
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
 
-    try {
-        if (props.format === 'formdata') {
-            const formData = new FormData();
+        // Track upload progress
+        xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+                const percentComplete = Math.round((event.loaded / event.total) * 100);
+                progress.value = percentComplete;
+            }
+        };
 
-            formData.append('file', file.value.file);
+        xhr.onload = () => {
+            try {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    progress.value = 100;
+                    const responseData = JSON.parse(xhr.responseText);
+                    emit('done', responseData);
+                    resolve(responseData);
+                } else {
+                    emit('error', new Error(`Upload Failed: ${xhr.statusText}`));
+                    reject(new Error(`Upload Failed: ${xhr.statusText}`));
+                }
+            } catch (error) {
+                emit('error', new Error('Failed to parse response'));
+                reject(error);
+            }
+        };
 
-            const headers = {
-                'X-Requested-With': 'XMLHttpRequest',
-                ...props.headers,
-            };
+        xhr.onerror = () => {
+            emit('error', new Error('Upload failed'));
+            reject(new Error('Upload failed'));
+        };
 
-            response = await fetch(url, {
-                method: props.method,
-                headers: headers,
-                body: formData,
-            });
-        } else if (props.format === 'raw') {
-            const headers = {
-                'X-Requested-With': 'XMLHttpRequest',
-                ...props.headers,
-            };
+        xhr.onabort = () => {
+            emit('cancel');
+            reject(new Error('Upload cancelled'));
+        };
 
-            response = await fetch(url, {
-                method: props.method,
-                headers: headers,
-                body: file.value.file,
-            });
-        } else {
-            throw new Error('Unsupported upload format');
+        // Set headers
+        const headers = {
+            'X-Requested-With': 'XMLHttpRequest',
+            ...props.headers,
+        };
+
+        xhr.open(props.method, url.toString());
+
+        // Set headers (excluding Content-Type for FormData, browser sets it automatically)
+        Object.entries(headers).forEach(([key, value]) => {
+            if (props.format !== 'formdata' || key.toLowerCase() !== 'content-type') {
+                xhr.setRequestHeader(key, value);
+            }
+        });
+
+        // Prepare and send data
+        try {
+            if (props.format === 'formdata') {
+                const formData = new FormData();
+                formData.append('file', file.value.file);
+                xhr.send(formData);
+            } else if (props.format === 'raw') {
+                xhr.send(file.value.file);
+            } else {
+                throw new Error('Unsupported upload format');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            emit('cancel');
+            reject(error);
         }
-
-        if (response.ok) {
-            progress.value = 101;
-            const responseData = await response.json();
-            emit('done', responseData);
-
-            return responseData;
-        } else {
-            emit('error', new Error(`Upload Failed: ${response.statusText}`));
-        }
-    } catch (error) {
-        console.error('Upload error:', error);
-        emit('cancel');
-    }
+    });
 }
 
 // Expose the refresh function so parent components can call it
