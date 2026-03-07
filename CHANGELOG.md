@@ -25,6 +25,9 @@
 
 ### v12.94.0 - 2026-03-07
 
+> [!WARNING]
+> Required https://github.com/dfpc-coe/vpc/releases/tag/v2.11.0 to be deloyed
+
 - :rocket: Allow IPV6 Internal RDS Ingress
 - :rocket: Automatically associate attachments added to a MissionCoT with the Mission
 
