@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.95.1 - 2026-03-07
+
+- :bug: Allow Agency Admins to Manage Connections
+
 ### v12.95.0 - 2026-03-07
 
 - :rocket: Allow `FloatingPane` access via CloudTAK Plugin API
