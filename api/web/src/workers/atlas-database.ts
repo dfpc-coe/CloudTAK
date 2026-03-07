@@ -220,6 +220,7 @@ export default class AtlasDatabase {
             diff.remove.push(cot.vectorId());
 
             this.cots.delete(id);
+            await db.feature.delete(id);
         }
 
         this.pendingDelete.clear();
@@ -684,6 +685,13 @@ export default class AtlasDatabase {
 
                 this.pendingCreate.set(exists.id, exists);
                 this.cots.set(exists.id, exists);
+
+                await db.feature.put({
+                    id: exists.id,
+                    path: exists.path,
+                    properties: exists.properties,
+                    geometry: exists.geometry
+                });
 
                 if (opts.skipBroadcast !== true && exists.properties.archived) {
                     this.atlas.postMessage({
