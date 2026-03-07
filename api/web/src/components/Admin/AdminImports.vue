@@ -128,6 +128,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl, server } from '../../std.ts';
+import type { paths } from '../../derived-types.js';
 import type { Import, ImportList } from '../../types.ts';
 import StatusDot from '../util/StatusDot.vue';
 import TableHeader from '../util/TableHeader.vue'
@@ -217,20 +218,18 @@ async function downloadImport(id: string) {
 async function fetchList() {
     loading.value = true;
 
-    const params: any = {
+    const params: paths['/api/import']['get']['parameters']['query'] = {
         impersonate: true,
         filter: paging.value.filter,
-        // @ts-expect-error - Sort should be string list, not string
-        sort: paging.value.sort,
-        // @ts-expect-error - Order should be string list, not string
-        order: paging.value.order,
+        sort: paging.value.sort as paths['/api/import']['get']['parameters']['query']['sort'],
+        order: paging.value.order as "asc" | "desc",
         limit: paging.value.limit,
         page: paging.value.page,
     };
 
     // Only add status filter if it's not 'All'
     if (paging.value.status && paging.value.status !== 'All') {
-        params.status = paging.value.status;
+        params.status = paging.value.status as paths['/api/import']['get']['parameters']['query']['status'];
     }
 
     const res = await server.GET('/api/import', {
