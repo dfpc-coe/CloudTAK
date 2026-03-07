@@ -110,6 +110,12 @@ export default {
                     ToPort: 5432,
                     CidrIp: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc-cidr'])),
                     Description: 'Allow Internal network access'
+                },{
+                    IpProtocol: 'TCP',
+                    FromPort: 5432,
+                    ToPort: 5432,
+                    CidrIpv6: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc-cidr-ipv6'])),
+                    Description: 'Allow Internal IPv6 network access'
                 }]
             }
         }
