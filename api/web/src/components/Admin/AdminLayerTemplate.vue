@@ -52,10 +52,10 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router';
-import { std } from '/src/std.ts';
+import { server } from '../../../src/std.ts';
 import LayerSelect from '../util/LayerSelect.vue';
 import {
     TablerInput,
@@ -77,12 +77,15 @@ async function createTemplate() {
     loading.value = true;
 
     try {
-        const layer = await std('/api/template', {
-            method: 'POST',
-            body: template.value
+        const layer = await server.POST('/api/template', {
+            body: {
+                id: template.value.id || 0,
+                name: template.value.name,
+                description: template.value.description
+            }
         });
 
-        router.push(`/admin/layer/${layer.id}`);
+        if (layer.data) router.push(`/admin/layer/${layer.data.id}`);
     } catch (err) {
         loading.value = false;
         throw err;

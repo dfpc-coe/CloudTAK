@@ -116,7 +116,7 @@
 import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { std } from '../../../src/std.ts';
+import { server } from '../../../src/std.ts';
 import type { Palette } from '../../../src/types.ts';
 import {
     TablerNone,
@@ -164,18 +164,21 @@ async function savePalette() {
 
     try {
         if (route.params.palette === "new") {
-            palette.value = await std(`/api/palette`, {
-                method: 'POST',
+            const res = await server.POST('/api/palette', {
                 body: palette.value
-            }) as Palette
+            });
+            if (res.error) throw new Error(String(res.error));
+            palette.value = res.data;
 
             disabled.value = true;
             router.push(`/admin/palette/${palette.value.uuid}`);
         } else {
-            palette.value = await std(`/api/palette/${route.params.palette}`, {
-                method: 'PATCH',
+            const res = await server.PATCH('/api/palette/{:palette}', {
+                params: { path: { ":palette": String(route.params.palette) } },
                 body: palette.value
-            }) as Palette
+            });
+            if (res.error) throw new Error(String(res.error));
+            palette.value = res.data;
 
             disabled.value = true;
         }
@@ -190,9 +193,10 @@ async function deletePalette() {
     loading.value = true;
 
     try {
-        await std(`/api/palette/${route.params.palette}`, {
-            method: 'DELETE'
-        })
+        const res = await server.DELETE('/api/palette/{:palette}', {
+            params: { path: { ":palette": String(route.params.palette) } }
+        });
+        if (res.error) throw new Error(String(res.error));
 
         router.push('/admin/palette');
     } catch (err) {
@@ -204,7 +208,11 @@ async function deletePalette() {
 async function fetchPalette() {
     loading.value = true;
     try {
-        palette.value = await std(`/api/palette/${route.params.palette}`) as Palette;
+        const res = await server.GET('/api/palette/{:palette}', {
+            params: { path: { ":palette": String(route.params.palette) } }
+        });
+        if (res.error) throw new Error(String(res.error));
+        palette.value = res.data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {

@@ -185,7 +185,14 @@ onMounted(async () => {
 });
 
 async function listImportSchema() {
-    const schema = await std('/api/schema?method=GET&url=/import');
+    const list = await server.GET('/api/schema', {
+        params: {
+            query: {
+                method: 'GET',
+                url: '/import'
+            }
+        }
+    });
 
     const defaults: Array<keyof Import> = ['username', 'name'];
     header.value = defaults.map((h) => {
@@ -193,7 +200,7 @@ async function listImportSchema() {
     });
 
     // @ts-expect-error Worth trying to type at some point maybe but not now
-    header.value.push(...schema.query.properties.sort.enum.map((h) => {
+    header.value.push(...list.data.query.properties.sort.enum.map((h) => {
         return {
             name: h,
             display: false
