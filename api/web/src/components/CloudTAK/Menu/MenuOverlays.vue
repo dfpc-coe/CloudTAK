@@ -515,6 +515,10 @@ async function saveOrder(sortableEv: SortableEvent) {
             pos: overlay_ids.indexOf(current.id)
         });
     }
+
+    overlays.sort((a, b) => {
+        return a.pos - b.pos;
+    });
 }
 
 async function removeOverlay(id: number) {
