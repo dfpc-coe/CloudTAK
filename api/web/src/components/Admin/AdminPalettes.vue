@@ -100,7 +100,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { std, stdurl, stdclick } from '../../../src/std.ts';
+import { server, stdclick } from '../../../src/std.ts';
 import type { PaletteList, Palette } from '../../../src/types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
@@ -147,7 +147,21 @@ onMounted(async () => {
 });
 
 async function listPaletteSchema() {
-    const schema = await std('/api/schema?method=GET&url=/palette');
+    const list = await server.GET('/api/schema', {
+        params: {
+            query: {
+                method: 'GET',
+                url: '/palette'
+            }
+        }
+    });
+
+    if (list.error) {
+        error.value = new Error(list.error.message);
+        return;
+    }
+
+    if (!list.data) return;
 
     const defaults: Array<keyof Palette> = ['name'];
     header.value = defaults.map((h) => {
@@ -155,7 +169,7 @@ async function listPaletteSchema() {
     });
 
     // @ts-expect-error Worth trying to type at some point maybe but not now
-    header.value.push(...schema.query.properties.sort.enum.map((h) => {
+    header.value.push(...list.data.query.properties.sort.enum.map((h) => {
         return {
             name: h,
             display: false
@@ -173,13 +187,23 @@ async function fetchList() {
     error.value = undefined;
 
     try {
-        const url = stdurl('/api/palette');
+        const res = await server.GET('/api/palette', {
+            params: {
+                query: {
+                    filter: paging.value.filter,
+                    limit: paging.value.limit,
+                    page: paging.value.page,
+                    sort: paging.value.sort as 'name',
+                    order: paging.value.order as 'asc' | 'desc'
+                }
+            }
+        });
 
-        url.searchParams.set('filter', paging.value.filter);
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('page', String(paging.value.page));
-        url.searchParams.set('sort', paging.value.sort);
-        list.value = await std(url) as PaletteList;
+        if (res.error) {
+            error.value = new Error(res.error.message);
+        } else if (res.data) {
+            list.value = res.data;
+        }
      } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
      } finally {

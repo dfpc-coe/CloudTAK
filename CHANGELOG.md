@@ -29,6 +29,10 @@
 
 ### v12.94.0 - 2026-03-07
 
+> [!WARNING]
+> If running CloudTAK in an AWS environment with supplied CloudFormation Templates,
+> Deploy: https://github.com/dfpc-coe/vpc/releases/tag/v2.11.0 before updating to this version
+
 - :rocket: Allow IPV6 Internal RDS Ingress
 - :rocket: Automatically associate attachments added to a MissionCoT with the Mission
 
@@ -41,7 +45,7 @@
 ### v12.92.0 - 2026-03-06
 
 - :rocket: Track current channel membership on pool object to make channel based object responses cheap as they won't have to hit TAK server to get a current list of active channels
-- :rocket: Make `/api/feature` call in frontend optional so not to prevent the map from loading if it fails 
+- :rocket: Make `/api/feature` call in frontend optional so not to prevent the map from loading if it fails
 - :rocket: Surface online/offline tracking in mapStore
 - :rocket: Default to overlays being added under CoT layer - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1294
 

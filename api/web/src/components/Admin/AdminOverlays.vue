@@ -197,7 +197,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { std, stdurl, stdclick } from '../../../src/std.ts';
+import { server, stdclick } from '../../../src/std.ts';
 import type { Basemap, BasemapList } from '../../../src/types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
@@ -251,7 +251,22 @@ onMounted(async () => {
 });
 
 async function listBasemapSchema() {
-    const schema = await std('/api/schema?method=GET&url=/basemap');
+    const res = await server.GET('/api/schema', {
+        params: {
+            query: {
+                method: 'GET',
+                url: '/basemap'
+            }
+        }
+    });
+
+    if (res.error) {
+        error.value = new Error(res.error.message);
+        return;
+    } else if (!res.data) {
+        error.value = new Error('No data returned');
+        return;
+    }
 
     const defaults: Array<keyof Basemap> = ['id', 'name'];
     header.value = defaults.map((h) => {
@@ -259,7 +274,7 @@ async function listBasemapSchema() {
     });
 
     // @ts-expect-error Worth trying to type at some point maybe but not now
-    header.value.push(...schema.query.properties.sort.enum.map((h) => {
+    header.value.push(...res.data.query.properties.sort.enum.map((h) => {
         return {
             name: h,
             display: false
@@ -273,23 +288,32 @@ async function listBasemapSchema() {
 }
 
 async function fetchList() {
+    error.value = undefined;
     loading.value = true;
-    const url = stdurl('/api/basemap');
 
-    if (paging.value.type === 'overlay') {
-        url.searchParams.set('overlay', String(true));
-    }
+    // Build standard query object manually to pacify typescript
+    const query: Record<string, unknown> = {
+        filter: paging.value.filter,
+        limit: paging.value.limit,
+        page: paging.value.page,
+        sort: paging.value.sort,
+        order: paging.value.order,
+        hidden: paging.value.hidden,
+        overlay: false
+    };
 
-    if (paging.value.scope !== "all") {
-        url.searchParams.set('scope', paging.value.scope);
-    }
+    if (paging.value.type === 'overlay') query.overlay = true;
+    if (paging.value.scope !== "all") query.scope = paging.value.scope;
 
-    url.searchParams.set('hidden', paging.value.hidden);
+    const res = await server.GET('/api/basemap', {
+        // @ts-expect-error Paging Config 
+        params: { query }
+    });
+    
+    if (res.error) error.value = new Error(res.error.message);
+    else if (!res.data) error.value = new Error('No data returned');
+    else list.value = res.data;
 
-    url.searchParams.set('filter', paging.value.filter);
-    url.searchParams.set('limit', String(paging.value.limit));
-    url.searchParams.set('page', String(paging.value.page));
-    list.value = await std(url) as BasemapList;
     loading.value = false;
 }
 </script>
