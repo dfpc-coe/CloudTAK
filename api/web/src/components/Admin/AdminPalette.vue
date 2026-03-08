@@ -167,7 +167,7 @@ async function savePalette() {
             const res = await server.POST('/api/palette', {
                 body: palette.value
             });
-            if (res.error) throw new Error(String(res.error));
+            if (res.error) throw new Error(String(res.error.message || JSON.stringify(res.error)));
             palette.value = res.data;
 
             disabled.value = true;
@@ -177,7 +177,7 @@ async function savePalette() {
                 params: { path: { ":palette": String(route.params.palette) } },
                 body: palette.value
             });
-            if (res.error) throw new Error(String(res.error));
+            if (res.error) throw new Error(String(res.error.message || JSON.stringify(res.error)));
             palette.value = res.data;
 
             disabled.value = true;
@@ -196,7 +196,7 @@ async function deletePalette() {
         const res = await server.DELETE('/api/palette/{:palette}', {
             params: { path: { ":palette": String(route.params.palette) } }
         });
-        if (res.error) throw new Error(String(res.error));
+        if (res.error) throw new Error(String(res.error.message || JSON.stringify(res.error)));
 
         router.push('/admin/palette');
     } catch (err) {
@@ -211,7 +211,7 @@ async function fetchPalette() {
         const res = await server.GET('/api/palette/{:palette}', {
             params: { path: { ":palette": String(route.params.palette) } }
         });
-        if (res.error) throw new Error(String(res.error));
+        if (res.error) throw new Error(String(res.error.message || JSON.stringify(res.error)));
         palette.value = res.data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

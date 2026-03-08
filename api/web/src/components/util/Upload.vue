@@ -193,26 +193,30 @@ async function upload(opts: {
         xhr.onload = () => {
             try {
                 if (xhr.status >= 200 && xhr.status < 300) {
-                    progress.value = 100;
                     const responseData = JSON.parse(xhr.responseText);
+                    progress.value = 100;
                     emit('done', responseData);
                     resolve(responseData);
                 } else {
+                    refresh();
                     emit('error', new Error(`Upload Failed: ${xhr.statusText}`));
                     reject(new Error(`Upload Failed: ${xhr.statusText}`));
                 }
             } catch (error) {
+                refresh();
                 emit('error', new Error('Failed to parse response'));
                 reject(error);
             }
         };
 
         xhr.onerror = () => {
+            refresh();
             emit('error', new Error('Upload failed'));
             reject(new Error('Upload failed'));
         };
 
         xhr.onabort = () => {
+            refresh();
             emit('cancel');
             reject(new Error('Upload cancelled'));
         };
@@ -244,6 +248,7 @@ async function upload(opts: {
                 throw new Error('Unsupported upload format');
             }
         } catch (error) {
+            refresh();
             console.error('Upload error:', error);
             emit('error', error instanceof Error ? error : new Error(String(error)));
             reject(error);

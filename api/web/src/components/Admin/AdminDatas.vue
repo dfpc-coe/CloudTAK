@@ -125,6 +125,12 @@ async function listDataSchema() {
         }
     });
 
+    if (res.error) {
+        error.value = new Error(res.error.message);
+        return;
+    }
+    if (!res.data) return;
+
     header.value = ['id', 'name'].map((h) => {
         return { name: h, display: true };
     });

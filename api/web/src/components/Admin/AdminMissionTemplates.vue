@@ -180,6 +180,7 @@ async function listMissionTemplateSchema() {
         error.value = new Error(list.error.message);
         return;
     }
+    if (!list.data) return;
 
     const defaults: Array<keyof MissionTemplateList['items'][0]> = ['icon', 'name', 'keywords'];
     header.value = defaults.map((h) => {
