@@ -127,8 +127,8 @@ async function listDataSchema() {
 
     if (res.error) {
         throw new Error(`Failed to fetch data schema: ${res.error}`);
-        return;
     }
+
     if (!res.data) return;
 
     header.value = ['id', 'name'].map((h) => {
