@@ -22,6 +22,7 @@ import {
 } from '@tabler/icons-vue';
 import ProfileConfig from '../../base/profile.ts';
 import ContactManager from '../../base/contact.ts';
+import Chatroom from '../../base/chatroom.ts';
 import type { Profile } from '../../types.ts';
 
 export type MenuItemConfig = {
@@ -47,6 +48,7 @@ export default class MenuManager {
     filter: Ref<string>;
     preferredLayout: Ref<'list' | 'tiles'>;
     onlineContactsCount: Ref<number>;
+    unreadChatsCount: Ref<number>;
     isSystemAdmin: Ref<boolean>;
     isAgencyAdmin: Ref<boolean>;
     pluginMenuItems: Ref<MenuItemConfig[]>;
@@ -57,6 +59,7 @@ export default class MenuManager {
         this.mapStore = mapStore;
         this.filter = ref('');
         this.onlineContactsCount = ref(0);
+        this.unreadChatsCount = ref(0);
         this.isSystemAdmin = ref(false);
         this.isAgencyAdmin = ref(false);
         this.pluginMenuItems = ref([]);
@@ -84,6 +87,10 @@ export default class MenuManager {
 
         ContactManager.liveCount().subscribe((count) => {
             this.onlineContactsCount.value = count;
+        });
+
+        Chatroom.liveUnreadCount().subscribe((count) => {
+            this.unreadChatsCount.value = count;
         });
     }
 
@@ -271,7 +278,13 @@ export default class MenuManager {
             }
 
             return combined.map((item) => {
-                if (item.key === 'contacts' && this.onlineContactsCount.value > 0) {
+                if (item.key === 'chats' && this.unreadChatsCount?.value > 0) {
+                    return {
+                        ...item,
+                        badge: this.unreadChatsCount.value > 99 ? '99+' : String(this.unreadChatsCount.value)
+                    }
+                }
+                if (item.key === 'contacts' && this.onlineContactsCount?.value > 0) {
                     return {
                         ...item,
                         badge: this.onlineContactsCount.value > 99 ? '99+' : String(this.onlineContactsCount.value)

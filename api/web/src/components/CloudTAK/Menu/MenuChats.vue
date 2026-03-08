@@ -77,14 +77,20 @@
                                 style='min-width: 0'
                             >
                                 <div class='d-flex justify-content-between align-items-center w-100'>
-                                    <div class='fw-bold text-truncate'>
-                                        {{ item.name }}
+                                    <div class='d-flex flex-column text-truncate'>
+                                        <span class='fw-bold text-truncate'>{{ item.name }}</span>
+                                        <span
+                                            class='text-muted text-nowrap'
+                                            style='font-size: 0.75rem;'
+                                        >
+                                            {{ timeDiff(item.updated) }}
+                                        </span>
                                     </div>
                                     <div
-                                        class='text-muted text-nowrap ms-2'
-                                        style='font-size: 0.75rem;'
+                                        v-if='item.unread'
+                                        class='me-3 flex-shrink-0 d-flex align-items-center justify-content-center rounded-pill border border-danger bg-danger bg-opacity-50 text-white px-2 small'
                                     >
-                                        {{ timeDiff(item.updated) }}
+                                        {{ item.unread }}
                                     </div>
                                 </div>
                             </div>

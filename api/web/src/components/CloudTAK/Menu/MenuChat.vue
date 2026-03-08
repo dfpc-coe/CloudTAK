@@ -176,6 +176,7 @@ watch([room, () => route.params.chatroom], ([newRoom, chatroom]) => {
                 if (atBottom.value) {
                     await nextTick();
                     scrollToBottom();
+                    await newRoom.chats.markRead();
                 }
             },
             error: (err) => {

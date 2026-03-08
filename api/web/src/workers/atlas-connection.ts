@@ -208,7 +208,13 @@ export default class AtlasConnection {
                     console.error('Error getting profile for chat routing', err);
                 }
 
-                await Chatroom.load(chatroom, { reload: false });
+                const loadedRoom = await Chatroom.load(chatroom, { reload: false });
+                const currentUnread = (await db.chatroom.get(chatroom))?.unread || 0;
+
+                await db.chatroom.update(chatroom, {
+                    updated: chat.time,
+                    unread: currentUnread + 1
+                });
 
                 await db.chatroom_chats.put({
                     id: chat.messageId,
