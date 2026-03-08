@@ -167,7 +167,7 @@ export default class Chatroom {
             });
         }
 
-        return (await collection.sortBy('name')).reverse();
+        return (await collection.sortBy('updated')).reverse();
     }
 
     static async sync(): Promise<ProfileChatroomList> {
