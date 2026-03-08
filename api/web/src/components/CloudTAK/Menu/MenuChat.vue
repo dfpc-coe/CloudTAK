@@ -49,6 +49,9 @@
                                     v-if='item.sender_uid !== id'
                                     class='bg-blue px-2 py-2 rounded'
                                 >
+                                    <div class='fw-bold small mb-1'>
+                                        <span v-text='item.sender || "Unknown"' />
+                                    </div>
                                     <div v-text='item.message' />
                                     <div
                                         class='text-end'
