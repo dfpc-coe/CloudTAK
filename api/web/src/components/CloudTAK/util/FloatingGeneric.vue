@@ -23,8 +23,8 @@
 
         <div class='h-100 w-100 overflow-auto'>
             <component
-                v-if='pane'
                 :is='pane.config._component'
+                v-if='pane'
                 v-bind='pane.config._props || {}'
             />
         </div>
