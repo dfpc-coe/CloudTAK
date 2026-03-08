@@ -253,24 +253,26 @@ async function listLayerSchema() {
         }
     });
 
-    const schema = res.data as Record<string, unknown>;
+    const schema = res.data as { query?: { properties?: { sort?: { enum?: string[] } } } };
 
     const defaults: Array<keyof ETLLayer> = ['id', 'name', 'task'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
 
-    header.value.push(...(schema as { data: { query: { properties: { sort: { enum: string[] } } } } }).data.query.properties.sort.enum.map((h: string) => {
-        return {
-            name: h,
-            display: false
-        } as unknown as Header
-    }).filter((h: Header) => {
-        for (const hknown of header.value) {
-            if (hknown.name === h.name) return false;
-        }
-        return true;
-    }));
+    if (schema?.query?.properties?.sort?.enum) {
+        header.value.push(...schema.query.properties.sort.enum.map((h: string) => {
+            return {
+                name: h as keyof ETLLayer,
+                display: false
+            }
+        }).filter((h: Header) => {
+            for (const hknown of header.value) {
+                if (hknown.name === h.name) return false;
+            }
+            return true;
+        }));
+    }
 }
 
 async function fetchList() {
