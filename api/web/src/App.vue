@@ -290,11 +290,7 @@ onMounted(async () => {
         'login::username'
     ]);
 
-    if (config['login::brand::enabled'] !== 'disabled' && config['login::brand::logo']) {
-        loginLogo.value = config['login::brand::logo'];
-    } else {
-        loginLogo.value = config['login::logo'];
-    }
+    loginLogo.value = config['login::logo'];
 
     loginName.value = config['login::name'];
 

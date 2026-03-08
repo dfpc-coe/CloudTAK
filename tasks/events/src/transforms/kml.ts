@@ -154,20 +154,42 @@ export default class KML implements Transform {
                         const extractDir = tmpKmzPath.replace(/\.kmz$/, '');
                         await fs.writeFile(tmpKmzPath, buf);
                         await fs.mkdir(extractDir, { recursive: true });
-                        const zip = new StreamZip.async({ file: tmpKmzPath, skipEntryNameValidation: true });
+                        const zip = new StreamZip.async({ file: tmpKmzPath });
                         try {
                             const entries = await zip.entries();
+                            let kmlFileName = 'doc.kml';
+                            
                             if (!entries['doc.kml']) {
-                                console.warn(`NetworkLink ${normalized} KMZ has no doc.kml, skipping`);
+                                // Look for alternative KML files if doc.kml doesn't exist
+                                const kmlFiles = Object.keys(entries).filter(name => name.toLowerCase().endsWith('.kml'));
+                                
+                                if (kmlFiles.length === 0) {
+                                    console.warn(`NetworkLink ${normalized} KMZ has no KML files, skipping`);
+                                    continue;
+                                } else if (kmlFiles.length > 1) {
+                                    console.warn(`NetworkLink ${normalized} KMZ has multiple KML files but no doc.kml, skipping`);
+                                    continue;
+                                } else {
+                                    kmlFileName = kmlFiles[0];
+                                    console.log(`NetworkLink ${normalized} KMZ using ${kmlFileName} instead of doc.kml`);
+                                }
+                            }
+                            
+                            const kmlFileResolved = path.resolve(extractDir, kmlFileName);
+                            const extractDirResolved = path.resolve(extractDir);
+                            if (kmlFileResolved !== extractDirResolved && !kmlFileResolved.startsWith(extractDirResolved + path.sep)) {
+                                console.warn(`NetworkLink ${normalized} KMZ path traversal attempt detected (${kmlFileName}), skipping`);
                                 continue;
                             }
+                            
                             // Extract everything so icon assets bundled in the linked KMZ are
                             // available on disk for the glob-based icon resolver.
                             await zip.extract(null, extractDir);
-                            const kmlContent = await fs.readFile(path.join(extractDir, 'doc.kml'), 'utf8');
-                            // Use extractDir as localDir so relative paths (icon refs, nested
-                            // NetworkLinks) in the extracted doc.kml resolve within the KMZ.
-                            linkedFeatures = await this.fetchFeatures(kmlContent, icons, depth + 1, normalized, extractDir, visited);
+                            const kmlContent = await fs.readFile(kmlFileResolved, 'utf8');
+                            // Use the directory containing the extracted KML as localDir so
+                            // relative paths (icon refs, nested NetworkLinks) resolve correctly.
+                            const kmlDir = path.dirname(kmlFileResolved);
+                            linkedFeatures = await this.fetchFeatures(kmlContent, icons, depth + 1, normalized, kmlDir, visited);
                         } finally {
                             await zip.close();
                             await fs.unlink(tmpKmzPath).catch(() => { /* ignore */ });
@@ -227,13 +249,36 @@ export default class KML implements Transform {
                 skipEntryNameValidation: true
             });
 
-            const preentries = await zip.entries();
+            try {
+                const preentries = await zip.entries();
+                let kmlFileName = 'doc.kml';
 
-            if (!preentries['doc.kml']) throw new Error('No doc.kml found in KMZ');
+                if (!preentries['doc.kml']) {
+                    // Look for alternative KML files if doc.kml doesn't exist
+                    const kmlFiles = Object.keys(preentries).filter(name => name.toLowerCase().endsWith('.kml'));
+                    
+                    if (kmlFiles.length === 0) {
+                        throw new Error('No KML files found in KMZ');
+                    } else if (kmlFiles.length > 1) {
+                        throw new Error('Multiple KML files found in KMZ but no doc.kml - ambiguous which file to use');
+                    } else {
+                        kmlFileName = kmlFiles[0];
+                        console.log(`Using ${kmlFileName} instead of doc.kml in KMZ`);
+                    }
+                }
 
-            await zip.extract(null, this.local.tmpdir);
+                const kmlFileResolved = path.resolve(this.local.tmpdir, kmlFileName);
+                const tmpdirResolved = path.resolve(this.local.tmpdir);
+                if (kmlFileResolved !== tmpdirResolved && !kmlFileResolved.startsWith(tmpdirResolved + path.sep)) {
+                    throw new Error(`Path traversal attempt detected in KMZ: ${kmlFileName}`);
+                }
 
-            asset = path.resolve(this.local.tmpdir, 'doc.kml');
+                await zip.extract(null, this.local.tmpdir);
+
+                asset = kmlFileResolved;
+            } finally {
+                await zip.close();
+            }
         } else {
             asset = path.resolve(this.local.raw);
         }

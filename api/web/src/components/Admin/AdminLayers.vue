@@ -169,7 +169,7 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
-import { std, stdurl, stdclick } from '../../std.ts';
+import { server, stdclick } from '../../std.ts';
 import type { ETLLayerList, ETLLayer } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
@@ -235,35 +235,58 @@ onMounted(async () => {
 async function redeploy() {
     loading.value = true;
 
-    await std(`/api/layer/redeploy`, {
-        method: 'POST'
-    });
-
-    loading.value = false;
+    try {
+        const res = await server.POST('/api/layer/redeploy');
+        if (res.error) throw new Error(String(res.error));
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            error.value = err;
+        } else {
+            error.value = new Error(String(err));
+        }
+    } finally {
+        loading.value = false;
+    }
 }
 
 
 
 async function listLayerSchema() {
-    const schema = await std('/api/schema?method=GET&url=/layer');
+    const res = await server.GET('/api/schema', {
+        params: {
+            query: {
+                method: 'GET',
+                url: '/layer'
+            }
+        }
+    });
+
+    if (res.error) {
+        error.value = new Error(res.error.message);
+        return;
+    }
+    if (!res.data) return;
+
+    const schema = res.data as { query?: { properties?: { sort?: { enum?: string[] } } } };
 
     const defaults: Array<keyof ETLLayer> = ['id', 'name', 'task'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
 
-    // @ts-expect-error Worth trying to type at some point maybe but not now
-    header.value.push(...schema.query.properties.sort.enum.map((h) => {
-        return {
-            name: h,
-            display: false
-        }
-    }).filter((h: Header) => {
-        for (const hknown of header.value) {
-            if (hknown.name === h.name) return false;
-        }
-        return true;
-    }));
+    if (schema?.query?.properties?.sort?.enum) {
+        header.value.push(...schema.query.properties.sort.enum.map((h: string) => {
+            return {
+                name: h as keyof ETLLayer,
+                display: false
+            }
+        }).filter((h: Header) => {
+            for (const hknown of header.value) {
+                if (hknown.name === h.name) return false;
+            }
+            return true;
+        }));
+    }
 }
 
 async function fetchList() {
@@ -271,25 +294,31 @@ async function fetchList() {
     error.value = undefined;
 
     try {
-        const url = stdurl('/api/layer');
-        url.searchParams.set('alarms', 'true');
-        url.searchParams.set('filter', paging.value.filter);
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('page', String(paging.value.page));
-        url.searchParams.set('sort', paging.value.sort);
-        url.searchParams.set('order', paging.value.order);
+        const query: Record<string, unknown> = {
+            alarms: true,
+            filter: paging.value.filter,
+            limit: paging.value.limit,
+            page: paging.value.page,
+            sort: paging.value.sort,
+            order: paging.value.order
+        };
 
         if (paging.value.task !== 'All Tasks') {
-            url.searchParams.set('task', paging.value.task);
+            query.task = paging.value.task;
         }
 
         if (paging.value.template === 'Connection') {
-            url.searchParams.set('template', String(false));
+            query.template = false;
         } else if (paging.value.template === 'Template') {
-            url.searchParams.set('template', String(true));
+            query.template = true;
         }
 
-        list.value = await std(url) as ETLLayerList;
+        const res = await server.GET('/api/layer', {
+            // @ts-expect-error Paging Object
+            params: { query }
+        });
+        if (res.error) throw new Error(String(res.error));
+        list.value = res.data as unknown as ETLLayerList;
         loading.value = false;
     } catch (err) {
         loading.value = false;
