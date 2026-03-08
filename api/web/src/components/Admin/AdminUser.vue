@@ -194,7 +194,7 @@
 </template>
 
 <script setup lang='ts'>
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import type { User } from '../../types.ts';
 import CopyField from '../CloudTAK/util/CopyField.vue';
 import StatusDot from '../util/StatusDot.vue';
@@ -218,8 +218,15 @@ const route = useRoute()
 const router = useRouter()
 
 async function fetchUser(): Promise<User> {
-    const url = stdurl(`/api/user/${route.params.user}`);
-    return await std(url) as User;
+    const res = await server.GET(`/api/user/{:username}`, {
+        params: {
+            path: {
+                ":username": String(route.params.user)
+            }
+        }
+    });
+    if (!res.data) throw new Error('User not found');
+    return res.data;
 }
 
 const opened = ref<Set<string>>(new Set());
@@ -243,21 +250,26 @@ const getTAKKeys = <T extends object>(obj: T) => Object.keys(obj).filter((key) =
 async function saveUser(): Promise<void> {
     edit.value = false;
     loading.value = true;
-    const url = stdurl(`/api/user/${route.params.user}`);
-    user.value = await std(url, {
-        method: 'PATCH',
+    const res = await server.PATCH(`/api/user/{:username}`, {
+        params: {
+            path: {
+                ":username": String(route.params.user)
+            }
+        },
         body: {
             system_admin: user.value.system_admin
         }
-    }) as User;
+    });
+
+    if (res.data) user.value = res.data;
+
     loading.value = false;
 }
 
 async function fetchUserLoading(): Promise<void> {
     edit.value = false;
     loading.value = true;
-    const url = stdurl(`/api/user/${route.params.user}`);
-    user.value = await std(url) as User;
+    user.value = await fetchUser();
     loading.value = false;
 }
 </script>

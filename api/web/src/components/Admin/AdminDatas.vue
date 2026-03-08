@@ -49,7 +49,7 @@
                             class='cursor-pointer'
                             @click='external(`/connection/${data.connection}/data/${data.id}`)'
                         >
-                            <template v-for='h in header'>
+                            <template v-for='h in header' :key='h.name'>
                                 <template v-if='h.display'>
                                     <td>
                                         <span v-text='data[h.name]' />
@@ -74,10 +74,11 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl, stdclick } from '/src/std.ts';
-import TableHeader from '../util/TableHeader.vue'
-import TableFooter from '../util/TableFooter.vue'
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue';
+import { server, stdclick } from '../../std.ts';
+import TableHeader from '../util/TableHeader.vue';
+import TableFooter from '../util/TableFooter.vue';
 import {
     TablerNone,
     TablerInput,
@@ -85,81 +86,89 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
-} from '@tabler/icons-vue'
+} from '@tabler/icons-vue';
 
-export default {
-    name: 'DataSyncAdmin',
-    components: {
-        TablerNone,
-        TablerInput,
-        TablerLoading,
-        IconRefresh,
-        TableHeader,
-        TableFooter,
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            header: [],
-            paging: {
-                filter: '',
-                sort: 'name',
-                order: 'asc',
-                limit: 100,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
+const err = ref<boolean>(false);
+const loading = ref<boolean>(true);
+const header = ref<Array<{ name: string; display: boolean }>>([]);
+const paging = ref({
+    filter: '',
+    sort: 'name',
+    order: 'asc' as 'asc' | 'desc',
+    limit: 100,
+    page: 0
+});
+const list = ref<{ total: number; items: any[] }>({
+    total: 0,
+    items: []
+});
+
+watch(paging, async () => {
+    await fetchList();
+}, { deep: true });
+
+onMounted(async () => {
+    await listDataSchema();
+    await fetchList();
+});
+
+async function listDataSchema() {
+    const res = await server.GET('/api/schema', {
+        params: {
+            query: {
+                method: 'GET',
+                url: '/data'
             }
         }
-    },
-    watch: {
-       paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
+    });
+
+    header.value = ['id', 'name'].map((h) => {
+        return { name: h, display: true };
+    });
+
+    if ((res.data as any)?.query?.properties?.sort?.enum) {
+        header.value.push(...(res.data as any).query.properties.sort.enum.map((h: string) => {
+            return {
+                name: h,
+                display: false
+            };
+        }).filter((h: any) => {
+            for (const hknown of header.value) {
+                if (hknown.name === h.name) return false;
             }
-        }
-    },
-    mounted: async function() {
-        await this.listDataSchema();
-        await this.fetchList();
-    },
-    methods: {
-        stdclick,
-        listDataSchema: async function() {
-            const schema = await std('/api/schema?method=GET&url=/data');
-
-            this.header = ['id', 'name'].map((h) => {
-                return { name: h, display: true };
-            });
-
-            this.header.push(...schema.query.properties.sort.enum.map((h) => {
-                return {
-                    name: h,
-                    display: false
-                }
-            }).filter((h) => {
-                for (const hknown of this.header) {
-                    if (hknown.name === h.name) return false;
-                }
-                return true;
-            }));
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/data');
-            url.searchParams.set('filter', this.paging.filter);
-            url.searchParams.set('limit', this.paging.limit);
-            url.searchParams.set('page', this.paging.page);
-            this.list = await std(url);
-            this.loading = false;
-        },
-        external(url) {
-            window.location.href = url;
-        }
+            return true;
+        }));
     }
+}
+
+async function fetchList() {
+    loading.value = true;
+    
+    const res = await server.GET('/api/data' as any, {
+        params: {
+            query: {
+                filter: paging.value.filter,
+                sort: paging.value.sort,
+                order: paging.value.order,
+                limit: paging.value.limit,
+                page: paging.value.page
+            }
+        }
+    });
+
+    if (res.data) {
+        list.value = {
+            total: (res.data as any).total ?? 0,
+            items: (res.data as any).items ?? []
+        };
+    } else {
+        list.value = { total: 0, items: [] };
+    }
+    
+    loading.value = false;
+}
+
+function external(url: string) {
+    window.location.href = url;
 }
 </script>

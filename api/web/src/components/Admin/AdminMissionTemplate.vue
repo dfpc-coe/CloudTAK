@@ -193,7 +193,7 @@
 import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { std, stdclick } from '../../../src/std.ts';
+import { server, std, stdclick } from '../../../src/std.ts';
 import type { MissionTemplate } from '../../../src/types.ts';
 import Keywords from '../CloudTAK/util/Keywords.vue';
 import TagEntry from '../CloudTAK/util/TagEntry.vue';
@@ -245,18 +245,23 @@ async function saveTemplate() {
 
     try {
         if (route.params.template === "new") {
-            template.value = await std(`/api/template/mission`, {
-                method: 'POST',
+            const res = await server.POST(`/api/template/mission`, {
                 body: template.value
-            }) as MissionTemplate
+            });
+            if (res.data) template.value = { ...res.data, logs: template.value.logs };
 
             disabled.value = true;
             router.push(`/admin/template/${template.value.id}`);
         } else {
-            template.value = await std(`/api/template/mission/${route.params.template}`, {
-                method: 'PATCH',
+            const res = await server.PATCH(`/api/template/mission/{:mission}`, {
+                params: {
+                    path: {
+                        ":mission": String(route.params.template)
+                    }
+                },
                 body: template.value
-            }) as MissionTemplate
+            });
+            if (res.data) template.value = { ...res.data, logs: template.value.logs };
 
             disabled.value = true;
         }
@@ -271,9 +276,13 @@ async function deleteTemplate() {
     loading.value = true;
 
     try {
-        await std(`/api/template/mission/${route.params.template}`, {
-            method: 'DELETE'
-        })
+        await server.DELETE(`/api/template/mission/{:mission}`, {
+            params: {
+                path: {
+                    ":mission": String(route.params.template)
+                }
+            }
+        });
 
         router.push('/admin/templates');
     } catch (err) {
@@ -285,7 +294,14 @@ async function deleteTemplate() {
 async function fetchTemplate() {
     loading.value = true;
     try {
-        template.value = await std(`/api/template/mission/${route.params.template}`) as MissionTemplate;
+        const res = await server.GET(`/api/template/mission/{:mission}`, {
+            params: {
+                path: {
+                    ":mission": String(route.params.template)
+                }
+            }
+        });
+        if (res.data) template.value = res.data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
