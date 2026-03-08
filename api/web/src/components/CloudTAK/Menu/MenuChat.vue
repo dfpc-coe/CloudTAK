@@ -20,66 +20,88 @@
         </template>
         <template #default>
             <TablerLoading v-if='loading' />
-            <GenericSelect
+            <div
                 v-else
-                ref='select'
-                role='menu'
-                :disabled='!multiselect'
-                :items='chats'
+                class='d-flex flex-column h-100 overflow-hidden'
             >
-                <template #buttons='{disabled}'>
-                    <TablerDelete
-                        :disabled='disabled'
-                        displaytype='icon'
-                        @delete='deleteChats'
-                    />
-                </template>
-                <template #item='{item}'>
-                    <div class='w-100 d-flex my-2 px-2'>
-                        <div
-                            v-if='item.sender_uid !== id'
-                            class='bg-blue px-2 py-2 rounded'
-                        >
-                            <div v-text='item.message' />
-                            <div
-                                class='text-end'
-                                style='font-size: 0.75rem; opacity: 0.75;'
-                                v-text='formatTime(item.created)'
+                <div
+                    ref='scrollContainer'
+                    class='flex-grow-1 position-relative'
+                    style='min-height: 0; overflow-y: auto;'
+                    @scroll='onScroll'
+                >
+                    <GenericSelect
+                        ref='select'
+                        role='menu'
+                        :disabled='!multiselect'
+                        :items='chats'
+                    >
+                        <template #buttons='{disabled}'>
+                            <TablerDelete
+                                :disabled='disabled'
+                                displaytype='icon'
+                                @delete='deleteChats'
                             />
-                        </div>
-                        <div
-                            v-else
-                            class='ms-auto bg-accent px-2 py-2 rounded'
-                        >
-                            <div v-text='item.message' />
-                            <div
-                                class='text-end'
-                                style='font-size: 0.75rem; opacity: 0.75;'
-                                v-text='formatTime(item.created)'
-                            />
-                        </div>
-                    </div>
-                </template>
-            </GenericSelect>
-
-            <div class='border-top position-absolute start-0 bottom-0 end-0'>
-                <div class='d-flex align-items-center mx-2 my-2'>
-                    <div class='flex-grow-1 me-2'>
-                        <TablerInput
-                            v-model='message'
-                            @keyup.enter='sendMessage'
+                        </template>
+                        <template #item='{item}'>
+                            <div class='w-100 d-flex my-2 px-2'>
+                                <div
+                                    v-if='item.sender_uid !== id'
+                                    class='bg-blue px-2 py-2 rounded'
+                                >
+                                    <div v-text='item.message' />
+                                    <div
+                                        class='text-end'
+                                        style='font-size: 0.75rem; opacity: 0.75;'
+                                        v-text='formatTime(item.created)'
+                                    />
+                                </div>
+                                <div
+                                    v-else
+                                    class='ms-auto bg-accent px-2 py-2 rounded'
+                                >
+                                    <div v-text='item.message' />
+                                    <div
+                                        class='text-end'
+                                        style='font-size: 0.75rem; opacity: 0.75;'
+                                        v-text='formatTime(item.created)'
+                                    />
+                                </div>
+                            </div>
+                        </template>
+                    </GenericSelect>
+                </div>
+                <div class='flex-shrink-0 border-top position-relative pt-1'>
+                    <button
+                        v-if='chats.length && !atBottom'
+                        class='btn btn-primary rounded-circle position-absolute start-50 p-1 scroll-bottom-btn'
+                        style='z-index: 10; top: -56px; width: 44px; height: 44px;'
+                        title='Scroll to bottom'
+                        @click='scrollToBottom'
+                    >
+                        <IconArrowDown
+                            :size='24'
+                            stroke='2.5'
                         />
-                    </div>
-                    <div>
-                        <TablerIconButton
-                            title='Send Message'
-                            @click='sendMessage'
-                        >
-                            <IconSend
-                                :size='32'
-                                stroke='1'
+                    </button>
+                    <div class='d-flex align-items-center mx-2 mb-2 mt-1'>
+                        <div class='flex-grow-1 me-2'>
+                            <TablerInput
+                                v-model='message'
+                                @keyup.enter='sendMessage'
                             />
-                        </TablerIconButton>
+                        </div>
+                        <div>
+                            <TablerIconButton
+                                title='Send Message'
+                                @click='sendMessage'
+                            >
+                                <IconSend
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -88,7 +110,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, shallowRef, watch, onUnmounted } from 'vue';
+import { ref, onMounted, shallowRef, watch, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Chatroom from '../../../base/chatroom.ts';
 import GenericSelect from '../util/GenericSelect.vue';
@@ -96,6 +118,7 @@ import { liveQuery } from 'dexie';
 import {
     IconListCheck,
     IconSend,
+    IconArrowDown,
 } from '@tabler/icons-vue';
 import {
     TablerRefreshButton,
@@ -109,6 +132,21 @@ import { useMapStore } from '../../../stores/map.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import timeDiff from '../../../timediff.ts';
 const mapStore = useMapStore();
+
+const scrollContainer = ref(null);
+const atBottom = ref(true);
+
+function onScroll() {
+    const el = scrollContainer.value;
+    if (!el) return;
+    atBottom.value = el.scrollHeight - el.scrollTop - el.clientHeight < 32;
+}
+
+function scrollToBottom() {
+    const el = scrollContainer.value;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+}
 
 const route = useRoute();
 const router = useRouter();
@@ -133,8 +171,12 @@ watch([room, () => route.params.chatroom], ([newRoom, chatroom]) => {
     if (newRoom && chatroom !== 'new') {
         const obs = liveQuery(() => newRoom.chats.list());
         subscription = obs.subscribe({
-            next: (val) => {
+            next: async (val) => {
                 chats.value = val;
+                if (atBottom.value) {
+                    await nextTick();
+                    scrollToBottom();
+                }
             },
             error: (err) => {
                 console.error(err);
@@ -256,3 +298,34 @@ function formatTime(iso) {
     return `${month} ${day}, ${hour}:${minute}`;
 }
 </script>
+
+<style scoped>
+@keyframes float {
+    0% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-6px);
+    }
+    100% {
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.scroll-bottom-btn {
+    opacity: 0.9;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    animation: float 2.5s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.scroll-bottom-btn:hover {
+    opacity: 1;
+    background-color: var(--bs-primary-dark, #0b5ed7);
+    animation: none;
+    transform: translateX(-50%) translateY(0);
+}
+</style>

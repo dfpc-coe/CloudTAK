@@ -72,9 +72,20 @@
                                 />
                             </div>
 
-                            <div class='d-flex flex-column'>
-                                <div class='fw-bold'>
-                                    {{ item.name }}
+                            <div
+                                class='d-flex flex-column flex-grow-1'
+                                style='min-width: 0'
+                            >
+                                <div class='d-flex justify-content-between align-items-center w-100'>
+                                    <div class='fw-bold text-truncate'>
+                                        {{ item.name }}
+                                    </div>
+                                    <div
+                                        class='text-muted text-nowrap ms-2'
+                                        style='font-size: 0.75rem;'
+                                    >
+                                        {{ timeDiff(item.updated) }}
+                                    </div>
                                 </div>
                             </div>
                         </StandardItem>
@@ -86,8 +97,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, useTemplateRef } from 'vue'
-import type { Ref } from 'vue';
+import { ref, onMounted, useTemplateRef, watch, onUnmounted } from 'vue'
 import type { ComponentExposed } from 'vue-component-type-helpers'
 import Chatroom from '../../../base/chatroom.ts';
 import type { DBChatroom } from '../../../base/database.ts';
@@ -110,8 +120,7 @@ import {
 } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
 import { liveQuery } from "dexie";
-import { useObservable } from "@vueuse/rxjs";
-import { from } from 'rxjs';
+import timeDiff from '../../../timediff.ts';
 
 const select = useTemplateRef<ComponentExposed<typeof GenericSelect>>('select');
 const router = useRouter();
@@ -119,14 +128,38 @@ const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 const multiselect = ref(false)
 
-const chats: Ref<Array<DBChatroom> | undefined> = useObservable(
-    from(liveQuery(async () => {
-        return await Chatroom.list(paging.value.filter);
-    }))
-)
-
 const paging = ref({
     filter: ''
+});
+
+const chats = ref<Array<DBChatroom> | undefined>(undefined);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let subscription: any;
+
+watch(() => paging.value.filter, (filter) => {
+    if (subscription) {
+        subscription.unsubscribe();
+        subscription = null;
+    }
+
+    const obs = liveQuery(async () => {
+        return await Chatroom.list(filter);
+    });
+    
+    subscription = obs.subscribe({
+        next: (val: Array<DBChatroom>) => {
+            chats.value = val;
+        },
+        error: (err: Error) => {
+            console.error(err);
+        }
+    });
+}, { immediate: true });
+
+onUnmounted(() => {
+    if (subscription) {
+        subscription.unsubscribe();
+    }
 });
 
 onMounted(async () => {
