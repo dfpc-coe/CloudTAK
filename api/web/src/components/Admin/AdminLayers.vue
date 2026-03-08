@@ -253,6 +253,12 @@ async function listLayerSchema() {
         }
     });
 
+    if (res.error) {
+        error.value = new Error(res.error.message);
+        return;
+    }
+    if (!res.data) return;
+
     const schema = res.data as { query?: { properties?: { sort?: { enum?: string[] } } } };
 
     const defaults: Array<keyof ETLLayer> = ['id', 'name', 'task'];
