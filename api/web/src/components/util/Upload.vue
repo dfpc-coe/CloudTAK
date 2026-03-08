@@ -168,7 +168,8 @@ function stage(event: Event) {
 async function upload(opts: {
     query?: Record<string, string>;
 } = {}) {
-    if (!file.value) throw new Error('No file staged for upload');
+    const currentFile = file.value;
+    if (!currentFile) throw new Error('No file staged for upload');
 
     const url = new URL(props.url.toString());
 
@@ -235,10 +236,10 @@ async function upload(opts: {
         try {
             if (props.format === 'formdata') {
                 const formData = new FormData();
-                formData.append('file', file.value.file);
+                formData.append('file', currentFile.file);
                 xhr.send(formData);
             } else if (props.format === 'raw') {
-                xhr.send(file.value.file);
+                xhr.send(currentFile.file);
             } else {
                 throw new Error('Unsupported upload format');
             }
