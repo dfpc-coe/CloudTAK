@@ -17,6 +17,15 @@
 
 ### Pending Release
 
+### v12.96.0 - 2026-03-08
+
+- :rocket: Add visual indicator that you are not at most recent chat: Closes: https://github.com/dfpc-coe/CloudTAK/issues/1317
+- :bug: Ensure long chats aren't cut off by TablerInput for sending message
+- :bug: Filtering by chatroom was broken during the dexie transition, restored chatroom search function
+- :rocket: Calculate an `updated` value based on the last message sent and show the user when the last message was sent in the chat list, update this value dynamically on the frontend as messages are received.
+- :tada: Introduce an unread badge and dynamic counts via a dexie LiveQuery in both the main menu and on the specific conversion in the chat list. Mark as read if a given chatroom is opened.
+- :rocket: Show sender Callsign - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1315
+
 ### v12.95.2 - 2026-03-08
 
 - :bug: Fallback to single kml if doc.kml isn't present
