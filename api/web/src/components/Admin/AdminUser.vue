@@ -24,7 +24,7 @@
 
             <div class='ms-auto btn-list'>
                 <TablerIconButton
-                    v-if='!edit'
+                    v-if='!edit && !error'
                     title='Edit User'
                     @click='edit = true'
                 >
@@ -41,6 +41,10 @@
         </div>
         <div class='card-body'>
             <TablerLoading v-if='loading' />
+            <TablerError
+                v-else-if='error'
+                :err='error'
+            />
             <template v-else-if='edit'>
                 <div class='col-12 pb-4'>
                     <TablerToggle
@@ -225,13 +229,17 @@ async function fetchUser(): Promise<User> {
             }
         }
     });
+
+    if (res.error) throw new Error(res.error.message);
     if (!res.data) throw new Error('User not found');
+
     return res.data;
 }
 
 const opened = ref<Set<string>>(new Set());
 
 const loading = ref(false);
+const error = ref<Error | undefined>();
 const edit = ref(false);
 const user = ref<User>(await fetchUser());
 
@@ -250,6 +258,8 @@ const getTAKKeys = <T extends object>(obj: T) => Object.keys(obj).filter((key) =
 async function saveUser(): Promise<void> {
     edit.value = false;
     loading.value = true;
+    error.value = undefined;
+
     const res = await server.PATCH(`/api/user/{:username}`, {
         params: {
             path: {
@@ -261,12 +271,18 @@ async function saveUser(): Promise<void> {
         }
     });
 
+    if (res.error) {
+        error.value = new Error(res.error.message);
+        edit.value = true;
+    }
+
     if (res.data) user.value = res.data;
 
     loading.value = false;
 }
 
 async function fetchUserLoading(): Promise<void> {
+    error.value = undefined;
     edit.value = false;
     loading.value = true;
     user.value = await fetchUser();

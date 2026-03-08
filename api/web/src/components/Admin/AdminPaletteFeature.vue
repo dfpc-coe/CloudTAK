@@ -165,6 +165,13 @@ async function savePaletteFeature() {
                     style: paletteFeature.value.style as Record<string, unknown>
                 }
             });
+
+            if (res.error) {
+                loading.value = false;
+                error.value = new Error(res.error.message);
+                return;
+            }
+
             if (res.data) paletteFeature.value = res.data;
 
             disabled.value = true;
@@ -184,6 +191,13 @@ async function savePaletteFeature() {
                     style: paletteFeature.value.style as Record<string, unknown>
                 }
             });
+
+            if (res.error) {
+                loading.value = false;
+                error.value = new Error(res.error.message);
+                return;
+            }
+
             if (res.data) paletteFeature.value = res.data;
 
             router.push(`/admin/palette/${route.params.palette}`);
@@ -198,7 +212,7 @@ async function deletePaletteFeature() {
     loading.value = true;
 
     try {
-        await server.DELETE(`/api/palette/{:palette}/feature/{:feature}`, {
+        const res = await server.DELETE(`/api/palette/{:palette}/feature/{:feature}`, {
             params: {
                 path: {
                     ":palette": String(route.params.palette),
@@ -206,6 +220,12 @@ async function deletePaletteFeature() {
                 }
             }
         });
+
+        if (res.error) {
+            loading.value = false;
+            error.value = new Error(res.error.message);
+            return;
+        }
 
         router.push(`/admin/palette/${route.params.palette}`);
     } catch (err) {
@@ -223,6 +243,12 @@ async function fetchPalette() {
                 }
             }
         });
+
+        if (res.error) {
+            error.value = new Error(res.error.message);
+            return;
+        }
+
         if (res.data) palette.value = res.data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -239,6 +265,12 @@ async function fetchPaletteFeature() {
                 }
             }
         });
+
+        if (res.error) {
+            error.value = new Error(res.error.message);
+            return;
+        }
+
         if (res.data) paletteFeature.value = res.data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
