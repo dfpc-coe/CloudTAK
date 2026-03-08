@@ -204,9 +204,16 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
                     try {
                         if (conn instanceof ProfileConnConfig && feat.properties && feat.properties.chat) {
+                            const myUid = `ANDROID-CloudTAK-${conn.id}`;
+                            const senderUid = feat.properties.chat.chatgrp?._attributes?.uid0;
+                            const isOutgoing = senderUid === myUid;
+                            const chatroom = isOutgoing
+                                ? feat.properties.chat.chatroom
+                                : feat.properties.chat.senderCallsign;
+
                             await this.config.models.ProfileChat.generate({
                                 username: String(conn.id),
-                                chatroom: feat.properties.chat.senderCallsign,
+                                chatroom: chatroom,
                                 sender_callsign: feat.properties.chat.senderCallsign,
                                 sender_uid: feat.properties.chat.chatgrp._attributes.uid0,
                                 message_id: feat.properties.chat.messageId || randomUUID(),

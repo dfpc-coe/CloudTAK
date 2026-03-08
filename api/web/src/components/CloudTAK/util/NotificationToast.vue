@@ -38,7 +38,11 @@
                     />
                 </div>
                 <div class='toast-body'>
-                    <span v-text='notification.body' />
+                    <span
+                        class='text-truncate d-block'
+                        style='max-width: 220px;'
+                        v-text='notification.body'
+                    />
                 </div>
                 <div class='loading-bar' />
             </div>

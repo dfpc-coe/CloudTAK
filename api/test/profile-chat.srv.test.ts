@@ -85,6 +85,9 @@ test('GET: api/profile/chatroom', async () => {
             }
         }, true);
 
+        assert.ok(res.body.items[0].updated);
+        delete res.body.items[0].updated;
+
         assert.deepEqual(res.body, {
              total: 1,
              items: [{
