@@ -197,7 +197,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { server, std, stdurl, stdclick } from '../../../src/std.ts';
+import { server, stdclick } from '../../../src/std.ts';
 import type { Basemap, BasemapList } from '../../../src/types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'

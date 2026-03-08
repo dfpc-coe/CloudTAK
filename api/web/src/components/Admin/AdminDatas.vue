@@ -49,10 +49,13 @@
                             class='cursor-pointer'
                             @click='external(`/connection/${data.connection}/data/${data.id}`)'
                         >
-                            <template v-for='h in header' :key='h.name'>
+                            <template
+                                v-for='h in header'
+                                :key='h.name'
+                            >
                                 <template v-if='h.display'>
                                     <td>
-                                        <span v-text='data[h.name]' />
+                                        <span v-text='(data as unknown as Record<string, unknown>)[h.name]' />
                                     </td>
                                 </template>
                             </template>
@@ -76,7 +79,8 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import { server, stdclick } from '../../std.ts';
+import { server } from '../../std.ts';
+import type { ETLData } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue';
 import TableFooter from '../util/TableFooter.vue';
 import {
@@ -88,7 +92,6 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue';
 
-const err = ref<boolean>(false);
 const loading = ref<boolean>(true);
 const header = ref<Array<{ name: string; display: boolean }>>([]);
 const paging = ref({
@@ -98,7 +101,7 @@ const paging = ref({
     limit: 100,
     page: 0
 });
-const list = ref<{ total: number; items: any[] }>({
+const list = ref<{ total: number; items: ETLData[] }>({
     total: 0,
     items: []
 });
@@ -126,13 +129,14 @@ async function listDataSchema() {
         return { name: h, display: true };
     });
 
-    if ((res.data as any)?.query?.properties?.sort?.enum) {
-        header.value.push(...(res.data as any).query.properties.sort.enum.map((h: string) => {
+    const schema = res.data as { query?: { properties?: { sort?: { enum?: string[] } } } };
+    if (schema?.query?.properties?.sort?.enum) {
+        header.value.push(...schema.query.properties.sort.enum.map((h: string) => {
             return {
                 name: h,
                 display: false
             };
-        }).filter((h: any) => {
+        }).filter((h: { name: string, display: boolean }) => {
             for (const hknown of header.value) {
                 if (hknown.name === h.name) return false;
             }
@@ -144,7 +148,9 @@ async function listDataSchema() {
 async function fetchList() {
     loading.value = true;
     
-    const res = await server.GET('/api/data' as any, {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - The root /api/data endpoint is missing from definitions
+    const res = await server.GET('/api/data', {
         params: {
             query: {
                 filter: paging.value.filter,
@@ -157,9 +163,10 @@ async function fetchList() {
     });
 
     if (res.data) {
+        const data = res.data as unknown as { total: number; items: ETLData[] };
         list.value = {
-            total: (res.data as any).total ?? 0,
-            items: (res.data as any).items ?? []
+            total: data.total ?? 0,
+            items: data.items ?? []
         };
     } else {
         list.value = { total: 0, items: [] };
