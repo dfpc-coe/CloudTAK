@@ -210,6 +210,11 @@ export default class AtlasConnection {
 
                 await Chatroom.load(chatroom, { reload: false });
 
+                await db.chatroom.where('id').equals(chatroom).modify(room => {
+                    room.updated = chat.time;
+                    room.unread = (room.unread || 0) + 1;
+                });
+
                 await db.chatroom_chats.put({
                     id: chat.messageId,
                     chatroom: chatroom,

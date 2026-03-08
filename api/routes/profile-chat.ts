@@ -18,6 +18,7 @@ export default async function router(schema: Schema, config: Config) {
             items: Type.Array(Type.Object({
                 id: Type.String(),
                 chatroom: Type.String(),
+                updated: Type.String(),
             }))
         })
     }, async (req, res) => {
@@ -29,7 +30,8 @@ export default async function router(schema: Schema, config: Config) {
                 total: chats.total,
                 items: chats.items.map((c) => ({
                     id: c.chatroom,
-                    chatroom: c.chatroom
+                    chatroom: c.chatroom,
+                    updated: c.created
                 }))
             });
         } catch (err) {

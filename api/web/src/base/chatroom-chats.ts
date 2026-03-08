@@ -40,6 +40,13 @@ export default class ChatroomChats {
                 });
             }
         });
+
+        const activeItem = list.items[list.items.length - 1];
+        if (activeItem) {
+            await db.chatroom.update(this.chatroom, {
+                updated: (activeItem as APIProfileChat).created
+            });
+        }
     }
 
     async list(
@@ -63,6 +70,10 @@ export default class ChatroomChats {
         return chats;
     }
 
+    async markRead(): Promise<void> {
+        await db.chatroom.update(this.chatroom, { unread: 0 });
+    }
+
     async send(
         message: string,
         sender: { uid: string, callsign: string },
@@ -71,6 +82,10 @@ export default class ChatroomChats {
     ): Promise<void> {
         const id = crypto.randomUUID();
         const created = new Date().toISOString();
+
+        await db.chatroom.update(this.chatroom, {
+            updated: created
+        });
 
         await db.chatroom_chats.put({
             id: id,
