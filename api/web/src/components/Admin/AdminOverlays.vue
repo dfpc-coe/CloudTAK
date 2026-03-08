@@ -263,6 +263,9 @@ async function listBasemapSchema() {
     if (res.error) {
         error.value = new Error(res.error.message);
         return;
+    } else if (!res.data) {
+        error.value = new Error('No data returned');
+        return;
     }
 
     const defaults: Array<keyof Basemap> = ['id', 'name'];
@@ -308,6 +311,7 @@ async function fetchList() {
     });
     
     if (res.error) error.value = new Error(res.error.message);
+    else if (!res.data) error.value = new Error('No data returned');
     else list.value = res.data;
 
     loading.value = false;

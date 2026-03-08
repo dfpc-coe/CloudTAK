@@ -231,31 +231,36 @@ async function downloadImport(id: string) {
 
 async function fetchList() {
     loading.value = true;
+    error.value = undefined;
 
-    const params: paths['/api/import']['get']['parameters']['query'] = {
-        impersonate: true,
-        filter: paging.value.filter,
-        sort: paging.value.sort as paths['/api/import']['get']['parameters']['query']['sort'],
-        order: paging.value.order as "asc" | "desc",
-        limit: paging.value.limit,
-        page: paging.value.page,
-    };
+    try {
+        const params: paths['/api/import']['get']['parameters']['query'] = {
+            impersonate: true,
+            filter: paging.value.filter,
+            sort: paging.value.sort as paths['/api/import']['get']['parameters']['query']['sort'],
+            order: paging.value.order as "asc" | "desc",
+            limit: paging.value.limit,
+            page: paging.value.page,
+        };
 
-    // Only add status filter if it's not 'All'
-    if (paging.value.status && paging.value.status !== 'All') {
-        params.status = paging.value.status as paths['/api/import']['get']['parameters']['query']['status'];
-    }
-
-    const res = await server.GET('/api/import', {
-        params: {
-            query: params
+        // Only add status filter if it's not 'All'
+        if (paging.value.status && paging.value.status !== 'All') {
+            params.status = paging.value.status as paths['/api/import']['get']['parameters']['query']['status'];
         }
-    });
 
-    if (res.error) throw new Error(res.error.message);
+        const res = await server.GET('/api/import', {
+            params: {
+                query: params
+            }
+        });
 
-    list.value = res.data;
+        if (res.error) throw new Error(res.error.message);
 
-    loading.value = false;
+        list.value = res.data;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        loading.value = false;
+    }
 }
 </script>

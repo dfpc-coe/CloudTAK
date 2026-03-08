@@ -154,7 +154,7 @@ export default class KML implements Transform {
                         const extractDir = tmpKmzPath.replace(/\.kmz$/, '');
                         await fs.writeFile(tmpKmzPath, buf);
                         await fs.mkdir(extractDir, { recursive: true });
-                        const zip = new StreamZip.async({ file: tmpKmzPath, skipEntryNameValidation: true });
+                        const zip = new StreamZip.async({ file: tmpKmzPath });
                         try {
                             const entries = await zip.entries();
                             let kmlFileName = 'doc.kml';
