@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.95.2 - 2026-03-08
+
+- :bug: Fallback to single kml if doc.kml isn't present
+- :rocket: Migrate a ton of components from `std` to `server` which has strong typing
+
 ### v12.95.1 - 2026-03-07
 
 - :bug: Allow Agency Admins to Manage Connections
