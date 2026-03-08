@@ -248,6 +248,13 @@ async function saveTemplate() {
             const res = await server.POST(`/api/template/mission`, {
                 body: template.value
             });
+
+            if (res.error) {
+                loading.value = false;
+                error.value = new Error(res.error.message);
+                return;
+            }
+
             if (res.data) template.value = { ...res.data, logs: template.value.logs };
 
             disabled.value = true;
@@ -261,6 +268,13 @@ async function saveTemplate() {
                 },
                 body: template.value
             });
+
+            if (res.error) {
+                loading.value = false;
+                error.value = new Error(res.error.message);
+                return;
+            }
+
             if (res.data) template.value = { ...res.data, logs: template.value.logs };
 
             disabled.value = true;
@@ -276,13 +290,19 @@ async function deleteTemplate() {
     loading.value = true;
 
     try {
-        await server.DELETE(`/api/template/mission/{:mission}`, {
+        const res = await server.DELETE(`/api/template/mission/{:mission}`, {
             params: {
                 path: {
                     ":mission": String(route.params.template)
                 }
             }
         });
+
+        if (res.error) {
+            loading.value = false;
+            error.value = new Error(res.error.message);
+            return;
+        }
 
         router.push('/admin/templates');
     } catch (err) {
@@ -301,6 +321,7 @@ async function fetchTemplate() {
                 }
             }
         });
+        if (res.error) throw new Error(res.error.message);
         if (res.data) template.value = res.data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

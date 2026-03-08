@@ -176,6 +176,11 @@ async function listMissionTemplateSchema() {
         }
     });
 
+    if (list.error) {
+        error.value = new Error(list.error.message);
+        return;
+    }
+
     const defaults: Array<keyof MissionTemplateList['items'][0]> = ['icon', 'name', 'keywords'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
@@ -211,7 +216,8 @@ async function fetchList() {
                 }
             }
         });
-        if (res.data) list.value = res.data;
+        if (res.error) error.value = new Error(res.error.message);
+        else if (res.data) list.value = res.data;
      } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
      } finally {

@@ -260,6 +260,11 @@ async function listBasemapSchema() {
         }
     });
 
+    if (res.error) {
+        error.value = new Error(res.error.message);
+        return;
+    }
+
     const defaults: Array<keyof Basemap> = ['id', 'name'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
@@ -280,6 +285,7 @@ async function listBasemapSchema() {
 }
 
 async function fetchList() {
+    error.value = undefined;
     loading.value = true;
 
     // Build standard query object manually to pacify typescript
@@ -300,7 +306,10 @@ async function fetchList() {
         // @ts-expect-error Paging Config 
         params: { query }
     });
-    if (res.data) list.value = res.data;
+    
+    if (res.error) error.value = new Error(res.error.message);
+    else list.value = res.data;
+
     loading.value = false;
 }
 </script>

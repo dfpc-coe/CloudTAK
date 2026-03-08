@@ -186,7 +186,7 @@ async function upload(opts: {
         xhr.upload.onprogress = (event) => {
             if (event.lengthComputable) {
                 const percentComplete = Math.round((event.loaded / event.total) * 100);
-                progress.value = percentComplete;
+                progress.value = Math.min(percentComplete, 99);
             }
         };
 
@@ -245,7 +245,7 @@ async function upload(opts: {
             }
         } catch (error) {
             console.error('Upload error:', error);
-            emit('cancel');
+            emit('error', error instanceof Error ? error : new Error(String(error)));
             reject(error);
         }
     });

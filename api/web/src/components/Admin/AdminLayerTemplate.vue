@@ -85,10 +85,13 @@ async function createTemplate() {
             }
         });
 
+        if (layer.error) {
+            throw new Error(layer.error.message);
+        }
+
         if (layer.data) router.push(`/admin/layer/${layer.data.id}`);
-    } catch (err) {
+    } finally {
         loading.value = false;
-        throw err;
     }
 }
 </script>

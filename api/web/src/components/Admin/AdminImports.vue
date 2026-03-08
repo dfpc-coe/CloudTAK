@@ -194,6 +194,13 @@ async function listImportSchema() {
         }
     });
 
+    if (list.error) {
+        error.value = new Error(list.error.message);
+        return;
+    }
+
+    if (!list.data) return;
+
     const defaults: Array<keyof Import> = ['username', 'name'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
