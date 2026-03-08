@@ -235,10 +235,18 @@ onMounted(async () => {
 async function redeploy() {
     loading.value = true;
 
-    const res = await server.POST('/api/layer/redeploy');
-    if (res.error) throw new Error(String(res.error));
-
-    loading.value = false;
+    try {
+        const res = await server.POST('/api/layer/redeploy');
+        if (res.error) throw new Error(String(res.error));
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            error.value = err;
+        } else {
+            error.value = new Error(String(err));
+        }
+    } finally {
+        loading.value = false;
+    }
 }
 
 
