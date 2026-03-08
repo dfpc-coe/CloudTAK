@@ -145,8 +145,8 @@ function onScroll() {
     const wasAtBottom = atBottom.value;
     const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 32;
     atBottom.value = isAtBottom;
-    if (!wasAtBottom && isAtBottom && typeof markRead === 'function') {
-        markRead();
+    if (!wasAtBottom && isAtBottom && typeof room.value?.chats?.markRead === 'function') {
+        room.value.chats.markRead();
     }
 }
 
@@ -155,8 +155,8 @@ function scrollToBottom() {
     if (!el) return;
     el.scrollTop = el.scrollHeight;
     atBottom.value = true;
-    if (typeof markRead === 'function') {
-        markRead();
+    if (typeof room.value?.chats?.markRead === 'function') {
+        room.value.chats.markRead();
     }
 }
 
