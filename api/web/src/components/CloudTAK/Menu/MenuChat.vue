@@ -142,13 +142,22 @@ const atBottom = ref(true);
 function onScroll() {
     const el = scrollContainer.value;
     if (!el) return;
-    atBottom.value = el.scrollHeight - el.scrollTop - el.clientHeight < 32;
+    const wasAtBottom = atBottom.value;
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 32;
+    atBottom.value = isAtBottom;
+    if (!wasAtBottom && isAtBottom && typeof markRead === 'function') {
+        markRead();
+    }
 }
 
 function scrollToBottom() {
     const el = scrollContainer.value;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
+    atBottom.value = true;
+    if (typeof markRead === 'function') {
+        markRead();
+    }
 }
 
 const route = useRoute();
