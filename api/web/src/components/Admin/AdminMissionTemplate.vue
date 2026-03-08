@@ -193,7 +193,7 @@
 import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { server, std, stdclick } from '../../../src/std.ts';
+import { server, stdclick } from '../../../src/std.ts';
 import type { MissionTemplate } from '../../../src/types.ts';
 import Keywords from '../CloudTAK/util/Keywords.vue';
 import TagEntry from '../CloudTAK/util/TagEntry.vue';
