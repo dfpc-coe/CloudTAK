@@ -2,6 +2,7 @@ import { db } from './database.ts'
 import type { DBChatroom } from './database.ts';
 import { std, stdurl } from '../std.ts';
 import ChatroomChats from './chatroom-chats.ts';
+import { liveQuery, type Observable } from 'dexie';
 import type {
     ProfileChatroomList,
     ProfileChatList
@@ -21,6 +22,13 @@ export default class Chatroom {
     ) {
         this.name = name;
         this.chats = new ChatroomChats(name);
+    }
+
+    static liveUnreadCount(): Observable<number> {
+        return liveQuery(async () => {
+            const chatrooms = await db.chatroom.toArray();
+            return chatrooms.reduce((acc, room) => acc + (room.unread || 0), 0);
+        });
     }
 
     /**
@@ -185,14 +193,19 @@ export default class Chatroom {
         }
 
         for (const chat of list.items) {
+            const externalChat = chat as { chatroom: string, updated?: string };
             const exists = await db.chatroom.get(chat.chatroom);
             if (!exists) {
                 await db.chatroom.put({
                     id: chat.chatroom,
                     name: chat.chatroom,
-                    created: new Date().toISOString(),
-                    updated: new Date().toISOString(),
+                    created: externalChat.updated || new Date().toISOString(),
+                    updated: externalChat.updated || new Date().toISOString(),
                     last_read: null
+                });
+            } else if (externalChat.updated && new Date(externalChat.updated).getTime() > new Date(exists.updated).getTime()) {
+                await db.chatroom.update(chat.chatroom, {
+                    updated: externalChat.updated
                 });
             }
         }

@@ -35,6 +35,7 @@ export interface DBChatroom {
     name: string;
     created: string;
     updated: string;
+    unread?: number;
     last_read: string | null;
 }
 
@@ -45,6 +46,7 @@ export interface DBChatroomChat {
     sender_uid: string;
     message: string;
     created: string;
+    unread?: boolean;
 }
 
 export interface DBIconset {
