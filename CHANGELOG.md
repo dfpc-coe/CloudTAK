@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.96.1 - 2026-03-08
+
+- :bug: Ensure Overlay order in UI matches mapStore order
+
 ### v12.96.0 - 2026-03-08
 
 - :rocket: Add visual indicator that you are not at most recent chat: Closes: https://github.com/dfpc-coe/CloudTAK/issues/1317
