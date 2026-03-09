@@ -14,6 +14,7 @@ import mapgl from 'maplibre-gl';
 const FloatingGeneric = defineAsyncComponent(() => import('./src/components/CloudTAK/util/FloatingGeneric.vue'));
 
 export type { MenuItemConfig };
+export type { DBFeature };
 
 export interface PluginInstance {
     /**
