@@ -100,4 +100,58 @@ test('GET: api/profile/chatroom', async () => {
     }
 });
 
+
+let lastMessageId: string | undefined;
+
+test('GET: api/profile/chatroom/:chatroom/chat (Get Message)', async () => {
+    try {
+        const res = await flight.fetch('/api/profile/chatroom/user%40example.com/chat', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        assert.equal(res.body.total, 1);
+        assert.equal(res.body.items[0].message, 'Wilco');
+        
+        lastMessageId = res.body.items[0].message_id;
+        assert.ok(lastMessageId);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('DELETE: api/profile/chatroom/:chatroom/chat (Delete Message)', async () => {
+    try {
+        const res = await flight.fetch(`/api/profile/chatroom/user%40example.com/chat?chat=${lastMessageId}`, {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        assert.deepEqual(res.body, {
+            status: 200,
+            message: 'Chat Deleted'
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/profile/chatroom/:chatroom/chat (Verify Delete)', async () => {
+    try {
+        const res = await flight.fetch('/api/profile/chatroom/user%40example.com/chat', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        assert.equal(res.body.total, 0);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
 flight.landing();
