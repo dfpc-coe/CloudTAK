@@ -158,7 +158,7 @@ export default async function router(schema: Schema, config: Config) {
             for (const chat of req.query.chat) {
                 await config.models.ProfileChat.delete(sql`
                     username = ${user.email}
-                    AND id = ${chat}
+                    AND message_id = ${chat}
                 `);
             }
 
