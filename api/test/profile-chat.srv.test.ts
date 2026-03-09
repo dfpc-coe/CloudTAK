@@ -133,7 +133,7 @@ test('DELETE: api/profile/chatroom/:chatroom/chat (Delete Message)', async () =>
 
         assert.deepEqual(res.body, {
             status: 200,
-            message: 'Chat Deleted'
+            message: 'Deleted Chats'
         });
     } catch (err) {
         assert.ifError(err);
