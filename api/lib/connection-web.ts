@@ -22,6 +22,9 @@ export class ConnectionWebSocket {
 
                     if (msg.type === 'chat') {
                         const chat = new DirectChat(msg.data);
+                        if (msg.data.location && msg.data.location[0] !== 0 && msg.data.location[1] !== 0) {
+                            chat.position(msg.data.location);
+                        }
                         client.tak.write([chat]);
 
                         const feat = await CoTParser.to_geojson(chat);
