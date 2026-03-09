@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.97.0 - 2026-03-09
+
+- :bug: Ensure MessageID is used for delete as dynamic chat messages will not have the DB id - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1313
+- :white_check_mark: Add integration tests to ensure this doesn't regress
+
 ### v12.96.1 - 2026-03-08
 
 - :bug: Ensure Overlay order in UI matches mapStore order
