@@ -134,7 +134,8 @@ export default class ChatroomChats {
             to: recipient,
             message: message,
             messageId: id,
-            time: created
+            time: created,
+            location: worker.profile?.location?.coordinates || [0, 0]
         }, 'chat');
     }
 }
