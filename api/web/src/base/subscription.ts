@@ -105,7 +105,7 @@ export default class Subscription {
             token: opts.token
         });
 
-        this.chat = new SubscriptionChat(mission.guid);
+        this.chat = new SubscriptionChat(mission.guid, mission.name);
 
         this.subscribed = opts.subscribed;
 

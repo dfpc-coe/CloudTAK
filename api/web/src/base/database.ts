@@ -137,6 +137,7 @@ export interface DBSubscriptionChat {
     sender_uid: string;
     message: string;
     created: string;
+    unread: boolean;
 }
 
 export interface DBSubscription {
