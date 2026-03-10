@@ -9,7 +9,7 @@
                 title='Edit'
                 @click.stop='edit = true'
             >
-                <IconPencil :stroke='1' />
+                <IconPencil stroke='1' />
             </TablerIconButton>
             <div
                 v-else-if='edit && isOpen'
@@ -20,14 +20,14 @@
                     title='Save'
                     @click.stop='save'
                 >
-                    <IconDeviceFloppy :stroke='1' />
+                    <IconDeviceFloppy stroke='1' />
                 </TablerIconButton>
                 <TablerIconButton
                     color='red'
                     title='Cancel'
                     @click.stop='edit = false; fetch()'
                 >
-                    <IconX :stroke='1' />
+                    <IconX stroke='1' />
                 </TablerIconButton>
             </div>
         </template>
@@ -53,7 +53,7 @@
                         <TablerInput
                             v-model='config["geofence::url"]'
                             :disabled='!edit'
-                            :error='validateURL(config["geofence::url"])'
+                            :error='validateURL(config["geofence::url"] as string)'
                             label='Geofence Server URL'
                         />
                         <TablerInput
@@ -134,9 +134,8 @@ async function save() {
     loading.value = true;
     err.value = null;
     try {
-        // @ts-expect-error body typing based on config
         const { error: reqError } = await server.PUT('/api/config', {
-            body: config.value as Record<string, string | boolean>
+            body: config.value
         });
         if (reqError) throw new Error(reqError.message);
 

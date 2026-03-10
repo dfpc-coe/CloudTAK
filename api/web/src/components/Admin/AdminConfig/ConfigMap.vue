@@ -9,7 +9,7 @@
                 title='Edit'
                 @click.stop='edit = true'
             >
-                <IconPencil :stroke='1' />
+                <IconPencil stroke='1' />
             </TablerIconButton>
             <div
                 v-else-if='edit && isOpen'
@@ -20,14 +20,14 @@
                     title='Save'
                     @click.stop='save'
                 >
-                    <IconDeviceFloppy :stroke='1' />
+                    <IconDeviceFloppy stroke='1' />
                 </TablerIconButton>
                 <TablerIconButton
                     color='red'
                     title='Cancel'
                     @click.stop='edit = false; fetch()'
                 >
-                    <IconX :stroke='1' />
+                    <IconX stroke='1' />
                 </TablerIconButton>
             </div>
         </template>
@@ -131,22 +131,22 @@ async function fetch() {
     loading.value = true;
     err.value = null;
     try {
-        const client = await server();
-        const res = await client.getConfig({
-            query: {
-                keys: Object.keys(config.value).join(',')
+        const res = await server.GET('/api/config', {
+            params: {
+                query: {
+                    keys: Object.keys(config.value).join(',')
+                }
             }
         });
+        if (res.error) throw new Error(res.error.message);
         
         for (const key of Object.keys(config.value)) {
-            // @ts-expect-error Types on the generic API are open
-             if (res.data[key] !== undefined) {
+             if (res.data && res.data[key as keyof typeof res.data] !== undefined) {
                  if (key === 'map::center') {
                      // DB is Lng,Lat. UI is Lat,Lng
-                     config.value[key] = String(res.data[key]).split(',').reverse().join(',');
+                     config.value[key] = String(res.data[key as keyof typeof res.data]).split(',').reverse().join(',');
                  } else {
-                     // @ts-expect-error Types on the generic API are open
-                     config.value[key] = res.data[key];
+                     config.value[key as keyof typeof config.value] = res.data[key as keyof typeof res.data] as never;
                  }
              }
         }
@@ -164,10 +164,10 @@ async function save() {
         // Save as Lng,Lat
         payload['map::center'] = payload['map::center'].split(',').reverse().join(',');
 
-        const client = await server();
-        await client.updateConfig({
+        const res = await server.PUT('/api/config', {
             body: payload
         });
+        if (res.error) throw new Error(res.error.message);
         edit.value = false;
     } catch (error) {
         err.value = error as Error;

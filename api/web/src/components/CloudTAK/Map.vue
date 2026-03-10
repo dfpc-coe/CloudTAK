@@ -189,24 +189,34 @@
                     </div>
 
                     <div
-                        v-if='mapStore.bearing !== 0'
                         style='margin: 3px 3px'
                         class='cursor-pointer hover-button'
-                        @click='mapStore.map.setBearing(0)'
+                        @click='toggleCompass'
                     >
-                        <IconCircleArrowUp
-                            v-tooltip='"Snap to North"'
+                        <IconCompass
+                            v-if='mapStore.userOrientationMode'
+                            v-tooltip='"Orient North"'
                             tabindex='0'
-                            :alt='`Map Rotated to ${humanBearing}`'
-                            :transform='`rotate(${360 - mapStore.bearing})`'
                             :size='32'
                             stroke='2'
+                            color='#1E90FF'
                         />
-                        <div
-                            v-if='mapStore.bearing !== 0'
-                            class='text-center'
-                            v-text='humanBearing'
-                        />
+                        <template v-else>
+                            <IconCircleArrowUp
+                                v-tooltip='"Snap to North"'
+                                tabindex='0'
+                                :alt='`Map Rotated to ${humanBearing}`'
+                                :transform='`rotate(${360 - mapStore.bearing})`'
+                                :size='32'
+                                stroke='2'
+                                :color='mapStore.bearing === 0 ? "#ffffff" : undefined'
+                            />
+                            <div
+                                v-if='mapStore.bearing !== 0'
+                                class='text-center'
+                                v-text='humanBearing'
+                            />
+                        </template>
                     </div>
                     <div
                         v-if='mapStore.pitch !== 0'
@@ -466,6 +476,7 @@ import {
     IconBell,
     IconAngle,
     IconCircleArrowUp,
+    IconCompass,
     IconMountain,
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
@@ -568,6 +579,18 @@ const humanBearing = computed(() => {
 const humanPitch = computed(() => {
     return Math.round(mapStore.pitch) + '°'
 })
+
+const toggleCompass = () => {
+    if (mapStore.userOrientationMode) {
+        mapStore.userOrientationMode = false;
+        mapStore.map.setBearing(0);
+    } else if (mapStore.bearing !== 0) {
+        mapStore.map.setBearing(0);
+    } else {
+        // Was at bearing 0, now enable user orientation mode
+        mapStore.userOrientationMode = true;
+    }
+}
 
 // Reactive location accuracy
 const locationAccuracy = ref<number | undefined>(undefined);

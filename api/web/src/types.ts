@@ -231,3 +231,4 @@ export type ETLRawTaskList = {
 
 export type ETLTaskVersions = paths["/api/task/raw/{:task}"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type Config = paths["/api/config"]["get"]["responses"]["200"]["content"]["application/json"];
