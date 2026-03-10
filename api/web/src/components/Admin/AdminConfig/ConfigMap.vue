@@ -110,7 +110,7 @@ const config = ref<{
     'map::zoom': number;
     'map::bearing': number;
     'map::pitch': number;
-    'map::basemap': string | null;
+    'map::basemap': number | null;
 }>({
     'map::center': '40,-100', // Default Lat,Lng
     'map::zoom': 4,
@@ -139,19 +139,19 @@ async function fetch() {
             }
         });
         if (res.error) throw new Error(res.error.message);
-        
-        for (const key of Object.keys(config.value)) {
-             if (res.data && res.data[key as keyof typeof res.data] !== undefined) {
-                 if (key === 'map::center') {
-                     // DB is Lng,Lat. UI is Lat,Lng
-                     config.value[key] = String(res.data[key as keyof typeof res.data]).split(',').reverse().join(',');
-                 } else {
-                     config.value[key as keyof typeof config.value] = res.data[key as keyof typeof res.data] as never;
-                 }
-             }
-        }
+
+        config.value = {
+            // DB is Lng,Lat. UI is Lat,Lng
+            'map::center': res.data['map::center']
+                ? String(res.data['map::center']).split(',').reverse().join(',')
+                : config.value['map::center'],
+            'map::zoom': res.data['map::zoom'] ?? config.value['map::zoom'],
+            'map::bearing': res.data['map::bearing'] ?? config.value['map::bearing'],
+            'map::pitch': res.data['map::pitch'] ?? config.value['map::pitch'],
+            'map::basemap': res.data['map::basemap'] ?? config.value['map::basemap'],
+        };
     } catch (error) {
-        err.value = error as Error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value = false;
 }
