@@ -318,7 +318,9 @@ onMounted(async () => {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(async (registrations) => {
             for (const registration of registrations) {
-                registration.update();
+                registration.update().catch((err) => {
+                    console.debug('Failed to update ServiceWorker (likely unregistered):', err);
+                });
             }
 
             try {

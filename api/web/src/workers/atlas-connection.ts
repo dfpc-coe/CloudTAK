@@ -238,7 +238,9 @@ export default class AtlasConnection {
                     console.log(`Version change detected: ${this.version} -> ${status.version}`);
                     if ('serviceWorker' in self.navigator) {
                         const registration = await self.navigator.serviceWorker.ready;
-                        registration.update();
+                        registration.update().catch((err) => {
+                            console.debug('Failed to update ServiceWorker (likely unregistered):', err);
+                        });
 
                         this.version = status.version;
                     } else {
@@ -263,7 +265,9 @@ export default class AtlasConnection {
                         })) {
                             console.log(`Service Worker out of date, updating to version ${status.version}`);
                             const registration = await self.navigator.serviceWorker.ready;
-                            registration.update();
+                            registration.update().catch((err) => {
+                                console.debug('Failed to update ServiceWorker (likely unregistered):', err);
+                            });
                         }
                     } else {
                         console.log('No Service Worker available');
