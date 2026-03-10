@@ -124,7 +124,11 @@ async function fetch() {
 
         if (reqError) throw new Error(reqError.message);
 
-        config.value = data;
+        config.value = {
+            'geofence::enabled': data['geofence::enabled'] ?? false,
+            'geofence::url': data['geofence::url'] ?? '',
+            'geofence::password': data['geofence::password'] ?? '',
+        };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
     }
