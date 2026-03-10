@@ -4,6 +4,7 @@ import SubscriptionLog from './subscription-log.ts';
 import SubscriptionChanges from './subscription-changes.ts';
 import SubscriptionContents from './subscription-contents.ts';
 import SubscriptionFeature from './subscription-feature.ts';
+import SubscriptionChat from './subscription-chat.ts';
 import MissionTemplate from './mission-template.ts';
 import type {
     Mission,
@@ -55,6 +56,7 @@ export default class Subscription {
     change: SubscriptionChanges;
     contents: SubscriptionContents;
     feature: SubscriptionFeature;
+    chat: SubscriptionChat;
 
     token: string;
     missiontoken?: string;
@@ -102,6 +104,8 @@ export default class Subscription {
             missiontoken: opts.missiontoken,
             token: opts.token
         });
+
+        this.chat = new SubscriptionChat(mission.guid);
 
         this.subscribed = opts.subscribed;
 
