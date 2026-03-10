@@ -6,7 +6,7 @@ import type Atlas from '../workers/atlas.ts';
 import { std, stdurl } from '../std.ts';
 import { bbox } from '@turf/bbox';
 import type { BBox, FeatureCollection as GeoJSONFeatureCollection } from 'geojson'
-import type { Feature, FeatureCollection } from '../types.ts';
+import type { Feature, FeatureCollection, Chat } from '../types.ts';
 import { WorkerMessageType } from './events.ts';
 
 /**
@@ -52,19 +52,41 @@ export default class SubscriptionFeature {
                 await COT.style(feat);
             }
 
-            await db.transaction('rw', db.subscription_feature, async () => {
+            const mapFeatures = list.features.filter((f) => f.properties.type !== 'b-t-f');
+            const chatFeatures = list.features.filter((f) => f.properties.type === 'b-t-f');
+
+            await db.transaction('rw', db.subscription_feature, db.subscription_chat, async () => {
                 await db.subscription_feature
                     .where('mission')
                     .equals(this.parent.guid)
                     .delete();
 
-                for (const feature of list.features) {
+                for (const feature of mapFeatures) {
                     await db.subscription_feature.put({
                         id: feature.id,
                         mission: this.parent.guid,
                         path: feature.path,
                         properties: feature.properties,
                         geometry: feature.geometry,
+                    });
+                }
+
+                await db.subscription_chat
+                    .where('mission')
+                    .equals(this.parent.guid)
+                    .delete();
+
+                for (const feature of chatFeatures) {
+                    const chat = feature.properties.__chat as Chat | undefined;
+                    if (!chat) continue;
+                    await db.subscription_chat.put({
+                        id: feature.id,
+                        mission: this.parent.guid,
+                        chatroom: chat.chatroom,
+                        sender: chat.from.callsign,
+                        sender_uid: chat.from.uid,
+                        message: chat.message,
+                        created: chat.time,
                     });
                 }
             });

@@ -150,6 +150,10 @@ const router = VueRouter.createRouter({
                         path: 'logs',
                         name: 'home-menu-mission-logs',
                         component: () => import('./components/CloudTAK/Menu/Mission/MissionLogs.vue')
+                    },{
+                        path: 'chats',
+                        name: 'home-menu-mission-chats',
+                        component: () => import('./components/CloudTAK/Menu/Mission/MissionChats.vue')
                     }]
                 },{
                     path: 'channels',
