@@ -172,10 +172,10 @@
     </SlideDownHeader>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import { validateURL } from '../../../base/validators.ts';
 import {
     TablerLoading,
@@ -196,9 +196,9 @@ import {
 const isOpen = ref(false);
 const loading = ref(false);
 const edit = ref(false);
-const err = ref(null);
+const err = ref<Error | null>(null);
 
-const config = ref({
+const config = ref<{ [key: string]: any }>({
     'login::name': '',
     'login::logo': '',
     'login::forgot': '',
@@ -232,14 +232,21 @@ async function fetch() {
     loading.value = true;
     err.value = null;
     try {
-        const url = stdurl('/api/config');
-        url.searchParams.set('keys', Object.keys(config.value).join(','));
-        const res = await std(url);
+        const queryParams = Object.keys(config.value).join(',');
+        const res = await server.GET('/api/config', {
+            params: {
+                query: {
+                    keys: queryParams
+                }
+            }
+        });
+        if (res.error) throw new Error(res.error.message);
+
         for (const key of Object.keys(config.value)) {
-             if (res[key] !== undefined) config.value[key] = res[key];
+             if (res.data[key] !== undefined) config.value[key] = res.data[key];
         }
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value = false;
 }
@@ -248,13 +255,14 @@ async function save() {
     loading.value = true;
     err.value = null;
     try {
-        await std(`/api/config`, {
-            method: 'PUT',
+        const res = await server.PUT('/api/config', {
             body: config.value
         });
+        if (res.error) throw new Error(res.error.message);
+
         edit.value = false;
     } catch (error) {
-        err.value = error
+        err.value = error instanceof Error ? error : new Error(String(error));
         console.error('Failed to save login config:', error);
     }
     loading.value = false;
