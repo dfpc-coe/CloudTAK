@@ -275,7 +275,7 @@ async function save() {
     err.value = null;
     try {
         const res = await server.PUT('/api/config', {
-            body: config.value as any
+            body: config.value
         });
         if (res.error) throw new Error(res.error.message);
 

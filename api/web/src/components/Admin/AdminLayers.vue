@@ -289,7 +289,7 @@ async function listLayerSchema() {
     }
 }
 
-function navTo(path, event) {
+function navTo(path: string, event: MouseEvent) {
     if (event?.ctrlKey) {
         window.open(path, '_blank');
     } else {
