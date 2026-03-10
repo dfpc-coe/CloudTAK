@@ -76,10 +76,7 @@ export type MissionSubscriptions = paths["/api/marti/missions/{:name}/subscripti
 export type Server_Update = paths["/api/server"]["patch"]["requestBody"]["content"]["application/json"]
 export type Server = paths["/api/server"]["get"]["responses"]["200"]["content"]["application/json"]
 
-export type MapConfig = paths["/api/config/map"]["get"]["responses"]["200"]["content"]["application/json"]
-
 export type Login = paths["/api/login"]["get"]["responses"]["200"]["content"]["application/json"]
-export type LoginConfig = paths["/api/config/login"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Login_Create = paths["/api/login"]["post"]["requestBody"]["content"]["application/json"]
 export type Login_CreateRes = paths["/api/login"]["post"]["responses"]["200"]["content"]["application/json"]
 
@@ -96,8 +93,6 @@ export type IconsetList = paths["/api/iconset"]["get"]["responses"]["200"]["cont
 
 export type AttachmentList = paths["/api/attachment"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Attachment = paths["/api/attachment"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0]
-
-export type ConfigGroups = paths["/api/config/group"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type TileJSON = paths["/api/basemap/{:basemapid}/tiles"]["get"]["responses"]["200"]["content"]["application/json"]
 
@@ -230,4 +225,9 @@ export type ETLRawTaskList = {
 }
 
 export type ETLTaskVersions = paths["/api/task/raw/{:task}"]["get"]["responses"]["200"]["content"]["application/json"]
+
+export type Config = paths["/api/config"]["get"]["responses"]["200"]["content"]["application/json"];
+export type ConfigLogin = paths["/api/config/login"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ConfigMap = paths["/api/config/map"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ConfigGroups = paths["/api/config/group"]["get"]["responses"]["200"]["content"]["application/json"]
 

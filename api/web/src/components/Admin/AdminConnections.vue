@@ -111,9 +111,10 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
-import { server, std } from '../../std.ts';
+import { server } from '../../std.ts';
+import type { paths } from '../../derived-types.js';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import Status from '../ETL/Connection/StatusDot.vue';
@@ -130,10 +131,22 @@ import {
     IconPlus,
 } from '@tabler/icons-vue'
 
-const error = ref(false);
-const loading = ref(true);
-const header = ref([]);
-const paging = ref({
+const error = ref<Error | boolean>(false);
+const loading = ref<boolean>(true);
+const header = ref<{ name: ConnectionItemKey; display: boolean }[]>([]);
+
+type ConnectionQuery = paths['/api/connection']['get']['parameters']['query'];
+type ConnectionResponse = paths['/api/connection']['get']['responses']['200']['content']['application/json'];
+type ConnectionItem = ConnectionResponse['items'][number];
+type ConnectionItemKey = keyof ConnectionItem;
+
+const paging = ref<{
+    filter: string;
+    sort: ConnectionQuery['sort'];
+    order: ConnectionQuery['order'];
+    limit: number;
+    page: number;
+}>({
     filter: '',
     sort: 'name',
     order: 'asc',
@@ -141,8 +154,13 @@ const paging = ref({
     page: 0
 })
 
-const list = ref({
+const list = ref<ConnectionResponse>({
     total: 0,
+    status: {
+        dead: 0,
+        live: 0,
+        unknown: 0,
+    },
     items: []
 })
 
@@ -156,8 +174,25 @@ onMounted(async () => {
 });
 
 async function listLayerSchema() {
-    const schema = await std('/api/schema?method=GET&url=/connection');
-    header.value = ['id', 'name'].map((h) => {
+    const res = await server.GET('/api/schema', {
+        params: {
+            query: {
+                method: 'GET',
+                url: '/connection'
+            }
+        }
+    });
+    if (res.error) throw new Error(res.error.message);
+
+    const schema = res.data as {
+        query: {
+            properties: {
+                sort: { enum: ConnectionItemKey[] };
+            };
+        };
+    };
+
+    header.value = (['id', 'name'] satisfies ConnectionItemKey[]).map((h) => {
         return { name: h, display: true };
     });
 
@@ -178,9 +213,8 @@ async function reconnectConnections() {
     loading.value = true;
     error.value = false;
     try {
-        await std('/api/connection/refresh', {
-            method: 'POST'
-        });
+        const res = await server.POST('/api/connection/refresh');
+        if (res.error) throw new Error(res.error.message);
 
         await fetchList();
     } catch (err) {
@@ -189,7 +223,7 @@ async function reconnectConnections() {
     }
 }
 
-function navTo(path, event) {
+function navTo(path: string, event?: MouseEvent | KeyboardEvent) {
     if (event?.ctrlKey) {
         window.open(path, '_blank');
     } else {

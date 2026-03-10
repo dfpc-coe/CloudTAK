@@ -89,8 +89,8 @@
                             class='cursor-pointer'
                             role='menuitem'
                             tabindex='0'
-                            @keyup.enter='stdclick(router, $event, `/connection/${layer.connection || "template"}/layer/${layer.id}`)'
-                            @click='stdclick(router, $event, `/connection/${layer.connection || "template"}/layer/${layer.id}`)'
+                            @keyup.enter='navTo(`/connection/${layer.connection || "template"}/layer/${layer.id}`, $event)'
+                            @click='navTo(`/connection/${layer.connection || "template"}/layer/${layer.id}`, $event)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display && h.name === "name"'>
@@ -169,7 +169,7 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
-import { server, stdclick } from '../../std.ts';
+import { server } from '../../std.ts';
 import type { ETLLayerList, ETLLayer } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
@@ -286,6 +286,14 @@ async function listLayerSchema() {
             }
             return true;
         }));
+    }
+}
+
+function navTo(path: string, event: MouseEvent | KeyboardEvent) {
+    if (event?.ctrlKey) {
+        window.open(path, '_blank');
+    } else {
+        window.location.href = path;
     }
 }
 

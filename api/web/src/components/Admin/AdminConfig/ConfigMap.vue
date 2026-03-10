@@ -9,7 +9,7 @@
                 title='Edit'
                 @click.stop='edit = true'
             >
-                <IconPencil :stroke='1' />
+                <IconPencil stroke='1' />
             </TablerIconButton>
             <div
                 v-else-if='edit && isOpen'
@@ -20,14 +20,14 @@
                     title='Save'
                     @click.stop='save'
                 >
-                    <IconDeviceFloppy :stroke='1' />
+                    <IconDeviceFloppy stroke='1' />
                 </TablerIconButton>
                 <TablerIconButton
                     color='red'
                     title='Cancel'
                     @click.stop='edit = false; fetch()'
                 >
-                    <IconX :stroke='1' />
+                    <IconX stroke='1' />
                 </TablerIconButton>
             </div>
         </template>
@@ -82,10 +82,10 @@
     </SlideDownHeader>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import { validateLatLng } from '../../../base/validators.ts';
 import BasemapSelect from '../../util/BasemapSelect.vue';
 import {
@@ -100,12 +100,18 @@ import {
     IconX
 } from '@tabler/icons-vue';
 
-const isOpen = ref(false);
-const loading = ref(false);
-const edit = ref(false);
-const err = ref(null);
+const isOpen = ref<boolean>(false);
+const loading = ref<boolean>(false);
+const edit = ref<boolean>(false);
+const err = ref<Error | null>(null);
 
-const config = ref({
+const config = ref<{
+    'map::center': string;
+    'map::zoom': number;
+    'map::bearing': number;
+    'map::pitch': number;
+    'map::basemap': number | null;
+}>({
     'map::center': '40,-100', // Default Lat,Lng
     'map::zoom': 4,
     'map::bearing': 0,
@@ -125,21 +131,27 @@ async function fetch() {
     loading.value = true;
     err.value = null;
     try {
-        const url = stdurl('/api/config');
-        url.searchParams.set('keys', Object.keys(config.value).join(','));
-        const res = await std(url);
-        for (const key of Object.keys(config.value)) {
-             if (res[key] !== undefined) {
-                 if (key === 'map::center') {
-                     // DB is Lng,Lat. UI is Lat,Lng
-                     config.value[key] = res[key].split(',').reverse().join(',');
-                 } else {
-                     config.value[key] = res[key];
-                 }
-             }
-        }
+        const res = await server.GET('/api/config', {
+            params: {
+                query: {
+                    keys: Object.keys(config.value).join(',')
+                }
+            }
+        });
+        if (res.error) throw new Error(res.error.message);
+
+        config.value = {
+            // DB is Lng,Lat. UI is Lat,Lng
+            'map::center': res.data['map::center']
+                ? String(res.data['map::center']).split(',').reverse().join(',')
+                : config.value['map::center'],
+            'map::zoom': res.data['map::zoom'] ?? config.value['map::zoom'],
+            'map::bearing': res.data['map::bearing'] ?? config.value['map::bearing'],
+            'map::pitch': res.data['map::pitch'] ?? config.value['map::pitch'],
+            'map::basemap': res.data['map::basemap'] ?? config.value['map::basemap'],
+        };
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value = false;
 }
@@ -152,13 +164,13 @@ async function save() {
         // Save as Lng,Lat
         payload['map::center'] = payload['map::center'].split(',').reverse().join(',');
 
-        await std(`/api/config`, {
-            method: 'PUT',
+        const res = await server.PUT('/api/config', {
             body: payload
         });
+        if (res.error) throw new Error(res.error.message);
         edit.value = false;
     } catch (error) {
-        err.value = error
+        err.value = error as Error;
         console.error('Failed to save Map config:', error);
     }
     loading.value = false;
