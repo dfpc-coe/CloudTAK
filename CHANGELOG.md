@@ -17,6 +17,12 @@
 
 ### Pending Release
 
+### v12.98.0 - 2026-03-10
+
+- :tada: Track Course & Heading information via Device Orientation API
+- :rocket: Migrate AdminConfig components to TypeScript
+- :bug: Hide duplicate attempts to update Service Worker
+
 ### v12.97.0 - 2026-03-09
 
 - :bug: Ensure MessageID is used for delete as dynamic chat messages will not have the DB id - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1313
