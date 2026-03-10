@@ -106,6 +106,27 @@
                     </span>
                 </div>
 
+                <div class='position-relative'>
+                    <TablerIconButton
+                        title='Chats'
+                        class='hover-button'
+                        :hover='false'
+                        @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/chats`)'
+                    >
+                        <IconMessage
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <span
+                        v-if='unreadChats && unreadChats > 0'
+                        class='position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-white fw-bold shadow-sm border border-dark'
+                        style='font-size: 0.75rem; z-index: 10;'
+                    >
+                        {{ unreadChats > 99 ? '99+' : unreadChats }}
+                    </span>
+                </div>
+
                 <TablerIconButton
                     title='Files'
                     class='hover-button'
@@ -137,7 +158,8 @@ import {
     IconTimeline,
     IconUsers,
     IconArticle,
-    IconFiles
+    IconFiles,
+    IconMessage,
 } from '@tabler/icons-vue';
 
 const mapStore = useMapStore();
@@ -150,6 +172,17 @@ const unreadLogs = useObservable(
             .where('mission')
             .equals(mapStore.mission.meta.guid)
             .filter(l => l.read === false)
+            .count();
+    }))
+);
+
+const unreadChats = useObservable(
+    from(liveQuery(async () => {
+        if (!mapStore.mission) return 0;
+        return await db.subscription_chat
+            .where('mission')
+            .equals(mapStore.mission.meta.guid)
+            .filter(c => c.unread === true)
             .count();
     }))
 );

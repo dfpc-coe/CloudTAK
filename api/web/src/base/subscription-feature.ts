@@ -6,7 +6,7 @@ import type Atlas from '../workers/atlas.ts';
 import { std, stdurl } from '../std.ts';
 import { bbox } from '@turf/bbox';
 import type { BBox, FeatureCollection as GeoJSONFeatureCollection } from 'geojson'
-import type { Feature, FeatureCollection, Chat } from '../types.ts';
+import type { Feature, FeatureCollection } from '../types.ts';
 import { WorkerMessageType } from './events.ts';
 
 /**
@@ -71,22 +71,36 @@ export default class SubscriptionFeature {
                     });
                 }
 
+                const unreadChats = new Set(
+                    await db.subscription_chat
+                        .where('mission')
+                        .equals(this.parent.guid)
+                        .filter(c => c.unread === true)
+                        .primaryKeys()
+                );
+
                 await db.subscription_chat
                     .where('mission')
                     .equals(this.parent.guid)
                     .delete();
 
                 for (const feature of chatFeatures) {
-                    const chat = feature.properties.__chat as Chat | undefined;
+                    const chat = feature.properties.chat as {
+                        chatroom: string;
+                        id: string;
+                        senderCallsign: string;
+                        messageId?: string;
+                    } | undefined;
                     if (!chat) continue;
                     await db.subscription_chat.put({
                         id: feature.id,
                         mission: this.parent.guid,
                         chatroom: chat.chatroom,
-                        sender: chat.from.callsign,
-                        sender_uid: chat.from.uid,
-                        message: chat.message,
-                        created: chat.time,
+                        sender: chat.senderCallsign || String(feature.properties.callsign || ''),
+                        sender_uid: chat.id,
+                        message: String(feature.properties.remarks || ''),
+                        created: String(feature.properties.start || feature.properties.time || new Date().toISOString()),
+                        unread: unreadChats.has(feature.id),
                     });
                 }
             });
