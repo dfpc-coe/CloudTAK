@@ -82,10 +82,10 @@
     </SlideDownHeader>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import { validateLatLng } from '../../../base/validators.ts';
 import BasemapSelect from '../../util/BasemapSelect.vue';
 import {
@@ -100,12 +100,18 @@ import {
     IconX
 } from '@tabler/icons-vue';
 
-const isOpen = ref(false);
-const loading = ref(false);
-const edit = ref(false);
-const err = ref(null);
+const isOpen = ref<boolean>(false);
+const loading = ref<boolean>(false);
+const edit = ref<boolean>(false);
+const err = ref<Error | null>(null);
 
-const config = ref({
+const config = ref<{
+    'map::center': string;
+    'map::zoom': number;
+    'map::bearing': number;
+    'map::pitch': number;
+    'map::basemap': string | null;
+}>({
     'map::center': '40,-100', // Default Lat,Lng
     'map::zoom': 4,
     'map::bearing': 0,
@@ -125,21 +131,27 @@ async function fetch() {
     loading.value = true;
     err.value = null;
     try {
-        const url = stdurl('/api/config');
-        url.searchParams.set('keys', Object.keys(config.value).join(','));
-        const res = await std(url);
+        const client = await server();
+        const res = await client.getConfig({
+            query: {
+                keys: Object.keys(config.value).join(',')
+            }
+        });
+        
         for (const key of Object.keys(config.value)) {
-             if (res[key] !== undefined) {
+            // @ts-expect-error Types on the generic API are open
+             if (res.data[key] !== undefined) {
                  if (key === 'map::center') {
                      // DB is Lng,Lat. UI is Lat,Lng
-                     config.value[key] = res[key].split(',').reverse().join(',');
+                     config.value[key] = String(res.data[key]).split(',').reverse().join(',');
                  } else {
-                     config.value[key] = res[key];
+                     // @ts-expect-error Types on the generic API are open
+                     config.value[key] = res.data[key];
                  }
              }
         }
     } catch (error) {
-        err.value = error;
+        err.value = error as Error;
     }
     loading.value = false;
 }
@@ -152,13 +164,13 @@ async function save() {
         // Save as Lng,Lat
         payload['map::center'] = payload['map::center'].split(',').reverse().join(',');
 
-        await std(`/api/config`, {
-            method: 'PUT',
+        const client = await server();
+        await client.updateConfig({
             body: payload
         });
         edit.value = false;
     } catch (error) {
-        err.value = error
+        err.value = error as Error;
         console.error('Failed to save Map config:', error);
     }
     loading.value = false;

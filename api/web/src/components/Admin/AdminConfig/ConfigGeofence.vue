@@ -69,10 +69,10 @@
     </SlideDownHeader>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import { validateURL } from '../../../base/validators.ts';
 import {
     TablerLoading,
@@ -90,9 +90,9 @@ import {
 const isOpen = ref(false);
 const loading = ref(false);
 const edit = ref(false);
-const err = ref(null);
+const err = ref<Error | null>(null);
 
-const config = ref({
+const config = ref<Record<string, boolean | string>>({
     'geofence::enabled': false,
     'geofence::url': '',
     'geofence::password': '',
@@ -110,14 +110,22 @@ async function fetch() {
     loading.value = true;
     err.value = null;
     try {
-        const url = stdurl('/api/config');
-        url.searchParams.set('keys', Object.keys(config.value).join(','));
-        const res = await std(url);
+        const { data, error: reqError } = await server.GET('/api/config', {
+            params: {
+                query: {
+                    keys: Object.keys(config.value).join(',')
+                }
+            }
+        });
+        if (reqError) throw new Error(reqError.message);
+
         for (const key of Object.keys(config.value)) {
-            if (res[key] !== undefined) config.value[key] = res[key];
+            if (data && data[key as keyof typeof data] !== undefined) {
+                config.value[key] = data[key as keyof typeof data] as string | boolean;
+            }
         }
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value = false;
 }
@@ -126,13 +134,15 @@ async function save() {
     loading.value = true;
     err.value = null;
     try {
-        await std(`/api/config`, {
-            method: 'PUT',
-            body: config.value
+        // @ts-expect-error body typing based on config
+        const { error: reqError } = await server.PUT('/api/config', {
+            body: config.value as Record<string, string | boolean>
         });
+        if (reqError) throw new Error(reqError.message);
+
         edit.value = false;
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
         console.error('Failed to save Geofence config:', error);
     }
     loading.value = false;
