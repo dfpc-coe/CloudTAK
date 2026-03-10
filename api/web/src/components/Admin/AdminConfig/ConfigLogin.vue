@@ -175,6 +175,7 @@
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
+import type { Config } from '../../../types.ts';
 import { server } from '../../../std.ts';
 import { validateURL } from '../../../base/validators.ts';
 import {
@@ -198,26 +199,7 @@ const loading = ref(false);
 const edit = ref(false);
 const err = ref<Error | null>(null);
 
-const config = ref<{
-    'login::name': string;
-    'login::logo': string;
-    'login::forgot': string;
-    'login::signup': string;
-    'login::username': string;
-    'login::brand::enabled': string;
-    'login::brand::logo': string;
-    'login::background::enabled': boolean;
-    'login::background::color': string;
-    'oidc::enabled': boolean;
-    'oidc::enforced': boolean;
-    'oidc::name': string;
-    'oidc::client': string;
-    'oidc::secret': string;
-    'oidc::discovery': string;
-    'oidc::redirect': string;
-    'oidc::scopes': string;
-    'oidc::logo': string;
-}>({
+const config = ref<Partial<Config>>({
     'login::name': '',
     'login::logo': '',
     'login::forgot': '',

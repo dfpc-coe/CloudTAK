@@ -260,7 +260,7 @@
 </template>
 
 <script setup lang='ts'>
-import type { Login_Create, Login_CreateRes, LoginConfig } from '../types.ts'
+import type { Login_Create, Login_CreateRes, ConfigLogin } from '../types.ts'
 import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { version } from '../../package.json';
 import { IconSettings, IconTrash, IconLock } from '@tabler/icons-vue';
@@ -280,7 +280,7 @@ const router = useRouter();
 
 const brandStore = reactive<{
     loaded: boolean;
-    login: LoginConfig | undefined;
+    login: ConfigLogin | undefined;
     oidc: {
         enforced: boolean;
         enabled: boolean;

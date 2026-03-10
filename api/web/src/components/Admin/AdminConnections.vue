@@ -111,7 +111,7 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { server, std } from '../../std.ts';
 import TableHeader from '../util/TableHeader.vue'
@@ -130,10 +130,19 @@ import {
     IconPlus,
 } from '@tabler/icons-vue'
 
-const error = ref(false);
-const loading = ref(true);
-const header = ref([]);
-const paging = ref({
+const error = ref<Error | boolean>(false);
+const loading = ref<boolean>(true);
+const header = ref<{ name: string; display: boolean }[]>([]);
+
+type ConnectionQuery = NonNullable<Exclude<Parameters<typeof server.GET<'/api/connection'>>[1], undefined>['params']>['query'];
+
+const paging = ref<{
+    filter: string;
+    sort: NonNullable<ConnectionQuery['sort']>;
+    order: NonNullable<ConnectionQuery['order']>;
+    limit: number;
+    page: number;
+}>({
     filter: '',
     sort: 'name',
     order: 'asc',
@@ -141,7 +150,7 @@ const paging = ref({
     page: 0
 })
 
-const list = ref({
+const list = ref<NonNullable<Awaited<ReturnType<typeof server.GET<'/api/connection'>>>['data']>>({
     total: 0,
     items: []
 })
@@ -156,17 +165,18 @@ onMounted(async () => {
 });
 
 async function listLayerSchema() {
-    const schema = await std('/api/schema?method=GET&url=/connection');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const schema = await std('/api/schema?method=GET&url=/connection') as any;
     header.value = ['id', 'name'].map((h) => {
         return { name: h, display: true };
     });
 
-    header.value.push(...schema.query.properties.sort.enum.map((h) => {
+    header.value.push(...schema.query.properties.sort.enum.map((h: string) => {
         return {
             name: h,
             display: false
         }
-    }).filter((h) => {
+    }).filter((h: { name: string; display: boolean }) => {
         for (const hknown of header.value) {
             if (hknown.name === h.name) return false;
         }
@@ -189,7 +199,7 @@ async function reconnectConnections() {
     }
 }
 
-function navTo(path: string, event: MouseEvent) {
+function navTo(path: string, event?: MouseEvent | KeyboardEvent) {
     if (event?.ctrlKey) {
         window.open(path, '_blank');
     } else {

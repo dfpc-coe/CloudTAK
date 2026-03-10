@@ -121,13 +121,10 @@ async function fetch() {
                 }
             }
         });
+
         if (reqError) throw new Error(reqError.message);
 
-        for (const key of Object.keys(config.value)) {
-            if (data && data[key as keyof typeof data] !== undefined) {
-                config.value[key] = data[key as keyof typeof data] as string | boolean;
-            }
-        }
+        config.value = data;
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
     }
