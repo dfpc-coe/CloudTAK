@@ -9,7 +9,7 @@
                 title='Edit'
                 @click.stop='edit = true'
             >
-                <IconPencil :stroke='1' />
+                <IconPencil stroke='1' />
             </TablerIconButton>
             <div
                 v-else-if='edit && isOpen'
@@ -20,14 +20,14 @@
                     title='Save'
                     @click.stop='save'
                 >
-                    <IconDeviceFloppy :stroke='1' />
+                    <IconDeviceFloppy stroke='1' />
                 </TablerIconButton>
                 <TablerIconButton
                     color='red'
                     title='Cancel'
                     @click.stop='edit = false; fetch()'
                 >
-                    <IconX :stroke='1' />
+                    <IconX stroke='1' />
                 </TablerIconButton>
             </div>
         </template>
@@ -53,7 +53,7 @@
                         <TablerInput
                             v-model='config["geofence::url"]'
                             :disabled='!edit'
-                            :error='validateURL(config["geofence::url"])'
+                            :error='validateURL(config["geofence::url"] as string)'
                             label='Geofence Server URL'
                         />
                         <TablerInput
@@ -69,10 +69,10 @@
     </SlideDownHeader>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import { validateURL } from '../../../base/validators.ts';
 import {
     TablerLoading,
@@ -90,9 +90,13 @@ import {
 const isOpen = ref(false);
 const loading = ref(false);
 const edit = ref(false);
-const err = ref(null);
+const err = ref<Error | null>(null);
 
-const config = ref({
+const config = ref<{
+    'geofence::enabled': boolean;
+    'geofence::url': string;
+    'geofence::password': string;
+}>({
     'geofence::enabled': false,
     'geofence::url': '',
     'geofence::password': '',
@@ -110,14 +114,23 @@ async function fetch() {
     loading.value = true;
     err.value = null;
     try {
-        const url = stdurl('/api/config');
-        url.searchParams.set('keys', Object.keys(config.value).join(','));
-        const res = await std(url);
-        for (const key of Object.keys(config.value)) {
-            if (res[key] !== undefined) config.value[key] = res[key];
-        }
+        const { data, error: reqError } = await server.GET('/api/config', {
+            params: {
+                query: {
+                    keys: Object.keys(config.value).join(',')
+                }
+            }
+        });
+
+        if (reqError) throw new Error(reqError.message);
+
+        config.value = {
+            'geofence::enabled': data['geofence::enabled'] ?? false,
+            'geofence::url': data['geofence::url'] ?? '',
+            'geofence::password': data['geofence::password'] ?? '',
+        };
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value = false;
 }
@@ -126,13 +139,14 @@ async function save() {
     loading.value = true;
     err.value = null;
     try {
-        await std(`/api/config`, {
-            method: 'PUT',
+        const { error: reqError } = await server.PUT('/api/config', {
             body: config.value
         });
+        if (reqError) throw new Error(reqError.message);
+
         edit.value = false;
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
         console.error('Failed to save Geofence config:', error);
     }
     loading.value = false;

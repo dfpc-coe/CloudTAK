@@ -29,7 +29,7 @@ import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
 
-import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, MapConfig } from '../types.ts';
+import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, ConfigMap } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
@@ -47,6 +47,7 @@ export const useMapStore = defineStore('cloudtak', {
 
         _boundOnOnline?: () => void;
         _boundOnOffline?: () => void;
+        _boundOnDeviceOrientation?: (event: DeviceOrientationEvent) => void;
 
         db: DatabaseType;
         channel: BroadcastChannel;
@@ -77,7 +78,7 @@ export const useMapStore = defineStore('cloudtak', {
 
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
-        mapConfig: MapConfig;
+        mapConfig: ConfigMap;
         container?: HTMLElement;
         hasTerrain: boolean;
         hasSnapping: boolean;
@@ -86,6 +87,7 @@ export const useMapStore = defineStore('cloudtak', {
         isLoaded: boolean;
         isOpen: boolean;
         isOnline: boolean;
+        userOrientationMode: boolean;
         pitch: number;
         bearing: number;
         selected: Map<string, COT>;
@@ -136,6 +138,7 @@ export const useMapStore = defineStore('cloudtak', {
             isOpen: false,
             isLoaded: false,
             isOnline: navigator.onLine,
+            userOrientationMode: false,
             pitch: 0,
             bearing: 0,
             mission: undefined,
@@ -190,6 +193,13 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (this._boundOnOnline) window.removeEventListener('online', this._boundOnOnline);
             if (this._boundOnOffline) window.removeEventListener('offline', this._boundOnOffline);
+            if (this._boundOnDeviceOrientation) {
+                if ('ondeviceorientationabsolute' in (window as unknown as Record<string, unknown>)) {
+                    window.removeEventListener('deviceorientationabsolute', this._boundOnDeviceOrientation as EventListener);
+                } else {
+                    window.removeEventListener('deviceorientation', this._boundOnDeviceOrientation as EventListener);
+                }
+            }
 
             // Clean up GPS watch
             if (this.gpsWatchId !== null) {
@@ -431,8 +441,29 @@ export const useMapStore = defineStore('cloudtak', {
             this.isOnline = navigator.onLine;
             this._boundOnOnline = (): void => { this.isOnline = true; };
             this._boundOnOffline = (): void => { this.isOnline = false; };
+            this._boundOnDeviceOrientation = (event: DeviceOrientationEvent): void => {
+                if (!this.userOrientationMode) return;
+                
+                let heading: number | null = null;
+                const iOSEvent = event as DeviceOrientationEvent & { webkitCompassHeading?: number };
+                if (iOSEvent.webkitCompassHeading !== undefined) {
+                    heading = iOSEvent.webkitCompassHeading;
+                } else if (event.alpha !== null) {
+                    heading = 360 - event.alpha;
+                }
+                
+                if (heading !== null && this.map) {
+                    this.map.setBearing(heading);
+                }
+            };
+
             window.addEventListener('online', this._boundOnOnline);
             window.addEventListener('offline', this._boundOnOffline);
+            if ('ondeviceorientationabsolute' in (window as unknown as Record<string, unknown>)) {
+                window.addEventListener('deviceorientationabsolute', this._boundOnDeviceOrientation as EventListener);
+            } else {
+                window.addEventListener('deviceorientation', this._boundOnDeviceOrientation as EventListener);
+            }
 
             await this.worker.init(localStorage.token);
 
