@@ -29,7 +29,7 @@ import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
 
-import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, MapConfig } from '../types.ts';
+import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, ConfigMap } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
@@ -78,7 +78,7 @@ export const useMapStore = defineStore('cloudtak', {
 
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
-        mapConfig: MapConfig;
+        mapConfig: ConfigMap;
         container?: HTMLElement;
         hasTerrain: boolean;
         hasSnapping: boolean;
