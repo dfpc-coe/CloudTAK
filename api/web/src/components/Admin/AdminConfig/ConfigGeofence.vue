@@ -92,7 +92,11 @@ const loading = ref(false);
 const edit = ref(false);
 const err = ref<Error | null>(null);
 
-const config = ref<Record<string, boolean | string>>({
+const config = ref<{
+    'geofence::enabled': boolean;
+    'geofence::url': string;
+    'geofence::password': string;
+}>({
     'geofence::enabled': false,
     'geofence::url': '',
     'geofence::password': '',

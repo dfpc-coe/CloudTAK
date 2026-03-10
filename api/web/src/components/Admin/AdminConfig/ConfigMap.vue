@@ -165,7 +165,7 @@ async function save() {
         payload['map::center'] = payload['map::center'].split(',').reverse().join(',');
 
         const res = await server.PUT('/api/config', {
-            body: payload
+            body: payload as any
         });
         if (res.error) throw new Error(res.error.message);
         edit.value = false;
