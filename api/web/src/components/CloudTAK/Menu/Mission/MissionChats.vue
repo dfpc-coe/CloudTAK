@@ -14,7 +14,7 @@
         <template #default>
             <GenericChat
                 :chats='chats || []'
-                :my-u-i-d='myUID'
+                :myUID='my-u-i-d'
                 :loading='loading'
                 :error='error'
                 :can-send='true'
