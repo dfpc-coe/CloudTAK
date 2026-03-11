@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.99.0 - 2026-03-11
+
+- :rocket: Don't hardcode 256 size DEM tiles (@lucaswoj)
+- :rocket: Add an escape hatch to nuke service worker if loading takes > 20s
+
 ### v12.98.0 - 2026-03-10
 
 - :tada: Track Course & Heading information via Device Orientation API
