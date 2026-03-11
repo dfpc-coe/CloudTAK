@@ -212,27 +212,55 @@ export default class SubscriptionFeature {
             skipNetwork?: boolean
         } = {}
     ): Promise<void> {
-        await db.subscription_feature.put({
-            id: cot.id,
-            mission: this.parent.guid,
-            path: cot.path,
-            properties: cot.properties,
-            geometry: cot.geometry,
-        });
+        if (cot.properties.type === 'b-t-f') {
+            const chat = cot.properties.chat as {
+                chatroom: string;
+                id: string;
+                senderCallsign: string;
+                messageId?: string;
+            } | undefined;
+
+            if (chat) {
+                await db.subscription_chat.put({
+                    id: cot.id,
+                    mission: this.parent.guid,
+                    chatroom: chat.chatroom,
+                    sender: chat.senderCallsign || String(cot.properties.callsign || ''),
+                    sender_uid: chat.id,
+                    message: String(cot.properties.remarks || ''),
+                    created: String(cot.properties.start || cot.properties.time || new Date().toISOString()),
+                    unread: !!opts.skipNetwork,
+                });
+            }
+        } else {
+            await db.subscription_feature.put({
+                id: cot.id,
+                mission: this.parent.guid,
+                path: cot.path,
+                properties: cot.properties,
+                geometry: cot.geometry,
+            });
+        }
 
         await this.parent.update({
             dirty: true
         })
 
-        const feat = cot.as_feature({
-            clone: true
-        });
-
-        feat.properties.dest = [{
-            'mission-guid': this.parent.guid
-        }];
-
         if (!opts.skipNetwork) {
+            const feat = cot.as_feature({
+                clone: true
+            });
+
+            if (cot.properties.type === 'b-t-f') {
+                feat.properties.dest = [{
+                    mission: this.parent.name
+                }];
+            } else {
+                feat.properties.dest = [{
+                    'mission-guid': this.parent.guid
+                }];
+            }
+
             await atlas.conn.sendCOT(feat);
         }
     }
