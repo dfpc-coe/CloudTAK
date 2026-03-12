@@ -2,6 +2,7 @@ import { db } from './database.ts';
 import type { DBSubscriptionChat } from './database.ts';
 import { liveQuery, type Observable } from 'dexie';
 import type Atlas from '../workers/atlas.ts';
+import type { Remote } from 'comlink';
 
 /**
  * High Level Wrapper around Mission Chat messages stored in the local Dexie DB.
@@ -52,7 +53,7 @@ export default class SubscriptionChat {
     async send(
         message: string,
         sender: { uid: string; callsign: string },
-        worker: Atlas
+        worker: Remote<Atlas>
     ): Promise<void> {
         const id = crypto.randomUUID();
         const created = new Date().toISOString();
@@ -68,6 +69,8 @@ export default class SubscriptionChat {
             unread: false,
         });
 
+        const location = (await worker.profile?.location)?.coordinates || [0, 0];
+
         await worker.conn.sendCOT({
             chatroom: this.name,
             from: {
@@ -81,7 +84,7 @@ export default class SubscriptionChat {
             message: message,
             messageId: id,
             time: created,
-            location: worker.profile?.location?.coordinates || [0, 0]
+            location
         }, 'chat');
     }
 }
