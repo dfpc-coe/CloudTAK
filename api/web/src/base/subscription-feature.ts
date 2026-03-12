@@ -52,19 +52,55 @@ export default class SubscriptionFeature {
                 await COT.style(feat);
             }
 
-            await db.transaction('rw', db.subscription_feature, async () => {
+            const mapFeatures = list.features.filter((f) => f.properties.type !== 'b-t-f');
+            const chatFeatures = list.features.filter((f) => f.properties.type === 'b-t-f');
+
+            await db.transaction('rw', db.subscription_feature, db.subscription_chat, async () => {
                 await db.subscription_feature
                     .where('mission')
                     .equals(this.parent.guid)
                     .delete();
 
-                for (const feature of list.features) {
+                for (const feature of mapFeatures) {
                     await db.subscription_feature.put({
                         id: feature.id,
                         mission: this.parent.guid,
                         path: feature.path,
                         properties: feature.properties,
                         geometry: feature.geometry,
+                    });
+                }
+
+                const unreadChats = new Set(
+                    await db.subscription_chat
+                        .where('mission')
+                        .equals(this.parent.guid)
+                        .filter(c => c.unread === true)
+                        .primaryKeys()
+                );
+
+                await db.subscription_chat
+                    .where('mission')
+                    .equals(this.parent.guid)
+                    .delete();
+
+                for (const feature of chatFeatures) {
+                    const chat = feature.properties.chat as {
+                        chatroom: string;
+                        id: string;
+                        senderCallsign: string;
+                        messageId?: string;
+                    } | undefined;
+                    if (!chat) continue;
+                    await db.subscription_chat.put({
+                        id: feature.id,
+                        mission: this.parent.guid,
+                        chatroom: chat.chatroom,
+                        sender: chat.senderCallsign || String(feature.properties.callsign || ''),
+                        sender_uid: chat.id,
+                        message: String(feature.properties.remarks || ''),
+                        created: String(feature.properties.start || feature.properties.time || new Date().toISOString()),
+                        unread: unreadChats.has(feature.id),
                     });
                 }
             });
@@ -176,27 +212,55 @@ export default class SubscriptionFeature {
             skipNetwork?: boolean
         } = {}
     ): Promise<void> {
-        await db.subscription_feature.put({
-            id: cot.id,
-            mission: this.parent.guid,
-            path: cot.path,
-            properties: cot.properties,
-            geometry: cot.geometry,
-        });
+        if (cot.properties.type === 'b-t-f') {
+            const chat = cot.properties.chat as {
+                chatroom: string;
+                id: string;
+                senderCallsign: string;
+                messageId?: string;
+            } | undefined;
+
+            if (chat) {
+                await db.subscription_chat.put({
+                    id: cot.id,
+                    mission: this.parent.guid,
+                    chatroom: chat.chatroom,
+                    sender: chat.senderCallsign || String(cot.properties.callsign || ''),
+                    sender_uid: chat.id,
+                    message: String(cot.properties.remarks || ''),
+                    created: String(cot.properties.start || cot.properties.time || new Date().toISOString()),
+                    unread: !!opts.skipNetwork,
+                });
+            }
+        } else {
+            await db.subscription_feature.put({
+                id: cot.id,
+                mission: this.parent.guid,
+                path: cot.path,
+                properties: cot.properties,
+                geometry: cot.geometry,
+            });
+        }
 
         await this.parent.update({
             dirty: true
         })
 
-        const feat = cot.as_feature({
-            clone: true
-        });
-
-        feat.properties.dest = [{
-            'mission-guid': this.parent.guid
-        }];
-
         if (!opts.skipNetwork) {
+            const feat = cot.as_feature({
+                clone: true
+            });
+
+            if (cot.properties.type === 'b-t-f') {
+                feat.properties.dest = [{
+                    mission: this.parent.name
+                }];
+            } else {
+                feat.properties.dest = [{
+                    'mission-guid': this.parent.guid
+                }];
+            }
+
             await atlas.conn.sendCOT(feat);
         }
     }

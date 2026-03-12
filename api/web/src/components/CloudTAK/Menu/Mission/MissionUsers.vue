@@ -4,6 +4,7 @@
         :back='false'
         :border='false'
         :loading='loading'
+        :standalone='false'
     >
         <template #buttons>
             <TablerDropdown

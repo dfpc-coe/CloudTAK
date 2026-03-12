@@ -198,6 +198,24 @@
                         :size='32'
                         stroke='1'
                     /></label>
+
+                    <input
+                        id='chats'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='route.name === "home-menu-mission-chats"'
+                        @click='router.replace(`/menu/missions/${route.params.mission}/chats`)'
+                    >
+                    <label
+                        for='chats'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconMessage
+                        v-tooltip='"Chats"'
+                        :size='32'
+                        stroke='1'
+                    /></label>
                 </div>
 
                 <Suspense>
@@ -239,6 +257,7 @@ import {
     IconFiles,
     IconInfoSquare,
     IconUsers,
+    IconMessage,
 } from '@tabler/icons-vue';
 import {
     TablerAlert,

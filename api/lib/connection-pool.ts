@@ -239,7 +239,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
                     for (const client of (this.config.wsClients.get(String(conn.id)) || [])) {
                         if (client.format == 'geojson') {
-                            if (feat.properties && feat.properties.chat) {
+
+                            if (feat.properties && feat.properties.chat && feat.properties.chat.parent !== 'DataSyncMissionsList') {
                                 client.ws.send(JSON.stringify({
                                     type: 'chat',
                                     connection: conn.id,
