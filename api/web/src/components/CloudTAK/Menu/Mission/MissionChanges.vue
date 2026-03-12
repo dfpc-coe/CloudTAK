@@ -5,6 +5,7 @@
         :back='false'
         :border='false'
         :loading='!changes'
+        :standalone='false'
     >
         <TablerAlert
             v-if='error'

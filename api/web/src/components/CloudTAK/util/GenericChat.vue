@@ -124,7 +124,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch, onMounted, nextTick } from 'vue';
 import {
     IconSend,
     IconArrowDown,
@@ -179,6 +179,11 @@ watch(() => props.chats, async (newChats) => {
         scrollToBottom();
     }
 }, { deep: false });
+
+onMounted(async () => {
+    await nextTick();
+    scrollToBottom();
+});
 
 function onScroll() {
     const el = scrollContainer.value;

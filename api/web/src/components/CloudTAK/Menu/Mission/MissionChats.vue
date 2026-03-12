@@ -4,6 +4,7 @@
         :zindex='0'
         :back='false'
         :border='false'
+        :standalone='false'
     >
         <template #buttons>
             <TablerRefreshButton

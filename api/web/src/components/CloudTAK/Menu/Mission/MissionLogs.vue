@@ -5,6 +5,7 @@
         :back='false'
         :border='false'
         :loading='!logs'
+        :standalone='false'
     >
         <template #buttons>
             <TablerIconButton>

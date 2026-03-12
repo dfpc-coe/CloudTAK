@@ -1,7 +1,7 @@
 <template>
     <div
         class='w-100 px-0 d-flex flex-column'
-        style='height: calc(100vh - 64px)'
+        :style='standalone ? "height: calc(100vh - 64px)" : ""'
     >
         <div
             class='col-12 bg-dark flex-shrink-0'
@@ -53,7 +53,8 @@
         </div>
 
         <div
-            class='row mx-0 d-flex flex-row overflow-y-auto overflow-x-hidden align-content-start flex-grow-1'
+            class='row mx-0 d-flex flex-row overflow-x-hidden align-content-start'
+            :class='standalone ? "overflow-y-auto flex-grow-1" : ""'
         >
             <TablerLoading
                 v-if='loading'
@@ -111,6 +112,10 @@ const props = defineProps({
     none: {
         type: Boolean,
         default: false,
+    },
+    standalone: {
+        type: Boolean,
+        default: true,
     }
 });
 
