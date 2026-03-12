@@ -129,6 +129,17 @@ export interface DBSubscriptionChanges extends MissionChange {
     mission: string;
 }
 
+export interface DBSubscriptionChat {
+    id: string;
+    mission: string;
+    chatroom: string;
+    sender: string;
+    sender_uid: string;
+    message: string;
+    created: string;
+    unread: boolean;
+}
+
 export interface DBSubscription {
     guid: string;
     name: string;
@@ -202,6 +213,7 @@ export type DatabaseType = Dexie & {
     server: EntityTable<DBServer, '_id'>,
     subscription_log: EntityTable<DBSubscriptionLog, 'id'>,
     subscription_feature: EntityTable<DBSubscriptionFeature, 'id'>,
+    subscription_chat: EntityTable<DBSubscriptionChat, 'id'>,
     mission_template: EntityTable<DBMissionTemplate, 'id'>,
     mission_template_log: EntityTable<DBMissionTemplateLog, 'id'>,
     profile: EntityTable<DBProfileConfig, 'key'>,
@@ -234,6 +246,7 @@ db.version(1).stores({
 
     subscription: 'guid, name',
     subscription_log: 'id, [mission+id]',
+    subscription_chat: 'id, mission, [mission+id]',
     subscription_feature: 'id, mission, [mission+id]',
     subscription_contents: 'uid, mission, [mission+uid]',
     subscription_changes: '++id, mission',

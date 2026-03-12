@@ -6,6 +6,7 @@ import type {
 } from '../types.ts'
 import type { DBChatroomChat } from './database.ts';
 import type Atlas from '../workers/atlas.ts';
+import type { Remote } from 'comlink';
 import ContactManager from './contact.ts';
 
 export default class ChatroomChats {
@@ -19,6 +20,7 @@ export default class ChatroomChats {
 
     async refresh(): Promise<void> {
         const url = stdurl(`/api/profile/chatroom/${encodeURIComponent(this.chatroom)}/chat`);
+        url.searchParams.append('limit', '50');
 
         const list = await std(url) as ProfileChatList;
 
@@ -77,7 +79,7 @@ export default class ChatroomChats {
     async send(
         message: string,
         sender: { uid: string, callsign: string },
-        worker: Atlas,
+        worker: Remote<Atlas>,
         recipient?: { uid: string, callsign: string }
     ): Promise<void> {
         const id = crypto.randomUUID();
@@ -125,6 +127,8 @@ export default class ChatroomChats {
 
         if (!recipient) throw new Error('Error sending Chat - Contact is not defined');
 
+        const location = (await worker.profile?.location)?.coordinates || [0, 0];
+
         await worker.conn.sendCOT({
             chatroom: this.chatroom,
             from: {
@@ -135,7 +139,7 @@ export default class ChatroomChats {
             message: message,
             messageId: id,
             time: created,
-            location: worker.profile?.location?.coordinates || [0, 0]
+            location
         }, 'chat');
     }
 }

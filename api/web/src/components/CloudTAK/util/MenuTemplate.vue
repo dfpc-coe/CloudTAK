@@ -1,7 +1,8 @@
 <template>
     <div
         class='w-100 px-0 d-flex flex-column'
-        style='height: calc(100vh - 64px)'
+        :class='standalone ? "" : "flex-grow-1"'
+        :style='standalone ? "height: calc(100vh - 64px)" : "min-height: 0"'
     >
         <div
             class='col-12 bg-dark flex-shrink-0'
@@ -53,7 +54,9 @@
         </div>
 
         <div
-            class='row mx-0 d-flex flex-row overflow-y-auto overflow-x-hidden align-content-start flex-grow-1'
+            class='d-flex flex-column overflow-x-hidden flex-grow-1'
+            :class='scroll ? "overflow-y-auto" : "overflow-hidden"'
+            :style='standalone ? "" : "min-height: 0"'
         >
             <TablerLoading
                 v-if='loading'
@@ -111,6 +114,14 @@ const props = defineProps({
     none: {
         type: Boolean,
         default: false,
+    },
+    standalone: {
+        type: Boolean,
+        default: true,
+    },
+    scroll: {
+        type: Boolean,
+        default: true,
     }
 });
 

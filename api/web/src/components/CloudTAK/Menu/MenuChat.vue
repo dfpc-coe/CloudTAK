@@ -2,6 +2,7 @@
     <MenuTemplate
         :name='name'
         :loading='loading'
+        :scroll='false'
     >
         <template #buttons>
             <TablerIconButton
@@ -22,7 +23,8 @@
             <TablerLoading v-if='loading' />
             <div
                 v-else
-                class='d-flex flex-column h-100 overflow-hidden'
+                class='d-flex flex-column flex-grow-1 overflow-hidden'
+                style='min-height: 0'
             >
                 <div
                     ref='scrollContainer'
@@ -49,7 +51,8 @@
                                     v-if='item.sender_uid !== id'
                                     class='bg-blue px-2 py-2 rounded'
                                 >
-                                    <div class='fw-bold small mb-1'>
+                                    <div class='fw-bold small mb-1 d-flex align-items-center gap-1'>
+                                        <IconUser :size='14' stroke='1.5' />
                                         <span v-text='item.sender || "Unknown"' />
                                     </div>
                                     <div v-text='item.message' />
@@ -122,6 +125,7 @@ import {
     IconListCheck,
     IconSend,
     IconArrowDown,
+    IconUser,
 } from '@tabler/icons-vue';
 import {
     TablerRefreshButton,
@@ -291,6 +295,9 @@ async function fetchChats() {
     }
 
     loading.value = false;
+
+    await nextTick();
+    scrollToBottom();
 }
 
 function formatTime(iso) {
