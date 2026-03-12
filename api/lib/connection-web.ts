@@ -25,6 +25,9 @@ export class ConnectionWebSocket {
                         if (msg.data.location && msg.data.location[0] !== 0 && msg.data.location[1] !== 0) {
                             chat.position(msg.data.location);
                         }
+                        if (msg.data.mission) {
+                            chat.addDest({ mission: msg.data.mission });
+                        }
                         client.tak.write([chat]);
 
                         const feat = await CoTParser.to_geojson(chat);

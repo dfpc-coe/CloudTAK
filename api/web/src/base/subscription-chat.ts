@@ -73,6 +73,7 @@ export default class SubscriptionChat {
 
         await worker.conn.sendCOT({
             chatroom: this.name,
+            parent: 'DataSyncMissionsList',
             from: {
                 uid: sender.uid,
                 callsign: sender.callsign
@@ -81,6 +82,7 @@ export default class SubscriptionChat {
                 uid: this.name,
                 callsign: this.name
             },
+            mission: this.name,
             message: message,
             messageId: id,
             time: created,
