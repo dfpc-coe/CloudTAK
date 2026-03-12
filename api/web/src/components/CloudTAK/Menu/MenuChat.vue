@@ -2,6 +2,7 @@
     <MenuTemplate
         :name='name'
         :loading='loading'
+        :scroll='false'
     >
         <template #buttons>
             <TablerIconButton
@@ -22,7 +23,8 @@
             <TablerLoading v-if='loading' />
             <div
                 v-else
-                class='d-flex flex-column h-100 overflow-hidden'
+                class='d-flex flex-column flex-grow-1 overflow-hidden'
+                style='min-height: 0'
             >
                 <div
                     ref='scrollContainer'
@@ -293,6 +295,9 @@ async function fetchChats() {
     }
 
     loading.value = false;
+
+    await nextTick();
+    scrollToBottom();
 }
 
 function formatTime(iso) {
