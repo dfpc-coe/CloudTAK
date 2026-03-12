@@ -16,21 +16,22 @@
                 >
             </div>
             <TablerLoading desc='Loading Map State' />
-            <div
-                class='text-center mt-3'
-                :style='{ opacity: showReset ? 1 : 0, transition: "opacity 1s ease-in" }'
-            >
-                <button
-                    class='btn btn-danger'
-                    :disabled='!showReset'
-                    @click='hardReset'
+            <Transition name='reset-fade'>
+                <div
+                    v-if='showReset'
+                    class='text-center mt-3'
                 >
-                    Hard Reset
-                </button>
-                <div class='text-muted mt-1' style='font-size: 0.8rem;'>
-                    If loading has stalled, click to clear the cache and reload.
+                    <button
+                        class='btn btn-danger'
+                        @click='hardReset'
+                    >
+                        Hard Reset
+                    </button>
+                    <div class='text-muted mt-1' style='font-size: 0.8rem;'>
+                        If loading has stalled, click to clear the cache and reload.
+                    </div>
                 </div>
-            </div>
+            </Transition>
         </div>
     </TablerModal>
 </template>
@@ -73,3 +74,12 @@ onUnmounted(() => {
     clearTimeout(resetTimer);
 });
 </script>
+
+<style scoped>
+.reset-fade-enter-active {
+    transition: opacity 1s ease-in;
+}
+.reset-fade-enter-from {
+    opacity: 0;
+}
+</style>
