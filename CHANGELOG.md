@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.99.1 - 2026-03-12
+
+- :bug: Fix bug in sending Data Sync Chat messages
+
 ### v12.99.0 - 2026-03-11
 
 - :rocket: Don't hardcode 256 size DEM tiles (@lucaswoj)
