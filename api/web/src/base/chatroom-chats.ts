@@ -19,6 +19,7 @@ export default class ChatroomChats {
 
     async refresh(): Promise<void> {
         const url = stdurl(`/api/profile/chatroom/${encodeURIComponent(this.chatroom)}/chat`);
+        url.searchParams.append('limit', '50');
 
         const list = await std(url) as ProfileChatList;
 
