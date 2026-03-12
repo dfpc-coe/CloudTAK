@@ -1,6 +1,6 @@
 import { Static } from '@sinclair/typebox'
 import { randomUUID } from 'node:crypto';
-import { DirectChat, CoTParser }  from '@tak-ps/node-cot';
+import { DirectChat, MissionChat, CoTParser }  from '@tak-ps/node-cot';
 import type { Feature }  from '@tak-ps/node-cot';
 import { WebSocket } from 'ws';
 import { ConnectionClient } from './connection-pool.js';
@@ -21,13 +21,39 @@ export class ConnectionWebSocket {
                     const msg = JSON.parse(String(data));
 
                     if (msg.type === 'chat') {
-                        const chat = new DirectChat(msg.data);
+                        let chat: DirectChat | MissionChat;
+
+                        if (msg.data.mission) {
+                            const serverUrl = new URL(client.config.config.server.url);
+                            const apiUrl = new URL(String(client.config.config.server.api));
+                            const protocol = serverUrl.protocol.replace(':', '');
+                            const hostname = apiUrl.hostname;
+                            const port = apiUrl.port;
+                            const missionId = `${hostname}-${port}-${protocol}-${msg.data.chatroom}`;
+
+                            chat = new MissionChat({
+                                from: {
+                                    uid: msg.data.from.uid,
+                                },
+                                mission: {
+                                    name: msg.data.chatroom,
+                                    id: missionId,
+                                    guid: msg.data.guid
+                                },
+                                senderCallsign: msg.data.from.callsign,
+                                message: msg.data.message,
+                                messageId: msg.data.messageId,
+                                parent: msg.data.parent,
+                                groupOwner: msg.data.groupOwner
+                            });
+                        } else {
+                            chat = new DirectChat(msg.data);
+                        }
+
                         if (msg.data.location && msg.data.location[0] !== 0 && msg.data.location[1] !== 0) {
                             chat.position(msg.data.location);
                         }
-                        if (msg.data.mission) {
-                            chat.addDest({ mission: msg.data.mission });
-                        }
+
                         client.tak.write([chat]);
 
                         const feat = await CoTParser.to_geojson(chat);
