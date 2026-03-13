@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.100.1 - 2026-03-13
+
+- :rocket: Use `body` for POST request in OAuth Password Grant
+
 ### v12.100.0 - 2026-03-13
 
 - :arrow_up: Update Vite@8
