@@ -64,11 +64,10 @@
     </div>
 </template>
 
-<script setup>
-const props = defineProps({
-    overlay: {
-        type: Object,
-        required: true
-    }
-});
+<script setup lang="ts">
+import type { TileJSON } from '../../types.js';
+
+const props = defineProps<{
+    overlay: TileJSON;
+}>();
 </script>
