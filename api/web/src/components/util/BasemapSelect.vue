@@ -115,7 +115,7 @@ import {
 import type { Basemap, BasemapList } from '../../types.ts';
 
 const props = withDefaults(defineProps<{
-    modelValue: number | string | null;
+    modelValue?: number | string | null;
     disabled?: boolean;
 }>(), {
     modelValue: null,

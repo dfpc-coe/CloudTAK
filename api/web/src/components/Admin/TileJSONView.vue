@@ -56,7 +56,7 @@
                         Tile URL
                     </div>
                     <div class='datagrid-content text-break'>
-                        {{ props.overlay.url }}
+                        {{ props.overlay.tiles[0] }}
                     </div>
                 </div>
             </div>
