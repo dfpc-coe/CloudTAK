@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.101.0 - 2026-03-13
+
+- :tada: Surface initial breadcrumb functionality in the PluginAPI
+- :rocket: Create Generic Bottom Pane to allow better interactions on mobile vs desktop
+
 ### v12.100.1 - 2026-03-13
 
 - :rocket: Use `body` for POST request in OAuth Password Grant
