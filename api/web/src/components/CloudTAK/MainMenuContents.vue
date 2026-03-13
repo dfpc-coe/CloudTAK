@@ -316,7 +316,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, computed, watch, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch, onBeforeUnmount } from 'vue';
 import {
     IconX,
     IconUser,
@@ -353,10 +353,14 @@ const mapStore = useMapStore();
 
 const logo = ref('/CloudTAKLogo.svg');
 
+let alive = false;
+onMounted(() => { alive = true; });
+onUnmounted(() => { alive = false; });
+
 onMounted(async () => {
     const config = await Config.list(['login::logo']);
 
-    if (config['login::logo']) {
+    if (alive && config['login::logo']) {
         logo.value = config['login::logo'];
     }
 });
@@ -454,18 +458,19 @@ onMounted(async () => {
         const pkg = await navigator.serviceWorker.getRegistration();
         if (pkg && pkg.active) {
             const url = new URL(pkg.active.scriptURL);
-            if (url.searchParams.get('v')) {
+            if (alive && url.searchParams.get('v')) {
                 version.value = String(url.searchParams.get('v'));
             }
         }
     }
 
-    if (!version.value) {
+    if (alive && !version.value) {
         version.value = (await mapStore.worker.profile.loadServer()).version;
     }
 
+    if (!alive) return;
     const usernameConfig = await ProfileConfig.get('username');
-    if (usernameConfig) {
+    if (alive && usernameConfig) {
         username.value = usernameConfig.value;
     }
 })

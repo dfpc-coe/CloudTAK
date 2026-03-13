@@ -34,17 +34,9 @@
                 @done='mapStore.toImport = []'
             />
 
-            <div
-                v-if='mode === "SetLocation"'
-                class='position-absolute bottom-0 text-white bg-dark rounded-top'
-                style='
-                    z-index: 1;
-                    left: calc(50% - 250px);
-                    width: 500px;
-                '
-            >
+            <GenericBottomPane v-if='mode === "SetLocation"'>
                 <div
-                    class='card user-select-none'
+                    class='card user-select-none text-white bg-dark rounded-top'
                 >
                     <div class='card-header'>
                         <div class='col-8'>
@@ -79,7 +71,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </GenericBottomPane>
             <div
                 class='position-absolute bottom-0 begin-0 text-white'
                 style='
@@ -468,6 +460,7 @@ import Notifications from './Notifications.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
 import DrawTools from './DrawTools.vue';
+import GenericBottomPane from './GenericBottomPane.vue';
 import type { MapGeoJSONFeature, LngLatLike, MapMouseEvent } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
 import {
