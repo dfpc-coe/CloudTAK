@@ -17,7 +17,7 @@
                 v-if='props.locationPicker'
                 class='btn btn-icon location-picker-btn'
                 :class='pickingLocation ? "btn-primary" : "btn-dark"'
-                :title='pickingLocation ? "Click on map to select location (Escape to cancel)" : "Select location on map"'
+                :title='pickingLocation ? "Click on map to select location" : "Select location on map"'
                 @click='pickingLocation ? cancelPickingLocation() : startPickingLocation()'
             >
                 <IconCrosshair
