@@ -120,7 +120,11 @@
             stroke-width='2'
             stroke-linecap='round'
             stroke-linejoin='round'
-        ><path stroke='none' d='M0 0h24v24H0z' fill='none' /><path d='M12 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' /><path d='M6 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' /><path d='M18 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' /><path d='M6 8v2a2 2 0 0 0 2 2h4a2 2 0 0 0 2 -2v-2' /><path d='M12 12l0 4' /></symbol>
+        ><path
+            stroke='none'
+            d='M0 0h24v24H0z'
+            fill='none'
+        /><path d='M12 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' /><path d='M6 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' /><path d='M18 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' /><path d='M6 8v2a2 2 0 0 0 2 2h4a2 2 0 0 0 2 -2v-2' /><path d='M12 12l0 4' /></symbol>
         <symbol
             id='radial-geometry-split'
             viewBox='0 0 24 24'
@@ -129,7 +133,11 @@
             stroke-width='2'
             stroke-linecap='round'
             stroke-linejoin='round'
-        ><path stroke='none' d='M0 0h24v24H0z' fill='none' /><path d='M6 7m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0' /><path d='M6 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0' /><path d='M8.5 8.5l7.5 7.5' /><path d='M8.5 15.5l7.5 -7.5' /></symbol>
+        ><path
+            stroke='none'
+            d='M0 0h24v24H0z'
+            fill='none'
+        /><path d='M6 7m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0' /><path d='M6 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0' /><path d='M8.5 8.5l7.5 7.5' /><path d='M8.5 15.5l7.5 -7.5' /></symbol>
         <symbol
             id='radial-buffer'
             viewBox='0 0 24 24'
@@ -138,7 +146,20 @@
             stroke-width='2'
             stroke-linecap='round'
             stroke-linejoin='round'
-        ><path stroke='none' d='M0 0h24v24H0z' fill='none' /><circle cx='12' cy='12' r='4' /><circle cx='12' cy='12' r='9' stroke-dasharray='2 2' /></symbol>
+        ><path
+            stroke='none'
+            d='M0 0h24v24H0z'
+            fill='none'
+        /><circle
+            cx='12'
+            cy='12'
+            r='4'
+        /><circle
+            cx='12'
+            cy='12'
+            r='9'
+            stroke-dasharray='2 2'
+        /></symbol>
     </svg>
 </template>
 

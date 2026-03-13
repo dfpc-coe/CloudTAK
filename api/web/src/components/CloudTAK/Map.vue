@@ -447,14 +447,20 @@
                                     type='number'
                                     class='form-control'
                                     min='1'
-                                />
+                                >
                                 <select
                                     v-model='buffer.unit'
                                     class='form-select'
                                 >
-                                    <option value='meters'>meters</option>
-                                    <option value='kilometers'>kilometers</option>
-                                    <option value='miles'>miles</option>
+                                    <option value='meters'>
+                                        meters
+                                    </option>
+                                    <option value='kilometers'>
+                                        kilometers
+                                    </option>
+                                    <option value='miles'>
+                                        miles
+                                    </option>
                                 </select>
                             </div>
                         </div>
@@ -464,12 +470,16 @@
                             type='button'
                             class='btn'
                             @click='buffer.shown = false'
-                        >Cancel</button>
+                        >
+                            Cancel
+                        </button>
                         <button
                             type='button'
                             class='btn btn-primary'
                             @click='applyBuffer'
-                        >Apply</button>
+                        >
+                            Apply
+                        </button>
                     </div>
                 </TablerModal>
             </template>
