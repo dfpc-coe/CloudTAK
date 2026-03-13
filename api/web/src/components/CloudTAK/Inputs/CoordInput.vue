@@ -55,7 +55,7 @@ import {
     TablerModal,
 } from '@tak-ps/vue-tabler';
 import type { LngLatLike } from 'maplibre-gl'
-import { useMapStore } from '../../stores/map.ts';
+import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
 const emit = defineEmits([ 'close' ]);
