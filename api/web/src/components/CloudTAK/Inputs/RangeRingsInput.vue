@@ -127,9 +127,9 @@
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
 import { ref, toRaw, computed, onMounted } from 'vue'
-import Coordinate from './util/Coordinate.vue';
-import PropertyDistance from './util/PropertyDistance.vue';
-import ProfileConfig from '../../base/profile.ts';
+import Coordinate from '../util/Coordinate.vue';
+import PropertyDistance from '../util/PropertyDistance.vue';
+import ProfileConfig from '../../../base/profile.ts';
 import Ellipse from '@turf/ellipse'
 import {
     IconPlus,
@@ -145,7 +145,7 @@ import {
     TablerSlidedown
 } from '@tak-ps/vue-tabler';
 import type { LngLatLike } from 'maplibre-gl'
-import { useMapStore } from '../../stores/map.ts';
+import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
 const emit = defineEmits([ 'close' ]);

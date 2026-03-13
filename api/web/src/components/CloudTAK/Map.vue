@@ -425,6 +425,12 @@
                 />
             </template>
 
+            <BufferInput
+                v-if='bufferCotId'
+                :cot-id='bufferCotId'
+                @close='bufferCotId = null'
+            />
+
             <template v-if='upload.shown'>
                 <TablerModal>
                     <div class='modal-status bg-red' />
@@ -451,7 +457,8 @@
 </template>
 
 <script setup lang='ts'>
-import GeoJSONInput from './GeoJSONInput.vue';
+import GeoJSONInput from './Inputs/GeoJSONInput.vue';
+import BufferInput from './Inputs/BufferInput.vue';
 import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import {useRoute, useRouter } from 'vue-router';
 import ActiveMission from './ActiveMission.vue';
@@ -491,6 +498,10 @@ import {
 } from '@tak-ps/vue-tabler';
 import { LocationState } from '../../base/events.ts';
 import TAKNotification from '../../base/notification.ts';
+import { v4 as randomUUID } from 'uuid';
+import { lineString as turfLineString, point as turfPoint } from '@turf/helpers';
+import nearestPointOnLine from '@turf/nearest-point-on-line';
+import lineSplit from '@turf/line-split';
 import COT from '../../base/cot.ts';
 import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -530,6 +541,8 @@ const upload = ref({
     shown: false,
     dragging: false
 })
+
+const bufferCotId = ref<string | null>(null)
 
 // Interval for pushing GeoJSON Map Updates (CoT)
 const timer = ref<ReturnType<typeof setInterval> | undefined>()
@@ -871,6 +884,72 @@ async function handleRadial(event: string): Promise<void> {
         // @ts-expect-error Figure out geometry.coordinates type
         router.push(`/query/${encodeURIComponent(mapStore.radial.cot.geometry.coordinates.join(','))}`);
         closeRadial()
+    } else if (event === 'cot:geometry-buffer') {
+        bufferCotId.value = mapStore.radial.cot.properties.id || String(mapStore.radial.cot.id);
+        closeRadial();
+    } else if (event === 'cot:geometry-split') {
+        const cotFeat = await mapStore.worker.db.get(
+            mapStore.radial.cot.properties.id || String(mapStore.radial.cot.id),
+            { mission: true }
+        );
+
+        if (!cotFeat) throw new Error('Cannot find COT to split');
+        if (cotFeat.geometry.type !== 'LineString') throw new Error('Can only split LineString geometries');
+
+        const line = turfLineString(cotFeat.geometry.coordinates as [number, number][]);
+        const click = turfPoint([mapStore.radial.lngLat!.lng, mapStore.radial.lngLat!.lat]);
+
+        // Snap click to the nearest point exactly on the line, then split there
+        const snapped = nearestPointOnLine(line, click);
+        const split = lineSplit(line, snapped);
+
+        if (split.features.length < 2) {
+            closeRadial();
+            throw new Error('Cannot split: click point is too close to a line endpoint');
+        }
+
+        const coordsA = split.features[0].geometry.coordinates as [number, number][];
+        const coordsB = split.features[1].geometry.coordinates as [number, number][];
+
+        const now = new Date();
+        const idA = randomUUID();
+        const idB = randomUUID();
+
+        const baseProps = { ...cotFeat.properties };
+
+        const featA: Feature = {
+            id: idA,
+            type: 'Feature',
+            path: cotFeat.path || '/',
+            properties: {
+                ...baseProps,
+                id: idA,
+                callsign: `${cotFeat.properties.callsign} (1)`,
+                time: now.toISOString(),
+                start: now.toISOString(),
+            },
+            geometry: { type: 'LineString', coordinates: coordsA }
+        };
+
+        const featB: Feature = {
+            id: idB,
+            type: 'Feature',
+            path: cotFeat.path || '/',
+            properties: {
+                ...baseProps,
+                id: idB,
+                callsign: `${cotFeat.properties.callsign} (2)`,
+                time: now.toISOString(),
+                start: now.toISOString(),
+            },
+            geometry: { type: 'LineString', coordinates: coordsB }
+        };
+
+        closeRadial();
+        await mapStore.worker.db.remove(String(cotFeat.id), { mission: true });
+        await mapStore.worker.db.add(featA, { authored: true });
+        await mapStore.worker.db.add(featB, { authored: true });
+        await mapStore.refresh();
     } else {
         closeRadial()
         throw new Error(`Unimplemented Radial Action: ${event}`);

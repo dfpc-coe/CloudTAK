@@ -48,14 +48,14 @@
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
 import { ref, toRaw } from 'vue'
-import Coordinate from './util/Coordinate.vue';
-import CoordinateType from './util/CoordinateType.vue';
+import Coordinate from '../util/Coordinate.vue';
+import CoordinateType from '../util/CoordinateType.vue';
 import {
     TablerInput,
     TablerModal,
 } from '@tak-ps/vue-tabler';
 import type { LngLatLike } from 'maplibre-gl'
-import { useMapStore } from '../../stores/map.ts';
+import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
 const emit = defineEmits([ 'close' ]);

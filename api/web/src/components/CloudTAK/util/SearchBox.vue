@@ -2,16 +2,36 @@
     <div
         class='text-white bg-dark rounded position-relative'
     >
-        <TablerInput
-            ref='searchBoxRef'
-            v-model='query.filter'
-            :label='props.label'
-            :autofocus='props.autofocus'
-            class='mt-0'
-            :placeholder='props.placeholder'
-            icon='search'
-            @focus='selected = false'
-        />
+        <div class='d-flex align-items-end gap-1'>
+            <TablerInput
+                ref='searchBoxRef'
+                v-model='query.filter'
+                :label='props.label'
+                :autofocus='props.autofocus'
+                class='mt-0 flex-grow-1'
+                :placeholder='props.placeholder'
+                icon='search'
+                @focus='selected = false'
+            />
+            <button
+                v-if='props.locationPicker'
+                class='btn btn-icon location-picker-btn'
+                :class='pickingLocation ? "btn-primary" : "btn-dark"'
+                :title='pickingLocation ? "Click on map to select location" : "Select location on map"'
+                @click='pickingLocation ? cancelPickingLocation() : startPickingLocation()'
+            >
+                <IconCrosshair
+                    :size='18'
+                    stroke='1'
+                />
+            </button>
+        </div>
+        <div
+            v-if='pickingLocation'
+            class='text-muted small mt-1 px-1'
+        >
+            Click on the map to select a location
+        </div>
 
         <div
             class='dropdown-menu w-100 mt-2 p-2'
@@ -81,9 +101,10 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconMapPin
+    IconMapPin,
+    IconCrosshair
 } from '@tabler/icons-vue';
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onUnmounted } from 'vue';
 
 const props = defineProps({
     label: {
@@ -97,6 +118,10 @@ const props = defineProps({
     placeholder: {
         type: String,
         default: 'Search...'
+    },
+    locationPicker: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -106,6 +131,43 @@ const emit = defineEmits(['select']);
 
 const selected = ref(false);
 const partialLoading = ref(false);
+const pickingLocation = ref(false);
+
+function startPickingLocation(): void {
+    pickingLocation.value = true;
+    selected.value = true;
+    mapStore.map.getCanvas().style.cursor = 'crosshair';
+
+    mapStore.map.once('click', onMapClick);
+}
+
+function cancelPickingLocation(): void {
+    pickingLocation.value = false;
+    mapStore.map.getCanvas().style.cursor = '';
+    mapStore.map.off('click', onMapClick);
+}
+
+function onMapClick(e: { lngLat: { lng: number, lat: number } }): void {
+    pickingLocation.value = false;
+    mapStore.map.getCanvas().style.cursor = '';
+
+    const { lng, lat } = e.lngLat;
+    const label = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    query.value.filter = label;
+    selected.value = true;
+
+    emit('select', {
+        name: label,
+        coordinates: [lng, lat]
+    });
+}
+
+onUnmounted(() => {
+    if (pickingLocation.value) {
+        mapStore.map.getCanvas().style.cursor = '';
+        mapStore.map.off('click', onMapClick);
+    }
+});
 
 const shown = computed(() => {
     if (query.value.filter.length > 0 && !selected.value) {
@@ -309,6 +371,14 @@ async function fetchSearch(
     height: 3rem;
     min-width: 3rem;
     min-height: 3rem;
+    flex-shrink: 0;
+}
+
+.location-picker-btn {
+    height: 2.375rem;
+    width: 2.375rem;
+    min-width: 2.375rem;
+    padding: 0;
     flex-shrink: 0;
 }
 </style>
