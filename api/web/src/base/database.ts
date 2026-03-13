@@ -28,6 +28,7 @@ export interface DBBreadcrumb {
     callsign: string;
     color?: string;
     coordinates: number[][];
+    live: boolean;       // whether live breadcrumb recording is currently enabled
 }
 
 export interface DBChatroom {
@@ -237,7 +238,7 @@ db.version(1).stores({
     config: 'key',
     cache: 'key',
 
-    breadcrumb: 'id, uid',
+    breadcrumb: 'id, uid, live',
 
     chatroom: 'id',
     chatroom_chats: 'id, chatroom',

@@ -34,6 +34,13 @@ export default class AtlasBreadcrumb {
             this.enabled.delete(uid);
             this.pending.delete(uid);
         }
+
+        // Persist live state to DB so it survives page reloads
+        const trackId = `${uid}.track`;
+        const existing = await db.breadcrumb.get(trackId);
+        if (existing) {
+            await db.breadcrumb.put({ ...existing, live: enabled });
+        }
     }
 
     /**
@@ -45,19 +52,26 @@ export default class AtlasBreadcrumb {
 
     /**
      * Returns all CoT UIDs that currently have live breadcrumb recording enabled.
+     * Queries the persistent Dexie store so the result survives page reloads.
      */
     async listEnabled(): Promise<string[]> {
-        return Array.from(this.enabled);
+        const rows = await db.breadcrumb.where('live').equals(1).toArray();
+        return rows.map((r) => r.uid);
     }
 
     /**
      * On startup, restore all persisted breadcrumb LineStrings from Dexie
      * into the in-memory cots Map so they are rendered on the map.
+     * Also restores the in-memory `enabled` Set from entries that have live: true.
      */
     async load(): Promise<void> {
         const all = await db.breadcrumb.toArray();
 
         for (const entry of all) {
+            if (entry.live) {
+                this.enabled.add(entry.uid);
+            }
+
             if (entry.coordinates.length < 2) continue;
 
             const feature: InputFeature = this._buildFeature(
@@ -169,6 +183,7 @@ export default class AtlasBreadcrumb {
                 callsign,
                 color,
                 coordinates: seedCoords,
+                live: this.enabled.has(uid),
             });
 
             await this.db.add(
@@ -209,6 +224,7 @@ export default class AtlasBreadcrumb {
                     callsign: cot.properties.callsign,
                     color,
                     coordinates,
+                    live: true,
                 });
 
                 await this.db.add(
