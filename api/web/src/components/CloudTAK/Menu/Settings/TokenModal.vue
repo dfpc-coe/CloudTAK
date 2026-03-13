@@ -10,7 +10,7 @@
         <div class='modal-header'>
             <div
                 class='modal-title'
-                v-text='token.id ? "Edit Token" : "New Token"'
+                v-text='"id" in token ? "Edit Token" : "New Token"'
             />
 
             <div class='ms-auto btn-list'>
@@ -59,52 +59,59 @@
     </TablerModal>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import { std } from '/src/std.ts';
+<script setup lang="ts">
+import { reactive, ref } from 'vue';
+import { server } from '../../../../std.ts';
+import type { ProfileToken } from '../../../../types.ts';
 import {
     TablerModal,
     TablerInput,
     TablerDelete
-} from '@tak-ps/vue-tabler'
+} from '@tak-ps/vue-tabler';
 
-const props = defineProps({
-    token: {
-        type: Object,
-        required: true
-    }
-});
+const props = defineProps<{
+    token: ProfileToken | Record<string, never>;
+}>();
 
-const emit = defineEmits([
-    'close',
-    'refresh'
-]);
+const emit = defineEmits(['close', 'refresh']);
 
-const code = ref(false);
-const editToken = ref(props.token.id ? JSON.parse(JSON.stringify(props.token)) : { name: '' });
+const code = ref<string | false>(false);
+const editToken = reactive<{ id?: number; name: string }>(
+    'id' in props.token
+        ? JSON.parse(JSON.stringify(props.token))
+        : { name: '' }
+);
 
 async function deleteToken() {
-    await std(`/api/profile/token/${props.token.id}`, {
-        method: 'DELETE',
+    if (!('id' in props.token)) return;
+
+    const res = await server.DELETE('/api/profile/token/{:id}', {
+        params: { path: { ':id': props.token.id } }
     });
+
+    if (res.error) throw new Error(res.error.message);
 
     emit('refresh');
 }
 
 async function saveToken() {
-    if (props.token.id) {
-        await std(`/api/profile/token/${props.token.id}`, {
-            method: 'PATCH',
-            body: editToken.value
-        });
-        emit('refresh');
-    } else {
-        const newtoken = await std('/api/profile/token', {
-            method: 'POST',
-            body: editToken.value
+    if ('id' in props.token) {
+        const res = await server.PATCH('/api/profile/token/{:id}', {
+            params: { path: { ':id': props.token.id } },
+            body: { name: editToken.name }
         });
 
-        code.value = newtoken.token;
+        if (res.error) throw new Error(res.error.message);
+
+        emit('refresh');
+    } else {
+        const res = await server.POST('/api/profile/token', {
+            body: { name: editToken.name }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        code.value = res.data.token;
     }
 }
 </script>
