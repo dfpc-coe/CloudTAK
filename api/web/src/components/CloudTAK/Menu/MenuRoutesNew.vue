@@ -26,6 +26,7 @@
                         label='Start Location'
                         placeholder='Start Location'
                         :autofocus='true'
+                        :location-picker='true'
                         @select='routePlan.start = $event || null'
                     />
                 </div>
@@ -34,6 +35,7 @@
                         label='End Location'
                         placeholder='End Location'
                         :autofocus='false'
+                        :location-picker='true'
                         @select='routePlan.end = $event || null'
                     />
                 </div>

@@ -425,6 +425,55 @@
                 />
             </template>
 
+            <template v-if='buffer.shown'>
+                <TablerModal>
+                    <div class='modal-header'>
+                        <div class='modal-title'>
+                            Buffer Geometry
+                        </div>
+                        <button
+                            type='button'
+                            class='btn-close'
+                            aria-label='Close'
+                            @click='buffer.shown = false'
+                        />
+                    </div>
+                    <div class='modal-body'>
+                        <div class='mb-3'>
+                            <label class='form-label'>Radius</label>
+                            <div class='input-group'>
+                                <input
+                                    v-model.number='buffer.radius'
+                                    type='number'
+                                    class='form-control'
+                                    min='1'
+                                />
+                                <select
+                                    v-model='buffer.unit'
+                                    class='form-select'
+                                >
+                                    <option value='meters'>meters</option>
+                                    <option value='kilometers'>kilometers</option>
+                                    <option value='miles'>miles</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='modal-footer'>
+                        <button
+                            type='button'
+                            class='btn'
+                            @click='buffer.shown = false'
+                        >Cancel</button>
+                        <button
+                            type='button'
+                            class='btn btn-primary'
+                            @click='applyBuffer'
+                        >Apply</button>
+                    </div>
+                </TablerModal>
+            </template>
+
             <template v-if='upload.shown'>
                 <TablerModal>
                     <div class='modal-status bg-red' />
@@ -491,6 +540,11 @@ import {
 } from '@tak-ps/vue-tabler';
 import { LocationState } from '../../base/events.ts';
 import TAKNotification from '../../base/notification.ts';
+import { v4 as randomUUID } from 'uuid';
+import { lineString as turfLineString, point as turfPoint } from '@turf/helpers';
+import nearestPointOnLine from '@turf/nearest-point-on-line';
+import lineSplit from '@turf/line-split';
+import turfBuffer from '@turf/buffer';
 import COT from '../../base/cot.ts';
 import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -529,6 +583,18 @@ const searchBoxShown = ref(false);
 const upload = ref({
     shown: false,
     dragging: false
+})
+
+const buffer = ref<{
+    shown: boolean;
+    radius: number;
+    unit: 'meters' | 'kilometers' | 'miles';
+    cotId: string | null;
+}>({
+    shown: false,
+    radius: 100,
+    unit: 'meters',
+    cotId: null
 })
 
 // Interval for pushing GeoJSON Map Updates (CoT)
@@ -871,10 +937,120 @@ async function handleRadial(event: string): Promise<void> {
         // @ts-expect-error Figure out geometry.coordinates type
         router.push(`/query/${encodeURIComponent(mapStore.radial.cot.geometry.coordinates.join(','))}`);
         closeRadial()
+    } else if (event === 'cot:geometry-buffer') {
+        buffer.value.cotId = mapStore.radial.cot.properties.id || String(mapStore.radial.cot.id);
+        buffer.value.shown = true;
+        closeRadial();
+    } else if (event === 'cot:geometry-split') {
+        const cotFeat = await mapStore.worker.db.get(
+            mapStore.radial.cot.properties.id || String(mapStore.radial.cot.id),
+            { mission: true }
+        );
+
+        if (!cotFeat) throw new Error('Cannot find COT to split');
+        if (cotFeat.geometry.type !== 'LineString') throw new Error('Can only split LineString geometries');
+
+        const line = turfLineString(cotFeat.geometry.coordinates as [number, number][]);
+        const click = turfPoint([mapStore.radial.lngLat!.lng, mapStore.radial.lngLat!.lat]);
+
+        // Snap click to the nearest point exactly on the line, then split there
+        const snapped = nearestPointOnLine(line, click);
+        const split = lineSplit(line, snapped);
+
+        if (split.features.length < 2) {
+            closeRadial();
+            throw new Error('Cannot split: click point is too close to a line endpoint');
+        }
+
+        const coordsA = split.features[0].geometry.coordinates as [number, number][];
+        const coordsB = split.features[1].geometry.coordinates as [number, number][];
+
+        const now = new Date();
+        const idA = randomUUID();
+        const idB = randomUUID();
+
+        const baseProps = { ...cotFeat.properties };
+
+        const featA: Feature = {
+            id: idA,
+            type: 'Feature',
+            path: cotFeat.path || '/',
+            properties: {
+                ...baseProps,
+                id: idA,
+                callsign: `${cotFeat.properties.callsign} (1)`,
+                center: coordsA[0],
+                time: now.toISOString(),
+                start: now.toISOString(),
+            },
+            geometry: { type: 'LineString', coordinates: coordsA }
+        };
+
+        const featB: Feature = {
+            id: idB,
+            type: 'Feature',
+            path: cotFeat.path || '/',
+            properties: {
+                ...baseProps,
+                id: idB,
+                callsign: `${cotFeat.properties.callsign} (2)`,
+                center: coordsB[0],
+                time: now.toISOString(),
+                start: now.toISOString(),
+            },
+            geometry: { type: 'LineString', coordinates: coordsB }
+        };
+
+        closeRadial();
+        await mapStore.worker.db.remove(String(cotFeat.id), { mission: true });
+        await mapStore.worker.db.add(featA, { authored: true });
+        await mapStore.worker.db.add(featB, { authored: true });
+        await mapStore.refresh();
     } else {
         closeRadial()
         throw new Error(`Unimplemented Radial Action: ${event}`);
     }
+}
+
+async function applyBuffer(): Promise<void> {
+    if (!buffer.value.cotId || buffer.value.radius <= 0) return;
+
+    const cotFeat = await mapStore.worker.db.get(buffer.value.cotId, { mission: true });
+    if (!cotFeat) throw new Error('Cannot find COT to buffer');
+
+    buffer.value.shown = false;
+    buffer.value.cotId = null;
+
+    const buffered = turfBuffer(cotFeat.geometry, buffer.value.radius, { units: buffer.value.unit });
+    if (!buffered) throw new Error('Buffer operation produced no result');
+
+    const now = new Date();
+    const id = randomUUID();
+
+    const ring = buffered.geometry.type === 'Polygon'
+        ? buffered.geometry.coordinates[0] as [number, number][]
+        : buffered.geometry.coordinates[0][0] as [number, number][];
+    const centerLng = ring.reduce((s, c) => s + c[0], 0) / ring.length;
+    const centerLat = ring.reduce((s, c) => s + c[1], 0) / ring.length;
+
+    const feat: Feature = {
+        id,
+        type: 'Feature',
+        path: cotFeat.path || '/',
+        properties: {
+            ...cotFeat.properties,
+            id,
+            callsign: `${cotFeat.properties.callsign} (Buffer)`,
+            type: 'u-d-f',
+            center: [centerLng, centerLat],
+            time: now.toISOString(),
+            start: now.toISOString(),
+        },
+        geometry: buffered.geometry
+    };
+
+    await mapStore.worker.db.add(feat, { authored: true });
+    await mapStore.refresh();
 }
 
 async function mountMap(): Promise<void> {
