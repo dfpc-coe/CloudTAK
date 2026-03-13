@@ -219,10 +219,11 @@ export default class MockTAKServer {
             if (!request.method || !request.url) {
                 return false;
             } else if (request.method === 'POST' && request.url.startsWith('/oauth/token')) {
-                const url = new URL(request.url, 'http://localhost');
+                const body = (await stream2buffer(request)).toString();
+                const params = new URLSearchParams(body);
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({ access_token: jwt.sign({
-                    sub: url.searchParams.get('username')
+                    sub: params.get('username')
                 }, 'fake-test-token') }))
                 response.end();
                 return true;
