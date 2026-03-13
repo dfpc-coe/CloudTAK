@@ -52,7 +52,10 @@
                                     class='bg-blue px-2 py-2 rounded'
                                 >
                                     <div class='fw-bold small mb-1 d-flex align-items-center gap-1'>
-                                        <IconUser :size='14' stroke='1.5' />
+                                        <IconUser
+                                            :size='14'
+                                            stroke='1.5'
+                                        />
                                         <span v-text='item.sender || "Unknown"' />
                                     </div>
                                     <div v-text='item.message' />
