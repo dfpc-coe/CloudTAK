@@ -425,64 +425,11 @@
                 />
             </template>
 
-            <template v-if='buffer.shown'>
-                <TablerModal>
-                    <div class='modal-header'>
-                        <div class='modal-title'>
-                            Buffer Geometry
-                        </div>
-                        <button
-                            type='button'
-                            class='btn-close'
-                            aria-label='Close'
-                            @click='buffer.shown = false'
-                        />
-                    </div>
-                    <div class='modal-body'>
-                        <div class='mb-3'>
-                            <label class='form-label'>Radius</label>
-                            <div class='input-group'>
-                                <input
-                                    v-model.number='buffer.radius'
-                                    type='number'
-                                    class='form-control'
-                                    min='1'
-                                >
-                                <select
-                                    v-model='buffer.unit'
-                                    class='form-select'
-                                >
-                                    <option value='meters'>
-                                        meters
-                                    </option>
-                                    <option value='kilometers'>
-                                        kilometers
-                                    </option>
-                                    <option value='miles'>
-                                        miles
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class='modal-footer'>
-                        <button
-                            type='button'
-                            class='btn'
-                            @click='buffer.shown = false'
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type='button'
-                            class='btn btn-primary'
-                            @click='applyBuffer'
-                        >
-                            Apply
-                        </button>
-                    </div>
-                </TablerModal>
-            </template>
+            <BufferInput
+                v-if='bufferCotId'
+                :cot-id='bufferCotId'
+                @close='bufferCotId = null'
+            />
 
             <template v-if='upload.shown'>
                 <TablerModal>
@@ -510,7 +457,8 @@
 </template>
 
 <script setup lang='ts'>
-import GeoJSONInput from './GeoJSONInput.vue';
+import GeoJSONInput from './Inputs/GeoJSONInput.vue';
+import BufferInput from './Inputs/BufferInput.vue';
 import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import {useRoute, useRouter } from 'vue-router';
 import ActiveMission from './ActiveMission.vue';
@@ -554,7 +502,6 @@ import { v4 as randomUUID } from 'uuid';
 import { lineString as turfLineString, point as turfPoint } from '@turf/helpers';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 import lineSplit from '@turf/line-split';
-import turfBuffer from '@turf/buffer';
 import COT from '../../base/cot.ts';
 import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -595,17 +542,7 @@ const upload = ref({
     dragging: false
 })
 
-const buffer = ref<{
-    shown: boolean;
-    radius: number;
-    unit: 'meters' | 'kilometers' | 'miles';
-    cotId: string | null;
-}>({
-    shown: false,
-    radius: 100,
-    unit: 'meters',
-    cotId: null
-})
+const bufferCotId = ref<string | null>(null)
 
 // Interval for pushing GeoJSON Map Updates (CoT)
 const timer = ref<ReturnType<typeof setInterval> | undefined>()
@@ -948,8 +885,7 @@ async function handleRadial(event: string): Promise<void> {
         router.push(`/query/${encodeURIComponent(mapStore.radial.cot.geometry.coordinates.join(','))}`);
         closeRadial()
     } else if (event === 'cot:geometry-buffer') {
-        buffer.value.cotId = mapStore.radial.cot.properties.id || String(mapStore.radial.cot.id);
-        buffer.value.shown = true;
+        bufferCotId.value = mapStore.radial.cot.properties.id || String(mapStore.radial.cot.id);
         closeRadial();
     } else if (event === 'cot:geometry-split') {
         const cotFeat = await mapStore.worker.db.get(
@@ -1020,47 +956,6 @@ async function handleRadial(event: string): Promise<void> {
         closeRadial()
         throw new Error(`Unimplemented Radial Action: ${event}`);
     }
-}
-
-async function applyBuffer(): Promise<void> {
-    if (!buffer.value.cotId || buffer.value.radius <= 0) return;
-
-    const cotFeat = await mapStore.worker.db.get(buffer.value.cotId, { mission: true });
-    if (!cotFeat) throw new Error('Cannot find COT to buffer');
-
-    buffer.value.shown = false;
-    buffer.value.cotId = null;
-
-    const buffered = turfBuffer(cotFeat.geometry, buffer.value.radius, { units: buffer.value.unit });
-    if (!buffered) throw new Error('Buffer operation produced no result');
-
-    const now = new Date();
-    const id = randomUUID();
-
-    const ring = buffered.geometry.type === 'Polygon'
-        ? buffered.geometry.coordinates[0] as [number, number][]
-        : buffered.geometry.coordinates[0][0] as [number, number][];
-    const centerLng = ring.reduce((s, c) => s + c[0], 0) / ring.length;
-    const centerLat = ring.reduce((s, c) => s + c[1], 0) / ring.length;
-
-    const feat: Feature = {
-        id,
-        type: 'Feature',
-        path: cotFeat.path || '/',
-        properties: {
-            ...cotFeat.properties,
-            id,
-            callsign: `${cotFeat.properties.callsign} (Buffer)`,
-            type: 'u-d-f',
-            center: [centerLng, centerLat],
-            time: now.toISOString(),
-            start: now.toISOString(),
-        },
-        geometry: buffered.geometry
-    };
-
-    await mapStore.worker.db.add(feat, { authored: true });
-    await mapStore.refresh();
 }
 
 async function mountMap(): Promise<void> {

@@ -162,10 +162,10 @@
 <script setup lang='ts'>
 import { ref } from 'vue';
 import { DrawToolMode } from '../../stores/modules/draw.ts';
-import CoordInput from './CoordInput.vue';
-import RangeRingsInput from './RangeRingsInput.vue';
-import RangeInput from './RangeInput.vue';
-import GeoJSONInput from './GeoJSONInput.vue';
+import CoordInput from './Inputs/CoordInput.vue';
+import RangeRingsInput from './Inputs/RangeRingsInput.vue';
+import RangeInput from './Inputs/RangeInput.vue';
+import GeoJSONInput from './Inputs/GeoJSONInput.vue';
 import {
     IconTarget,
     IconLasso,

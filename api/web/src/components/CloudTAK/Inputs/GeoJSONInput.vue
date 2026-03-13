@@ -109,8 +109,8 @@ import {
     TablerInlineAlert,
     TablerFileInput,
 } from '@tak-ps/vue-tabler';
-import type CoT from '../../base/cot.ts';
-import { useMapStore } from '../../stores/map.ts';
+import type CoT from '../../../base/cot.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import { normalize_geojson } from '@tak-ps/node-cot/normalize_geojson';
 import {
     IconFileImport,
@@ -118,7 +118,7 @@ import {
 import type { LngLatBoundsLike } from 'maplibre-gl';
 import FeatureRow from './util/FeatureRow.vue';
 import { bbox } from '@turf/bbox';
-import type { InputFeature } from '../../types.ts';
+import type { InputFeature } from '../../../types.ts';
 
 const mapStore = useMapStore();
 
@@ -174,11 +174,8 @@ async function uploadGeoJSON() {
                 try {
                     const norm = await normalize_geojson(feat);
 
-                    norm.path = `/${name}/`
-
-                    // TODO Remote once we support the metadata property throughout
-                    // @ts-expect-error The "metadata" property is jamming us up - Once we swithc to node-cot this will be solved
-                    feats.value.push(norm)
+                    // TODO Remove once we support the metadata property throughout
+                    feats.value.push({ ...norm, path: `/${name}/` })
                 } catch (err) {
                     console.error('Error normalizing GeoJSON feature:', feat, err);
                 }
@@ -210,7 +207,7 @@ async function saveToMap() {
         }
     });
 
-    const adding: Array<Promise<CoT>> = feats.value.map(feat =>
+    const adding: Array<Promise<CoT>> = feats.value.map((feat: InputFeature) =>
         mapStore.worker.db.add(JSON.parse(JSON.stringify(feat)), {
             authored: true
         })
