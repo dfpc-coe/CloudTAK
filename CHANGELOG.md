@@ -17,6 +17,13 @@
 
 ### Pending Release
 
+### v12.100.0 - 2026-03-13
+
+- :arrow_up: Update Vite@8
+- :tada: Introduce Line Split & Buffer geometry operations
+- :rocket: Allow Selecting a Start/End Coordinate for a route by clicking on the map
+- :bug: Pin MapLibre@5.19 as features were not updating properly
+
 ### v12.99.1 - 2026-03-12
 
 - :bug: Fix bug in sending Data Sync Chat messages
