@@ -1,12 +1,5 @@
 <template>
-    <div
-        class='position-absolute bottom-0 text-white bg-dark rounded-top'
-        style='
-            z-index: 1;
-            left: calc(50% - 250px);
-            width: 500px;
-        '
-    >
+    <GenericBottomPane>
         <div
             v-if='mapStore.draw.mode === DrawToolMode.POINT'
             class='card user-select-none'
@@ -231,11 +224,12 @@
                 </div>
             </div>
         </div>
-    </div>
+    </GenericBottomPane>
 </template>
 
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue';
+import GenericBottomPane from '../GenericBottomPane.vue';
 import CoordinateType from '../util/CoordinateType.vue';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
 import { useMapStore } from '../../../stores/map.ts';
