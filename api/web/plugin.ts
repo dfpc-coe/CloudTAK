@@ -6,7 +6,7 @@ import type { Pinia } from 'pinia';
 import { useMapStore } from './src/stores/map.ts';
 import { useFloatStore, type PaneConfig } from './src/stores/float.ts';
 import type { MenuItemConfig } from './src/stores/modules/menu.ts';
-import { db, type DBFeature } from './src/base/database.ts';
+import { db, type DBFeature, type DBBreadcrumb } from './src/base/database.ts';
 import { liveQuery } from 'dexie';
 import { from, type Observable } from 'rxjs';
 import mapgl from 'maplibre-gl';
@@ -15,6 +15,7 @@ const FloatingGeneric = defineAsyncComponent(() => import('./src/components/Clou
 
 export type { MenuItemConfig };
 export type { DBFeature };
+export type { DBBreadcrumb };
 
 export interface PluginInstance {
     /**
@@ -173,6 +174,78 @@ export class PluginAPI {
                     return db.feature.toArray();
                 })) as Observable<DBFeature[]>;
             }
+        }
+    }
+
+    /**
+     * Manage Breadcrumb Trails
+     */
+    get breadcrumb() {
+        const mapStore = useMapStore(this.pinia);
+        return {
+            /**
+             * Returns whether live breadcrumb recording is currently enabled for the given UID
+             * @param uid The CoT UID to check
+             */
+            get: (uid: string): Promise<boolean> => {
+                return mapStore.worker.db.breadcrumb.get(uid);
+            },
+            /**
+             * Enable or disable live breadcrumb trail recording for a given CoT UID
+             * @param uid     The CoT UID to toggle
+             * @param enabled True to start recording, false to stop (trail is kept)
+             */
+            set: (uid: string, enabled: boolean): Promise<void> => {
+                return mapStore.worker.db.breadcrumb.set(uid, enabled);
+            },
+            /**
+             * Returns all CoT UIDs that currently have live breadcrumb recording enabled
+             */
+            listEnabled: (): Promise<string[]> => {
+                return mapStore.worker.db.breadcrumb.listEnabled();
+            },
+            /**
+             * Merge historical coordinates into the breadcrumb trail for a given CoT UID
+             * @param uid         The CoT UID whose trail should be updated
+             * @param coordinates Ordered array of [lng, lat] (or [lng, lat, alt]) positions
+             */
+            merge: (uid: string, coordinates: number[][]): Promise<void> => {
+                return mapStore.worker.db.breadcrumb.merge(uid, coordinates);
+            },
+            /**
+             * List breadcrumb trails from the local database
+             * @param opts Filter options
+             */
+            list: (opts: {
+                uid?: string;
+                filter?: (breadcrumb: DBBreadcrumb) => boolean;
+            } = {}): Promise<DBBreadcrumb[]> => {
+                if (opts.uid) {
+                    return db.breadcrumb.where('uid').equals(opts.uid).toArray();
+                }
+                if (opts.filter) {
+                    return db.breadcrumb.filter(opts.filter).toArray();
+                }
+                return db.breadcrumb.toArray();
+            },
+            /**
+             * Stream breadcrumb trails from the local database
+             * @param opts Filter options
+             */
+            stream: (opts: {
+                uid?: string;
+                filter?: (breadcrumb: DBBreadcrumb) => boolean;
+            } = {}): Observable<DBBreadcrumb[]> => {
+                return from(liveQuery(() => {
+                    if (opts.uid) {
+                        return db.breadcrumb.where('uid').equals(opts.uid).toArray();
+                    }
+                    if (opts.filter) {
+                        return db.breadcrumb.filter(opts.filter).toArray();
+                    }
+                    return db.breadcrumb.toArray();
+                })) as Observable<DBBreadcrumb[]>;
+            },
         }
     }
 
