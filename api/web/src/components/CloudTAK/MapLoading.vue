@@ -27,7 +27,10 @@
                     >
                         Hard Reset
                     </button>
-                    <div class='text-muted mt-1' style='font-size: 0.8rem;'>
+                    <div
+                        class='text-muted mt-1'
+                        style='font-size: 0.8rem;'
+                    >
                         If loading has stalled, click to clear the cache and reload.
                     </div>
                 </div>

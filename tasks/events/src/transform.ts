@@ -14,9 +14,10 @@ import Tippecanoe from './tippecanoe.ts';
 import KML from './transforms/kml.ts';
 import Translate from './transforms/translate.ts';
 import GeoJSON from './transforms/geojson.ts';
+import MBTiles from './transforms/mbtiles.ts';
 import { createImportResult } from './api.ts';
 
-const FORMATS = [KML, Translate, GeoJSON];
+const FORMATS = [KML, Translate, GeoJSON, MBTiles];
 const formats = new Map();
 
 // TODO load all conversion files from a directory

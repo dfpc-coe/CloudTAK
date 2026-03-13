@@ -99,9 +99,9 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import {
     IconTrash
 } from '@tabler/icons-vue';
@@ -112,36 +112,44 @@ import {
     TablerPager,
     TablerInlineAlert
 } from '@tak-ps/vue-tabler';
+import type { Basemap, BasemapList } from '../../types.ts';
 
-const props = defineProps({
-    modelValue: {
-        type: [Number, String],
-        default: null
-    },
-    disabled: {
-        type: Boolean,
-        default: false
-    }
+const props = withDefaults(defineProps<{
+    modelValue: number | string | null;
+    disabled?: boolean;
+}>(), {
+    modelValue: null,
+    disabled: false
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+    'update:modelValue': [value: number | string | null];
+}>();
 
-const loading = ref({
+const loading = ref<{
+    init: boolean;
+    list: boolean;
+}>({
     init: false,
     list: false
 });
 
-const err = ref(null);
-const selected = ref(null);
+const err = ref<Error | null>(null);
+const selected = ref<Basemap | null>(null);
 
-const paging = ref({
+const paging = ref<{
+    filter: string;
+    limit: number;
+    page: number;
+}>({
     filter: '',
     limit: 10,
     page: 0
 });
 
-const list = ref({
+const list = ref<BasemapList>({
     total: 0,
+    collections: [],
     items: []
 });
 
@@ -171,7 +179,7 @@ onMounted(async () => {
     }
 });
 
-async function fetchSelected() {
+async function fetchSelected(): Promise<void> {
     err.value = null;
     if (!props.modelValue) {
         selected.value = null;
@@ -179,27 +187,37 @@ async function fetchSelected() {
     }
 
     loading.value.init = true;
-    try {
-        const url = stdurl(`/api/basemap/${props.modelValue}`);
-        selected.value = await std(url);
-    } catch (e) {
-        err.value = e;
+    const { data, error } = await server.GET('/api/basemap/{:basemapid}', {
+        params: { path: { ':basemapid': Number(props.modelValue) } }
+    });
+    if (error) {
+        err.value = new Error(String(error));
         await fetchList();
+    } else if (typeof data !== 'string') {
+        selected.value = data;
     }
     loading.value.init = false;
 }
 
-async function fetchList() {
+async function fetchList(): Promise<void> {
     loading.value.list = true;
-    try {
-        const url = stdurl('/api/basemap');
-        url.searchParams.set('limit', paging.value.limit);
-        url.searchParams.set('page', paging.value.page);
-        url.searchParams.set('filter', paging.value.filter);
-        const res = await std(url);
-        list.value = res;
-    } catch (err) {
-        console.error(err);
+    const { data, error } = await server.GET('/api/basemap', {
+        params: {
+            query: {
+                limit: paging.value.limit,
+                page: paging.value.page,
+                filter: paging.value.filter,
+                overlay: false,
+                order: 'asc',
+                sort: 'name',
+                hidden: 'false'
+            }
+        }
+    });
+    if (error) {
+        console.error(error);
+    } else {
+        list.value = data;
     }
     loading.value.list = false;
 }
