@@ -48,8 +48,8 @@
 <script setup lang='ts'>
 import { v4 as randomUUID } from 'uuid';
 import { ref, toRaw } from 'vue'
-import Coordinate from './util/Coordinate.vue';
-import CoordinateType from './util/CoordinateType.vue';
+import Coordinate from '../util/Coordinate.vue';
+import CoordinateType from '../util/CoordinateType.vue';
 import {
     TablerInput,
     TablerModal,

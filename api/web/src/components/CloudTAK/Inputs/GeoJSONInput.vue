@@ -116,7 +116,7 @@ import {
     IconFileImport,
 } from '@tabler/icons-vue';
 import type { LngLatBoundsLike } from 'maplibre-gl';
-import FeatureRow from './util/FeatureRow.vue';
+import FeatureRow from '../util/FeatureRow.vue';
 import { bbox } from '@turf/bbox';
 import type { InputFeature } from '../../../types.ts';
 
