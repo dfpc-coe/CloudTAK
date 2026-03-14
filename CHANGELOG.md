@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.102.3 - 2026-03-14
+
+- :arrow_up: Update Core Deps
+
 ### v12.102.2 - 2026-03-14
 
 - :bug: More aggressive deletion of underlying WebWorker
