@@ -23,7 +23,7 @@
 
             <div class='col-12 col-md-6 pe-md-1'>
                 <CopyField
-                    :model-value='!isNaN(l.minzoom ?? NaN) ? l.minzoom : "Not Set"'
+                    :model-value='typeof l.minzoom === "number" ? l.minzoom : "Not Set"'
                     :edit='!disabled'
                     :hover='!disabled'
                     @update:model-value='l.minzoom = !isNaN(parseInt($event)) ? parseInt($event) : undefined'
@@ -31,7 +31,7 @@
             </div>
             <div class='col-12 col-md-6 ps-md-1'>
                 <CopyField
-                    :model-value='!isNaN(l.maxzoom ?? NaN) ? l.maxzoom : "Not Set"'
+                    :model-value='typeof l.maxzoom === "number" ? l.maxzoom : "Not Set"'
                     :edit='!disabled'
                     :hover='!disabled'
                     @update:model-value='l.maxzoom = !isNaN(parseInt($event)) ? parseInt($event) : undefined'
@@ -70,8 +70,9 @@
                 >
                     <template v-if='p === "visibility"'>
                         <TablerToggle
-                            v-model='l.layout[p]'
+                            :model-value='(l.layout as Record<string, boolean>)[p]'
                             :label='p'
+                            @update:model-value='(l.layout as Record<string, boolean>)[p] = $event'
                         />
                     </template>
                     <template v-else>
@@ -125,12 +126,13 @@
                     </template>
                     <template v-else-if='!isNaN(Number(l.paint[p]))'>
                         <TablerRange
-                            v-model='l.paint[p]'
+                            :model-value='(l.paint as Record<string, number>)[p]'
                             class='w-100'
                             label='Opacity'
                             :min='0'
                             :max='1'
                             :step='0.1'
+                            @update:model-value='(l.paint as Record<string, number>)[p] = $event'
                         >
                             <span
                                 class='float-right'
@@ -166,12 +168,13 @@
                     </template>
                     <template v-else-if='!isNaN(Number(l.paint[p]))'>
                         <TablerRange
-                            v-model='l.paint[p]'
+                            :model-value='(l.paint as Record<string, number>)[p]'
                             class='w-100'
                             label='Width'
                             :min='1'
                             :max='10'
                             :step='1'
+                            @update:model-value='(l.paint as Record<string, number>)[p] = $event'
                         >
                             <span
                                 class='float-right'

@@ -115,7 +115,7 @@ const props = withDefaults(defineProps<{
 
 const selected = ref<Set<string | number>>(new Set());
 
-interface GenericSelectExpose {
+export interface GenericSelectExpose {
   selected: Set<string | number>;
 }
 

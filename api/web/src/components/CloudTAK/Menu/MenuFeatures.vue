@@ -158,7 +158,7 @@
                                         />
                                     </TablerIconButton>
                                     <TablerDelete
-                                        displaytype='Icon'
+                                        displaytype='icon'
                                         :size='20'
                                         @delete='deletePath(path)'
                                     />

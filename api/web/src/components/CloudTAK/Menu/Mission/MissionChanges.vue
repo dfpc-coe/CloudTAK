@@ -135,7 +135,7 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import StandardItem from '@/components/CloudTAK/util/StandardItem.vue';
+import StandardItem from '../../util/StandardItem.vue';
 
 const props = defineProps<{
     subscription: Subscription

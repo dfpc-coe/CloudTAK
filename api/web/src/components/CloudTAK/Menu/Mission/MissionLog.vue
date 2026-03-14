@@ -39,7 +39,7 @@
                                         label='Log Time'
                                         type='datetime-local'
                                         :model-value='dtgEdit ?? toDatetimeLocal(log.dtg)'
-                                        @update:model-value='dtgEdit = $event'
+                                        @update:model-value='dtgEdit = String($event)'
                                     />
                                     <div class='d-flex justify-content-end gap-2 mt-2'>
                                         <button

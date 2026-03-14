@@ -1,5 +1,22 @@
 /// <reference types="vite/client" />
 
+declare module 'dropzone/dist/dropzone.mjs' {
+    interface DropzoneOptions {
+        autoProcessQueue?: boolean;
+        addRemoveLinks?: boolean;
+        url?: string;
+        [key: string]: unknown;
+    }
+
+    class Dropzone {
+        constructor(selector: string | Element, options?: DropzoneOptions);
+        on(event: string, callback: (file: File) => void): this;
+        destroy(): void;
+    }
+
+    export default Dropzone;
+}
+
 interface ImportMetaEnv {
   readonly HASH: string
 }

@@ -51,7 +51,7 @@
     </TablerModal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { std, stdurl } from '../../../../std.ts';

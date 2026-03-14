@@ -83,10 +83,9 @@
                     />
                 </div>
                 <div class='col-12'>
-                    <TablerEnum
+                    <TablerToggle
                         v-model='profile.display_icon_rotation'
                         label='Rotate Icons with Course'
-                        :options='[true, false]'
                     />
                 </div>
                 <div class='col-12 d-flex py-3'>
@@ -111,6 +110,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import type { Profile } from '../../../types.ts';
 import {
     TablerEnum,
+    TablerToggle,
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../../stores/map.ts';
 import ProfileConfig from '../../../base/profile.ts';
