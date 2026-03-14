@@ -193,11 +193,7 @@
                     label='Layer Selection'
                     description='Features will be selected from the chosen layer.'
                     default='CoT Icons'
-                    :options='
-                        mapStore.overlays
-                            .filter(overlay => overlay.actions.feature.includes("query") || overlay.id === -1)
-                            .map(overlay => overlay.name)
-                    '
+                    :options='filteredOverlayNames'
                 />
             </div>
         </div>
@@ -228,7 +224,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import GenericBottomPane from '../GenericBottomPane.vue';
 import CoordinateType from '../util/CoordinateType.vue';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
@@ -253,6 +249,13 @@ import {
 const mapStore = useMapStore();
 
 const opened = ref(false);
+
+const filteredOverlayNames = computed((): string[] => {
+    type O = { id: number; actions: { feature: string[] }; name: string };
+    return (mapStore.overlays as unknown as O[])
+        .filter(o => o.actions.feature.includes('query') || o.id === -1)
+        .map(o => o.name);
+});
 
 onMounted(async () => {
     if (mapStore.hasSnapping && (mapStore.draw.mode === DrawToolMode.LINESTRING || mapStore.draw.mode === DrawToolMode.SNAPPING)) {

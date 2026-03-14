@@ -53,140 +53,112 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import {
-    TablerIconButton
-} from '@tak-ps/vue-tabler';
-import {
-    IconX
-} from '@tabler/icons-vue';
+import { TablerIconButton } from '@tak-ps/vue-tabler';
+import { IconX } from '@tabler/icons-vue';
 
-// Props
-const props = defineProps({
-    disabled: {
-        type: Boolean,
-        default: false
-    },
-    modelValue: {
-        type: Array,
-        default: () => [],
-    },
-    validate: {
-        type: [String, Function, Object],
-        default: ""
-    },
-    addTagOnKeys: {
-        type: Array,
-        default: () => [
-            13, // Enter
-            188, // Comma ','
-            32, // Space
-        ]
-    },
-    placeholder: {
-        type: String,
-        default: ''
-    },
-    limit: {
-        type: Number,
-        default: -1
-    },
-    tagLength: {
-        type: Number,
-        default: -1
-    },
-    allowDuplicates: {
-        type: Boolean,
-        default: false
-    },
-    addTagOnBlur: {
-        type: Boolean,
-        default: false
-    },
+type ValidateFn = (value: string) => string | false;
+type ValidateProp = string | ValidateFn | RegExp;
+
+interface Props {
+    disabled?: boolean;
+    modelValue?: string[];
+    validate?: ValidateProp;
+    addTagOnKeys?: number[];
+    placeholder?: string;
+    limit?: number;
+    tagLength?: number;
+    allowDuplicates?: boolean;
+    addTagOnBlur?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+    disabled: false,
+    modelValue: () => [],
+    validate: '',
+    addTagOnKeys: () => [13, 188, 32],
+    placeholder: '',
+    limit: -1,
+    tagLength: -1,
+    allowDuplicates: false,
+    addTagOnBlur: false,
 });
 
-// Emits
-const emit = defineEmits(['update:modelValue', 'on-limit', 'on-error', 'on-focus', 'on-blur']);
+const emit = defineEmits<{
+    'update:modelValue': [value: string[]];
+    'on-limit': [];
+    'on-error': [error: Error];
+    'on-focus': [event: FocusEvent];
+    'on-blur': [event: FocusEvent | KeyboardEvent];
+}>();
 
-// State
 const isInputActive = ref(false);
-const error = ref(false);
+const error = ref<string | null>(null);
 const newTag = ref('');
-const innerTags = ref([]);
-const tagEntryEl = ref(null); // Template ref
+const innerTags = ref<string[]>([]);
+const tagEntryEl = ref<HTMLElement | null>(null);
 
-// Computed
 const isLimit = computed(() => {
-    const limitReached = props.limit > 0 && Number(props.limit) === innerTags.value.length;
-    if (limitReached) {
-        emit('on-limit');
-    }
+    const limitReached = props.limit > 0 && props.limit === innerTags.value.length;
+    if (limitReached) emit('on-limit');
     return limitReached;
 });
 
-// Watchers
 watch(() => props.modelValue, (value) => {
     if (JSON.stringify(value) !== JSON.stringify(innerTags.value)) {
         innerTags.value = [...value];
     }
 }, { deep: true, immediate: true });
 
-
-// Methods
-function focusNewTag() {
-    if (tagEntryEl.value) {
-        const input = tagEntryEl.value.querySelector(".tag-entry-new-tag");
-        if (input) {
-            input.focus();
-        }
-    }
+function focusNewTag(): void {
+    const input = tagEntryEl.value?.querySelector<HTMLElement>('.tag-entry-new-tag');
+    input?.focus();
 }
 
-function handleInputFocus(event) {
+function handleInputFocus(event: FocusEvent): void {
     isInputActive.value = true;
     emit('on-focus', event);
 }
 
-function handleInputBlur(e) {
+function handleInputBlur(e: FocusEvent): void {
     isInputActive.value = false;
-    if (props.addTagOnBlur) {
-        addNew(e);
-    }
+    if (props.addTagOnBlur) addNew(e);
     emit('on-blur', e);
 }
 
-function addNew(e) {
-    const keyShouldAddTag = e ? props.addTagOnKeys.indexOf(e.keyCode) !== -1 : true;
-    const typeIsNotBlur = e && e.type !== "blur";
+function addNew(e?: KeyboardEvent | FocusEvent): void {
+    const keyShouldAddTag = e instanceof KeyboardEvent
+        ? props.addTagOnKeys.indexOf(e.keyCode) !== -1
+        : e == null;
+    const typeIsNotBlur = e != null && e.type !== 'blur';
 
     if (isLimit.value) {
         makeItError('Exceeds max number of tags');
         return;
     } else if (!keyShouldAddTag && (typeIsNotBlur || !props.addTagOnBlur)) {
-        makeItError(false);
+        makeItError(null);
         return;
     }
 
-    // Clear previous error before validation
-    makeItError(false);
+    makeItError(null);
 
     const validationError = validateIfNeeded(newTag.value);
     if (validationError) {
         makeItError(validationError);
-        if (e) e.preventDefault();
+        e?.preventDefault();
         return;
     }
 
-    if (newTag.value && (props.tagLength !== -1 && newTag.value.length > props.tagLength)) {
+    if (newTag.value && props.tagLength !== -1 && newTag.value.length > props.tagLength) {
         makeItError(`Exceeds ${props.tagLength} characters`);
-        if (e) e.preventDefault();
+        e?.preventDefault();
         return;
     }
 
     if (!props.allowDuplicates && innerTags.value.includes(newTag.value)) {
         makeItError(`Duplicate Tag: "${newTag.value}"`);
-        if (e) e.preventDefault();
+        e?.preventDefault();
         return;
     }
 
@@ -196,53 +168,44 @@ function addNew(e) {
         emit('update:modelValue', innerTags.value);
     }
 
-    if (e) {
-        e.preventDefault();
-    }
+    e?.preventDefault();
 }
 
-function makeItError(errorMessage) {
-    if (errorMessage) {
-        error.value = errorMessage;
-        emit('on-error', new Error(errorMessage));
+function makeItError(message: string | null): void {
+    if (message) {
+        error.value = message;
+        emit('on-error', new Error(message));
     } else {
-        error.value = false;
+        error.value = null;
     }
 }
 
-function validateIfNeeded(tagValue) {
-    if (!props.validate) {
-        return false;
-    }
+function validateIfNeeded(tagValue: string): string | false {
+    if (!props.validate) return false;
 
-    if (typeof props.validate === "function") {
+    if (typeof props.validate === 'function') {
         return props.validate(tagValue);
     }
 
-    if (typeof props.validate === "object" && props.validate.test !== undefined) {
-        // Assuming it's a RegExp object. If test fails, return an error message.
+    if (props.validate instanceof RegExp) {
         return !props.validate.test(tagValue) ? `Validation failed for "${tagValue}"` : false;
     }
 
-    // For string validation (assuming it's a regex pattern)
     if (typeof props.validate === 'string') {
         const regex = new RegExp(props.validate);
-         return !regex.test(tagValue) ? `Validation failed for "${tagValue}"` : false;
+        return !regex.test(tagValue) ? `Validation failed for "${tagValue}"` : false;
     }
 
     return false;
 }
 
-function removeTag(index) {
+function removeTag(index: number): void {
     innerTags.value.splice(index, 1);
     emit('update:modelValue', innerTags.value);
 }
 
-function removeLastTag() {
-    if (newTag.value) {
-        return;
-    }
-
+function removeLastTag(): void {
+    if (newTag.value) return;
     innerTags.value.pop();
     emit('update:modelValue', innerTags.value);
 }

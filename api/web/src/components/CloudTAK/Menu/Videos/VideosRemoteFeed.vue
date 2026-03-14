@@ -17,7 +17,7 @@
             </div>
             <div class='ms-auto btn-list'>
                 <TablerDelete
-                    size='24'
+                    :size='24'
                     title='Delete Feed'
                     displaytype='icon'
                     @delete='emit("delete")'

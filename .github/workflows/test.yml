@@ -126,6 +126,10 @@ jobs:
         working-directory: ./api/web/
         run: npm run check
 
+      - name: Build Types
+        working-directory: ./api/web/
+        run: npm run build:types
+
       - name: Test
         working-directory: ./api/web/
         run: npm run test

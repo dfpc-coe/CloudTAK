@@ -52,7 +52,7 @@ export class ConnectionClient {
      */
     async refreshChannels(): Promise<void> {
         try {
-            const list = await this.api.Group.list({ useCache: false });
+            const list = await this.api.Group.list({ useCache: true });
             const active = new Set<number>();
             for (const group of list.data) {
                 if (group.active) {

@@ -12,7 +12,10 @@
                 "uid": feature.properties.id,
                 "callsign": feature.properties.callsign,
                 "team": feature.properties.group.name,
-                "notes": ""
+                "notes": "",
+                "role": "",
+                "takv": "",
+                "filterGroups": undefined
             }'
         />
         <StandardItem

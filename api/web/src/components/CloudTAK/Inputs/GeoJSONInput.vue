@@ -24,6 +24,7 @@
             >
                 <div class='col-12'>
                     <TablerFileInput
+                        :model-value='""'
                         type='file'
                         accept='.json, .geojson'
                         label='File'

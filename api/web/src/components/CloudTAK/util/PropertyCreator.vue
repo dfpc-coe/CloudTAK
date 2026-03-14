@@ -22,7 +22,7 @@
             </template>
             <div class='mx-2 pt-2'>
                 <ContactRow
-                    :contact='contact || props.creator'
+                    :contact='effectiveContact'
                     @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
                 />
             </div>
@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import timediff from '../../../timediff.ts';
 import ContactRow from './Contact.vue';
 import ContactManager from '../../../base/contact.ts';
@@ -50,6 +50,18 @@ const router = useRouter();
 const relative = ref(true);
 const expanded = ref(false);
 const contact = ref<Contact | undefined>();
+
+const effectiveContact = computed((): Contact => {
+    return contact.value ?? {
+        uid: props.creator.uid,
+        callsign: props.creator.callsign,
+        notes: '',
+        team: '',
+        role: '',
+        takv: '',
+        filterGroups: undefined,
+    };
+});
 
 onMounted(async () => {
     contact.value = await ContactManager.get(props.creator.uid);

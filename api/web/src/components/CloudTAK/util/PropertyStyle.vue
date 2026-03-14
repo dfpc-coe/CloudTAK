@@ -22,7 +22,7 @@
                         <template v-if='cot.geometry.type === "Point"'>
                             <div class='col-12'>
                                 <IconSelect
-                                    :model-value='cot.properties.icon'
+                                    :model-value='cot.properties.icon ?? ""'
                                     label='Point Icon'
                                     :size='32'
                                     stroke='1'
@@ -43,7 +43,7 @@
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Point Opacity</label>
                                 <TablerRange
-                                    :model-value='cot.properties["marker-opacity"]'
+                                    :model-value='cot.properties["marker-opacity"] ?? 1'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -67,7 +67,7 @@
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Line Style</label>
                                 <TablerEnum
-                                    :model-value='cot.properties["stroke-style"]'
+                                    :model-value='cot.properties["stroke-style"] ?? "solid"'
                                     label=''
                                     :options='["solid", "dashed", "dotted", "outlined"]'
                                     default='solid'
@@ -77,7 +77,7 @@
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Line Thickness</label>
                                 <TablerRange
-                                    :model-value='cot.properties["stroke-width"]'
+                                    :model-value='cot.properties["stroke-width"] ?? 1'
                                     label=''
                                     :default='1'
                                     :min='1'
@@ -89,7 +89,7 @@
                             <div class='col-12'>
                                 <label class='subheader user-select-none'>Line Opacity</label>
                                 <TablerRange
-                                    :model-value='cot.properties["stroke-opacity"]'
+                                    :model-value='cot.properties["stroke-opacity"] ?? 1'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -112,7 +112,7 @@
                             <div class='col-12 round'>
                                 <label class='subheader user-select-none'>Fill Opacity</label>
                                 <TablerRange
-                                    :model-value='cot.properties["fill-opacity"]'
+                                    :model-value='cot.properties["fill-opacity"] ?? 1'
                                     label=''
                                     :default='1'
                                     :min='0'

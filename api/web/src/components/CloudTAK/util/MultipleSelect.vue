@@ -38,6 +38,7 @@ onMounted(() => {
     if (!selectMenu.value) return;
 
     if (!mapStore.select.popup) {
+        // @ts-expect-error mapgl.Popup causes deep UnwrapRef instantiation in Pinia reactive stores
         mapStore.select.popup = markRaw(new mapgl.Popup({
             closeButton: false,
             closeOnClick: false,

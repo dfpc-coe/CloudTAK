@@ -118,12 +118,13 @@
     </MenuTemplate>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, shallowRef, watch, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Chatroom from '../../../base/chatroom.ts';
 import GenericSelect from '../util/GenericSelect.vue';
-import { liveQuery } from 'dexie';
+import { liveQuery, type Subscription } from 'dexie';
+import type { DBChatroomChat } from '../../../base/database.ts';
 import {
     IconListCheck,
     IconSend,
@@ -141,53 +142,71 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import timeDiff from '../../../timediff.ts';
+
 const mapStore = useMapStore();
 
-const scrollContainer = ref(null);
+const scrollContainer = ref<HTMLElement | null>(null);
 const atBottom = ref(true);
 
-function onScroll() {
+function normalizeRouteParam(param: string | string[]): string {
+    return Array.isArray(param) ? (param[0] ?? '') : param;
+}
+
+function normalizeRouteQuery(query: string | null | (string | null)[]): string {
+    if (Array.isArray(query)) return query[0] ?? '';
+    return query ?? '';
+}
+
+function onScroll(): void {
     const el = scrollContainer.value;
     if (!el) return;
     const wasAtBottom = atBottom.value;
     const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 32;
     atBottom.value = isAtBottom;
-    if (!wasAtBottom && isAtBottom && typeof room.value?.chats?.markRead === 'function') {
-        room.value.chats.markRead();
+    if (!wasAtBottom && isAtBottom) {
+        room.value?.chats.markRead();
     }
 }
 
-function scrollToBottom() {
+function scrollToBottom(): void {
     const el = scrollContainer.value;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
     atBottom.value = true;
-    if (typeof room.value?.chats?.markRead === 'function') {
-        room.value.chats.markRead();
-    }
+    room.value?.chats.markRead();
 }
 
 const route = useRoute();
 const router = useRouter();
 
-const id = ref('')
+interface GenericSelectRef {
+    selected: Set<string | number>;
+}
+
+const id = ref('');
 const callsign = ref('');
 const loading = ref(true);
-const select = ref(null);
+const select = ref<GenericSelectRef | null>(null);
 const multiselect = ref(false);
-const name = ref(route.params.chatroom === 'new' ? route.query.callsign : route.params.chatroom);
-const room = shallowRef();
 
-const chats = ref([]);
-let subscription;
+const initialName = route.params.chatroom === 'new'
+    ? normalizeRouteQuery(route.query.callsign)
+    : normalizeRouteParam(route.params.chatroom);
+const name = ref<string>(initialName);
+const room = shallowRef<Chatroom | undefined>(undefined);
+
+const chats = ref<DBChatroomChat[]>([]);
+let subscription: Subscription | undefined;
 
 watch([room, () => route.params.chatroom], ([newRoom, chatroom]) => {
     if (subscription) {
         subscription.unsubscribe();
-        subscription = null;
+        subscription = undefined;
     }
 
-    if (newRoom && chatroom !== 'new') {
+    const chatroomStr = Array.isArray(chatroom) ? (chatroom[0] ?? '') : chatroom;
+
+    if (newRoom && chatroomStr !== 'new') {
         const obs = liveQuery(() => newRoom.chats.list());
         subscription = obs.subscribe({
             next: async (val) => {
@@ -198,7 +217,7 @@ watch([room, () => route.params.chatroom], ([newRoom, chatroom]) => {
                     await newRoom.chats.markRead();
                 }
             },
-            error: (err) => {
+            error: (err: unknown) => {
                 console.error(err);
             }
         });
@@ -221,8 +240,8 @@ onMounted(async () => {
         throw new Error('Username not set in profile config');
     }
 
-    id.value = `ANDROID-CloudTAK-${username}`
-    callsign.value = tak_callsign || '';
+    id.value = `ANDROID-CloudTAK-${username}`;
+    callsign.value = String(tak_callsign ?? '');
 
     room.value = new Chatroom(name.value);
 
@@ -231,24 +250,24 @@ onMounted(async () => {
 
 watch(() => route.params.chatroom, async (newChatroom) => {
     if (newChatroom === 'new') {
-        name.value = route.query.callsign;
+        name.value = normalizeRouteQuery(route.query.callsign);
     } else {
-        name.value = newChatroom;
+        name.value = normalizeRouteParam(newChatroom);
     }
     room.value = new Chatroom(name.value);
     await fetchChats();
 });
 
-async function sendMessage() {
+async function sendMessage(): Promise<void> {
     if (!message.value.trim().length) return;
     if (!room.value) return;
 
-    let recipient;
+    let recipient: { uid: string; callsign: string } | undefined;
     if (route.query.uid && route.query.callsign) {
         recipient = {
-            uid: String(route.query.uid),
-            callsign: String(route.query.callsign)
-        }
+            uid: normalizeRouteQuery(route.query.uid),
+            callsign: normalizeRouteQuery(route.query.callsign)
+        };
     }
 
     await room.value.chats.send(
@@ -258,7 +277,7 @@ async function sendMessage() {
         recipient
     );
 
-    message.value = ''
+    message.value = '';
 
     if (route.params.chatroom === 'new') {
         await router.push({
@@ -268,7 +287,7 @@ async function sendMessage() {
     }
 }
 
-async function deleteChats() {
+async function deleteChats(): Promise<void> {
     if (!select.value) return;
     if (!room.value) return;
     const selected = select.value.selected;
@@ -276,16 +295,16 @@ async function deleteChats() {
     loading.value = true;
 
     try {
-        await room.value.deleteChats(Array.from(selected.values()));
+        await room.value.deleteChats(Array.from(selected.values()).map(String));
     } catch (err) {
         loading.value = false;
-        throw new Error(err.message, { cause: err });
+        throw new Error(err instanceof Error ? err.message : String(err), { cause: err });
     }
 
     await fetchChats();
 }
 
-async function fetchChats() {
+async function fetchChats(): Promise<void> {
     loading.value = true;
 
     if (route.params.chatroom !== 'new' && room.value) {
@@ -303,7 +322,7 @@ async function fetchChats() {
     scrollToBottom();
 }
 
-function formatTime(iso) {
+function formatTime(iso: string): string {
     if (!iso) return '';
     const d = new Date(iso);
     const now = new Date();

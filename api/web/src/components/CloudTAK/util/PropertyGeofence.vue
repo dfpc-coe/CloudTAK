@@ -18,7 +18,7 @@
                         <div class='col-12'>
                             <TablerToggle
                                 label='Elevation Monitored'
-                                :model-value='geofence.elevationMonitored'
+                                :model-value='geofence.elevationMonitored ?? false'
                                 :disabled='true'
                             />
                         </div>
