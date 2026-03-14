@@ -17,6 +17,7 @@ export default class Atlas {
 
     token: string;
     username: string;
+    initialized: boolean;
 
     db = Comlink.proxy(new AtlasDatabase(this));
     conn = Comlink.proxy(new AtlasConnection(this));
@@ -26,6 +27,7 @@ export default class Atlas {
         this.channel = new BroadcastChannel('cloudtak');
         this.token = '';
         this.username = '';
+        this.initialized = false;
 
         this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
             const msg = event.data;
@@ -59,20 +61,38 @@ export default class Atlas {
     }
 
     async init(authToken: string) {
-        if (this.token) return;
+        // Only skip if we know initialization has successfully completed before
+        if (this.initialized) return;
 
         this.token = authToken;
 
-        await db.config.put({ key: 'token', value: authToken });
+        try {
+            await db.config.put({ key: 'token', value: authToken });
 
-        this.username = await this.profile.init();
-        await this.conn.connect(this.username)
+            this.username = await this.profile.init();
+            await this.conn.connect(this.username)
 
-        await this.db.init();
+            await this.db.init();
+
+            this.initialized = true;
+        } catch (error) {
+            // Reset state so a future init call can retry after a transient failure
+            this.conn.destroy();
+            this.profile.destroy();
+            this.token = '';
+            this.username = '';
+            this.initialized = false;
+            throw error;
+        }
     }
 
     destroy() {
         this.conn.destroy();
+        this.profile.destroy();
+        this.initialized = false;
+        this.token = '';
+        this.username = '';
+        this.channel.close();
     }
 }
 

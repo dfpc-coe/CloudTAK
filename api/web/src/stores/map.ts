@@ -48,6 +48,7 @@ export const useMapStore = defineStore('cloudtak', {
         _boundOnOnline?: () => void;
         _boundOnOffline?: () => void;
         _boundOnDeviceOrientation?: (event: DeviceOrientationEvent) => void;
+        _boundOnVisibilityChange?: () => Promise<void>;
 
         db: DatabaseType;
         channel: BroadcastChannel;
@@ -76,6 +77,7 @@ export const useMapStore = defineStore('cloudtak', {
             notification: boolean;
         }
 
+        _rawWorker: Worker;
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
         mapConfig: ConfigMap;
@@ -108,9 +110,8 @@ export const useMapStore = defineStore('cloudtak', {
         },
         overlays: Array<Overlay>
     } => {
-        const worker = Comlink.wrap<Atlas>(new Worker(AtlasWorker, {
-            type: 'module'
-        }));
+        const rawWorker = new Worker(AtlasWorker, { type: 'module' });
+        const worker = Comlink.wrap<Atlas>(rawWorker);
 
         new CloudTAKTransferHandler(
             Comlink.transferHandlers,
@@ -118,6 +119,7 @@ export const useMapStore = defineStore('cloudtak', {
         );
 
         return {
+            _rawWorker: rawWorker,
             worker,
             callsign: 'Unknown',
             toImport: [],
@@ -188,7 +190,25 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
-        destroy: function() {
+        destroy: async function() {
+            // Capture current worker instances to avoid races with $reset()/state() creating new ones.
+            const currentWorker = this.worker;
+            const currentRawWorker = this._rawWorker;
+
+            if (currentWorker && currentRawWorker) {
+                try {
+                    await currentWorker.destroy();
+                } catch (err: unknown) {
+                    console.error('Failed to destroy atlas worker:', err);
+                } finally {
+                    try {
+                        currentRawWorker.terminate();
+                    } catch (terminateErr) {
+                        console.error('Failed to terminate atlas worker:', terminateErr);
+                    }
+                }
+            }
+
             this.channel.close();
 
             if (this._boundOnOnline) window.removeEventListener('online', this._boundOnOnline);
@@ -200,6 +220,7 @@ export const useMapStore = defineStore('cloudtak', {
                     window.removeEventListener('deviceorientation', this._boundOnDeviceOrientation as EventListener);
                 }
             }
+            if (this._boundOnVisibilityChange) document.removeEventListener('visibilitychange', this._boundOnVisibilityChange);
 
             // Clean up GPS watch
             if (this.gpsWatchId !== null) {
@@ -455,6 +476,18 @@ export const useMapStore = defineStore('cloudtak', {
                     this.map.setBearing(heading);
                 }
             };
+            this._boundOnVisibilityChange = async (): Promise<void> => {
+                if (document.hidden) return;
+                if (!(await this.worker.initialized)) return;
+
+                const isOpen = await this.worker.conn.isOpen;
+                if (!isOpen) {
+                    console.log('Tab became visible with closed connection, reconnecting...');
+                    await this.worker.conn.reconnect(await this.worker.username);
+                }
+
+                await this.updateCOT();
+            };
 
             window.addEventListener('online', this._boundOnOnline);
             window.addEventListener('offline', this._boundOnOffline);
@@ -463,6 +496,7 @@ export const useMapStore = defineStore('cloudtak', {
             } else {
                 window.addEventListener('deviceorientation', this._boundOnDeviceOrientation as EventListener);
             }
+            document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
 
             await this.worker.init(localStorage.token);
 
@@ -654,17 +688,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.isOpen = await this.worker.conn.isOpen;
 
-            document.addEventListener('visibilitychange', async () => {
-                if (!document.hidden) {
-                    const isOpen = await this.worker.conn.isOpen;
-                    if (!isOpen) {
-                        console.log('Tab became visible with closed connection, reconnecting...');
-                        const username = await this.worker.username;
-                        await this.worker.conn.reconnect(username);
-                    }
-                    await this.updateCOT();
-                }
-            });
         },
         startGPSWatch: function(): void {
             if (!("geolocation" in navigator)) return;
