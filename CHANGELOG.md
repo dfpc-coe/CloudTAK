@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.102.0 - 2026-03-14
+
+- :rocket: Update components to Typescript
+
 ### v12.101.0 - 2026-03-13
 
 - :tada: Surface initial breadcrumb functionality in the PluginAPI
