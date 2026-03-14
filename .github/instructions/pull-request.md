@@ -34,7 +34,7 @@ A header called "### Change Summary" followed by a bulleted list of changes, usi
 
 A header called "### Breaking Changes" followed by a bulleted list of any API changes or behavioral modifications, along with migration instructions if needed.
 
-**Breaking Changes**
+### Breaking Changes
 
 - List any API changes or behavioral modifications
 - Include migration instructions if needed
