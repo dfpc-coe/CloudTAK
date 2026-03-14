@@ -51,10 +51,11 @@
     </TablerModal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { std, stdurl } from '../../../../std.ts';
+import type { Iconset } from '../../../../types.ts';
 import {
     TablerModal,
     TablerLoading,
@@ -69,8 +70,8 @@ const route = useRoute();
 const loading = ref({
     iconset: true
 });
-const schema = ref({});
-const iconset = ref({
+const schema = ref<Record<string, unknown>>({});
+const iconset = ref<Partial<Iconset> & { scope?: string; name?: string }>({
     scope: 'user'
 });
 
@@ -86,7 +87,7 @@ onMounted(async () => {
 
 async function fetch() {
     loading.value.iconset = true;
-    iconset.value = await std(`/api/iconset/${route.params.iconset}`);
+    iconset.value = await std(`/api/iconset/${route.params.iconset}`) as Iconset;
     loading.value.iconset = false;
 }
 
@@ -113,6 +114,6 @@ async function fetchSchema() {
     const url = await stdurl(`/api/schema`);
     url.searchParams.set('method', route.params.iconset ? 'PATCH' : 'POST');
     url.searchParams.set('url', route.params.iconset ? '/iconset/:iconset' : '/iconset');
-    schema.value = (await std(url)).body;
+    schema.value = ((await std(url)) as { body: Record<string, unknown> }).body;
 }
 </script>

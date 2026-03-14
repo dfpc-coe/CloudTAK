@@ -91,43 +91,49 @@
     </div>
 </template>
 
-<script setup>
-import { ref, watch } from 'vue'
+<script setup lang="ts">
+import { ref, watch } from 'vue';
 import SlideDownHeader from './SlideDownHeader.vue';
-import {
-    IconCone
-} from '@tabler/icons-vue';
-import {
-    TablerRange,
-    TablerInput
-} from '@tak-ps/vue-tabler';
+import { IconCone } from '@tabler/icons-vue';
+import { TablerRange, TablerInput } from '@tak-ps/vue-tabler';
 
-const props = defineProps({
-    modelValue: {
-        type: Object,
-        required: true
-    }
-});
+interface Sensor {
+    type?: string;
+    model?: string;
+    range?: number;
+    azimuth?: number;
+    fov?: number;
+    [key: string]: unknown;
+}
 
-const emit = defineEmits([
-    'update:modelValue'
-]);
+interface Props {
+    modelValue: Sensor;
+}
+
+const props = defineProps<Props>();
+
+const emit = defineEmits<{
+    'update:modelValue': [value: Sensor];
+}>();
 
 const expanded = ref(false);
-const sensor = ref(JSON.parse(JSON.stringify(props.modelValue)));
-if (!sensor.value.fov) sensor.value.fov = 0;
-if (!sensor.value.azimuth) sensor.value.azimuth = 0;
-if (!sensor.value.range) sensor.value.range = 0;
 
-watch(sensor.value, () => {
+function initSensor(raw: Sensor): Sensor {
+    const s = structuredClone(raw);
+    if (!s.fov) s.fov = 0;
+    if (!s.azimuth) s.azimuth = 0;
+    if (!s.range) s.range = 0;
+    return s;
+}
+
+const sensor = ref<Sensor>(initSensor(props.modelValue));
+
+watch(sensor, () => {
     emit('update:modelValue', sensor.value);
-})
+}, { deep: true });
 
-watch(() => props.modelValue, () => {
-    sensor.value = props.modelValue;
-    if (!sensor.value.fov) sensor.value.fov = 0;
-    if (!sensor.value.azimuth) sensor.value.azimuth = 0;
-    if (!sensor.value.range) sensor.value.range = 0;
+watch(() => props.modelValue, (value) => {
+    sensor.value = initSensor(value);
 });
 </script>
 

@@ -829,6 +829,11 @@
         "query": true,
         "res": true
     },
+    "DELETE /marti/missions/:guid/user": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "POST /marti/package": {
         "body": false,
         "query": true,
@@ -1204,6 +1209,16 @@
         "query": true,
         "res": true
     },
+    "GET /server/repeater": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /server/repeater/:uid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /search": {
         "body": false,
         "query": false,
@@ -1227,16 +1242,6 @@
     "GET /search/suggest": {
         "body": false,
         "query": true,
-        "res": true
-    },
-    "GET /server/repeater": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /server/repeater/:uid": {
-        "body": false,
-        "query": false,
         "res": true
     },
     "GET /server/video": {

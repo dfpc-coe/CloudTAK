@@ -165,7 +165,7 @@ const uploadRef = useTemplateRef<typeof Upload>('upload');
 
 const body = ref({
     name: props.name,
-    keywords: [],
+    keywords: [] as string[],
     groups: []
 })
 

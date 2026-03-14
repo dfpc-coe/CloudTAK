@@ -4,7 +4,7 @@
             type='button'
             class='btn-close'
             aria-label='Close'
-            @click='modal = false'
+            @click='$emit("close")'
         />
         <div class='modal-status bg-red' />
         <div class='modal-header text-center py-4'>
@@ -30,7 +30,7 @@
     </TablerModal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
     TablerModal
 } from '@tak-ps/vue-tabler'
@@ -53,5 +53,5 @@ defineProps({
     }
 });
 
-defineEmits(['delete']);
+defineEmits(['delete', 'close']);
 </script>

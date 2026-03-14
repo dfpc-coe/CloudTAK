@@ -13,7 +13,7 @@ flight.connection();
 
 test('GET: api/connection/1/channel', async () => {
     try {
-        flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
             } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
@@ -68,7 +68,7 @@ test('GET: api/connection/1/channel', async () => {
 
 test('GET: api/connection/1/channel - Failure', async () => {
     try {
-        flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
             } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {

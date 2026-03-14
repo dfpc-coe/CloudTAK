@@ -501,6 +501,16 @@ export default class Subscription {
         });
     }
 
+    async removeUser(uid: string): Promise<void> {
+        const url = stdurl(`/api/marti/missions/${encodeURIComponent(this.guid)}/user`);
+        url.searchParams.set('uid', uid);
+        await std(url, {
+            method: 'DELETE',
+            token: this.token,
+            headers: Subscription.headers(this.missiontoken)
+        });
+    }
+
     async subscriptions(): Promise<MissionSubscriptions> {
         const url = stdurl(`/api/marti/missions/${encodeURIComponent(this.guid)}/subscriptions/roles`);
 

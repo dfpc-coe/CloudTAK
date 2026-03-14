@@ -8,7 +8,7 @@
         :standalone='false'
     >
         <template #buttons>
-            <TablerIconButton>
+            <TablerIconButton title='Download Logs'>
                 <IconDownload
                     :size='24'
                     stroke='1'

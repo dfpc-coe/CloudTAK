@@ -2,8 +2,8 @@
     <StandardItem
         class='d-flex flex-row gap-3 mb-2 align-items-center'
         :class='{
-            "cursor-pointer": isZoomable(contact),
-            "cursor-default": !isZoomable(contact),
+            "cursor-pointer": zoomable,
+            "cursor-default": !zoomable,
             "hover": hover,
             "contact-card--no-notes": !contact.notes || !contact.notes.trim()
         }'
@@ -48,7 +48,7 @@
             class='align-self-center me-2'
         >
             <IconMessage
-                v-if='props.buttonChat && isChatable(contact)'
+                v-if='props.buttonChat && chatable'
                 v-tooltip='"Start Chat"'
                 :size='compact ? 20 : 32'
                 stroke='1'
@@ -59,59 +59,63 @@
     </StandardItem>
 </template>
 
-<script setup>
+<script setup lang='ts'>
+import { ref, watchEffect } from 'vue';
 import {
     IconCheck,
     IconMessage,
 } from '@tabler/icons-vue';
 import ContactPuck from './ContactPuck.vue';
 import StandardItem from './StandardItem.vue';
-import { useMapStore } from '/src/stores/map.ts';
+import { useMapStore } from '../../../stores/map.ts';
+import type { Contact } from '../../../types.ts';
+
 const mapStore = useMapStore();
 
-const props = defineProps({
-    contact: {
-        type: Object,
-        required: true
-    },
-    flyToClick: {
-        type: Boolean,
-        default: true
-    },
-    selected: {
-        type: Boolean,
-        default: false
-    },
-    buttonChat: {
-        type: Boolean,
-        default: true
-    },
-    hover: {
-        type: Boolean,
-        default: true
-    },
-    compact: {
-        type: Boolean,
-        default: false
-    }
+const props = withDefaults(defineProps<{
+    contact: Contact;
+    flyToClick?: boolean;
+    selected?: boolean;
+    buttonChat?: boolean;
+    hover?: boolean;
+    compact?: boolean;
+}>(), {
+    flyToClick: true,
+    selected: false,
+    buttonChat: true,
+    hover: true,
+    compact: false
 });
 
-const emit = defineEmits([
-    'chat'
-]);
+const emit = defineEmits<{
+    chat: [contact: Contact];
+}>();
 
-async function isZoomable(contact) {
-    return mapStore.worker.db.has(contact.uid);
+const zoomable = ref(false);
+const chatable = ref(false);
+
+function hasEndpoint(val: unknown): val is { endpoint: unknown } {
+    return typeof val === 'object' && val !== null && 'endpoint' in val;
 }
 
-async function isChatable(contact) {
-    if (!await mapStore.worker.db.has(contact.uid)) return false;
-    const cot = await mapStore.worker.db.get(contact.uid);
-    return cot.properties.contact && cot.properties.contact.endpoint;
-}
+watchEffect(async () => {
+    zoomable.value = await mapStore.worker.db.has(props.contact.uid);
 
-async function flyTo(contact) {
-    if (!await isZoomable(contact) || !props.flyToClick) return;
+    if (!zoomable.value) {
+        chatable.value = false;
+        return;
+    }
+    const cot = await mapStore.worker.db.get(props.contact.uid);
+    if (!cot) {
+        chatable.value = false;
+        return;
+    }
+    const contactProp = cot.properties['contact'];
+    chatable.value = hasEndpoint(contactProp) && Boolean(contactProp.endpoint);
+});
+
+async function flyTo(contact: Contact): Promise<void> {
+    if (!zoomable.value || !props.flyToClick) return;
 
     const cot = await mapStore.worker.db.get(contact.uid);
     if (!cot) return;

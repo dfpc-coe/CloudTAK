@@ -3,7 +3,7 @@
         <template #buttons>
             <TablerIconButton
                 title='Create Iconset'
-                @click='editModal = {}'
+                @click='editModal = true'
             >
                 <IconPlus
                     :size='32'
@@ -174,14 +174,14 @@
     />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import { std, stdurl } from '../../../std.ts';
 import Upload from '../../util/Upload.vue';
-import IconCombineds from '../util/Icons.vue'
+import IconCombineds from '../util/Icons.vue';
 import IconsetEditModal from './Iconset/EditModal.vue';
 import {
     TablerNone,
@@ -198,13 +198,22 @@ import {
     IconAlbum,
     IconPhoto,
     IconPlus
-} from '@tabler/icons-vue'
+} from '@tabler/icons-vue';
+import type { IconsetList, Iconset } from '../../../types.ts';
+
+interface ImportUploadResponse {
+    imports: {
+        file: string;
+        uid: string;
+        ext: string;
+    }[];
+}
 
 const router = useRouter();
-const mode = ref('iconsets');
 
-const error = ref();
-const loading = ref(true)
+const mode = ref<'iconsets' | 'icons'>('iconsets');
+const error = ref<Error | undefined>(undefined);
+const loading = ref(true);
 const upload = ref(false);
 const editModal = ref(false);
 
@@ -214,7 +223,7 @@ const paging = ref({
     page: 0
 });
 
-const list = ref({
+const list = ref<IconsetList>({
     total: 0,
     items: []
 });
@@ -227,36 +236,47 @@ onMounted(async () => {
     await fetchList();
 });
 
-function throws(err) {
+function throws(err: Error): void {
     throw err;
 }
 
-function processUpload(body) {
-    router.push(`/menu/imports/${body.imports[0].uid}`);
+function isImportUploadResponse(val: unknown): val is ImportUploadResponse {
+    return (
+        typeof val === 'object' &&
+        val !== null &&
+        'imports' in val &&
+        Array.isArray((val as { imports: unknown }).imports)
+    );
 }
 
-function uploadHeaders() {
+function processUpload(body: unknown): void {
+    if (isImportUploadResponse(body) && body.imports.length > 0) {
+        router.push(`/menu/imports/${body.imports[0].uid}`);
+    }
+}
+
+function uploadHeaders(): Record<string, string> {
     return {
         Authorization: `Bearer ${localStorage.token}`
     };
 }
 
-async function download(iconset) {
+async function download(iconset: Iconset): Promise<void> {
     await std(`/api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`, {
         download: true
     });
 }
 
-async function fetchList() {
+async function fetchList(): Promise<void> {
     loading.value = true;
     error.value = undefined;
 
     try {
         const url = stdurl('/api/iconset');
-        url.searchParams.set('page', paging.value.page);
+        url.searchParams.set('page', String(paging.value.page));
         url.searchParams.set('filter', paging.value.filter);
-        url.searchParams.set('limit', paging.value.limit);
-        list.value = await std(url);
+        url.searchParams.set('limit', String(paging.value.limit));
+        list.value = await std(url) as IconsetList;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
