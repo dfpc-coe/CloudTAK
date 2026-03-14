@@ -502,7 +502,7 @@ export default class Subscription {
     }
 
     async removeUser(uid: string): Promise<void> {
-        const url = stdurl(`/api/marti/missions/${this.guid}/user`);
+        const url = stdurl(`/api/marti/missions/${encodeURIComponent(this.guid)}/user`);
         url.searchParams.set('uid', uid);
         await std(url, {
             method: 'DELETE',
