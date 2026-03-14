@@ -77,6 +77,8 @@ export default class Atlas {
             this.initialized = true;
         } catch (error) {
             // Reset state so a future init call can retry after a transient failure
+            this.conn.destroy();
+            this.profile.destroy();
             this.token = '';
             this.username = '';
             this.initialized = false;
@@ -86,6 +88,10 @@ export default class Atlas {
 
     destroy() {
         this.conn.destroy();
+        this.profile.destroy();
+        this.initialized = false;
+        this.token = '';
+        this.username = '';
         this.channel.close();
     }
 }
