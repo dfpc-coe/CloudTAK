@@ -189,12 +189,24 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
-        destroy: function() {
-            this.worker.destroy().catch((err: unknown) => {
-                console.error('Failed to destroy atlas worker:', err);
-            }).finally(() => {
-                this._rawWorker.terminate();
-            });
+        destroy: async function() {
+            // Capture current worker instances to avoid races with $reset()/state() creating new ones.
+            const currentWorker = this.worker;
+            const currentRawWorker = this._rawWorker;
+
+            if (currentWorker && currentRawWorker) {
+                try {
+                    await currentWorker.destroy();
+                } catch (err: unknown) {
+                    console.error('Failed to destroy atlas worker:', err);
+                } finally {
+                    try {
+                        currentRawWorker.terminate();
+                    } catch (terminateErr) {
+                        console.error('Failed to terminate atlas worker:', terminateErr);
+                    }
+                }
+            }
 
             this.channel.close();
 
