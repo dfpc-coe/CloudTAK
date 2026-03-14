@@ -269,7 +269,7 @@ export default class MockTAKServer {
                 response.write(JSON.stringify([]))
                 response.end();
                 return true;
-            } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=false') {
+            } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({ version: '3', type: 'com.bbn.marti.remote.groups.Group', data: [] }))
                 response.end();

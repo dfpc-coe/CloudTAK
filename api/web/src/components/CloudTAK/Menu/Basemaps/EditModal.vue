@@ -333,7 +333,7 @@ onMounted(async () => {
 });
 
 async function download(): Promise<void> {
-    await std(`api/basemap/${props.basemap.id}?format=xml&download=true&token=${localStorage['token']}`, {
+    await std(`/api/basemap/${props.basemap.id}?format=xml&download=true&token=${localStorage['token']}`, {
         download: true,
     });
 }

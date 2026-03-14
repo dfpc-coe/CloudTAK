@@ -160,12 +160,17 @@ const upload = ref(false);
 const loading = ref(true);
 const files = ref<Attachment[]>([]);
 
-watch(() => props.modelValue, async () => {
+watch(() => props.modelValue, async (newVal, oldVal) => {
+    if (newVal.length === oldVal.length && newVal.every((h, i) => h === oldVal[i])) return;
     await refresh();
 });
 
 watch(files, () => {
-    emit('update:modelValue', files.value.map(f => f.hash));
+    const newHashes = files.value.map(f => f.hash);
+    const same = newHashes.length === props.modelValue.length
+        && newHashes.every((h, i) => h === props.modelValue[i]);
+    if (same) return;
+    emit('update:modelValue', newHashes);
 }, {
     deep: true
 });
