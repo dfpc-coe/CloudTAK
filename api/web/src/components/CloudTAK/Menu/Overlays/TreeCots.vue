@@ -312,7 +312,7 @@ import type { Contact as ContactData } from '../../../../types.ts';
 
 const mapStore = useMapStore();
 
-const props = defineProps<{
+defineProps<{
     element: Overlay;
 }>();
 

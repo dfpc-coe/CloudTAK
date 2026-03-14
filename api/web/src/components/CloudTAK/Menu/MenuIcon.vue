@@ -44,8 +44,9 @@
 
                     <div class='col-12'>
                         <TablerInput
-                            v-model='icon.type2525b'
+                            :model-value='icon.type2525b ?? ""'
                             label='2525B Type'
+                            @update:model-value='icon.type2525b = $event ? String($event) : null'
                         />
                     </div>
 

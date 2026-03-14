@@ -73,7 +73,6 @@
                     :headers='uploadHeaders()'
                     @done='processUpload($event)'
                     @cancel='mode.upload = false'
-                    @err='err = $event'
                 />
             </template>
             <template v-else-if='mode.tilejson'>
@@ -139,7 +138,7 @@
                             v-model='scope'
                             required
                             label='Access Scope'
-                            :disabled='(props.basemap.id && !isSystemAdmin)'
+                            :disabled='!!(props.basemap.id && !isSystemAdmin)'
                             :options='["user", "server"]'
                         />
                     </div>
@@ -347,12 +346,12 @@ function normalizeEditing(data: Basemap | BasemapImport): EditingBasemap {
         minzoom: data.minzoom ?? 0,
         maxzoom: data.maxzoom ?? 16,
         tilesize: ('tilesize' in data ? data.tilesize : undefined) ?? 256,
-        attribution: (('attribution' in data ? data.attribution : undefined) ?? '') ?? '',
+        attribution: ('attribution' in data ? data.attribution : undefined) ?? '',
         sharing_enabled: ('sharing_enabled' in data ? data.sharing_enabled : undefined) ?? true,
         format: data.format ?? 'png',
         bounds: ('bounds' in data && Array.isArray(data.bounds) ? data.bounds : null) ?? [-180, -90, 180, 90],
         center: ('center' in data && Array.isArray(data.center) ? data.center : null) ?? [0, 0],
-        collection: (('collection' in data ? data.collection : undefined) ?? '') ?? '',
+        collection: ('collection' in data ? data.collection : undefined) ?? '',
     };
 }
 
@@ -373,9 +372,9 @@ async function fetchTileJSON(): Promise<void> {
     }
 }
 
-function processUpload(body: BasemapImport): void {
+function processUpload(body: unknown): void {
     mode.value.upload = false;
-    editing.value = normalizeEditing(body);
+    editing.value = normalizeEditing(body as BasemapImport);
 }
 
 function uploadHeaders(): Record<string, string> {
@@ -403,7 +402,13 @@ async function create(): Promise<void> {
 
     loading.value = true;
     try {
-        const body: Partial<EditingBasemap> & { bounds?: number[]; center?: number[]; tilesize?: number | null; collection?: string | null; attribution?: string | null; } = {
+        const body: Omit<Partial<EditingBasemap>, 'tilesize' | 'collection' | 'attribution' | 'bounds' | 'center'> & {
+            bounds?: number[];
+            center?: number[];
+            tilesize?: number | null;
+            collection?: string | null;
+            attribution?: string | null;
+        } = {
             ...editing.value,
         };
 

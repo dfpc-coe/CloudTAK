@@ -120,12 +120,14 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server, stdurl } from '../../../std.ts';
 import { useFloatStore } from '../../../stores/float.ts';
 import Upload from '../../util/Upload.vue';
 import SlideDownHeader from './SlideDownHeader.vue';
+import Subscription from '../../../base/subscription.ts';
+import type { Attachment } from '../../../types.ts';
 import {
     IconFile,
     IconDownload,
@@ -140,47 +142,43 @@ import {
     TablerDelete,
 } from '@tak-ps/vue-tabler'
 
-const props = defineProps({
-    modelValue: {
-        type: Array,
-        required: true
-    },
-    subscription: {
-        type: Object,
-        default: null
-    }
+const props = withDefaults(defineProps<{
+    modelValue: string[];
+    subscription?: Subscription | null;
+}>(), {
+    subscription: null
 });
 
-const emit = defineEmits([
-    'update:modelValue'
-]);
+const emit = defineEmits<{
+    'update:modelValue': [value: string[]];
+}>();
 
 const floatStore = useFloatStore();
 
 const expanded = ref(false);
 const upload = ref(false);
 const loading = ref(true);
-const files = ref([]);
+const files = ref<Attachment[]>([]);
 
-watch(props.modelValue, async () => {
+watch(() => props.modelValue, async () => {
     await refresh();
 });
 
 watch(files, () => {
-    emit("update:modelValue", files.value.map(f => f.hash));
+    emit('update:modelValue', files.value.map(f => f.hash));
 }, {
     deep: true
 });
 
 onMounted(async () => {
     await refresh();
-})
+});
 
-function attachmentPane(file) {
+function attachmentPane(file: Attachment): void {
     floatStore.addAttachment(file);
 }
 
-async function deleteAttachment(file) {
+async function deleteAttachment(file: Attachment): Promise<void> {
     if (!props.subscription) return;
 
     await props.subscription.contents.delete(file.hash);
@@ -188,7 +186,7 @@ async function deleteAttachment(file) {
     files.value = files.value.filter(f => f.hash !== file.hash);
 }
 
-async function refresh() {
+async function refresh(): Promise<void> {
     loading.value = true;
     if (props.modelValue.length) {
         await fetchMetadata();
@@ -199,48 +197,70 @@ async function refresh() {
     loading.value = false;
 }
 
-function uploadHeaders() {
+function uploadHeaders(): Record<string, string> {
     return {
         Authorization: `Bearer ${localStorage.token}`
     };
 }
 
-async function uploadComplete(event) {
+function hasHash(val: unknown): val is { hash: string } {
+    return (
+        typeof val === 'object'
+        && val !== null
+        && 'hash' in val
+        && typeof (val as { hash: unknown }).hash === 'string'
+    );
+}
+
+async function uploadComplete(event: unknown): Promise<void> {
+    if (!hasHash(event)) return;
+
     loading.value = true;
     upload.value = false;
 
-    const url = stdurl(`/api/attachment`);
-    url.searchParams.set('hash', event.hash);
-    files.value.push(...(await std(url)).items);
+    const res = await server.GET('/api/attachment', {
+        params: {
+            query: {
+                hash: event.hash
+            }
+        }
+    });
+
+    if (res.error) throw new Error(String(res.error));
+    if (res.data) files.value.push(...res.data.items);
 
     loading.value = false;
 }
 
-function uploadURL() {
+function uploadURL(): URL {
     const url = stdurl(`/api/attachment`);
-    if (props.subscription && props.subscription.meta && props.subscription.meta.guid) {
+    if (props.subscription?.meta?.guid) {
         url.searchParams.set('mission', props.subscription.meta.guid);
     }
     return url;
 }
 
-function downloadAssetUrl(file) {
+function downloadAssetUrl(file: Attachment): string {
     const url = stdurl(`/api/attachment/${file.hash}`);
     url.searchParams.set('token', localStorage.token);
-    return url;
+    return url.toString();
 }
 
-async function downloadAsset(file) {
-    window.open(downloadAssetUrl(file), "_blank")
+async function downloadAsset(file: Attachment): Promise<void> {
+    window.open(downloadAssetUrl(file), '_blank');
 }
 
-async function fetchMetadata() {
-    const url = stdurl(`/api/attachment`);
-    for (const a of props.modelValue) {
-        url.searchParams.append('hash', a);
-    }
+async function fetchMetadata(): Promise<void> {
+    const res = await server.GET('/api/attachment', {
+        params: {
+            query: {
+                hash: props.modelValue
+            }
+        }
+    });
 
-    files.value = (await std(url)).items;
+    if (res.error) throw new Error(String(res.error));
+    if (res.data) files.value = res.data.items;
 }
 </script>
 

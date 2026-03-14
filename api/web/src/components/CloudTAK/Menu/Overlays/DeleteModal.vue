@@ -30,7 +30,7 @@
     </TablerModal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
     TablerModal
 } from '@tak-ps/vue-tabler'

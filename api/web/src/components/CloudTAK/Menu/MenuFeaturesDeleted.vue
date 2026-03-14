@@ -71,6 +71,7 @@
                 >
                     <template #buttons='{disabled}'>
                         <TablerIconButton
+                            title='Restore Features'
                             :disabled='disabled'
                             @click='restoreFeatures'
                         >

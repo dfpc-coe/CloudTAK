@@ -163,7 +163,7 @@
     </svg>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, shallowRef, onMounted, onUnmounted, nextTick, useTemplateRef, watch } from 'vue';
 import { OriginMode } from '../../../base/cot.ts';
 import Subscription from '../../../base/subscription.ts';
