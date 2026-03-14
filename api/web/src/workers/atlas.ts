@@ -61,18 +61,27 @@ export default class Atlas {
     }
 
     async init(authToken: string) {
-        if (this.token) return;
+        // Only skip if we know initialization has successfully completed before
+        if (this.initialized) return;
 
         this.token = authToken;
 
-        await db.config.put({ key: 'token', value: authToken });
+        try {
+            await db.config.put({ key: 'token', value: authToken });
 
-        this.username = await this.profile.init();
-        await this.conn.connect(this.username)
+            this.username = await this.profile.init();
+            await this.conn.connect(this.username)
 
-        await this.db.init();
+            await this.db.init();
 
-        this.initialized = true;
+            this.initialized = true;
+        } catch (error) {
+            // Reset state so a future init call can retry after a transient failure
+            this.token = '';
+            this.username = '';
+            this.initialized = false;
+            throw error;
+        }
     }
 
     destroy() {
