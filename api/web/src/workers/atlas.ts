@@ -17,6 +17,7 @@ export default class Atlas {
 
     token: string;
     username: string;
+    initialized: boolean;
 
     db = Comlink.proxy(new AtlasDatabase(this));
     conn = Comlink.proxy(new AtlasConnection(this));
@@ -26,6 +27,7 @@ export default class Atlas {
         this.channel = new BroadcastChannel('cloudtak');
         this.token = '';
         this.username = '';
+        this.initialized = false;
 
         this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
             const msg = event.data;
@@ -69,10 +71,13 @@ export default class Atlas {
         await this.conn.connect(this.username)
 
         await this.db.init();
+
+        this.initialized = true;
     }
 
     destroy() {
         this.conn.destroy();
+        this.channel.close();
     }
 }
 
