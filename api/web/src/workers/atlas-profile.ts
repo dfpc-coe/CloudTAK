@@ -129,6 +129,42 @@ export default class AtlasProfile {
             clearInterval(this.timerSelf);
             this.timerSelf = undefined;
         }
+
+        this.profile_type?.destroy();
+        this.profile_type = undefined;
+
+        this.profile_callsign?.destroy();
+        this.profile_callsign = undefined;
+
+        this.profile_remarks?.destroy();
+        this.profile_remarks = undefined;
+
+        this.profile_group?.destroy();
+        this.profile_group = undefined;
+
+        this.profile_role?.destroy();
+        this.profile_role = undefined;
+
+        this.profile_loc?.destroy();
+        this.profile_loc = undefined;
+
+        this.profile_loc_freq?.destroy();
+        this.profile_loc_freq = undefined;
+
+        this.profile_created?.destroy();
+        this.profile_created = undefined;
+
+        this.profile_updated?.destroy();
+        this.profile_updated = undefined;
+
+        this.username = null;
+        this.server = null;
+        this.location = {
+            source: LocationState.Disabled,
+            accuracy: undefined,
+            altitude: undefined,
+            coordinates: [0, 0]
+        };
     }
 
     setupTimer() {
