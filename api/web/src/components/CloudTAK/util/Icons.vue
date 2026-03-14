@@ -83,6 +83,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../std.ts';
+import type { IconList } from '../../../types.ts';
 import {
     TablerNone,
     TablerPager,
@@ -114,7 +115,7 @@ const paging = ref({
     page: 0
 });
 
-const list = ref({
+const list = ref<IconList>({
     total: 0,
     items: []
 });
@@ -133,10 +134,10 @@ async function fetchList() {
     try {
         const url = stdurl('/api/icon');
         url.searchParams.set('filter', paging.value.filter);
-        url.searchParams.set('limit', paging.value.limit);
-        url.searchParams.set('page', paging.value.page);
+        url.searchParams.set('limit', String(paging.value.limit));
+        url.searchParams.set('page', String(paging.value.page));
         if (props.iconset) url.searchParams.set('iconset', props.iconset);
-        list.value = await std(url);
+        list.value = await std(url) as IconList;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

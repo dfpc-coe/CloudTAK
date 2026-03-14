@@ -845,6 +845,7 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
                 : await config.conns.subscription(user.email, req.params.guid)
@@ -852,7 +853,7 @@ export default async function router(schema: Schema, config: Config) {
             const uids = Array.isArray(req.query.uid) ? req.query.uid : [req.query.uid];
 
             for (const uid of uids) {
-                await api.Mission.unsubscribe(req.params.guid, { uid });
+                await api.Mission.unsubscribe(req.params.guid, { uid }, opts);
             }
 
             res.json({

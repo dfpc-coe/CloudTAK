@@ -250,11 +250,12 @@ const mapStore = useMapStore();
 
 const opened = ref(false);
 
-const filteredOverlayNames = computed((): string[] =>
-    mapStore.overlays
+const filteredOverlayNames = computed((): string[] => {
+    type O = { id: number; actions: { feature: string[] }; name: string };
+    return (mapStore.overlays as unknown as O[])
         .filter(o => o.actions.feature.includes('query') || o.id === -1)
-        .map(o => o.name)
-);
+        .map(o => o.name);
+});
 
 onMounted(async () => {
     if (mapStore.hasSnapping && (mapStore.draw.mode === DrawToolMode.LINESTRING || mapStore.draw.mode === DrawToolMode.SNAPPING)) {
