@@ -828,4 +828,39 @@ export default async function router(schema: Schema, config: Config) {
              Err.respond(err, res);
         }
     });
+
+    await schema.delete('/marti/missions/:guid/user', {
+        name: 'Delete Mission User',
+        group: 'MartiMissions',
+        description: 'Remove one or more active subscribers from a mission by UID',
+        params: Type.Object({
+            guid: Type.String()
+        }),
+        query: Type.Object({
+            uid: Type.Union([Type.String(), Type.Array(Type.String())])
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.guid)
+
+            const uids = Array.isArray(req.query.uid) ? req.query.uid : [req.query.uid];
+
+            for (const uid of uids) {
+                await api.Mission.unsubscribe(req.params.guid, { uid });
+            }
+
+            res.json({
+                status: 200,
+                message: 'User(s) Removed'
+            });
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
 }

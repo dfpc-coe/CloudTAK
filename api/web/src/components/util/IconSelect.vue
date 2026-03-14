@@ -16,7 +16,7 @@
                 />
                 <TablerHelp
                     v-if='help'
-                    :label='label || placeholder'
+                    :label='label'
                     :description='description'
                     @click='help = false'
                 />
@@ -146,9 +146,9 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, computed, onMounted } from 'vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../std.ts';
 import {
     IconInfoSquare,
     IconTrash,
@@ -163,39 +163,32 @@ import {
     TablerDropdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import type { Iconset, Icon, IconList } from '../../types.ts';
 
-const props = defineProps({
-    modelValue: {
-        type: String,
-        required: true
-    },
-    description: {
-        type: String,
-        default: ''
-    },
-    required: {
-        type: Boolean,
-        default: false
-    },
-    disabled: {
-        type: Boolean,
-        default: false
-    },
-    label: {
-        type: String,
-        default: 'Icon Select'
-    }
+interface Props {
+    modelValue: string;
+    description?: string;
+    required?: boolean;
+    disabled?: boolean;
+    label?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+    description: '',
+    required: false,
+    disabled: false,
+    label: 'Icon Select',
 });
 
-const emit = defineEmits([
-    'update:modelValue'
-]);
+const emit = defineEmits<{
+    'update:modelValue': [value: string];
+}>();
 
 const help = ref(false);
 
 const loading = ref({
-   iconsets: true,
-   icons: true
+    iconset: true,
+    icons: true,
 });
 
 const params = ref({
@@ -204,99 +197,82 @@ const params = ref({
     filter: '',
 });
 
-const selected = ref({
-    iconset: false,
-    path: '',
-    name: ''
-})
+const selected = ref<Partial<Icon>>({});
+const sets = ref<Iconset[]>([]);
+const list = ref<IconList>({ total: 0, items: [] });
 
-const sets = ref([]);
-const list = ref({
-    total: 0,
-    items: []
-});
-
-const setsName = computed(() => {
-    return sets.value.map((set) => { return set.name });
+const setsName = computed<string[]>(() => {
+    return sets.value.map((set) => set.name);
 });
 
 watch(selected, () => {
+    if (!selected.value.path) return;
     if (selected.value.path.endsWith('.png')) {
         emit('update:modelValue', selected.value.path);
     } else {
-        // Replace any extension with PNG for sprites
-        emit('update:modelValue', selected.value.path.replace(/\.[^/.]+$/, ".png"));
+        emit('update:modelValue', selected.value.path.replace(/\.[^/.]+$/, '.png'));
     }
-}, { deep: true })
+}, { deep: true });
 
 watch(params.value, async () => {
-    await Iconlists();
+    await fetchIcons();
 });
 
-watch(props.modelValue, async () => {
-    await fetch();
+watch(() => props.modelValue, async () => {
+    await fetchSelected();
 });
 
 onMounted(async () => {
-    await fetch();
-    await Iconlistsets();
-    await Iconlists();
+    await fetchSelected();
+    await fetchIconsets();
+    await fetchIcons();
 });
 
-function removeIcon() {
-    selected.value.path = '';
-    selected.value.iconset = false;
-    selected.value.name = '';
+function removeIcon(): void {
+    selected.value = {};
 }
 
-async function fetch() {
-    // This is unfortuante but the CloudTAK Map uses the MapLibre Icon format
-    // While the backend uses the TAK Icon Format
+async function fetchSelected(): Promise<void> {
     if (
         props.modelValue
         && !props.modelValue.startsWith('2525')
         && (
-            props.modelValue.includes(":")
+            props.modelValue.includes(':')
             || props.modelValue.split('/').length === 3
         )
     ) {
         let path = props.modelValue;
 
-        // MapLibre needs the palette name seperated by a ":" instead of a "/"
         if (path.includes(':')) path = path.split(':').join('/') + '.png';
 
         const iconset = path.split('/')[0];
         const icon = path.split('/').splice(1).join('/');
 
-        selected.value = await std(`/api/iconset/${iconset}/icon/${encodeURIComponent(icon)}`);
+        selected.value = await std(`/api/iconset/${iconset}/icon/${encodeURIComponent(icon)}`) as Icon;
     }
 }
 
-async function Iconlistsets() {
-    loading.value.iconsets = true;
+async function fetchIconsets(): Promise<void> {
+    loading.value.iconset = true;
     const url = stdurl('/api/iconset');
-    url.searchParams.set('limit', 50);
-    sets.value = (await std(url)).items;
+    url.searchParams.set('limit', '50');
+    sets.value = (await std(url) as { total: number; items: Iconset[] }).items;
     if (sets.value.length) {
         params.value.iconset = sets.value[0].name;
     }
-    loading.value.iconsets = false;
+    loading.value.iconset = false;
 }
 
-async function Iconlists() {
+async function fetchIcons(): Promise<void> {
     loading.value.icons = true;
-    let url = stdurl(`/api/icon`);
-    url.searchParams.set('limit', 1000);
+    const url = stdurl('/api/icon');
+    url.searchParams.set('limit', '1000');
     if (params.value.iconset) {
-        const id = sets.value.filter((set) => {
-            return set.name === params.value.iconset;
-        })[0];
-
-        if (id) url.searchParams.set('iconset', id.uid);
+        const match = sets.value.find((set) => set.name === params.value.iconset);
+        if (match) url.searchParams.set('iconset', match.uid);
     }
-
     url.searchParams.set('filter', params.value.filter);
-    list.value = await std(url)
+    list.value = await std(url) as IconList;
     loading.value.icons = false;
 }
 </script>

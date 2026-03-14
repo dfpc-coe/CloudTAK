@@ -7,7 +7,7 @@
                     class='dropzone dz-clickable'
                     action='./'
                     autocomplete='off'
-                    novalidate=''
+                    :novalidate='true'
                 >
                     <div class='dz-default dz-message'>
                         <button
@@ -41,52 +41,63 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue';
-import {
-    TablerInput
-} from '@tak-ps/vue-tabler';
+import { TablerInput } from '@tak-ps/vue-tabler';
 import Dropzone from 'dropzone/dist/dropzone.mjs';
 import 'dropzone/dist/dropzone.css';
 import '@tabler/core/dist/css/tabler-vendors.min.css';
 import { convertToPem } from 'p12-pem/lib/lib/p12.js';
 
-const emit = defineEmits([
-    'certs'
-]);
+interface CertPair {
+    key: string;
+    cert: string;
+}
 
-const dropzone = ref(null);
-const password = ref('');
-const file = ref(null);
+const emit = defineEmits<{
+    certs: [CertPair];
+}>();
+
+const dropzoneInstance = ref<Dropzone | null>(null);
+const password = ref<string>('');
+const file = ref<string | null>(null);
 
 onMounted(() => {
     createDropzone();
 });
 
-function createDropzone() {
+function createDropzone(): void {
     nextTick(() => {
-        dropzone.value = new Dropzone("#dropzone-default", {
+        dropzoneInstance.value = new Dropzone('#dropzone-default', {
             autoProcessQueue: false,
         });
 
-        dropzone.value.on('addedfile', (f) => {
+        dropzoneInstance.value.on('addedfile', (f: File) => {
             const read = new FileReader();
-            read.onload = (event) => {
-                file.value = event.target.result;
+            read.onload = (event: ProgressEvent<FileReader>) => {
+                const result = event.target?.result;
+                if (typeof result === 'string') {
+                    file.value = result;
+                }
             };
             read.readAsDataURL(f);
         });
     });
 }
 
-function extract() {
+function extract(): void {
+    if (!file.value) return;
+
     try {
-        const certs = convertToPem(atob(file.value.split('base64,')[1]), password.value);
+        const b64 = file.value.split('base64,')[1];
+        const certs = convertToPem(atob(b64), password.value);
+
         const cert = certs.pemCertificate
             .split('-----BEGIN CERTIFICATE-----')
             .join('-----BEGIN CERTIFICATE-----\n')
             .split('-----END CERTIFICATE-----')
             .join('\n-----END CERTIFICATE-----');
+
         const key = certs.pemKey
             .split('-----BEGIN RSA PRIVATE KEY-----')
             .join('-----BEGIN RSA PRIVATE KEY-----\n')
