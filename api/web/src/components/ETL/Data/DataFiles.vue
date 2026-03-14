@@ -128,7 +128,9 @@
     </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { std, stdurl } from '../../../std.ts';
 import {
     IconRefreshDot,
@@ -138,7 +140,7 @@ import {
     IconMapOff,
     IconRefresh,
     IconDownload,
-} from '@tabler/icons-vue'
+} from '@tabler/icons-vue';
 import Upload from '../../util/Upload.vue';
 import {
     TablerAlert,
@@ -149,97 +151,76 @@ import {
     TablerEpoch
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'DataFiles',
-    components: {
-        TablerNone,
-        Upload,
-        TablerAlert,
-        IconPlus,
-        IconMap,
-        IconMapOff,
-        IconRefresh,
-        IconRefreshDot,
-        IconRefreshOff,
-        IconDownload,
-        TablerDelete,
-        TablerLoading,
-        TablerBytes,
-        TablerEpoch,
-    },
-    props: {
-        data: {
-            type: Object,
-            required: true
-        }
-    },
-    emits: [
-        'assets'
-    ],
-    data: function() {
-        return {
-            err: null,
-            upload: false,
-            loading: {
-                list: true
-            },
-            transform: {
-                shown: false,
-                asset: {}
-            },
-            list: {
-                total: 0,
-                assets: []
-            }
-        };
-    },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    methods: {
-        uploadHeaders: function() {
-            return {
-                Authorization: `Bearer ${localStorage.token}`
-            };
-        },
-        uploadURL: function() {
-            return stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset`);
-        },
-        downloadAsset: async function(asset) {
-            const url = stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${asset.name}`);
-            url.searchParams.set('token', localStorage.token);
-            window.open(url, "_blank")
-        },
-        initTransform: function(asset) {
-            if (!asset) {
-                this.transform.asset = {};
-                this.transform.shown = false;
-            } else {
-                this.transform.asset = asset;
-                this.transform.shown = true;
-            }
-        },
-        deleteAsset: async function(asset) {
-            this.loading.list = true;
-            await std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${asset.name}`, {
-                method: 'DELETE'
-            });
+type Asset = {
+    name: string;
+    size: number;
+    updated: string;
+    visualized: boolean;
+    sync: boolean;
+};
 
-            await this.fetchList();
-        },
-        fetchList: async function() {
-            this.upload = false;
+type AssetList = {
+    total: number;
+    assets: Asset[];
+    tiles?: { url: string };
+};
 
-            try {
-                this.loading.list = true;
-                this.err = false;
-                this.list = await std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset`);
-                this.loading.list = false;
-                this.$emit('assets', this.list);
-            } catch (err) {
-                this.err = err;
-            }
-        }
+defineProps<{
+    data: {
+        mission_sync?: boolean;
+        [key: string]: unknown;
+    };
+}>();
+
+const emit = defineEmits<{
+    (e: 'assets', list: AssetList): void;
+}>();
+
+const route = useRoute();
+
+const err = ref<unknown>(null);
+const upload = ref(false);
+const loading = ref({ list: true });
+const list = ref<AssetList>({ total: 0, assets: [] });
+
+onMounted(async () => {
+    await fetchList();
+});
+
+function uploadHeaders() {
+    return {
+        Authorization: `Bearer ${localStorage.token}`
+    };
+}
+
+function uploadURL() {
+    return stdurl(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}/asset`);
+}
+
+async function downloadAsset(asset: Asset) {
+    const url = stdurl(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}/asset/${asset.name}`);
+    url.searchParams.set('token', localStorage.token);
+    window.open(url, '_blank');
+}
+
+async function deleteAsset(asset: Asset) {
+    loading.value.list = true;
+    await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}/asset/${asset.name}`, {
+        method: 'DELETE'
+    });
+    await fetchList();
+}
+
+async function fetchList() {
+    upload.value = false;
+    try {
+        loading.value.list = true;
+        err.value = null;
+        list.value = await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}/asset`) as AssetList;
+        loading.value.list = false;
+        emit('assets', list.value);
+    } catch (e) {
+        err.value = e;
     }
 }
 </script>

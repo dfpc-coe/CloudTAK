@@ -59,8 +59,9 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang="ts">
+import { ref } from 'vue';
+import { std, stdurl } from '../../std.ts';
 import GroupSelect from '../util/GroupSelect.vue';
 import {
     TablerLoading,
@@ -69,53 +70,37 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'AdminExport',
-    components: {
-        GroupSelect,
-        TablerLoading,
-        TablerToggle,
-        TablerEnum,
-        TablerInput,
-    },
-    data: function() {
-        let today = new Date();
-        today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
-        return {
-            loading: false,
-            data: {
-                startTime: today.toISOString().slice(0, -1).replace(/\.\d+$/, ''),
-                endTime: today.toISOString().slice(0, -1).replace(/\.\d+$/, ''),
-                groups: [],
-                format: 'kmz',
-                optimizeExport: true,
-                extendedData: false
-            }
-        }
-    },
-    methods: {
-        postExport: async function() {
-            this.loading = true;
-            try {
-                const url = stdurl('/api/marti/export');
-                url.searchParams.set('download', 'true');
-                await std(url, {
-                    method: 'POST',
-                    download: `export.${this.data.format}`,
-                    body: {
-                        ...this.data,
-                        startTime: (new Date(this.data.startTime)).toISOString(),
-                        endTime: (new Date(this.data.endTime)).toISOString(),
-                    }
-                });
+const today = new Date();
+today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
 
-                this.loading = false;
-            } catch (err) {
-                this.loading = false;
-                throw err;
-            }
+const loading = ref(false);
+const data = ref({
+    startTime: today.toISOString().slice(0, -1).replace(/\.\d+$/, ''),
+    endTime: today.toISOString().slice(0, -1).replace(/\.\d+$/, ''),
+    groups: [] as string[],
+    format: 'kmz',
+    optimizeExport: true,
+    extendedData: false
+});
 
-        }
+async function postExport() {
+    loading.value = true;
+    try {
+        const url = stdurl('/api/marti/export');
+        url.searchParams.set('download', 'true');
+        await std(url, {
+            method: 'POST',
+            download: `export.${data.value.format}`,
+            body: {
+                ...data.value,
+                startTime: (new Date(data.value.startTime)).toISOString(),
+                endTime: (new Date(data.value.endTime)).toISOString(),
+            }
+        });
+        loading.value = false;
+    } catch (err) {
+        loading.value = false;
+        throw err;
     }
 }
 </script>

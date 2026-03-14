@@ -19,6 +19,7 @@ export default ts.config(
             }
         },
         rules: {
+            "vue/component-api-style": ["error", ["script-setup"]],
             "vue/html-indent": ["error", 4],
             "vue/html-quotes": ["error", "single", { "avoidEscape": false } ],
             "vue/multi-word-component-names": 0,
