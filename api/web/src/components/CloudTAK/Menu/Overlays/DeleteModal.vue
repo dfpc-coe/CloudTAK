@@ -4,7 +4,7 @@
             type='button'
             class='btn-close'
             aria-label='Close'
-            @click='modal = false'
+            @click='$emit("close")'
         />
         <div class='modal-status bg-red' />
         <div class='modal-header text-center py-4'>
@@ -53,5 +53,5 @@ defineProps({
     }
 });
 
-defineEmits(['delete']);
+defineEmits(['delete', 'close']);
 </script>

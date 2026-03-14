@@ -7,6 +7,7 @@
         "outDir": "dist/types"
     },
     "include": [
-        "plugin.ts"
+        "plugin.ts",
+        "src/vite-env.d.ts"
     ]
 }

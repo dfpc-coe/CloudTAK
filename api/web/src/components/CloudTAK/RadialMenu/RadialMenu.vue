@@ -167,10 +167,17 @@
 import { ref, shallowRef, onMounted, onUnmounted, nextTick, useTemplateRef, watch } from 'vue';
 import { OriginMode } from '../../../base/cot.ts';
 import Subscription from '../../../base/subscription.ts';
+// @ts-expect-error no declaration file for RadialMenu.js
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
 import { useMapStore } from '../../../stores/map.ts';
 import mapgl from 'maplibre-gl';
+
+interface RadialMenuItem {
+    id: string;
+    icon: string;
+    items?: RadialMenuItem[];
+}
 
 const mapStore = useMapStore();
 
@@ -184,7 +191,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'click']);
 
 const iconsRef = useTemplateRef('icons');
-const menuItems = ref([]);
+const menuItems = ref<RadialMenuItem[]>([]);
 const menu = shallowRef();
 const popup = shallowRef();
 const cot = shallowRef();
@@ -195,7 +202,7 @@ watch(() => cot.value?.geometry, (newGeometry) => {
     }
 });
 
-let timer;
+let timer: ReturnType<typeof setInterval> | undefined;
 onUnmounted(() => {
     if (timer) clearInterval(timer);
     if (menu.value) {
@@ -223,7 +230,7 @@ onMounted(async () => {
             size: props.size,
             closeOnClick: true,
             menuItems: menuItems.value,
-            onClick: (item) => {
+            onClick: (item: RadialMenuItem) => {
                 emit('click', `${mapStore.radial.mode}:${item.id}`);
             },
             onClose: () => {
@@ -283,7 +290,7 @@ async function genMenuItems() {
 
                 const sub = await Subscription.from(cot.value.origin.mode_id, localStorage.token);
 
-                if (sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
+                if (sub && sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
                     menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
                     menuItems.value.push({ id: 'delete', icon: '#radial-trash' })
                 }
