@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.102.1 - 2026-03-14
+
+- :rocket: Fix package.json for npm releases
+
 ### v12.102.0 - 2026-03-14
 
 - :rocket: Update components to Typescript
