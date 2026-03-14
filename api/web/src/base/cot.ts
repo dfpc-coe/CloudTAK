@@ -3,7 +3,6 @@ import { v4 as randomUUID } from 'uuid';
 import { std } from '../std.ts';
 import { db } from './database.ts';
 import { liveQuery } from 'dexie';
-import { nextTick } from 'vue';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
 import { isEqual } from '@react-hookz/deep-equal';
@@ -116,19 +115,11 @@ export default class COT {
      */
     reactivity() {
         if (this._remote) {
-            this._liveQuerySubscription = liveQuery(() => db.feature.get(this.id)).subscribe(async (feat) => {
+            this._liveQuerySubscription = liveQuery(() => db.feature.get(this.id)).subscribe((feat) => {
                 if (!feat) return;
-                // Defer mutations to the next Vue tick to avoid triggering recursive reactive updates.
-                // Without this, Object.assign on a Vue-reactive proxy (set via cot.value = ...) causes
-                // the component render effect to re-queue itself before the current flush completes.
-                await nextTick();
                 this._path = feat.path;
-                if (!isEqual(this._properties, feat.properties)) {
-                    Object.assign(this._properties, feat.properties);
-                }
-                if (!isEqual(this._geometry, feat.geometry)) {
-                    Object.assign(this._geometry, feat.geometry);
-                }
+                Object.assign(this._properties, feat.properties);
+                Object.assign(this._geometry, feat.geometry);
             });
         } else {
             throw new Error('Only Remote instances can listen for updates');
