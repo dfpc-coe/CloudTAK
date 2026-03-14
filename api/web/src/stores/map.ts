@@ -76,6 +76,7 @@ export const useMapStore = defineStore('cloudtak', {
             notification: boolean;
         }
 
+        _rawWorker: Worker;
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
         mapConfig: ConfigMap;
@@ -108,9 +109,8 @@ export const useMapStore = defineStore('cloudtak', {
         },
         overlays: Array<Overlay>
     } => {
-        const worker = Comlink.wrap<Atlas>(new Worker(AtlasWorker, {
-            type: 'module'
-        }));
+        const rawWorker = new Worker(AtlasWorker, { type: 'module' });
+        const worker = Comlink.wrap<Atlas>(rawWorker);
 
         new CloudTAKTransferHandler(
             Comlink.transferHandlers,
@@ -118,6 +118,7 @@ export const useMapStore = defineStore('cloudtak', {
         );
 
         return {
+            _rawWorker: rawWorker,
             worker,
             callsign: 'Unknown',
             toImport: [],
@@ -189,6 +190,12 @@ export const useMapStore = defineStore('cloudtak', {
     },
     actions: {
         destroy: function() {
+            this.worker.destroy().catch((err: unknown) => {
+                console.error('Failed to destroy atlas worker:', err);
+            }).finally(() => {
+                this._rawWorker.terminate();
+            });
+
             this.channel.close();
 
             if (this._boundOnOnline) window.removeEventListener('online', this._boundOnOnline);
@@ -656,11 +663,11 @@ export const useMapStore = defineStore('cloudtak', {
 
             document.addEventListener('visibilitychange', async () => {
                 if (!document.hidden) {
+                    if (!(await this.worker.initialized)) return;
                     const isOpen = await this.worker.conn.isOpen;
                     if (!isOpen) {
                         console.log('Tab became visible with closed connection, reconnecting...');
-                        const username = await this.worker.username;
-                        await this.worker.conn.reconnect(username);
+                        await this.worker.conn.reconnect(await this.worker.username);
                     }
                     await this.updateCOT();
                 }
