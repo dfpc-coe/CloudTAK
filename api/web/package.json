@@ -23,6 +23,10 @@
         "lint": "eslint --config eslint.config.js ./src/ ./public/ ./plugins/",
         "test": "exit 0"
     },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
+    },
     "dependencies": {
         "@mapbox/tile-cover": "^3.0.2",
         "@react-hookz/deep-equal": "^3.0.3",
