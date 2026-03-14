@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.102.2 - 2026-03-14
+
+- :bug: More aggressive deletion of underlying WebWorker
+
 ### v12.102.1 - 2026-03-14
 
 - :rocket: Fix package.json for npm releases
