@@ -118,11 +118,19 @@
             v-for='sub of filteredSubscriptions'
             v-else
             :key='sub.clientUid'
-            class='col-lg-12'
+            class='col-lg-12 d-flex align-items-center'
         >
-            <Contact
-                :contact='toContact(sub)'
-                @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
+            <div class='flex-grow-1 overflow-hidden'>
+                <Contact
+                    :contact='toContact(sub)'
+                    @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
+                />
+            </div>
+            <TablerDelete
+                v-if='canInvite'
+                label='Remove User'
+                displaytype='icon'
+                @delete='removeUser(sub)'
             />
         </div>
     </MenuTemplate>
@@ -176,6 +184,11 @@ async function inviteUser(selection?: { callsign: string } | ContactType) {
     await props.subscription.invite(invitee);
 
     inviteUsername.value = '';
+    await fetchSubscriptions();
+}
+
+async function removeUser(sub: MissionSubscriptions[number]) {
+    await props.subscription.removeUser(sub.clientUid);
     await fetchSubscriptions();
 }
 

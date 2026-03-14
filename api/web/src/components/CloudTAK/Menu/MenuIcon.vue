@@ -122,7 +122,7 @@
     </MenuTemplate>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '../../../std.ts';
@@ -133,25 +133,29 @@ import {
     TablerIconButton,
     TablerInput
 } from '@tak-ps/vue-tabler';
-import {
-    IconPencil,
-} from '@tabler/icons-vue';
+import { IconPencil } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import UploadLogo from '../../util/UploadLogo.vue';
 import ProfileConfig from '../../../base/profile.ts';
+import type { Iconset, Icon } from '../../../types.ts';
+
+interface IconDraft {
+    id?: number;
+    name: string;
+    data: string;
+    iconset?: string;
+    type2525b: string | null;
+}
 
 const route = useRoute();
 const router = useRouter();
 
 const loading = ref(true);
 const isSystemAdmin = ref(false);
-
 const disabled = ref(true);
 
-const iconset = ref({});
-const icon = ref({
-    id: false
-});
+const iconset = ref<Pick<Iconset, 'name' | 'username'>>({ name: '', username: null });
+const icon = ref<IconDraft>({ name: '', data: '', type2525b: null });
 
 onMounted(async () => {
     const isSysAdmin = await ProfileConfig.get('system_admin');
@@ -159,7 +163,7 @@ onMounted(async () => {
     await refresh();
 });
 
-async function refresh() {
+async function refresh(): Promise<void> {
     loading.value = true;
 
     await fetchIconset();
@@ -174,32 +178,24 @@ async function refresh() {
     loading.value = false;
 }
 
-async function submit() {
+async function submit(): Promise<void> {
     if (icon.value.id) {
-        const url = await stdurl(`/api/iconset/${route.params.iconset}/icon/${icon.value.id}`);
-
-        icon.value = await std(url, {
-            method: 'PATCH',
-            body: icon.value
-        });
+        const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${icon.value.id}`);
+        icon.value = await std(url, { method: 'PATCH', body: icon.value }) as Icon;
     } else {
-        const url = await stdurl(`/api/iconset/${route.params.iconset}/icon`);
-
-        icon.value = await std(url, {
-            method: 'POST',
-            body: icon.value
-        });
-
-        router.push(`/menu/iconset/${route.params.iconset}/${icon.value.id}`);
+        const url = stdurl(`/api/iconset/${route.params.iconset}/icon`);
+        const created = await std(url, { method: 'POST', body: icon.value }) as Icon;
+        icon.value = created;
+        router.push(`/menu/iconset/${route.params.iconset}/${created.id}`);
     }
 
     disabled.value = true;
     await refresh();
 }
 
-async function fetch() {
+async function fetch(): Promise<void> {
     const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${route.params.icon}`);
-    const res = await std(url);
+    const res = await std(url) as Icon;
 
     if (res.name.endsWith('.svg') && !res.data.startsWith('data:image/svg+xml;base64,')) {
         res.data = `data:image/svg+xml;base64,${res.data}`;
@@ -210,26 +206,24 @@ async function fetch() {
     icon.value = res;
 }
 
-async function fetchIconset() {
-    const is = await IconManager.from(route.params.iconset);
-    if (is) {
-        iconset.value = is;
+async function fetchIconset(): Promise<void> {
+    const cached = await IconManager.from(String(route.params.iconset));
+    if (cached) {
+        iconset.value = cached;
     } else {
         const url = stdurl(`/api/iconset/${route.params.iconset}`);
-        iconset.value = await std(url);
+        iconset.value = await std(url) as Iconset;
     }
 }
 
-async function deleteIcon() {
+async function deleteIcon(): Promise<void> {
     loading.value = true;
     const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${route.params.icon}`);
-    iconset.value = await std(url, {
-        method: 'DELETE'
-    });
+    await std(url, { method: 'DELETE' });
     router.push(`/menu/iconset/${route.params.iconset}`);
 }
 
-function updateName(name) {
+function updateName(name: string): void {
     icon.value.name = name;
 }
 </script>

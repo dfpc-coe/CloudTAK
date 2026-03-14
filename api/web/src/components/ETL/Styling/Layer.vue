@@ -23,7 +23,7 @@
 
             <div class='col-12 col-md-6 pe-md-1'>
                 <CopyField
-                    :model-value='!isNaN(l.minzoom) ? l.minzoom : "Not Set"'
+                    :model-value='!isNaN(l.minzoom ?? NaN) ? l.minzoom : "Not Set"'
                     :edit='!disabled'
                     :hover='!disabled'
                     @update:model-value='l.minzoom = !isNaN(parseInt($event)) ? parseInt($event) : undefined'
@@ -31,7 +31,7 @@
             </div>
             <div class='col-12 col-md-6 ps-md-1'>
                 <CopyField
-                    :model-value='!isNaN(l.maxzoom) ? l.maxzoom : "Not Set"'
+                    :model-value='!isNaN(l.maxzoom ?? NaN) ? l.maxzoom : "Not Set"'
                     :edit='!disabled'
                     :hover='!disabled'
                     @update:model-value='l.maxzoom = !isNaN(parseInt($event)) ? parseInt($event) : undefined'
@@ -44,7 +44,7 @@
         >
             <label class='subheader'>Source Layer</label>
             <CopyField
-                :model-value='l["source-layer"] || None'
+                :model-value='l["source-layer"] || "None"'
                 :edit='!disabled'
                 :hover='!disabled'
                 @update:model-value='l["source-layer"] = $event ? $event : undefined'
@@ -76,7 +76,6 @@
                     </template>
                     <template v-else>
                         <span v-text='p' />
-
                         <span
                             class='ms-auto'
                             v-text='l.layout[p]'
@@ -111,7 +110,7 @@
                 >
                     <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "number"'>
                         <TablerRange
-                            v-model='l.paint[p][l.paint[p].length -1]'
+                            v-model='l.paint[p][l.paint[p].length - 1]'
                             class='w-100'
                             label='Opacity'
                             :min='0'
@@ -120,7 +119,7 @@
                         >
                             <span
                                 class='float-right'
-                                v-text='Math.round(l.paint[p][l.paint[p].length -1] * 100) + "%"'
+                                v-text='Math.round(l.paint[p][l.paint[p].length - 1] * 100) + "%"'
                             />
                         </TablerRange>
                     </template>
@@ -135,7 +134,7 @@
                         >
                             <span
                                 class='float-right'
-                                v-text='Math.round(l.paint[p] * 100) + "%"'
+                                v-text='Math.round(Number(l.paint[p]) * 100) + "%"'
                             />
                         </TablerRange>
                     </template>
@@ -152,7 +151,7 @@
                 >
                     <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "number"'>
                         <TablerRange
-                            v-model='l.paint[p][l.paint[p].length -1]'
+                            v-model='l.paint[p][l.paint[p].length - 1]'
                             class='w-100'
                             label='Width'
                             :min='1'
@@ -161,7 +160,7 @@
                         >
                             <span
                                 class='float-right'
-                                v-text='l.paint[p][l.paint[p].length -1]'
+                                v-text='l.paint[p][l.paint[p].length - 1]'
                             />
                         </TablerRange>
                     </template>
@@ -197,14 +196,14 @@
                 >
                     <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "string"'>
                         <TablerInput
-                            v-model='l.paint[p][l.paint[p].length -1]'
+                            v-model='l.paint[p][l.paint[p].length - 1]'
                             class='w-100'
                             type='color'
                             :label='p'
                         >
                             <span
                                 class='float-right'
-                                v-text='l.paint[p][l.paint[p].length -1]'
+                                v-text='l.paint[p][l.paint[p].length - 1]'
                             />
                         </TablerInput>
                     </template>
@@ -235,7 +234,6 @@
                 <template v-else>
                     <div v-text='p' />
                     <CopyField
-                        v-model='l.paint[p]'
                         :model-value='JSON.stringify(l.paint[p], null, 4)'
                         :rows='JSON.stringify(l.paint[p], null, 4).split("\n").length'
                         :edit='!disabled'
@@ -248,7 +246,7 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from 'vue';
 import {
     TablerNone,
@@ -258,53 +256,59 @@ import {
 } from '@tak-ps/vue-tabler';
 import CopyField from '../../CloudTAK/util/CopyField.vue';
 import { useMapStore } from '../../../stores/map.ts';
+import type { FilterSpecification } from 'maplibre-gl';
+
 const mapStore = useMapStore();
 
-const props = defineProps({
-    disabled: {
-        type: Boolean,
-        default: false
-    },
-    advanced: {
-        type: Boolean,
-        default: false
-    },
-    layer: {
-        type: Object,
-        required: true
-    },
-    updateMap: {
-        type: Boolean,
-        default: true
-    }
+interface StyledLayer {
+    id: string;
+    type: string;
+    filter?: FilterSpecification;
+    minzoom?: number;
+    maxzoom?: number;
+    'source-layer'?: string;
+    layout?: Record<string, unknown>;
+    paint: Record<string, unknown>;
+}
+
+const props = withDefaults(defineProps<{
+    disabled?: boolean;
+    advanced?: boolean;
+    layer: StyledLayer;
+    updateMap?: boolean;
+}>(), {
+    disabled: false,
+    advanced: false,
+    updateMap: true
 });
 
-const l = ref(props.layer);
+const l = ref<StyledLayer>(props.layer);
 
-function validateFilter(text) {
+function validateFilter(text: string): true | string {
     try {
-        JSON.parse(text) 
+        JSON.parse(text);
     } catch (err) {
-        return err.message;
+        return err instanceof Error ? err.message : String(err);
     }
-
     return true;
 }
+
+const PAINT_PROPERTIES = [
+    'fill-opacity',
+    'fill-color',
+    'line-opacity',
+    'line-color',
+    'line-width',
+    'text-halo-width',
+    'text-halo-blur',
+] as const;
 
 watch(l.value, () => {
     if (!props.updateMap) return;
 
-    for (const paint of [
-        'fill-opacity',
-        'fill-color',
-        'line-opacity',
-        'line-color',
-        'line-width',
-        'text-halo-width',
-        'text-halo-blur'
-    ]) {
-        if (l.value.paint[paint]) {
-            mapStore.map.setPaintProperty(String(l.value.id), paint, l.value.paint[paint]);
+    for (const paint of PAINT_PROPERTIES) {
+        if (l.value.paint[paint] !== undefined) {
+            mapStore.map.setPaintProperty(l.value.id, paint, l.value.paint[paint]);
         }
     }
 });

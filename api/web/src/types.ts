@@ -90,6 +90,8 @@ export type ServerAdminVideoList = paths["/api/server/video"]["get"]["responses"
 
 export type Iconset = paths["/api/iconset/{:iconset}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type IconsetList = paths["/api/iconset"]["get"]["responses"]["200"]["content"]["application/json"]
+export type Icon = paths["/api/iconset/{:iconset}/icon/{:icon}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type IconList = paths["/api/icon"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type AttachmentList = paths["/api/attachment"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Attachment = paths["/api/attachment"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0]
