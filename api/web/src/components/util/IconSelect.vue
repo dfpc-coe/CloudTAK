@@ -230,6 +230,7 @@ onMounted(async () => {
 
 function removeIcon(): void {
     selected.value = {};
+    emit('update:modelValue', '');
 }
 
 async function fetchSelected(): Promise<void> {
