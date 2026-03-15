@@ -1,0 +1,74 @@
+name: GHCR
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  build:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        include:
+          - task: api
+            context: ./api/
+          - task: pmtiles
+            context: ./tasks/pmtiles/
+          - task: events
+            context: ./tasks/events/
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{github.event.pull_request.head.sha || github.sha}}
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Get Semver Tag
+        id: version
+        if: github.ref == 'refs/heads/main'
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAGGED=$(git tag --points-at HEAD)
+          if [ -z "$TAGGED" ]; then
+            echo "semver=v${VERSION}" >> $GITHUB_OUTPUT
+            echo "should_tag=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_tag=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{github.repository_owner}}/cloudtak-${{matrix.task}}
+          tags: |
+            type=ref,event=pr
+            type=sha,enable={{is_default_branch}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{steps.version.outputs.semver}},enable=${{steps.version.outputs.should_tag == 'true'}}
+
+      - name: Build and Push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{matrix.context}}
+          push: true
+          tags: ${{steps.meta.outputs.tags}}
+          labels: ${{steps.meta.outputs.labels}}
