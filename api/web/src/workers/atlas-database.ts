@@ -404,9 +404,28 @@ export default class AtlasDatabase {
 
         // TODO Throw an error?
         if (!cot) {
+            await db.feature.delete(id);
             console.warn(`Cannot remove CoT ${id} as it does not exist in the store`);
             return;
         }
+
+        const breadcrumbUid = cot.properties.breadcrumb
+            ? String(cot.properties.uid || cot.id).replace(/\.track$/, '')
+            : cot.id;
+        const breadcrumbId = `${breadcrumbUid}.track`;
+        const breadcrumbEntry = await db.breadcrumb.get(breadcrumbId);
+
+        if (breadcrumbEntry) {
+            await this.breadcrumb.remove(breadcrumbUid);
+
+            if (this.cots.has(breadcrumbId)) {
+                this.pendingDelete.add(breadcrumbId);
+            }
+
+            await db.feature.delete(breadcrumbId);
+        }
+
+        await db.feature.delete(id);
 
         if (cot.origin.mode === OriginMode.CONNECTION) {
             this.pendingDelete.add(id);
