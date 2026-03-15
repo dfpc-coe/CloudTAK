@@ -90,11 +90,6 @@
                 v-model='query.filter'
                 desc='Loading Features'
             />
-            <TablerNone
-                v-else-if='cots.size === 0 && paths.length === 0'
-                :create='false'
-                label='No Archived Features'
-            />
             <template v-else>
                 <div class='px-2 pb-2'>
                     <StandardItem
@@ -109,114 +104,123 @@
                     </StandardItem>
                 </div>
 
-                <div class='d-flex flex-column gap-2 px-2'>
-                    <template
-                        v-for='path of paths'
-                        :key='path.id'
-                    >
-                        <StandardItem
-                            :id='`foldertarget-${path.id}`'
-                            class='px-3 py-3 user-select-none'
-                            :style='hover === path ? "background-color: rgba(255, 255, 255, 0.1);" : ""'
-                            @drop.stop.prevent='onFolderDrop(path)'
-                            @dragover.prevent='dragOverFolder(path)'
-                            @dragleave='dragLeaveFolder()'
-                            @click='path.opened ? closePath(path) : openPath(path)'
-                        >
-                            <div class='d-flex align-items-center justify-content-between'>
-                                <div class='d-flex align-items-center'>
-                                    <IconChevronRight
-                                        v-if='!path.opened'
-                                        :size='20'
-                                        stroke='1'
-                                    />
-                                    <IconChevronDown
-                                        v-else
-                                        :size='20'
-                                        stroke='1'
-                                    />
-                                    <IconFolder
-                                        class='mx-2'
-                                        :size='20'
-                                        stroke='2'
-                                    />
-                                    <span
-                                        class='fw-bold'
-                                        v-text='path.name.replace(/(^\/|\/$)/g, "")'
-                                    />
-                                </div>
+                <TablerNone
+                    v-if='cots.size === 0 && paths.length === 0'
+                    :create='false'
+                    label='No Archived Features'
+                />
 
-                                <div class='ms-auto d-flex align-items-center gap-2'>
-                                    <span class='badge rounded-pill bg-secondary bg-opacity-25 text-white-50'>{{ path.count }}</span>
-                                    <TablerIconButton
-                                        title='Rename Folder'
-                                        @click.stop='openEditModal(path)'
-                                    >
-                                        <IconPencil
+                <template v-else>
+
+                    <div class='d-flex flex-column gap-2 px-2'>
+                        <template
+                            v-for='path of paths'
+                            :key='path.id'
+                        >
+                            <StandardItem
+                                :id='`foldertarget-${path.id}`'
+                                class='px-3 py-3 user-select-none'
+                                :style='hover === path ? "background-color: rgba(255, 255, 255, 0.1);" : ""'
+                                @drop.stop.prevent='onFolderDrop(path)'
+                                @dragover.prevent='dragOverFolder(path)'
+                                @dragleave='dragLeaveFolder()'
+                                @click='path.opened ? closePath(path) : openPath(path)'
+                            >
+                                <div class='d-flex align-items-center justify-content-between'>
+                                    <div class='d-flex align-items-center'>
+                                        <IconChevronRight
+                                            v-if='!path.opened'
                                             :size='20'
                                             stroke='1'
                                         />
-                                    </TablerIconButton>
-                                    <TablerDelete
-                                        displaytype='icon'
-                                        :size='20'
-                                        @delete='deletePath(path)'
-                                    />
-                                </div>
-                            </div>
-                            
-                            <div
-                                v-if='path.opened'
-                                class='mt-3'
-                                @click.stop
-                            >
-                                <div
-                                    :id='`folder-${path.id}`'
-                                    class='folder w-100'
-                                    style='min-height: 40px;'
-                                >
-                                    <TablerLoading v-if='path.loading' />
-                                    <template v-else>
-                                        <div
-                                            v-if='path.cots.size === 0'
-                                            class='text-center text-muted fst-italic py-2 small user-select-none opacity-50 pe-none position-absolute w-100'
-                                            style='margin-top: -8px;'
-                                        >
-                                            Folder is empty
-                                        </div>
-                                        <Feature
-                                            v-for='cot of path.cots.values()'
-                                            :id='cot.id'
-                                            :key='cot.id'
-                                            :select='true'
-                                            :grip-handle='true'
-                                            :delete-button='true'
-                                            :info-button='true'
-                                            :feature='cot'
+                                        <IconChevronDown
+                                            v-else
+                                            :size='20'
+                                            stroke='1'
                                         />
-                                    </template>
-                                </div>
-                            </div>
-                        </StandardItem>
-                    </template>
-                </div>
+                                        <IconFolder
+                                            class='mx-2'
+                                            :size='20'
+                                            stroke='2'
+                                        />
+                                        <span
+                                            class='fw-bold'
+                                            v-text='path.name.replace(/(^\/|\/$)/g, "")'
+                                        />
+                                    </div>
 
-                <div
-                    id='general'
-                    ref='sortableFilesRef'
-                    class='px-2 mt-2'
-                >
-                    <Feature
-                        v-for='cot of cots.values()'
-                        :id='cot.id'
-                        :key='cot.id'
-                        :select='true'
-                        :grip-handle='true'
-                        :delete-button='true'
-                        :info-button='true'
-                        :feature='cot'
-                    />
-                </div>
+                                    <div class='ms-auto d-flex align-items-center gap-2'>
+                                        <span class='badge rounded-pill bg-secondary bg-opacity-25 text-white-50'>{{ path.count }}</span>
+                                        <TablerIconButton
+                                            title='Rename Folder'
+                                            @click.stop='openEditModal(path)'
+                                        >
+                                            <IconPencil
+                                                :size='20'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
+                                        <TablerDelete
+                                            displaytype='icon'
+                                            :size='20'
+                                            @delete='deletePath(path)'
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div
+                                    v-if='path.opened'
+                                    class='mt-3'
+                                    @click.stop
+                                >
+                                    <div
+                                        :id='`folder-${path.id}`'
+                                        class='folder w-100'
+                                        style='min-height: 40px;'
+                                    >
+                                        <TablerLoading v-if='path.loading' />
+                                        <template v-else>
+                                            <div
+                                                v-if='path.cots.size === 0'
+                                                class='text-center text-muted fst-italic py-2 small user-select-none opacity-50 pe-none position-absolute w-100'
+                                                style='margin-top: -8px;'
+                                            >
+                                                Folder is empty
+                                            </div>
+                                            <Feature
+                                                v-for='cot of path.cots.values()'
+                                                :id='cot.id'
+                                                :key='cot.id'
+                                                :select='true'
+                                                :grip-handle='true'
+                                                :delete-button='true'
+                                                :info-button='true'
+                                                :feature='cot'
+                                            />
+                                        </template>
+                                    </div>
+                                </div>
+                            </StandardItem>
+                        </template>
+                    </div>
+
+                    <div
+                        id='general'
+                        ref='sortableFilesRef'
+                        class='px-2 mt-2'
+                    >
+                        <Feature
+                            v-for='cot of cots.values()'
+                            :id='cot.id'
+                            :key='cot.id'
+                            :select='true'
+                            :grip-handle='true'
+                            :delete-button='true'
+                            :info-button='true'
+                            :feature='cot'
+                        />
+                    </div>
+                </template>
             </template>
         </template>
     </MenuTemplate>

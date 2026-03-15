@@ -44,6 +44,16 @@ export default class AtlasBreadcrumb {
     }
 
     /**
+     * Remove a breadcrumb trail entirely and disable any future live updates.
+     */
+    async remove(uid: string): Promise<void> {
+        this.enabled.delete(uid);
+        this.pending.delete(uid);
+
+        await db.breadcrumb.delete(`${uid}.track`);
+    }
+
+    /**
      * Returns whether live breadcrumb recording is currently enabled for the given UID
      */
     async get(uid: string): Promise<boolean> {
@@ -153,15 +163,10 @@ export default class AtlasBreadcrumb {
 
             await db.breadcrumb.put({ ...existing, coordinates: merged });
 
-            const cotEntry = this.db.cots.get(trackId);
-            if (cotEntry) {
-                await cotEntry.update({
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: merged,
-                    } as LineString,
-                }, { skipSave: true });
-            }
+            await this.db.add(
+                this._buildFeature(trackId, uid, existing.path, existing.callsign, merged, existing.color),
+                { skipSave: true },
+            );
         } else {
             // No live trail yet — seed from history.
             // Flush any single buffered live coord so it is not silently dropped.
@@ -238,15 +243,10 @@ export default class AtlasBreadcrumb {
 
             await db.breadcrumb.put({ ...existing, coordinates });
 
-            const cotEntry = this.db.cots.get(breadcrumbId);
-            if (cotEntry) {
-                await cotEntry.update({
-                    geometry: {
-                        type: 'LineString',
-                        coordinates,
-                    } as LineString,
-                }, { skipSave: true });
-            }
+            await this.db.add(
+                this._buildFeature(breadcrumbId, cot.id, existing.path, existing.callsign, coordinates, existing.color),
+                { skipSave: true },
+            );
         }
     }
 }
