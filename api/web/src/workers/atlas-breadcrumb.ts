@@ -44,6 +44,16 @@ export default class AtlasBreadcrumb {
     }
 
     /**
+     * Remove a breadcrumb trail entirely and disable any future live updates.
+     */
+    async remove(uid: string): Promise<void> {
+        this.enabled.delete(uid);
+        this.pending.delete(uid);
+
+        await db.breadcrumb.delete(`${uid}.track`);
+    }
+
+    /**
      * Returns whether live breadcrumb recording is currently enabled for the given UID
      */
     async get(uid: string): Promise<boolean> {
