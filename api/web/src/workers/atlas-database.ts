@@ -130,6 +130,7 @@ export default class AtlasDatabase {
         diff.add = [];
         diff.remove = [];
         diff.update = [];
+        const staleDelete = new Set<string>();
 
         const display_stale = (await ProfileConfig.get('display_stale'))?.value || 'Immediate';
 
@@ -151,6 +152,7 @@ export default class AtlasDatabase {
                 )
             ) {
                 diff.remove.push(cot.vectorId())
+                staleDelete.add(cot.id);
             } else if (!cot.properties.archived) {
                 if (now < stale && (cot.properties['icon-opacity'] !== 1 || cot.properties['marker-opacity'] !== 1)) {
                     cot.properties['icon-opacity'] = 1;
@@ -212,6 +214,11 @@ export default class AtlasDatabase {
         }
 
         this.pendingCreate.clear();
+
+        for (const id of staleDelete) {
+            this.cots.delete(id);
+            await db.feature.delete(id);
+        }
 
         for (const id of this.pendingDelete) {
             const cot = await this.get(id);
@@ -406,6 +413,22 @@ export default class AtlasDatabase {
         if (!cot) {
             console.warn(`Cannot remove CoT ${id} as it does not exist in the store`);
             return;
+        }
+
+        const breadcrumbUid = cot.properties.breadcrumb
+            ? String(cot.properties.uid || cot.id).replace(/\.track$/, '')
+            : cot.id;
+        const breadcrumbId = `${breadcrumbUid}.track`;
+        const breadcrumbEntry = await db.breadcrumb.get(breadcrumbId);
+
+        if (breadcrumbEntry) {
+            await this.breadcrumb.remove(breadcrumbUid);
+
+            if (this.cots.has(breadcrumbId)) {
+                this.pendingDelete.add(breadcrumbId);
+            }
+
+            await db.feature.delete(breadcrumbId);
         }
 
         if (cot.origin.mode === OriginMode.CONNECTION) {
