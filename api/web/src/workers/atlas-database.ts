@@ -130,6 +130,7 @@ export default class AtlasDatabase {
         diff.add = [];
         diff.remove = [];
         diff.update = [];
+        const staleDelete = new Set<string>();
 
         const display_stale = (await ProfileConfig.get('display_stale'))?.value || 'Immediate';
 
@@ -151,6 +152,7 @@ export default class AtlasDatabase {
                 )
             ) {
                 diff.remove.push(cot.vectorId())
+                staleDelete.add(cot.id);
             } else if (!cot.properties.archived) {
                 if (now < stale && (cot.properties['icon-opacity'] !== 1 || cot.properties['marker-opacity'] !== 1)) {
                     cot.properties['icon-opacity'] = 1;
@@ -212,6 +214,11 @@ export default class AtlasDatabase {
         }
 
         this.pendingCreate.clear();
+
+        for (const id of staleDelete) {
+            this.cots.delete(id);
+            await db.feature.delete(id);
+        }
 
         for (const id of this.pendingDelete) {
             const cot = await this.get(id);
@@ -404,7 +411,6 @@ export default class AtlasDatabase {
 
         // TODO Throw an error?
         if (!cot) {
-            await db.feature.delete(id);
             console.warn(`Cannot remove CoT ${id} as it does not exist in the store`);
             return;
         }
@@ -424,8 +430,6 @@ export default class AtlasDatabase {
 
             await db.feature.delete(breadcrumbId);
         }
-
-        await db.feature.delete(id);
 
         if (cot.origin.mode === OriginMode.CONNECTION) {
             this.pendingDelete.add(id);
