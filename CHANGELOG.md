@@ -17,6 +17,13 @@
 
 ### Pending Release
 
+### v12.103.0 - 2026-03-14
+
+- :rocket: Improve Buffer behavior in Video Pane
+- :rocket: Ensure Recently Deleted features button is shown even if there are no features at all (maybe because they were recently deleted)
+- :rocket: When a breadcrumb feature is deleted, disable live breadcrumbs
+- :bug: If a CoT is deleted, remove it from the underlying store.
+
 ### v12.102.3 - 2026-03-14
 
 - :arrow_up: Update Core Deps
