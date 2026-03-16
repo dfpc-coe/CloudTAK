@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.103.2 - 2026-03-16
+
+- :tada: Introduce Github Container Repository builds on Tagged Releases (@layertwo)
+
 ### v12.103.1 - 2026-03-16
 
 - :bug: Fix TablerPager now showing relative pages on last page
