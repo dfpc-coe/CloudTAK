@@ -482,6 +482,8 @@ export const FullConfig = Type.Object({
     'provider::url': Type.String(),
     'provider::secret': Type.String(),
     'provider::client': Type.String(),
+    'proxy::enabled': Type.Boolean({ description: 'Enable plugin proxy requests to admin-allowed origins' }),
+    'proxy::whitelist': Type.Array(Type.String({ description: 'Allowed proxy origin (scheme + host + optional port)' })),
     'login::signup': Type.String({ description: 'URL for Signup Page' }),
     'login::forgot': Type.String({ description: 'URL for Forgot Password Page' }),
     'login::name': Type.String({ description: 'Login Page Title' }),

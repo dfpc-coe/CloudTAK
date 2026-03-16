@@ -16,14 +16,13 @@
                 class='d-flex gap-1'
             >
                 <TablerIconButton
-                    color='blue'
+                    color='rgba(var(--tblr-primary-rgb), 0.14)'
                     title='Save'
                     @click.stop='save'
                 >
-                    <IconDeviceFloppy :stroke='1' />
+                    <IconDeviceFloppy color='rgb(var(--tblr-primary-rgb))' stroke='1' />
                 </TablerIconButton>
                 <TablerIconButton
-                    color='red'
                     title='Cancel'
                     @click.stop='edit = false; fetch()'
                 >
