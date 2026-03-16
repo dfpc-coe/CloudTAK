@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.103.1 - 2026-03-16
+
+- :bug: Fix TablerPager now showing relative pages on last page
+
 ### v12.103.0 - 2026-03-14
 
 - :rocket: Improve Buffer behavior in Video Pane
