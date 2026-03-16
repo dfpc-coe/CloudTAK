@@ -1,9 +1,7 @@
-import { lookup } from 'node:dns/promises';
-import net from 'node:net';
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import { fetch, Headers } from 'undici';
+import { fetch, Headers, Response } from 'undici';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 
@@ -72,59 +70,6 @@ function parseWhitelist(raw: string[]): Set<string> {
     }
 
     return whitelist;
-}
-
-function isPrivateIPv4(address: string): boolean {
-    const octets = address.split('.').map(Number);
-    const [a, b] = octets;
-
-    if (a === 10) return true;
-    if (a === 127) return true;
-    if (a === 0) return true;
-    if (a === 169 && b === 254) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-    if (a === 100 && b >= 64 && b <= 127) return true;
-    if (a === 198 && (b === 18 || b === 19)) return true;
-
-    return false;
-}
-
-function isPrivateIPv6(address: string): boolean {
-    const normalized = address.toLowerCase();
-
-    if (normalized === '::1' || normalized === '::') return true;
-    if (normalized.startsWith('fc') || normalized.startsWith('fd')) return true;
-    if (normalized.startsWith('fe8') || normalized.startsWith('fe9') || normalized.startsWith('fea') || normalized.startsWith('feb')) return true;
-
-    return false;
-}
-
-function isPrivateAddress(address: string): boolean {
-    const family = net.isIP(address);
-
-    if (family === 4) return isPrivateIPv4(address);
-    if (family === 6) return isPrivateIPv6(address);
-
-    return true;
-}
-
-async function assertPublicTarget(config: Config, url: URL): Promise<void> {
-    if (config.StackName === 'test') return;
-
-    const hostname = url.hostname.toLowerCase();
-    if (hostname === 'localhost' || hostname.endsWith('.localhost')) {
-        throw new Err(403, null, 'Proxy target must resolve to a public address');
-    }
-
-    const addresses = await lookup(hostname, { all: true, verbatim: true });
-    if (!addresses.length) throw new Err(403, null, 'Proxy target could not be resolved');
-
-    for (const address of addresses) {
-        if (isPrivateAddress(address.address)) {
-            throw new Err(403, null, 'Proxy target must resolve to a public address');
-        }
-    }
 }
 
 function sanitizeRequestHeaders(input?: Record<string, string>): Headers {
@@ -265,8 +210,6 @@ export default async function router(schema: Schema, config: Config) {
             if (!whitelist.has(parsed.origin)) {
                 throw new Err(403, null, `Proxy origin ${parsed.origin} is not allowed`);
             }
-
-            await assertPublicTarget(config, parsed);
 
             const method = String(req.body.method || 'GET').toUpperCase() as typeof ALLOWED_METHODS[number];
             if (!ALLOWED_METHODS.includes(method)) {
