@@ -16,14 +16,13 @@
                 class='d-flex gap-1'
             >
                 <TablerIconButton
-                    color='blue'
+                    color='rgba(var(--tblr-primary-rgb), 0.14)'
                     title='Save'
                     @click.stop='save'
                 >
-                    <IconDeviceFloppy color='white' stroke='1' />
+                    <IconDeviceFloppy color='rgb(var(--tblr-primary-rgb))' stroke='1' />
                 </TablerIconButton>
                 <TablerIconButton
-                    color='red'
                     title='Cancel'
                     @click.stop='edit = false; fetch()'
                 >
@@ -57,11 +56,10 @@
 
                                 <TablerIconButton
                                     v-if='edit'
-                                    color='blue'
                                     title='Add URL'
                                     @click='addWhitelistEntry()'
                                 >
-                                    <IconPlus stroke='1' />
+                                    <IconPlus color='rgb(var(--tblr-primary-rgb))' stroke='1' />
                                 </TablerIconButton>
                             </div>
 
@@ -82,11 +80,10 @@
 
                                     <TablerIconButton
                                         v-if='edit'
-                                        color='red'
                                         title='Remove URL'
                                         @click='removeWhitelistEntry(index)'
                                     >
-                                        <IconTrash stroke='1' />
+                                        <IconTrash color='rgb(var(--tblr-danger-rgb))' stroke='1' />
                                     </TablerIconButton>
                                 </div>
                             </template>
