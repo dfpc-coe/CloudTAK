@@ -20,7 +20,7 @@
                     title='Save'
                     @click.stop='save'
                 >
-                    <IconDeviceFloppy stroke='1' />
+                    <IconDeviceFloppy color='white' stroke='1' />
                 </TablerIconButton>
                 <TablerIconButton
                     color='red'
@@ -47,21 +47,56 @@
                             label='Enable Plugin Proxy'
                         />
 
-                        <p class='text-secondary mt-2 mb-2'>
-                            Allow plugins to make outbound requests through CloudTAK. Only exact origins in the whitelist are allowed.
-                        </p>
+                        <template v-if='config["proxy::enabled"]'>
+                            <p class='text-secondary mt-2 mb-2'>
+                                Allow plugins to make outbound requests through CloudTAK. Configure the whitelist as an array of allowed URLs.
+                            </p>
 
-                        <TagEntry
-                            v-model='config["proxy::whitelist"]'
-                            :disabled='!edit'
-                            :validate='validateOrigin'
-                            placeholder='https://api.example.com'
-                            :add-tag-on-blur='true'
-                        />
+                            <div class='d-flex align-items-center justify-content-between mb-2'>
+                                <label class='form-label mb-0'>Allowed URLs</label>
 
-                        <div class='text-secondary small mt-2'>
-                            Enter one origin per tag, such as https://api.example.com or https://api.example.com:8443. Paths, query strings, credentials, and fragments are not allowed.
-                        </div>
+                                <TablerIconButton
+                                    v-if='edit'
+                                    color='blue'
+                                    title='Add URL'
+                                    @click='addWhitelistEntry()'
+                                >
+                                    <IconPlus stroke='1' />
+                                </TablerIconButton>
+                            </div>
+
+                            <template v-if='config["proxy::whitelist"].length'>
+                                <div
+                                    v-for='(url, index) in config["proxy::whitelist"]'
+                                    :key='index'
+                                    class='d-flex gap-2 align-items-center mb-2'
+                                >
+                                    <div class='flex-grow-1'>
+                                        <TablerInput
+                                            v-model='config["proxy::whitelist"][index]'
+                                            :disabled='!edit'
+                                            :error='validateOptionalProxyURL(url)'
+                                            placeholder='https://api.example.com/v1'
+                                        />
+                                    </div>
+
+                                    <TablerIconButton
+                                        v-if='edit'
+                                        color='red'
+                                        title='Remove URL'
+                                        @click='removeWhitelistEntry(index)'
+                                    >
+                                        <IconTrash stroke='1' />
+                                    </TablerIconButton>
+                                </div>
+                            </template>
+
+                            <TablerNone
+                                v-else
+                                label='No proxy URLs configured'
+                                :create='false'
+                            />
+                        </template>
                     </div>
                 </div>
             </template>
@@ -71,11 +106,12 @@
 
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
-import TagEntry from '../../CloudTAK/util/TagEntry.vue';
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../../std.ts';
 import {
     TablerLoading,
+    TablerNone,
+    TablerInput,
     TablerToggle,
     TablerIconButton,
     TablerAlert
@@ -83,6 +119,8 @@ import {
 import {
     IconPencil,
     IconDeviceFloppy,
+    IconPlus,
+    IconTrash,
     IconX
 } from '@tabler/icons-vue';
 
@@ -109,8 +147,8 @@ watch(isOpen, (newState) => {
     if (newState && !edit.value) fetch();
 });
 
-function validateOrigin(value: string): string {
-    if (!value.trim()) return 'Origin cannot be empty';
+function validateProxyURL(value: string): string {
+    if (!value.trim()) return 'URL cannot be empty';
 
     let parsed: URL;
     try {
@@ -120,24 +158,29 @@ function validateOrigin(value: string): string {
     }
 
     if (!['http:', 'https:'].includes(parsed.protocol)) {
-        return 'Origin must start with http:// or https://';
+        return 'URL must start with http:// or https://';
     }
 
     if (parsed.username || parsed.password) {
-        return 'Origins cannot include credentials';
+        return 'URLs cannot include credentials';
     }
 
-    if (parsed.pathname && parsed.pathname !== '/') {
-        return 'Origins cannot include a path';
-    }
-
-    if (parsed.search) return 'Origins cannot include query parameters';
-    if (parsed.hash) return 'Origins cannot include fragments';
-    if (parsed.origin !== value.trim().replace(/\/$/, '')) {
-        return 'Enter only the origin (scheme, host, optional port)';
-    }
+    if (parsed.hash) return 'URLs cannot include fragments';
 
     return '';
+}
+
+function validateOptionalProxyURL(value: string): string {
+    if (!value.trim()) return '';
+    return validateProxyURL(value);
+}
+
+function addWhitelistEntry(): void {
+    config.value['proxy::whitelist'].push('');
+}
+
+function removeWhitelistEntry(index: number): void {
+    config.value['proxy::whitelist'].splice(index, 1);
 }
 
 async function fetch() {

@@ -20,7 +20,7 @@
                     title='Save'
                     @click.stop='save'
                 >
-                    <IconDeviceFloppy :stroke='1' />
+                    <IconDeviceFloppy color='white' stroke='1' />
                 </TablerIconButton>
                 <TablerIconButton
                     color='red'
