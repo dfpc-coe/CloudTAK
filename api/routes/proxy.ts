@@ -52,14 +52,10 @@ const BLOCKED_RESPONSE_HEADERS = new Set([
     'upgrade'
 ]);
 
-function parseWhitelist(raw: string[]): Set<string> {
+function normalizeWhitelist(raw: string[]): Set<string> {
     const whitelist = new Set<string>();
 
-    if (!raw.length) return whitelist;
-
-    const entries = raw;
-
-    for (const entry of entries) {
+    for (const entry of raw.map((entry) => String(entry).trim()).filter(Boolean)) {
         try {
             const url = new URL(entry);
             if (!['http:', 'https:'].includes(url.protocol)) continue;
@@ -101,10 +97,6 @@ function sanitizeResponseHeaders(headers: Headers): Record<string, string> {
     }
 
     return sanitized;
-}
-
-function normalizeWhitelist(raw: string[]): Set<string> {
-    return parseWhitelist(raw.map((entry) => String(entry).trim()).filter(Boolean));
 }
 
 function serializeRequestBody(method: typeof ALLOWED_METHODS[number], headers: Headers, body: unknown): string | undefined {
