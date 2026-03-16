@@ -56,13 +56,23 @@ function normalizeWhitelist(raw: string[]): Set<string> {
     const whitelist = new Set<string>();
 
     for (const entry of raw.map((entry) => String(entry).trim()).filter(Boolean)) {
+        let url: URL;
+
         try {
-            const url = new URL(entry);
-            if (!['http:', 'https:'].includes(url.protocol)) continue;
-            whitelist.add(url.origin);
+            url = new URL(entry);
         } catch {
-            continue;
+            throw new Err(400, null, `Invalid whitelist entry: ${entry}`);
         }
+
+        if (!['http:', 'https:'].includes(url.protocol)) {
+            throw new Err(400, null, `Invalid whitelist entry protocol: ${entry}`);
+        }
+
+        if (url.username || url.password || url.search || url.hash || (url.pathname && url.pathname !== '/')) {
+            throw new Err(400, null, 'Whitelist entries must be origin-only (scheme + host + optional port), without path, query, fragment, or credentials');
+        }
+
+        whitelist.add(url.origin);
     }
 
     return whitelist;
@@ -73,6 +83,10 @@ function sanitizeRequestHeaders(input?: Record<string, string>): Headers {
 
     for (const [key, value] of Object.entries(input || {})) {
         const normalized = key.toLowerCase();
+
+        if (normalized.startsWith('x-forwarded-') || normalized === 'x-real-ip') {
+            throw new Err(400, null, `Header ${key} is not allowed`);
+        }
 
         if (BLOCKED_REQUEST_HEADERS.has(normalized)) {
             throw new Err(400, null, `Header ${key} is not allowed`);
@@ -118,6 +132,45 @@ function serializeRequestBody(method: typeof ALLOWED_METHODS[number], headers: H
     return serialized;
 }
 
+async function readResponseBodyWithLimit(response: Response, limit: number): Promise<Buffer> {
+    const body = response.body;
+    if (!body) return Buffer.alloc(0);
+
+    const reader = body.getReader();
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        if (value) {
+            total += value.byteLength;
+
+            if (total > limit) {
+                try {
+                    await reader.cancel();
+                } catch {
+                    // Ignore cancellation errors
+                }
+
+                throw new Err(400, null, 'Proxy response body exceeds the 1MB limit');
+            }
+
+            chunks.push(value);
+        }
+    }
+
+    const result = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+        result.set(chunk, offset);
+        offset += chunk.byteLength;
+    }
+
+    return Buffer.from(result.buffer, result.byteOffset, result.byteLength);
+}
+
 async function readUpstreamBody(response: Response): Promise<{
     body: unknown;
     encoding?: 'base64';
@@ -128,11 +181,7 @@ async function readUpstreamBody(response: Response): Promise<{
     }
 
     const contentType = (response.headers.get('content-type') || '').toLowerCase();
-    const buf = Buffer.from(await response.arrayBuffer());
-
-    if (buf.byteLength > RESPONSE_BODY_LIMIT) {
-        throw new Err(400, null, 'Proxy response body exceeds the 1MB limit');
-    }
+    const buf = await readResponseBodyWithLimit(response, RESPONSE_BODY_LIMIT);
 
     if (contentType.includes('application/json') || contentType.endsWith('+json')) {
         return { body: JSON.parse(buf.toString('utf-8')) };
@@ -226,7 +275,7 @@ export default async function router(schema: Schema, config: Config) {
                 type: 'proxy',
                 username: user.email,
                 method,
-                url: parsed.toString(),
+                url: parsed.origin + parsed.pathname,
                 status: upstream.status
             }));
 

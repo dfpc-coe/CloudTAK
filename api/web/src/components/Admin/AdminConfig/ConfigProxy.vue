@@ -49,7 +49,7 @@
 
                         <template v-if='config["proxy::enabled"]'>
                             <p class='text-secondary mt-2 mb-2'>
-                                Allow plugins to make outbound requests through CloudTAK. Configure the whitelist as an array of allowed URLs.
+                                Allow plugins to make outbound requests through CloudTAK. Configure the whitelist as an array of allowed origin URLs.
                             </p>
 
                             <div class='d-flex align-items-center justify-content-between mb-2'>
@@ -76,7 +76,7 @@
                                             v-model='config["proxy::whitelist"][index]'
                                             :disabled='!edit'
                                             :error='validateOptionalProxyURL(url)'
-                                            placeholder='https://api.example.com/v1'
+                                            placeholder='https://api.example.com'
                                         />
                                     </div>
 
@@ -165,6 +165,11 @@ function validateProxyURL(value: string): string {
         return 'URLs cannot include credentials';
     }
 
+    if (parsed.pathname && parsed.pathname !== '/') {
+        return 'Whitelist URLs must be origin-only';
+    }
+
+    if (parsed.search) return 'Whitelist URLs cannot include query parameters';
     if (parsed.hash) return 'URLs cannot include fragments';
 
     return '';

@@ -21,6 +21,12 @@ test('start upstream proxy test server', async () => {
             return;
         }
 
+        if (req.url === '/large' && req.method === 'GET') {
+            res.writeHead(200, { 'content-type': 'text/plain' });
+            res.end('a'.repeat((1024 * 1024) + 1));
+            return;
+        }
+
         if (req.url === '/echo' && req.method === 'POST') {
             const chunks: Buffer[] = [];
             req.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
@@ -210,6 +216,95 @@ test('POST api/proxy rejects forbidden request headers', async () => {
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Header cookie is not allowed');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST api/proxy rejects spoofed forwarded headers', async () => {
+    try {
+        const res = await flight.fetch('/api/proxy', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.user
+            },
+            body: {
+                url: `${upstreamOrigin}/json`,
+                method: 'GET',
+                headers: {
+                    'x-forwarded-for': '1.2.3.4'
+                }
+            }
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Header x-forwarded-for is not allowed');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST api/proxy rejects invalid whitelist entries', async () => {
+    try {
+        const update = await flight.fetch('/api/config', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                'proxy::enabled': true,
+                'proxy::whitelist': [`${upstreamOrigin}/json`]
+            }
+        }, false);
+
+        assert.equal(update.status, 200);
+
+        const res = await flight.fetch('/api/proxy', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.user
+            },
+            body: {
+                url: `${upstreamOrigin}/json`,
+                method: 'GET'
+            }
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Whitelist entries must be origin-only (scheme + host + optional port), without path, query, fragment, or credentials');
+
+        const reset = await flight.fetch('/api/config', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                'proxy::enabled': true,
+                'proxy::whitelist': [upstreamOrigin]
+            }
+        }, false);
+
+        assert.equal(reset.status, 200);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('POST api/proxy rejects oversized response bodies', async () => {
+    try {
+        const res = await flight.fetch('/api/proxy', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.user
+            },
+            body: {
+                url: `${upstreamOrigin}/large`,
+                method: 'GET'
+            }
+        }, false);
+
+        assert.equal(res.status, 400);
+        assert.equal(res.body.message, 'Proxy response body exceeds the 1MB limit');
     } catch (err) {
         assert.ifError(err);
     }
