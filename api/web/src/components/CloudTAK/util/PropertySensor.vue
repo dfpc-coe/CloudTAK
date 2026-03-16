@@ -119,7 +119,7 @@ const emit = defineEmits<{
 const expanded = ref(false);
 
 function initSensor(raw: Sensor): Sensor {
-    const s = structuredClone(raw);
+    const s = JSON.parse(JSON.stringify(raw || {})) as Sensor;
     if (!s.fov) s.fov = 0;
     if (!s.azimuth) s.azimuth = 0;
     if (!s.range) s.range = 0;
