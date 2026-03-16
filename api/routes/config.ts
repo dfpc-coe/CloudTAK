@@ -51,6 +51,23 @@ export const UserConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'group::Dark Green',
     'group::Brown',]
 
+function serializeConfigValue<K extends keyof Static<typeof FullConfig>>(
+    key: K,
+    value: Static<typeof FullConfig>[K]
+): string {
+    const schema = FullConfig.properties[key] as any;
+
+    if (schema.type === 'array' || schema.type === 'object') {
+        return JSON.stringify(value);
+    }
+
+    if (Array.isArray(schema.anyOf) && schema.anyOf.some((entry: any) => entry.type === 'array' || entry.type === 'object')) {
+        return JSON.stringify(value);
+    }
+
+    return String(value);
+}
+
 export default async function router(schema: Schema, config: Config) {
     const profileControl = new ProfileControl(config);
 
@@ -96,12 +113,17 @@ export default async function router(schema: Schema, config: Config) {
                     return { key, value: null };
                 }
 
-                return config.models.Setting.generate({
+                await config.models.Setting.generate({
                     key: key,
-                    value: String(req.body[key])
+                    value: serializeConfigValue(key, req.body[key] as Static<typeof FullConfig>[typeof key])
                 },{
                     upsert: GenerateUpsert.UPDATE
                 });
+
+                return {
+                    key,
+                    value: req.body[key]
+                };
             }))).forEach((k) => {
                 if (k.status === 'rejected') return;
                 return final[k.value.key as keyof Static<typeof FullConfig>] = k.value.value as any;

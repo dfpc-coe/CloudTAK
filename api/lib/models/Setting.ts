@@ -19,11 +19,14 @@ function coerceRawValue<K extends keyof FullConfigType>(key: K, raw: string): Fu
 
     if (schema.type === 'boolean') return (raw === 'true') as FullConfigType[K];
     if (schema.type === 'integer' || schema.type === 'number') return Number(raw) as FullConfigType[K];
+    if (schema.type === 'array') return JSON.parse(raw) as FullConfigType[K];
 
     // Handle union types e.g. Type.Union([Type.Null(), Type.Integer()])
     if (Array.isArray(schema.anyOf)) {
         const hasNumber = schema.anyOf.some((s: any) => s.type === 'integer' || s.type === 'number');
         if (hasNumber) return Number(raw) as FullConfigType[K];
+        const hasArray = schema.anyOf.some((s: any) => s.type === 'array');
+        if (hasArray) return JSON.parse(raw) as FullConfigType[K];
     }
 
     return raw as FullConfigType[K];

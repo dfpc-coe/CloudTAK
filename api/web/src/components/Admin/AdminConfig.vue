@@ -10,6 +10,7 @@
             <ConfigAgol />
             <ConfigGeofence />
             <ConfigMedia />
+            <ConfigProxy />
             <ConfigDisplay />
             <ConfigGroups />
             <ConfigMap />
@@ -23,6 +24,7 @@ import ConfigLogin from './AdminConfig/ConfigLogin.vue';
 import ConfigAgol from './AdminConfig/ConfigAgol.vue';
 import ConfigGeofence from './AdminConfig/ConfigGeofence.vue';
 import ConfigMedia from './AdminConfig/ConfigMedia.vue';
+import ConfigProxy from './AdminConfig/ConfigProxy.vue';
 import ConfigDisplay from './AdminConfig/ConfigDisplay.vue';
 import ConfigGroups from './AdminConfig/ConfigGroups.vue';
 import ConfigMap from './AdminConfig/ConfigMap.vue';

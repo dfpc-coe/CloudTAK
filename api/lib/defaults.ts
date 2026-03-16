@@ -8,6 +8,8 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'map::zoom': 4,
     'map::pitch': 0,
     'map::bearing': 0,
+    'proxy::enabled': false,
+    'proxy::whitelist': [],
     'login::name': 'CloudTAK',
     'login::logo': `data:image/svg+xml;base64,${fs.readFileSync(new URL('../web/public/CloudTAKLogo.svg', import.meta.url)).toString('base64')}`,
     'login::signup': '',
