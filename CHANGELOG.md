@@ -17,6 +17,13 @@
 
 ### Pending Release
 
+### v12.105.0 - 2026-03-17
+
+- :pencil2: Publish Plugin Docs to GH Pages on release
+- :rocket: Update Buffer Transform component to use standard PropertyDistance
+- :rocket: Allow geometry transforms from CoTView menu
+- :rocket: Update all GH Action runners
+
 ### v12.104.2 - 2026-03-17
 
 - :bug: Use Docker.compose version of `pmtiles` task in GHCR
