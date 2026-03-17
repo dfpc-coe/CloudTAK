@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.104.2 - 2026-03-17
+
+- :bug: Use Docker.compose version of `pmtiles` task in GHCR
+
 ### v12.104.1 - 2026-03-17
 
 - :bug: Log actual provided AWS Region and not a hardcoded value
