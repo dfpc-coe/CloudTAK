@@ -1,4 +1,4 @@
-n in the PMTiles Taskame: GHCR
+name: GHCR
 
 on:
   push:
