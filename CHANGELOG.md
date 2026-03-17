@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.104.1 - 2026-03-17
+
+- :bug: Log actual provided AWS Region and not a hardcoded value
+
 ### v12.104.0 - 2026-03-16
 
 - :tada: Allow plugins to bypass CSP via a whitelisted proxy mode
