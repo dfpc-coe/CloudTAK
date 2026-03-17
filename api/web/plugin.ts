@@ -4,7 +4,7 @@ import { markRaw, defineAsyncComponent } from 'vue';
 import type { Router, RouteRecordRaw } from 'vue-router';
 import type { Pinia } from 'pinia';
 import { useMapStore } from './src/stores/map.ts';
-import { useFloatStore, type PaneConfig } from './src/stores/float.ts';
+import { useFloatStore } from './src/stores/float.ts';
 import type { MenuItemConfig } from './src/stores/modules/menu.ts';
 import { db, type DBFeature } from './src/base/database.ts';
 import { liveQuery } from 'dexie';
@@ -15,6 +15,29 @@ const FloatingGeneric = defineAsyncComponent(() => import('./src/components/Clou
 
 export type { MenuItemConfig };
 export type { DBFeature };
+
+/**
+ * Configuration stored with a floating pane created by the plugin API
+ */
+export type FloatingPaneConfig = Record<string, unknown> & {
+    _component: Component;
+    _actions?: Component;
+    _props: Record<string, unknown>;
+}
+
+/**
+ * Public representation of a floating pane managed through the plugin API
+ */
+export interface FloatingPane {
+    uid: string;
+    name?: string;
+    component: Component;
+    config: FloatingPaneConfig;
+    height: number;
+    width: number;
+    x: number;
+    y: number;
+}
 
 export interface PluginInstance {
     /**
@@ -230,21 +253,34 @@ export class PluginAPI {
                 width?: number,
                 x?: number,
                 y?: number,
-            }) => {
-                return floatStore.add({
+            }): FloatingPane => {
+                const config: FloatingPaneConfig = {
+                    _component: markRaw(opts.component),
+                    _actions: opts.actions ? markRaw(opts.actions) : undefined,
+                    _props: opts.props ? markRaw(opts.props) : {},
+                };
+
+                const pane = floatStore.add({
                     uid: opts.uid,
                     name: opts.name,
                     component: FloatingGeneric,
-                    config: {
-                        _component: markRaw(opts.component),
-                        _actions: opts.actions ? markRaw(opts.actions) : undefined,
-                        _props: opts.props ? markRaw(opts.props) : {},
-                    },
+                    config,
                     height: opts.height,
                     width: opts.width,
                     x: opts.x,
                     y: opts.y,
                 });
+
+                return {
+                    uid: pane.uid,
+                    name: pane.name,
+                    component: pane.component,
+                    config,
+                    height: pane.height,
+                    width: pane.width,
+                    x: pane.x,
+                    y: pane.y,
+                };
             },
             /**
              * Remove a floating pane
