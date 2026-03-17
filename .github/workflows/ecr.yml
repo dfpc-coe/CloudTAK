@@ -29,7 +29,7 @@ jobs:
           ref: ${{github.event.pull_request.head.sha || github.sha}}
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws-us-gov:iam::${{secrets.AWS_ACCOUNT_ID}}:role/Github-ECR-Builder
           role-session-name: GithubECRBuilder
@@ -50,7 +50,7 @@ jobs:
           AWS_REGION: ${{secrets.AWS_REGION}}
 
       - name: Configure AWS Credentials (STAGING)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_STAGING_ACCOUNT_ID}}:role/Github-ECR-Builder
           role-session-name: GithubECRBuilder

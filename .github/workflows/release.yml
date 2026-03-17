@@ -8,6 +8,7 @@ on:
 permissions:
   id-token: write  # Required for OIDC
   contents: write
+  pages: write
 
 jobs:
   build:
@@ -29,17 +30,32 @@ jobs:
       - name: Build Types
         run: cd api/web && npm run build:types
 
+      - name: Build TypeDocs
+        run: cd api/web && npm run doc
+
+      - name: Upload TypeDoc artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./api/web/dist/typedoc
+
       - name: npm publish
         run: cd api/web && npm publish --provenance --access public
 
-      - name: Get tag
-        id: tag
-        uses: dawidd6/action-get-tag@v1
-
       - name: Generate CHANGELOG
-        run: grep -Pzo "### ${{steps.tag.outputs.tag}}(?s).*?(?=###)" CHANGELOG.md > RELEASE
+        run: grep -Pzo "### ${{ github.ref_name }}(?s).*?(?=###)" CHANGELOG.md > RELEASE
 
       - name: Github Release
         uses: softprops/action-gh-release@v2
         with:
           body_path: RELEASE
+
+  deploy-pages:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy TypeDocs to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
