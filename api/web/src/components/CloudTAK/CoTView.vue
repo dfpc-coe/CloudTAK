@@ -142,12 +142,6 @@
                             </template>
                         </TablerDropdown>
 
-                        <TablerDelete
-                            v-if='is_editable'
-                            displaytype='icon'
-                            @delete='deleteCOT'
-                        />
-
                         <TablerIconButton
                             v-if='is_editable'
                             title='Edit'
@@ -159,6 +153,55 @@
                             />
                         </TablerIconButton>
 
+                        <TablerDropdown
+                            v-if='hasGeoJSONTransforms'
+                        >
+                            <TablerIconButton
+                                title='Transforms'
+                            >
+                                <svg
+                                    width='32'
+                                    height='32'
+                                    viewBox='0 0 24 24'
+                                    fill='none'
+                                    stroke='currentColor'
+                                    stroke-width='1'
+                                    stroke-linecap='round'
+                                    stroke-linejoin='round'
+                                >
+                                    <path
+                                        stroke='none'
+                                        d='M0 0h24v24H0z'
+                                        fill='none'
+                                    />
+                                    <path d='M12 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' />
+                                    <path d='M6 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' />
+                                    <path d='M18 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' />
+                                    <path d='M6 8v2a2 2 0 0 0 2 2h4a2 2 0 0 0 2 -2v-2' />
+                                    <path d='M12 12l0 4' />
+                                </svg>
+                            </TablerIconButton>
+
+                            <template #dropdown>
+                                <div class='card'>
+                                    <div class='card-body'>
+                                        <div
+                                            role='button'
+                                            class='hover px-2 py-2 d-flex align-items-center rounded'
+                                            @click='openBufferInput'
+                                        >
+                                            <IconAdjustments
+                                                stroke='1'
+                                                :size='32'
+                                            /><div class='mx-2'>
+                                                Buffer
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </TablerDropdown>
+
                         <TablerIconButton
                             v-if='cot.properties.group && !cot.is_self'
                             title='Chat'
@@ -169,6 +212,12 @@
                                 stroke='1'
                             />
                         </TablerIconButton>
+
+                        <TablerDelete
+                            v-if='is_editable'
+                            displaytype='icon'
+                            @delete='deleteCOT'
+                        />
 
                         <TablerDropdown
                             v-if='is_editable'
@@ -609,12 +658,19 @@
         @done='share = false'
         @close='share = false'
     />
+
+    <BufferInput
+        v-if='bufferCotId'
+        :cot-id='bufferCotId'
+        @close='bufferCotId = null'
+    />
 </template>
 
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import FeatureIcon from './util/FeatureIcon.vue';
+import BufferInput from './Inputs/BufferInput.vue';
 import type COT from '../../base/cot.ts';
 import type { COTType } from '../../types.ts';
 import { OriginMode } from '../../base/cot.ts'
@@ -669,6 +725,7 @@ import {
     IconInfoCircle,
     IconPaperclip,
     IconFence,
+    IconAdjustments,
     IconLock,
     IconLockOpen,
 } from '@tabler/icons-vue';
@@ -700,6 +757,7 @@ const type = ref<COTType | undefined>();
 const mode = ref('default');
 const breadcrumbLive = ref(false);
 const remarksExpanded = ref(true);
+const bufferCotId = ref<string | null>(null);
 
 const currentTime = ref(new Date());
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
@@ -791,6 +849,10 @@ const isLocked = computed(() => {
     return mapStore.locked.length > 0 && mapStore.locked[mapStore.locked.length - 1] === id;
 });
 
+const hasGeoJSONTransforms = computed(() => {
+    return !!cot.value && cot.value.geometry.type !== 'GeometryCollection';
+});
+
 function toggleLock() {
     if (!cot.value) return;
     const id = cot.value.properties.id || cot.value.id;
@@ -880,6 +942,11 @@ async function editGeometry() {
     mapStore.draw.edit(cot.value);
 }
 
+function openBufferInput(): void {
+    if (!cot.value) return;
+    bufferCotId.value = cot.value.properties.id || String(cot.value.id);
+}
+
 async function fetchType() {
     if (!cot.value) return;
     const { data, error } = await server.GET('/api/type/cot/{:type}', {
@@ -910,6 +977,7 @@ async function deleteCOT() {
     await mapStore.worker.db.remove(cot.value.id, {
         mission: !!subscription.value
     });
+    bufferCotId.value = null;
     router.push('/');
 }
 </script>
