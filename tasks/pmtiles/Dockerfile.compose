@@ -1,11 +1,8 @@
-FROM alpine:3.22
+FROM node:24-alpine3.23
 
 EXPOSE 5002
 
 ENV HOME=/home/etl
-WORKDIR $HOME
-
-RUN apk add git nodejs-current npm
 
 WORKDIR $HOME/tiles
 
@@ -17,6 +14,7 @@ RUN npm install
 COPY ./ $HOME/tiles
 
 RUN npm run lint \
+    && npm run test \
     && npm run build
 
 CMD ["npm", "run", "prod"]

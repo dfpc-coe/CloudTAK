@@ -25,6 +25,9 @@ jobs:
             context: ./api/
           - task: pmtiles
             context: ./tasks/pmtiles/
+          - task: pmtiles-compose
+            context: ./tasks/pmtiles/
+            file: ./tasks/pmtiles/Dockerfile.compose
           - task: events
             context: ./tasks/events/
     steps:
@@ -51,6 +54,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: ${{matrix.context}}
+          file: ${{matrix.file}}
           push: true
           tags: ${{steps.meta.outputs.tags}}
           labels: ${{steps.meta.outputs.labels}}
