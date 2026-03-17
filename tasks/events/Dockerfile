@@ -13,7 +13,7 @@ RUN export VERSION_TIPPECANOE='2.79.0' && \
     PREFIX=/usr/local make install && \
     rm -rf /tmp/tippecanoe
 
-FROM alpine:3.22 AS runtime
+FROM alpine:3.23 AS runtime
 
 COPY --from=build /usr/lib /usr/lib
 COPY --from=build /usr/local/share /usr/local/share
