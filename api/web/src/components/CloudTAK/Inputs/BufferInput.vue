@@ -12,31 +12,12 @@
             />
         </div>
         <div class='modal-body'>
-            <div class='mb-3'>
-                <label class='form-label'>Radius</label>
-                <div class='input-group'>
-                    <input
-                        v-model.number='radius'
-                        type='number'
-                        class='form-control'
-                        min='1'
-                    >
-                    <select
-                        v-model='unit'
-                        class='form-select'
-                    >
-                        <option value='meters'>
-                            meters
-                        </option>
-                        <option value='kilometers'>
-                            kilometers
-                        </option>
-                        <option value='miles'>
-                            miles
-                        </option>
-                    </select>
-                </div>
-            </div>
+            <PropertyDistance
+                v-model='radius'
+                label='Radius'
+                :unit='displayUnit'
+                :edit='true'
+            />
         </div>
         <div class='modal-footer'>
             <button
@@ -58,12 +39,14 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { v4 as randomUUID } from 'uuid';
 import turfBuffer from '@turf/buffer';
 import { TablerModal } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../../stores/map.ts';
 import type { Feature } from '../../../types.ts';
+import ProfileConfig from '../../../base/profile.ts';
+import PropertyDistance from '../util/PropertyDistance.vue';
 
 const props = defineProps<{
     cotId: string;
@@ -75,8 +58,15 @@ const emit = defineEmits<{
 
 const mapStore = useMapStore();
 
-const radius = ref(100);
-const unit = ref<'meters' | 'kilometers' | 'miles'>('meters');
+const radius = ref(0.1);
+const displayUnit = ref('mile');
+
+onMounted(async () => {
+    const displayDistance = await ProfileConfig.get('display_distance');
+    if (displayDistance && displayDistance.value) {
+        displayUnit.value = displayDistance.value;
+    }
+});
 
 async function applyBuffer(): Promise<void> {
     if (radius.value <= 0) return;
@@ -87,7 +77,7 @@ async function applyBuffer(): Promise<void> {
     const geom = cotFeat.geometry;
     if (geom.type === 'GeometryCollection') throw new Error('Cannot buffer a GeometryCollection');
 
-    const buffered = turfBuffer(geom, radius.value, { units: unit.value });
+    const buffered = turfBuffer(geom, radius.value, { units: 'kilometers' });
     if (!buffered) throw new Error('Buffer operation produced no result');
 
     const now = new Date();

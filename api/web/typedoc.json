@@ -1,0 +1,13 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": [
+        "plugin.ts"
+    ],
+    "entryPointStrategy": "resolve",
+    "tsconfig": "tsconfig.build.json",
+    "out": "dist/typedoc",
+    "name": "@tak-ps/cloudtak Plugin API",
+    "readme": "none",
+    "githubPages": false,
+    "excludeInternal": true
+}
