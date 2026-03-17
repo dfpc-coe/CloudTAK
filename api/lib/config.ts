@@ -153,7 +153,7 @@ export default class Config {
         });
 
         if (!config.silent) {
-            console.error('ok - set env AWS_REGION: us-east-1');
+            console.error(`ok - set env AWS_REGION: ${process.env.AWS_REGION}`);
             console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
             console.error(`ok - StackName: ${config.StackName}`);
         }
