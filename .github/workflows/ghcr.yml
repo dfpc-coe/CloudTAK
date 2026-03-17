@@ -1,4 +1,4 @@
-name: GHCR
+n in the PMTiles Taskame: GHCR
 
 on:
   push:
@@ -24,8 +24,6 @@ jobs:
           - task: api
             context: ./api/
           - task: pmtiles
-            context: ./tasks/pmtiles/
-          - task: pmtiles-compose
             context: ./tasks/pmtiles/
             file: ./tasks/pmtiles/Dockerfile.compose
           - task: events
