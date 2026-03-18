@@ -338,7 +338,7 @@ export default async function router(schema: Schema, config: Config) {
                         })
                 }
 
-                client.tak.write([cot]);
+                client.tak.write([cot], { stripFlow: true });
             }
 
             if (req.body.destinations.length && req.body.destinations.filter((d) => d.mission).length) {
