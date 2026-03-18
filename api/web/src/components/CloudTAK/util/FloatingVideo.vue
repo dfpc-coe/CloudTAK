@@ -197,8 +197,10 @@ const active = ref();
 
 // Buffer monitoring state
 const isBuffering = ref(false);
+const pausedForBuffering = ref(false);
 const bufferCheckInterval = ref<number | undefined>();
 const bufferRecoveryTimeout = ref<number | undefined>();
+const retryTimeout = ref<number | undefined>();
 
 // Buffer monitoring configuration
 const BUFFER_LOW_THRESHOLD = 2; // Pause when buffer falls below 2 seconds
@@ -243,11 +245,7 @@ function monitorBuffer(): void {
         // If buffer has recovered (more than threshold), resume
         if (bufferAhead > BUFFER_RECOVERY_THRESHOLD && isBuffering.value) {
             console.log(`Buffer recovered (${bufferAhead.toFixed(2)}s), resuming playback...`);
-            setBuffering(false);
-
-            if (video.paused && !video.ended) {
-                video.play().catch(e => console.error("Failed to resume video playback after buffering:", e));
-            }
+            setBuffering(false); // setBuffering(false) handles calling play()
         }
     } catch (err) {
         console.error('Error monitoring buffer:', err);
@@ -261,12 +259,42 @@ function clearBufferRecoveryTimeout(): void {
     }
 }
 
+function clearRetryTimeout(): void {
+    if (retryTimeout.value) {
+        clearTimeout(retryTimeout.value);
+        retryTimeout.value = undefined;
+    }
+}
+
+function destroyPlayer(): void {
+    if (!player.value) return;
+
+    player.value.destroy();
+    player.value = undefined;
+}
+
 function setBuffering(buffering: boolean): void {
     isBuffering.value = buffering;
 
+    const videoEl = videoTag.value;
+
     if (!buffering) {
         clearBufferRecoveryTimeout();
+        // Resume playback only if buffering handling paused it
+        if (videoEl && pausedForBuffering.value && videoEl.paused && !videoEl.ended) {
+            videoEl.play().catch(e => console.error('Failed to resume after buffering:', e));
+        }
+
+        pausedForBuffering.value = false;
         return;
+    }
+
+    // Pause playback while buffering so the player does not walk off the end of the buffer
+    if (videoEl && !videoEl.paused && !videoEl.ended) {
+        videoEl.pause();
+        pausedForBuffering.value = true;
+    } else {
+        pausedForBuffering.value = false;
     }
 
     clearBufferRecoveryTimeout();
@@ -286,6 +314,7 @@ function clearBufferMonitoring(): void {
 
     clearBufferRecoveryTimeout();
     isBuffering.value = false;
+    pausedForBuffering.value = false;
 }
 
 function startBufferMonitoring(): void {
@@ -322,11 +351,10 @@ function attachVideoEventHandlers(): void {
 onUnmounted(async () => {
     // Stop buffer monitoring
     clearBufferMonitoring();
+    clearRetryTimeout();
 
     // Destroy HLS player instance
-    if (player.value) {
-        player.value.destroy();
-    }
+    destroyPlayer();
 
     // Clean up video lease from server
     await deleteLease();
@@ -364,6 +392,8 @@ async function createPlayer(): Promise<void> {
     try {
         const url = new URL(videoProtocols.value!.hls!.url);
 
+        destroyPlayer();
+
         attachVideoEventHandlers();
 
         player.value = new Hls({
@@ -373,6 +403,11 @@ async function createPlayer(): Promise<void> {
             backBufferLength: 90, // Keep more buffer for smoother playback
             maxBufferLength: 30, // Larger buffer for resilience
             maxMaxBufferLength: 600,
+            // Allow HLS.js to skip over small discontinuities/holes automatically
+            maxBufferHole: 0.5,
+            // Nudge playhead past tiny stalls before escalating to error events
+            nudgeOffset: 0.1,
+            nudgeMaxRetry: 3,
             liveSyncDurationCount: 3, // More tolerant of discontinuities
             liveMaxLatencyDurationCount: 10,
             xhrSetup: (xhr: XMLHttpRequest) => {
@@ -425,10 +460,25 @@ async function createPlayer(): Promise<void> {
                         setBuffering(true);
 
                         if (player.value) {
-                            try {
-                                player.value.recoverMediaError();
-                            } catch (err) {
-                                console.error('Failed to recover non-fatal media error:', err);
+                            if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+                                // Buffer exhausted on a live stream — recoverMediaError() is wrong here
+                                // (that is for corrupted MSE/codec state).  Instead jump to the live
+                                // sync position so the player can unblock immediately.
+                                const liveSync = player.value.liveSyncPosition;
+                                if (liveSync !== null && liveSync !== undefined && videoTag.value) {
+                                    console.log(
+                                        `Buffer stall at ${videoTag.value.currentTime.toFixed(2)}s,`
+                                        + ` seeking to live edge (${liveSync.toFixed(2)}s)`
+                                    );
+                                    videoTag.value.currentTime = liveSync;
+                                }
+                                player.value.startLoad();
+                            } else {
+                                try {
+                                    player.value.recoverMediaError();
+                                } catch (err) {
+                                    console.error('Failed to recover non-fatal media error:', err);
+                                }
                             }
                         }
 
@@ -437,7 +487,7 @@ async function createPlayer(): Promise<void> {
                         console.log("Fatal media error:", data);
 
                         if (data.details === 'bufferAddCodecError' && data.error instanceof Error && data.error.name === 'NotSupportedError') {
-                            error.value = new Error(`Your browser does not support the required video codec for this stream (${data.mimeType}`);
+                            error.value = new Error(`Your browser does not support the required video codec for this stream (${data.mimeType || 'unknown mime type'}).`);
                         } else if (player.value) {
                             try {
                                 player.value.recoverMediaError();
@@ -509,6 +559,7 @@ async function createPlayer(): Promise<void> {
 function handleStreamError(streamError: Error): void {
     // Clear buffer monitoring before destroying player
     clearBufferMonitoring();
+    clearRetryTimeout();
 
     if (retryCount.value < maxRetries.value) {
         // Calculate exponential backoff delay
@@ -518,11 +569,8 @@ function handleStreamError(streamError: Error): void {
         retryCount.value++;
 
         // Retry after delay
-        setTimeout(() => {
-            if (player.value) {
-                player.value.destroy();
-                player.value = undefined;
-            }
+        retryTimeout.value = window.setTimeout(() => {
+            destroyPlayer();
 
             createPlayer();
         }, delay);
@@ -530,10 +578,7 @@ function handleStreamError(streamError: Error): void {
         // Max retries reached - give up and show error to user
         console.error('Max retries reached, giving up');
 
-        if (player.value) {
-            player.value.destroy();
-            player.value = undefined;
-        }
+        destroyPlayer();
 
         error.value = streamError;
         retryCount.value = 0;
@@ -552,7 +597,11 @@ async function requestLease(): Promise<void> {
         error.value = new Error('HLS.js is not supported in this browser.');
         return;
     } else {
+        loading.value = true;
         error.value = undefined;
+        clearBufferMonitoring();
+        clearRetryTimeout();
+        destroyPlayer();
     }
 
     try {
