@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.105.1 - 2026-03-18
+
+- :rocket: Simplify ECS Service Name in CloudFormation Templates
+
 ### v12.105.0 - 2026-03-17
 
 - :pencil2: Publish Plugin Docs to GH Pages on release
