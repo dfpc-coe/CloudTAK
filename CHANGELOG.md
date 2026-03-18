@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.105.2 - 2026-03-18
+
+- :rocket: Flow stripping when resubmitting back to a Data Sync
+
 ### v12.105.1 - 2026-03-18
 
 - :rocket: Simplify ECS Service Name in CloudFormation Templates
