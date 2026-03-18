@@ -462,7 +462,7 @@ export default {
         Service: {
             Type: 'AWS::ECS::Service',
             Properties: {
-                ServiceName: cf.join('-', [cf.stackName, 'Service']),
+                ServiceName: cf.stackName,
                 Cluster: cf.join(['tak-vpc-', cf.ref('Environment')]),
                 TaskDefinition: cf.ref('TaskDefinition'),
                 LaunchType: 'FARGATE',
