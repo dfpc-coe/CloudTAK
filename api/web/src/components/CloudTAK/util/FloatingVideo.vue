@@ -197,6 +197,7 @@ const active = ref();
 
 // Buffer monitoring state
 const isBuffering = ref(false);
+const pausedForBuffering = ref(false);
 const bufferCheckInterval = ref<number | undefined>();
 const bufferRecoveryTimeout = ref<number | undefined>();
 
@@ -244,10 +245,6 @@ function monitorBuffer(): void {
         if (bufferAhead > BUFFER_RECOVERY_THRESHOLD && isBuffering.value) {
             console.log(`Buffer recovered (${bufferAhead.toFixed(2)}s), resuming playback...`);
             setBuffering(false);
-
-            if (video.paused && !video.ended) {
-                video.play().catch(e => console.error("Failed to resume video playback after buffering:", e));
-            }
         }
     } catch (err) {
         console.error('Error monitoring buffer:', err);
@@ -261,12 +258,36 @@ function clearBufferRecoveryTimeout(): void {
     }
 }
 
+async function resumeBufferedPlayback(): Promise<void> {
+    const video = videoTag.value;
+
+    if (!video || !pausedForBuffering.value || video.ended) return;
+
+    pausedForBuffering.value = false;
+
+    try {
+        await video.play();
+    } catch (err) {
+        pausedForBuffering.value = true;
+        console.error('Failed to resume video playback after buffering:', err);
+    }
+}
+
 function setBuffering(buffering: boolean): void {
+    const video = videoTag.value;
+
     isBuffering.value = buffering;
 
     if (!buffering) {
         clearBufferRecoveryTimeout();
+
+        void resumeBufferedPlayback();
         return;
+    }
+
+    if (video && !video.paused && !video.ended) {
+        pausedForBuffering.value = true;
+        video.pause();
     }
 
     clearBufferRecoveryTimeout();
@@ -286,6 +307,7 @@ function clearBufferMonitoring(): void {
 
     clearBufferRecoveryTimeout();
     isBuffering.value = false;
+    pausedForBuffering.value = false;
 }
 
 function startBufferMonitoring(): void {
