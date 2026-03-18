@@ -260,7 +260,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(200, null, 'No features found');
             }
 
-            pooledClient.tak.write(cots);
+            pooledClient.tak.write(cots, { stripFlow: true });
 
             config.conns.cots(pooledClient.config, cots);
 
