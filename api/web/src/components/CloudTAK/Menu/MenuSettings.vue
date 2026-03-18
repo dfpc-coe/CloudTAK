@@ -28,6 +28,19 @@
                 </div>
             </StandardItem>
             <StandardItem
+                @click='router.push("/menu/settings/permissions")'
+            >
+                <div class='d-flex align-items-center px-2 py-2'>
+                    <IconLock
+                        :size='32'
+                        stroke='1'
+                    />
+                    <div class='ms-2 flex-grow-1 font-weight-bold'>
+                        Permissions
+                    </div>
+                </div>
+            </StandardItem>
+            <StandardItem
                 @click='router.push("/menu/settings/tokens")'
             >
                 <div class='d-flex align-items-center px-2 py-2'>
@@ -66,6 +79,7 @@ import {
     IconRobot,
     IconUserCog,
     IconAdjustments,
+    IconLock,
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';
 
