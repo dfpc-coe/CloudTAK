@@ -591,9 +591,11 @@ function handleStreamError(streamError: Error): void {
  */
 async function requestLease(): Promise<void> {
     if (!video.value) {
+        loading.value = false;
         error.value = new Error('Video URL could not be loaded');
         return;
     } else if (!Hls.isSupported()) {
+        loading.value = false;
         error.value = new Error('HLS.js is not supported in this browser.');
         return;
     } else {
@@ -634,6 +636,7 @@ async function requestLease(): Promise<void> {
             loading.value = false;
         } else if (!active.value.leasable) {
             // Stream cannot be leased
+            loading.value = false;
             error.value = new Error(active.value.message || 'Could not start stream');
         }
 
