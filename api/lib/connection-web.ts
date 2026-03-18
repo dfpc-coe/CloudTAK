@@ -54,7 +54,7 @@ export class ConnectionWebSocket {
                             chat.position(msg.data.location);
                         }
 
-                        client.tak.write([chat]);
+                        client.tak.write([chat], { stripFlow: true });
 
                         const feat = await CoTParser.to_geojson(chat);
                         await client.config.config.models.ProfileChat.generate({
@@ -70,7 +70,7 @@ export class ConnectionWebSocket {
 
                         const cot = await CoTParser.from_geojson(feat);
 
-                        client.tak.write([cot]);
+                        client.tak.write([cot], { stripFlow: true });
                     }
                 } catch (err) {
                     this.ws.send(JSON.stringify({
