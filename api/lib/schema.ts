@@ -239,6 +239,16 @@ export const Basemap = pgTable('basemaps', {
     }
 });
 
+export const BasemapChannel = pgTable('basemap_channels', {
+    basemap: integer().notNull().references(() => Basemap.id, { onDelete: 'cascade' }),
+    channel: integer().notNull(),
+}, (table) => ({
+    pk: primaryKey({
+        columns: [table.basemap, table.channel]
+    }),
+    channel_idx: index("basemap_channels_channel_idx").on(table.channel)
+}));
+
 export const BasemapRaster = pgTable('basemaps_raster', {
     id: serial().primaryKey(),
     basemap: integer().notNull().references(() => Basemap.id, { onDelete: 'cascade' }),

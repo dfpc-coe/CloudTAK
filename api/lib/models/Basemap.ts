@@ -1,8 +1,8 @@
 import Modeler, { GenericListInput } from '@openaddresses/batch-generic';
 import { Static, Type } from '@sinclair/typebox'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { Basemap, BasemapVector, BasemapRaster, BasemapTerrain } from '../schema.js';
-import { desc, eq, sql } from 'drizzle-orm';
+import { Basemap, BasemapChannel, BasemapVector, BasemapRaster, BasemapTerrain } from '../schema.js';
+import { desc, eq, inArray, sql } from 'drizzle-orm';
 import { Basemap_Type } from '../enums.js';
 
 export const BasemapCollection = Type.Object({
@@ -14,6 +14,52 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
         pool: PostgresJsDatabase<Record<string, unknown>>,
     ) {
         super(pool, Basemap);
+    }
+
+    normalizeChannels(channels?: Array<number>): Array<number> {
+        if (!channels) return [];
+
+        return Array.from(new Set(channels
+            .map((channel) => Number(channel))
+            .filter((channel) => Number.isInteger(channel))
+        )).sort((a, b) => a - b);
+    }
+
+    async syncChannels(id: number, channels?: Array<number>): Promise<void> {
+        if (channels === undefined) return;
+
+        const normalized = this.normalizeChannels(channels);
+
+        await this.pool.delete(BasemapChannel).where(eq(BasemapChannel.basemap, id));
+
+        if (normalized.length) {
+            await this.pool.insert(BasemapChannel).values(normalized.map((channel) => {
+                return {
+                    basemap: id,
+                    channel,
+                };
+            }));
+        }
+    }
+
+    async getChannels(ids: Array<number>): Promise<Map<number, Array<number>>> {
+        const map = new Map<number, Array<number>>();
+
+        if (!ids.length) return map;
+
+        const rows = await this.pool.select().from(BasemapChannel).where(inArray(BasemapChannel.basemap, ids));
+
+        for (const row of rows) {
+            const channels = map.get(row.basemap) || [];
+            channels.push(row.channel);
+            map.set(row.basemap, channels);
+        }
+
+        for (const channels of map.values()) {
+            channels.sort((a, b) => a - b);
+        }
+
+        return map;
     }
 
     async generate(input: any): Promise<any> {
@@ -39,6 +85,8 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             tilejson: input.tilejson
         });
 
+        await this.syncChannels(base.id, input.channels);
+
         if (input.type === Basemap_Type.VECTOR) {
             await this.pool.insert(BasemapVector).values({
                 basemap: base.id,
@@ -63,6 +111,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
 
     async from(id: number): Promise<any> {
         const base = await super.from(id);
+        const channels = await this.getChannels([base.id]);
 
         let specific;
         if (base.type === Basemap_Type.VECTOR) {
@@ -82,6 +131,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             snapping_enabled: false,
             title: 'callsign',
             snapping_layer: null,
+            channels: channels.get(base.id) || [],
             ...specific,
             ...base,
         };
@@ -110,6 +160,8 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             updated: input.updated,
             tilejson: input.tilejson
         });
+
+        await this.syncChannels(base.id, input.channels);
 
         if (base.type === Basemap_Type.VECTOR) {
             const vector: any = {};
@@ -184,10 +236,13 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             return { total: 0, items: [] };
         }
 
+        const channels = await this.getChannels(pgres.map((row) => row.basemap.id));
+
         return {
             total: pgres[0].count,
             items: pgres.map((row) => {
                 return {
+                    channels: channels.get(row.basemap.id) || [],
                     ...row.vector,
                     ...row.terrain,
                     ...row.raster,

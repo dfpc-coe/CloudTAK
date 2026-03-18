@@ -20,6 +20,7 @@ import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
 import { toEnum, Basemap_Format, Basemap_Scheme, Basemap_Type, AllBoolean, AllBooleanCast } from '../lib/enums.js';
 import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
+import { getActiveChannels, hasBasemapChannelAccess } from '../lib/basemap-channel.js';
 import * as Default from '../lib/limits.js';
 
 const AugmentedBasemapResponse = Type.Composite([
@@ -37,6 +38,33 @@ const AugmentedTileJSONType = Type.Composite([
         actions: TileJSONActions
     })
 ])
+
+function channelVisibilityWhere(channels: Set<number>) {
+    if (!channels.size) {
+        return sql`
+            NOT EXISTS (
+                SELECT 1 FROM basemap_channels
+                WHERE basemap_channels.basemap = basemaps.id
+            )
+        `;
+    }
+
+    const visible = [...channels].filter((channel) => Number.isInteger(channel));
+
+    return sql`
+        (
+            NOT EXISTS (
+                SELECT 1 FROM basemap_channels
+                WHERE basemap_channels.basemap = basemaps.id
+            )
+            OR EXISTS (
+                SELECT 1 FROM basemap_channels
+                WHERE basemap_channels.basemap = basemaps.id
+                AND basemap_channels.channel = ANY(${sql.raw(`ARRAY[${visible.join(', ')}]`)}::INTEGER[])
+            )
+        )
+    `;
+}
 
 export default async function router(schema: Schema, config: Config) {
     await schema.put('/basemap', {
@@ -266,6 +294,8 @@ export default async function router(schema: Schema, config: Config) {
                 }
             } else {
                 const user = await Auth.as_user(config, req);
+                const channels = await getActiveChannels(config, user);
+                const channelWhere = channelVisibilityWhere(channels);
 
                 list = await config.models.Basemap.list({
                     limit: req.query.limit,
@@ -288,6 +318,7 @@ export default async function router(schema: Schema, config: Config) {
                                 OR ${Param(req.query.collection)}::TEXT = collection
                             )
                         AND ${scope}
+                        AND ${channelWhere}
                     `
                 });
 
@@ -307,6 +338,7 @@ export default async function router(schema: Schema, config: Config) {
                             AND (username IS NULL OR username = ${user.email})
                             AND type = ANY(${sql.raw(`ARRAY[${types.map(c => `'${c}'`).join(', ')}]`)}::TEXT[])
                             AND ${scope}
+                            AND ${channelWhere}
                         `
                     });
                 }
@@ -350,6 +382,7 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'The Vector Tile layer to snap to'
             })),
             collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            channels: Type.Optional(Type.Array(Type.Integer())),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
             overlay: Type.Boolean({ default: false }),
@@ -452,6 +485,7 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'The Vector Tile layer to snap to'
             })),
             collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            channels: Type.Optional(Type.Array(Type.Integer())),
             overlay: Type.Optional(Type.Boolean()),
             hidden: Type.Optional(Type.Boolean()),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
@@ -570,6 +604,8 @@ export default async function router(schema: Schema, config: Config) {
 
             if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!(await hasBasemapChannelAccess(config, user, basemap))) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
             if (req.query.download) {
@@ -629,6 +665,8 @@ export default async function router(schema: Schema, config: Config) {
 
             if (auth instanceof AuthUser) {
                 if (basemap.username && basemap.username !== auth.email && auth.access === AuthUserAccess.USER) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                } else if (!(await hasBasemapChannelAccess(config, auth, basemap))) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
                 }
             } else if (auth instanceof AuthResource) {
@@ -714,6 +752,8 @@ export default async function router(schema: Schema, config: Config) {
             if (auth instanceof AuthUser) {
                 if (basemap.username && basemap.username !== auth.email && auth.access === AuthUserAccess.USER) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
+                } else if (!(await hasBasemapChannelAccess(config, auth, basemap))) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
                 }
             } else if (auth instanceof AuthResource) {
                 if (basemap.sharing_enabled === false) {
@@ -761,6 +801,8 @@ export default async function router(schema: Schema, config: Config) {
 
             if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!(await hasBasemapChannelAccess(config, user, basemap))) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
             const fc = await TileJSON.featureQuery(
@@ -790,6 +832,8 @@ export default async function router(schema: Schema, config: Config) {
             const basemap = await config.models.Basemap.from(req.params.basemapid);
 
             if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!(await hasBasemapChannelAccess(config, user, basemap))) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 

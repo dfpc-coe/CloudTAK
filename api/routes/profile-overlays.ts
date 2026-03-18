@@ -11,6 +11,7 @@ import { TileJSONActions } from '../lib/control/tilejson.js';
 import { StandardResponse, ProfileOverlayResponse } from '../lib/types.js'
 import { sql } from 'drizzle-orm';
 import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
+import { hasBasemapChannelAccess } from '../lib/basemap-channel.js';
 import * as Default from '../lib/limits.js';
 
 const AugmentedProfileOverlayResponse = Type.Composite([
@@ -110,6 +111,16 @@ export default async function router(schema: Schema, config: Config) {
                     try {
                         if (!item.mode_id) throw new Error('mode_id is required');
                         const basemap = await config.models.Basemap.from(parseInt(item.mode_id));
+
+                        if (!(await hasBasemapChannelAccess(config, user, basemap))) {
+                            await config.models.ProfileOverlay.delete(item.id);
+                            removed.push(...overlays.items.splice(i, 1).map((o) => {
+                                return { ...item, opacity: Number(o.opacity) }
+                            }));
+                            total--;
+                            continue;
+                        }
+
                         items.push({
                             ...item,
                             opacity: Number(item.opacity),
@@ -162,6 +173,10 @@ export default async function router(schema: Schema, config: Config) {
             if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
                 if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
                 const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
+
+                if (!(await hasBasemapChannelAccess(config, user, basemap))) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
 
                 res.json({
                     ...overlay,
@@ -232,6 +247,10 @@ export default async function router(schema: Schema, config: Config) {
             if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
                 if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
                 const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
+
+                if (!(await hasBasemapChannelAccess(config, user, basemap))) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
 
                 res.json({
                     ...overlay,

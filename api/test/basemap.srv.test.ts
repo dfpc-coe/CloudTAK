@@ -7,6 +7,7 @@ const flight = new Flight();
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
+flight.user({ username: 'user', admin: false });
 
 test('GET: api/basemap', async () => {
     try {
@@ -116,6 +117,7 @@ test('POST: api/basemap', async () => {
             sharing_enabled: false,
             sharing_token: null,
             collection: null,
+            channels: [],
             tilesize: 256,
             minzoom: 0,
             maxzoom: 16,
@@ -191,6 +193,7 @@ test('PATCH: api/basemap/1', async () => {
             sharing_enabled: false,
             sharing_token: null,
             collection: null,
+            channels: [],
             tilesize: 256,
             minzoom: 0,
             maxzoom: 16,
@@ -201,6 +204,81 @@ test('PATCH: api/basemap/1', async () => {
             snapping_enabled: false,
             snapping_layer: null
         })
+    } catch (err) {
+        assert.ifError(err)
+    }
+});
+
+test('PATCH: api/basemap/1 - Set Channels', async () => {
+    try {
+        const res = await flight.fetch('/api/basemap/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                channels: [3, 1, 3, 2],
+            }
+        }, true);
+
+        delete res.body.created;
+        delete res.body.updated;
+
+        assert.deepEqual(res.body.channels, [1, 2, 3]);
+    } catch (err) {
+        assert.ifError(err)
+    }
+});
+
+test('GET: api/basemap - Filter Server Basemaps By Channels', async () => {
+    try {
+        await flight.fetch('/api/basemap', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                name: 'Channel Scoped Basemap',
+                url: 'https://test.com/channel/{z}/{x}/{y}',
+                scope: 'server',
+                channels: [9],
+                sharing_enabled: false
+            }
+        }, true);
+
+        flight.config!.conns.set('user@example.com', {
+            channels: new Set([1]),
+            destroy: () => {}
+        } as any);
+
+        const hidden = await flight.fetch('/api/basemap', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user
+            }
+        }, true);
+
+        assert.deepEqual(hidden.body, {
+            total: 0,
+            collections: [],
+            items: []
+        });
+
+        flight.config!.conns.set('user@example.com', {
+            channels: new Set([9]),
+            destroy: () => {}
+        } as any);
+
+        const visible = await flight.fetch('/api/basemap', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.user
+            }
+        }, true);
+
+        assert.equal(visible.body.total, 1);
+        assert.equal(visible.body.items[0].id, 2);
+        assert.deepEqual(visible.body.items[0].channels, [9]);
     } catch (err) {
         assert.ifError(err)
     }

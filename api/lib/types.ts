@@ -421,6 +421,7 @@ export const BasemapResponse = Type.Object({
     tilesize: Type.Integer(),
     attribution: Type.Union([Type.Null(), Type.String()]),
     collection: Type.Union([Type.Null(), Type.String()]),
+    channels: Type.Array(Type.Integer()),
     frequency: Type.Union([Type.Null(), Type.Integer()]),
     scheme: Type.Enum(Basemap_Scheme),
     overlay: Type.Boolean(),

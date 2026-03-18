@@ -49,6 +49,7 @@ test('POST: api/basemap - ArcGIS Imagery Source', async () => {
             sharing_enabled: false,
             sharing_token: null,
             collection: null,
+            channels: [],
             tilesize: 256,
             minzoom: 0,
             maxzoom: 16,
