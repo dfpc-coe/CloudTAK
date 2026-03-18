@@ -99,7 +99,8 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'Number of seconds ago to look back for client updates. Default is 300 (5 minutes)',
                 default: 300
             }),
-            groups: Type.Optional(Type.String())
+            groups: Type.Optional(Type.String()),
+            group: Type.Optional(Type.Union([Type.String(), Type.Array(Type.String())]))
         }),
         res: TAKList(ClientEndpoint)
     }, async (req, res) => {
@@ -116,9 +117,15 @@ export default async function router(schema: Schema, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
 
+            const groups = req.query.groups
+                ? req.query.groups.split(',')
+                : req.query.group
+                    ? (Array.isArray(req.query.group) ? req.query.group : [req.query.group])
+                    : undefined;
+
             const clients = await api.Client.list({
                 secAgo: req.query.secago,
-                group: req.query.groups ? req.query.groups.split(',') : undefined
+                group: groups
             });
 
             res.json(clients);

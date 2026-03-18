@@ -49,13 +49,16 @@
                             </div>
                         </div>
 
-                        <TablerBadge class='text-uppercase flex-shrink-0'>
+                        <TablerBadge
+                            class='text-uppercase flex-shrink-0'
+                            v-bind='badgeProps(item.status)'
+                        >
                             {{ statusLabel(item.status) }}
                         </TablerBadge>
                     </div>
 
                     <div
-                        v-if='item.status !== "granted"'
+                        v-if='item.status !== "granted" && item.status !== "unsupported"'
                         class='d-flex justify-content-end'
                     >
                         <button
@@ -79,8 +82,10 @@ import {
     IconCamera,
     IconCompass,
     IconDatabase,
+    IconFolderOpen,
     IconMapPin,
     IconRefresh,
+    IconSun,
 } from '@tabler/icons-vue';
 import { TablerBadge, TablerIconButton } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -89,7 +94,7 @@ import { useMapStore } from '../../../stores/map.ts';
 import type { BrowserPermissionState } from '../../../stores/map.ts';
 
 const mapStore = useMapStore();
-type PermissionKey = 'location' | 'notification' | 'orientation' | 'storage' | 'camera';
+type PermissionKey = 'location' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
 
 const loading = ref(true);
 const error = ref('');
@@ -126,6 +131,18 @@ const permissionItems = computed(() => {
         icon: IconDatabase,
         status: mapStore.permissions.storage,
         description: descriptionFor('storage', mapStore.permissions.storage)
+    }, {
+        key: 'fileSystem' as const,
+        title: 'File System Access',
+        icon: IconFolderOpen,
+        status: mapStore.permissions.fileSystem,
+        description: descriptionFor('fileSystem', mapStore.permissions.fileSystem)
+    }, {
+        key: 'wakeLock' as const,
+        title: 'Wake Lock',
+        icon: IconSun,
+        status: mapStore.permissions.wakeLock,
+        description: descriptionFor('wakeLock', mapStore.permissions.wakeLock)
     }];
 });
 
@@ -144,6 +161,18 @@ function statusLabel(status: BrowserPermissionState): string {
     }
 }
 
+function badgeProps(status: BrowserPermissionState): Record<string, string> {
+    if (status === 'unsupported') {
+        return {
+            backgroundColor: 'rgba(249, 115, 22, 0.18)',
+            borderColor: 'rgba(234, 88, 12, 0.35)',
+            textColor: '#fdba74'
+        };
+    }
+
+    return {};
+}
+
 function descriptionFor(type: PermissionKey, status: BrowserPermissionState): string {
     if (status === 'granted') {
         return type === 'location'
@@ -154,7 +183,11 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
                     ? 'CloudTAK can access your device orientation for compass-based map rotation.'
                     : type === 'storage'
                         ? 'CloudTAK can persist local data storage for more reliable offline access.'
-                        : 'CloudTAK can access your camera when needed.';
+                        : type === 'camera'
+                            ? 'CloudTAK can access your camera when needed.'
+                            : type === 'fileSystem'
+                                    ? 'CloudTAK can open local files for import and export workflows.'
+                                    : 'CloudTAK can keep the screen awake during active operations.';
     }
 
     if (status === 'denied') {
@@ -166,7 +199,11 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
                     ? 'Device orientation access is currently blocked. Use the button below to try again.'
                     : type === 'storage'
                         ? 'Persistent storage was not granted. Use the button below to try again.'
-                        : 'Camera access is currently blocked. Use the button below to try again.';
+                        : type === 'camera'
+                            ? 'Camera access is currently blocked. Use the button below to try again.'
+                            : type === 'fileSystem'
+                                    ? 'File system access is currently blocked. Use the button below to try again.'
+                                    : 'Wake lock access is currently blocked. Use the button below to try again.';
     }
 
     if (status === 'prompt') {
@@ -178,7 +215,11 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
                     ? 'Device orientation access has not been granted yet.'
                     : type === 'storage'
                         ? 'Persistent storage has not been requested yet.'
-                        : 'Camera access has not been granted yet.';
+                        : type === 'camera'
+                            ? 'Camera access has not been granted yet.'
+                            : type === 'fileSystem'
+                                    ? 'File system access has not been granted yet.'
+                                    : 'Wake lock access has not been granted yet.';
     }
 
     if (status === 'unsupported') {
@@ -190,7 +231,11 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
                     ? 'This browser does not support device orientation events.'
                     : type === 'storage'
                         ? 'This browser does not support persistent storage requests.'
-                        : 'This browser does not support camera access requests.';
+                        : type === 'camera'
+                            ? 'This browser does not support camera access requests.'
+                            : type === 'fileSystem'
+                                    ? 'This browser does not support file system access requests.'
+                                    : 'This browser does not support wake lock requests.';
     }
 
     return type === 'location'
@@ -201,7 +246,11 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
                 ? 'CloudTAK could not determine the current device orientation permission state.'
                 : type === 'storage'
                     ? 'CloudTAK could not determine the current persistent storage state.'
-                    : 'CloudTAK could not determine the current camera permission state.';
+                    : type === 'camera'
+                        ? 'CloudTAK could not determine the current camera permission state.'
+                        : type === 'fileSystem'
+                                ? 'CloudTAK could not determine the current file system access state.'
+                                : 'CloudTAK could not determine the current wake lock state.';
 }
 
 function canRequest(type: PermissionKey, status: BrowserPermissionState): boolean {
@@ -241,8 +290,12 @@ async function requestPermission(type: PermissionKey): Promise<void> {
             await mapStore.requestCameraPermission();
         } else if (type === 'orientation') {
             await mapStore.requestOrientationPermission();
+        } else if (type === 'fileSystem') {
+            await mapStore.requestFileSystemPermission();
         } else if (type === 'storage') {
             await mapStore.requestStoragePermission();
+        } else if (type === 'wakeLock') {
+            await mapStore.requestWakeLockPermission();
         } else {
             await mapStore.requestNotificationPermission();
         }
