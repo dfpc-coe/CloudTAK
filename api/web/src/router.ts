@@ -37,6 +37,10 @@ const router = VueRouter.createRouter({
                     name: 'home-menu-settings-display',
                     component: () => import('./components/CloudTAK/Menu/MenuSettingsDisplay.vue')
                 },{
+                    path: 'settings/permissions',
+                    name: 'home-menu-settings-permissions',
+                    component: () => import('./components/CloudTAK/Menu/MenuSettingsPermissions.vue')
+                },{
                     path: 'imports',
                     name: 'home-menu-imports',
                     component: () => import('./components/CloudTAK/Menu/MenuImports.vue')
