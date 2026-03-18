@@ -67,7 +67,8 @@ services:
             - "${MEDIA_PORT_API:-9997}:9997"
             - "${MEDIA_PORT_RTSP:-8554}:8554"
             - "${MEDIA_PORT_RTMP:-1935}:1935"
-            - "${MEDIA_PORT_HLS:-8888}:8888"
+            - "${MEDIA_PORT_WEBRTC:-8889}:8889"
+            - "${MEDIA_PORT_WEBRTC_UDP:-8189}:8189/udp"
             - "${MEDIA_PORT_SRT:-8890}:8890"
 
     postgis:

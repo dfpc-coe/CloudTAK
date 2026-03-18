@@ -24,17 +24,17 @@ export default {
                     FromPort: 8889,
                     ToPort: 8889
                 },{
+                    Description: 'WebRTC UDP Media Port',
+                    CidrIp: '0.0.0.0/0',
+                    IpProtocol: 'udp',
+                    FromPort: 8189,
+                    ToPort: 8189
+                },{
                     Description: 'SRT Protocol',
                     CidrIp: '0.0.0.0/0',
                     IpProtocol: 'tcp',
                     FromPort: 8890,
                     ToPort: 8890
-                },{
-                    Description: 'HLS Protocol',
-                    CidrIp: '0.0.0.0/0',
-                    IpProtocol: 'tcp',
-                    FromPort: 8888,
-                    ToPort: 8888
                 },{
                     Description: 'RTMP Protocol',
                     CidrIp: '0.0.0.0/0',

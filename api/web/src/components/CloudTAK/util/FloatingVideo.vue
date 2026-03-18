@@ -93,9 +93,9 @@
                     </div>
                 </div>
             </template>
-            <template v-else-if='!video || !videoProtocols || !videoProtocols.hls'>
+            <template v-else-if='!video || !videoProtocols || (!videoProtocols.webrtc && !videoProtocols.hls)'>
                 <TablerNone
-                    label='No HLS Streaming Protocol'
+                    label='No Streaming Protocol'
                     :create='false'
                 />
             </template>
@@ -111,7 +111,7 @@
                     
                     <!-- Buffering Overlay -->
                     <div
-                        v-if='isBuffering'
+                        v-if='activeProtocol === "hls" && isBuffering'
                         class='buffering-overlay'
                     >
                         <div class='buffering-icon'>
@@ -131,12 +131,13 @@
 /**
  * FloatingVideo Component
  *
- * A draggable, resizable video player component for HLS live streaming.
- * Features resilient error handling, automatic retry logic, and MediaMTX muxer restart recovery.
+ * A draggable, resizable video player component for WebRTC/HLS live streaming.
+ * Prefers WebRTC when available and falls back to resilient HLS playback.
  */
 
 import { ref, computed, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue'
 import { std, stdurl } from '../../../../src/std.ts';
+import MediaMTXWebRTCReader from '../../../base/mediamtx-webrtc.ts';
 import StatusDot from './../../util/StatusDot.vue';
 import VideoLeaseSourceType from './VideoLeaseSourceType.vue';
 import FloatingPane from './FloatingPane.vue';
@@ -179,6 +180,7 @@ const emit = defineEmits(['close']);
 // UI state management
 const loading = ref(true);
 const error = ref<Error | undefined>();
+const activeProtocol = ref<'webrtc' | 'hls' | undefined>();
 
 // HLS retry logic state
 const retryCount = ref(0);
@@ -186,6 +188,7 @@ const maxRetries = ref(3); // Maximum retry attempts before giving up
 
 // HLS player instance
 const player = ref<Hls | undefined>()
+const webrtcReader = ref<MediaMTXWebRTCReader | undefined>();
 
 // Video streaming data
 const video = ref(floatStore.panes.get(props.uid) as Pane<PaneVideoConfig>);
@@ -267,10 +270,30 @@ function clearRetryTimeout(): void {
 }
 
 function destroyPlayer(): void {
-    if (!player.value) return;
+    if (player.value) {
+        player.value.destroy();
+        player.value = undefined;
+    }
 
-    player.value.destroy();
-    player.value = undefined;
+    if (webrtcReader.value) {
+        webrtcReader.value.close().catch((err) => {
+            console.warn('Failed to close WebRTC reader cleanly:', err);
+        });
+        webrtcReader.value = undefined;
+    }
+
+    const videoEl = videoTag.value;
+    if (videoEl) {
+        videoEl.onwaiting = null;
+        videoEl.onstalled = null;
+        videoEl.onplaying = null;
+        videoEl.oncanplay = null;
+        videoEl.onerror = null;
+        videoEl.pause();
+        videoEl.removeAttribute('src');
+        videoEl.srcObject = null;
+        videoEl.load();
+    }
 }
 
 function setBuffering(buffering: boolean): void {
@@ -388,11 +411,12 @@ async function deleteLease(): Promise<void> {
 /**
  * Create and configure HLS.js player with resilient settings for live streaming
  */
-async function createPlayer(): Promise<void> {
+async function createHlsPlayer(): Promise<void> {
     try {
         const url = new URL(videoProtocols.value!.hls!.url);
 
         destroyPlayer();
+        activeProtocol.value = 'hls';
 
         attachVideoEventHandlers();
 
@@ -513,6 +537,49 @@ async function createPlayer(): Promise<void> {
     }
 }
 
+async function createWebRTCPlayer(): Promise<void> {
+    try {
+        const protocol = videoProtocols.value?.webrtc;
+        if (!protocol) throw new Error('No WebRTC streaming protocol available');
+        if (typeof RTCPeerConnection === 'undefined') throw new Error('WebRTC is not supported in this browser');
+
+        destroyPlayer();
+        activeProtocol.value = 'webrtc';
+
+        const videoEl = videoTag.value;
+        if (!videoEl) throw new Error('Video element could not be initialized');
+
+        const reader = new MediaMTXWebRTCReader({
+            url: protocol.url,
+            onTrack: (event) => {
+                videoEl.srcObject = event.streams[0];
+                videoEl.play().catch((err) => console.error('Failed to start WebRTC playback:', err));
+            },
+            onError: (streamError) => {
+                console.warn('WebRTC playback error, attempting HLS fallback:', streamError);
+
+                if (videoProtocols.value?.hls && Hls.isSupported()) {
+                    createHlsPlayer().catch((err) => {
+                        handleStreamError(err instanceof Error ? err : new Error(String(err)));
+                    });
+                } else {
+                    error.value = streamError;
+                }
+            }
+        });
+
+        webrtcReader.value = reader;
+        await reader.start();
+    } catch (err) {
+        if (videoProtocols.value?.hls && Hls.isSupported()) {
+            console.warn('WebRTC initialization failed, falling back to HLS:', err);
+            await createHlsPlayer();
+        } else {
+            error.value = err instanceof Error ? err : new Error(String(err));
+        }
+    }
+}
+
 /**
  * Handle MediaMTX muxer restarts gracefully
  * This occurs when MediaMTX creates new segment naming due to source hiccups
@@ -572,7 +639,7 @@ function handleStreamError(streamError: Error): void {
         retryTimeout.value = window.setTimeout(() => {
             destroyPlayer();
 
-            createPlayer();
+            createHlsPlayer();
         }, delay);
     } else {
         // Max retries reached - give up and show error to user
@@ -593,12 +660,10 @@ async function requestLease(): Promise<void> {
     if (!video.value) {
         error.value = new Error('Video URL could not be loaded');
         return;
-    } else if (!Hls.isSupported()) {
-        error.value = new Error('HLS.js is not supported in this browser.');
-        return;
     } else {
         loading.value = true;
         error.value = undefined;
+        activeProtocol.value = undefined;
         clearBufferMonitoring();
         clearRetryTimeout();
         destroyPlayer();
@@ -613,7 +678,6 @@ async function requestLease(): Promise<void> {
         if (active.value.metadata) {
             // Stream is already active - use existing protocols
             videoProtocols.value = active.value.metadata.protocols;
-            loading.value = false;
         } else if (active.value.leasable) {
             // Stream can be leased - create temporary lease
             const lease = await std('/api/video/lease', {
@@ -630,19 +694,27 @@ async function requestLease(): Promise<void> {
 
             videoLease.value = lease;
             videoProtocols.value = protocols;
-
-            loading.value = false;
         } else if (!active.value.leasable) {
             // Stream cannot be leased
             error.value = new Error(active.value.message || 'Could not start stream');
         }
 
-        // Initialize HLS player if we have protocols available
-        if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
+        // Initialize preferred player if we have protocols available
+        if (!error.value && videoProtocols.value && (videoProtocols.value.webrtc || videoProtocols.value.hls)) {
             retryCount.value = 0; // Reset retry count for new lease
+            loading.value = false;
             nextTick(() => {
-                createPlayer();
+                if (videoProtocols.value?.webrtc) {
+                    createWebRTCPlayer();
+                } else if (videoProtocols.value?.hls && Hls.isSupported()) {
+                    createHlsPlayer();
+                } else {
+                    error.value = new Error('No supported streaming protocol is available in this browser');
+                }
             });
+        } else if (!error.value) {
+            loading.value = false;
+            error.value = new Error('No supported streaming protocol is available for this stream');
         }
     } catch (err) {
         loading.value = false;
