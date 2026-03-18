@@ -261,7 +261,15 @@ function clearBufferRecoveryTimeout(): void {
 async function resumeBufferedPlayback(): Promise<void> {
     const video = videoTag.value;
 
-    if (!video || !pausedForBuffering.value || video.ended) return;
+    if (
+        !video ||
+        !pausedForBuffering.value ||
+        video.ended ||
+        video.error ||
+        video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA
+    ) {
+        return;
+    }
 
     pausedForBuffering.value = false;
 
