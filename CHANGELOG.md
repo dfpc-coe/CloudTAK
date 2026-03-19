@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.106.0 - 2026-03-19
+
+- :tada: Add new Permissions Menu
+- :bug: Ensure list of invitable clients in Data Sync match users in the same channels as the Data sync
+
 ### v12.105.2 - 2026-03-18
 
 - :rocket: Flow stripping when resubmitting back to a Data Sync
