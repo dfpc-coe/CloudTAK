@@ -36,6 +36,11 @@ export type TAKNotification = { type: string; name: string; body: string; url: s
 export type BrowserPermissionState = PermissionState | 'unsupported' | 'unknown';
 type BrowserPermissionType = 'location' | 'notification' | 'orientation' | 'storage' | 'camera';
 
+// Hysteresis thresholds to avoid thrashing at the boundary.
+// Must zoom in past ENTER to switch to mercator, must zoom out past LEAVE to switch back to globe.
+const GLOBE_ENTER_HEIGHT = 17_000;
+const GLOBE_LEAVE_HEIGHT = 20_000;
+
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,6 +96,7 @@ export const useMapStore = defineStore('cloudtak', {
         hasSnapping: boolean;
         hasNoChannels: boolean;
         isTerrainEnabled: boolean;
+        isGlobeEnabled: boolean;
         isLoaded: boolean;
         isOpen: boolean;
         isOnline: boolean;
@@ -142,6 +148,7 @@ export const useMapStore = defineStore('cloudtak', {
             hasTerrain: false,
             hasNoChannels: false,
             isTerrainEnabled: false,
+            isGlobeEnabled: false,
             isOpen: false,
             isLoaded: false,
             isOnline: navigator.onLine,
@@ -613,6 +620,7 @@ export const useMapStore = defineStore('cloudtak', {
                 });
 
                 this.isTerrainEnabled = true;
+                this.updateProjection();
             } else {
                 this.hasTerrain = false;
             }
@@ -623,6 +631,29 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.removeSource('-2');
 
             this.isTerrainEnabled = false;
+        },
+
+        updateProjection: function(): void {
+            // Estimate camera height above terrain from zoom and pitch.
+            // getCameraAltitude() is broken in globe mode, so we avoid it entirely.
+            const EARTH_CIRCUMFERENCE = 2 * Math.PI * 6_371_008.8;
+            const pitchFactor = Math.cos((this.map.getPitch() * Math.PI) / 180) * 0.7 + 0.3;
+            const height = (EARTH_CIRCUMFERENCE / Math.pow(2, this.map.getZoom())) * pitchFactor;
+
+            console.log(height);
+
+            const currentProjection = this.map.getProjection()?.type ?? 'mercator';
+            const shouldEnterGlobe = this.isGlobeEnabled && (!this.isTerrainEnabled || height > GLOBE_ENTER_HEIGHT);
+            const shouldLeaveGlobe = !this.isGlobeEnabled || (this.isTerrainEnabled && height < GLOBE_LEAVE_HEIGHT);
+
+            if (shouldEnterGlobe && currentProjection !== 'globe') {
+                console.log('Enable GLOBE')
+                this.map.setProjection({ type: 'globe' });
+                this.map.setSky({});
+            } else if (shouldLeaveGlobe && currentProjection === 'globe') {
+                console.log('Disable GLOBE')
+                this.map.setProjection({ type: 'mercator' });
+            }
         },
 
         returnHome: function(): void {
@@ -721,7 +752,6 @@ export const useMapStore = defineStore('cloudtak', {
             this._boundOnOffline = (): void => { this.isOnline = false; };
             this._boundOnDeviceOrientation = (event: DeviceOrientationEvent): void => {
                 if (!this.userOrientationMode) return;
-                
                 let heading: number | null = null;
                 const iOSEvent = event as DeviceOrientationEvent & { webkitCompassHeading?: number };
                 if (iOSEvent.webkitCompassHeading !== undefined) {
@@ -729,7 +759,6 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (event.alpha !== null) {
                     heading = 360 - event.alpha;
                 }
-                
                 if (heading !== null && this.map) {
                     this.map.setBearing(heading);
                 }
@@ -788,7 +817,8 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (msg.type === WorkerMessageType.Profile_Distance_Unit) {
                     this.updateDistanceUnit(msg.body.unit);
                 } else if (msg.type === WorkerMessageType.Map_Projection) {
-                    map.setProjection(msg.body);
+                    this.isGlobeEnabled = msg.body.type === 'globe';
+                    this.updateProjection();
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
                     this.isOpen = true;
                 } else if (msg.type === WorkerMessageType.Connection_Close) {
@@ -1009,6 +1039,14 @@ export const useMapStore = defineStore('cloudtak', {
                 } else {
                     this.draw.snapping.clear();
                 }
+            });
+
+            map.on('zoomend', () => {
+                this.updateProjection();
+            });
+
+            map.on("pitchend", () => {
+              this.updateProjection();
             });
 
             map.on('click', async (e: MapMouseEvent) => {
