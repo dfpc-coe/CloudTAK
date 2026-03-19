@@ -116,9 +116,22 @@ export default async function router(schema: Schema, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
 
+            const groupsRaw = req.query.groups
+                ? req.query.groups.split(',')
+                : undefined;
+
+            const groups = Array.isArray(groupsRaw)
+                ? (() => {
+                    const cleaned = groupsRaw
+                        .map((g) => (g !== undefined && g !== null ? String(g).trim() : ''))
+                        .filter((g) => g.length > 0);
+                    return cleaned.length > 0 ? cleaned : undefined;
+                })()
+                : undefined;
+
             const clients = await api.Client.list({
                 secAgo: req.query.secago,
-                group: req.query.groups ? req.query.groups.split(',') : undefined
+                group: groups
             });
 
             res.json(clients);

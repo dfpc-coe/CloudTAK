@@ -34,7 +34,14 @@ import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSO
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
 export type BrowserPermissionState = PermissionState | 'unsupported' | 'unknown';
-type BrowserPermissionType = 'location' | 'notification' | 'orientation' | 'storage' | 'camera';
+type BrowserPermissionType = 'location' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
+type FileSystemAccessHandle = FileSystemHandle & {
+    queryPermission?: (descriptor?: { mode?: 'read' | 'readwrite' }) => Promise<PermissionState>;
+    requestPermission?: (descriptor?: { mode?: 'read' | 'readwrite' }) => Promise<PermissionState>;
+};
+type WindowWithFilePicker = Window & {
+    showOpenFilePicker?: (options?: { multiple?: boolean }) => Promise<FileSystemAccessHandle[]>;
+};
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
@@ -51,6 +58,8 @@ export const useMapStore = defineStore('cloudtak', {
         _boundOnOffline?: () => void;
         _boundOnDeviceOrientation?: (event: DeviceOrientationEvent) => void;
         _boundOnVisibilityChange?: () => Promise<void>;
+        _wakeLockSentinel?: WakeLockSentinel | null;
+        _fileSystemHandle?: FileSystemAccessHandle | null;
 
         db: DatabaseType;
         channel: BroadcastChannel;
@@ -80,6 +89,8 @@ export const useMapStore = defineStore('cloudtak', {
             orientation: BrowserPermissionState;
             storage: BrowserPermissionState;
             camera: BrowserPermissionState;
+            wakeLock: BrowserPermissionState;
+            fileSystem: BrowserPermissionState;
         }
 
         _rawWorker: Worker;
@@ -126,6 +137,8 @@ export const useMapStore = defineStore('cloudtak', {
         return {
             _rawWorker: rawWorker,
             worker,
+            _wakeLockSentinel: null,
+            _fileSystemHandle: null,
             callsign: 'Unknown',
             toImport: [],
             location: LocationState.Loading,
@@ -154,7 +167,9 @@ export const useMapStore = defineStore('cloudtak', {
                 notification: 'unknown',
                 orientation: 'unknown',
                 storage: 'unknown',
-                camera: 'unknown'
+                camera: 'unknown',
+                wakeLock: 'unknown',
+                fileSystem: 'unknown'
             },
             select: {
                 mode: undefined,
@@ -349,13 +364,58 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.setPermissionStatus('camera', 'unknown');
         },
+        refreshWakeLockPermissionStatus: async function(): Promise<void> {
+            if (!('wakeLock' in navigator) || !navigator.wakeLock?.request) {
+                this.setPermissionStatus('wakeLock', 'unsupported');
+                return;
+            }
+
+            if (this._wakeLockSentinel && !this._wakeLockSentinel.released) {
+                this.setPermissionStatus('wakeLock', 'granted');
+                return;
+            }
+
+            if ('permissions' in navigator && navigator.permissions?.query) {
+                try {
+                    const status = await navigator.permissions.query({ name: 'screen-wake-lock' as PermissionName });
+                    this.setPermissionStatus('wakeLock', status.state);
+                    return;
+                } catch (err) {
+                    console.warn('Failed to query wake lock permission status', err);
+                }
+            }
+
+            this.setPermissionStatus('wakeLock', 'prompt');
+        },
+        refreshFileSystemPermissionStatus: async function(): Promise<void> {
+            const pickerWindow = window as WindowWithFilePicker;
+
+            if (!pickerWindow.showOpenFilePicker) {
+                this.setPermissionStatus('fileSystem', 'unsupported');
+                return;
+            }
+
+            if (this._fileSystemHandle?.queryPermission) {
+                try {
+                    const status = await this._fileSystemHandle.queryPermission({ mode: 'read' });
+                    this.setPermissionStatus('fileSystem', status);
+                    return;
+                } catch (err) {
+                    console.warn('Failed to query file system access status', err);
+                }
+            }
+
+            this.setPermissionStatus('fileSystem', 'prompt');
+        },
         refreshPermissionStatuses: async function(): Promise<void> {
             await Promise.all([
                 this.refreshLocationPermissionStatus(),
                 this.refreshNotificationPermissionStatus(),
                 this.refreshOrientationPermissionStatus(),
                 this.refreshStoragePermissionStatus(),
-                this.refreshCameraPermissionStatus()
+                this.refreshCameraPermissionStatus(),
+                this.refreshWakeLockPermissionStatus(),
+                this.refreshFileSystemPermissionStatus()
             ]);
         },
         requestLocationPermission: async function(): Promise<void> {
@@ -448,10 +508,61 @@ export const useMapStore = defineStore('cloudtak', {
                 await this.refreshCameraPermissionStatus();
             }
         },
+        requestWakeLockPermission: async function(): Promise<void> {
+            if (!('wakeLock' in navigator) || !navigator.wakeLock?.request) {
+                this.setPermissionStatus('wakeLock', 'unsupported');
+                return;
+            }
+
+            try {
+                const sentinel = await navigator.wakeLock.request('screen');
+                this.setPermissionStatus('wakeLock', 'granted');
+
+                // Release immediately after confirming permission so we don't
+                // keep the screen awake indefinitely as a side-effect.
+                try {
+                    await sentinel.release();
+                } catch {
+                    // Ignore release errors; permission status has already been updated.
+                }
+            } finally {
+                await this.refreshWakeLockPermissionStatus();
+            }
+        },
+        requestFileSystemPermission: async function(): Promise<void> {
+            const pickerWindow = window as WindowWithFilePicker;
+
+            if (!pickerWindow.showOpenFilePicker) {
+                this.setPermissionStatus('fileSystem', 'unsupported');
+                return;
+            }
+
+            try {
+                const handles = await pickerWindow.showOpenFilePicker({ multiple: false });
+                const handle = handles[0];
+
+                if (!handle) {
+                    this.setPermissionStatus('fileSystem', 'unknown');
+                    return;
+                }
+
+                this._fileSystemHandle = handle;
+
+                if (handle.requestPermission) {
+                    const status = await handle.requestPermission({ mode: 'read' });
+                    this.setPermissionStatus('fileSystem', status);
+                } else {
+                    this.setPermissionStatus('fileSystem', 'granted');
+                }
+            } finally {
+                await this.refreshFileSystemPermissionStatus();
+            }
+        },
         destroy: async function() {
             // Capture current worker instances to avoid races with $reset()/state() creating new ones.
             const currentWorker = this.worker;
             const currentRawWorker = this._rawWorker;
+            const currentWakeLock = this._wakeLockSentinel;
 
             if (currentWorker && currentRawWorker) {
                 try {
@@ -468,6 +579,14 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             this.channel.close();
+
+            if (currentWakeLock && !currentWakeLock.released) {
+                try {
+                    await currentWakeLock.release();
+                } catch (err) {
+                    console.warn('Failed to release wake lock sentinel', err);
+                }
+            }
 
             if (this._boundOnOnline) window.removeEventListener('online', this._boundOnOnline);
             if (this._boundOnOffline) window.removeEventListener('offline', this._boundOnOffline);

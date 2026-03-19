@@ -56,11 +56,13 @@ const filteredList = computed(() => {
 });
 
 onMounted(async () => {
+    const groups = props.groups?.filter(Boolean);
+
     const { data } = await server.GET('/api/marti/clients', {
         params: {
             query: {
                 secago: 7 * 24 * 60 * 60,
-                group: props.groups
+                groups: groups?.length ? groups.join(',') : undefined
             }
         }
     });
