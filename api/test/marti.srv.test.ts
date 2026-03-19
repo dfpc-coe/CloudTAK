@@ -51,14 +51,15 @@ test('GET: api/marti/clients - comma separated groups forwarded as repeated grou
     flight.tak.reset();
 });
 
-test('GET: api/marti/clients - legacy group params still supported', async () => {
+test('GET: api/marti/clients - single groups filter forwards a single group param', async () => {
     flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
         if (!request.method || !request.url) return false;
 
         const url = new URL(request.url, 'http://localhost');
 
         if (request.method === 'GET' && url.pathname === '/Marti/api/clientEndPoints') {
-            assert.deepEqual(url.searchParams.getAll('group'), ['group-a', 'group-b']);
+            assert.deepEqual(url.searchParams.getAll('group'), ['group-a']);
+            assert.equal(url.searchParams.get('groups'), null);
 
             response.setHeader('Content-Type', 'application/json');
             response.write(JSON.stringify({
@@ -74,7 +75,7 @@ test('GET: api/marti/clients - legacy group params still supported', async () =>
     });
 
     try {
-        const res = await flight.fetch('/api/marti/clients?group=group-a&group=group-b', {
+        const res = await flight.fetch('/api/marti/clients?groups=group-a', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin

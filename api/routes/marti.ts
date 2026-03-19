@@ -99,8 +99,7 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'Number of seconds ago to look back for client updates. Default is 300 (5 minutes)',
                 default: 300
             }),
-            groups: Type.Optional(Type.String()),
-            group: Type.Optional(Type.Union([Type.String(), Type.Array(Type.String())]))
+            groups: Type.Optional(Type.String())
         }),
         res: TAKList(ClientEndpoint)
     }, async (req, res) => {
@@ -119,9 +118,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const groupsRaw = req.query.groups
                 ? req.query.groups.split(',')
-                : req.query.group
-                    ? (Array.isArray(req.query.group) ? req.query.group : [req.query.group])
-                    : undefined;
+                : undefined;
 
             const groups = Array.isArray(groupsRaw)
                 ? (() => {
