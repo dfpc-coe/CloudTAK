@@ -53,12 +53,12 @@
                             class='text-uppercase flex-shrink-0'
                             v-bind='badgeProps(item.status)'
                         >
-                            {{ statusLabel(item.status) }}
+                            {{ badgeLabel(item.status) }}
                         </TablerBadge>
                     </div>
 
                     <div
-                        v-if='item.status !== "granted" && item.status !== "unsupported"'
+                        v-if='shouldShowAction(item.status)'
                         class='d-flex justify-content-end'
                     >
                         <button
@@ -77,6 +77,7 @@
 
 <script setup lang='ts'>
 import { computed, onMounted, ref } from 'vue';
+import type { Component } from 'vue';
 import {
     IconBell,
     IconCamera,
@@ -95,55 +96,105 @@ import type { BrowserPermissionState } from '../../../stores/map.ts';
 
 const mapStore = useMapStore();
 type PermissionKey = 'location' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
+type PermissionDescriptor = {
+    key: PermissionKey;
+    title: string;
+    icon: Component;
+};
+type PermissionStatusText = Record<PermissionKey, string>;
 
 const loading = ref(true);
 const error = ref('');
 const working = ref<PermissionKey | undefined>();
 
+const permissionDescriptors: PermissionDescriptor[] = [{
+    key: 'notification',
+    title: 'Notifications',
+    icon: IconBell,
+}, {
+    key: 'camera',
+    title: 'Camera',
+    icon: IconCamera,
+}, {
+    key: 'location',
+    title: 'Location',
+    icon: IconMapPin,
+}, {
+    key: 'orientation',
+    title: 'Device Orientation',
+    icon: IconCompass,
+}, {
+    key: 'storage',
+    title: 'Persistent Storage',
+    icon: IconDatabase,
+}, {
+    key: 'fileSystem',
+    title: 'File System Access',
+    icon: IconFolderOpen,
+}, {
+    key: 'wakeLock',
+    title: 'Wake Lock',
+    icon: IconSun,
+}];
+
+const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsupported' | 'unknown', PermissionStatusText> = {
+    granted: {
+        location: 'CloudTAK can access your live position.',
+        notification: 'CloudTAK can deliver browser notifications.',
+        orientation: 'CloudTAK can access your device orientation for compass-based map rotation.',
+        storage: 'CloudTAK can persist local data storage for more reliable offline access.',
+        camera: 'CloudTAK can access your camera when needed.',
+        wakeLock: 'CloudTAK can keep the screen awake during active operations.',
+        fileSystem: 'CloudTAK can open local files for import and export workflows.'
+    },
+    denied: {
+        location: 'Location access is currently blocked. Use the button below to try again.',
+        notification: 'Notification access is currently blocked. Use the button below to try again.',
+        orientation: 'Device orientation access is currently blocked. Use the button below to try again.',
+        storage: 'Persistent storage was not granted. Use the button below to try again.',
+        camera: 'Camera access is currently blocked. Use the button below to try again.',
+        wakeLock: 'Wake lock access is currently blocked. Use the button below to try again.',
+        fileSystem: 'File system access is currently blocked. Use the button below to try again.'
+    },
+    prompt: {
+        location: 'Location access has not been granted yet.',
+        notification: 'Notification access has not been granted yet.',
+        orientation: 'Device orientation access has not been granted yet.',
+        storage: 'Persistent storage has not been requested yet.',
+        camera: 'Camera access has not been granted yet.',
+        wakeLock: 'Wake lock access has not been granted yet.',
+        fileSystem: 'File system access has not been granted yet.'
+    },
+    unsupported: {
+        location: 'This browser does not support geolocation permissions.',
+        notification: 'This browser does not support notification permissions.',
+        orientation: 'This browser does not support device orientation events.',
+        storage: 'This browser does not support persistent storage requests.',
+        camera: 'This browser does not support camera access requests.',
+        wakeLock: 'This browser does not support wake lock requests.',
+        fileSystem: 'This browser does not support file system access requests.'
+    },
+    unknown: {
+        location: 'CloudTAK could not determine the current location permission state.',
+        notification: 'CloudTAK could not determine the current notification permission state.',
+        orientation: 'CloudTAK could not determine the current device orientation permission state.',
+        storage: 'CloudTAK could not determine the current persistent storage state.',
+        camera: 'CloudTAK could not determine the current camera permission state.',
+        wakeLock: 'CloudTAK could not determine the current wake lock state.',
+        fileSystem: 'CloudTAK could not determine the current file system access state.'
+    }
+};
+
 const permissionItems = computed(() => {
-    return [{
-        key: 'notification' as const,
-        title: 'Notifications',
-        icon: IconBell,
-        status: mapStore.permissions.notification,
-        description: descriptionFor('notification', mapStore.permissions.notification)
-    }, {
-        key: 'camera' as const,
-        title: 'Camera',
-        icon: IconCamera,
-        status: mapStore.permissions.camera,
-        description: descriptionFor('camera', mapStore.permissions.camera)
-    }, {
-        key: 'location' as const,
-        title: 'Location',
-        icon: IconMapPin,
-        status: mapStore.permissions.location,
-        description: descriptionFor('location', mapStore.permissions.location)
-    }, {
-        key: 'orientation' as const,
-        title: 'Device Orientation',
-        icon: IconCompass,
-        status: mapStore.permissions.orientation,
-        description: descriptionFor('orientation', mapStore.permissions.orientation)
-    }, {
-        key: 'storage' as const,
-        title: 'Persistent Storage',
-        icon: IconDatabase,
-        status: mapStore.permissions.storage,
-        description: descriptionFor('storage', mapStore.permissions.storage)
-    }, {
-        key: 'fileSystem' as const,
-        title: 'File System Access',
-        icon: IconFolderOpen,
-        status: mapStore.permissions.fileSystem,
-        description: descriptionFor('fileSystem', mapStore.permissions.fileSystem)
-    }, {
-        key: 'wakeLock' as const,
-        title: 'Wake Lock',
-        icon: IconSun,
-        status: mapStore.permissions.wakeLock,
-        description: descriptionFor('wakeLock', mapStore.permissions.wakeLock)
-    }];
+    return permissionDescriptors.map((permission) => {
+        const status = mapStore.permissions[permission.key];
+
+        return {
+            ...permission,
+            status,
+            description: descriptionFor(permission.key, status)
+        };
+    });
 });
 
 onMounted(async () => {
@@ -151,106 +202,48 @@ onMounted(async () => {
     loading.value = false;
 });
 
-function statusLabel(status: BrowserPermissionState): string {
+function badgeLabel(status: BrowserPermissionState): string {
     switch (status) {
         case 'granted': return 'Allowed';
-        case 'denied': return 'Disallowed';
-        case 'prompt': return 'Ask';
+        case 'denied': return 'Re-request';
+        case 'prompt': return 'Request';
         case 'unsupported': return 'Unsupported';
-        default: return 'Unknown';
+        default: return 'Request';
     }
 }
 
 function badgeProps(status: BrowserPermissionState): Record<string, string> {
-    if (status === 'unsupported') {
-        return {
-            backgroundColor: 'rgba(249, 115, 22, 0.18)',
-            borderColor: 'rgba(234, 88, 12, 0.35)',
-            textColor: '#fdba74'
-        };
+    switch (status) {
+        case 'unsupported':
+            return {
+                backgroundColor: 'rgba(249, 115, 22, 0.18)',
+                borderColor: 'rgba(234, 88, 12, 0.35)',
+                textColor: '#fdba74'
+            };
+        case 'granted':
+            return {};
+        default:
+            return {
+                backgroundColor: 'rgba(220, 38, 38, 0.16)',
+                borderColor: 'rgba(185, 28, 28, 0.32)',
+                textColor: '#fca5a5'
+            };
     }
-
-    return {};
 }
 
 function descriptionFor(type: PermissionKey, status: BrowserPermissionState): string {
-    if (status === 'granted') {
-        return type === 'location'
-            ? 'CloudTAK can access your live position.'
-            : type === 'notification'
-                ? 'CloudTAK can deliver browser notifications.'
-                : type === 'orientation'
-                    ? 'CloudTAK can access your device orientation for compass-based map rotation.'
-                    : type === 'storage'
-                        ? 'CloudTAK can persist local data storage for more reliable offline access.'
-                        : type === 'camera'
-                            ? 'CloudTAK can access your camera when needed.'
-                            : type === 'fileSystem'
-                                    ? 'CloudTAK can open local files for import and export workflows.'
-                                    : 'CloudTAK can keep the screen awake during active operations.';
+    switch (status) {
+        case 'granted':
+            return permissionDescriptions.granted[type];
+        case 'denied':
+            return permissionDescriptions.denied[type];
+        case 'prompt':
+            return permissionDescriptions.prompt[type];
+        case 'unsupported':
+            return permissionDescriptions.unsupported[type];
+        default:
+            return permissionDescriptions.unknown[type];
     }
-
-    if (status === 'denied') {
-        return type === 'location'
-            ? 'Location access is currently blocked. Use the button below to try again.'
-            : type === 'notification'
-                ? 'Notification access is currently blocked. Use the button below to try again.'
-                : type === 'orientation'
-                    ? 'Device orientation access is currently blocked. Use the button below to try again.'
-                    : type === 'storage'
-                        ? 'Persistent storage was not granted. Use the button below to try again.'
-                        : type === 'camera'
-                            ? 'Camera access is currently blocked. Use the button below to try again.'
-                            : type === 'fileSystem'
-                                    ? 'File system access is currently blocked. Use the button below to try again.'
-                                    : 'Wake lock access is currently blocked. Use the button below to try again.';
-    }
-
-    if (status === 'prompt') {
-        return type === 'location'
-            ? 'Location access has not been granted yet.'
-            : type === 'notification'
-                ? 'Notification access has not been granted yet.'
-                : type === 'orientation'
-                    ? 'Device orientation access has not been granted yet.'
-                    : type === 'storage'
-                        ? 'Persistent storage has not been requested yet.'
-                        : type === 'camera'
-                            ? 'Camera access has not been granted yet.'
-                            : type === 'fileSystem'
-                                    ? 'File system access has not been granted yet.'
-                                    : 'Wake lock access has not been granted yet.';
-    }
-
-    if (status === 'unsupported') {
-        return type === 'location'
-            ? 'This browser does not support geolocation permissions.'
-            : type === 'notification'
-                ? 'This browser does not support notification permissions.'
-                : type === 'orientation'
-                    ? 'This browser does not support device orientation events.'
-                    : type === 'storage'
-                        ? 'This browser does not support persistent storage requests.'
-                        : type === 'camera'
-                            ? 'This browser does not support camera access requests.'
-                            : type === 'fileSystem'
-                                    ? 'This browser does not support file system access requests.'
-                                    : 'This browser does not support wake lock requests.';
-    }
-
-    return type === 'location'
-        ? 'CloudTAK could not determine the current location permission state.'
-        : type === 'notification'
-            ? 'CloudTAK could not determine the current notification permission state.'
-            : type === 'orientation'
-                ? 'CloudTAK could not determine the current device orientation permission state.'
-                : type === 'storage'
-                    ? 'CloudTAK could not determine the current persistent storage state.'
-                    : type === 'camera'
-                        ? 'CloudTAK could not determine the current camera permission state.'
-                        : type === 'fileSystem'
-                                ? 'CloudTAK could not determine the current file system access state.'
-                                : 'CloudTAK could not determine the current wake lock state.';
 }
 
 function canRequest(type: PermissionKey, status: BrowserPermissionState): boolean {
@@ -258,6 +251,10 @@ function canRequest(type: PermissionKey, status: BrowserPermissionState): boolea
         return false;
     }
 
+    return status !== 'granted' && status !== 'unsupported';
+}
+
+function shouldShowAction(status: BrowserPermissionState): boolean {
     return status !== 'granted' && status !== 'unsupported';
 }
 
@@ -284,20 +281,28 @@ async function requestPermission(type: PermissionKey): Promise<void> {
     working.value = type;
 
     try {
-        if (type === 'location') {
-            await mapStore.requestLocationPermission();
-        } else if (type === 'camera') {
-            await mapStore.requestCameraPermission();
-        } else if (type === 'orientation') {
-            await mapStore.requestOrientationPermission();
-        } else if (type === 'fileSystem') {
-            await mapStore.requestFileSystemPermission();
-        } else if (type === 'storage') {
-            await mapStore.requestStoragePermission();
-        } else if (type === 'wakeLock') {
-            await mapStore.requestWakeLockPermission();
-        } else {
-            await mapStore.requestNotificationPermission();
+        switch (type) {
+            case 'location':
+                await mapStore.requestLocationPermission();
+                break;
+            case 'camera':
+                await mapStore.requestCameraPermission();
+                break;
+            case 'orientation':
+                await mapStore.requestOrientationPermission();
+                break;
+            case 'fileSystem':
+                await mapStore.requestFileSystemPermission();
+                break;
+            case 'storage':
+                await mapStore.requestStoragePermission();
+                break;
+            case 'wakeLock':
+                await mapStore.requestWakeLockPermission();
+                break;
+            case 'notification':
+                await mapStore.requestNotificationPermission();
+                break;
         }
     } catch (err) {
         error.value = err instanceof Error ? err.message : `Failed to request ${type} permission`;
