@@ -36,8 +36,10 @@ export type TAKNotification = { type: string; name: string; body: string; url: s
 export type BrowserPermissionState = PermissionState | 'unsupported' | 'unknown';
 type BrowserPermissionType = 'location' | 'notification' | 'orientation' | 'storage' | 'camera';
 
-// Zoom level at or above which we switch from globe to mercator (when user has globe enabled)
-const GLOBE_HEIGHT_THRESHOLD = 50_000;
+// Hysteresis thresholds to avoid thrashing at the boundary.
+// Must zoom in past ENTER to switch to mercator, must zoom out past LEAVE to switch back to globe.
+const GLOBE_ENTER_HEIGHT = 17_000;
+const GLOBE_LEAVE_HEIGHT = 20_000;
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
@@ -635,23 +637,20 @@ export const useMapStore = defineStore('cloudtak', {
             // Estimate camera height above terrain from zoom and pitch.
             // getCameraAltitude() is broken in globe mode, so we avoid it entirely.
             const EARTH_CIRCUMFERENCE = 2 * Math.PI * 6_371_008.8;
-            const height = EARTH_CIRCUMFERENCE / Math.pow(2, this.map.getZoom()) * Math.cos(this.map.getPitch() * Math.PI / 180);
+            const pitchFactor = Math.cos((this.map.getPitch() * Math.PI) / 180) * 0.7 + 0.3;
+            const height = (EARTH_CIRCUMFERENCE / Math.pow(2, this.map.getZoom())) * pitchFactor;
 
             console.log(height);
 
-            const wantGlobe =
-              this.isGlobeEnabled &&
-              !(
-                this.isTerrainEnabled &&
-                height <= GLOBE_HEIGHT_THRESHOLD
-              );
-
             const currentProjection = this.map.getProjection()?.type ?? 'mercator';
-            if (wantGlobe && currentProjection !== 'globe') {
+            const shouldEnterGlobe = this.isGlobeEnabled && (!this.isTerrainEnabled || height > GLOBE_ENTER_HEIGHT);
+            const shouldLeaveGlobe = !this.isGlobeEnabled || (this.isTerrainEnabled && height < GLOBE_LEAVE_HEIGHT);
+
+            if (shouldEnterGlobe && currentProjection !== 'globe') {
                 console.log('Enable GLOBE')
                 this.map.setProjection({ type: 'globe' });
                 this.map.setSky({});
-            } else if (!wantGlobe && currentProjection !== 'mercator') {
+            } else if (shouldLeaveGlobe && currentProjection === 'globe') {
                 console.log('Disable GLOBE')
                 this.map.setProjection({ type: 'mercator' });
             }
