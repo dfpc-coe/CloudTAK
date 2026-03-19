@@ -516,13 +516,15 @@ export const useMapStore = defineStore('cloudtak', {
 
             try {
                 const sentinel = await navigator.wakeLock.request('screen');
-                this._wakeLockSentinel = sentinel;
                 this.setPermissionStatus('wakeLock', 'granted');
 
-                sentinel.addEventListener('release', () => {
-                    this._wakeLockSentinel = null;
-                    this.setPermissionStatus('wakeLock', 'prompt');
-                }, { once: true });
+                // Release immediately after confirming permission so we don't
+                // keep the screen awake indefinitely as a side-effect.
+                try {
+                    await sentinel.release();
+                } catch {
+                    // Ignore release errors; permission status has already been updated.
+                }
             } finally {
                 await this.refreshWakeLockPermissionStatus();
             }
