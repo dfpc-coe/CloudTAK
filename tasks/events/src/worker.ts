@@ -24,6 +24,12 @@ export default class Worker extends EventEmitter {
         this.msg = msg;
     }
 
+    normalizeBasemapFormat(tileType?: string): string | undefined {
+        if (!tileType) return undefined;
+
+        return tileType.replace(/^image\//, '').toLowerCase();
+    }
+
     async process() {
         let local: LocalMessage | undefined = undefined;
 
@@ -361,6 +367,7 @@ export default class Worker extends EventEmitter {
         try {
             const basemap = await Basemap.parse(xml);
             const json = basemap.to_json();
+            const format = this.normalizeBasemapFormat(json.tileType);
 
             const basemap_req = await fetch(new URL(`/api/basemap`, this.msg.api), {
                 method: 'POST',
@@ -373,8 +380,7 @@ export default class Worker extends EventEmitter {
                     url: json.url,
                     minzoom: json.minZoom,
                     maxzoom: json.maxZoom,
-                    format: json.tileType,
-                    serverParts: json.serverParts,
+                    format,
                 })
             });
 
