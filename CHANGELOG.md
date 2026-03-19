@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.106.1 - 2026-03-19
+
+- :bug: Strip `image/` prefix in MOBAC XML Image Format fields
+
 ### v12.106.0 - 2026-03-19
 
 - :tada: Add new Permissions Menu
