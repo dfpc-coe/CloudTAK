@@ -956,10 +956,8 @@ async function mountMap(): Promise<void> {
     return new Promise((resolve) => {
         mapStore.map.once('idle', async () => {
             const displayProjection = await ProfileConfig.get('display_projection');
-
-            if (displayProjection && displayProjection.value === 'globe') {
-                mapStore.map.setProjection({ type: "globe" });
-            }
+            mapStore.isGlobeEnabled = displayProjection?.value === 'globe';
+            mapStore.syncTerrainAndProjection();
 
             await mapStore.icons.updateImages();
 

@@ -36,6 +36,9 @@ export type TAKNotification = { type: string; name: string; body: string; url: s
 export type BrowserPermissionState = PermissionState | 'unsupported' | 'unknown';
 type BrowserPermissionType = 'location' | 'notification' | 'orientation' | 'storage' | 'camera';
 
+// Zoom level at or above which we switch from globe to mercator (when user has globe enabled)
+const GLOBE_ZOOM_THRESHOLD = 10;
+
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,6 +94,7 @@ export const useMapStore = defineStore('cloudtak', {
         hasSnapping: boolean;
         hasNoChannels: boolean;
         isTerrainEnabled: boolean;
+        isGlobeEnabled: boolean;
         isLoaded: boolean;
         isOpen: boolean;
         isOnline: boolean;
@@ -142,6 +146,7 @@ export const useMapStore = defineStore('cloudtak', {
             hasTerrain: false,
             hasNoChannels: false,
             isTerrainEnabled: false,
+            isGlobeEnabled: false,
             isOpen: false,
             isLoaded: false,
             isOnline: navigator.onLine,
@@ -613,6 +618,7 @@ export const useMapStore = defineStore('cloudtak', {
                 });
 
                 this.isTerrainEnabled = true;
+                this.syncTerrainAndProjection();
             } else {
                 this.hasTerrain = false;
             }
@@ -623,6 +629,20 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.removeSource('-2');
 
             this.isTerrainEnabled = false;
+        },
+
+        syncTerrainAndProjection: function(): void {
+            const zoom = this.map.getZoom();
+
+            const wantGlobe = this.isGlobeEnabled && !(this.isTerrainEnabled && zoom >= GLOBE_ZOOM_THRESHOLD);
+
+            const currentProjection = this.map.getProjection()?.type ?? 'mercator';
+            if (wantGlobe && currentProjection !== 'globe') {
+                this.map.setProjection({ type: 'globe' });
+                this.map.setSky({});
+            } else if (!wantGlobe && currentProjection !== 'mercator') {
+                this.map.setProjection({ type: 'mercator' });
+            }
         },
 
         returnHome: function(): void {
@@ -721,7 +741,6 @@ export const useMapStore = defineStore('cloudtak', {
             this._boundOnOffline = (): void => { this.isOnline = false; };
             this._boundOnDeviceOrientation = (event: DeviceOrientationEvent): void => {
                 if (!this.userOrientationMode) return;
-                
                 let heading: number | null = null;
                 const iOSEvent = event as DeviceOrientationEvent & { webkitCompassHeading?: number };
                 if (iOSEvent.webkitCompassHeading !== undefined) {
@@ -729,7 +748,6 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (event.alpha !== null) {
                     heading = 360 - event.alpha;
                 }
-                
                 if (heading !== null && this.map) {
                     this.map.setBearing(heading);
                 }
@@ -788,7 +806,8 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (msg.type === WorkerMessageType.Profile_Distance_Unit) {
                     this.updateDistanceUnit(msg.body.unit);
                 } else if (msg.type === WorkerMessageType.Map_Projection) {
-                    map.setProjection(msg.body);
+                    this.isGlobeEnabled = msg.body.type === 'globe';
+                    this.syncTerrainAndProjection();
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
                     this.isOpen = true;
                 } else if (msg.type === WorkerMessageType.Connection_Close) {
@@ -1009,6 +1028,10 @@ export const useMapStore = defineStore('cloudtak', {
                 } else {
                     this.draw.snapping.clear();
                 }
+            });
+
+            map.on('zoomend', () => {
+                this.syncTerrainAndProjection();
             });
 
             map.on('click', async (e: MapMouseEvent) => {
