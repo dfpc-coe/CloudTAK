@@ -60,7 +60,9 @@ onMounted(async () => {
         params: {
             query: {
                 secago: 7 * 24 * 60 * 60,
-                groups: props.groups?.join(',')
+                groups: props.groups?.filter(Boolean).length
+                    ? props.groups.filter(Boolean).join(',')
+                    : undefined
             }
         }
     });
