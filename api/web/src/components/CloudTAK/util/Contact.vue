@@ -56,6 +56,13 @@
                 @click.stop='emit("chat", contact)'
             />
         </div>
+
+        <div
+            v-if='$slots.actions'
+            class='align-self-center me-2'
+        >
+            <slot name='actions' />
+        </div>
     </StandardItem>
 </template>
 

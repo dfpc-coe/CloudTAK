@@ -118,20 +118,23 @@
             v-for='sub of filteredSubscriptions'
             v-else
             :key='sub.clientUid'
-            class='col-lg-12 d-flex align-items-center'
+            class='col-lg-12'
         >
-            <div class='flex-grow-1 overflow-hidden'>
-                <Contact
-                    :contact='toContact(sub)'
-                    @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
-                />
-            </div>
-            <TablerDelete
-                v-if='canInvite'
-                label='Remove User'
-                displaytype='icon'
-                @delete='removeUser(sub)'
-            />
+            <Contact
+                :contact='toContact(sub)'
+                @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
+            >
+                <template
+                    v-if='canInvite'
+                    #actions
+                >
+                    <TablerDelete
+                        label='Remove User'
+                        displaytype='icon'
+                        @delete='removeUser(sub)'
+                    />
+                </template>
+            </Contact>
         </div>
     </MenuTemplate>
 </template>
