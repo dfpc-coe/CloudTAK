@@ -37,7 +37,7 @@ export type BrowserPermissionState = PermissionState | 'unsupported' | 'unknown'
 type BrowserPermissionType = 'location' | 'notification' | 'orientation' | 'storage' | 'camera';
 
 // Zoom level at or above which we switch from globe to mercator (when user has globe enabled)
-const GLOBE_ZOOM_THRESHOLD = 10;
+const GLOBE_HEIGHT_THRESHOLD = 50_000;
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
@@ -618,7 +618,7 @@ export const useMapStore = defineStore('cloudtak', {
                 });
 
                 this.isTerrainEnabled = true;
-                this.syncTerrainAndProjection();
+                this.updateProjection();
             } else {
                 this.hasTerrain = false;
             }
@@ -631,16 +631,28 @@ export const useMapStore = defineStore('cloudtak', {
             this.isTerrainEnabled = false;
         },
 
-        syncTerrainAndProjection: function(): void {
-            const zoom = this.map.getZoom();
+        updateProjection: function(): void {
+            // Estimate camera height above terrain from zoom and pitch.
+            // getCameraAltitude() is broken in globe mode, so we avoid it entirely.
+            const EARTH_CIRCUMFERENCE = 2 * Math.PI * 6_371_008.8;
+            const height = EARTH_CIRCUMFERENCE / Math.pow(2, this.map.getZoom()) * Math.cos(this.map.getPitch() * Math.PI / 180);
 
-            const wantGlobe = this.isGlobeEnabled && !(this.isTerrainEnabled && zoom >= GLOBE_ZOOM_THRESHOLD);
+            console.log(height);
+
+            const wantGlobe =
+              this.isGlobeEnabled &&
+              !(
+                this.isTerrainEnabled &&
+                height <= GLOBE_HEIGHT_THRESHOLD
+              );
 
             const currentProjection = this.map.getProjection()?.type ?? 'mercator';
             if (wantGlobe && currentProjection !== 'globe') {
+                console.log('Enable GLOBE')
                 this.map.setProjection({ type: 'globe' });
                 this.map.setSky({});
             } else if (!wantGlobe && currentProjection !== 'mercator') {
+                console.log('Disable GLOBE')
                 this.map.setProjection({ type: 'mercator' });
             }
         },
@@ -807,7 +819,7 @@ export const useMapStore = defineStore('cloudtak', {
                     this.updateDistanceUnit(msg.body.unit);
                 } else if (msg.type === WorkerMessageType.Map_Projection) {
                     this.isGlobeEnabled = msg.body.type === 'globe';
-                    this.syncTerrainAndProjection();
+                    this.updateProjection();
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
                     this.isOpen = true;
                 } else if (msg.type === WorkerMessageType.Connection_Close) {
@@ -1031,7 +1043,11 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             map.on('zoomend', () => {
-                this.syncTerrainAndProjection();
+                this.updateProjection();
+            });
+
+            map.on("pitchend", () => {
+              this.updateProjection();
             });
 
             map.on('click', async (e: MapMouseEvent) => {
