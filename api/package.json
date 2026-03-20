@@ -39,8 +39,10 @@
         "@aws-sdk/client-sqs": "^3.354.0",
         "@aws-sdk/client-sts": "^3.540.0",
         "@aws-sdk/lib-storage": "^3.299.0",
+        "@fastify/busboy": "^3.2.0",
         "@iwpnd/tile38-ts": "^2.4.5",
         "@mapbox/tilebelt": "^2.0.0",
+        "@maplibre/geojson-vt": "^6.0.0",
         "@maplibre/maplibre-gl-style-spec": "^24.0.0",
         "@openaddresses/batch-error": "^2.13.1",
         "@openaddresses/batch-generic": "^24.14.0",
@@ -48,7 +50,6 @@
         "@openaddresses/cloudfriend": "^7.0.0",
         "@sinclair/typebox": "^0.34.0",
         "@tak-ps/etl": "^10.0.0",
-        "@maplibre/geojson-vt": "^6.0.0",
         "@tak-ps/node-cot": "^14.24.3",
         "@tak-ps/node-tak": "^12.1.0",
         "@turf/bbox": "^7.1.0",
@@ -59,7 +60,6 @@
         "ajv-formats": "^3.0.0",
         "archiver": "^7.0.0",
         "array-includes-with-glob": "^5.0.9",
-        "busboy": "^1.6.0",
         "connect-history-api-fallback": "^2.0.0",
         "cors": "^2.8.5",
         "csv-stringify": "^6.3.0",
@@ -94,7 +94,6 @@
     "devDependencies": {
         "@eslint/js": "^10.0.1",
         "@types/archiver": "^7.0.0",
-        "@types/busboy": "^1.5.0",
         "@types/connect-history-api-fallback": "^1.3.5",
         "@types/cors": "^2.8.13",
         "@types/express": "^5.0.0",
@@ -124,7 +123,7 @@
         "typescript-eslint": "^8.0.0"
     },
     "optionalDependencies": {
-        "@img/sharp-linuxmusl-x64": "0.34.5",
-        "@img/sharp-libvips-linuxmusl-x64": "1.2.4"
+        "@img/sharp-libvips-linuxmusl-x64": "1.2.4",
+        "@img/sharp-linuxmusl-x64": "0.34.5"
     }
 }

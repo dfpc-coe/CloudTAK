@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import busboy from 'busboy';
+import { Busboy } from '@fastify/busboy';
 import os from 'node:os';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
@@ -62,8 +62,16 @@ test('POST api/marti/package - Upload Data Package', async () => {
                 return false;
             } else if (request.method === 'POST' && request.url.includes('/Marti/sync/missionupload')) {
                 await new Promise((resolve, reject) => {
-                     const bb = busboy({
-                         headers: request.headers,
+                    const contentType = request.headers['content-type'];
+                    if (!contentType) {
+                        reject(new Error('Missing Content-Type Header'));
+                        return;
+                    }
+
+                     const bb = new Busboy({
+                         headers: {
+                             'content-type': contentType
+                         },
                          limits: {
                              files: 1
                          }
@@ -170,8 +178,16 @@ test('POST api/marti/package - Upload KML', async () => {
                 return false;
             } else if (request.method === 'POST' && request.url.includes('/Marti/sync/missionupload')) {
                 await new Promise((resolve, reject) => {
-                     const bb = busboy({
-                         headers: request.headers,
+                    const contentType = request.headers['content-type'];
+                    if (!contentType) {
+                        reject(new Error('Missing Content-Type Header'));
+                        return;
+                    }
+
+                     const bb = new Busboy({
+                         headers: {
+                             'content-type': contentType
+                         },
                          limits: {
                              files: 1
                          }
