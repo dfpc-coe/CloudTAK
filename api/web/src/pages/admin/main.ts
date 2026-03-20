@@ -76,6 +76,10 @@ const router = VueRouter.createRouter({
                 name: 'admin-overlays-edit',
                 component: () => import('../../components/Admin/AdminOverlaysEdit.vue')
             },{
+                path: 'public',
+                name: 'admin-public',
+                component: () => import('../../components/Admin/AdminPublicTiles.vue')
+            },{
                 path: 'data',
                 name: 'admin-data',
                 component: () => import('../../components/Admin/AdminDatas.vue')
