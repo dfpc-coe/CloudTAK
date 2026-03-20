@@ -111,7 +111,6 @@
                 />
 
                 <template v-else>
-
                     <div class='d-flex flex-column gap-2 px-2'>
                         <template
                             v-for='path of paths'

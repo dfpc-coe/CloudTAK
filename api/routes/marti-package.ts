@@ -2,7 +2,7 @@ import os from 'node:os';
 import dns from 'node:dns/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import busboy from 'busboy';
+import { Busboy } from '@fastify/busboy';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import { pipeline } from 'node:stream/promises';
@@ -64,18 +64,22 @@ export default async function router(schema: Schema, config: Config) {
                 keywords = req.query.keywords;
             }
 
-            if (req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data')) {
-                const bb = busboy({
-                    headers: req.headers,
+            const contentType = req.headers['content-type'];
+
+            if (contentType && contentType.startsWith('multipart/form-data')) {
+                const bb = new Busboy({
+                    headers: {
+                        'content-type': contentType
+                    },
                     limits: {
                         files: 1
                     }
                 });
 
                 let singleFile: Promise<DataPackage> | undefined = undefined;
-                bb.on('file', (fieldname, file, meta) => {
+                bb.on('file', (fieldname, file, filename) => {
                     singleFile = (async () => {
-                        const { ext } = path.parse(meta.filename);
+                        const { ext } = path.parse(filename);
                         const filePath = path.resolve(os.tmpdir(), `${crypto.randomUUID()}${ext}`);
 
                         await pipeline(
@@ -90,9 +94,9 @@ export default async function router(schema: Schema, config: Config) {
 
                             const pkg = new DataPackage(id, id);
 
-                            pkg.settings.name = req.query.name || meta.filename;
+                            pkg.settings.name = req.query.name || filename;
                             await pkg.addFile(fs.createReadStream(filePath), {
-                                name: meta.filename,
+                                name: filename,
                             });
 
                             return pkg;
