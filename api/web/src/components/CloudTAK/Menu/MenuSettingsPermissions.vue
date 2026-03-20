@@ -41,7 +41,9 @@
                             />
 
                             <div class='flex-grow-1'>
-                                <div class='fw-bold'>{{ item.title }}</div>
+                                <div class='fw-bold'>
+                                    {{ item.title }}
+                                </div>
 
                                 <div class='text-secondary small mt-1'>
                                     {{ item.description }}

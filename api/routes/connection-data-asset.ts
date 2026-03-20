@@ -1,7 +1,7 @@
 import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import busboy from 'busboy';
+import { Busboy } from '@fastify/busboy';
 import Auth, { AuthResourceAccess }  from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
@@ -71,7 +71,6 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
 
-        let bb;
         let data: InferSelectModel<typeof Data>;
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -80,16 +79,19 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
             }, req.params.connectionid);
+            const contentType = req.headers['content-type'];
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             data = await config.models.Data.from(req.params.dataid);
             if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
-            if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
+            if (!contentType) throw new Err(400, null, 'Missing Content-Type Header');
 
-            bb = busboy({
-                headers: req.headers,
+            const bb = new Busboy({
+                headers: {
+                    'content-type': contentType
+                },
                 limits: {
                     files: 1
                 }
@@ -97,13 +99,13 @@ export default async function router(schema: Schema, config: Config) {
 
             let name = '';
             const assets: Promise<void>[] = [];
-            bb.on('file', async (fieldname, file, blob) => {
+            bb.on('file', async (fieldname, file, filename) => {
                 try {
                     const passThrough = new Stream.PassThrough();
                     file.pipe(passThrough);
 
-                    name = blob.filename;
-                    assets.push(S3.put(`data/${data.id}/${blob.filename}`, passThrough));
+                    name = filename;
+                    assets.push(S3.put(`data/${data.id}/${filename}`, passThrough));
                 } catch (err) {
                     Err.respond(err, res);
                 }

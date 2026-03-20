@@ -19,7 +19,7 @@
                     <div class='col-12 d-flex align-items-center user-select-none'>
                         <div v-text='selected.name' />
                         <div class='ms-auto btn-list'>
-                            <IconTrash
+                            <IconX
                                 v-tooltip='"Remove Tile"'
                                 :size='32'
                                 stroke='1'
@@ -82,7 +82,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '/src/std.ts';
 import {
-    IconTrash,
+    IconX,
 } from '@tabler/icons-vue';
 import {
     TablerLoading,
