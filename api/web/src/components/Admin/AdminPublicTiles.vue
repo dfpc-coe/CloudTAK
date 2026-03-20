@@ -32,7 +32,7 @@
                 :url='uploadUrl'
                 :headers='uploadHeaders'
                 mimetype='.pmtiles'
-                label='Upload a .pmtiles file to the hosted public tileset directory'
+                label='Upload a .pmtiles file to the hosted tileset directory'
                 @cancel='uploading = false'
                 @done='onUploadDone'
                 @error='error = $event'
