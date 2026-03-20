@@ -9,7 +9,7 @@
                 title='Edit'
                 @click.stop='edit = true'
             >
-                <IconPencil :stroke='1' />
+                <IconPencil stroke='1' />
             </TablerIconButton>
             <div
                 v-else-if='edit && isOpen'
@@ -29,7 +29,7 @@
                     title='Cancel'
                     @click.stop='edit = false; fetch()'
                 >
-                    <IconX :stroke='1' />
+                    <IconX stroke='1' />
                 </TablerIconButton>
             </div>
         </template>
@@ -53,8 +53,8 @@
                     >
                         <TablerEnum
                             v-model='config[key]'
-                            :label='key.replace("display::", "") === "icon_rotation" ? "Rotate Icons with Course" : key.replace("display::", "").replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())'
-                            :options='displayOptions[key.replace("display::", "")] || []'
+                            :label='labelForKey(key)'
+                            :options='displayOptions[key]'
                             :disabled='!edit'
                         />
                     </div>
@@ -64,10 +64,10 @@
     </SlideDownHeader>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
-import { ref, watch, onMounted, computed } from 'vue';
-import { std } from '../../../std.ts';
+import { ref, watch, onMounted } from 'vue';
+import { server, std, stdurl } from '../../../std.ts';
 import {
     TablerLoading,
     TablerEnum,
@@ -81,55 +81,120 @@ import {
     IconX
 } from '@tabler/icons-vue';
 
-const isOpen = ref(false);
-const loading = ref(false);
-const edit = ref(false);
-const err = ref(null);
+type DisplayKey = 'stale' | 'distance' | 'elevation' | 'speed' | 'projection' | 'zoom' | 'text' | 'icon_rotation';
+type DisplayConfigKey = `display::${DisplayKey}`;
+type DisplayOptionValue = string | boolean;
 
-const config = ref({});
-const displayOptions = ref({});
+interface DisplayOptionEntry {
+    value: DisplayOptionValue;
+    options: DisplayOptionValue[];
+}
 
-const displayKeys = computed(() => Object.keys(config.value).filter(k => k.startsWith('display::')));
+type DisplayResponse = Record<DisplayKey, DisplayOptionEntry>;
+type DisplayConfig = Record<DisplayConfigKey, DisplayOptionValue>;
+type DisplayOptions = Record<DisplayConfigKey, DisplayOptionValue[]>;
+
+const displayKeys: DisplayConfigKey[] = [
+    'display::stale',
+    'display::distance',
+    'display::elevation',
+    'display::speed',
+    'display::projection',
+    'display::zoom',
+    'display::text',
+    'display::icon_rotation',
+];
+
+function createDisplayConfig(): DisplayConfig {
+    return {
+        'display::stale': '',
+        'display::distance': '',
+        'display::elevation': '',
+        'display::speed': '',
+        'display::projection': '',
+        'display::zoom': '',
+        'display::text': '',
+        'display::icon_rotation': true,
+    };
+}
+
+function createDisplayOptions(): DisplayOptions {
+    return {
+        'display::stale': [],
+        'display::distance': [],
+        'display::elevation': [],
+        'display::speed': [],
+        'display::projection': [],
+        'display::zoom': [],
+        'display::text': [],
+        'display::icon_rotation': [],
+    };
+}
+
+function labelForKey(key: DisplayConfigKey): string {
+    if (key === 'display::icon_rotation') return 'Rotate Icons with Course';
+
+    return key
+        .replace('display::', '')
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+const isOpen = ref<boolean>(false);
+const loading = ref<boolean>(false);
+const edit = ref<boolean>(false);
+const err = ref<Error | null>(null);
+
+const config = ref<DisplayConfig>(createDisplayConfig());
+const displayOptions = ref<DisplayOptions>(createDisplayOptions());
 
 onMounted(() => {
-     if (isOpen.value) fetch();
+     if (isOpen.value) void fetch();
 });
 
 watch(isOpen, (newState) => {
-    if (newState && !edit.value) fetch();
+    if (newState && !edit.value) void fetch();
 });
 
-async function fetch() {
+async function fetch(): Promise<void> {
     loading.value = true;
     err.value = null;
-    config.value = {}; 
-    displayOptions.value = {};
+    config.value = createDisplayConfig();
+    displayOptions.value = createDisplayOptions();
+
     try {
-        const display = await std('/api/config/display');
-        for (const [key, value] of Object.entries(display)) {
-            displayOptions.value[key] = value.options;
-            config.value[`display::${key}`] = value.value;
+        const { data, error } = await server.GET('/api/config/display');
+        if (error) throw new Error(error.message);
+
+        const display = data as DisplayResponse;
+
+        for (const key of displayKeys) {
+            const shortKey = key.replace('display::', '') as DisplayKey;
+            displayOptions.value[key] = display[shortKey].options;
+            config.value[key] = display[shortKey].value;
         }
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value = false;
 }
 
-async function save() {
+async function save(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
-        await std(`/api/config`, {
+        await std(stdurl('/api/config'), {
             method: 'PUT',
             body: config.value
         });
         
         await fetch();
+        edit.value = false;
     } catch (error) {
-        err.value = error
+        err.value = error instanceof Error ? error : new Error(String(error));
         console.error('Failed to save Display config:', error);
-        loading.value = false;
     }
+
+    loading.value = false;
 }
 </script>
