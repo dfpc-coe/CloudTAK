@@ -20,22 +20,46 @@ export default async function router(schema: Schema, config: Config) {
             path: Type.String()
         })
     }, async (req, res) => {
-        let bb;
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
+            if (
+                !req.headers['content-type']
+                || !req.headers['content-type'].startsWith('multipart/form-data')
+            ) {
+                throw new Err(400, null, 'Unsupported Content-Type');
+            }
 
-            bb = busboy({
+            const bb = busboy({
                 headers: req.headers,
                 limits: {
                     files: 1
                 }
             });
 
+            let handled = false;
             let uploadPromise: Promise<void> | undefined;
             let uploadError: Error | undefined;
             let uploadName = '';
+            let passThrough: Stream.PassThrough | undefined;
+
+            function respond(err: unknown) {
+                if (handled || res.headersSent) return;
+                handled = true;
+
+                req.unpipe(bb);
+                req.resume();
+
+                const wrapped = err instanceof Err
+                    ? err
+                    : new Err(400, err instanceof Error ? err : new Error(String(err)), 'Malformed multipart upload');
+
+                if (passThrough && !passThrough.destroyed) {
+                    passThrough.destroy(wrapped);
+                }
+
+                Err.respond(wrapped, res);
+            }
 
             bb.on('file', (fieldname, file, blob) => {
                 try {
@@ -53,19 +77,24 @@ export default async function router(schema: Schema, config: Config) {
 
                     uploadName = `${sanitized}.pmtiles`;
 
-                    const passThrough = new Stream.PassThrough();
+                    passThrough = new Stream.PassThrough();
                     file.pipe(passThrough);
                     uploadPromise = S3.put(`public/${uploadName}`, passThrough);
                 } catch (err) {
                     uploadError = err instanceof Error ? err : new Error(String(err));
                     file.resume();
                 }
+            }).on('error', (err) => {
+                respond(err);
             }).on('finish', async () => {
                 try {
+                    if (handled) return;
                     if (uploadError) throw uploadError;
                     if (!uploadPromise || !uploadName) throw new Err(400, null, 'No Asset Provided');
 
                     await uploadPromise;
+
+                    handled = true;
 
                     res.json({
                         status: 200,
@@ -74,7 +103,7 @@ export default async function router(schema: Schema, config: Config) {
                         path: `public/${uploadName}`
                     });
                 } catch (err) {
-                    Err.respond(err, res);
+                    respond(err);
                 }
             });
 
