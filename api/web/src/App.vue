@@ -176,9 +176,11 @@ import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vu
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
 import { db } from './base/database.ts';
+import { useMapStore } from './stores/map.ts';
 
 const router = useRouter();
 const route = useRoute();
+const mapStore = useMapStore();
 
 const loginLogo = ref<string>();
 const loginName = ref<string>();
@@ -353,6 +355,7 @@ onUnmounted(() => {
 
 function logout() {
     user.value = false;
+    mapStore.tokenExpiry = null;
     delete localStorage.token;
 
     window.location.href = '/login';
@@ -384,6 +387,7 @@ async function checkToken() {
         if (!token) throw new Error('No token found');
         const payload = JSON.parse(atob(token.split('.')[1]));
         const expirationDate = payload.exp * 1000; // Convert to milliseconds
+        mapStore.tokenExpiry = expirationDate;
         const now = Date.now();
 
         if (now > expirationDate) {
@@ -391,6 +395,7 @@ async function checkToken() {
         }
     } catch (err) {
         console.error(err);
+        mapStore.tokenExpiry = null;
 
         logout();
     }

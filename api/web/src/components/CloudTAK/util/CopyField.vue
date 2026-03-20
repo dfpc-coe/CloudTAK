@@ -7,7 +7,7 @@
 
     <div
         v-if='editing'
-        class='position-relative rounded'
+        class='rounded'
     >
         <TablerInput
             v-model='text'
@@ -15,7 +15,7 @@
             :autofocus='true'
             label=''
             :error='error'
-            @update:model-value='validUpdate(text)'
+            @update:model-value='validUpdate($event)'
             @blur='validUpdate(text, {
                 submit: false,
                 editing: true
@@ -24,23 +24,25 @@
                 submit: rows > 1 ? false : true,
                 editing: rows > 1 ? true : false
             })'
-        />
-
-        <TablerIconButton
-            v-if='!error'
-            title='Done Editing'
-            class='position-absolute'
-            style='right: 8px; top: 8px;'
-            @click.stop.prevent='validUpdate(text, {
-                submit: true,
-                editing: false
-            })'
         >
-            <IconCheck
-                :size='24'
-                stroke='1'
-            />
-        </TablerIconButton>
+            <template
+                v-if='!error'
+                #end
+            >
+                <TablerIconButton
+                    title='Done Editing'
+                    @click.stop.prevent='validUpdate(text, {
+                        submit: true,
+                        editing: false
+                    })'
+                >
+                    <IconCheck
+                        :size='20'
+                        stroke='1.5'
+                    />
+                </TablerIconButton>
+            </template>
+        </TablerInput>
     </div>
     <div
         v-else
@@ -248,27 +250,29 @@ watch(props, () => {
 })
 
 function validUpdate(
-    text: string | number,
+    nextText: string | number,
     opts = {
         submit: false,
         editing: true
     }
 ) {
+    text.value = nextText;
+
     if (typeof props.validate !== 'function') {
         editing.value = opts.editing;
 
-        if (opts.submit) emit("submit", text);
-        emit("update:modelValue", text);
+        if (opts.submit) emit("submit", nextText);
+        emit("update:modelValue", nextText);
     } else {
-        const res = props.validate(text);
+        const res = props.validate(nextText);
 
-        if (res.length) {
+        if (typeof res === 'string' && res.length) {
             error.value = res;
         } else {
             editing.value = opts.editing;
             error.value = undefined;
-            if (opts.submit) emit("submit", text);
-            emit("update:modelValue", text);
+            if (opts.submit) emit("submit", nextText);
+            emit("update:modelValue", nextText);
         }
     }
 }

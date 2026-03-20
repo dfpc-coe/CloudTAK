@@ -1,21 +1,29 @@
 <template>
     <div
         class='standard-item text-white position-relative'
-        :class='{ "standard-item--hover": hover }'
-        :tabindex='hover ? 0 : undefined'
-        :role='hover ? "menuitem" : undefined'
-        @keydown.enter.prevent='hover ? $el.click() : undefined'
-        @keydown.space.prevent='hover ? $el.click() : undefined'
+        :class='{ "standard-item--hover": interactive }'
+        :tabindex='interactive ? 0 : undefined'
+        :role='interactive ? "menuitem" : undefined'
+        @keydown.enter.prevent='interactive ? $el.click() : undefined'
+        @keydown.space.prevent='interactive ? $el.click() : undefined'
     >
         <slot />
     </div>
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
+import { computed, useAttrs } from 'vue';
+
+const props = withDefaults(defineProps<{
     hover?: boolean;
 }>(), {
     hover: true,
+});
+
+const attrs = useAttrs();
+
+const interactive = computed(() => {
+    return props.hover && typeof attrs.onClick === 'function';
 });
 </script>
 
