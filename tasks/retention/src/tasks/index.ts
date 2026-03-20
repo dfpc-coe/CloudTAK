@@ -1,4 +1,4 @@
-import type { RetentionTask } from '../lib/runner.js';
+import type { RetentionTask } from '../index.js';
 
 const tasks: RetentionTask[] = [];
 
