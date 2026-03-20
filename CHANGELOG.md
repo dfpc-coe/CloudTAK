@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.108.0 - 2026-03-20
+
+- :rocket: Add an interstitial for selecting the type of basemap when adding a new basemap via the Map View
+- :rocket: Consistent verbage around Hosted Tilesets
+
 ### v12.107.0 - 2026-03-19
 
 - :tada: Allow administrators to upload new Hosted Tilesets
