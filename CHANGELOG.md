@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.107.0 - 2026-03-19
+
+- :tada: Allow administrators to upload new Hosted Tilesets
+- :arrow_up: Migrate from `busboy` => `@fastify/busboy`
+
 ### v12.106.1 - 2026-03-19
 
 - :bug: Strip `image/` prefix in MOBAC XML Image Format fields
