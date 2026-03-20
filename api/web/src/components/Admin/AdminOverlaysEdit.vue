@@ -97,12 +97,12 @@
                         for='entry-public'
                         type='button'
                         class='btn btn-sm'
-                    ><IconList
-                        v-tooltip='"Public Tilesets"'
+                        ><IconList
+                            v-tooltip='"Hosted Tilesets"'
                         class='me-2'
                         :size='32'
                         stroke='1'
-                    />Public Tilesets</label>
+                        />Hosted Tilesets</label>
 
                     <input
                         id='entry-tilejson'
