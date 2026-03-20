@@ -3,7 +3,7 @@ import Stream from 'node:stream';
 import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import busboy from 'busboy';
+import { Busboy } from '@fastify/busboy';
 import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Config from '../lib/config.js';
@@ -22,16 +22,19 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
+            const contentType = req.headers['content-type'];
 
             if (
-                !req.headers['content-type']
-                || !req.headers['content-type'].startsWith('multipart/form-data')
+                !contentType
+                || !contentType.startsWith('multipart/form-data')
             ) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
-            const bb = busboy({
-                headers: req.headers,
+            const bb = new Busboy({
+                headers: {
+                    'content-type': contentType
+                },
                 limits: {
                     files: 1
                 }
@@ -61,9 +64,9 @@ export default async function router(schema: Schema, config: Config) {
                 Err.respond(wrapped, res);
             }
 
-            bb.on('file', (fieldname, file, blob) => {
+            bb.on('file', (fieldname, file, filename) => {
                 try {
-                    const parsed = path.parse(path.basename(blob.filename || ''));
+                    const parsed = path.parse(path.basename(filename || ''));
                     if (!parsed.name) throw new Err(400, null, 'Uploaded file must have a filename');
                     if (parsed.ext.toLowerCase() !== '.pmtiles') throw new Err(400, null, 'Only .pmtiles files can be uploaded');
 

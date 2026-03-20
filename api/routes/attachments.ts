@@ -1,5 +1,5 @@
 import path from 'path';
-import busboy from 'busboy';
+import { Busboy } from '@fastify/busboy';
 import { Static, Type } from '@sinclair/typebox'
 import AttachmentControl from '../lib/control/attachment.js';
 import Schema from '@openaddresses/batch-schema';
@@ -73,16 +73,19 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+            const contentType = req.headers['content-type'];
 
             if (
-                !req.headers['content-type']
-                || !req.headers['content-type'].startsWith('multipart/form-data')
+                !contentType
+                || !contentType.startsWith('multipart/form-data')
             ) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
-            const bb = busboy({
-                headers: req.headers,
+            const bb = new Busboy({
+                headers: {
+                    'content-type': contentType
+                },
                 limits: { files: 1 }
             });
 
@@ -90,8 +93,8 @@ export default async function router(schema: Schema, config: Config) {
                 hash: string;
             }>[] = [];
 
-            bb.on('file', async (fieldname, file, blob) => {
-                uploads.push(attachmentControl.upload(blob.filename, file));
+            bb.on('file', async (fieldname, file, filename) => {
+                uploads.push(attachmentControl.upload(filename, file));
             }).on('finish', async () => {
                 try {
                     const files = await Promise.all(uploads);

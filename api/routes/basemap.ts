@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import { bbox } from '@turf/bbox';
 import TileJSON, { TileJSONType, TileJSONActions } from '../lib/control/tilejson.js';
 import Auth, { AuthUserAccess, AuthUser, AuthResource, ResourceCreationScope, AuthResourceAccess } from '../lib/auth.js';
-import busboy from 'busboy';
+import { Busboy } from '@fastify/busboy';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import stream2buffer from '../lib/stream.js';
@@ -67,10 +67,13 @@ export default async function router(schema: Schema, config: Config) {
             } = {
                 type: Basemap_Type.RASTER
             };
+            const contentType = req.headers['content-type'];
 
-            if (req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data')) {
-                const bb = busboy({
-                    headers: req.headers,
+            if (contentType && contentType.startsWith('multipart/form-data')) {
+                const bb = new Busboy({
+                    headers: {
+                        'content-type': contentType
+                    },
                     limits: {
                         files: 1
                     }
@@ -116,7 +119,7 @@ export default async function router(schema: Schema, config: Config) {
                 });
 
                 req.pipe(bb);
-            } else if (req.headers['content-type'] && req.headers['content-type'].startsWith('text/plain')) {
+            } else if (contentType && contentType.startsWith('text/plain')) {
                 let url: URL;
                 try {
                     url = new URL(String(await stream2buffer(req)));

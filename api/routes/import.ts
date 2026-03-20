@@ -4,7 +4,7 @@ import path from 'node:path';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { Param } from '@openaddresses/batch-generic';
-import busboy from 'busboy';
+import { Busboy } from '@fastify/busboy';
 import Config from '../lib/config.js';
 import S3 from '../lib/aws/s3.js'
 import crypto from 'node:crypto';
@@ -138,8 +138,9 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+            const contentType = req.headers['content-type'];
 
-            if (!req.headers['content-type'] || !req.headers['content-type'].startsWith('multipart/form-data')) {
+            if (!contentType || !contentType.startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
@@ -148,17 +149,19 @@ export default async function router(schema: Schema, config: Config) {
             if (imported.status !== Import_Status.EMPTY) throw new Err(400, null, 'An asset is already associated with this import');
             if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
 
-            const bb = busboy({
-                headers: req.headers,
+            const bb = new Busboy({
+                headers: {
+                    'content-type': contentType
+                },
                 limits: { files: 1 }
             });
 
             const uploads: Promise<unknown>[] = [];
-            bb.on('file', async (fieldname, file, blob) => {
+            bb.on('file', async (fieldname, file, filename) => {
                 uploads.push((async function() {
                     const res = {
-                        file: blob.filename,
-                        ext: path.parse(blob.filename).ext,
+                        file: filename,
+                        ext: path.parse(filename).ext,
                     };
 
                     await config.models.Import.commit(imported.id, {
@@ -199,13 +202,16 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+            const contentType = req.headers['content-type'];
 
-            if (!req.headers['content-type'] || !req.headers['content-type'].startsWith('multipart/form-data')) {
+            if (!contentType || !contentType.startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
-            const bb = busboy({
-                headers: req.headers,
+            const bb = new Busboy({
+                headers: {
+                    'content-type': contentType
+                },
                 limits: { files: 5 }
             });
 
@@ -214,11 +220,11 @@ export default async function router(schema: Schema, config: Config) {
                 uid: string;
                 ext: string;
             }>[] = [];
-            bb.on('file', async (fieldname, file, blob) => {
+            bb.on('file', async (fieldname, file, filename) => {
                 uploads.push((async function() {
                     const res = {
-                        file: blob.filename,
-                        ext: path.parse(blob.filename).ext,
+                        file: filename,
+                        ext: path.parse(filename).ext,
                         uid: crypto.randomUUID()
                     };
 
