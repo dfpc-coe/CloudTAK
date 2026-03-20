@@ -7,11 +7,11 @@
             <label class='subheader'>Filter</label>
             <div class='12'>
                 <CopyField
-                    :model-value='JSON.stringify(l.filter)'
+                    :model-value='typeof l.filter === "undefined" ? "" : JSON.stringify(l.filter)'
                     :edit='!disabled'
                     :hover='!disabled'
                     :validate='validateFilter'
-                    @update:model-value='l.filter = $event ? JSON.parse($event) : undefined'
+                    @update:model-value='updateFilter($event)'
                 />
             </div>
         </div>
@@ -288,12 +288,23 @@ const props = withDefaults(defineProps<{
 const l = ref<StyledLayer>(props.layer);
 
 function validateFilter(text: string): true | string {
+    if (!text.trim()) return true;
+
     try {
         JSON.parse(text);
     } catch (err) {
         return err instanceof Error ? err.message : String(err);
     }
     return true;
+}
+
+function updateFilter(text: string | number): void {
+    if (typeof text !== 'string' || !text.trim()) {
+        l.value.filter = undefined;
+        return;
+    }
+
+    l.value.filter = JSON.parse(text) as FilterSpecification;
 }
 
 const PAINT_PROPERTIES = [
