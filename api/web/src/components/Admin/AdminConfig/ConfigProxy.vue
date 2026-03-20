@@ -20,7 +20,10 @@
                     title='Save'
                     @click.stop='save'
                 >
-                    <IconDeviceFloppy color='rgb(var(--tblr-primary-rgb))' stroke='1' />
+                    <IconDeviceFloppy
+                        color='rgb(var(--tblr-primary-rgb))'
+                        stroke='1'
+                    />
                 </TablerIconButton>
                 <TablerIconButton
                     title='Cancel'
@@ -59,7 +62,10 @@
                                     title='Add URL'
                                     @click='addWhitelistEntry()'
                                 >
-                                    <IconPlus color='rgb(var(--tblr-primary-rgb))' stroke='1' />
+                                    <IconPlus
+                                        color='rgb(var(--tblr-primary-rgb))'
+                                        stroke='1'
+                                    />
                                 </TablerIconButton>
                             </div>
 
@@ -83,7 +89,10 @@
                                         title='Remove URL'
                                         @click='removeWhitelistEntry(index)'
                                     >
-                                        <IconTrash color='rgb(var(--tblr-danger-rgb))' stroke='1' />
+                                        <IconTrash
+                                            color='rgb(var(--tblr-danger-rgb))'
+                                            stroke='1'
+                                        />
                                     </TablerIconButton>
                                 </div>
                             </template>
