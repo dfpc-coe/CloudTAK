@@ -7,6 +7,7 @@ import DB from './lib/db.js';
 import Signing from './lib/signing.js';
 import Events from './lib/events.js';
 import PMTiles from './lib/pmtiles.js';
+import Retention from './lib/retention.js';
 import Alarms from './lib/alarms.js';
 import {
     ELB as ELBAlarms,
@@ -14,7 +15,7 @@ import {
 } from '@openaddresses/batch-alarms';
 
 export default cf.merge(
-    S3, DB, API, KMS, Signing, Alarms, PMTiles, Events, Media,
+    S3, DB, API, KMS, Signing, Alarms, PMTiles, Events, Retention, Media,
     {
         Description: 'Template for @tak-ps/etl',
         Parameters: {

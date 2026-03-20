@@ -56,6 +56,29 @@ services:
             - AWS_S3_AccessKeyId=${AWS_S3_AccessKeyId}
             - AWS_S3_SecretAccessKey=${AWS_S3_SecretAccessKey}
 
+    retention:
+        build:
+          context: ./tasks/retention/
+          dockerfile: Dockerfile.compose
+        restart: 'always'
+        depends_on:
+            - api
+            - postgis
+            - store
+        ports:
+            - "5004:5004"
+        environment:
+            CLOUDTAK_Mode: ${CLOUDTAK_Mode}
+            POSTGRES: ${POSTGRES}
+            API_URL: ${API_URL}
+            ASSET_BUCKET: ${ASSET_BUCKET}
+            AWS_REGION: ${AWS_REGION:-us-east-1}
+            AWS_S3_Endpoint: ${AWS_S3_Endpoint}
+            AWS_S3_AccessKeyId: ${AWS_S3_AccessKeyId}
+            AWS_S3_SecretAccessKey: ${AWS_S3_SecretAccessKey}
+            RETENTION_PORT: 5004
+            RETENTION_SCHEDULE: ${RETENTION_SCHEDULE:-0 3 * * *}
+
     media:
         image: ghcr.io/dfpc-coe/media-infra:v9.1.1
         restart: 'always'
