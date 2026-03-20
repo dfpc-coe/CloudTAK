@@ -367,7 +367,7 @@ interface EditingBasemap {
 
 type BasemapSourceType = 'zxy' | 'quadkey' | 'imageserver' | 'mapserver' | 'featureserver' | 'tilejson' | 'upload';
 
-const BASemapTypeConfig: Record<BasemapSourceType, {
+const BasemapTypeConfig: Record<BasemapSourceType, {
     label: string;
     description: string;
     icon: object;
