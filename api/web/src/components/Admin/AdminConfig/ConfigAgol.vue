@@ -20,7 +20,10 @@
                     title='Save'
                     @click.stop='save'
                 >
-                    <IconDeviceFloppy color='rgb(var(--tblr-primary-rgb))' stroke='1' />
+                    <IconDeviceFloppy
+                        color='rgb(var(--tblr-primary-rgb))'
+                        stroke='1'
+                    />
                 </TablerIconButton>
                 <TablerIconButton
                     title='Cancel'

@@ -62,8 +62,12 @@
                             </div>
 
                             <div>
-                                <div class='fw-semibold'>{{ selectedTypeConfig.label }}</div>
-                                <div class='small text-white-50'>{{ selectedTypeConfig.description }}</div>
+                                <div class='fw-semibold'>
+                                    {{ selectedTypeConfig.label }}
+                                </div>
+                                <div class='small text-white-50'>
+                                    {{ selectedTypeConfig.description }}
+                                </div>
                             </div>
 
                             <div class='ms-auto'>
@@ -105,8 +109,12 @@
                             </div>
 
                             <div>
-                                <div class='fw-semibold'>{{ selectedTypeConfig.label }}</div>
-                                <div class='small text-white-50'>{{ selectedTypeConfig.description }}</div>
+                                <div class='fw-semibold'>
+                                    {{ selectedTypeConfig.label }}
+                                </div>
+                                <div class='small text-white-50'>
+                                    {{ selectedTypeConfig.description }}
+                                </div>
                             </div>
 
                             <div class='ms-auto'>
@@ -161,8 +169,12 @@
                             </div>
 
                             <div>
-                                <div class='fw-semibold'>{{ selectedTypeConfig.label }}</div>
-                                <div class='small text-white-50'>{{ selectedTypeConfig.description }}</div>
+                                <div class='fw-semibold'>
+                                    {{ selectedTypeConfig.label }}
+                                </div>
+                                <div class='small text-white-50'>
+                                    {{ selectedTypeConfig.description }}
+                                </div>
                             </div>
 
                             <div class='ms-auto'>
