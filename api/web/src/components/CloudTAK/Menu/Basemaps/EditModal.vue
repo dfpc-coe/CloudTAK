@@ -555,7 +555,7 @@ const showFormFooter = computed(() => {
 
 const selectedTypeConfig = computed(() => {
     if (!selectedBasemapType.value) return null;
-    return BASemapTypeConfig[selectedBasemapType.value];
+    return BasemapTypeConfig[selectedBasemapType.value];
 });
 
 const urlFieldLabel = computed(() => {
@@ -611,7 +611,7 @@ function setBasemapType(type: string): void {
     }
 
     selectedBasemapType.value = type as BasemapSourceType;
-    const config = BASemapTypeConfig[selectedBasemapType.value];
+    const config = BasemapTypeConfig[selectedBasemapType.value];
     editing.value.url = '';
     editing.value.type = config.defaults.type;
     editing.value.format = config.defaults.format;
