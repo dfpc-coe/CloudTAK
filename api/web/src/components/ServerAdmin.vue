@@ -133,6 +133,27 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
+                                                    "active": String(route.name).startsWith("admin-public"),
+                                                    "cursor-pointer": !String(route.name).startsWith("admin-public")
+                                                }'
+                                                @keyup.enter='router.push(`/admin/public`)'
+                                                @click='router.push(`/admin/public`)'
+                                            >
+                                                <IconCloud
+                                                    v-tooltip='nest ? "Hosted Tilesets" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Hosted Tilesets</span>
+                                            </span>
+                                            <span
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
                                                     "active": String(route.name).includes("admin-overlays"),
                                                     "cursor-pointer": !String(route.name).includes("admin-overlays")
                                                 }'
@@ -375,6 +396,7 @@ import {
 } from '@tak-ps/vue-tabler'
 import {
     IconBrush,
+    IconCloud,
     IconNetwork,
     IconVideo,
     IconUsers,
