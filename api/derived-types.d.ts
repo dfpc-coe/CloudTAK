@@ -520,7 +520,10 @@ export interface paths {
         /** Upload an attachment that is assigned to a given CoT */
         put: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description GUID of a mission to also upload the attachment to */
+                    mission?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -731,13 +734,17 @@ export interface paths {
                     /** @description No Description */
                     type?: ("raster" | "raster-dem" | "vector") | ("raster" | "raster-dem" | "vector")[];
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "sharing_enabled" | "sharing_token" | "snapping_enabled" | "snapping_layer" | "name" | "title" | "url" | "overlay" | "iconset" | "username" | "bounds" | "tilesize" | "frequency" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "name" | "url" | "bounds" | "center" | "minzoom" | "maxzoom" | "format" | "type" | "username" | "sharing_enabled" | "sharing_token" | "hidden" | "tilesize" | "attribution" | "collection" | "frequency" | "scheme" | "overlay" | "tilejson" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only show Basemaps belonging to a given collection */
                     collection?: string;
                     /** @description No Description */
                     overlay: boolean;
+                    /** @description No Description */
+                    hidden: "true" | "false" | "all";
+                    /** @description No Description */
+                    snapping?: boolean;
                 };
                 header?: never;
                 path?: never;
@@ -760,26 +767,28 @@ export interface paths {
                                 id: number;
                                 created: string;
                                 updated: string;
-                                sharing_enabled: boolean;
-                                sharing_token?: null | string;
-                                snapping_enabled: boolean;
-                                snapping_layer: null | string;
                                 name: string;
-                                title: string;
                                 url: string;
-                                overlay: boolean;
-                                iconset: string | null;
-                                username: string | null;
-                                tilesize: number;
-                                frequency: null | number;
-                                attribution: string | null;
                                 minzoom: number;
                                 maxzoom: number;
-                                collection?: null | string;
-                                format: string;
-                                scheme: string;
-                                styles: unknown[];
-                                type: string;
+                                format: "png" | "jpeg" | "mvt";
+                                type: "raster" | "raster-dem" | "vector";
+                                username: null | string;
+                                sharing_enabled: boolean;
+                                sharing_token: null | string;
+                                hidden: boolean;
+                                tilesize: number;
+                                attribution: null | string;
+                                collection: null | string;
+                                frequency: null | number;
+                                /** @constant */
+                                scheme: "xyz";
+                                overlay: boolean;
+                                styles?: unknown[];
+                                iconset?: null | string;
+                                title?: string;
+                                snapping_enabled?: boolean;
+                                snapping_layer?: null | string;
                                 bounds?: number[];
                                 center?: number[];
                                 actions: {
@@ -982,6 +991,8 @@ export interface paths {
                         url: string;
                         /** @default false */
                         overlay: boolean;
+                        /** @default false */
+                        hidden: boolean;
                         /** @default 256 */
                         tilesize: number;
                         attribution?: null | string;
@@ -995,6 +1006,9 @@ export interface paths {
                         bounds?: number[];
                         center?: number[];
                         styles?: unknown[];
+                        title?: string;
+                        iconset?: null | string;
+                        tilejson?: string;
                     };
                 };
             };
@@ -1009,26 +1023,28 @@ export interface paths {
                             id: number;
                             created: string;
                             updated: string;
-                            sharing_enabled: boolean;
-                            sharing_token?: null | string;
-                            snapping_enabled: boolean;
-                            snapping_layer: null | string;
                             name: string;
-                            title: string;
                             url: string;
-                            overlay: boolean;
-                            iconset: string | null;
-                            username: string | null;
-                            tilesize: number;
-                            frequency: null | number;
-                            attribution: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection?: null | string;
-                            format: string;
-                            scheme: string;
-                            styles: unknown[];
-                            type: string;
+                            format: "png" | "jpeg" | "mvt";
+                            type: "raster" | "raster-dem" | "vector";
+                            username: null | string;
+                            sharing_enabled: boolean;
+                            sharing_token: null | string;
+                            hidden: boolean;
+                            tilesize: number;
+                            attribution: null | string;
+                            collection: null | string;
+                            frequency: null | number;
+                            /** @constant */
+                            scheme: "xyz";
+                            overlay: boolean;
+                            styles?: unknown[];
+                            iconset?: null | string;
+                            title?: string;
+                            snapping_enabled?: boolean;
+                            snapping_layer?: null | string;
                             bounds?: number[];
                             center?: number[];
                             actions: {
@@ -1142,26 +1158,28 @@ export interface paths {
                             id: number;
                             created: string;
                             updated: string;
-                            sharing_enabled: boolean;
-                            sharing_token?: null | string;
-                            snapping_enabled: boolean;
-                            snapping_layer: null | string;
                             name: string;
-                            title: string;
                             url: string;
-                            overlay: boolean;
-                            iconset: string | null;
-                            username: string | null;
-                            tilesize: number;
-                            frequency: null | number;
-                            attribution: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection?: null | string;
-                            format: string;
-                            scheme: string;
-                            styles: unknown[];
-                            type: string;
+                            format: "png" | "jpeg" | "mvt";
+                            type: "raster" | "raster-dem" | "vector";
+                            username: null | string;
+                            sharing_enabled: boolean;
+                            sharing_token: null | string;
+                            hidden: boolean;
+                            tilesize: number;
+                            attribution: null | string;
+                            collection: null | string;
+                            frequency: null | number;
+                            /** @constant */
+                            scheme: "xyz";
+                            overlay: boolean;
+                            styles?: unknown[];
+                            iconset?: null | string;
+                            title?: string;
+                            snapping_enabled?: boolean;
+                            snapping_layer?: null | string;
                             bounds?: number[];
                             center?: number[];
                             actions: {
@@ -1349,6 +1367,7 @@ export interface paths {
                         snapping_layer?: string;
                         collection?: null | string;
                         overlay?: boolean;
+                        hidden?: boolean;
                         /** @default user */
                         scope: "server" | "user";
                         url?: string;
@@ -1365,6 +1384,9 @@ export interface paths {
                         bounds?: number[];
                         center?: number[];
                         styles?: unknown[];
+                        title?: string;
+                        iconset?: null | string;
+                        tilejson?: string;
                     };
                 };
             };
@@ -1379,26 +1401,28 @@ export interface paths {
                             id: number;
                             created: string;
                             updated: string;
-                            sharing_enabled: boolean;
-                            sharing_token?: null | string;
-                            snapping_enabled: boolean;
-                            snapping_layer: null | string;
                             name: string;
-                            title: string;
                             url: string;
-                            overlay: boolean;
-                            iconset: string | null;
-                            username: string | null;
-                            tilesize: number;
-                            frequency: null | number;
-                            attribution: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection?: null | string;
-                            format: string;
-                            scheme: string;
-                            styles: unknown[];
-                            type: string;
+                            format: "png" | "jpeg" | "mvt";
+                            type: "raster" | "raster-dem" | "vector";
+                            username: null | string;
+                            sharing_enabled: boolean;
+                            sharing_token: null | string;
+                            hidden: boolean;
+                            tilesize: number;
+                            attribution: null | string;
+                            collection: null | string;
+                            frequency: null | number;
+                            /** @constant */
+                            scheme: "xyz";
+                            overlay: boolean;
+                            styles?: unknown[];
+                            iconset?: null | string;
+                            title?: string;
+                            snapping_enabled?: boolean;
+                            snapping_layer?: null | string;
                             bounds?: number[];
                             center?: number[];
                             actions: {
@@ -1994,7 +2018,108 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            [key: string]: unknown;
+                            /** @description Enable Geofence Server Integration */
+                            "geofence::enabled"?: boolean;
+                            /** @description Geofence Server URL */
+                            "geofence::url"?: string;
+                            /** @description Geofence Server Password */
+                            "geofence::password"?: string;
+                            /** @description Enable scheduled retention processing */
+                            "retention::enabled"?: boolean;
+                            /** @description Enable retention processing for connection features */
+                            "retention::connection-feature::enabled"?: boolean;
+                            /** @description Enable ArcGIS Online Integration */
+                            "agol::enabled"?: boolean;
+                            /**
+                             * @description AGOL Auth Type
+                             * @enum {string}
+                             */
+                            "agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Legacy Token */
+                            "agol::token"?: string;
+                            /** @description AGOL OAuth2 Client ID */
+                            "agol::client_id"?: string;
+                            /** @description AGOL OAuth2 Client Secret */
+                            "agol::client_secret"?: string;
+                            /** @description Base URL for Media Service */
+                            "media::url"?: string;
+                            /** @description Map Center Coordinates (lng,lat) */
+                            "map::center"?: string;
+                            /** @description Default Map Pitch Angle */
+                            "map::pitch"?: number;
+                            /** @description Default Map Bearing */
+                            "map::bearing"?: number;
+                            /** @description Default Map Zoom Level */
+                            "map::zoom"?: number;
+                            /** @description Default Basemap for New Users */
+                            "map::basemap"?: null | number;
+                            "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
+                            "display::distance"?: "meter" | "kilometer" | "mile";
+                            "display::elevation"?: "meter" | "feet";
+                            "display::speed"?: "m/s" | "km/h" | "mi/h";
+                            "display::projection"?: "mercator" | "globe";
+                            "display::zoom"?: "always" | "conditional" | "never";
+                            "display::text"?: "Small" | "Medium" | "Large";
+                            "display::icon_rotation"?: boolean;
+                            "group::Yellow"?: string;
+                            "group::Cyan"?: string;
+                            "group::Green"?: string;
+                            "group::Red"?: string;
+                            "group::Purple"?: string;
+                            "group::Orange"?: string;
+                            "group::Blue"?: string;
+                            "group::Magenta"?: string;
+                            "group::White"?: string;
+                            "group::Maroon"?: string;
+                            "group::Dark Blue"?: string;
+                            "group::Teal"?: string;
+                            "group::Dark Green"?: string;
+                            "group::Brown"?: string;
+                            /** @description Enable OIDC Authentication */
+                            "oidc::enabled"?: boolean;
+                            /** @description Disable Username/Password Login */
+                            "oidc::enforced"?: boolean;
+                            /** @description OIDC Provider Name */
+                            "oidc::name"?: string;
+                            /** @description OIDC Discovery URL */
+                            "oidc::discovery"?: string;
+                            /** @description OIDC Client ID */
+                            "oidc::client"?: string;
+                            /** @description OIDC Client Secret */
+                            "oidc::secret"?: string;
+                            /** @description OIDC App Redirect URL */
+                            "oidc::redirect"?: string;
+                            /** @description OIDC Scopes */
+                            "oidc::scopes"?: string;
+                            /** @description Base64 encoded PNG for OIDC Logo */
+                            "oidc::logo"?: string;
+                            "provider::url"?: string;
+                            "provider::secret"?: string;
+                            "provider::client"?: string;
+                            /** @description Enable plugin proxy requests to admin-allowed origins */
+                            "proxy::enabled"?: boolean;
+                            "proxy::whitelist"?: string[];
+                            /** @description URL for Signup Page */
+                            "login::signup"?: string;
+                            /** @description URL for Forgot Password Page */
+                            "login::forgot"?: string;
+                            /** @description Login Page Title */
+                            "login::name"?: string;
+                            /** @description Custom Label for Username Field */
+                            "login::username"?: string;
+                            /**
+                             * @description Enable Custom Branding on Login Page
+                             * @enum {string}
+                             */
+                            "login::brand::enabled"?: "default" | "enabled" | "disabled";
+                            /** @description Show or Hide the CloudTAK Branding */
+                            "login::brand::logo"?: string;
+                            /** @description Enable or Disable Custom Background on Login Page */
+                            "login::background::enabled"?: boolean;
+                            /** @description Hex Color Code for Login Background */
+                            "login::background::color"?: string;
+                            /** @description Base64 encoded PNG for Logo */
+                            "login::logo"?: string;
                         };
                     };
                 };
@@ -2071,6 +2196,16 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        /** @description Enable Geofence Server Integration */
+                        "geofence::enabled"?: boolean;
+                        /** @description Geofence Server URL */
+                        "geofence::url"?: string;
+                        /** @description Geofence Server Password */
+                        "geofence::password"?: string;
+                        /** @description Enable scheduled retention processing */
+                        "retention::enabled"?: boolean;
+                        /** @description Enable retention processing for connection features */
+                        "retention::connection-feature::enabled"?: boolean;
                         /** @description Enable ArcGIS Online Integration */
                         "agol::enabled"?: boolean;
                         /**
@@ -2091,9 +2226,11 @@ export interface paths {
                         /** @description Default Map Pitch Angle */
                         "map::pitch"?: number;
                         /** @description Default Map Bearing */
-                        "map::bearing"?: string;
+                        "map::bearing"?: number;
                         /** @description Default Map Zoom Level */
                         "map::zoom"?: number;
+                        /** @description Default Basemap for New Users */
+                        "map::basemap"?: null | number;
                         "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                         "display::distance"?: "meter" | "kilometer" | "mile";
                         "display::elevation"?: "meter" | "feet";
@@ -2116,18 +2253,36 @@ export interface paths {
                         "group::Teal"?: string;
                         "group::Dark Green"?: string;
                         "group::Brown"?: string;
+                        /** @description Enable OIDC Authentication */
                         "oidc::enabled"?: boolean;
+                        /** @description Disable Username/Password Login */
                         "oidc::enforced"?: boolean;
+                        /** @description OIDC Provider Name */
                         "oidc::name"?: string;
+                        /** @description OIDC Discovery URL */
                         "oidc::discovery"?: string;
+                        /** @description OIDC Client ID */
                         "oidc::client"?: string;
+                        /** @description OIDC Client Secret */
+                        "oidc::secret"?: string;
+                        /** @description OIDC App Redirect URL */
+                        "oidc::redirect"?: string;
+                        /** @description OIDC Scopes */
+                        "oidc::scopes"?: string;
+                        /** @description Base64 encoded PNG for OIDC Logo */
+                        "oidc::logo"?: string;
                         "provider::url"?: string;
                         "provider::secret"?: string;
                         "provider::client"?: string;
+                        /** @description Enable plugin proxy requests to admin-allowed origins */
+                        "proxy::enabled"?: boolean;
+                        "proxy::whitelist"?: string[];
                         /** @description URL for Signup Page */
                         "login::signup"?: string;
                         /** @description URL for Forgot Password Page */
                         "login::forgot"?: string;
+                        /** @description Login Page Title */
+                        "login::name"?: string;
                         /** @description Custom Label for Username Field */
                         "login::username"?: string;
                         /**
@@ -2153,7 +2308,110 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": unknown;
+                        "application/json": {
+                            /** @description Enable Geofence Server Integration */
+                            "geofence::enabled"?: boolean;
+                            /** @description Geofence Server URL */
+                            "geofence::url"?: string;
+                            /** @description Geofence Server Password */
+                            "geofence::password"?: string;
+                            /** @description Enable scheduled retention processing */
+                            "retention::enabled"?: boolean;
+                            /** @description Enable retention processing for connection features */
+                            "retention::connection-feature::enabled"?: boolean;
+                            /** @description Enable ArcGIS Online Integration */
+                            "agol::enabled"?: boolean;
+                            /**
+                             * @description AGOL Auth Type
+                             * @enum {string}
+                             */
+                            "agol::auth_method"?: "oauth2" | "legacy";
+                            /** @description AGOL Legacy Token */
+                            "agol::token"?: string;
+                            /** @description AGOL OAuth2 Client ID */
+                            "agol::client_id"?: string;
+                            /** @description AGOL OAuth2 Client Secret */
+                            "agol::client_secret"?: string;
+                            /** @description Base URL for Media Service */
+                            "media::url"?: string;
+                            /** @description Map Center Coordinates (lng,lat) */
+                            "map::center"?: string;
+                            /** @description Default Map Pitch Angle */
+                            "map::pitch"?: number;
+                            /** @description Default Map Bearing */
+                            "map::bearing"?: number;
+                            /** @description Default Map Zoom Level */
+                            "map::zoom"?: number;
+                            /** @description Default Basemap for New Users */
+                            "map::basemap"?: null | number;
+                            "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
+                            "display::distance"?: "meter" | "kilometer" | "mile";
+                            "display::elevation"?: "meter" | "feet";
+                            "display::speed"?: "m/s" | "km/h" | "mi/h";
+                            "display::projection"?: "mercator" | "globe";
+                            "display::zoom"?: "always" | "conditional" | "never";
+                            "display::text"?: "Small" | "Medium" | "Large";
+                            "display::icon_rotation"?: boolean;
+                            "group::Yellow"?: string;
+                            "group::Cyan"?: string;
+                            "group::Green"?: string;
+                            "group::Red"?: string;
+                            "group::Purple"?: string;
+                            "group::Orange"?: string;
+                            "group::Blue"?: string;
+                            "group::Magenta"?: string;
+                            "group::White"?: string;
+                            "group::Maroon"?: string;
+                            "group::Dark Blue"?: string;
+                            "group::Teal"?: string;
+                            "group::Dark Green"?: string;
+                            "group::Brown"?: string;
+                            /** @description Enable OIDC Authentication */
+                            "oidc::enabled"?: boolean;
+                            /** @description Disable Username/Password Login */
+                            "oidc::enforced"?: boolean;
+                            /** @description OIDC Provider Name */
+                            "oidc::name"?: string;
+                            /** @description OIDC Discovery URL */
+                            "oidc::discovery"?: string;
+                            /** @description OIDC Client ID */
+                            "oidc::client"?: string;
+                            /** @description OIDC Client Secret */
+                            "oidc::secret"?: string;
+                            /** @description OIDC App Redirect URL */
+                            "oidc::redirect"?: string;
+                            /** @description OIDC Scopes */
+                            "oidc::scopes"?: string;
+                            /** @description Base64 encoded PNG for OIDC Logo */
+                            "oidc::logo"?: string;
+                            "provider::url"?: string;
+                            "provider::secret"?: string;
+                            "provider::client"?: string;
+                            /** @description Enable plugin proxy requests to admin-allowed origins */
+                            "proxy::enabled"?: boolean;
+                            "proxy::whitelist"?: string[];
+                            /** @description URL for Signup Page */
+                            "login::signup"?: string;
+                            /** @description URL for Forgot Password Page */
+                            "login::forgot"?: string;
+                            /** @description Login Page Title */
+                            "login::name"?: string;
+                            /** @description Custom Label for Username Field */
+                            "login::username"?: string;
+                            /**
+                             * @description Enable Custom Branding on Login Page
+                             * @enum {string}
+                             */
+                            "login::brand::enabled"?: "default" | "enabled" | "disabled";
+                            /** @description Show or Hide the CloudTAK Branding */
+                            "login::brand::logo"?: string;
+                            /** @description Enable or Disable Custom Background on Login Page */
+                            "login::background::enabled"?: boolean;
+                            /** @description Hex Color Code for Login Background */
+                            "login::background::color"?: string;
+                            /** @description Base64 encoded PNG for Logo */
+                            "login::logo"?: string;
+                        };
                     };
                 };
                 /** @description Error Response */
@@ -2710,6 +2968,7 @@ export interface paths {
                             pitch: number;
                             /** @default 0 */
                             bearing: number;
+                            basemap: null | number;
                         };
                     };
                 };
@@ -4367,8 +4626,12 @@ export interface paths {
                     download: boolean;
                     /** @description No Description */
                     limit: number;
+                    /** @description Filter features by callsign */
+                    filter: string;
+                    /** @description Filter features by layer ID */
+                    layer?: number;
                     /** @description No Description */
-                    sort: "id" | "path" | "connection" | "properties" | "geometry" | "enableRLS";
+                    sort: "id" | "path" | "layer" | "connection" | "properties" | "geometry" | "enableRLS";
                     /** @description Iterate through "pages" of items based on the "limit" query param */
                     page: number;
                     /** @description Order in which results are returned based on the "sort" query param */
@@ -4435,14 +4698,15 @@ export interface paths {
                                     metadata?: {
                                         [key: string]: unknown;
                                     };
+                                    /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -4453,8 +4717,11 @@ export interface paths {
                                     };
                                     shape?: {
                                         ellipse?: {
+                                            /** @description The major axis of the ellipse in meters */
                                             major: number;
+                                            /** @description The minor axis of the ellipse in meters */
                                             minor: number;
+                                            /** @description The angle of the ellipse in degrees */
                                             angle: number;
                                         };
                                     };
@@ -4478,13 +4745,24 @@ export interface paths {
                                             uid?: string;
                                         };
                                         missionChanges?: {
-                                            contentUid: string;
+                                            contentUid?: string;
                                             creatorUid: string;
-                                            isFederatedChange: string;
+                                            isFederatedChange: boolean;
                                             missionName: string;
                                             timestamp: string;
                                             type: string;
-                                            details: {
+                                            contentResource?: {
+                                                expiration: string;
+                                                filename?: string;
+                                                hash: string;
+                                                name: string;
+                                                size: number;
+                                                submissionTime: string;
+                                                submitter: string;
+                                                tool?: string;
+                                                uid: string;
+                                            };
+                                            details?: {
                                                 type: string;
                                                 callsign: string;
                                                 color: string;
@@ -4597,6 +4875,8 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
+                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
                                     takv?: {
@@ -4701,7 +4981,616 @@ export interface paths {
                 };
             };
         };
-        put?: never;
+        /** Create or Update a feature */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":connectionid": number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        id: string;
+                        /** @constant */
+                        type: "Feature";
+                        properties: {
+                            /** @default UNKNOWN */
+                            callsign: string;
+                            /** @default a-f-G */
+                            type: string;
+                            how: string;
+                            time: string;
+                            start: string;
+                            stale: string;
+                            center: number[];
+                            minzoom?: number;
+                            maxzoom?: number;
+                            rotate?: boolean;
+                            range?: number;
+                            bearing?: number;
+                            creator?: {
+                                /** @description The Unique ID of the creator of the CoT */
+                                uid: string;
+                                /** @description The Callsign of the creator of the CoT */
+                                callsign: string;
+                                /** @description Time at which the CoT was created by the creator */
+                                time?: string;
+                                /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
+                                type: string;
+                            };
+                            course?: number;
+                            slope?: number;
+                            speed?: number;
+                            labels?: boolean;
+                            "marker-color"?: string;
+                            "marker-opacity"?: number;
+                            stroke?: string;
+                            "stroke-opacity"?: number;
+                            "stroke-width"?: number;
+                            "stroke-style"?: string;
+                            fill?: string;
+                            "fill-opacity"?: number;
+                            metadata?: {
+                                [key: string]: unknown;
+                            };
+                            /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
+                            archived?: boolean;
+                            geofence?: {
+                                elevationMonitored?: boolean;
+                                minElevation?: string;
+                                maxElevation?: string;
+                                monitor?: string;
+                                trigger?: string;
+                                tracking?: boolean;
+                                boundingSphere?: number;
+                            };
+                            contact?: {
+                                phone?: string;
+                                name?: string;
+                                callsign?: string;
+                                endpoint?: string;
+                            };
+                            shape?: {
+                                ellipse?: {
+                                    /** @description The major axis of the ellipse in meters */
+                                    major: number;
+                                    /** @description The minor axis of the ellipse in meters */
+                                    minor: number;
+                                    /** @description The angle of the ellipse in degrees */
+                                    angle: number;
+                                };
+                            };
+                            remarks?: string;
+                            milsym?: {
+                                id: string;
+                            };
+                            milicon?: {
+                                id: string;
+                            };
+                            mission?: {
+                                type?: string;
+                                tool?: string;
+                                guid?: string;
+                                name?: string;
+                                authorUid?: string;
+                                missionLayer?: {
+                                    name?: string;
+                                    parentUid?: string;
+                                    type?: string;
+                                    uid?: string;
+                                };
+                                missionChanges?: {
+                                    contentUid?: string;
+                                    creatorUid: string;
+                                    isFederatedChange: boolean;
+                                    missionName: string;
+                                    timestamp: string;
+                                    type: string;
+                                    contentResource?: {
+                                        expiration: string;
+                                        filename?: string;
+                                        hash: string;
+                                        name: string;
+                                        size: number;
+                                        submissionTime: string;
+                                        submitter: string;
+                                        tool?: string;
+                                        uid: string;
+                                    };
+                                    details?: {
+                                        type: string;
+                                        callsign: string;
+                                        color: string;
+                                        lat: string;
+                                        lon: string;
+                                    };
+                                }[];
+                            };
+                            fileshare?: {
+                                filename: string;
+                                name: string;
+                                senderCallsign: string;
+                                senderUid: string;
+                                senderUrl: string;
+                                sha256: string;
+                                sizeInBytes: number;
+                            };
+                            ackrequest?: {
+                                uid: string;
+                                ackrequested: boolean;
+                                tag: string;
+                            };
+                            attachments?: string[];
+                            sensor?: {
+                                elevation?: number;
+                                vfov?: number;
+                                fov?: number;
+                                roll?: number;
+                                range?: number;
+                                azimuth?: number;
+                                north?: number;
+                                fovBlue?: number;
+                                fovAlpha?: number;
+                                fovGreen?: number;
+                                fovRed?: number;
+                                strokeWeight?: number;
+                                strokeColor?: number;
+                                rangeLines?: number;
+                                rangeLineStrokeWeight?: number;
+                                rangeLineStrokeColor?: number;
+                                displayMagneticReference?: number;
+                                hideFov?: boolean;
+                                type?: string;
+                                version?: string;
+                                model?: string;
+                            };
+                            video?: {
+                                uid?: string;
+                                sensor?: string;
+                                spi?: string;
+                                url?: string;
+                                connection?: {
+                                    uid: string;
+                                    address: string;
+                                    networkTimeout?: number;
+                                    path?: string;
+                                    protocol?: string;
+                                    bufferTime?: number;
+                                    port?: number;
+                                    roverPort?: number;
+                                    rtspReliable?: number;
+                                    ignoreEmbeddedKLV?: boolean;
+                                    alias?: string;
+                                };
+                            };
+                            links?: {
+                                uid?: string;
+                                relation?: string;
+                                type?: string;
+                                point?: string;
+                                callsign?: string;
+                                mission?: string;
+                                url?: string;
+                                mime?: string;
+                                remarks?: string;
+                                production_time?: string;
+                                parent_callsign?: string;
+                            }[];
+                            chat?: {
+                                parent?: string;
+                                groupOwner?: string;
+                                messageId?: string;
+                                chatroom: string;
+                                id: string;
+                                senderCallsign: string;
+                                chatgrp: unknown;
+                            };
+                            track?: {
+                                speed?: string;
+                                course?: string;
+                                slope?: string;
+                                eCourse?: string;
+                                eSpeed?: string;
+                                eSlope?: string;
+                            };
+                            dest?: {
+                                uid?: string;
+                                callsign?: string;
+                                group?: string;
+                                mission?: string;
+                                "mission-guid"?: string;
+                                after?: string;
+                                path?: string;
+                            } | {
+                                uid?: string;
+                                callsign?: string;
+                                group?: string;
+                                mission?: string;
+                                "mission-guid"?: string;
+                                after?: string;
+                                path?: string;
+                            }[];
+                            /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                            marti_archive?: boolean;
+                            icon?: string;
+                            droid?: string;
+                            takv?: {
+                                device?: string;
+                                platform?: string;
+                                os?: string;
+                                version?: string;
+                            };
+                            group?: {
+                                name: string;
+                                role: string;
+                            };
+                            status?: {
+                                battery?: string;
+                                readiness?: string;
+                            };
+                            precisionlocation?: {
+                                geopointsrc?: string;
+                                altsrc?: string;
+                            };
+                            flow?: {
+                                [key: string]: string;
+                            };
+                        };
+                        path: string;
+                        geometry: {
+                            /** @constant */
+                            type: "Point";
+                            coordinates: number[];
+                        } | {
+                            /** @constant */
+                            type: "LineString";
+                            coordinates: number[][];
+                        } | {
+                            /** @constant */
+                            type: "Polygon";
+                            coordinates: number[][][];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            /** @constant */
+                            type: "Feature";
+                            properties: {
+                                /** @default UNKNOWN */
+                                callsign: string;
+                                /** @default a-f-G */
+                                type: string;
+                                how: string;
+                                time: string;
+                                start: string;
+                                stale: string;
+                                center: number[];
+                                minzoom?: number;
+                                maxzoom?: number;
+                                rotate?: boolean;
+                                range?: number;
+                                bearing?: number;
+                                creator?: {
+                                    /** @description The Unique ID of the creator of the CoT */
+                                    uid: string;
+                                    /** @description The Callsign of the creator of the CoT */
+                                    callsign: string;
+                                    /** @description Time at which the CoT was created by the creator */
+                                    time?: string;
+                                    /** @description The Type of the creator - typically a- for things on the ground, b- for digital things, etc */
+                                    type: string;
+                                };
+                                course?: number;
+                                slope?: number;
+                                speed?: number;
+                                labels?: boolean;
+                                "marker-color"?: string;
+                                "marker-opacity"?: number;
+                                stroke?: string;
+                                "stroke-opacity"?: number;
+                                "stroke-width"?: number;
+                                "stroke-style"?: string;
+                                fill?: string;
+                                "fill-opacity"?: number;
+                                metadata?: {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
+                                archived?: boolean;
+                                geofence?: {
+                                    elevationMonitored?: boolean;
+                                    minElevation?: string;
+                                    maxElevation?: string;
+                                    monitor?: string;
+                                    trigger?: string;
+                                    tracking?: boolean;
+                                    boundingSphere?: number;
+                                };
+                                contact?: {
+                                    phone?: string;
+                                    name?: string;
+                                    callsign?: string;
+                                    endpoint?: string;
+                                };
+                                shape?: {
+                                    ellipse?: {
+                                        /** @description The major axis of the ellipse in meters */
+                                        major: number;
+                                        /** @description The minor axis of the ellipse in meters */
+                                        minor: number;
+                                        /** @description The angle of the ellipse in degrees */
+                                        angle: number;
+                                    };
+                                };
+                                remarks?: string;
+                                milsym?: {
+                                    id: string;
+                                };
+                                milicon?: {
+                                    id: string;
+                                };
+                                mission?: {
+                                    type?: string;
+                                    tool?: string;
+                                    guid?: string;
+                                    name?: string;
+                                    authorUid?: string;
+                                    missionLayer?: {
+                                        name?: string;
+                                        parentUid?: string;
+                                        type?: string;
+                                        uid?: string;
+                                    };
+                                    missionChanges?: {
+                                        contentUid?: string;
+                                        creatorUid: string;
+                                        isFederatedChange: boolean;
+                                        missionName: string;
+                                        timestamp: string;
+                                        type: string;
+                                        contentResource?: {
+                                            expiration: string;
+                                            filename?: string;
+                                            hash: string;
+                                            name: string;
+                                            size: number;
+                                            submissionTime: string;
+                                            submitter: string;
+                                            tool?: string;
+                                            uid: string;
+                                        };
+                                        details?: {
+                                            type: string;
+                                            callsign: string;
+                                            color: string;
+                                            lat: string;
+                                            lon: string;
+                                        };
+                                    }[];
+                                };
+                                fileshare?: {
+                                    filename: string;
+                                    name: string;
+                                    senderCallsign: string;
+                                    senderUid: string;
+                                    senderUrl: string;
+                                    sha256: string;
+                                    sizeInBytes: number;
+                                };
+                                ackrequest?: {
+                                    uid: string;
+                                    ackrequested: boolean;
+                                    tag: string;
+                                };
+                                attachments?: string[];
+                                sensor?: {
+                                    elevation?: number;
+                                    vfov?: number;
+                                    fov?: number;
+                                    roll?: number;
+                                    range?: number;
+                                    azimuth?: number;
+                                    north?: number;
+                                    fovBlue?: number;
+                                    fovAlpha?: number;
+                                    fovGreen?: number;
+                                    fovRed?: number;
+                                    strokeWeight?: number;
+                                    strokeColor?: number;
+                                    rangeLines?: number;
+                                    rangeLineStrokeWeight?: number;
+                                    rangeLineStrokeColor?: number;
+                                    displayMagneticReference?: number;
+                                    hideFov?: boolean;
+                                    type?: string;
+                                    version?: string;
+                                    model?: string;
+                                };
+                                video?: {
+                                    uid?: string;
+                                    sensor?: string;
+                                    spi?: string;
+                                    url?: string;
+                                    connection?: {
+                                        uid: string;
+                                        address: string;
+                                        networkTimeout?: number;
+                                        path?: string;
+                                        protocol?: string;
+                                        bufferTime?: number;
+                                        port?: number;
+                                        roverPort?: number;
+                                        rtspReliable?: number;
+                                        ignoreEmbeddedKLV?: boolean;
+                                        alias?: string;
+                                    };
+                                };
+                                links?: {
+                                    uid?: string;
+                                    relation?: string;
+                                    type?: string;
+                                    point?: string;
+                                    callsign?: string;
+                                    mission?: string;
+                                    url?: string;
+                                    mime?: string;
+                                    remarks?: string;
+                                    production_time?: string;
+                                    parent_callsign?: string;
+                                }[];
+                                chat?: {
+                                    parent?: string;
+                                    groupOwner?: string;
+                                    messageId?: string;
+                                    chatroom: string;
+                                    id: string;
+                                    senderCallsign: string;
+                                    chatgrp: unknown;
+                                };
+                                track?: {
+                                    speed?: string;
+                                    course?: string;
+                                    slope?: string;
+                                    eCourse?: string;
+                                    eSpeed?: string;
+                                    eSlope?: string;
+                                };
+                                dest?: {
+                                    uid?: string;
+                                    callsign?: string;
+                                    group?: string;
+                                    mission?: string;
+                                    "mission-guid"?: string;
+                                    after?: string;
+                                    path?: string;
+                                } | {
+                                    uid?: string;
+                                    callsign?: string;
+                                    group?: string;
+                                    mission?: string;
+                                    "mission-guid"?: string;
+                                    after?: string;
+                                    path?: string;
+                                }[];
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                marti_archive?: boolean;
+                                icon?: string;
+                                droid?: string;
+                                takv?: {
+                                    device?: string;
+                                    platform?: string;
+                                    os?: string;
+                                    version?: string;
+                                };
+                                group?: {
+                                    name: string;
+                                    role: string;
+                                };
+                                status?: {
+                                    battery?: string;
+                                    readiness?: string;
+                                };
+                                precisionlocation?: {
+                                    geopointsrc?: string;
+                                    altsrc?: string;
+                                };
+                                flow?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            path: string;
+                            geometry: {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: number[];
+                            } | {
+                                /** @constant */
+                                type: "LineString";
+                                coordinates: number[][];
+                            } | {
+                                /** @constant */
+                                type: "Polygon";
+                                coordinates: number[][][];
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         post?: never;
         /** Delete multiple features */
         delete: {
@@ -4870,14 +5759,15 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -4888,8 +5778,11 @@ export interface paths {
                                 };
                                 shape?: {
                                     ellipse?: {
+                                        /** @description The major axis of the ellipse in meters */
                                         major: number;
+                                        /** @description The minor axis of the ellipse in meters */
                                         minor: number;
+                                        /** @description The angle of the ellipse in degrees */
                                         angle: number;
                                     };
                                 };
@@ -4913,13 +5806,24 @@ export interface paths {
                                         uid?: string;
                                     };
                                     missionChanges?: {
-                                        contentUid: string;
+                                        contentUid?: string;
                                         creatorUid: string;
-                                        isFederatedChange: string;
+                                        isFederatedChange: boolean;
                                         missionName: string;
                                         timestamp: string;
                                         type: string;
-                                        details: {
+                                        contentResource?: {
+                                            expiration: string;
+                                            filename?: string;
+                                            hash: string;
+                                            name: string;
+                                            size: number;
+                                            submissionTime: string;
+                                            submitter: string;
+                                            tool?: string;
+                                            uid: string;
+                                        };
+                                        details?: {
                                             type: string;
                                             callsign: string;
                                             color: string;
@@ -5032,6 +5936,8 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
                                 takv?: {
@@ -5243,9 +6149,11 @@ export interface paths {
         /** Post CoT data to a given layer */
         post: {
             parameters: {
-                query?: {
+                query: {
                     /** @description If logging is enabled for the layer, allow callers to skip logging for a particular CoT payload */
                     logging?: boolean;
+                    /** @description Save features to ConnectionFeature table */
+                    archive: boolean;
                 };
                 header?: never;
                 path: {
@@ -5304,14 +6212,15 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -5322,8 +6231,11 @@ export interface paths {
                                 };
                                 shape?: {
                                     ellipse?: {
+                                        /** @description The major axis of the ellipse in meters */
                                         major: number;
+                                        /** @description The minor axis of the ellipse in meters */
                                         minor: number;
+                                        /** @description The angle of the ellipse in degrees */
                                         angle: number;
                                     };
                                 };
@@ -5347,13 +6259,24 @@ export interface paths {
                                         uid?: string;
                                     };
                                     missionChanges?: {
-                                        contentUid: string;
+                                        contentUid?: string;
                                         creatorUid: string;
-                                        isFederatedChange: string;
+                                        isFederatedChange: boolean;
                                         missionName: string;
                                         timestamp: string;
                                         type: string;
-                                        details: {
+                                        contentResource?: {
+                                            expiration: string;
+                                            filename?: string;
+                                            hash: string;
+                                            name: string;
+                                            size: number;
+                                            submissionTime: string;
+                                            submitter: string;
+                                            tool?: string;
+                                            uid: string;
+                                        };
+                                        details?: {
                                             type: string;
                                             callsign: string;
                                             color: string;
@@ -5466,6 +6389,8 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
                                 takv?: {
@@ -5564,14 +6489,15 @@ export interface paths {
                                         metadata?: {
                                             [key: string]: unknown;
                                         };
+                                        /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                         archived?: boolean;
                                         geofence?: {
-                                            elevationMonitored?: string;
+                                            elevationMonitored?: boolean;
                                             minElevation?: string;
                                             maxElevation?: string;
                                             monitor?: string;
                                             trigger?: string;
-                                            tracking?: string;
+                                            tracking?: boolean;
                                             boundingSphere?: number;
                                         };
                                         contact?: {
@@ -5582,8 +6508,11 @@ export interface paths {
                                         };
                                         shape?: {
                                             ellipse?: {
+                                                /** @description The major axis of the ellipse in meters */
                                                 major: number;
+                                                /** @description The minor axis of the ellipse in meters */
                                                 minor: number;
+                                                /** @description The angle of the ellipse in degrees */
                                                 angle: number;
                                             };
                                         };
@@ -5607,13 +6536,24 @@ export interface paths {
                                                 uid?: string;
                                             };
                                             missionChanges?: {
-                                                contentUid: string;
+                                                contentUid?: string;
                                                 creatorUid: string;
-                                                isFederatedChange: string;
+                                                isFederatedChange: boolean;
                                                 missionName: string;
                                                 timestamp: string;
                                                 type: string;
-                                                details: {
+                                                contentResource?: {
+                                                    expiration: string;
+                                                    filename?: string;
+                                                    hash: string;
+                                                    name: string;
+                                                    size: number;
+                                                    submissionTime: string;
+                                                    submitter: string;
+                                                    tool?: string;
+                                                    uid: string;
+                                                };
+                                                details?: {
                                                     type: string;
                                                     callsign: string;
                                                     color: string;
@@ -5726,6 +6666,8 @@ export interface paths {
                                             after?: string;
                                             path?: string;
                                         }[];
+                                        /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                        marti_archive?: boolean;
                                         icon?: string;
                                         droid?: string;
                                         takv?: {
@@ -5911,14 +6853,15 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -5929,8 +6872,11 @@ export interface paths {
                                 };
                                 shape?: {
                                     ellipse?: {
+                                        /** @description The major axis of the ellipse in meters */
                                         major: number;
+                                        /** @description The minor axis of the ellipse in meters */
                                         minor: number;
+                                        /** @description The angle of the ellipse in degrees */
                                         angle: number;
                                     };
                                 };
@@ -5954,13 +6900,24 @@ export interface paths {
                                         uid?: string;
                                     };
                                     missionChanges?: {
-                                        contentUid: string;
+                                        contentUid?: string;
                                         creatorUid: string;
-                                        isFederatedChange: string;
+                                        isFederatedChange: boolean;
                                         missionName: string;
                                         timestamp: string;
                                         type: string;
-                                        details: {
+                                        contentResource?: {
+                                            expiration: string;
+                                            filename?: string;
+                                            hash: string;
+                                            name: string;
+                                            size: number;
+                                            submissionTime: string;
+                                            submitter: string;
+                                            tool?: string;
+                                            uid: string;
+                                        };
+                                        details?: {
                                             type: string;
                                             callsign: string;
                                             color: string;
@@ -6073,6 +7030,8 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
                                 takv?: {
@@ -6267,14 +7226,15 @@ export interface paths {
                                     metadata?: {
                                         [key: string]: unknown;
                                     };
+                                    /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -6285,8 +7245,11 @@ export interface paths {
                                     };
                                     shape?: {
                                         ellipse?: {
+                                            /** @description The major axis of the ellipse in meters */
                                             major: number;
+                                            /** @description The minor axis of the ellipse in meters */
                                             minor: number;
+                                            /** @description The angle of the ellipse in degrees */
                                             angle: number;
                                         };
                                     };
@@ -6310,13 +7273,24 @@ export interface paths {
                                             uid?: string;
                                         };
                                         missionChanges?: {
-                                            contentUid: string;
+                                            contentUid?: string;
                                             creatorUid: string;
-                                            isFederatedChange: string;
+                                            isFederatedChange: boolean;
                                             missionName: string;
                                             timestamp: string;
                                             type: string;
-                                            details: {
+                                            contentResource?: {
+                                                expiration: string;
+                                                filename?: string;
+                                                hash: string;
+                                                name: string;
+                                                size: number;
+                                                submissionTime: string;
+                                                submitter: string;
+                                                tool?: string;
+                                                uid: string;
+                                            };
+                                            details?: {
                                                 type: string;
                                                 callsign: string;
                                                 color: string;
@@ -6429,6 +7403,8 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
+                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
                                     takv?: {
@@ -7508,7 +8484,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -7549,6 +8525,7 @@ export interface paths {
                                 name: string;
                                 description: string;
                                 enabled: boolean;
+                                protected: boolean;
                                 logging: boolean;
                                 task: string;
                                 memory: number;
@@ -7582,6 +8559,7 @@ export interface paths {
                                             "stroke-width"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
                                             maxzoom?: number | string;
@@ -7590,6 +8568,21 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         point?: {
                                             "marker-color"?: string;
@@ -7597,6 +8590,7 @@ export interface paths {
                                             id?: string;
                                             type?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             stale?: number | string;
                                             /** @default true */
                                             rotate: boolean;
@@ -7608,6 +8602,21 @@ export interface paths {
                                                 url: string;
                                             }[];
                                             icon?: string;
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         polygon?: {
                                             stroke?: string;
@@ -7618,6 +8627,7 @@ export interface paths {
                                             "fill-opacity"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             callsign?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
@@ -7626,9 +8636,25 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         callsign?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
@@ -7637,12 +8663,28 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                         queries?: {
                                             query: string;
                                             delete?: boolean;
                                             styles?: {
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 callsign?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
@@ -7651,6 +8693,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                                 line?: {
                                                     stroke?: string;
                                                     "stroke-style"?: string;
@@ -7658,6 +8715,7 @@ export interface paths {
                                                     "stroke-width"?: string;
                                                     id?: string;
                                                     remarks?: string;
+                                                    phone?: string;
                                                     stale?: number | string;
                                                     minzoom?: number | string;
                                                     maxzoom?: number | string;
@@ -7666,6 +8724,21 @@ export interface paths {
                                                         remarks: string;
                                                         url: string;
                                                     }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
                                                 };
                                                 point?: {
                                                     "marker-color"?: string;
@@ -7673,6 +8746,7 @@ export interface paths {
                                                     id?: string;
                                                     type?: string;
                                                     remarks?: string;
+                                                    phone?: string;
                                                     stale?: number | string;
                                                     /** @default true */
                                                     rotate: boolean;
@@ -7684,6 +8758,21 @@ export interface paths {
                                                         url: string;
                                                     }[];
                                                     icon?: string;
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
                                                 };
                                                 polygon?: {
                                                     stroke?: string;
@@ -7694,6 +8783,7 @@ export interface paths {
                                                     "fill-opacity"?: string;
                                                     id?: string;
                                                     remarks?: string;
+                                                    phone?: string;
                                                     callsign?: string;
                                                     stale?: number | string;
                                                     minzoom?: number | string;
@@ -7702,6 +8792,21 @@ export interface paths {
                                                         remarks: string;
                                                         url: string;
                                                     }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
                                                 };
                                             };
                                         }[];
@@ -7711,6 +8816,7 @@ export interface paths {
                                         [key: string]: unknown;
                                     };
                                     data: null | number;
+                                    /** @description Deprecated: derived from styles.marti.dest for backwards compatibility */
                                     groups: string[];
                                 };
                                 outgoing?: {
@@ -7837,6 +8943,8 @@ export interface paths {
                         alarm_period?: number;
                         alarm_evals?: number;
                         alarm_points?: number;
+                        /** @default false */
+                        protected: boolean;
                     };
                 };
             };
@@ -7859,6 +8967,7 @@ export interface paths {
                             name: string;
                             description: string;
                             enabled: boolean;
+                            protected: boolean;
                             logging: boolean;
                             task: string;
                             memory: number;
@@ -7892,6 +9001,7 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
@@ -7900,6 +9010,21 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     point?: {
                                         "marker-color"?: string;
@@ -7907,6 +9032,7 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         /** @default true */
                                         rotate: boolean;
@@ -7918,6 +9044,21 @@ export interface paths {
                                             url: string;
                                         }[];
                                         icon?: string;
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     polygon?: {
                                         stroke?: string;
@@ -7928,6 +9069,7 @@ export interface paths {
                                         "fill-opacity"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         callsign?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
@@ -7936,9 +9078,25 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     id?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     callsign?: string;
                                     stale?: number | string;
                                     minzoom?: number | string;
@@ -7947,12 +9105,28 @@ export interface paths {
                                         remarks: string;
                                         url: string;
                                     }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                     queries?: {
                                         query: string;
                                         delete?: boolean;
                                         styles?: {
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             callsign?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
@@ -7961,6 +9135,21 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                             line?: {
                                                 stroke?: string;
                                                 "stroke-style"?: string;
@@ -7968,6 +9157,7 @@ export interface paths {
                                                 "stroke-width"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
                                                 maxzoom?: number | string;
@@ -7976,6 +9166,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                             point?: {
                                                 "marker-color"?: string;
@@ -7983,6 +9188,7 @@ export interface paths {
                                                 id?: string;
                                                 type?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 stale?: number | string;
                                                 /** @default true */
                                                 rotate: boolean;
@@ -7994,6 +9200,21 @@ export interface paths {
                                                     url: string;
                                                 }[];
                                                 icon?: string;
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                             polygon?: {
                                                 stroke?: string;
@@ -8004,6 +9225,7 @@ export interface paths {
                                                 "fill-opacity"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 callsign?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
@@ -8012,6 +9234,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                         };
                                     }[];
@@ -8021,6 +9258,7 @@ export interface paths {
                                     [key: string]: unknown;
                                 };
                                 data: null | number;
+                                /** @description Deprecated: derived from styles.marti.dest for backwards compatibility */
                                 groups: string[];
                             };
                             outgoing?: {
@@ -8138,7 +9376,6 @@ export interface paths {
                         cron?: string;
                         stale?: number;
                         data?: number;
-                        groups?: string[];
                         enabled_styles?: boolean;
                         styles?: {
                             line?: {
@@ -8148,6 +9385,7 @@ export interface paths {
                                 "stroke-width"?: string;
                                 id?: string;
                                 remarks?: string;
+                                phone?: string;
                                 stale?: number | string;
                                 minzoom?: number | string;
                                 maxzoom?: number | string;
@@ -8156,6 +9394,21 @@ export interface paths {
                                     remarks: string;
                                     url: string;
                                 }[];
+                                marti?: {
+                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                    archive?: boolean;
+                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                    dest?: {
+                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                        group?: string;
+                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                        mission?: string;
+                                        /** @description Individual client UID to route this CoT to */
+                                        uid?: string;
+                                        /** @description Individual client callsign to route this CoT to */
+                                        callsign?: string;
+                                    }[];
+                                };
                             };
                             point?: {
                                 "marker-color"?: string;
@@ -8163,6 +9416,7 @@ export interface paths {
                                 id?: string;
                                 type?: string;
                                 remarks?: string;
+                                phone?: string;
                                 stale?: number | string;
                                 /** @default true */
                                 rotate?: boolean;
@@ -8174,6 +9428,21 @@ export interface paths {
                                     url: string;
                                 }[];
                                 icon?: string;
+                                marti?: {
+                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                    archive?: boolean;
+                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                    dest?: {
+                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                        group?: string;
+                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                        mission?: string;
+                                        /** @description Individual client UID to route this CoT to */
+                                        uid?: string;
+                                        /** @description Individual client callsign to route this CoT to */
+                                        callsign?: string;
+                                    }[];
+                                };
                             };
                             polygon?: {
                                 stroke?: string;
@@ -8184,6 +9453,7 @@ export interface paths {
                                 "fill-opacity"?: string;
                                 id?: string;
                                 remarks?: string;
+                                phone?: string;
                                 callsign?: string;
                                 stale?: number | string;
                                 minzoom?: number | string;
@@ -8192,9 +9462,25 @@ export interface paths {
                                     remarks: string;
                                     url: string;
                                 }[];
+                                marti?: {
+                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                    archive?: boolean;
+                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                    dest?: {
+                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                        group?: string;
+                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                        mission?: string;
+                                        /** @description Individual client UID to route this CoT to */
+                                        uid?: string;
+                                        /** @description Individual client callsign to route this CoT to */
+                                        callsign?: string;
+                                    }[];
+                                };
                             };
                             id?: string;
                             remarks?: string;
+                            phone?: string;
                             callsign?: string;
                             stale?: number | string;
                             minzoom?: number | string;
@@ -8203,12 +9489,28 @@ export interface paths {
                                 remarks: string;
                                 url: string;
                             }[];
+                            marti?: {
+                                /** @description Whether the CoT should be archived by the TAK Server */
+                                archive?: boolean;
+                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                dest?: {
+                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                    group?: string;
+                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                    mission?: string;
+                                    /** @description Individual client UID to route this CoT to */
+                                    uid?: string;
+                                    /** @description Individual client callsign to route this CoT to */
+                                    callsign?: string;
+                                }[];
+                            };
                             queries?: {
                                 query: string;
                                 delete?: boolean;
                                 styles?: {
                                     id?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     callsign?: string;
                                     stale?: number | string;
                                     minzoom?: number | string;
@@ -8217,6 +9519,21 @@ export interface paths {
                                         remarks: string;
                                         url: string;
                                     }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                     line?: {
                                         stroke?: string;
                                         "stroke-style"?: string;
@@ -8224,6 +9541,7 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
@@ -8232,6 +9550,21 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     point?: {
                                         "marker-color"?: string;
@@ -8239,6 +9572,7 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         /** @default true */
                                         rotate?: boolean;
@@ -8250,6 +9584,21 @@ export interface paths {
                                             url: string;
                                         }[];
                                         icon?: string;
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     polygon?: {
                                         stroke?: string;
@@ -8260,6 +9609,7 @@ export interface paths {
                                         "fill-opacity"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         callsign?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
@@ -8268,6 +9618,21 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                 };
                             }[];
@@ -8307,6 +9672,7 @@ export interface paths {
                                     "stroke-width"?: string;
                                     id?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     stale?: number | string;
                                     minzoom?: number | string;
                                     maxzoom?: number | string;
@@ -8315,6 +9681,21 @@ export interface paths {
                                         remarks: string;
                                         url: string;
                                     }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                 };
                                 point?: {
                                     "marker-color"?: string;
@@ -8322,6 +9703,7 @@ export interface paths {
                                     id?: string;
                                     type?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     stale?: number | string;
                                     /** @default true */
                                     rotate: boolean;
@@ -8333,6 +9715,21 @@ export interface paths {
                                         url: string;
                                     }[];
                                     icon?: string;
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                 };
                                 polygon?: {
                                     stroke?: string;
@@ -8343,6 +9740,7 @@ export interface paths {
                                     "fill-opacity"?: string;
                                     id?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     callsign?: string;
                                     stale?: number | string;
                                     minzoom?: number | string;
@@ -8351,9 +9749,25 @@ export interface paths {
                                         remarks: string;
                                         url: string;
                                     }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                 };
                                 id?: string;
                                 remarks?: string;
+                                phone?: string;
                                 callsign?: string;
                                 stale?: number | string;
                                 minzoom?: number | string;
@@ -8362,12 +9776,28 @@ export interface paths {
                                     remarks: string;
                                     url: string;
                                 }[];
+                                marti?: {
+                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                    archive?: boolean;
+                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                    dest?: {
+                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                        group?: string;
+                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                        mission?: string;
+                                        /** @description Individual client UID to route this CoT to */
+                                        uid?: string;
+                                        /** @description Individual client callsign to route this CoT to */
+                                        callsign?: string;
+                                    }[];
+                                };
                                 queries?: {
                                     query: string;
                                     delete?: boolean;
                                     styles?: {
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         callsign?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
@@ -8376,6 +9806,21 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                         line?: {
                                             stroke?: string;
                                             "stroke-style"?: string;
@@ -8383,6 +9828,7 @@ export interface paths {
                                             "stroke-width"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
                                             maxzoom?: number | string;
@@ -8391,6 +9837,21 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         point?: {
                                             "marker-color"?: string;
@@ -8398,6 +9859,7 @@ export interface paths {
                                             id?: string;
                                             type?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             stale?: number | string;
                                             /** @default true */
                                             rotate: boolean;
@@ -8409,6 +9871,21 @@ export interface paths {
                                                 url: string;
                                             }[];
                                             icon?: string;
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         polygon?: {
                                             stroke?: string;
@@ -8419,6 +9896,7 @@ export interface paths {
                                             "fill-opacity"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             callsign?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
@@ -8427,6 +9905,21 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                     };
                                 }[];
@@ -8436,6 +9929,7 @@ export interface paths {
                                 [key: string]: unknown;
                             };
                             data: null | number;
+                            /** @description Deprecated: derived from styles.marti.dest for backwards compatibility */
                             groups: string[];
                         };
                     };
@@ -8620,6 +10114,7 @@ export interface paths {
                                 "stroke-width"?: string;
                                 id?: string;
                                 remarks?: string;
+                                phone?: string;
                                 stale?: number | string;
                                 minzoom?: number | string;
                                 maxzoom?: number | string;
@@ -8628,6 +10123,21 @@ export interface paths {
                                     remarks: string;
                                     url: string;
                                 }[];
+                                marti?: {
+                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                    archive?: boolean;
+                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                    dest?: {
+                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                        group?: string;
+                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                        mission?: string;
+                                        /** @description Individual client UID to route this CoT to */
+                                        uid?: string;
+                                        /** @description Individual client callsign to route this CoT to */
+                                        callsign?: string;
+                                    }[];
+                                };
                             };
                             point?: {
                                 "marker-color"?: string;
@@ -8635,6 +10145,7 @@ export interface paths {
                                 id?: string;
                                 type?: string;
                                 remarks?: string;
+                                phone?: string;
                                 stale?: number | string;
                                 /** @default true */
                                 rotate?: boolean;
@@ -8646,6 +10157,21 @@ export interface paths {
                                     url: string;
                                 }[];
                                 icon?: string;
+                                marti?: {
+                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                    archive?: boolean;
+                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                    dest?: {
+                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                        group?: string;
+                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                        mission?: string;
+                                        /** @description Individual client UID to route this CoT to */
+                                        uid?: string;
+                                        /** @description Individual client callsign to route this CoT to */
+                                        callsign?: string;
+                                    }[];
+                                };
                             };
                             polygon?: {
                                 stroke?: string;
@@ -8656,6 +10182,7 @@ export interface paths {
                                 "fill-opacity"?: string;
                                 id?: string;
                                 remarks?: string;
+                                phone?: string;
                                 callsign?: string;
                                 stale?: number | string;
                                 minzoom?: number | string;
@@ -8664,9 +10191,25 @@ export interface paths {
                                     remarks: string;
                                     url: string;
                                 }[];
+                                marti?: {
+                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                    archive?: boolean;
+                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                    dest?: {
+                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                        group?: string;
+                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                        mission?: string;
+                                        /** @description Individual client UID to route this CoT to */
+                                        uid?: string;
+                                        /** @description Individual client callsign to route this CoT to */
+                                        callsign?: string;
+                                    }[];
+                                };
                             };
                             id?: string;
                             remarks?: string;
+                            phone?: string;
                             callsign?: string;
                             stale?: number | string;
                             minzoom?: number | string;
@@ -8675,12 +10218,28 @@ export interface paths {
                                 remarks: string;
                                 url: string;
                             }[];
+                            marti?: {
+                                /** @description Whether the CoT should be archived by the TAK Server */
+                                archive?: boolean;
+                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                dest?: {
+                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                    group?: string;
+                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                    mission?: string;
+                                    /** @description Individual client UID to route this CoT to */
+                                    uid?: string;
+                                    /** @description Individual client callsign to route this CoT to */
+                                    callsign?: string;
+                                }[];
+                            };
                             queries?: {
                                 query: string;
                                 delete?: boolean;
                                 styles?: {
                                     id?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     callsign?: string;
                                     stale?: number | string;
                                     minzoom?: number | string;
@@ -8689,6 +10248,21 @@ export interface paths {
                                         remarks: string;
                                         url: string;
                                     }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                     line?: {
                                         stroke?: string;
                                         "stroke-style"?: string;
@@ -8696,6 +10270,7 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
@@ -8704,6 +10279,21 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     point?: {
                                         "marker-color"?: string;
@@ -8711,6 +10301,7 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         /** @default true */
                                         rotate?: boolean;
@@ -8722,6 +10313,21 @@ export interface paths {
                                             url: string;
                                         }[];
                                         icon?: string;
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     polygon?: {
                                         stroke?: string;
@@ -8732,6 +10338,7 @@ export interface paths {
                                         "fill-opacity"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         callsign?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
@@ -8740,13 +10347,27 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                 };
                             }[];
                         };
                         stale?: number;
                         data?: null | number;
-                        groups?: string[];
                         environment?: unknown;
                         config?: {
                             timezone?: {
@@ -8783,6 +10404,7 @@ export interface paths {
                                     "stroke-width"?: string;
                                     id?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     stale?: number | string;
                                     minzoom?: number | string;
                                     maxzoom?: number | string;
@@ -8791,6 +10413,21 @@ export interface paths {
                                         remarks: string;
                                         url: string;
                                     }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                 };
                                 point?: {
                                     "marker-color"?: string;
@@ -8798,6 +10435,7 @@ export interface paths {
                                     id?: string;
                                     type?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     stale?: number | string;
                                     /** @default true */
                                     rotate: boolean;
@@ -8809,6 +10447,21 @@ export interface paths {
                                         url: string;
                                     }[];
                                     icon?: string;
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                 };
                                 polygon?: {
                                     stroke?: string;
@@ -8819,6 +10472,7 @@ export interface paths {
                                     "fill-opacity"?: string;
                                     id?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     callsign?: string;
                                     stale?: number | string;
                                     minzoom?: number | string;
@@ -8827,9 +10481,25 @@ export interface paths {
                                         remarks: string;
                                         url: string;
                                     }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                 };
                                 id?: string;
                                 remarks?: string;
+                                phone?: string;
                                 callsign?: string;
                                 stale?: number | string;
                                 minzoom?: number | string;
@@ -8838,12 +10508,28 @@ export interface paths {
                                     remarks: string;
                                     url: string;
                                 }[];
+                                marti?: {
+                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                    archive?: boolean;
+                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                    dest?: {
+                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                        group?: string;
+                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                        mission?: string;
+                                        /** @description Individual client UID to route this CoT to */
+                                        uid?: string;
+                                        /** @description Individual client callsign to route this CoT to */
+                                        callsign?: string;
+                                    }[];
+                                };
                                 queries?: {
                                     query: string;
                                     delete?: boolean;
                                     styles?: {
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         callsign?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
@@ -8852,6 +10538,21 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                         line?: {
                                             stroke?: string;
                                             "stroke-style"?: string;
@@ -8859,6 +10560,7 @@ export interface paths {
                                             "stroke-width"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
                                             maxzoom?: number | string;
@@ -8867,6 +10569,21 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         point?: {
                                             "marker-color"?: string;
@@ -8874,6 +10591,7 @@ export interface paths {
                                             id?: string;
                                             type?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             stale?: number | string;
                                             /** @default true */
                                             rotate: boolean;
@@ -8885,6 +10603,21 @@ export interface paths {
                                                 url: string;
                                             }[];
                                             icon?: string;
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         polygon?: {
                                             stroke?: string;
@@ -8895,6 +10628,7 @@ export interface paths {
                                             "fill-opacity"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             callsign?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
@@ -8903,6 +10637,21 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                     };
                                 }[];
@@ -8912,6 +10661,7 @@ export interface paths {
                                 [key: string]: unknown;
                             };
                             data: null | number;
+                            /** @description Deprecated: derived from styles.marti.dest for backwards compatibility */
                             groups: string[];
                         };
                     };
@@ -9352,6 +11102,7 @@ export interface paths {
                             name: string;
                             description: string;
                             enabled: boolean;
+                            protected: boolean;
                             logging: boolean;
                             task: string;
                             memory: number;
@@ -9385,6 +11136,7 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
@@ -9393,6 +11145,21 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     point?: {
                                         "marker-color"?: string;
@@ -9400,6 +11167,7 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         /** @default true */
                                         rotate: boolean;
@@ -9411,6 +11179,21 @@ export interface paths {
                                             url: string;
                                         }[];
                                         icon?: string;
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     polygon?: {
                                         stroke?: string;
@@ -9421,6 +11204,7 @@ export interface paths {
                                         "fill-opacity"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         callsign?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
@@ -9429,9 +11213,25 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     id?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     callsign?: string;
                                     stale?: number | string;
                                     minzoom?: number | string;
@@ -9440,12 +11240,28 @@ export interface paths {
                                         remarks: string;
                                         url: string;
                                     }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                     queries?: {
                                         query: string;
                                         delete?: boolean;
                                         styles?: {
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             callsign?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
@@ -9454,6 +11270,21 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                             line?: {
                                                 stroke?: string;
                                                 "stroke-style"?: string;
@@ -9461,6 +11292,7 @@ export interface paths {
                                                 "stroke-width"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
                                                 maxzoom?: number | string;
@@ -9469,6 +11301,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                             point?: {
                                                 "marker-color"?: string;
@@ -9476,6 +11323,7 @@ export interface paths {
                                                 id?: string;
                                                 type?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 stale?: number | string;
                                                 /** @default true */
                                                 rotate: boolean;
@@ -9487,6 +11335,21 @@ export interface paths {
                                                     url: string;
                                                 }[];
                                                 icon?: string;
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                             polygon?: {
                                                 stroke?: string;
@@ -9497,6 +11360,7 @@ export interface paths {
                                                 "fill-opacity"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 callsign?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
@@ -9505,6 +11369,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                         };
                                     }[];
@@ -9514,6 +11393,7 @@ export interface paths {
                                     [key: string]: unknown;
                                 };
                                 data: null | number;
+                                /** @description Deprecated: derived from styles.marti.dest for backwards compatibility */
                                 groups: string[];
                             };
                             outgoing?: {
@@ -9718,6 +11598,7 @@ export interface paths {
                         /** @description Timeout in seconds for this Layer */
                         timeout?: number;
                         enabled?: boolean;
+                        protected?: boolean;
                         task?: string;
                         logging?: boolean;
                         alarm_period?: number;
@@ -9745,6 +11626,7 @@ export interface paths {
                             name: string;
                             description: string;
                             enabled: boolean;
+                            protected: boolean;
                             logging: boolean;
                             task: string;
                             memory: number;
@@ -9778,6 +11660,7 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
@@ -9786,6 +11669,21 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     point?: {
                                         "marker-color"?: string;
@@ -9793,6 +11691,7 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         /** @default true */
                                         rotate: boolean;
@@ -9804,6 +11703,21 @@ export interface paths {
                                             url: string;
                                         }[];
                                         icon?: string;
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     polygon?: {
                                         stroke?: string;
@@ -9814,6 +11728,7 @@ export interface paths {
                                         "fill-opacity"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         callsign?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
@@ -9822,9 +11737,25 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     id?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     callsign?: string;
                                     stale?: number | string;
                                     minzoom?: number | string;
@@ -9833,12 +11764,28 @@ export interface paths {
                                         remarks: string;
                                         url: string;
                                     }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                     queries?: {
                                         query: string;
                                         delete?: boolean;
                                         styles?: {
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             callsign?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
@@ -9847,6 +11794,21 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                             line?: {
                                                 stroke?: string;
                                                 "stroke-style"?: string;
@@ -9854,6 +11816,7 @@ export interface paths {
                                                 "stroke-width"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
                                                 maxzoom?: number | string;
@@ -9862,6 +11825,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                             point?: {
                                                 "marker-color"?: string;
@@ -9869,6 +11847,7 @@ export interface paths {
                                                 id?: string;
                                                 type?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 stale?: number | string;
                                                 /** @default true */
                                                 rotate: boolean;
@@ -9880,6 +11859,21 @@ export interface paths {
                                                     url: string;
                                                 }[];
                                                 icon?: string;
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                             polygon?: {
                                                 stroke?: string;
@@ -9890,6 +11884,7 @@ export interface paths {
                                                 "fill-opacity"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 callsign?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
@@ -9898,6 +11893,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                         };
                                     }[];
@@ -9907,6 +11917,7 @@ export interface paths {
                                     [key: string]: unknown;
                                 };
                                 data: null | number;
+                                /** @description Deprecated: derived from styles.marti.dest for backwards compatibility */
                                 groups: string[];
                             };
                             outgoing?: {
@@ -11317,7 +13328,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "readonly" | "agency" | "created" | "updated" | "username" | "name" | "description" | "enabled" | "auth" | "enableRLS";
+                    sort: "id" | "readonly" | "agency" | "created" | "updated" | "username" | "name" | "description" | "enabled" | "features" | "auth" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -11480,6 +13491,105 @@ export interface paths {
                             name: string;
                             description: string;
                             enabled: boolean;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/connection/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh all enabled connections */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
                         };
                     };
                 };
@@ -13358,7 +15468,7 @@ export interface paths {
                     /** @description No Description */
                     status?: "Empty" | "Pending" | "Running" | "Success" | "Fail";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "name" | "status" | "error" | "result" | "username" | "source" | "source_id" | "config" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "name" | "status" | "error" | "username" | "source" | "source_id" | "config" | "enableRLS";
                     /** @description No Description */
                     source?: "Upload" | "Mission" | "Package";
                     /** @description No Description */
@@ -13385,11 +15495,17 @@ export interface paths {
                                 name: string;
                                 status: string;
                                 error?: null | string;
-                                result: unknown;
                                 username: string;
                                 source: string;
                                 source_id?: null | string;
                                 config: unknown;
+                                results: {
+                                    id: number;
+                                    import: string;
+                                    name: string;
+                                    type: string;
+                                    type_id: string;
+                                }[];
                             }[];
                         };
                     };
@@ -13576,11 +15692,17 @@ export interface paths {
                             name: string;
                             status: string;
                             error?: null | string;
-                            result: unknown;
                             username: string;
                             source: string;
                             source_id?: null | string;
                             config: unknown;
+                            results: {
+                                id: number;
+                                import: string;
+                                name: string;
+                                type: string;
+                                type_id: string;
+                            }[];
                         };
                     };
                 };
@@ -13685,11 +15807,17 @@ export interface paths {
                             name: string;
                             status: string;
                             error?: null | string;
-                            result: unknown;
                             username: string;
                             source: string;
                             source_id?: null | string;
                             config: unknown;
+                            results: {
+                                id: number;
+                                import: string;
+                                name: string;
+                                type: string;
+                                type_id: string;
+                            }[];
                         };
                     };
                 };
@@ -13781,11 +15909,17 @@ export interface paths {
                             name: string;
                             status: string;
                             error?: null | string;
-                            result: unknown;
                             username: string;
                             source: string;
                             source_id?: null | string;
                             config: unknown;
+                            results: {
+                                id: number;
+                                import: string;
+                                name: string;
+                                type: string;
+                                type_id: string;
+                            }[];
                         };
                     };
                 };
@@ -13957,7 +16091,6 @@ export interface paths {
                     "application/json": {
                         status?: "Empty" | "Pending" | "Running" | "Success" | "Fail";
                         error?: string;
-                        result?: unknown;
                     };
                 };
             };
@@ -13975,11 +16108,17 @@ export interface paths {
                             name: string;
                             status: string;
                             error?: null | string;
-                            result: unknown;
                             username: string;
                             source: string;
                             source_id?: null | string;
                             config: unknown;
+                            results: {
+                                id: number;
+                                import: string;
+                                name: string;
+                                type: string;
+                                type_id: string;
+                            }[];
                         };
                     };
                 };
@@ -14149,6 +16288,119 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/import/{:import}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a new Import Result */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":import": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        type: "Feature" | "Asset" | "Iconset" | "Basemap";
+                        type_id: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            import: string;
+                            name: string;
+                            type: string;
+                            type_id: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/layer": {
         parameters: {
             query?: never;
@@ -14169,7 +16421,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -14213,6 +16465,7 @@ export interface paths {
                                 name: string;
                                 description: string;
                                 enabled: boolean;
+                                protected: boolean;
                                 logging: boolean;
                                 task: string;
                                 memory: number;
@@ -14246,6 +16499,7 @@ export interface paths {
                                             "stroke-width"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
                                             maxzoom?: number | string;
@@ -14254,6 +16508,21 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         point?: {
                                             "marker-color"?: string;
@@ -14261,6 +16530,7 @@ export interface paths {
                                             id?: string;
                                             type?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             stale?: number | string;
                                             /** @default true */
                                             rotate: boolean;
@@ -14272,6 +16542,21 @@ export interface paths {
                                                 url: string;
                                             }[];
                                             icon?: string;
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         polygon?: {
                                             stroke?: string;
@@ -14282,6 +16567,7 @@ export interface paths {
                                             "fill-opacity"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             callsign?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
@@ -14290,9 +16576,25 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         callsign?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
@@ -14301,12 +16603,28 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                         queries?: {
                                             query: string;
                                             delete?: boolean;
                                             styles?: {
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 callsign?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
@@ -14315,6 +16633,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                                 line?: {
                                                     stroke?: string;
                                                     "stroke-style"?: string;
@@ -14322,6 +16655,7 @@ export interface paths {
                                                     "stroke-width"?: string;
                                                     id?: string;
                                                     remarks?: string;
+                                                    phone?: string;
                                                     stale?: number | string;
                                                     minzoom?: number | string;
                                                     maxzoom?: number | string;
@@ -14330,6 +16664,21 @@ export interface paths {
                                                         remarks: string;
                                                         url: string;
                                                     }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
                                                 };
                                                 point?: {
                                                     "marker-color"?: string;
@@ -14337,6 +16686,7 @@ export interface paths {
                                                     id?: string;
                                                     type?: string;
                                                     remarks?: string;
+                                                    phone?: string;
                                                     stale?: number | string;
                                                     /** @default true */
                                                     rotate: boolean;
@@ -14348,6 +16698,21 @@ export interface paths {
                                                         url: string;
                                                     }[];
                                                     icon?: string;
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
                                                 };
                                                 polygon?: {
                                                     stroke?: string;
@@ -14358,6 +16723,7 @@ export interface paths {
                                                     "fill-opacity"?: string;
                                                     id?: string;
                                                     remarks?: string;
+                                                    phone?: string;
                                                     callsign?: string;
                                                     stale?: number | string;
                                                     minzoom?: number | string;
@@ -14366,6 +16732,21 @@ export interface paths {
                                                         remarks: string;
                                                         url: string;
                                                     }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
                                                 };
                                             };
                                         }[];
@@ -14375,6 +16756,7 @@ export interface paths {
                                         [key: string]: unknown;
                                     };
                                     data: null | number;
+                                    /** @description Deprecated: derived from styles.marti.dest for backwards compatibility */
                                     groups: string[];
                                 };
                                 outgoing?: {
@@ -14511,6 +16893,7 @@ export interface paths {
                             name: string;
                             description: string;
                             enabled: boolean;
+                            protected: boolean;
                             logging: boolean;
                             task: string;
                             memory: number;
@@ -14544,6 +16927,7 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
@@ -14552,6 +16936,21 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     point?: {
                                         "marker-color"?: string;
@@ -14559,6 +16958,7 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         /** @default true */
                                         rotate: boolean;
@@ -14570,6 +16970,21 @@ export interface paths {
                                             url: string;
                                         }[];
                                         icon?: string;
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     polygon?: {
                                         stroke?: string;
@@ -14580,6 +16995,7 @@ export interface paths {
                                         "fill-opacity"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         callsign?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
@@ -14588,9 +17004,25 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     id?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     callsign?: string;
                                     stale?: number | string;
                                     minzoom?: number | string;
@@ -14599,12 +17031,28 @@ export interface paths {
                                         remarks: string;
                                         url: string;
                                     }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                     queries?: {
                                         query: string;
                                         delete?: boolean;
                                         styles?: {
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             callsign?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
@@ -14613,6 +17061,21 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                             line?: {
                                                 stroke?: string;
                                                 "stroke-style"?: string;
@@ -14620,6 +17083,7 @@ export interface paths {
                                                 "stroke-width"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
                                                 maxzoom?: number | string;
@@ -14628,6 +17092,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                             point?: {
                                                 "marker-color"?: string;
@@ -14635,6 +17114,7 @@ export interface paths {
                                                 id?: string;
                                                 type?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 stale?: number | string;
                                                 /** @default true */
                                                 rotate: boolean;
@@ -14646,6 +17126,21 @@ export interface paths {
                                                     url: string;
                                                 }[];
                                                 icon?: string;
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                             polygon?: {
                                                 stroke?: string;
@@ -14656,6 +17151,7 @@ export interface paths {
                                                 "fill-opacity"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 callsign?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
@@ -14664,6 +17160,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                         };
                                     }[];
@@ -14673,6 +17184,7 @@ export interface paths {
                                     [key: string]: unknown;
                                 };
                                 data: null | number;
+                                /** @description Deprecated: derived from styles.marti.dest for backwards compatibility */
                                 groups: string[];
                             };
                             outgoing?: {
@@ -14781,7 +17293,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
+                    sort: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "protected" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -14813,6 +17325,7 @@ export interface paths {
                                 name: string;
                                 description: string;
                                 enabled: boolean;
+                                protected: boolean;
                                 logging: boolean;
                                 task: string;
                                 memory: number;
@@ -14846,6 +17359,7 @@ export interface paths {
                                             "stroke-width"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
                                             maxzoom?: number | string;
@@ -14854,6 +17368,21 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         point?: {
                                             "marker-color"?: string;
@@ -14861,6 +17390,7 @@ export interface paths {
                                             id?: string;
                                             type?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             stale?: number | string;
                                             /** @default true */
                                             rotate: boolean;
@@ -14872,6 +17402,21 @@ export interface paths {
                                                 url: string;
                                             }[];
                                             icon?: string;
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         polygon?: {
                                             stroke?: string;
@@ -14882,6 +17427,7 @@ export interface paths {
                                             "fill-opacity"?: string;
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             callsign?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
@@ -14890,9 +17436,25 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                         };
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         callsign?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
@@ -14901,12 +17463,28 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                         queries?: {
                                             query: string;
                                             delete?: boolean;
                                             styles?: {
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 callsign?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
@@ -14915,6 +17493,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                                 line?: {
                                                     stroke?: string;
                                                     "stroke-style"?: string;
@@ -14922,6 +17515,7 @@ export interface paths {
                                                     "stroke-width"?: string;
                                                     id?: string;
                                                     remarks?: string;
+                                                    phone?: string;
                                                     stale?: number | string;
                                                     minzoom?: number | string;
                                                     maxzoom?: number | string;
@@ -14930,6 +17524,21 @@ export interface paths {
                                                         remarks: string;
                                                         url: string;
                                                     }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
                                                 };
                                                 point?: {
                                                     "marker-color"?: string;
@@ -14937,6 +17546,7 @@ export interface paths {
                                                     id?: string;
                                                     type?: string;
                                                     remarks?: string;
+                                                    phone?: string;
                                                     stale?: number | string;
                                                     /** @default true */
                                                     rotate: boolean;
@@ -14948,6 +17558,21 @@ export interface paths {
                                                         url: string;
                                                     }[];
                                                     icon?: string;
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
                                                 };
                                                 polygon?: {
                                                     stroke?: string;
@@ -14958,6 +17583,7 @@ export interface paths {
                                                     "fill-opacity"?: string;
                                                     id?: string;
                                                     remarks?: string;
+                                                    phone?: string;
                                                     callsign?: string;
                                                     stale?: number | string;
                                                     minzoom?: number | string;
@@ -14966,6 +17592,21 @@ export interface paths {
                                                         remarks: string;
                                                         url: string;
                                                     }[];
+                                                    marti?: {
+                                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                                        archive?: boolean;
+                                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                        dest?: {
+                                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                                            group?: string;
+                                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                            mission?: string;
+                                                            /** @description Individual client UID to route this CoT to */
+                                                            uid?: string;
+                                                            /** @description Individual client callsign to route this CoT to */
+                                                            callsign?: string;
+                                                        }[];
+                                                    };
                                                 };
                                             };
                                         }[];
@@ -14975,6 +17616,7 @@ export interface paths {
                                         [key: string]: unknown;
                                     };
                                     data: null | number;
+                                    /** @description Deprecated: derived from styles.marti.dest for backwards compatibility */
                                     groups: string[];
                                 };
                                 outgoing?: {
@@ -15099,6 +17741,7 @@ export interface paths {
                             name: string;
                             description: string;
                             enabled: boolean;
+                            protected: boolean;
                             logging: boolean;
                             task: string;
                             memory: number;
@@ -15132,6 +17775,7 @@ export interface paths {
                                         "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
                                         maxzoom?: number | string;
@@ -15140,6 +17784,21 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     point?: {
                                         "marker-color"?: string;
@@ -15147,6 +17806,7 @@ export interface paths {
                                         id?: string;
                                         type?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         stale?: number | string;
                                         /** @default true */
                                         rotate: boolean;
@@ -15158,6 +17818,21 @@ export interface paths {
                                             url: string;
                                         }[];
                                         icon?: string;
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     polygon?: {
                                         stroke?: string;
@@ -15168,6 +17843,7 @@ export interface paths {
                                         "fill-opacity"?: string;
                                         id?: string;
                                         remarks?: string;
+                                        phone?: string;
                                         callsign?: string;
                                         stale?: number | string;
                                         minzoom?: number | string;
@@ -15176,9 +17852,25 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
+                                        marti?: {
+                                            /** @description Whether the CoT should be archived by the TAK Server */
+                                            archive?: boolean;
+                                            /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                            dest?: {
+                                                /** @description TAK Server channel (group) name to route this CoT to */
+                                                group?: string;
+                                                /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                mission?: string;
+                                                /** @description Individual client UID to route this CoT to */
+                                                uid?: string;
+                                                /** @description Individual client callsign to route this CoT to */
+                                                callsign?: string;
+                                            }[];
+                                        };
                                     };
                                     id?: string;
                                     remarks?: string;
+                                    phone?: string;
                                     callsign?: string;
                                     stale?: number | string;
                                     minzoom?: number | string;
@@ -15187,12 +17879,28 @@ export interface paths {
                                         remarks: string;
                                         url: string;
                                     }[];
+                                    marti?: {
+                                        /** @description Whether the CoT should be archived by the TAK Server */
+                                        archive?: boolean;
+                                        /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                        dest?: {
+                                            /** @description TAK Server channel (group) name to route this CoT to */
+                                            group?: string;
+                                            /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                            mission?: string;
+                                            /** @description Individual client UID to route this CoT to */
+                                            uid?: string;
+                                            /** @description Individual client callsign to route this CoT to */
+                                            callsign?: string;
+                                        }[];
+                                    };
                                     queries?: {
                                         query: string;
                                         delete?: boolean;
                                         styles?: {
                                             id?: string;
                                             remarks?: string;
+                                            phone?: string;
                                             callsign?: string;
                                             stale?: number | string;
                                             minzoom?: number | string;
@@ -15201,6 +17909,21 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            marti?: {
+                                                /** @description Whether the CoT should be archived by the TAK Server */
+                                                archive?: boolean;
+                                                /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                dest?: {
+                                                    /** @description TAK Server channel (group) name to route this CoT to */
+                                                    group?: string;
+                                                    /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                    mission?: string;
+                                                    /** @description Individual client UID to route this CoT to */
+                                                    uid?: string;
+                                                    /** @description Individual client callsign to route this CoT to */
+                                                    callsign?: string;
+                                                }[];
+                                            };
                                             line?: {
                                                 stroke?: string;
                                                 "stroke-style"?: string;
@@ -15208,6 +17931,7 @@ export interface paths {
                                                 "stroke-width"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
                                                 maxzoom?: number | string;
@@ -15216,6 +17940,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                             point?: {
                                                 "marker-color"?: string;
@@ -15223,6 +17962,7 @@ export interface paths {
                                                 id?: string;
                                                 type?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 stale?: number | string;
                                                 /** @default true */
                                                 rotate: boolean;
@@ -15234,6 +17974,21 @@ export interface paths {
                                                     url: string;
                                                 }[];
                                                 icon?: string;
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                             polygon?: {
                                                 stroke?: string;
@@ -15244,6 +17999,7 @@ export interface paths {
                                                 "fill-opacity"?: string;
                                                 id?: string;
                                                 remarks?: string;
+                                                phone?: string;
                                                 callsign?: string;
                                                 stale?: number | string;
                                                 minzoom?: number | string;
@@ -15252,6 +18008,21 @@ export interface paths {
                                                     remarks: string;
                                                     url: string;
                                                 }[];
+                                                marti?: {
+                                                    /** @description Whether the CoT should be archived by the TAK Server */
+                                                    archive?: boolean;
+                                                    /** @description One or more routing destinations (channels, data syncs, or individual clients) */
+                                                    dest?: {
+                                                        /** @description TAK Server channel (group) name to route this CoT to */
+                                                        group?: string;
+                                                        /** @description TAK Server Data Sync (mission) name to route this CoT to */
+                                                        mission?: string;
+                                                        /** @description Individual client UID to route this CoT to */
+                                                        uid?: string;
+                                                        /** @description Individual client callsign to route this CoT to */
+                                                        callsign?: string;
+                                                    }[];
+                                                };
                                             };
                                         };
                                     }[];
@@ -15261,6 +18032,7 @@ export interface paths {
                                     [key: string]: unknown;
                                 };
                                 data: null | number;
+                                /** @description Deprecated: derived from styles.marti.dest for backwards compatibility */
                                 groups: string[];
                             };
                             outgoing?: {
@@ -15679,6 +18451,197 @@ export interface paths {
             };
         };
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** No Description */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            email: string;
+                            access: "admin" | "agency" | "user";
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** No Description */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Case-Sensitive username, if an email, the client MUST lowercase */
+                        username: string;
+                        password: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            token: string;
+                            access: "admin" | "agency" | "user";
+                            email: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -17100,197 +20063,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** No Description */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            email: string;
-                            access: "admin" | "agency" | "user";
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** No Description */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Case-Sensitive username, if an email, the client MUST lowercase */
-                        username: string;
-                        password: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            token: string;
-                            access: "admin" | "agency" | "user";
-                            email: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/manifest.webmanifest": {
         parameters: {
             query?: never;
@@ -17584,14 +20356,15 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -17602,8 +20375,11 @@ export interface paths {
                                 };
                                 shape?: {
                                     ellipse?: {
+                                        /** @description The major axis of the ellipse in meters */
                                         major: number;
+                                        /** @description The minor axis of the ellipse in meters */
                                         minor: number;
+                                        /** @description The angle of the ellipse in degrees */
                                         angle: number;
                                     };
                                 };
@@ -17627,13 +20403,24 @@ export interface paths {
                                         uid?: string;
                                     };
                                     missionChanges?: {
-                                        contentUid: string;
+                                        contentUid?: string;
                                         creatorUid: string;
-                                        isFederatedChange: string;
+                                        isFederatedChange: boolean;
                                         missionName: string;
                                         timestamp: string;
                                         type: string;
-                                        details: {
+                                        contentResource?: {
+                                            expiration: string;
+                                            filename?: string;
+                                            hash: string;
+                                            name: string;
+                                            size: number;
+                                            submissionTime: string;
+                                            submitter: string;
+                                            tool?: string;
+                                            uid: string;
+                                        };
+                                        details?: {
                                             type: string;
                                             callsign: string;
                                             color: string;
@@ -17746,6 +20533,8 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
                                 takv?: {
@@ -17938,14 +20727,15 @@ export interface paths {
                                     metadata?: {
                                         [key: string]: unknown;
                                     };
+                                    /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -17956,8 +20746,11 @@ export interface paths {
                                     };
                                     shape?: {
                                         ellipse?: {
+                                            /** @description The major axis of the ellipse in meters */
                                             major: number;
+                                            /** @description The minor axis of the ellipse in meters */
                                             minor: number;
+                                            /** @description The angle of the ellipse in degrees */
                                             angle: number;
                                         };
                                     };
@@ -17981,13 +20774,24 @@ export interface paths {
                                             uid?: string;
                                         };
                                         missionChanges?: {
-                                            contentUid: string;
+                                            contentUid?: string;
                                             creatorUid: string;
-                                            isFederatedChange: string;
+                                            isFederatedChange: boolean;
                                             missionName: string;
                                             timestamp: string;
                                             type: string;
-                                            details: {
+                                            contentResource?: {
+                                                expiration: string;
+                                                filename?: string;
+                                                hash: string;
+                                                name: string;
+                                                size: number;
+                                                submissionTime: string;
+                                                submitter: string;
+                                                tool?: string;
+                                                uid: string;
+                                            };
+                                            details?: {
                                                 type: string;
                                                 callsign: string;
                                                 color: string;
@@ -18100,6 +20904,8 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
+                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
                                     takv?: {
@@ -19508,16 +22314,16 @@ export interface paths {
                                 timestamp: string;
                                 creatorUid?: string;
                                 data: {
-                                    keywords: string[];
-                                    name: string;
+                                    keywords?: string[];
+                                    name?: string;
                                     hash: string;
-                                    submissionTime: string;
-                                    uid: string;
-                                    size: number;
+                                    submissionTime?: string;
+                                    uid?: string;
+                                    size?: number;
                                     creatorUid?: string;
                                     mimeType?: string;
                                     submitter?: string;
-                                    expiration: number;
+                                    expiration?: number;
                                 };
                             }[];
                             passwordProtected: boolean;
@@ -19527,30 +22333,36 @@ export interface paths {
                                 isFederatedChange: boolean;
                                 type: string;
                                 missionName: string;
+                                missionGuid?: string;
                                 timestamp: string;
                                 serverTime: string;
                                 creatorUid?: string;
                                 contentUid?: string;
                                 details?: {
                                     type: string;
-                                    callsign: string;
+                                    callsign?: string;
+                                    title?: string;
+                                    iconsetPath?: string;
                                     color?: string;
-                                    location: {
+                                    attachments?: string[];
+                                    name?: string;
+                                    category?: string;
+                                    location?: {
                                         lat: number;
                                         lon: number;
                                     };
                                 };
                                 contentResource?: {
-                                    keywords: string[];
-                                    name: string;
+                                    keywords?: string[];
+                                    name?: string;
                                     hash: string;
-                                    submissionTime: string;
-                                    uid: string;
-                                    size: number;
+                                    submissionTime?: string;
+                                    uid?: string;
+                                    size?: number;
                                     creatorUid?: string;
                                     mimeType?: string;
                                     submitter?: string;
-                                    expiration: number;
+                                    expiration?: number;
                                 };
                             }[];
                         };
@@ -19781,16 +22593,16 @@ export interface paths {
                                 timestamp: string;
                                 creatorUid?: string;
                                 data: {
-                                    keywords: string[];
-                                    name: string;
+                                    keywords?: string[];
+                                    name?: string;
                                     hash: string;
-                                    submissionTime: string;
-                                    uid: string;
-                                    size: number;
+                                    submissionTime?: string;
+                                    uid?: string;
+                                    size?: number;
                                     creatorUid?: string;
                                     mimeType?: string;
                                     submitter?: string;
-                                    expiration: number;
+                                    expiration?: number;
                                 };
                             }[];
                             passwordProtected: boolean;
@@ -19800,30 +22612,36 @@ export interface paths {
                                 isFederatedChange: boolean;
                                 type: string;
                                 missionName: string;
+                                missionGuid?: string;
                                 timestamp: string;
                                 serverTime: string;
                                 creatorUid?: string;
                                 contentUid?: string;
                                 details?: {
                                     type: string;
-                                    callsign: string;
+                                    callsign?: string;
+                                    title?: string;
+                                    iconsetPath?: string;
                                     color?: string;
-                                    location: {
+                                    attachments?: string[];
+                                    name?: string;
+                                    category?: string;
+                                    location?: {
                                         lat: number;
                                         lon: number;
                                     };
                                 };
                                 contentResource?: {
-                                    keywords: string[];
-                                    name: string;
+                                    keywords?: string[];
+                                    name?: string;
                                     hash: string;
-                                    submissionTime: string;
-                                    uid: string;
-                                    size: number;
+                                    submissionTime?: string;
+                                    uid?: string;
+                                    size?: number;
                                     creatorUid?: string;
                                     mimeType?: string;
                                     submitter?: string;
-                                    expiration: number;
+                                    expiration?: number;
                                 };
                             }[];
                         };
@@ -19965,14 +22783,15 @@ export interface paths {
                                     metadata?: {
                                         [key: string]: unknown;
                                     };
+                                    /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -19983,8 +22802,11 @@ export interface paths {
                                     };
                                     shape?: {
                                         ellipse?: {
+                                            /** @description The major axis of the ellipse in meters */
                                             major: number;
+                                            /** @description The minor axis of the ellipse in meters */
                                             minor: number;
+                                            /** @description The angle of the ellipse in degrees */
                                             angle: number;
                                         };
                                     };
@@ -20008,13 +22830,24 @@ export interface paths {
                                             uid?: string;
                                         };
                                         missionChanges?: {
-                                            contentUid: string;
+                                            contentUid?: string;
                                             creatorUid: string;
-                                            isFederatedChange: string;
+                                            isFederatedChange: boolean;
                                             missionName: string;
                                             timestamp: string;
                                             type: string;
-                                            details: {
+                                            contentResource?: {
+                                                expiration: string;
+                                                filename?: string;
+                                                hash: string;
+                                                name: string;
+                                                size: number;
+                                                submissionTime: string;
+                                                submitter: string;
+                                                tool?: string;
+                                                uid: string;
+                                            };
+                                            details?: {
                                                 type: string;
                                                 callsign: string;
                                                 color: string;
@@ -20127,6 +22960,8 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
+                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
                                     takv?: {
@@ -20485,30 +23320,36 @@ export interface paths {
                                 isFederatedChange: boolean;
                                 type: string;
                                 missionName: string;
+                                missionGuid?: string;
                                 timestamp: string;
                                 serverTime: string;
                                 creatorUid?: string;
                                 contentUid?: string;
                                 details?: {
                                     type: string;
-                                    callsign: string;
+                                    callsign?: string;
+                                    title?: string;
+                                    iconsetPath?: string;
                                     color?: string;
-                                    location: {
+                                    attachments?: string[];
+                                    name?: string;
+                                    category?: string;
+                                    location?: {
                                         lat: number;
                                         lon: number;
                                     };
                                 };
                                 contentResource?: {
-                                    keywords: string[];
-                                    name: string;
+                                    keywords?: string[];
+                                    name?: string;
                                     hash: string;
-                                    submissionTime: string;
-                                    uid: string;
-                                    size: number;
+                                    submissionTime?: string;
+                                    uid?: string;
+                                    size?: number;
                                     creatorUid?: string;
                                     mimeType?: string;
                                     submitter?: string;
-                                    expiration: number;
+                                    expiration?: number;
                                 };
                             }[];
                             messages?: string[];
@@ -20607,6 +23448,8 @@ export interface paths {
                     sort: string;
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
+                    /** @description Filter by one or more groups (comma separated) */
+                    groups?: string;
                 };
                 header?: never;
                 path?: never;
@@ -20659,16 +23502,16 @@ export interface paths {
                                     timestamp: string;
                                     creatorUid?: string;
                                     data: {
-                                        keywords: string[];
-                                        name: string;
+                                        keywords?: string[];
+                                        name?: string;
                                         hash: string;
-                                        submissionTime: string;
-                                        uid: string;
-                                        size: number;
+                                        submissionTime?: string;
+                                        uid?: string;
+                                        size?: number;
                                         creatorUid?: string;
                                         mimeType?: string;
                                         submitter?: string;
-                                        expiration: number;
+                                        expiration?: number;
                                     };
                                 }[];
                                 passwordProtected: boolean;
@@ -20678,30 +23521,36 @@ export interface paths {
                                     isFederatedChange: boolean;
                                     type: string;
                                     missionName: string;
+                                    missionGuid?: string;
                                     timestamp: string;
                                     serverTime: string;
                                     creatorUid?: string;
                                     contentUid?: string;
                                     details?: {
                                         type: string;
-                                        callsign: string;
+                                        callsign?: string;
+                                        title?: string;
+                                        iconsetPath?: string;
                                         color?: string;
-                                        location: {
+                                        attachments?: string[];
+                                        name?: string;
+                                        category?: string;
+                                        location?: {
                                             lat: number;
                                             lon: number;
                                         };
                                     };
                                     contentResource?: {
-                                        keywords: string[];
-                                        name: string;
+                                        keywords?: string[];
+                                        name?: string;
                                         hash: string;
-                                        submissionTime: string;
-                                        uid: string;
-                                        size: number;
+                                        submissionTime?: string;
+                                        uid?: string;
+                                        size?: number;
                                         creatorUid?: string;
                                         mimeType?: string;
                                         submitter?: string;
-                                        expiration: number;
+                                        expiration?: number;
                                     };
                                 }[];
                             }[];
@@ -20865,16 +23714,16 @@ export interface paths {
                                 timestamp: string;
                                 creatorUid?: string;
                                 data: {
-                                    keywords: string[];
-                                    name: string;
+                                    keywords?: string[];
+                                    name?: string;
                                     hash: string;
-                                    submissionTime: string;
-                                    uid: string;
-                                    size: number;
+                                    submissionTime?: string;
+                                    uid?: string;
+                                    size?: number;
                                     creatorUid?: string;
                                     mimeType?: string;
                                     submitter?: string;
-                                    expiration: number;
+                                    expiration?: number;
                                 };
                             }[];
                             passwordProtected: boolean;
@@ -20884,30 +23733,36 @@ export interface paths {
                                 isFederatedChange: boolean;
                                 type: string;
                                 missionName: string;
+                                missionGuid?: string;
                                 timestamp: string;
                                 serverTime: string;
                                 creatorUid?: string;
                                 contentUid?: string;
                                 details?: {
                                     type: string;
-                                    callsign: string;
+                                    callsign?: string;
+                                    title?: string;
+                                    iconsetPath?: string;
                                     color?: string;
-                                    location: {
+                                    attachments?: string[];
+                                    name?: string;
+                                    category?: string;
+                                    location?: {
                                         lat: number;
                                         lon: number;
                                     };
                                 };
                                 contentResource?: {
-                                    keywords: string[];
-                                    name: string;
+                                    keywords?: string[];
+                                    name?: string;
                                     hash: string;
-                                    submissionTime: string;
-                                    uid: string;
-                                    size: number;
+                                    submissionTime?: string;
+                                    uid?: string;
+                                    size?: number;
                                     creatorUid?: string;
                                     mimeType?: string;
                                     submitter?: string;
-                                    expiration: number;
+                                    expiration?: number;
                                 };
                             }[];
                         };
@@ -21832,9 +24687,201 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** List pending mission invites */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":guid": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                missionName?: string;
+                                invitee?: string;
+                                type?: string;
+                                creatorUid?: string;
+                                createTime?: string;
+                                token?: string;
+                                role?: {
+                                    name?: string;
+                                    description?: string;
+                                    permissions?: string[];
+                                };
+                                missionGuid?: string;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         put?: never;
-        post?: never;
+        /** Create a pending mission invite */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":guid": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        type: "clientUid" | "callsign" | "userName" | "group" | "team";
+                        invitee: string;
+                        role: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         /** Remove a pending mission invite */
         delete: {
             parameters: {
@@ -21843,6 +24890,111 @@ export interface paths {
                     type: "clientUid" | "callsign" | "userName" | "group" | "team";
                     /** @description No Description */
                     invitee: string;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":guid": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marti/missions/{:guid}/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove one or more active subscribers from a mission by UID */
+        delete: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    uid: string | string[];
                 };
                 header?: never;
                 path: {
@@ -23640,6 +26792,122 @@ export interface paths {
                 };
             };
         };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marti/clients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to list clients */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Use Connection auth */
+                    connection?: number;
+                    /** @description Number of seconds ago to look back for client updates. Default is 300 (5 minutes) */
+                    secago: number;
+                    /** @description No Description */
+                    groups?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: {
+                                callsign: string;
+                                uid: string;
+                                username: string;
+                                team: string;
+                                role: string;
+                                lastStatus: string;
+                            }[];
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -26682,6 +29950,7 @@ export interface paths {
                             items: {
                                 id: string;
                                 chatroom: string;
+                                updated: string;
                             }[];
                         };
                     };
@@ -27230,14 +30499,15 @@ export interface paths {
                                     metadata?: {
                                         [key: string]: unknown;
                                     };
+                                    /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -27248,8 +30518,11 @@ export interface paths {
                                     };
                                     shape?: {
                                         ellipse?: {
+                                            /** @description The major axis of the ellipse in meters */
                                             major: number;
+                                            /** @description The minor axis of the ellipse in meters */
                                             minor: number;
+                                            /** @description The angle of the ellipse in degrees */
                                             angle: number;
                                         };
                                     };
@@ -27273,13 +30546,24 @@ export interface paths {
                                             uid?: string;
                                         };
                                         missionChanges?: {
-                                            contentUid: string;
+                                            contentUid?: string;
                                             creatorUid: string;
-                                            isFederatedChange: string;
+                                            isFederatedChange: boolean;
                                             missionName: string;
                                             timestamp: string;
                                             type: string;
-                                            details: {
+                                            contentResource?: {
+                                                expiration: string;
+                                                filename?: string;
+                                                hash: string;
+                                                name: string;
+                                                size: number;
+                                                submissionTime: string;
+                                                submitter: string;
+                                                tool?: string;
+                                                uid: string;
+                                            };
+                                            details?: {
                                                 type: string;
                                                 callsign: string;
                                                 color: string;
@@ -27392,6 +30676,8 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
+                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
                                     takv?: {
@@ -27556,14 +30842,15 @@ export interface paths {
                             metadata?: {
                                 [key: string]: unknown;
                             };
+                            /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                             archived?: boolean;
                             geofence?: {
-                                elevationMonitored?: string;
+                                elevationMonitored?: boolean;
                                 minElevation?: string;
                                 maxElevation?: string;
                                 monitor?: string;
                                 trigger?: string;
-                                tracking?: string;
+                                tracking?: boolean;
                                 boundingSphere?: number;
                             };
                             contact?: {
@@ -27574,8 +30861,11 @@ export interface paths {
                             };
                             shape?: {
                                 ellipse?: {
+                                    /** @description The major axis of the ellipse in meters */
                                     major: number;
+                                    /** @description The minor axis of the ellipse in meters */
                                     minor: number;
+                                    /** @description The angle of the ellipse in degrees */
                                     angle: number;
                                 };
                             };
@@ -27599,13 +30889,24 @@ export interface paths {
                                     uid?: string;
                                 };
                                 missionChanges?: {
-                                    contentUid: string;
+                                    contentUid?: string;
                                     creatorUid: string;
-                                    isFederatedChange: string;
+                                    isFederatedChange: boolean;
                                     missionName: string;
                                     timestamp: string;
                                     type: string;
-                                    details: {
+                                    contentResource?: {
+                                        expiration: string;
+                                        filename?: string;
+                                        hash: string;
+                                        name: string;
+                                        size: number;
+                                        submissionTime: string;
+                                        submitter: string;
+                                        tool?: string;
+                                        uid: string;
+                                    };
+                                    details?: {
                                         type: string;
                                         callsign: string;
                                         color: string;
@@ -27718,6 +31019,8 @@ export interface paths {
                                 after?: string;
                                 path?: string;
                             }[];
+                            /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                            marti_archive?: boolean;
                             icon?: string;
                             droid?: string;
                             takv?: {
@@ -27810,14 +31113,15 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -27828,8 +31132,11 @@ export interface paths {
                                 };
                                 shape?: {
                                     ellipse?: {
+                                        /** @description The major axis of the ellipse in meters */
                                         major: number;
+                                        /** @description The minor axis of the ellipse in meters */
                                         minor: number;
+                                        /** @description The angle of the ellipse in degrees */
                                         angle: number;
                                     };
                                 };
@@ -27853,13 +31160,24 @@ export interface paths {
                                         uid?: string;
                                     };
                                     missionChanges?: {
-                                        contentUid: string;
+                                        contentUid?: string;
                                         creatorUid: string;
-                                        isFederatedChange: string;
+                                        isFederatedChange: boolean;
                                         missionName: string;
                                         timestamp: string;
                                         type: string;
-                                        details: {
+                                        contentResource?: {
+                                            expiration: string;
+                                            filename?: string;
+                                            hash: string;
+                                            name: string;
+                                            size: number;
+                                            submissionTime: string;
+                                            submitter: string;
+                                            tool?: string;
+                                            uid: string;
+                                        };
+                                        details?: {
                                             type: string;
                                             callsign: string;
                                             color: string;
@@ -27972,6 +31290,8 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
                                 takv?: {
@@ -28240,14 +31560,15 @@ export interface paths {
                                 metadata?: {
                                     [key: string]: unknown;
                                 };
+                                /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                 archived?: boolean;
                                 geofence?: {
-                                    elevationMonitored?: string;
+                                    elevationMonitored?: boolean;
                                     minElevation?: string;
                                     maxElevation?: string;
                                     monitor?: string;
                                     trigger?: string;
-                                    tracking?: string;
+                                    tracking?: boolean;
                                     boundingSphere?: number;
                                 };
                                 contact?: {
@@ -28258,8 +31579,11 @@ export interface paths {
                                 };
                                 shape?: {
                                     ellipse?: {
+                                        /** @description The major axis of the ellipse in meters */
                                         major: number;
+                                        /** @description The minor axis of the ellipse in meters */
                                         minor: number;
+                                        /** @description The angle of the ellipse in degrees */
                                         angle: number;
                                     };
                                 };
@@ -28283,13 +31607,24 @@ export interface paths {
                                         uid?: string;
                                     };
                                     missionChanges?: {
-                                        contentUid: string;
+                                        contentUid?: string;
                                         creatorUid: string;
-                                        isFederatedChange: string;
+                                        isFederatedChange: boolean;
                                         missionName: string;
                                         timestamp: string;
                                         type: string;
-                                        details: {
+                                        contentResource?: {
+                                            expiration: string;
+                                            filename?: string;
+                                            hash: string;
+                                            name: string;
+                                            size: number;
+                                            submissionTime: string;
+                                            submitter: string;
+                                            tool?: string;
+                                            uid: string;
+                                        };
+                                        details?: {
                                             type: string;
                                             callsign: string;
                                             color: string;
@@ -28402,6 +31737,8 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
+                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
                                 takv?: {
@@ -29106,6 +32443,7 @@ export interface paths {
                             }[];
                             available: {
                                 terrain: boolean;
+                                snapping: boolean;
                             };
                             items: {
                                 id: number;
@@ -30493,7 +33831,13 @@ export interface paths {
                             } | null;
                             tak_loc_freq: number;
                             menu_order: {
+                                /** @description Menu Key */
                                 key: string;
+                                /**
+                                 * @description Menu Visibility
+                                 * @default full
+                                 */
+                                visibility: "full" | "partial" | "hidden";
                             }[];
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
@@ -30593,7 +33937,13 @@ export interface paths {
                         display_icon_rotation?: boolean;
                         display_text?: "Small" | "Medium" | "Large";
                         menu_order?: {
+                            /** @description Menu Key */
                             key: string;
+                            /**
+                             * @description Menu Visibility
+                             * @default full
+                             */
+                            visibility: "full" | "partial" | "hidden";
                         }[];
                         tak_callsign?: string;
                         tak_remarks?: string;
@@ -30637,7 +33987,13 @@ export interface paths {
                             } | null;
                             tak_loc_freq: number;
                             menu_order: {
+                                /** @description Menu Key */
                                 key: string;
+                                /**
+                                 * @description Menu Visibility
+                                 * @default full
+                                 */
+                                visibility: "full" | "partial" | "hidden";
                             }[];
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
@@ -30712,6 +34068,125 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/api/proxy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Make a proxied outbound HTTP request to an admin-allowed origin */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        url: string;
+                        /**
+                         * @default GET
+                         * @enum {string}
+                         */
+                        method?: "GET" | "POST";
+                        headers?: {
+                            [key: string]: string;
+                        };
+                        body?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            headers: {
+                                [key: string]: string;
+                            };
+                            body: unknown;
+                            /** @enum {string} */
+                            encoding?: "base64";
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/server/injector": {
@@ -31200,6 +34675,107 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/server/tileset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload a hosted PMTiles tileset into the public asset prefix */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            name: string;
+                            path: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -32895,7 +36471,13 @@ export interface paths {
                             } | null;
                             tak_loc_freq: number;
                             menu_order: {
+                                /** @description Menu Key */
                                 key: string;
+                                /**
+                                 * @description Menu Visibility
+                                 * @default full
+                                 */
+                                visibility: "full" | "partial" | "hidden";
                             }[];
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
@@ -33027,7 +36609,13 @@ export interface paths {
                             } | null;
                             tak_loc_freq: number;
                             menu_order: {
+                                /** @description Menu Key */
                                 key: string;
+                                /**
+                                 * @description Menu Visibility
+                                 * @default full
+                                 */
+                                visibility: "full" | "partial" | "hidden";
                             }[];
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
@@ -34776,14 +38364,15 @@ export interface paths {
                                     metadata?: {
                                         [key: string]: unknown;
                                     };
+                                    /** @description Presence of the detail.archive tag - instructs the TAK client to locally archive this feature */
                                     archived?: boolean;
                                     geofence?: {
-                                        elevationMonitored?: string;
+                                        elevationMonitored?: boolean;
                                         minElevation?: string;
                                         maxElevation?: string;
                                         monitor?: string;
                                         trigger?: string;
-                                        tracking?: string;
+                                        tracking?: boolean;
                                         boundingSphere?: number;
                                     };
                                     contact?: {
@@ -34794,8 +38383,11 @@ export interface paths {
                                     };
                                     shape?: {
                                         ellipse?: {
+                                            /** @description The major axis of the ellipse in meters */
                                             major: number;
+                                            /** @description The minor axis of the ellipse in meters */
                                             minor: number;
+                                            /** @description The angle of the ellipse in degrees */
                                             angle: number;
                                         };
                                     };
@@ -34819,13 +38411,24 @@ export interface paths {
                                             uid?: string;
                                         };
                                         missionChanges?: {
-                                            contentUid: string;
+                                            contentUid?: string;
                                             creatorUid: string;
-                                            isFederatedChange: string;
+                                            isFederatedChange: boolean;
                                             missionName: string;
                                             timestamp: string;
                                             type: string;
-                                            details: {
+                                            contentResource?: {
+                                                expiration: string;
+                                                filename?: string;
+                                                hash: string;
+                                                name: string;
+                                                size: number;
+                                                submissionTime: string;
+                                                submitter: string;
+                                                tool?: string;
+                                                uid: string;
+                                            };
+                                            details?: {
                                                 type: string;
                                                 callsign: string;
                                                 color: string;
@@ -34938,6 +38541,8 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
+                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
                                     takv?: {
