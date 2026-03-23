@@ -2,7 +2,7 @@ import { db } from './database.ts'
 import type { DBConfig } from './database.ts';
 import { std } from '../std.ts';
 import { liveQuery, type Subscription } from 'dexie';
-import type { paths } from '../derived-types.js';
+import type { paths } from '@cloudtak/api-types';
 
 export type FullConfig = paths['/api/config']['get']['responses']['200']['content']['application/json'];
 
