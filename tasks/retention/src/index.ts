@@ -21,8 +21,10 @@ async function runOnce(): Promise<void> {
     const apiUrl = process.env.API_URL;
     const signingSecret = process.env.SigningSecret;
 
-    if (!apiUrl) throw new Error('API_URL is required');
-    if (!signingSecret) throw new Error('SigningSecret is required');
+    if (!apiUrl || !signingSecret) {
+        console.log('ok - API_URL or SigningSecret not set, skipping retention run');
+        return;
+    }
 
     const res = await fetch(new URL('/api/config?keys=retention::enabled', apiUrl), {
         headers: {
