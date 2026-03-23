@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.109.0 - 2026-03-23
+
+- :tada: Introduce Retention Task for automated deletion of old data objects
+
 ### v12.108.0 - 2026-03-20
 
 - :rocket: Add an interstitial for selecting the type of basemap when adding a new basemap via the Map View
