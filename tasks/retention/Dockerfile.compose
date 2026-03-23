@@ -1,13 +1,13 @@
 FROM node:24-alpine3.23
 
-ENV HOME=/home/retention
-WORKDIR $HOME
+ENV APP_ROOT=/workspace
+WORKDIR $APP_ROOT/tasks/retention
 
-COPY package*.json ./
+COPY tasks/retention/package*.json ./
 
 RUN npm install
 
-COPY ./ $HOME
+COPY tasks/retention/ ./
 
 RUN npm run lint \
     && npm run build

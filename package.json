@@ -26,7 +26,7 @@
         "@eslint/js": "^10.0.1",
         "@mapbox/tile-cover": "^3.0.2",
         "@mapbox/tilebelt": "^2.0.3",
-        "@openaddresses/batch-alarms": "^4.7.4",
+        "@openaddresses/batch-alarms": "^5.0.4",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@openaddresses/deploy": "^9.0.0"
     },
