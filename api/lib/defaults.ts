@@ -4,6 +4,8 @@ import { FullConfig } from './types.js';
 
 export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'geofence::enabled': false,
+    'retention::enabled': true,
+    'retention::connection-feature::enabled': true,
     'map::center': '-100,40',
     'map::zoom': 4,
     'map::pitch': 0,

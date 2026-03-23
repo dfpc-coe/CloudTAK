@@ -1,7 +1,7 @@
 <template>
     <SlideDownHeader
         v-model='isOpen'
-        label='TAK User Groups'
+        label='Retention'
     >
         <template #right>
             <TablerIconButton
@@ -40,16 +40,24 @@
                     v-if='err'
                     :err='err'
                 />
+
                 <div class='row'>
+                    <div class='col-lg-12'>
+                        <TablerToggle
+                            v-model='config["retention::enabled"]'
+                            :disabled='!edit'
+                            label='Enable Retention Service'
+                        />
+                    </div>
+
                     <div
-                        v-for='group in groups'
-                        :key='group'
+                        v-if='config["retention::enabled"]'
                         class='col-lg-12'
                     >
-                        <TablerInput
-                            v-model='config[`group::${group}`]'
-                            :label='group'
+                        <TablerToggle
+                            v-model='config["retention::connection-feature::enabled"]'
                             :disabled='!edit'
+                            label='Enable Connection Feature Retention'
                         />
                     </div>
                 </div>
@@ -60,46 +68,23 @@
 
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
-import { ref, watch, onMounted } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { std, stdurl } from '../../../std.ts';
 import {
     TablerLoading,
-    TablerInput,
+    TablerToggle,
     TablerIconButton,
-    TablerAlert
+    TablerAlert,
 } from '@tak-ps/vue-tabler';
 import {
     IconPencil,
     IconDeviceFloppy,
-    IconX
+    IconX,
 } from '@tabler/icons-vue';
 
-const groups = [
-    'Yellow', 'Cyan', 'Green', 'Red', 'Purple', 'Orange', 'Blue',
-    'Magenta', 'White', 'Maroon', 'Dark Blue', 'Teal', 'Dark Green', 'Brown'
-] as const;
-
-type GroupName = (typeof groups)[number];
-type GroupConfigKey = `group::${GroupName}`;
-type GroupConfig = Record<GroupConfigKey, string>;
-
-function createGroupConfig(): GroupConfig {
-    return {
-        'group::Yellow': '',
-        'group::Cyan': '',
-        'group::Green': '',
-        'group::Red': '',
-        'group::Purple': '',
-        'group::Orange': '',
-        'group::Blue': '',
-        'group::Magenta': '',
-        'group::White': '',
-        'group::Maroon': '',
-        'group::Dark Blue': '',
-        'group::Teal': '',
-        'group::Dark Green': '',
-        'group::Brown': '',
-    };
+interface RetentionConfig {
+    'retention::enabled': boolean;
+    'retention::connection-feature::enabled': boolean;
 }
 
 const isOpen = ref<boolean>(false);
@@ -107,10 +92,13 @@ const loading = ref<boolean>(false);
 const edit = ref<boolean>(false);
 const err = ref<Error | null>(null);
 
-const config = ref<GroupConfig>(createGroupConfig());
+const config = ref<RetentionConfig>({
+    'retention::enabled': true,
+    'retention::connection-feature::enabled': true,
+});
 
 onMounted(() => {
-     if (isOpen.value) void fetch();
+    if (isOpen.value) void fetch();
 });
 
 watch(isOpen, (newState) => {
@@ -120,33 +108,39 @@ watch(isOpen, (newState) => {
 async function fetch(): Promise<void> {
     loading.value = true;
     err.value = null;
+
     try {
         const url = stdurl('/api/config');
         url.searchParams.set('keys', Object.keys(config.value).join(','));
-        const res = await std(url) as Partial<GroupConfig>;
+        const res = await std(url) as Partial<RetentionConfig>;
+
         config.value = {
-            ...createGroupConfig(),
-            ...res,
+            'retention::enabled': res['retention::enabled'] ?? true,
+            'retention::connection-feature::enabled': res['retention::connection-feature::enabled'] ?? true,
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
     }
+
     loading.value = false;
 }
 
 async function save(): Promise<void> {
     loading.value = true;
     err.value = null;
+
     try {
-        await std(`/api/config`, {
+        await std('/api/config', {
             method: 'PUT',
-            body: config.value
+            body: config.value,
         });
+
         edit.value = false;
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
-        console.error('Failed to save Groups config:', error);
+        console.error('Failed to save Retention config:', error);
     }
+
     loading.value = false;
 }
 </script>

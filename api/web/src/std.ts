@@ -1,6 +1,6 @@
 import createClient from "openapi-fetch";
 import type { Middleware } from "openapi-fetch";
-import type { paths } from './derived-types.js'
+import type { paths } from '@cloudtak/api-types'
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
 

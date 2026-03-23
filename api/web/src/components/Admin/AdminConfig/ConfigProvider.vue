@@ -9,7 +9,7 @@
                 title='Edit'
                 @click.stop='edit = true'
             >
-                <IconPencil :stroke='1' />
+                <IconPencil stroke='1' />
             </TablerIconButton>
             <div
                 v-else-if='edit && isOpen'
@@ -29,7 +29,7 @@
                     title='Cancel'
                     @click.stop='edit = false; fetch()'
                 >
-                    <IconX :stroke='1' />
+                    <IconX stroke='1' />
                 </TablerIconButton>
             </div>
         </template>
@@ -68,7 +68,7 @@
     </SlideDownHeader>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../../std.ts';
@@ -84,42 +84,50 @@ import {
     IconX
 } from '@tabler/icons-vue';
 
-const isOpen = ref(false);
-const loading = ref(false);
-const edit = ref(false);
-const err = ref(null);
+interface ProviderConfig {
+    'provider::url': string;
+    'provider::secret': string;
+    'provider::client': string;
+}
 
-const config = ref({
+const isOpen = ref<boolean>(false);
+const loading = ref<boolean>(false);
+const edit = ref<boolean>(false);
+const err = ref<Error | null>(null);
+
+const config = ref<ProviderConfig>({
     'provider::url': '',
     'provider::secret': '',
     'provider::client': '',
 });
 
 onMounted(() => {
-     if (isOpen.value) fetch();
+     if (isOpen.value) void fetch();
 });
 
 watch(isOpen, (newState) => {
-    if (newState && !edit.value) fetch();
+    if (newState && !edit.value) void fetch();
 });
 
-async function fetch() {
+async function fetch(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
         const url = stdurl('/api/config');
         url.searchParams.set('keys', Object.keys(config.value).join(','));
-        const res = await std(url);
-        for (const key of Object.keys(config.value)) {
-             if (res[key] !== undefined) config.value[key] = res[key];
-        }
+        const res = await std(url) as Partial<ProviderConfig>;
+        config.value = {
+            'provider::url': res['provider::url'] ?? '',
+            'provider::secret': res['provider::secret'] ?? '',
+            'provider::client': res['provider::client'] ?? '',
+        };
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value = false;
 }
 
-async function save() {
+async function save(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
@@ -129,7 +137,7 @@ async function save() {
         });
         edit.value = false;
     } catch (error) {
-        err.value = error
+        err.value = error instanceof Error ? error : new Error(String(error));
         console.error('Failed to save Provider config:', error);
     }
     loading.value = false;

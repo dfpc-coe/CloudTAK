@@ -14,7 +14,8 @@
         "docker": [
             "tak-vpc-{{stack}}-cloudtak-api:{{gitsha}}",
             "tak-vpc-{{stack}}-cloudtak-api:pmtiles-{{gitsha}}",
-            "tak-vpc-{{stack}}-cloudtak-api:events-{{gitsha}}"
+            "tak-vpc-{{stack}}-cloudtak-api:events-{{gitsha}}",
+            "tak-vpc-{{stack}}-cloudtak-api:retention-{{gitsha}}"
         ]
     }
 }

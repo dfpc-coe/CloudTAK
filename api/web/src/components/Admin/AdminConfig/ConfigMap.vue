@@ -144,7 +144,7 @@ async function fetch() {
 
         config.value = {
             // DB is Lng,Lat. UI is Lat,Lng
-            'map::center': res.data['map::center']
+            'map::center': typeof res.data['map::center'] === 'string'
                 ? String(res.data['map::center']).split(',').reverse().join(',')
                 : config.value['map::center'],
             'map::zoom': res.data['map::zoom'] ?? config.value['map::zoom'],
@@ -172,7 +172,7 @@ async function save() {
         if (res.error) throw new Error(res.error.message);
         edit.value = false;
     } catch (error) {
-        err.value = error as Error;
+        err.value = error instanceof Error ? error : new Error(String(error));
         console.error('Failed to save Map config:', error);
     }
     loading.value = false;

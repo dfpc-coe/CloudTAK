@@ -325,7 +325,7 @@ import Upload from '../../../util/Upload.vue';
 import StandardItem from '../../util/StandardItem.vue';
 import ProfileConfig from '../../../../base/profile.ts';
 import type { Basemap, BasemapList } from '../../../../types.ts';
-import type { paths } from '../../../../derived-types.js';
+import type { paths } from '@cloudtak/api-types';
 import BasemapTypeSelector from './TypeSelector.vue';
 import {
     IconBraces,

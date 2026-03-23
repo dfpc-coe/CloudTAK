@@ -36,6 +36,24 @@ jobs:
       - name: Docker Events Test
         run: docker run cloudtak-events:latest npm run test
 
+  retention:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{github.event.pull_request.head.sha || github.sha}}
+
+      - name: Docker Build Retention
+        run: docker compose build retention
+
+      - name: Docker Retention Check
+        run: docker run cloudtak-retention:latest npm run check
+
+      - name: Docker Retention Run Once
+        run: docker run cloudtak-retention:latest npm run run-once
+
   pmtiles:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest

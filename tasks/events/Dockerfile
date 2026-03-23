@@ -21,8 +21,8 @@ COPY --from=build /usr/local/lib /usr/local/lib
 COPY --from=build /usr/local/include /usr/local/include
 COPY --from=build /usr/local/bin /usr/local/bin
 
-ENV HOME=/home/events
-WORKDIR $HOME
+ENV APP_ROOT=/workspace
+WORKDIR $APP_ROOT/tasks/events
 
 COPY --from=0 /usr/local/bin/tippecanoe* /usr/local/bin/
 COPY --from=0 /usr/local/bin/tile-join /usr/local/bin/
@@ -35,8 +35,12 @@ RUN export VERSION_PMTILES='1.28.3' && \
     tar -xzvf /tmp/pmtiles.tar.gz && \
     mv pmtiles /usr/local/bin/
 
-COPY . $HOME
+COPY tasks/events/package*.json ./
 
 RUN npm install
+
+COPY tasks/events/ ./
+COPY api/derived-types.d.ts $APP_ROOT/api/derived-types.d.ts
+
 
 CMD ["node", "index.ts"]

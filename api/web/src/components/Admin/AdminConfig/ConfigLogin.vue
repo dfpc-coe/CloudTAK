@@ -52,14 +52,14 @@
                         <TablerInput
                             v-model='config["login::signup"]'
                             :disabled='!edit'
-                            :error='validateURL(config["login::signup"] as string)'
+                            :error='validateURL(config["login::signup"])'
                             label='TAK Server Signup Link'
                         />
 
                         <TablerInput
                             v-model='config["login::forgot"]'
                             :disabled='!edit'
-                            :error='validateURL(config["login::forgot"] as string)'
+                            :error='validateURL(config["login::forgot"])'
                             label='TAK Server Password Reset Link'
                         />
 
@@ -177,8 +177,7 @@
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
-import type { Config } from '../../../types.ts';
-import { server } from '../../../std.ts';
+import { std, stdurl } from '../../../std.ts';
 import { validateURL } from '../../../base/validators.ts';
 import {
     TablerLoading,
@@ -196,12 +195,33 @@ import {
     IconX
 } from '@tabler/icons-vue';
 
-const isOpen = ref(false);
-const loading = ref(false);
-const edit = ref(false);
+interface LoginConfig {
+    'login::name': string;
+    'login::logo': string;
+    'login::forgot': string;
+    'login::signup': string;
+    'login::username': string;
+    'login::brand::enabled': 'default' | 'enabled' | 'disabled';
+    'login::brand::logo': string;
+    'login::background::enabled': boolean;
+    'login::background::color': string;
+    'oidc::enabled': boolean;
+    'oidc::enforced': boolean;
+    'oidc::name': string;
+    'oidc::client': string;
+    'oidc::secret': string;
+    'oidc::discovery': string;
+    'oidc::redirect': string;
+    'oidc::scopes': string;
+    'oidc::logo': string;
+}
+
+const isOpen = ref<boolean>(false);
+const loading = ref<boolean>(false);
+const edit = ref<boolean>(false);
 const err = ref<Error | null>(null);
 
-const config = ref<Partial<Config>>({
+const config = ref<LoginConfig>({
     'login::name': '',
     'login::logo': '',
     'login::forgot': '',
@@ -224,44 +244,55 @@ const config = ref<Partial<Config>>({
 
 onMounted(() => {
     // Optional: fetch on mount if we want to preload, or fetch on open
-     if (isOpen.value) fetch();
+     if (isOpen.value) void fetch();
 });
 
 watch(isOpen, (newState) => {
-    if (newState && !edit.value) fetch();
+    if (newState && !edit.value) void fetch();
 });
 
-async function fetch() {
+async function fetch(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
-        const queryParams = Object.keys(config.value).join(',');
-        const res = await server.GET('/api/config', {
-            params: {
-                query: {
-                    keys: queryParams
-                }
-            }
-        });
-        if (res.error) throw new Error(res.error.message);
+        const url = stdurl('/api/config');
+        url.searchParams.set('keys', Object.keys(config.value).join(','));
+        const res = await std(url) as Partial<LoginConfig>;
 
-        for (const key of Object.keys(config.value)) {
-             if (res.data && res.data[key as keyof typeof res.data] !== undefined) config.value[key as keyof typeof config.value] = res.data[key as keyof typeof res.data] as never;
-        }
+        config.value = {
+            'login::name': res['login::name'] ?? '',
+            'login::logo': res['login::logo'] ?? '',
+            'login::forgot': res['login::forgot'] ?? '',
+            'login::signup': res['login::signup'] ?? '',
+            'login::username': res['login::username'] ?? 'Username or Email',
+            'login::brand::enabled': res['login::brand::enabled'] ?? 'default',
+            'login::brand::logo': res['login::brand::logo'] ?? '',
+            'login::background::enabled': res['login::background::enabled'] ?? false,
+            'login::background::color': res['login::background::color'] ?? '#000000',
+            'oidc::enabled': res['oidc::enabled'] ?? false,
+            'oidc::enforced': res['oidc::enforced'] ?? false,
+            'oidc::name': res['oidc::name'] ?? '',
+            'oidc::client': res['oidc::client'] ?? '',
+            'oidc::secret': res['oidc::secret'] ?? '',
+            'oidc::discovery': res['oidc::discovery'] ?? '',
+            'oidc::redirect': res['oidc::redirect'] ?? '',
+            'oidc::scopes': res['oidc::scopes'] ?? '',
+            'oidc::logo': res['oidc::logo'] ?? '',
+        };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value = false;
 }
 
-async function save() {
+async function save(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
-        const res = await server.PUT('/api/config', {
+        await std('/api/config', {
+            method: 'PUT',
             body: config.value
         });
-        if (res.error) throw new Error(res.error.message);
 
         edit.value = false;
     } catch (error) {
