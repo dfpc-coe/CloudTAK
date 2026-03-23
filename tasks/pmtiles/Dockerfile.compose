@@ -2,16 +2,15 @@ FROM node:24-alpine3.23
 
 EXPOSE 5002
 
-ENV HOME=/home/etl
+ENV APP_ROOT=/workspace
 
-WORKDIR $HOME/tiles
+WORKDIR $APP_ROOT/tasks/pmtiles
 
-ADD package.json ./
-ADD package-lock.json ./
+COPY tasks/pmtiles/package*.json ./
 
 RUN npm install
 
-COPY ./ $HOME/tiles
+COPY tasks/pmtiles/ ./
 
 RUN npm run lint \
     && npm run test \
