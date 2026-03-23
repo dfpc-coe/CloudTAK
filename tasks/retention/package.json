@@ -15,10 +15,12 @@
         "run-once": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js --run-once"
     },
     "dependencies": {
+        "jsonwebtoken": "^9.0.0",
         "node-cron": "^4.2.1"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@types/jsonwebtoken": "^9.0.0",
         "@types/node": "^25.0.0",
         "eslint": "^10.0.0",
         "tsup": "^8.0.0",
