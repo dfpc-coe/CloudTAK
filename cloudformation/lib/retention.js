@@ -69,6 +69,7 @@ export default {
         },
         RetentionTaskDefinition: {
             Type: 'AWS::ECS::TaskDefinition',
+            DependsOn: ['SigningSecret'],
             Properties: {
                 Family: cf.join([cf.stackName, '-retention']),
                 Cpu: 256,
@@ -98,6 +99,7 @@ export default {
                                 ':5432/tak_ps_etl?sslmode=require'
                             ])
                         },
+                        { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'AWS_REGION', Value: cf.region },
                         { Name: 'CLOUDTAK_Mode', Value: 'AWS' },
                         { Name: 'StackName', Value: cf.stackName },
