@@ -114,7 +114,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { server } from '../../std.ts';
-import type { paths } from '../../derived-types.js';
+import type { paths } from '@cloudtak/api-types';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import Status from '../ETL/Connection/StatusDot.vue';

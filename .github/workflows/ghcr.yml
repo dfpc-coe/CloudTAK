@@ -28,6 +28,9 @@ jobs:
             file: ./tasks/pmtiles/Dockerfile.compose
           - task: events
             context: ./tasks/events/
+          - task: retention
+            context: ./tasks/retention/
+            file: ./tasks/retention/Dockerfile.compose
     steps:
       - uses: actions/checkout@v6
 

@@ -47,14 +47,14 @@ export default class SubscriptionContents {
                     mission: this.guid,
                     timestamp: content.timestamp,
                     creatorUid: content.creatorUid,
-                    keywords: content.data.keywords,
-                    name: content.data.name,
+                    keywords: content.data.keywords || [],
+                    name: content.data.name ?? content.data.hash ?? content.data.uid ?? '',
                     hash: content.data.hash,
-                    submissionTime: content.data.submissionTime,
-                    size: content.data.size,
+                    submissionTime: content.data.submissionTime || content.timestamp,
+                    size: content.data.size || 0,
                     mimeType: content.data.mimeType,
                     submitter: content.data.submitter,
-                    expiration: content.data.expiration,
+                    expiration: content.data.expiration || 0,
                 });
             }
         });

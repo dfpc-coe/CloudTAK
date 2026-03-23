@@ -1,4 +1,4 @@
-import type { paths } from './derived-types.js';
+import type { paths } from '@cloudtak/api-types';
 import type { Origin } from './base/cot.ts'
 import type { Geometry } from 'geojson';
 

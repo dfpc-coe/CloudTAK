@@ -437,6 +437,8 @@ export const FullConfig = Type.Object({
     'geofence::enabled': Type.Boolean({ description: 'Enable Geofence Server Integration' }),
     'geofence::url': Type.String({ description: 'Geofence Server URL' }),
     'geofence::password': Type.String({ description: 'Geofence Server Password' }),
+    'retention::enabled': Type.Boolean({ description: 'Enable scheduled retention processing' }),
+    'retention::connection-feature::enabled': Type.Boolean({ description: 'Enable retention processing for connection features' }),
     'agol::enabled': Type.Boolean({ description: 'Enable ArcGIS Online Integration' }),
     'agol::auth_method': Type.String({ description: 'AGOL Auth Type', enum: ['oauth2', 'legacy'] }),
     'agol::token': Type.String({ description: 'AGOL Legacy Token' }),

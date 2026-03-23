@@ -24,8 +24,8 @@ services:
 
     tiles:
         build:
-          context: ./tasks/pmtiles/
-          dockerfile: Dockerfile.compose
+          context: .
+          dockerfile: ./tasks/pmtiles/Dockerfile.compose
         restart: 'always'
         ports:
             - "5002:5002"
@@ -39,8 +39,8 @@ services:
 
     events:
         build:
-          context: ./tasks/events/
-          dockerfile: Dockerfile
+          context: .
+          dockerfile: ./tasks/events/Dockerfile
         restart: 'always'
         depends_on:
             - api
@@ -55,6 +55,26 @@ services:
             - AWS_S3_Endpoint=${AWS_S3_Endpoint}
             - AWS_S3_AccessKeyId=${AWS_S3_AccessKeyId}
             - AWS_S3_SecretAccessKey=${AWS_S3_SecretAccessKey}
+
+    retention:
+        build:
+          context: .
+          dockerfile: ./tasks/retention/Dockerfile.compose
+        restart: 'always'
+        depends_on:
+            - api
+            - postgis
+            - store
+        environment:
+            CLOUDTAK_Mode: ${CLOUDTAK_Mode}
+            API_URL: ${API_URL}
+            ASSET_BUCKET: ${ASSET_BUCKET}
+            AWS_REGION: ${AWS_REGION:-us-east-1}
+            AWS_S3_Endpoint: ${AWS_S3_Endpoint}
+            AWS_S3_AccessKeyId: ${AWS_S3_AccessKeyId}
+            AWS_S3_SecretAccessKey: ${AWS_S3_SecretAccessKey}
+            SigningSecret: ${SigningSecret}
+            RETENTION_SCHEDULE: ${RETENTION_SCHEDULE:-0 3 * * *}
 
     media:
         image: ghcr.io/dfpc-coe/media-infra:v9.1.1

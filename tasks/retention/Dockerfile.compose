@@ -1,19 +1,15 @@
 FROM node:24-alpine3.23
 
-EXPOSE 5002
-
 ENV APP_ROOT=/workspace
+WORKDIR $APP_ROOT/tasks/retention
 
-WORKDIR $APP_ROOT/tasks/pmtiles
-
-COPY tasks/pmtiles/package*.json ./
+COPY tasks/retention/package*.json ./
 
 RUN npm install
 
-COPY tasks/pmtiles/ ./
+COPY tasks/retention/ ./
 
 RUN npm run lint \
-    && npm run test \
     && npm run build
 
 CMD ["npm", "run", "prod"]

@@ -55,7 +55,7 @@ export default class DataTransform {
 
         const conversion = await convert.convert();
 
-        const artifacts: Array<{ ext: string }> = this.asset.artifacts.map(a => ({ ext: a.ext }));
+        const artifacts: Array<{ ext: string }> = this.asset.artifacts.map((a: { ext: string }) => ({ ext: a.ext }));
 
         if (conversion.icons && conversion.icons.size > 0) {
             console.error('ok - Creating Iconset');

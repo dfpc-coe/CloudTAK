@@ -55,7 +55,7 @@
                         <TablerInput
                             v-model='config["geofence::url"]'
                             :disabled='!edit'
-                            :error='validateURL(config["geofence::url"] as string)'
+                            :error='validateURL(config["geofence::url"])'
                             label='Geofence Server URL'
                         />
                         <TablerInput
