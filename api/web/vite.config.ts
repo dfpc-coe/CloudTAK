@@ -32,6 +32,7 @@ export default defineConfig(({ mode }) => {
             alias: {
                 '@tak-ps/cloudtak': path.resolve(__dirname, './plugin.ts'),
                 '@': path.resolve(__dirname, './src'),
+                '@cloudtak/api-types': path.resolve(__dirname, '../derived-types.d.ts'),
             }
         },
         build: {

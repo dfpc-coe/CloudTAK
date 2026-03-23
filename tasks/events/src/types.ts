@@ -1,4 +1,4 @@
-import type { paths } from './derived-types.js';
+import type { paths } from '@cloudtak/api-types';
 
 export type ConvertResponse = {
     asset: string;

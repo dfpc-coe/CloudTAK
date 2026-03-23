@@ -16,7 +16,7 @@
     },
     "scripts": {
         "serve": "DEV=true vite serve --port 8080",
-        "typegen": "openapi-typescript http://localhost:5001/api/swagger --output src/derived-types.d.ts",
+        "typegen": "npm run typegen -C ..",
         "check": "vue-tsc",
         "build:types": "vue-tsc -p tsconfig.build.json",
         "doc": "typedoc --options typedoc.json",
@@ -98,7 +98,6 @@
         "globals": "^17.3.0",
         "happy-dom": "^20.0.0",
         "jsdom": "^29.0.0",
-        "openapi-typescript": "^7.0.0",
         "sass-embedded": "^1.86.0",
         "typedoc": "^0.28.1",
         "typescript": "^5.7.0",

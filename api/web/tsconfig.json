@@ -26,7 +26,8 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@tak-ps/cloudtak": ["./plugin.ts"]
+      "@tak-ps/cloudtak": ["./plugin.ts"],
+      "@cloudtak/api-types": ["../derived-types.d.ts"]
     },
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,

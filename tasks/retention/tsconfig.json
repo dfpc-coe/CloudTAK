@@ -13,7 +13,11 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "isolatedModules": true
+        "isolatedModules": true,
+        "baseUrl": ".",
+        "paths": {
+            "@cloudtak/api-types": ["../../api/derived-types.d.ts"]
+        }
     },
     "exclude": ["node_modules"]
 }

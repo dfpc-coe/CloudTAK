@@ -12,6 +12,7 @@
         "outDir": "dist",
         "baseUrl": ".",
         "paths": {
+            "@cloudtak/api-types": ["../../api/derived-types.d.ts"],
             "*": [
                 "node_modules/*"
             ]
