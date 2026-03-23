@@ -24,8 +24,8 @@ services:
 
     tiles:
         build:
-                    context: .
-                    dockerfile: ./tasks/pmtiles/Dockerfile.compose
+          context: .
+          dockerfile: ./tasks/pmtiles/Dockerfile.compose
         restart: 'always'
         ports:
             - "5002:5002"
@@ -58,8 +58,8 @@ services:
 
     retention:
         build:
-                    context: .
-                    dockerfile: ./tasks/retention/Dockerfile.compose
+          context: .
+          dockerfile: ./tasks/retention/Dockerfile.compose
         restart: 'always'
         depends_on:
             - api
