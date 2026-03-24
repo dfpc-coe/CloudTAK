@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.110.0 - 2026-03-24
+
+- :rocket: Migrate current `json` column use to `jsonb` for more compact storage and faster querying
+
 ### v12.109.0 - 2026-03-23
 
 - :tada: Introduce Retention Task for automated deletion of old data objects
