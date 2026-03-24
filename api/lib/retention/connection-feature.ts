@@ -12,13 +12,7 @@ const task: RetentionTask = {
 
         const deleted = await config.models.ConnectionFeature.pool.delete(ConnectionFeature)
             .where(sql`
-                (
-                    CASE
-                        WHEN jsonb_typeof(${ConnectionFeature.properties} -> 'stale') = 'string'
-                        THEN (${ConnectionFeature.properties} ->> 'stale')::timestamptz
-                        ELSE NULL
-                    END
-                ) < ${now.toISOString()}::timestamptz
+                (${ConnectionFeature.properties} ->> 'stale')::timestamptz < ${now.toISOString()}::timestamptz
             `)
             .returning({ deleted: sql<number>`1` });
 
