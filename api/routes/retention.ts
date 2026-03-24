@@ -18,7 +18,6 @@ const RetentionTaskResult = Type.Object({
         Type.Literal('success'),
         Type.Literal('error')
     ]),
-    scanned: Type.Integer(),
     deleted: Type.Integer(),
     duration: Type.Integer(),
     message: Type.Optional(Type.String())
