@@ -5,7 +5,7 @@ import type { StyleContainer } from './style.js';
 import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from './palette.js';
 import { Polygon, Point } from 'geojson';
-import { geometry, GeometryType } from '@openaddresses/batch-generic';
+import { geometry, GeometryType, jsonb } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { Layer_Config } from './models/Layer.js';
 import {
@@ -13,7 +13,7 @@ import {
     Import_Status,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType
 } from  './enums.js';
-import { jsonb, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
+import { boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
 export const SpatialRefSys = pgTable('spatial_ref_sys', {
