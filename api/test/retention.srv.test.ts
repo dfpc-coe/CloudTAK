@@ -96,7 +96,6 @@ test('POST api/retention - connection feature action', async () => {
 
         assert.equal(res.body.name, 'connection-feature');
         assert.equal(res.body.status, 'success');
-        assert.equal(res.body.scanned, 2);
         assert.equal(res.body.deleted, 1);
         assert.equal(typeof res.body.duration, 'number');
         assert.ok(res.body.duration >= 0);

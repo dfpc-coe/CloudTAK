@@ -9,7 +9,6 @@ export interface RetentionTaskConfig {
 export interface RetentionTaskResult {
     name: string;
     status: 'success' | 'error';
-    scanned: number;
     deleted: number;
     duration: number;
     message?: string;
@@ -83,7 +82,7 @@ async function runOnce(): Promise<void> {
         const start = Date.now();
         try {
             const result = await task.run();
-            console.log(`ok - task:${task.name}: ${result.scanned} scanned, ${result.deleted} deleted in ${Date.now() - start}ms`);
+            console.log(`ok - task:${task.name}: ${result.deleted} deleted in ${Date.now() - start}ms`);
         } catch (err) {
             console.error(`error - task:${task.name} failed:`, err);
         }

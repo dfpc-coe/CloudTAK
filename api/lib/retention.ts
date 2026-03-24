@@ -13,7 +13,6 @@ export interface RetentionInvocation {
 export interface RetentionTaskResult {
     name: string;
     status: 'success' | 'error';
-    scanned: number;
     deleted: number;
     duration: number;
     message?: string;
