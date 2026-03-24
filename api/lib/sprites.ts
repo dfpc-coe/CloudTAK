@@ -88,7 +88,7 @@ export default class SpriteBuilder {
 
         await config.models.Iconset.commit(iconset, {
             spritesheet_data: sprites.image.toString('base64'),
-            spritesheet_json: JSON.stringify(sprites.json)
+            spritesheet_json: sprites.json
         });
 
         return sprites;
