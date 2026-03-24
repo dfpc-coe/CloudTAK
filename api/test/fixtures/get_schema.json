@@ -1199,6 +1199,11 @@
         "query": false,
         "res": true
     },
+    "POST /retention": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /server/injector": {
         "body": false,
         "query": false,
