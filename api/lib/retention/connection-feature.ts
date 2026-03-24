@@ -1,23 +1,14 @@
-import Err from '@openaddresses/batch-error';
 import { sql } from 'drizzle-orm';
 
 import type Config from '../config.js';
 import { ConnectionFeature } from '../schema.js';
-import type { RetentionConfigValue, RetentionInvocation, RetentionTask, RetentionTaskResult } from '../retention.js';
-
-function asString(value: RetentionConfigValue | undefined): string | undefined {
-    return typeof value === 'string' ? value : undefined;
-}
+import type { RetentionInvocation, RetentionTask, RetentionTaskResult } from '../retention.js';
 
 const task: RetentionTask = {
     name: 'connection-feature',
-    run: async (config: Config, retention: RetentionInvocation): Promise<RetentionTaskResult> => {
+    run: async (config: Config, _retention: RetentionInvocation): Promise<RetentionTaskResult> => {
         const start = Date.now();
-        const now = asString(retention.config.now) ? new Date(String(retention.config.now)) : new Date();
-
-        if (Number.isNaN(now.getTime())) {
-            throw new Err(400, null, 'Invalid retention config.now value');
-        }
+        const now = new Date();
 
         const deleted = await config.models.ConnectionFeature.pool.delete(ConnectionFeature)
             .where(sql`
