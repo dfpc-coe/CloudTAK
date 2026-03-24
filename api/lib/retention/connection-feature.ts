@@ -14,9 +14,8 @@ const task: RetentionTask = {
             .where(sql`
                 (
                     CASE
-                        WHEN jsonb_typeof(${ConnectionFeature.properties}::jsonb -> 'stale') = 'number' THEN to_timestamp((${ConnectionFeature.properties}::jsonb ->> 'stale')::double precision / 1000.0)
-                        WHEN jsonb_typeof(${ConnectionFeature.properties}::jsonb -> 'stale') = 'string'
-                        THEN (${ConnectionFeature.properties}::jsonb ->> 'stale')::timestamptz
+                        WHEN jsonb_typeof(${ConnectionFeature.properties} -> 'stale') = 'string'
+                        THEN (${ConnectionFeature.properties} ->> 'stale')::timestamptz
                         ELSE NULL
                     END
                 ) < ${now.toISOString()}::timestamptz
