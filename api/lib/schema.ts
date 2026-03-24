@@ -13,7 +13,7 @@ import {
     Import_Status,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType
 } from  './enums.js';
-import { json, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
+import { jsonb, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
 export const SpatialRefSys = pgTable('spatial_ref_sys', {
@@ -38,7 +38,7 @@ export const PaletteFeature = pgTable('palette_feature', {
     name: text().notNull(),
     palette: uuid().notNull().references(() => Palette.uuid),
     type: text().$type<BasicGeometryType>().notNull(),
-    style: json().$type<Static<typeof PaletteFeatureStyle>>().notNull().default({})
+    style: jsonb().$type<Static<typeof PaletteFeatureStyle>>().notNull().default({})
 });
 
 export const MissionTemplate = pgTable('mission_template', {
@@ -62,7 +62,7 @@ export const MissionTemplateLog = pgTable('mission_template_log', {
 
     template: uuid().notNull().references(() => MissionTemplate.id),
 
-    schema: json().notNull()
+    schema: jsonb().notNull()
 });
 
 /** ==== END ==== */
@@ -72,12 +72,12 @@ export const Profile = pgTable('profile', {
     name: text().default('Unknown'),
     username: text().primaryKey(),
     last_login: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    auth: json().$type<Static<typeof ConnectionAuth>>().notNull(),
+    auth: jsonb().$type<Static<typeof ConnectionAuth>>().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     phone: text().notNull().default(''),
     system_admin: boolean().notNull().default(false),
-    agency_admin: json().notNull().$type<Array<number>>().default([]),
+    agency_admin: jsonb().notNull().$type<Array<number>>().default([]),
 });
 
 export const ProfileSetting = pgTable('profile_settings',
@@ -103,7 +103,7 @@ export const ProfileFile = pgTable('profile_files', {
     name: text().notNull(),
     iconset: text().references(() => Iconset.uid),
     size: integer().notNull(),
-    artifacts: json().$type<Array<{
+    artifacts: jsonb().$type<Array<{
         ext: string;
         size: number;
     }>>().notNull().default([]),
@@ -186,7 +186,7 @@ export const ProfileFeature = pgTable('profile_features', {
     path: text().notNull().default('/'),
     deleted: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
-    properties: json().notNull().default({}),
+    properties: jsonb().notNull().default({}),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
 }, (table) => {
     return {
@@ -203,7 +203,7 @@ export const BasemapSource = pgTable('basemaps_source', {
     type: text().notNull(),
 
     url: text().notNull(),
-    auth: json().notNull().default({})
+    auth: jsonb().notNull().default({})
 });
 
 export const Basemap = pgTable('basemaps', {
@@ -250,7 +250,7 @@ export const BasemapVector = pgTable('basemaps_vector', {
     id: serial().primaryKey(),
     basemap: integer().notNull().references(() => Basemap.id, { onDelete: 'cascade' }),
 
-    styles: json().$type<Array<unknown>>().notNull().default([]),
+    styles: jsonb().$type<Array<unknown>>().notNull().default([]),
     iconset: text().references(() => Iconset.uid),
     snapping_enabled: boolean().notNull().default(false),
     title: text().notNull().default('callsign'),
@@ -285,7 +285,7 @@ export const Import = pgTable('imports', {
     username: text().notNull().references(() => Profile.username),
     source: text().notNull().default('Upload'),
     source_id: text(),
-    config: json().notNull().default({})
+    config: jsonb().notNull().default({})
 });
 
 export const ImportResult = pgTable('import_result', {
@@ -329,7 +329,7 @@ export const Iconset = pgTable('iconsets', {
     skip_resize: boolean().notNull().default(false),
 
     spritesheet_data: text(),
-    spritesheet_json: json(),
+    spritesheet_json: jsonb(),
 }, (table) => {
     return {
         username_idx: index("iconsets_username_idx").on(table.username),
@@ -362,7 +362,7 @@ export const Connection = pgTable('connections', {
     description: text().notNull().default(''),
     enabled: boolean().notNull().default(true),
     features: boolean().notNull().default(false),
-    auth: json().$type<Static<typeof ConnectionAuth>>().notNull()
+    auth: jsonb().$type<Static<typeof ConnectionAuth>>().notNull()
 });
 
 export const ConnectionFeature = pgTable('connection_features', {
@@ -370,7 +370,7 @@ export const ConnectionFeature = pgTable('connection_features', {
     path: text().notNull().default('/'),
     layer: integer().references(() => Layer.id),
     connection: integer().notNull().references(() => Connection.id),
-    properties: json().notNull().default({}),
+    properties: jsonb().notNull().default({}),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
 }, (table) => {
     return {
@@ -394,7 +394,7 @@ export const Data = pgTable('data', {
     mission_role: text().notNull().default('MISSION_SUBSCRIBER'),
     mission_token: text(),
     mission_groups: text().array().notNull().default([]),
-    assets: json().$type<Array<string>>().notNull().default(["*"]),
+    assets: jsonb().$type<Array<string>>().notNull().default(["*"]),
     connection: integer().notNull().references(() => Connection.id)
 });
 
@@ -428,10 +428,10 @@ export const LayerOutgoing = pgTable('layers_outgoing', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 
-    filters: json().$type<Static<typeof FilterContainer>>().notNull().default({}),
+    filters: jsonb().$type<Static<typeof FilterContainer>>().notNull().default({}),
 
-    environment: json().notNull().default({}),
-    ephemeral: json().$type<Record<string, any>>().notNull().default({}),
+    environment: jsonb().notNull().default({}),
+    ephemeral: jsonb().$type<Record<string, any>>().notNull().default({}),
 });
 
 export const LayerIncoming = pgTable('layers_incoming', {
@@ -443,10 +443,10 @@ export const LayerIncoming = pgTable('layers_incoming', {
     webhooks: boolean().notNull().default(false),
 
     enabled_styles: boolean().notNull().default(false),
-    styles: json().$type<Static<typeof StyleContainer>>().notNull().default({}),
-    environment: json().notNull().default({}),
-    ephemeral: json().$type<Record<string, any>>().notNull().default({}),
-    config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
+    styles: jsonb().$type<Static<typeof StyleContainer>>().notNull().default({}),
+    environment: jsonb().notNull().default({}),
+    ephemeral: jsonb().$type<Record<string, any>>().notNull().default({}),
+    config: jsonb().$type<Static<typeof Layer_Config>>().notNull().default({}),
 
     // Data Destinations
     data: integer().references(() => Data.id),
@@ -463,7 +463,7 @@ export const Server = pgTable('server', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull().default('Default'),
     url: text().notNull(),
-    auth: json().$type<{
+    auth: jsonb().$type<{
         cert?: string;
         key?: string;
     }>().notNull().default({}),
@@ -483,14 +483,14 @@ export const ConnectionToken = pgTable('connection_tokens', {
 export const FusionType = pgTable('fusion_type', {
     id: serial().primaryKey(),
     name: text().notNull(),
-    schema: json().notNull()
+    schema: jsonb().notNull()
 });
 
 export const ProfileFusionSource = pgTable('profile_fusion', {
     id: serial().primaryKey(),
     username: text().notNull().references(() => Profile.username),
     fusion: integer().notNull().references(() => FusionType.id),
-    value: json().$type<Record<string, string>>().notNull().default({}),
+    value: jsonb().$type<Record<string, string>>().notNull().default({}),
 });
 
 export const ProfileToken = pgTable('profile_tokens', {
@@ -526,7 +526,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     opacity: numeric().notNull().default('1'),
     visible: boolean().notNull().default(true),
     token: text(),
-    styles: json().$type<Array<unknown>>().notNull().default([]),
+    styles: jsonb().$type<Array<unknown>>().notNull().default([]),
     mode: text().notNull(),
     mode_id: text(), // Used for Data not for Profile
     url: text().notNull()
