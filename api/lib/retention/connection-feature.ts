@@ -2,11 +2,11 @@ import { sql } from 'drizzle-orm';
 
 import type Config from '../config.js';
 import { ConnectionFeature } from '../schema.js';
-import type { RetentionInvocation, RetentionTask, RetentionTaskResult } from '../retention.js';
+import type { RetentionTask, RetentionTaskResult } from '../retention.js';
 
 const task: RetentionTask = {
     name: 'connection-feature',
-    run: async (config: Config, _retention: RetentionInvocation): Promise<RetentionTaskResult> => {
+    run: async (config: Config): Promise<RetentionTaskResult> => {
         const start = Date.now();
         const now = new Date();
 
