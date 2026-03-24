@@ -1,7 +1,10 @@
 import cron from 'node-cron';
 import jwt from 'jsonwebtoken';
 
-import tasks from './tasks/index.js';
+export interface RetentionTaskConfig {
+    'retention::enabled'?: boolean;
+    'retention::connection-feature::enabled'?: boolean;
+}
 
 export interface RetentionTaskResult {
     name: string;
@@ -14,8 +17,41 @@ export interface RetentionTaskResult {
 
 export interface RetentionTask {
     name: string;
+    enabled?: (config: RetentionTaskConfig) => boolean;
     run: () => Promise<RetentionTaskResult>;
 }
+
+const tasks: RetentionTask[] = [{
+    name: 'connection-feature',
+    enabled: (config: RetentionTaskConfig): boolean => {
+        return config['retention::connection-feature::enabled'] !== false;
+    },
+    run: async (): Promise<RetentionTaskResult> => {
+        const apiUrl = process.env.API_URL;
+        const signingSecret = process.env.SigningSecret;
+
+        if (!apiUrl || !signingSecret) {
+            throw new Error('API_URL or SigningSecret not set');
+        }
+
+        const res = await fetch(new URL('/api/retention', apiUrl), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret)}`,
+            },
+            body: JSON.stringify({
+                action: 'connection-feature'
+            })
+        });
+
+        if (!res.ok) {
+            throw new Error(`Failed to execute connection-feature retention: HTTP ${res.status}`);
+        }
+
+        return await res.json() as RetentionTaskResult;
+    }
+}];
 
 async function runOnce(): Promise<void> {
     const apiUrl = process.env.API_URL;
@@ -26,7 +62,7 @@ async function runOnce(): Promise<void> {
         return;
     }
 
-    const res = await fetch(new URL('/api/config?keys=retention::enabled', apiUrl), {
+    const res = await fetch(new URL('/api/config?keys=retention::enabled,retention::connection-feature::enabled', apiUrl), {
         headers: {
             Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret)}`,
         }
@@ -34,7 +70,7 @@ async function runOnce(): Promise<void> {
 
     if (!res.ok) throw new Error(`Failed to fetch config: HTTP ${res.status}`);
 
-    const config = await res.json() as { 'retention::enabled'?: boolean };
+    const config = await res.json() as RetentionTaskConfig;
 
     if (config['retention::enabled'] === false) {
         console.log('ok - retention is disabled, skipping run');
@@ -42,6 +78,8 @@ async function runOnce(): Promise<void> {
     }
 
     for (const task of tasks) {
+        if (task.enabled && !task.enabled(config)) continue;
+
         const start = Date.now();
         try {
             const result = await task.run();
