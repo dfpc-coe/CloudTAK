@@ -3,11 +3,8 @@ import Err from '@openaddresses/batch-error';
 
 import Config from './config.js';
 
-export type RetentionConfigValue = string | number | boolean | null;
-
 export interface RetentionInvocation {
     name: string;
-    config: Record<string, RetentionConfigValue | undefined>;
 }
 
 export interface RetentionTaskResult {

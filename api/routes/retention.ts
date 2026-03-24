@@ -5,13 +5,6 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import Retention from '../lib/retention.js';
 
-const RetentionConfigValue = Type.Union([
-    Type.String(),
-    Type.Number(),
-    Type.Boolean(),
-    Type.Null()
-]);
-
 const RetentionTaskResult = Type.Object({
     name: Type.String(),
     status: Type.Union([
@@ -31,8 +24,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Retention',
         description: 'Run a retention action',
         body: Type.Object({
-            action: Type.String(),
-            config: Type.Optional(Type.Record(Type.String(), RetentionConfigValue))
+            action: Type.String()
         }),
         res: RetentionTaskResult
     }, async (req, res) => {
@@ -40,8 +32,7 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.as_user(config, req, { admin: true });
 
             res.json(await retention.run({
-                name: req.body.action,
-                config: req.body.config || {}
+                name: req.body.action
             }));
         } catch (err) {
             Err.respond(err, res);
