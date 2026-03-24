@@ -9,9 +9,8 @@ flight.takeoff();
 flight.user();
 flight.connection();
 
-const stale = '2025-03-04T22:54:15.447Z';
-const fresh = '2025-03-04T23:54:15.447Z';
-const now = '2025-03-04T23:00:00.000Z';
+const stale = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+const fresh = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
 test('PUT api/connection/1/feature - stale feature', async () => {
     try {
@@ -87,10 +86,7 @@ test('POST api/retention - connection feature action', async () => {
                 bearer: flight.token.admin
             },
             body: {
-                action: 'connection-feature',
-                config: {
-                    now
-                }
+                action: 'connection-feature'
             }
         }, true);
 
