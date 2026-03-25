@@ -604,7 +604,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
 
                 if (iconset.spritesheet_json) {
-                    res.json(JSON.parse(String(iconset.spritesheet_json)));
+                    res.json(iconset.spritesheet_json);
                 } else {
                     throw new Err(400, null, 'Request regeneration of Iconset Spritesheet');
                 }
