@@ -52,10 +52,18 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const auth = (await config.models.Profile.from(user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const [terrain, snapping] = await Promise.all([
+            const [profile, overlays, terrain, snapping] = await Promise.all([
+                config.models.Profile.from(user.email),
+                config.models.ProfileOverlay.list({
+                    limit: req.query.limit,
+                    page: req.query.page,
+                    order: req.query.order,
+                    sort: req.query.sort,
+                    where: sql`
+                        username = ${user.email}
+                    `
+                }),
                 config.models.Basemap.count({
                     where: sql`
                         USERNAME IS NULL
@@ -80,61 +88,56 @@ export default async function router(schema: Schema, config: Config) {
                 snapping: snapping > 0
             }
 
-            const overlays = await config.models.ProfileOverlay.list({
-                limit: req.query.limit,
-                page: req.query.page,
-                order: req.query.order,
-                sort: req.query.sort,
-                where: sql`
-                    username = ${user.email}
-                `
-            });
+            // Only initialize the TAK API connection when mission overlays are present
+            const hasMissionOverlays = overlays.items.some(item => item.mode === 'mission' && item.mode_id);
+            const api = hasMissionOverlays
+                ? await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key))
+                : null;
+
+            // Check all overlays in parallel
+            const results = await Promise.all(overlays.items.map(async (item) => {
+                if (item.mode === 'profile') {
+                    if (!(await S3.exists(`profile/${item.username}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`))) {
+                        return { keep: false as const, item };
+                    }
+                } else if (item.mode === 'data') {
+                    if (!(await S3.exists(`data/${item.mode_id}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`))) {
+                        return { keep: false as const, item };
+                    }
+                } else if (item.mode === 'basemap' || item.mode === 'overlay') {
+                    try {
+                        if (!item.mode_id) throw new Error('mode_id is required');
+                        const basemap = await config.models.Basemap.from(parseInt(item.mode_id));
+                        return { keep: true as const, item, actions: TileJSON.actions(basemap.url) };
+                    } catch (err) {
+                        console.error('Could not find basemap', err);
+                        return { keep: false as const, item };
+                    }
+                } else if (item.mode === 'mission' && item.mode_id && api) {
+                    const subscription = await config.conns.subscription(user.email, item.name);
+                    if (!(await api.Mission.access(item.mode_id, subscription))) {
+                        return { keep: false as const, item };
+                    }
+                }
+
+                return { keep: true as const, item, actions: TileJSON.actions() };
+            }));
+
+            // Batch all deletions in parallel
+            await Promise.all(
+                results.filter(r => !r.keep).map(r => config.models.ProfileOverlay.delete(r.item.id))
+            );
 
             let total = overlays.total;
             const removed: Static<typeof ProfileOverlayResponse>[] = [];
             const items: Static<typeof AugmentedProfileOverlayResponse>[] = [];
 
-            for (let i = 0; i < overlays.items.length; i++) {
-                const item = overlays.items[i];
-
-                if (
-                    (item.mode === 'profile' && !(await S3.exists(`profile/${item.username}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`)))
-                    || (item.mode === 'data' && !(await S3.exists(`data/${item.mode_id}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`)))
-                ) {
-                    await config.models.ProfileOverlay.delete(item.id);
-                    removed.push(...overlays.items.splice(i, 1).map((o) => {
-                        return { ...item, opacity: Number(o.opacity) }
-                    }));
-                    total--;
-                } else if (item.mode === 'basemap' || item.mode === 'overlay') {
-                    try {
-                        if (!item.mode_id) throw new Error('mode_id is required');
-                        const basemap = await config.models.Basemap.from(parseInt(item.mode_id));
-                        items.push({
-                            ...item,
-                            opacity: Number(item.opacity),
-                            actions: TileJSON.actions(basemap.url)
-                        });
-                    } catch (err) {
-                        console.error('Could not find basemap', err);
-                        await config.models.ProfileOverlay.delete(item.id);
-                        removed.push(...overlays.items.splice(i, 1).map((o) => {
-                            return { ...item, opacity: Number(o.opacity) }
-                        }));
-                        total--;
-                    }
-                } else if (item.mode === 'mission' && item.mode_id && !(await api.Mission.access(
-                        item.mode_id,
-                        await config.conns.subscription(user.email, item.name)
-                    ))
-                ) {
-                    await config.models.ProfileOverlay.delete(item.id);
-                    removed.push(...overlays.items.splice(i, 1).map((o) => {
-                        return { ...item, opacity: Number(o.opacity) }
-                    }));
+            for (const result of results) {
+                if (!result.keep) {
+                    removed.push({ ...result.item, opacity: Number(result.item.opacity) });
                     total--;
                 } else {
-                    items.push({ ...item, opacity: Number(item.opacity), actions: TileJSON.actions() });
+                    items.push({ ...result.item, opacity: Number(result.item.opacity), actions: result.actions });
                 }
             }
 
