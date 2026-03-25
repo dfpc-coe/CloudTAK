@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.111.2 - 2026-03-25
+
+- :rocket: Avoid returning Internal Iconsets in list endpoint to improve load performance
+
 ### v12.111.1 - 2026-03-25
 
 - :rocket: Improve Overlay List Performance
