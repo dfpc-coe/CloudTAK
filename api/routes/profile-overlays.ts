@@ -53,8 +53,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const [profile, overlays, terrain, snapping] = await Promise.all([
-                config.models.Profile.from(user.email),
+            const [overlays, terrain, snapping] = await Promise.all([
                 config.models.ProfileOverlay.list({
                     limit: req.query.limit,
                     page: req.query.page,
@@ -88,11 +87,13 @@ export default async function router(schema: Schema, config: Config) {
                 snapping: snapping > 0
             }
 
-            // Only initialize the TAK API connection when mission overlays are present
+            // Only fetch the profile and initialize the TAK API when mission overlays are present
             const hasMissionOverlays = overlays.items.some(item => item.mode === 'mission' && item.mode_id);
-            const api = hasMissionOverlays
-                ? await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key))
-                : null;
+            let api: TAKAPI | null = null;
+            if (hasMissionOverlays) {
+                const profile = await config.models.Profile.from(user.email);
+                api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            }
 
             // Check all overlays in parallel
             const results = await Promise.all(overlays.items.map(async (item) => {
