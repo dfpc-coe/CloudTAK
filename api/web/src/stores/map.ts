@@ -94,6 +94,8 @@ export const useMapStore = defineStore('cloudtak', {
             fileSystem: BrowserPermissionState;
         }
 
+        timer: ReturnType<typeof setInterval> | null;
+
         _rawWorker: Worker;
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
@@ -138,6 +140,7 @@ export const useMapStore = defineStore('cloudtak', {
         return {
             _rawWorker: rawWorker,
             worker,
+            timer: null,
             _wakeLockSentinel: null,
             _fileSystemHandle: null,
             callsign: 'Unknown',
@@ -566,6 +569,10 @@ export const useMapStore = defineStore('cloudtak', {
             const currentRawWorker = this._rawWorker;
             const currentWakeLock = this._wakeLockSentinel;
 
+            if (this.timer) {
+                window.clearInterval(this.timer);
+            }
+
             if (currentWorker && currentRawWorker) {
                 try {
                     await currentWorker.destroy();
@@ -842,7 +849,7 @@ export const useMapStore = defineStore('cloudtak', {
             this._boundOnOffline = (): void => { this.isOnline = false; };
             this._boundOnDeviceOrientation = (event: DeviceOrientationEvent): void => {
                 if (!this.userOrientationMode) return;
-                
+
                 let heading: number | null = null;
                 const iOSEvent = event as DeviceOrientationEvent & { webkitCompassHeading?: number };
                 if (iOSEvent.webkitCompassHeading !== undefined) {
@@ -850,7 +857,7 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (event.alpha !== null) {
                     heading = 360 - event.alpha;
                 }
-                
+
                 if (heading !== null && this.map) {
                     this.map.setBearing(heading);
                 }
@@ -1047,6 +1054,23 @@ export const useMapStore = defineStore('cloudtak', {
             map.addControl(scaleControl, 'bottom-left');
             // Store reference for later use
             (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
+
+            map.once('idle', async () => {
+                const displayProjection = await ProfileConfig.get('display_projection');
+
+                if (displayProjection && displayProjection.value === 'globe') {
+                    map.setProjection({ type: "globe" });
+                }
+
+                await this.icons.updateImages();
+
+                await this.initOverlays();
+
+                this.timer = setInterval(async () => {
+                    if (!this.map) return;
+                    await this.refresh();
+                }, 500);
+            });
 
             this._map = markRaw(map);
             this._draw = new DrawTool(this);
