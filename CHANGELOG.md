@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.111.0 - 2026-03-25
+
+- :rocket: Remove stale features from connection-features
+
 ### v12.110.0 - 2026-03-24
 
 - :rocket: Migrate current `json` column use to `jsonb` for more compact storage and faster querying
