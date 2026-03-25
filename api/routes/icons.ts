@@ -74,6 +74,7 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     name ~* ${req.query.filter}
                     AND (username IS NULL OR username = ${user.email})
+                    AND username_internal = False
                     AND ${scope}
                 `
             });
