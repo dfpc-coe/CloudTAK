@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.111.1 - 2026-03-25
+
+- :rocket: Improve Overlay List Performance
+- :white_check_mark: Add tests for Overlay List performance
+
 ### v12.111.0 - 2026-03-25
 
 - :rocket: Remove stale features from connection-features
