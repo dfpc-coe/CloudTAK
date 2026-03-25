@@ -537,9 +537,6 @@ const upload = ref({
 
 const bufferCotId = ref<string | null>(null)
 
-// Interval for pushing GeoJSON Map Updates (CoT)
-const timer = ref<ReturnType<typeof setInterval> | undefined>()
-
 const loading = ref(true)
 
 const notifications = useObservable<number>(
@@ -667,7 +664,8 @@ onMounted(async () => {
         width.value = window.innerWidth;
     });
 
-    await mountMap();
+    if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
+    await mapStore.init(mapRef.value);
 
     // TODO these are no longer reactive, does it matter?
     warnChannels.value = await mapStore.worker.profile.hasNoChannels();
@@ -708,10 +706,6 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-    if (timer.value) {
-        window.clearInterval(timer.value);
-    }
-
     // Clean up GPS watch
     if (mapStore.gpsWatchId !== null) {
         navigator.geolocation.clearWatch(mapStore.gpsWatchId);
@@ -949,31 +943,6 @@ async function handleRadial(event: string): Promise<void> {
     }
 }
 
-async function mountMap(): Promise<void> {
-    if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
-    await mapStore.init(mapRef.value);
-
-    return new Promise((resolve) => {
-        mapStore.map.once('idle', async () => {
-            const displayProjection = await ProfileConfig.get('display_projection');
-
-            if (displayProjection && displayProjection.value === 'globe') {
-                mapStore.map.setProjection({ type: "globe" });
-            }
-
-            await mapStore.icons.updateImages();
-
-            await mapStore.initOverlays();
-
-            timer.value = setInterval(async () => {
-                if (!mapStore.map) return;
-                await mapStore.refresh();
-            }, 500);
-
-            return resolve();
-        });
-    });
-}
 </script>
 
 <style>
