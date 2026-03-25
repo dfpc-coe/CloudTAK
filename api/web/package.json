@@ -90,7 +90,7 @@
         "@types/sortablejs": "^1.15.8",
         "@types/swagger-ui": "^5.21.1",
         "@vitejs/plugin-vue": "^6.0.0",
-        "@vitest/ui": "4.1.0",
+        "@vitest/ui": "^4.1.0",
         "@vue/test-utils": "^2.4.6",
         "@vueuse/rxjs": "^14.1.0",
         "eslint": "^10.0.0",
@@ -102,8 +102,8 @@
         "typedoc": "^0.28.1",
         "typescript": "^5.7.0",
         "typescript-eslint": "^8.20.0",
-        "vite": "8.0.0",
-        "vitest": "4.1.0",
+        "vite": "^8.0.0",
+        "vitest": "^4.1.0",
         "vue-tsc": "^3.0.0-alpha.10"
     },
     "browserslist": [
