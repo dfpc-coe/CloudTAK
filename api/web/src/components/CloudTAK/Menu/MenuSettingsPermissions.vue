@@ -94,9 +94,11 @@ import { TablerBadge, TablerIconButton } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import { useMapStore } from '../../../stores/map.ts';
-import type { BrowserPermissionState } from '../../../stores/map.ts';
+import { usePermissionStore } from '../../../stores/modules/permissions.ts';
+import type { BrowserPermissionState } from '../../../stores/modules/permissions.ts';
 
 const mapStore = useMapStore();
+const permissionStore = usePermissionStore();
 type PermissionKey = 'location' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
 type PermissionDescriptor = {
     key: PermissionKey;
@@ -189,7 +191,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
 
 const permissionItems = computed(() => {
     return permissionDescriptors.map((permission) => {
-        const status = mapStore.permissions[permission.key];
+        const status = permissionStore.permissions[permission.key];
 
         return {
             ...permission,
@@ -249,7 +251,7 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
 }
 
 function canRequest(type: PermissionKey, status: BrowserPermissionState): boolean {
-    if (type === 'orientation' && !mapStore.hasOrientationPermissionRequest() && status !== 'granted') {
+    if (type === 'orientation' && !permissionStore.hasOrientationPermissionRequest() && status !== 'granted') {
         return false;
     }
 
@@ -262,7 +264,7 @@ function shouldShowAction(status: BrowserPermissionState): boolean {
 
 function actionLabel(status: BrowserPermissionState, type: PermissionKey): string {
     if (working.value === type) return 'Requesting...';
-    if (type === 'orientation' && !mapStore.hasOrientationPermissionRequest() && status !== 'granted') return 'Unavailable';
+    if (type === 'orientation' && !permissionStore.hasOrientationPermissionRequest() && status !== 'granted') return 'Unavailable';
     if (status === 'denied') return 'Re-request Permission';
     if (status === 'granted') return 'Allowed';
     return 'Request Permission';
@@ -272,7 +274,7 @@ async function refreshStatuses(): Promise<void> {
     error.value = '';
 
     try {
-        await mapStore.refreshPermissionStatuses();
+        await permissionStore.refreshPermissionStatuses();
     } catch (err) {
         error.value = err instanceof Error ? err.message : 'Failed to refresh permission status';
     }
@@ -285,25 +287,27 @@ async function requestPermission(type: PermissionKey): Promise<void> {
     try {
         switch (type) {
             case 'location':
-                await mapStore.requestLocationPermission();
+                await permissionStore.requestLocationPermission(() => {
+                    mapStore.startGPSWatch();
+                });
                 break;
             case 'camera':
-                await mapStore.requestCameraPermission();
+                await permissionStore.requestCameraPermission();
                 break;
             case 'orientation':
-                await mapStore.requestOrientationPermission();
+                await permissionStore.requestOrientationPermission();
                 break;
             case 'fileSystem':
-                await mapStore.requestFileSystemPermission();
+                await permissionStore.requestFileSystemPermission();
                 break;
             case 'storage':
-                await mapStore.requestStoragePermission();
+                await permissionStore.requestStoragePermission();
                 break;
             case 'wakeLock':
-                await mapStore.requestWakeLockPermission();
+                await permissionStore.requestWakeLockPermission();
                 break;
             case 'notification':
-                await mapStore.requestNotificationPermission();
+                await permissionStore.requestNotificationPermission();
                 break;
         }
     } catch (err) {
