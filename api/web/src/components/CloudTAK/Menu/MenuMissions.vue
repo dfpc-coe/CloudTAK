@@ -92,6 +92,7 @@
                                         <TablerInput
                                             v-model='missionPasswords[mission.guid]'
                                             type='password'
+                                            autocomplete='new-password'
                                             placeholder='Password'
                                             :error='errors[mission.guid]'
                                             class='flex-grow-1 w-100'

@@ -61,6 +61,7 @@
                         <TablerInput
                             v-model='config["geofence::password"]'
                             type='password'
+                            autocomplete='new-password'
                             :disabled='!edit'
                             label='Geofence Server Password'
                         />
