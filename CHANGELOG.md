@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.113.0 - 2026-03-26
+
+- :rocket: Change password field autocomplete to avoid incorrect google chrome password suggestions
+- :arrow_up: Update nodeCoT to support more flexible normalization of Boolean values
+
 ### v12.112.0 - 2026-03-26
 
 - :rocket: Migrate all initialization actions into Pinia Store
