@@ -727,7 +727,12 @@ export const useMapStore = defineStore('cloudtak', {
             })
 
             map.on('styleimagemissing', (e) => {
-                this.icons.onStyleImageMissing(e);
+                void this.icons.onStyleImageMissing(e).catch((error: unknown) => {
+                    console.error('styleimagemissing handler failed', {
+                        imageId: e.id,
+                        error
+                    });
+                });
             })
 
             map.on('moveend', async () => {
