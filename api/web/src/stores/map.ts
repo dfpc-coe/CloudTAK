@@ -68,6 +68,7 @@ export const useMapStore = defineStore('cloudtak', {
         isMobileDetected: boolean;
         gpsWatchId: number | null;
         tokenExpiry: number | null;
+        lastUpdateCOTErrorSignature: string | null;
 
         toastOffset: {
             x: number;
@@ -133,6 +134,7 @@ export const useMapStore = defineStore('cloudtak', {
             manualLocationMode: false,
             gpsWatchId: null,
             tokenExpiry: null,
+            lastUpdateCOTErrorSignature: null,
             isMobileDetected: false,
             locked: [],
             hasTerrain: false,
@@ -392,14 +394,95 @@ export const useMapStore = defineStore('cloudtak', {
         updateCOT: async function(): Promise<void> {
             try {
                 const diff = await this.worker.db.diff();
+                const addCount = diff.add?.length || 0;
+                const removeCount = diff.remove?.length || 0;
+                const updateCount = diff.update?.length || 0;
+                const hasChanges = addCount || removeCount || updateCount;
 
-                if (
-                    (diff.add && diff.add.length)
-                    || (diff.remove && diff.remove.length)
-                    || (diff.update && diff.update.length)
-                ) {
-                    const source = this.map.getSource('-1') as GeoJSONSource
-                    if (source) source.updateData(diff);
+                if (hasChanges) {
+                    const invalidRemoveIds = (diff.remove || []).filter((id) => {
+                        return typeof id !== 'number' || !Number.isFinite(id);
+                    });
+                    const invalidAddIds = (diff.add || []).filter((feature) => {
+                        return typeof feature.id !== 'number' || !Number.isFinite(feature.id);
+                    }).map((feature) => feature.id);
+                    const invalidUpdateIds = (diff.update || []).filter((update) => {
+                        return typeof update.id !== 'number' || !Number.isFinite(update.id);
+                    }).map((update) => update.id);
+
+                    const addIds = (diff.add || []).map((feature) => feature.id).filter((id): id is number => {
+                        return typeof id === 'number' && Number.isFinite(id);
+                    });
+                    const updateIds = (diff.update || []).map((update) => update.id).filter((id): id is number => {
+                        return typeof id === 'number' && Number.isFinite(id);
+                    });
+
+                    const duplicateAddIds = addIds.filter((id, index) => addIds.indexOf(id) !== index);
+                    const duplicateUpdateIds = updateIds.filter((id, index) => updateIds.indexOf(id) !== index);
+
+                    const diffSummary = {
+                        addCount,
+                        removeCount,
+                        updateCount,
+                        invalidRemoveIds: invalidRemoveIds.slice(0, 10),
+                        invalidAddIds: invalidAddIds.slice(0, 10),
+                        invalidUpdateIds: invalidUpdateIds.slice(0, 10),
+                        duplicateAddIds: duplicateAddIds.slice(0, 10),
+                        duplicateUpdateIds: duplicateUpdateIds.slice(0, 10),
+                        sampleAddIds: addIds.slice(0, 10),
+                        sampleRemoveIds: (diff.remove || []).slice(0, 10),
+                        sampleUpdateIds: updateIds.slice(0, 10)
+                    };
+
+                    const source = this.map.getSource('-1') as GeoJSONSource | undefined;
+                    if (!source) {
+                        const signature = JSON.stringify({
+                            kind: 'missing-source',
+                            ...diffSummary
+                        });
+
+                        if (this.lastUpdateCOTErrorSignature !== signature) {
+                            this.lastUpdateCOTErrorSignature = signature;
+                            console.error('updateCOT could not find GeoJSON source', diffSummary);
+                        }
+
+                        return;
+                    }
+
+                    if (
+                        invalidRemoveIds.length
+                        || invalidAddIds.length
+                        || invalidUpdateIds.length
+                    ) {
+                        const signature = JSON.stringify({
+                            kind: 'invalid-diff',
+                            ...diffSummary
+                        });
+
+                        if (this.lastUpdateCOTErrorSignature !== signature) {
+                            this.lastUpdateCOTErrorSignature = signature;
+                            console.error('updateCOT generated an invalid GeoJSON diff', diffSummary);
+                        }
+
+                        return;
+                    }
+
+                    try {
+                        source.updateData(diff);
+                    } catch (error) {
+                        const signature = JSON.stringify({
+                            kind: 'updateData-throw',
+                            ...diffSummary
+                        });
+
+                        if (this.lastUpdateCOTErrorSignature !== signature) {
+                            this.lastUpdateCOTErrorSignature = signature;
+                            console.error('GeoJSON source updateData failed in updateCOT', {
+                                ...diffSummary,
+                                error
+                            });
+                        }
+                    }
                 }
 
                 if (this.locked.length && await this.worker.db.has(this.locked[this.locked.length - 1])) {
@@ -416,8 +499,10 @@ export const useMapStore = defineStore('cloudtak', {
                         }
                     }
                 }
+
+                this.lastUpdateCOTErrorSignature = null;
             } catch (err) {
-                console.error(err);
+                console.error('updateCOT failed before source update', err);
             }
         },
 
