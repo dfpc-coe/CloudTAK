@@ -4,6 +4,8 @@ import vue from '@vitejs/plugin-vue'
 import icons from './public/logos/icons.ts';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
+const milsymbolBrowserBundle = path.resolve(__dirname, 'node_modules/milsymbol/dist/milsymbol.js');
+
 export default defineConfig(({ mode }) => {
     const res = {
         define: {
@@ -30,6 +32,7 @@ export default defineConfig(({ mode }) => {
         },
         resolve: {
             alias: {
+                'milsymbol': milsymbolBrowserBundle,
                 '@tak-ps/cloudtak': path.resolve(__dirname, './plugin.ts'),
                 '@': path.resolve(__dirname, './src'),
                 '@cloudtak/api-types': path.resolve(__dirname, '../derived-types.d.ts'),
