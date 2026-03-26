@@ -11,9 +11,28 @@ import { db, type DBIconset } from '../../base/database.ts';
 export default class IconManager {
     private cache = new Map<string, HTMLCanvasElement>();
     private map: MapLibreMap;
+    private loggedMissingImageIds = new Set<string>();
+    private loggedErrors = new Set<string>();
 
     constructor(map: MapLibreMap) {
         this.map = map;
+    }
+
+    private logWarnOnce(key: string, message: string, context?: Record<string, unknown>): void {
+        if (this.loggedErrors.has(key)) return;
+        this.loggedErrors.add(key);
+
+        console.warn(message, context ?? {});
+    }
+
+    private logErrorOnce(key: string, message: string, error: unknown, context?: Record<string, unknown>): void {
+        if (this.loggedErrors.has(key)) return;
+        this.loggedErrors.add(key);
+
+        console.error(message, {
+            ...(context ?? {}),
+            error
+        });
     }
 
     static async from(uid: string): Promise<DBIconset | undefined> {
@@ -53,7 +72,7 @@ export default class IconManager {
         for (const iconset of iconsets.items) {
             sprites.push({
                 id: iconset.uid,
-                url: String(stdurl(`/api/iconset/${iconset.uid}/sprites?token=${localStorage.token}`))
+                url: String(stdurl(`/api/iconset/${iconset.uid}/sprite?token=${localStorage.token}`))
             });
         }
 
@@ -67,19 +86,35 @@ export default class IconManager {
     }
 
     public async onStyleImageMissing(e: { id: string }): Promise<void> {
-        if (e.id.startsWith('2525D:')) {
-            const sidc = e.id.replace('2525D:', '');
-            const size = 24;
-            const data = new ms.Symbol(sidc, { size }).asCanvas();
+        try {
+            if (e.id.startsWith('2525D:')) {
+                const sidc = e.id.replace('2525D:', '');
+                const size = 24;
+                const data = new ms.Symbol(sidc, { size }).asCanvas();
 
-            this.map.addImage(e.id, await createImageBitmap(data));
-        } else if (e.id.includes('-colored-')) {
-            // This is a colored icon, we need to load it from the icon manager
-            const parts = e.id.split('-colored-');
-            const originalIconId = parts[0];
-            const color = '#' + parts[1];
+                this.map.addImage(e.id, await createImageBitmap(data));
+            } else if (e.id.includes('-colored-')) {
+                // This is a colored icon, we need to load it from the icon manager
+                const parts = e.id.split('-colored-');
+                const originalIconId = parts[0];
+                const color = '#' + parts[1];
 
-            this.getColoredIcon(originalIconId, color);
+                this.getColoredIcon(originalIconId, color);
+            } else if (!this.loggedMissingImageIds.has(e.id)) {
+                this.loggedMissingImageIds.add(e.id);
+                console.info('Unhandled style image missing event', {
+                    imageId: e.id
+                });
+            }
+        } catch (error) {
+            this.logErrorOnce(
+                `styleimagemissing:${e.id}`,
+                'Failed to handle style image missing event',
+                error,
+                { imageId: e.id }
+            );
+
+            throw error;
         }
     }
 
@@ -103,41 +138,79 @@ export default class IconManager {
         // Get the original icon from the map
         const originalImage = this.map.getImage(iconId);
         if (!originalImage) {
-            console.warn(`Icon ${iconId} not found in map`);
+            this.logWarnOnce(
+                `missing-icon:${iconId}`,
+                'Icon not found in map when attempting recolor',
+                {
+                    iconId,
+                    color,
+                    coloredIconId
+                }
+            );
             return;
         }
 
-        // Create canvas for recoloring
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+        try {
+            // Create canvas for recoloring
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                this.logWarnOnce(
+                    `missing-canvas-context:${coloredIconId}`,
+                    'Canvas context unavailable while recoloring icon',
+                    {
+                        iconId,
+                        color,
+                        coloredIconId
+                    }
+                );
 
-        canvas.width = originalImage.data.width;
-        canvas.height = originalImage.data.height;
+                return;
+            }
 
-        // Create ImageData from the original image
-        const imageData = new ImageData(
-            new Uint8ClampedArray(originalImage.data.data),
-            originalImage.data.width,
-            originalImage.data.height
-        );
+            canvas.width = originalImage.data.width;
+            canvas.height = originalImage.data.height;
 
-        // Recolor white pixels
-        this.recolorWhitePixels(imageData, color);
+            // Create ImageData from the original image
+            const imageData = new ImageData(
+                new Uint8ClampedArray(originalImage.data.data),
+                originalImage.data.width,
+                originalImage.data.height
+            );
 
-        // Draw to canvas
-        ctx.putImageData(imageData, 0, 0);
+            // Recolor white pixels
+            this.recolorWhitePixels(imageData, color);
 
-        // Cache and add to map
-        this.cache.set(coloredIconId, canvas);
+            // Draw to canvas
+            ctx.putImageData(imageData, 0, 0);
 
-        // Convert canvas to ImageData for map
-        const canvasImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        this.map.addImage(coloredIconId, {
-            width: canvas.width,
-            height: canvas.height,
-            data: canvasImageData.data
-        });
+            // Cache and add to map
+            this.cache.set(coloredIconId, canvas);
+
+            // Convert canvas to ImageData for map
+            const canvasImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+            if (!this.map.hasImage(coloredIconId)) {
+                this.map.addImage(coloredIconId, {
+                    width: canvas.width,
+                    height: canvas.height,
+                    data: canvasImageData.data
+                });
+            }
+        } catch (error) {
+            this.logErrorOnce(
+                `colored-icon:${coloredIconId}`,
+                'Failed to create colored icon',
+                error,
+                {
+                    iconId,
+                    color,
+                    coloredIconId
+                }
+            );
+
+            throw error;
+        }
     }
 
     /**

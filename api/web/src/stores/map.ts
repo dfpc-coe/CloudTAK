@@ -13,6 +13,7 @@ import { markRaw } from 'vue';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
 import MenuManager from './modules/menu.ts';
+import { usePermissionStore } from './modules/permissions.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
@@ -33,15 +34,6 @@ import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, Con
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
-export type BrowserPermissionState = PermissionState | 'unsupported' | 'unknown';
-type BrowserPermissionType = 'location' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
-type FileSystemAccessHandle = FileSystemHandle & {
-    queryPermission?: (descriptor?: { mode?: 'read' | 'readwrite' }) => Promise<PermissionState>;
-    requestPermission?: (descriptor?: { mode?: 'read' | 'readwrite' }) => Promise<PermissionState>;
-};
-type WindowWithFilePicker = Window & {
-    showOpenFilePicker?: (options?: { multiple?: boolean }) => Promise<FileSystemAccessHandle[]>;
-};
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
@@ -58,8 +50,6 @@ export const useMapStore = defineStore('cloudtak', {
         _boundOnOffline?: () => void;
         _boundOnDeviceOrientation?: (event: DeviceOrientationEvent) => void;
         _boundOnVisibilityChange?: () => Promise<void>;
-        _wakeLockSentinel?: WakeLockSentinel | null;
-        _fileSystemHandle?: FileSystemAccessHandle | null;
 
         db: DatabaseType;
         channel: BroadcastChannel;
@@ -78,21 +68,14 @@ export const useMapStore = defineStore('cloudtak', {
         isMobileDetected: boolean;
         gpsWatchId: number | null;
         tokenExpiry: number | null;
+        lastUpdateCOTErrorSignature: string | null;
 
         toastOffset: {
             x: number;
             y: number;
         };
 
-        permissions: {
-            location: BrowserPermissionState;
-            notification: BrowserPermissionState;
-            orientation: BrowserPermissionState;
-            storage: BrowserPermissionState;
-            camera: BrowserPermissionState;
-            wakeLock: BrowserPermissionState;
-            fileSystem: BrowserPermissionState;
-        }
+        timer: ReturnType<typeof setInterval> | null;
 
         _rawWorker: Worker;
         worker: Comlink.Remote<Atlas>;
@@ -138,8 +121,7 @@ export const useMapStore = defineStore('cloudtak', {
         return {
             _rawWorker: rawWorker,
             worker,
-            _wakeLockSentinel: null,
-            _fileSystemHandle: null,
+            timer: null,
             callsign: 'Unknown',
             toImport: [],
             location: LocationState.Loading,
@@ -152,6 +134,7 @@ export const useMapStore = defineStore('cloudtak', {
             manualLocationMode: false,
             gpsWatchId: null,
             tokenExpiry: null,
+            lastUpdateCOTErrorSignature: null,
             isMobileDetected: false,
             locked: [],
             hasTerrain: false,
@@ -164,15 +147,6 @@ export const useMapStore = defineStore('cloudtak', {
             pitch: 0,
             bearing: 0,
             mission: undefined,
-            permissions: {
-                location: 'unknown',
-                notification: 'unknown',
-                orientation: 'unknown',
-                storage: 'unknown',
-                camera: 'unknown',
-                wakeLock: 'unknown',
-                fileSystem: 'unknown'
-            },
             select: {
                 mode: undefined,
                 feats: [],
@@ -215,356 +189,15 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
-        hasOrientationSupport: function(): boolean {
-            return 'DeviceOrientationEvent' in window && (
-                'ondeviceorientation' in window
-                || 'ondeviceorientationabsolute' in (window as unknown as Record<string, unknown>)
-            );
-        },
-        hasOrientationPermissionRequest: function(): boolean {
-            if (!('DeviceOrientationEvent' in window)) return false;
-
-            const orientationEvent = window.DeviceOrientationEvent as (typeof DeviceOrientationEvent & {
-                requestPermission?: () => Promise<PermissionState>;
-            });
-
-            return typeof orientationEvent.requestPermission === 'function';
-        },
-        setPermissionStatus: function(type: BrowserPermissionType, state: BrowserPermissionState): void {
-            this.permissions[type] = state;
-        },
-        refreshLocationPermissionStatus: async function(): Promise<void> {
-            if (!("geolocation" in navigator)) {
-                this.setPermissionStatus('location', 'unsupported');
-                return;
-            }
-
-            if ('permissions' in navigator && navigator.permissions?.query) {
-                try {
-                    const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-                    this.setPermissionStatus('location', status.state);
-                    return;
-                } catch (err) {
-                    console.warn('Failed to query geolocation permission status', err);
-                }
-            }
-
-            this.setPermissionStatus('location', 'unknown');
-        },
-        refreshNotificationPermissionStatus: async function(): Promise<void> {
-            if (!("Notification" in window)) {
-                this.setPermissionStatus('notification', 'unsupported');
-                return;
-            }
-
-            if ('permissions' in navigator && navigator.permissions?.query) {
-                try {
-                    const status = await navigator.permissions.query({ name: 'notifications' as PermissionName });
-                    this.setPermissionStatus('notification', status.state);
-                    return;
-                } catch (err) {
-                    console.warn('Failed to query notification permission status', err);
-                }
-            }
-
-            if (Notification.permission === 'default') {
-                this.setPermissionStatus('notification', 'prompt');
-            } else {
-                this.setPermissionStatus('notification', Notification.permission);
-            }
-        },
-        refreshOrientationPermissionStatus: async function(): Promise<void> {
-            if (!this.hasOrientationSupport()) {
-                this.setPermissionStatus('orientation', 'unsupported');
-                return;
-            }
-
-            if ('permissions' in navigator && navigator.permissions?.query) {
-                const sensorPermissions = [
-                    'accelerometer',
-                    'gyroscope',
-                    'magnetometer'
-                ];
-
-                try {
-                    const results = await Promise.allSettled(sensorPermissions.map(async (name) => {
-                        const status = await navigator.permissions.query({
-                            name
-                        } as PermissionDescriptor);
-
-                        return status.state;
-                    }));
-
-                    const states = results
-                        .filter((result): result is PromiseFulfilledResult<PermissionState> => result.status === 'fulfilled')
-                        .map((result) => result.value);
-
-                    if (states.includes('denied')) {
-                        this.setPermissionStatus('orientation', 'denied');
-                        return;
-                    }
-
-                    if (states.length === sensorPermissions.length && states.every((state) => state === 'granted')) {
-                        this.setPermissionStatus('orientation', 'granted');
-                        return;
-                    }
-
-                    if (states.includes('prompt')) {
-                        this.setPermissionStatus('orientation', 'prompt');
-                        return;
-                    }
-                } catch (err) {
-                    console.warn('Failed to query orientation permission status', err);
-                }
-            }
-
-            if (this.hasOrientationPermissionRequest()) {
-                this.setPermissionStatus('orientation', 'prompt');
-            } else {
-                this.setPermissionStatus('orientation', 'granted');
-            }
-        },
-        refreshStoragePermissionStatus: async function(): Promise<void> {
-            if (!('storage' in navigator) || !navigator.storage?.persisted) {
-                this.setPermissionStatus('storage', 'unsupported');
-                return;
-            }
-
-            if ('permissions' in navigator && navigator.permissions?.query) {
-                try {
-                    const status = await navigator.permissions.query({ name: 'persistent-storage' as PermissionName });
-                    this.setPermissionStatus('storage', status.state);
-                    return;
-                } catch (err) {
-                    console.warn('Failed to query persistent storage permission status', err);
-                }
-            }
-
-            try {
-                const persisted = await navigator.storage.persisted();
-                this.setPermissionStatus('storage', persisted ? 'granted' : 'prompt');
-            } catch (err) {
-                console.warn('Failed to check persistent storage status', err);
-                this.setPermissionStatus('storage', 'unknown');
-            }
-        },
-        refreshCameraPermissionStatus: async function(): Promise<void> {
-            if (!navigator.mediaDevices?.getUserMedia) {
-                this.setPermissionStatus('camera', 'unsupported');
-                return;
-            }
-
-            if ('permissions' in navigator && navigator.permissions?.query) {
-                try {
-                    const status = await navigator.permissions.query({ name: 'camera' as PermissionName });
-                    this.setPermissionStatus('camera', status.state);
-                    return;
-                } catch (err) {
-                    console.warn('Failed to query camera permission status', err);
-                }
-            }
-
-            this.setPermissionStatus('camera', 'unknown');
-        },
-        refreshWakeLockPermissionStatus: async function(): Promise<void> {
-            if (!('wakeLock' in navigator) || !navigator.wakeLock?.request) {
-                this.setPermissionStatus('wakeLock', 'unsupported');
-                return;
-            }
-
-            if (this._wakeLockSentinel && !this._wakeLockSentinel.released) {
-                this.setPermissionStatus('wakeLock', 'granted');
-                return;
-            }
-
-            if ('permissions' in navigator && navigator.permissions?.query) {
-                try {
-                    const status = await navigator.permissions.query({ name: 'screen-wake-lock' as PermissionName });
-                    this.setPermissionStatus('wakeLock', status.state);
-                    return;
-                } catch (err) {
-                    console.warn('Failed to query wake lock permission status', err);
-                }
-            }
-
-            this.setPermissionStatus('wakeLock', 'prompt');
-        },
-        refreshFileSystemPermissionStatus: async function(): Promise<void> {
-            const pickerWindow = window as WindowWithFilePicker;
-
-            if (!pickerWindow.showOpenFilePicker) {
-                this.setPermissionStatus('fileSystem', 'unsupported');
-                return;
-            }
-
-            if (this._fileSystemHandle?.queryPermission) {
-                try {
-                    const status = await this._fileSystemHandle.queryPermission({ mode: 'read' });
-                    this.setPermissionStatus('fileSystem', status);
-                    return;
-                } catch (err) {
-                    console.warn('Failed to query file system access status', err);
-                }
-            }
-
-            this.setPermissionStatus('fileSystem', 'prompt');
-        },
-        refreshPermissionStatuses: async function(): Promise<void> {
-            await Promise.all([
-                this.refreshLocationPermissionStatus(),
-                this.refreshNotificationPermissionStatus(),
-                this.refreshOrientationPermissionStatus(),
-                this.refreshStoragePermissionStatus(),
-                this.refreshCameraPermissionStatus(),
-                this.refreshWakeLockPermissionStatus(),
-                this.refreshFileSystemPermissionStatus()
-            ]);
-        },
-        requestLocationPermission: async function(): Promise<void> {
-            if (!("geolocation" in navigator)) {
-                this.setPermissionStatus('location', 'unsupported');
-                return;
-            }
-
-            try {
-                await new Promise<GeolocationPosition>((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
-                    });
-                });
-
-                this.startGPSWatch();
-            } finally {
-                await this.refreshLocationPermissionStatus();
-            }
-        },
-        requestNotificationPermission: async function(): Promise<void> {
-            if (!("Notification" in window)) {
-                this.setPermissionStatus('notification', 'unsupported');
-                return;
-            }
-
-            try {
-                const status = await Notification.requestPermission();
-                this.setPermissionStatus('notification', status === 'default' ? 'prompt' : status);
-            } finally {
-                await this.refreshNotificationPermissionStatus();
-            }
-        },
-        requestOrientationPermission: async function(): Promise<void> {
-            if (!this.hasOrientationSupport()) {
-                this.setPermissionStatus('orientation', 'unsupported');
-                return;
-            }
-
-            try {
-                if (this.hasOrientationPermissionRequest()) {
-                    const orientationEvent = window.DeviceOrientationEvent as (typeof DeviceOrientationEvent & {
-                        requestPermission?: () => Promise<PermissionState>;
-                    });
-
-                    const status = await orientationEvent.requestPermission?.();
-                    if (status) {
-                        this.setPermissionStatus('orientation', status);
-                    }
-                } else {
-                    this.setPermissionStatus('orientation', 'granted');
-                }
-            } finally {
-                await this.refreshOrientationPermissionStatus();
-            }
-        },
-        requestStoragePermission: async function(): Promise<void> {
-            if (!('storage' in navigator) || !navigator.storage?.persist) {
-                this.setPermissionStatus('storage', 'unsupported');
-                return;
-            }
-
-            try {
-                const persisted = await navigator.storage.persist();
-                this.setPermissionStatus('storage', persisted ? 'granted' : 'denied');
-            } finally {
-                await this.refreshStoragePermissionStatus();
-            }
-        },
-        requestCameraPermission: async function(): Promise<void> {
-            if (!navigator.mediaDevices?.getUserMedia) {
-                this.setPermissionStatus('camera', 'unsupported');
-                return;
-            }
-
-            let stream: MediaStream | undefined;
-
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                this.setPermissionStatus('camera', 'granted');
-            } finally {
-                if (stream) {
-                    for (const track of stream.getTracks()) {
-                        track.stop();
-                    }
-                }
-
-                await this.refreshCameraPermissionStatus();
-            }
-        },
-        requestWakeLockPermission: async function(): Promise<void> {
-            if (!('wakeLock' in navigator) || !navigator.wakeLock?.request) {
-                this.setPermissionStatus('wakeLock', 'unsupported');
-                return;
-            }
-
-            try {
-                const sentinel = await navigator.wakeLock.request('screen');
-                this.setPermissionStatus('wakeLock', 'granted');
-
-                // Release immediately after confirming permission so we don't
-                // keep the screen awake indefinitely as a side-effect.
-                try {
-                    await sentinel.release();
-                } catch {
-                    // Ignore release errors; permission status has already been updated.
-                }
-            } finally {
-                await this.refreshWakeLockPermissionStatus();
-            }
-        },
-        requestFileSystemPermission: async function(): Promise<void> {
-            const pickerWindow = window as WindowWithFilePicker;
-
-            if (!pickerWindow.showOpenFilePicker) {
-                this.setPermissionStatus('fileSystem', 'unsupported');
-                return;
-            }
-
-            try {
-                const handles = await pickerWindow.showOpenFilePicker({ multiple: false });
-                const handle = handles[0];
-
-                if (!handle) {
-                    this.setPermissionStatus('fileSystem', 'unknown');
-                    return;
-                }
-
-                this._fileSystemHandle = handle;
-
-                if (handle.requestPermission) {
-                    const status = await handle.requestPermission({ mode: 'read' });
-                    this.setPermissionStatus('fileSystem', status);
-                } else {
-                    this.setPermissionStatus('fileSystem', 'granted');
-                }
-            } finally {
-                await this.refreshFileSystemPermissionStatus();
-            }
-        },
         destroy: async function() {
             // Capture current worker instances to avoid races with $reset()/state() creating new ones.
             const currentWorker = this.worker;
             const currentRawWorker = this._rawWorker;
-            const currentWakeLock = this._wakeLockSentinel;
+            const permissionStore = usePermissionStore();
+
+            if (this.timer) {
+                window.clearInterval(this.timer);
+            }
 
             if (currentWorker && currentRawWorker) {
                 try {
@@ -582,13 +215,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.channel.close();
 
-            if (currentWakeLock && !currentWakeLock.released) {
-                try {
-                    await currentWakeLock.release();
-                } catch (err) {
-                    console.warn('Failed to release wake lock sentinel', err);
-                }
-            }
+            await permissionStore.releaseWakeLockSentinel();
 
             if (this._boundOnOnline) window.removeEventListener('online', this._boundOnOnline);
             if (this._boundOnOffline) window.removeEventListener('offline', this._boundOnOffline);
@@ -767,14 +394,95 @@ export const useMapStore = defineStore('cloudtak', {
         updateCOT: async function(): Promise<void> {
             try {
                 const diff = await this.worker.db.diff();
+                const addCount = diff.add?.length || 0;
+                const removeCount = diff.remove?.length || 0;
+                const updateCount = diff.update?.length || 0;
+                const hasChanges = addCount || removeCount || updateCount;
 
-                if (
-                    (diff.add && diff.add.length)
-                    || (diff.remove && diff.remove.length)
-                    || (diff.update && diff.update.length)
-                ) {
-                    const source = this.map.getSource('-1') as GeoJSONSource
-                    if (source) source.updateData(diff);
+                if (hasChanges) {
+                    const invalidRemoveIds = (diff.remove || []).filter((id) => {
+                        return typeof id !== 'number' || !Number.isFinite(id);
+                    });
+                    const invalidAddIds = (diff.add || []).filter((feature) => {
+                        return typeof feature.id !== 'number' || !Number.isFinite(feature.id);
+                    }).map((feature) => feature.id);
+                    const invalidUpdateIds = (diff.update || []).filter((update) => {
+                        return typeof update.id !== 'number' || !Number.isFinite(update.id);
+                    }).map((update) => update.id);
+
+                    const addIds = (diff.add || []).map((feature) => feature.id).filter((id): id is number => {
+                        return typeof id === 'number' && Number.isFinite(id);
+                    });
+                    const updateIds = (diff.update || []).map((update) => update.id).filter((id): id is number => {
+                        return typeof id === 'number' && Number.isFinite(id);
+                    });
+
+                    const duplicateAddIds = addIds.filter((id, index) => addIds.indexOf(id) !== index);
+                    const duplicateUpdateIds = updateIds.filter((id, index) => updateIds.indexOf(id) !== index);
+
+                    const diffSummary = {
+                        addCount,
+                        removeCount,
+                        updateCount,
+                        invalidRemoveIds: invalidRemoveIds.slice(0, 10),
+                        invalidAddIds: invalidAddIds.slice(0, 10),
+                        invalidUpdateIds: invalidUpdateIds.slice(0, 10),
+                        duplicateAddIds: duplicateAddIds.slice(0, 10),
+                        duplicateUpdateIds: duplicateUpdateIds.slice(0, 10),
+                        sampleAddIds: addIds.slice(0, 10),
+                        sampleRemoveIds: (diff.remove || []).slice(0, 10),
+                        sampleUpdateIds: updateIds.slice(0, 10)
+                    };
+
+                    const source = this.map.getSource('-1') as GeoJSONSource | undefined;
+                    if (!source) {
+                        const signature = JSON.stringify({
+                            kind: 'missing-source',
+                            ...diffSummary
+                        });
+
+                        if (this.lastUpdateCOTErrorSignature !== signature) {
+                            this.lastUpdateCOTErrorSignature = signature;
+                            console.error('updateCOT could not find GeoJSON source', diffSummary);
+                        }
+
+                        return;
+                    }
+
+                    if (
+                        invalidRemoveIds.length
+                        || invalidAddIds.length
+                        || invalidUpdateIds.length
+                    ) {
+                        const signature = JSON.stringify({
+                            kind: 'invalid-diff',
+                            ...diffSummary
+                        });
+
+                        if (this.lastUpdateCOTErrorSignature !== signature) {
+                            this.lastUpdateCOTErrorSignature = signature;
+                            console.error('updateCOT generated an invalid GeoJSON diff', diffSummary);
+                        }
+
+                        return;
+                    }
+
+                    try {
+                        source.updateData(diff);
+                    } catch (error) {
+                        const signature = JSON.stringify({
+                            kind: 'updateData-throw',
+                            ...diffSummary
+                        });
+
+                        if (this.lastUpdateCOTErrorSignature !== signature) {
+                            this.lastUpdateCOTErrorSignature = signature;
+                            console.error('GeoJSON source updateData failed in updateCOT', {
+                                ...diffSummary,
+                                error
+                            });
+                        }
+                    }
                 }
 
                 if (this.locked.length && await this.worker.db.has(this.locked[this.locked.length - 1])) {
@@ -791,8 +499,10 @@ export const useMapStore = defineStore('cloudtak', {
                         }
                     }
                 }
+
+                this.lastUpdateCOTErrorSignature = null;
             } catch (err) {
-                console.error(err);
+                console.error('updateCOT failed before source update', err);
             }
         },
 
@@ -842,7 +552,7 @@ export const useMapStore = defineStore('cloudtak', {
             this._boundOnOffline = (): void => { this.isOnline = false; };
             this._boundOnDeviceOrientation = (event: DeviceOrientationEvent): void => {
                 if (!this.userOrientationMode) return;
-                
+
                 let heading: number | null = null;
                 const iOSEvent = event as DeviceOrientationEvent & { webkitCompassHeading?: number };
                 if (iOSEvent.webkitCompassHeading !== undefined) {
@@ -850,7 +560,7 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (event.alpha !== null) {
                     heading = 360 - event.alpha;
                 }
-                
+
                 if (heading !== null && this.map) {
                     this.map.setBearing(heading);
                 }
@@ -923,49 +633,13 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            await this.refreshPermissionStatuses();
-
-            if ("geolocation" in navigator) {
-                if ('permissions' in navigator && navigator.permissions?.query) {
-                    try {
-                        const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-                        this.setPermissionStatus('location', status.state);
-                        status.onchange = () => {
-                            this.setPermissionStatus('location', status.state);
-
-                            if (status.state === 'granted') {
-                                this.startGPSWatch();
-                            }
-                        };
-                    } catch (err) {
-                        console.warn('Failed to subscribe to geolocation permission changes', err);
-                    }
-                }
-
+            const permissionStore = usePermissionStore();
+            await permissionStore.initializePermissionSubscriptions(() => {
                 this.startGPSWatch();
-            } else {
-                console.error('Browser does not appear to support Geolocation');
-                this.setPermissionStatus('location', 'unsupported');
-            }
+            });
 
-            if ('Notification' in window) {
-                if ('permissions' in navigator && navigator.permissions?.query) {
-                    try {
-                        const status = await navigator.permissions.query({ name: 'notifications' as PermissionName });
-                        this.setPermissionStatus('notification', status.state);
-                        status.onchange = () => {
-                            this.setPermissionStatus('notification', status.state);
-                        };
-                    } catch (err) {
-                        console.warn('Failed to subscribe to notification permission changes', err);
-                        await this.refreshNotificationPermissionStatus();
-                    }
-                } else {
-                    await this.refreshNotificationPermissionStatus();
-                }
-            } else {
-                console.error('Browser does not appear to support Notifications');
-                this.setPermissionStatus('notification', 'unsupported');
+            if (permissionStore.permissions.location !== 'unsupported') {
+                this.startGPSWatch();
             }
 
             const sprites = await IconManager.sprites();
@@ -1048,6 +722,23 @@ export const useMapStore = defineStore('cloudtak', {
             // Store reference for later use
             (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
 
+            map.once('idle', async () => {
+                const displayProjection = await ProfileConfig.get('display_projection');
+
+                if (displayProjection && displayProjection.value === 'globe') {
+                    map.setProjection({ type: "globe" });
+                }
+
+                await this.icons.updateImages();
+
+                await this.initOverlays();
+
+                this.timer = setInterval(async () => {
+                    if (!this.map) return;
+                    await this.refresh();
+                }, 500);
+            });
+
             this._map = markRaw(map);
             this._draw = new DrawTool(this);
             this._icons = markRaw(new IconManager(map));
@@ -1121,7 +812,12 @@ export const useMapStore = defineStore('cloudtak', {
             })
 
             map.on('styleimagemissing', (e) => {
-                this.icons.onStyleImageMissing(e);
+                void this.icons.onStyleImageMissing(e).catch((error: unknown) => {
+                    console.error('styleimagemissing handler failed', {
+                        imageId: e.id,
+                        error
+                    });
+                });
             })
 
             map.on('moveend', async () => {
