@@ -112,7 +112,7 @@
                                         v-model='certificate.truststorePassword'
                                         label='Choose Certificate Password'
                                         type='password'
-                                        autocomplete='off'
+                                        autocomplete='new-password'
                                     />
                                 </div>
                                 <div class='col-12'>
@@ -150,7 +150,7 @@
                                         v-model='certificate.clientPassword'
                                         label='Choose Certificate Password'
                                         type='password'
-                                        autocomplete='off'
+                                        autocomplete='new-password'
                                     />
                                 </div>
                                 <div class='col-12'>
