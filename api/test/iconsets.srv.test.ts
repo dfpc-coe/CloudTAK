@@ -249,6 +249,67 @@ test('GET: /api/iconset/:iconset?format=zip', async () => {
     }
 });
 
+test('GET: /api/iconset/:iconset/sprite.json and sprite.png', async () => {
+    try {
+        await flight.fetch('/api/iconset/test-iconset/regen', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {}
+        }, true);
+
+        const spriteJson = await flight.fetch('/api/iconset/test-iconset/sprite.json', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        assert.equal(typeof spriteJson.body, 'object');
+        assert.ok(spriteJson.body['google/camera']);
+        assert.ok(spriteJson.body.car);
+        assert.ok(spriteJson.body['google/marker']);
+        assert.ok(spriteJson.body.truck);
+
+        for (const key of ['google/camera', 'car', 'google/marker', 'truck']) {
+            assert.equal(spriteJson.body[key].width, 32);
+            assert.equal(spriteJson.body[key].height, 48);
+            assert.equal(spriteJson.body[key].pixelRatio, 1);
+        }
+
+        const spritePng = await flight.fetch('/api/iconset/test-iconset/sprite.png', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, {
+            json: false,
+            binary: true
+        });
+
+        assert.equal(spritePng.status, 200);
+
+        const metadata = await sharp(Buffer.from(spritePng.body)).metadata();
+        const expectedWidth = Math.max(
+            ...['google/camera', 'car', 'google/marker', 'truck'].map((key) => {
+                return spriteJson.body[key].x + spriteJson.body[key].width;
+            })
+        );
+        const expectedHeight = Math.max(
+            ...['google/camera', 'car', 'google/marker', 'truck'].map((key) => {
+                return spriteJson.body[key].y + spriteJson.body[key].height;
+            })
+        );
+
+        assert.equal(metadata.format, 'png');
+        assert.equal(metadata.width, expectedWidth);
+        assert.equal(metadata.height, expectedHeight);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: /api/iconset/:iconset/icon/:name', async () => {
     try {
         // Delete SVGs to avoid path collision for name lookup test
