@@ -123,7 +123,7 @@
                                                 type='password'
                                                 label='Initial Administrator Password'
                                                 description='An existing TAK user to use as an initial CloudTAK System Administrator - The TAK Server must respond with a cert for this username/password combo'
-                                                autocomplete='password'
+                                                autocomplete='new-password'
                                                 :error='errors.password'
                                                 @keyup.enter='updateServer'
                                             />

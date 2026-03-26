@@ -147,6 +147,7 @@
                                 v-model='config["oidc::secret"]'
                                 label='Client Secret'
                                 type='password'
+                                autocomplete='new-password'
                                 :disabled='!edit'
                             />
                             <TablerInput

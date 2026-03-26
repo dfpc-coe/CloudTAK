@@ -20,6 +20,7 @@
                         icon='lock'
                         label='Password'
                         type='password'
+                        autocomplete='new-password'
                         @keyup.enter='generate'
                     />
                 </div>
