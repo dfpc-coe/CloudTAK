@@ -62,7 +62,7 @@
         "hls.js": "^1.6.5",
         "imask": "^6.0.0",
         "jsonata": "^2.0.4",
-        "maplibre-gl": "^5.21.0",
+        "maplibre-gl": "^5.21.1",
         "milsymbol": "^3.0.2",
         "moment": "^2.29.3",
         "openapi-fetch": "^0.17.0",
