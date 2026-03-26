@@ -17,6 +17,10 @@
 
 ### Pending Release
 
+### v12.112.0 - 2026-03-26
+
+- :rocket: Migrate all initialization actions into Pinia Store
+
 ### v12.111.2 - 2026-03-25
 
 - :rocket: Avoid returning Internal Iconsets in list endpoint to improve load performance
