@@ -23,7 +23,7 @@
                 <TablerInput
                     v-model='password'
                     type='password'
-                    autocomplete='off'
+                    autocomplete='new-password'
                     label='P12 Password'
                     @keyup.enter='extract'
                 />

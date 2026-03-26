@@ -94,6 +94,7 @@
                                 <TablerInput
                                     v-model='config["agol::client_secret"]'
                                     type='password'
+                                    autocomplete='new-password'
                                     :disabled='!edit'
                                     label='OAuth2 Client Secret'
                                     description='Client Secret from your ArcGIS Location Platform or ArcGIS Enterprise account'
@@ -103,6 +104,7 @@
                                 <TablerInput
                                     v-model='config["agol::token"]'
                                     type='password'
+                                    autocomplete='new-password'
                                     :disabled='!edit'
                                     label='Legacy Token'
                                     description='ArcGIS Online access token'

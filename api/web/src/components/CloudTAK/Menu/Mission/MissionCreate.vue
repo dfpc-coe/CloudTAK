@@ -179,6 +179,7 @@
                                 v-model='mission.password'
                                 :disabled='!mission.passwordProtected'
                                 type='password'
+                                autocomplete='new-password'
                                 label='Password'
                             />
                         </div>
