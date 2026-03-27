@@ -1,5 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import { Static, Type } from '@sinclair/typebox';
+import EsriDump from 'esri-dump';
 import { OptionalTileJSON } from './types.js';
 import { Basemap_Format, Basemap_Type, Basemap_Scheme  } from './enums.js';
 import { fetch } from '@tak-ps/etl';
@@ -486,11 +487,45 @@ class EsriProxyLayer {
         }
     }
 
+    static #schemaFieldType(schema: unknown): string {
+        if (!schema || typeof schema !== 'object' || Array.isArray(schema)) return 'string';
+
+        const field = schema as {
+            type?: string | string[];
+            format?: string;
+        };
+
+        if (field.format) return field.format;
+        if (Array.isArray(field.type)) return field.type.join('|');
+        return field.type || 'string';
+    }
+
+    static async #vectorLayers(
+        url: string,
+        headers: Headers
+    ): Promise<Static<typeof OptionalTileJSON>['vector_layers']> {
+        const esri = new EsriDump(url, {
+            headers: Object.fromEntries(headers.entries())
+        });
+        const schema = await esri.schema();
+        const properties = typeof schema.properties === 'object' && schema.properties ? schema.properties : {};
+
+        return [{
+            id: 'out',
+            fields: Object.fromEntries(
+                Object.entries(properties)
+                    .map(([name, fieldSchema]) => [name, EsriProxyLayer.#schemaFieldType(fieldSchema)] as const)
+                    .filter(([, fieldType]) => fieldType !== 'object')
+            )
+        }];
+    }
+
     async tilejson(): Promise<Static<typeof OptionalTileJSON>> {
         const url = new URL(this.esri.base + this.esri.postfix);
         url.searchParams.append('f', 'json');
 
-        const res = await fetch(url);
+        const headers = this.esri.standardHeaders();
+        const res = await fetch(url, { headers });
 
         if ([EsriLayerType.FEATURE, EsriLayerType.MAP].includes(this.type)) {
             const json = await res.typed(FeatureLayer)
@@ -506,7 +541,8 @@ class EsriProxyLayer {
                 minzoom: 0,
                 maxzoom: 20,
                 style: Basemap_Scheme.XYZ,
-                format: Basemap_Format.MVT
+                format: Basemap_Format.MVT,
+                vector_layers: await EsriProxyLayer.#vectorLayers(String(this.esri.base + this.esri.postfix), headers)
             }
         } else if (this.type === EsriLayerType.IMAGE) {
             const json = await res.typed(ImageLayer)

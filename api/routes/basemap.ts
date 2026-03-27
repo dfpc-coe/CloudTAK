@@ -642,8 +642,42 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
+            let tileURL: string;
+
+            if (basemap.url.includes(new URL(config.PMTILES_URL || 'http://localhost:5001').hostname)) {
+                tileURL = basemap.url;
+                if (req.query.token) tileURL = tileURL + `?token=${req.query.token}`;
+            } else {
+                tileURL = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
+                if (req.query.token) tileURL = tileURL + `?token=${req.query.token}`;
+            }
+
             if (basemap.tilejson) {
                 const url = new URL(basemap.tilejson);
+
+                if (
+                    String(url).match(/\/FeatureServer\/\d+$/)
+                    || String(url).match(/\/MapServer\/\d+$/)
+                    || String(url).match(/\/ImageServer$/)
+                ) {
+                    const base = new EsriBase(url);
+                    const layer = new EsriProxyLayer(base);
+                    const metadata = await layer.tilejson();
+                    const json = TileJSON.json({
+                        ...basemap,
+                        ...metadata,
+                        bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                        center: basemap.center ? basemap.center.coordinates : undefined,
+                        url: tileURL,
+                    });
+
+                    res.json({
+                        ...json,
+                        actions: TileJSON.actions(basemap.url)
+                    });
+
+                    return;
+                }
 
                 if (url.hostname === new URL(config.PMTILES_URL).hostname) {
                     url.searchParams.set('token', auth.token);
@@ -663,21 +697,11 @@ export default async function router(schema: Schema, config: Config) {
                     actions: TileJSON.actions(basemap.url)
                 });
             } else {
-                let url: string;
-
-                if (basemap.url.includes(new URL(config.PMTILES_URL || "http://localhost:5001").hostname)) {
-                    url = basemap.url;
-                    if (req.query.token) url = url + `?token=${req.query.token}`;
-                } else {
-                    url = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
-                    if (req.query.token) url = url + `?token=${req.query.token}`;
-                }
-
                 const json = TileJSON.json({
                     ...basemap,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                     center: basemap.center ? basemap.center.coordinates : undefined,
-                    url,
+                    url: tileURL,
                 });
 
                 res.json({

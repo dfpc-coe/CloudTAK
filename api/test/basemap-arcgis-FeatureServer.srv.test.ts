@@ -67,6 +67,29 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
     }
 });
 
+test('PATCH: api/basemap/1 - ArcGIS Feature Server TileJSON Source', async () => {
+    try {
+        const res = await flight.fetch('/api/basemap/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                tilejson: ARCGIS_FEATURE_URL
+            }
+        }, true);
+
+        delete res.body.created;
+        delete res.body.updated;
+
+        assert.equal(res.status, 200);
+        assert.equal(res.body.id, 1);
+        assert.equal(res.body.url, ARCGIS_FEATURE_URL);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/basemap/1/tiles - ArcGIS Feature Server TileJSON', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1/tiles', {
@@ -87,10 +110,23 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server TileJSON', async () => {
             center: [ 0, 0 ],
             tileSize: 256,
             minzoom: 0,
-            maxzoom: 16,
+            maxzoom: 20,
             actions: { feature: ['fetch', 'query'] },
             tiles: [ 'http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}' ],
-            vector_layers: [{ id: 'out', fields: {} }]
+            vector_layers: [{
+                id: 'out',
+                fields: {
+                    objectid: 'number',
+                    rotation: 'integer',
+                    description: 'string',
+                    eventdate: 'date-time',
+                    eventtype: 'integer',
+                    created_user: 'string',
+                    created_date: 'date-time',
+                    last_edited_user: 'string',
+                    last_edited_date: 'date-time'
+                }
+            }]
         });
     } catch (err) {
         assert.ifError(err);
