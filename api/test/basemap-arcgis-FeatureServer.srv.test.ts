@@ -90,6 +90,49 @@ test('PATCH: api/basemap/1 - ArcGIS Feature Server TileJSON Source', async () =>
     }
 });
 
+test('GET: api/basemap/1/tiles - ArcGIS Feature Server direct source', async () => {
+    try {
+        const res = await flight.fetch('/api/basemap/1/tiles', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        assert.deepEqual(res.body, {
+            tilejson: '3.0.0',
+            version: '1.0.0',
+            description: '',
+            scheme: 'xyz',
+            name: 'Wildfire Response Points',
+            type: 'vector',
+            bounds: [ -180, -90, 180, 90 ],
+            center: [ 0, 0 ],
+            tileSize: 256,
+            minzoom: 0,
+            maxzoom: 16,
+            actions: { feature: ['fetch', 'query'] },
+            tiles: [ 'http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}' ],
+            vector_layers: [{
+                id: 'out',
+                fields: {
+                    objectid: 'number',
+                    rotation: 'integer',
+                    description: 'string',
+                    eventdate: 'date-time',
+                    eventtype: 'integer',
+                    created_user: 'string',
+                    created_date: 'date-time',
+                    last_edited_user: 'string',
+                    last_edited_date: 'date-time'
+                }
+            }]
+        });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/basemap/1/tiles - ArcGIS Feature Server TileJSON', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1/tiles', {
@@ -110,7 +153,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server TileJSON', async () => {
             center: [ 0, 0 ],
             tileSize: 256,
             minzoom: 0,
-            maxzoom: 20,
+            maxzoom: 16,
             actions: { feature: ['fetch', 'query'] },
             tiles: [ 'http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}' ],
             vector_layers: [{

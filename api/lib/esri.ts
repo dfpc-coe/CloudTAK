@@ -1,6 +1,5 @@
 import Err from '@openaddresses/batch-error';
 import { Static, Type } from '@sinclair/typebox';
-import EsriDump from 'esri-dump';
 import { OptionalTileJSON } from './types.js';
 import { Basemap_Format, Basemap_Type, Basemap_Scheme  } from './enums.js';
 import { fetch } from '@tak-ps/etl';
@@ -36,7 +35,11 @@ export const FeatureLayer = Type.Object({
     name: Type.String(),
     geometryType: Type.String(),
     description: Type.String(),
-    extent: EsriExtent
+    extent: EsriExtent,
+    fields: Type.Optional(Type.Array(Type.Object({
+        name: Type.String(),
+        type: Type.String()
+    })))
 });
 
 export interface EsriToken {
@@ -487,37 +490,42 @@ class EsriProxyLayer {
         }
     }
 
-    static #schemaFieldType(schema: unknown): string {
-        if (!schema || typeof schema !== 'object' || Array.isArray(schema)) return 'string';
-
-        const field = schema as {
-            type?: string | string[];
-            format?: string;
-        };
-
-        if (field.format) return field.format;
-        if (Array.isArray(field.type)) return field.type.join('|');
-        return field.type || 'string';
+    static #esriFieldType(fieldType: string): string {
+        switch (fieldType) {
+        case 'esriFieldTypeOID':
+        case 'esriFieldTypeDouble':
+        case 'esriFieldTypeSingle':
+            return 'number';
+        case 'esriFieldTypeSmallInteger':
+        case 'esriFieldTypeInteger':
+            return 'integer';
+        case 'esriFieldTypeDate':
+            return 'date-time';
+        case 'esriFieldTypeGeometry':
+        case 'esriFieldTypeBlob':
+        case 'esriFieldTypeRaster':
+            return 'object';
+        default:
+            return 'string';
+        }
     }
 
-    static async #vectorLayers(
-        url: string,
-        headers: Headers
+    static #vectorLayers(
+        metadata: {
+            fields?: Array<{
+                name: string;
+                type: string;
+            }>
+        }
     ): Promise<Static<typeof OptionalTileJSON>['vector_layers']> {
-        const esri = new EsriDump(url, {
-            headers: Object.fromEntries(headers.entries())
-        });
-        const schema = await esri.schema();
-        const properties = typeof schema.properties === 'object' && schema.properties ? schema.properties : {};
-
-        return [{
+        return Promise.resolve([{
             id: 'out',
             fields: Object.fromEntries(
-                Object.entries(properties)
-                    .map(([name, fieldSchema]) => [name, EsriProxyLayer.#schemaFieldType(fieldSchema)] as const)
+                (metadata.fields || [])
+                    .map((field) => [field.name, EsriProxyLayer.#esriFieldType(field.type)] as const)
                     .filter(([, fieldType]) => fieldType !== 'object')
             )
-        }];
+        }]);
     }
 
     async tilejson(): Promise<Static<typeof OptionalTileJSON>> {
@@ -542,7 +550,7 @@ class EsriProxyLayer {
                 maxzoom: 20,
                 style: Basemap_Scheme.XYZ,
                 format: Basemap_Format.MVT,
-                vector_layers: await EsriProxyLayer.#vectorLayers(String(this.esri.base + this.esri.postfix), headers)
+                vector_layers: await EsriProxyLayer.#vectorLayers(json)
             }
         } else if (this.type === EsriLayerType.IMAGE) {
             const json = await res.typed(ImageLayer)
