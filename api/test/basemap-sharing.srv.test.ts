@@ -102,7 +102,6 @@ test('GET: api/basemap/1/tiles - Ensure Token Works', async () => {
             minzoom: 0,
             maxzoom: 16,
             tiles: [ 'http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}' ],
-            vector_layers: [ { id: 'out', fields: {} } ],
             actions: { feature: [] }
         })
     } catch (err) {

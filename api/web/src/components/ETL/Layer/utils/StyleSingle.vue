@@ -21,11 +21,10 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='enabled.id'
                 v-model='filters.id'
                 placeholder='Global ID Field'
-                :rows='1'
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -47,11 +46,10 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='enabled.callsign'
                 v-model='filters.callsign'
                 placeholder='Global Callsign Field'
-                :rows='1'
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -73,11 +71,10 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='enabled.stale'
                 v-model='filters.stale'
                 placeholder='Stale Value (Seconds or ISO Date)'
-                :rows='1'
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -104,10 +101,9 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='enabled.minzoom'
                 v-model='filters.minzoom'
-                :rows='1'
                 placeholder='Min Zoom (0-24)'
                 :disabled='disabled'
                 :schema='props.schema'
@@ -130,10 +126,9 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='enabled.maxzoom'
                 v-model='filters.maxzoom'
-                :rows='1'
                 placeholder='Max Zoom (0-24)'
                 :disabled='disabled'
                 :schema='props.schema'
@@ -156,9 +151,10 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='enabled.remarks'
                 v-model='filters.remarks'
+                rows=''
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -180,11 +176,10 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='enabled.phone'
                 v-model='filters.phone'
                 placeholder='Global Phone Field'
-                :rows='1'
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -324,10 +319,11 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='filters[mode].enabled.id'
                 v-model='filters[mode].properties.id'
                 placeholder='ID Override'
+                rows=''
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -349,10 +345,11 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='filters[mode].enabled.callsign'
                 v-model='filters[mode].properties.callsign'
                 placeholder='Callsign Override'
+                rows=''
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -374,11 +371,10 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='filters[mode].enabled.stale'
                 v-model='filters[mode].properties.stale'
                 placeholder='Stale Value (Seconds or ISO Date)'
-                :rows='1'
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -405,10 +401,9 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='filters[mode].enabled.minzoom'
                 v-model='filters[mode].properties.minzoom'
-                :rows='1'
                 placeholder='Min Zoom (0-24)'
                 :disabled='disabled'
                 :schema='props.schema'
@@ -431,10 +426,9 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='filters[mode].enabled.maxzoom'
                 v-model='filters[mode].properties.maxzoom'
-                :rows='1'
                 placeholder='Max Zoom (0-24)'
                 :disabled='disabled'
                 :schema='props.schema'
@@ -457,10 +451,11 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='filters[mode].enabled.remarks'
                 v-model='filters[mode].properties.remarks'
                 placeholder='Remarks Override'
+                rows=''
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -482,10 +477,11 @@
                     />
                 </div>
             </div>
-            <StyleTemplate
+            <HandleForm
                 v-if='filters[mode].enabled.phone'
                 v-model='filters[mode].properties.phone'
                 placeholder='Phone Override'
+                rows=''
                 :disabled='disabled'
                 :schema='props.schema'
             />
@@ -533,12 +529,11 @@
                         />
                     </div>
                 </div>
-                <StyleTemplate
+                <HandleForm
                     v-if='filters[mode].enabled.type'
                     v-model='filters[mode].properties.type'
                     placeholder='Type Override (a-f-G)'
                     :disabled='disabled'
-                    :rows='1'
                     :schema='props.schema'
                 />
             </div>
@@ -792,7 +787,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
 import { humanSeconds } from '../../../../std.js';
-import StyleTemplate from './StyleTemplate.vue';
+import HandleForm from '../../../util/HandleForm.vue';
 import StyleMarti from './StyleMarti.vue';
 import {
     IconLink,
