@@ -93,9 +93,11 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { isEqual as deepEqual } from '@react-hookz/deep-equal';
 import SlideDownHeader from './SlideDownHeader.vue';
 import { IconCone } from '@tabler/icons-vue';
 import { TablerRange, TablerInput } from '@tak-ps/vue-tabler';
+import type COT from '../../../base/cot';
 
 interface Sensor {
     type?: string;
@@ -107,18 +109,14 @@ interface Sensor {
 }
 
 interface Props {
-    modelValue: Sensor;
+    cot: COT;
 }
 
 const props = defineProps<Props>();
 
-const emit = defineEmits<{
-    'update:modelValue': [value: Sensor];
-}>();
-
 const expanded = ref(false);
 
-function initSensor(raw: Sensor): Sensor {
+function initSensor(raw?: Sensor): Sensor {
     const s = JSON.parse(JSON.stringify(raw || {})) as Sensor;
     if (!s.fov) s.fov = 0;
     if (!s.azimuth) s.azimuth = 0;
@@ -126,14 +124,24 @@ function initSensor(raw: Sensor): Sensor {
     return s;
 }
 
-const sensor = ref<Sensor>(initSensor(props.modelValue));
+const sensor = ref<Sensor>(initSensor(props.cot.properties.sensor as Sensor));
 
-watch(sensor, () => {
-    emit('update:modelValue', sensor.value);
+watch(sensor, (value) => {
+    const next = initSensor(value);
+    const current = initSensor(props.cot.properties.sensor as Sensor);
+
+    if (deepEqual(next, current)) return;
+
+    const properties = { ...props.cot.properties, sensor: next };
+    props.cot.update({ properties });
 }, { deep: true });
 
-watch(() => props.modelValue, (value) => {
-    sensor.value = initSensor(value);
+watch(() => props.cot.properties.sensor, (value) => {
+    const next = initSensor(value);
+
+    if (deepEqual(next, sensor.value)) return;
+
+    sensor.value = next;
 });
 </script>
 
