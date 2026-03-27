@@ -52,7 +52,7 @@ export const TileJSONType = Type.Object({
     type: Type.String(),
     format: Type.Optional(Type.String()),
 
-    vector_layers: Type.Array(VectorLayer)
+    vector_layers: Type.Optional(Type.Array(VectorLayer))
 })
 
 export interface TileJSONInterface {
@@ -257,16 +257,22 @@ export default class TileJSON {
     static json(config: TileJSONInterface): Static<typeof TileJSONType> {
         const bounds = config.bounds as [number, number, number, number ] || [-180, -90, 180, 90];
         const center = config.center || pointOnFeature(bboxPolygon(bounds as BBox)).geometry.coordinates;
+        const type = config.type || 'raster';
+        const isVectorType = type !== 'raster' && type !== 'raster-dem';
 
-        const vector_layers: Array<Static<typeof VectorLayer>> = [];
+        let vector_layers: Array<Static<typeof VectorLayer>> | undefined;
 
-        if (!config.vector_layers) {
-            vector_layers.push({
-                id: 'out',
-                fields: {}
-            });
-        } else {
-            vector_layers.push(...config.vector_layers);
+        if (isVectorType) {
+            vector_layers = [];
+
+            if (!config.vector_layers) {
+                vector_layers.push({
+                    id: 'out',
+                    fields: {}
+                });
+            } else {
+                vector_layers.push(...config.vector_layers);
+            }
         }
 
         return {
@@ -275,7 +281,7 @@ export default class TileJSON {
             name: config.name,
             description: '',
             scheme: 'xyz',
-            type: config.type || 'raster',
+            type,
             bounds,
             center,
             attribution: config.attribution || undefined,
