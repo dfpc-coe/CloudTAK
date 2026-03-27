@@ -17,6 +17,11 @@
 
 ### Pending Release
 
+### v12.114.0 - 2026-03-27
+
+- :bug: PropertySensor resulted in a recursive loop that would eventually take down chrome or lock up firefox
+- :tada: Add the ability to add/edit/delete External Links
+
 ### v12.113.0 - 2026-03-26
 
 - :rocket: Change password field autocomplete to avoid incorrect google chrome password suggestions
