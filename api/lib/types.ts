@@ -75,6 +75,14 @@ export const GeoJSONFeatureCollection = Type.Object({
     features: Type.Array(GeoJSONFeature)
 });
 
+const OptionalVectorLayer = Type.Object({
+    id: Type.String(),
+    fields: Type.Record(Type.String(), Type.String()),
+    minzoom: Type.Optional(Type.Integer()),
+    maxzoom: Type.Optional(Type.Integer()),
+    description: Type.Optional(Type.String())
+});
+
 export const OptionalTileJSON = Type.Object({
     name: Type.Optional(Type.String()),
     type: Type.Optional(Type.Enum(Basemap_Type)),
@@ -84,7 +92,8 @@ export const OptionalTileJSON = Type.Object({
     minzoom: Type.Optional(Type.Integer()),
     maxzoom: Type.Optional(Type.Integer()),
     style: Type.Optional(Type.Enum(Basemap_Scheme)),
-    format: Type.Optional(Type.Enum(Basemap_Format))
+    format: Type.Optional(Type.Enum(Basemap_Format)),
+    vector_layers: Type.Optional(Type.Array(OptionalVectorLayer))
 });
 
 export const LayerError = Type.Object({
