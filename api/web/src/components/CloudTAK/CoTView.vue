@@ -237,6 +237,7 @@
                                         <div
                                             v-if='
                                                 cot.properties.attachments !== undefined
+                                                    && cot.properties.links !== undefined
                                                     && cot.properties.video !== undefined
                                                     && cot.properties.sensor !== undefined
                                                     && (cot.geometry.type !== "Polygon" || cot.properties.geofence !== undefined)
@@ -256,6 +257,19 @@
                                                     :size='32'
                                                 /><div class='mx-2'>
                                                     Add Attachment
+                                                </div>
+                                            </div>
+                                            <div
+                                                v-if='cot.properties.links === undefined'
+                                                role='button'
+                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                @click='updateProperty("links", [])'
+                                            >
+                                                <IconLink
+                                                    stroke='1'
+                                                    :size='32'
+                                                /><div class='mx-2'>
+                                                    Add External Links
                                                 </div>
                                             </div>
                                             <div
@@ -587,7 +601,8 @@
 
             <PropertyLinks
                 v-if='cot.properties.links'
-                :links='cot.properties.links'
+                :cot='cot'
+                :edit='is_editable'
             />
 
             <PropertyTimes
@@ -598,8 +613,7 @@
             <PropertySensor
                 v-if='cot.properties.sensor !== undefined'
                 :key='cot.properties.id'
-                :model-value='cot.properties.sensor'
-                @update:model-value='updateProperty("sensor", $event)'
+                :cot='cot'
             />
 
             <PropertyMilSym
@@ -723,6 +737,7 @@ import {
     IconCode,
     IconAffiliate,
     IconInfoCircle,
+    IconLink,
     IconPaperclip,
     IconFence,
     IconAdjustments,
