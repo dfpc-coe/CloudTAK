@@ -38,6 +38,14 @@ const AugmentedTileJSONType = Type.Composite([
     })
 ])
 
+function isEsriLayerURL(url: string): boolean {
+    return !!(
+        String(url).match(/\/FeatureServer\/\d+$/)
+        || String(url).match(/\/MapServer\/\d+$/)
+        || String(url).match(/\/ImageServer$/)
+    );
+}
+
 export default async function router(schema: Schema, config: Config) {
     await schema.put('/basemap', {
         name: 'Import Basemaps',
@@ -652,32 +660,32 @@ export default async function router(schema: Schema, config: Config) {
                 if (req.query.token) tileURL = tileURL + `?token=${req.query.token}`;
             }
 
+            const esriMetadataURL = basemap.tilejson || basemap.url;
+
+            if (isEsriLayerURL(esriMetadataURL)) {
+                const base = new EsriBase(new URL(esriMetadataURL));
+                const layer = new EsriProxyLayer(base);
+                const metadata = await layer.tilejson();
+                const json = TileJSON.json({
+                    ...basemap,
+                    ...metadata,
+                    minzoom: basemap.minzoom ?? metadata.minzoom,
+                    maxzoom: basemap.maxzoom ?? metadata.maxzoom,
+                    bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                    center: basemap.center ? basemap.center.coordinates : undefined,
+                    url: tileURL,
+                });
+
+                res.json({
+                    ...json,
+                    actions: TileJSON.actions(basemap.url)
+                });
+
+                return;
+            }
+
             if (basemap.tilejson) {
                 const url = new URL(basemap.tilejson);
-
-                if (
-                    String(url).match(/\/FeatureServer\/\d+$/)
-                    || String(url).match(/\/MapServer\/\d+$/)
-                    || String(url).match(/\/ImageServer$/)
-                ) {
-                    const base = new EsriBase(url);
-                    const layer = new EsriProxyLayer(base);
-                    const metadata = await layer.tilejson();
-                    const json = TileJSON.json({
-                        ...basemap,
-                        ...metadata,
-                        bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
-                        center: basemap.center ? basemap.center.coordinates : undefined,
-                        url: tileURL,
-                    });
-
-                    res.json({
-                        ...json,
-                        actions: TileJSON.actions(basemap.url)
-                    });
-
-                    return;
-                }
 
                 if (url.hostname === new URL(config.PMTILES_URL).hostname) {
                     url.searchParams.set('token', auth.token);
