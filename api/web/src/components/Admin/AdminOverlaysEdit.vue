@@ -330,6 +330,7 @@ const basemaps = ref({
     manual: {
         name: '',
         url: '',
+        tiles: [],
         minzoom: 0,
         maxzoom: 16,
         bounds: '-180, -90, 180, 90',
@@ -349,6 +350,7 @@ const basemaps = ref({
     public: {
         name: '',
         url: '',
+        tiles: [],
         minzoom: 0,
         maxzoom: 16,
         bounds: '-180, -90, 180, 90',
@@ -368,6 +370,7 @@ const basemaps = ref({
     tilejson: {
         name: '',
         url: '',
+        tiles: [],
         minzoom: 0,
         maxzoom: 16,
         bounds: '-180, -90, 180, 90',
@@ -446,6 +449,9 @@ async function fetchTileJSON() {
 
     basemaps.value[mode.value].tilejson = tilejson_url.value;
     if (res.url) basemaps.value[mode.value].url = res.url;
+    basemaps.value[mode.value].tiles = Array.isArray(res.tiles)
+        ? res.tiles
+        : (res.url ? [res.url] : []);
 
     if (res.minzoom !== undefined) basemaps.value[mode.value].minzoom = res.minzoom;
     if (res.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = res.maxzoom;
@@ -479,13 +485,18 @@ function publicTileSelect(tilejson) {
         }
 
         basemaps.value[mode.value].tilejson = tilejson.url;
-        basemaps.value[mode.value].url = tilejson.tiles[0].replace(/\?.*$/, '');
+        basemaps.value[mode.value].tiles = Array.isArray(tilejson.tiles) ? tilejson.tiles : [];
+        basemaps.value[mode.value].url = basemaps.value[mode.value].tiles[0]
+            ? basemaps.value[mode.value].tiles[0].replace(/\?.*$/, '')
+            : '';
 
         if (tilejson.minzoom !== undefined) basemaps.value[mode.value].minzoom = tilejson.minzoom;
         if (tilejson.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = tilejson.maxzoom;
         if (tilejson.bounds) basemaps.value[mode.value].bounds = tilejson.bounds.join(',');
         if (tilejson.center) basemaps.value[mode.value].center = tilejson.center.slice(0, 2).join(',');
     } else {
+        basemaps.value[mode.value].tilejson = '';
+        basemaps.value[mode.value].tiles = [];
         basemaps.value[mode.value].url = '';
     }
 }
@@ -582,6 +593,7 @@ async function fetchOverlay() {
     if (res.snapping_enabled === undefined) res.snapping_enabled = false;
     if (!res.snapping_layer) res.snapping_layer = '';
     if (res.hidden === undefined) res.hidden = false;
+    if (!Array.isArray(res.tiles)) res.tiles = res.url ? [res.url] : [];
 
     basemaps.value[mode.value] = res;
     loading.value = false;

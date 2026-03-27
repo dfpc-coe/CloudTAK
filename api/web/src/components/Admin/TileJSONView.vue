@@ -56,7 +56,7 @@
                         Tile URL
                     </div>
                     <div class='datagrid-content text-break'>
-                        {{ props.overlay.tiles[0] }}
+                        {{ tileUrl }}
                     </div>
                 </div>
             </div>
@@ -65,9 +65,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { TileJSON } from '../../types.js';
 
 const props = defineProps<{
-    overlay: TileJSON;
+    overlay: TileJSON & { url?: string };
 }>();
+
+const tileUrl = computed(() => {
+    return props.overlay.tiles?.[0] || props.overlay.url || '';
+});
 </script>
