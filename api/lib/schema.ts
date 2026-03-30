@@ -212,6 +212,9 @@ export const Basemap = pgTable('basemaps', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
     url: text().notNull(),
+
+    protocol: text().notNull().default('xyz'),
+
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
     center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
     minzoom: integer().notNull().default(0),
