@@ -20,6 +20,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
         const base = await super.generate({
             name: input.name,
             url: input.url,
+            protocol: input.protocol,
             bounds: input.bounds,
             center: input.center,
             minzoom: input.minzoom,
@@ -91,6 +92,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
         const base = await super.commit(id, {
             name: input.name,
             url: input.url,
+            protocol: input.protocol,
             bounds: input.bounds,
             center: input.center,
             minzoom: input.minzoom,
