@@ -51,6 +51,13 @@ const BasemapImportRequest = Type.Object({
     auth: Type.Optional(BasemapImportAuth)
 });
 
+function isBasemapImportRequest(body: unknown): body is Static<typeof BasemapImportRequest> {
+    return !!body
+        && typeof body === 'object'
+        && 'url' in body
+        && typeof body.url === 'string';
+}
+
 function isEsriLayerURL(url: string): boolean {
     return !!(
         String(url).match(/\/FeatureServer\/\d+$/)
@@ -207,6 +214,10 @@ export default async function router(schema: Schema, config: Config) {
                 const imported = await importBasemapURL(config, String(await stream2buffer(req)));
                 res.json(imported);
             } else if (contentType && contentType.startsWith('application/json')) {
+                if (!isBasemapImportRequest(req.body)) {
+                    throw new Err(400, null, 'Invalid import request');
+                }
+
                 const imported = await importBasemapURL(config, req.body.url, req.body.auth);
                 res.json(imported);
             } else {
