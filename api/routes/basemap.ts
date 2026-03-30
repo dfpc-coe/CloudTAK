@@ -713,8 +713,8 @@ export default async function router(schema: Schema, config: Config) {
                     ...metadata,
                     minzoom: basemap.minzoom ?? metadata.minzoom,
                     maxzoom: basemap.maxzoom ?? metadata.maxzoom,
-                    bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
-                    center: basemap.center ? basemap.center.coordinates : undefined,
+                    bounds: basemap.bounds ? bbox(basemap.bounds) : metadata.bounds,
+                    center: basemap.center ? basemap.center.coordinates : metadata.center,
                     url: tileURL,
                 });
 
