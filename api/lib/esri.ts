@@ -1,9 +1,10 @@
 import Err from '@openaddresses/batch-error';
+import EsriDump from 'esri-dump';
 import { Static, Type } from '@sinclair/typebox';
 import { OptionalTileJSON } from './types.js';
 import { Basemap_Format, Basemap_Type, Basemap_Scheme  } from './enums.js';
 import { fetch } from '@tak-ps/etl';
-import { ESRILayerList, EsriExtent } from './esri/types.js';
+import { ESRILayerList } from './esri/types.js';
 import {
     DefaultLayerPoints,
     DefaultLayerLines,
@@ -22,25 +23,6 @@ export enum EsriLayerType {
     IMAGE = 'ImageServer',
     UNKNOWN = 'Unknown'
 }
-
-export const ImageLayer = Type.Object({
-    name: Type.String(),
-    description: Type.String(),
-    extent: EsriExtent
-});
-
-export const FeatureLayer = Type.Object({
-    currentVersion: Type.Number(),
-    id: Type.Integer(),
-    name: Type.String(),
-    geometryType: Type.String(),
-    description: Type.String(),
-    extent: EsriExtent,
-    fields: Type.Optional(Type.Array(Type.Object({
-        name: Type.String(),
-        type: Type.String()
-    })))
-});
 
 export interface EsriToken {
     token: string;
@@ -189,7 +171,9 @@ export class EsriBase {
                 error: Type.Optional(Type.Object({
                     message: Type.String()
                 }))
-            }))
+            }), {
+                verbose: true
+            })
 
             if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
@@ -238,6 +222,10 @@ export class EsriBase {
         }
 
         return headers;
+    }
+
+    standardHeaderObject(): Record<string, string> {
+        return Object.fromEntries(this.standardHeaders().entries());
     }
 }
 
@@ -312,7 +300,9 @@ class EsriProxyPortal {
                 }
             }
 
-            return await res.typed(ESRIPortal);
+            return await res.typed(ESRIPortal, {
+                verbose: true
+            })
         } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
@@ -490,87 +480,25 @@ class EsriProxyLayer {
         }
     }
 
-    static #esriFieldType(fieldType: string): string {
-        switch (fieldType) {
-        case 'esriFieldTypeOID':
-        case 'esriFieldTypeDouble':
-        case 'esriFieldTypeSingle':
-            return 'number';
-        case 'esriFieldTypeSmallInteger':
-        case 'esriFieldTypeInteger':
-            return 'integer';
-        case 'esriFieldTypeDate':
-            return 'date-time';
-        case 'esriFieldTypeGeometry':
-        case 'esriFieldTypeBlob':
-        case 'esriFieldTypeRaster':
-            return 'object';
-        default:
-            return 'string';
-        }
-    }
-
-    static #vectorLayers(
-        metadata: {
-            fields?: Array<{
-                name: string;
-                type: string;
-            }>
-        }
-    ): Promise<Static<typeof OptionalTileJSON>['vector_layers']> {
-        return Promise.resolve([{
-            id: 'out',
-            fields: Object.fromEntries(
-                (metadata.fields || [])
-                    .map((field) => [field.name, EsriProxyLayer.#esriFieldType(field.type)] as const)
-                    .filter(([, fieldType]) => fieldType !== 'object')
-            )
-        }]);
-    }
-
     async tilejson(): Promise<Static<typeof OptionalTileJSON>> {
-        const url = new URL(this.esri.base + this.esri.postfix);
-        url.searchParams.append('f', 'json');
+        const url = `${this.esri.base}${this.esri.postfix}`;
+        const esri = new EsriDump(url, {
+            headers: this.esri.standardHeaderObject()
+        });
+        const json = await esri.tilejson();
 
-        const headers = this.esri.standardHeaders();
-        const res = await fetch(url, { headers });
-
-        if ([EsriLayerType.FEATURE, EsriLayerType.MAP].includes(this.type)) {
-            const json = await res.typed(FeatureLayer)
-
-            // @ts-expect-error ESRI JSON Format
-            if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
-
-            return {
-                name: json.name,
-                type: Basemap_Type.VECTOR,
-                url: this.esri.base + this.esri.postfix,
-                bounds: [json.extent.xmin, json.extent.ymin, json.extent.xmax, json.extent.ymax],
-                minzoom: 0,
-                maxzoom: 20,
-                style: Basemap_Scheme.XYZ,
-                format: Basemap_Format.MVT,
-                vector_layers: await EsriProxyLayer.#vectorLayers(json)
-            }
-        } else if (this.type === EsriLayerType.IMAGE) {
-            const json = await res.typed(ImageLayer)
-
-            // @ts-expect-error ESRI JSON Format
-            if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
-
-            return {
-                name: json.name,
-                type: Basemap_Type.RASTER,
-                url: this.esri.base + this.esri.postfix,
-                bounds: [json.extent.xmin, json.extent.ymin, json.extent.xmax, json.extent.ymax],
-                minzoom: 0,
-                maxzoom: 20,
-                style: Basemap_Scheme.XYZ,
-                format: Basemap_Format.PNG
-            }
-        } else {
-            throw new Err(400, null, 'Unsupported ESRI Layer Type');
-        }
+        return {
+            name: json.name,
+            type: json.type === 'vector' ? Basemap_Type.VECTOR : Basemap_Type.RASTER,
+            url,
+            bounds: json.bounds,
+            center: json.center,
+            minzoom: json.minzoom,
+            maxzoom: json.maxzoom,
+            style: Basemap_Scheme.XYZ,
+            format: json.type === 'vector' ? Basemap_Format.MVT : Basemap_Format.PNG,
+            vector_layers: json.vector_layers
+        };
     }
 
     async sample(where: string): Promise<{
