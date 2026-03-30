@@ -243,6 +243,17 @@
                         </div>
                     </div>
 
+                    <template v-if='basemaps[mode].type === "vector"'>
+                        <div class='col-12'>
+                            <HandleForm
+                                v-model='vectorTitleField'
+                                label='Feature Title Field'
+                                description='Feature property used as the vector title. Type {{ to browse fields discovered from vector_layers.'
+                                :schema='vectorTitleSchema'
+                            />
+                        </div>
+                    </template>
+
                     <template v-if='basemaps[mode].type === "vector" && (mode === "public" || mode === "tilejson")'>
                         <div class='col-12'>
                             <div class='row g-2 my-2 border rounded'>
@@ -258,7 +269,15 @@
                                     v-if='basemaps[mode].snapping_enabled'
                                     class='col-12'
                                 >
+                                    <TablerEnum
+                                        v-if='vectorLayerOptions.length'
+                                        v-model='basemaps[mode].snapping_layer'
+                                        label='Snapping Layer'
+                                        description='Choose the vector layer to snap drawing tools to'
+                                        :options='vectorLayerOptions'
+                                    />
                                     <TablerInput
+                                        v-else
                                         v-model='basemaps[mode].snapping_layer'
                                         label='Snapping Layer'
                                         description='The specific layer name within the vector tiles to snap to'
@@ -299,6 +318,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { std, stdurl } from '../../std.ts';
 import StyleContainer from '../ETL/Styling/Style.vue';
+import HandleForm from '../util/HandleForm.vue';
 import UserSelect from '../util/UserSelect.vue';
 import PublicTilesSelect from '../util/PublicTilesSelect.vue';
 import TileJSONView from './TileJSONView.vue';
@@ -325,6 +345,11 @@ const router = useRouter();
 const loading = ref(true);
 const mode = ref('manual');
 const tilejson_url = ref('');
+const vectorLayers = ref({
+    manual: [],
+    public: [],
+    tilejson: []
+});
 
 const basemaps = ref({
     manual: {
@@ -345,6 +370,7 @@ const basemaps = ref({
         hidden: false,
         snapping_enabled: false,
         snapping_layer: '',
+        title: 'callsign',
         tilejson: ''
     },
     public: {
@@ -365,6 +391,7 @@ const basemaps = ref({
         hidden: false,
         snapping_enabled: false,
         snapping_layer: '',
+        title: 'callsign',
         tilejson: ''
     },
     tilejson: {
@@ -385,6 +412,7 @@ const basemaps = ref({
         hidden: false,
         snapping_enabled: false,
         snapping_layer: '',
+        title: 'callsign',
         tilejson: ''
     }
 });
@@ -411,6 +439,55 @@ const formats = computed(() => {
     }
 });
 
+const vectorTitleSchema = computed(() => {
+    const fields = new Set();
+
+    for (const layer of vectorLayers.value[mode.value] || []) {
+        for (const field of Object.keys(layer.fields || {})) {
+            fields.add(field);
+        }
+    }
+
+    return {
+        type: 'object',
+        properties: Object.fromEntries(Array.from(fields).sort().map((field) => {
+            return [field, { type: 'string' }];
+        }))
+    };
+});
+
+const vectorLayerOptions = computed(() => {
+    const ids = new Set();
+
+    for (const layer of vectorLayers.value[mode.value] || []) {
+        if (layer.id) ids.add(layer.id);
+    }
+
+    const current = basemaps.value[mode.value].snapping_layer;
+    if (current) ids.add(current);
+
+    return Array.from(ids).sort();
+});
+
+const vectorTitleField = computed({
+    get: () => {
+        const title = basemaps.value[mode.value].title;
+        if (!title) return '';
+        if (/^\{\{\s*[a-zA-Z0-9_]+\s*\}\}$/.test(title)) return title;
+        if (!/^[a-zA-Z0-9_]+$/.test(title)) return title;
+        return `{{${title}}}`;
+    },
+    set: (value) => {
+        if (!value) {
+            basemaps.value[mode.value].title = '';
+            return;
+        }
+
+        const match = String(value).trim().match(/^\{\{\s*([a-zA-Z0-9_]+)\s*\}\}$/);
+        basemaps.value[mode.value].title = match ? match[1] : value;
+    }
+});
+
 onMounted(async () => {
     if (route.params.overlay !== 'new') {
         await fetchOverlay();
@@ -434,6 +511,25 @@ async function deleteOverlay() {
     }
 }
 
+function stripToken(url) {
+    if (!url) return url;
+
+    try {
+        const parsed = new URL(url);
+        parsed.searchParams.delete('token');
+        return parsed.toString();
+    } catch {
+        return url
+            .replace(/([?&])token=[^&]*&?/, '$1')
+            .replace(/[?&]$/, '');
+    }
+}
+
+function stripTokenList(urls) {
+    if (!Array.isArray(urls)) return [];
+    return urls.map((url) => stripToken(url));
+}
+
 async function fetchTileJSON() {
     if (!tilejson_url.value) return;
 
@@ -445,13 +541,15 @@ async function fetchTileJSON() {
         body: tilejson_url.value
     });
 
+    vectorLayers.value[mode.value] = Array.isArray(res.vector_layers) ? res.vector_layers : [];
+
     if (res.name && !basemaps.value[mode.value].name) basemaps.value[mode.value].name = res.name;
 
-    basemaps.value[mode.value].tilejson = tilejson_url.value;
-    if (res.url) basemaps.value[mode.value].url = res.url;
+    basemaps.value[mode.value].tilejson = stripToken(tilejson_url.value);
+    if (res.url) basemaps.value[mode.value].url = stripToken(res.url);
     basemaps.value[mode.value].tiles = Array.isArray(res.tiles)
-        ? res.tiles
-        : (res.url ? [res.url] : []);
+        ? stripTokenList(res.tiles)
+        : (res.url ? [stripToken(res.url)] : []);
 
     if (res.minzoom !== undefined) basemaps.value[mode.value].minzoom = res.minzoom;
     if (res.maxzoom !== undefined) basemaps.value[mode.value].maxzoom = res.maxzoom;
@@ -480,12 +578,14 @@ async function fetchTileJSON() {
 
 function publicTileSelect(tilejson) {
     if (tilejson) {
+        vectorLayers.value[mode.value] = Array.isArray(tilejson.vector_layers) ? tilejson.vector_layers : [];
+
         if (!basemaps.value[mode.value].name) {
             basemaps.value[mode.value].name = tilejson.name.replace(/^public\//, "").replace(/\.pmtiles$/, "");
         }
 
-        basemaps.value[mode.value].tilejson = tilejson.url;
-        basemaps.value[mode.value].tiles = Array.isArray(tilejson.tiles) ? tilejson.tiles : [];
+        basemaps.value[mode.value].tilejson = stripToken(tilejson.url);
+        basemaps.value[mode.value].tiles = Array.isArray(tilejson.tiles) ? stripTokenList(tilejson.tiles) : [];
         basemaps.value[mode.value].url = basemaps.value[mode.value].tiles[0]
             ? basemaps.value[mode.value].tiles[0].replace(/\?.*$/, '')
             : '';
@@ -495,6 +595,7 @@ function publicTileSelect(tilejson) {
         if (tilejson.bounds) basemaps.value[mode.value].bounds = tilejson.bounds.join(',');
         if (tilejson.center) basemaps.value[mode.value].center = tilejson.center.slice(0, 2).join(',');
     } else {
+        vectorLayers.value[mode.value] = [];
         basemaps.value[mode.value].tilejson = '';
         basemaps.value[mode.value].tiles = [];
         basemaps.value[mode.value].url = '';
@@ -510,6 +611,10 @@ async function saveOverlay() {
         }
 
         let body = JSON.parse(JSON.stringify(basemaps.value[mode.value]));
+
+        body.tilejson = stripToken(body.tilejson);
+        body.url = stripToken(body.url);
+        body.tiles = stripTokenList(body.tiles);
 
         body.bounds = body.bounds.split(',').map((b) => {
             return Number(b);
@@ -592,10 +697,19 @@ async function fetchOverlay() {
 
     if (res.snapping_enabled === undefined) res.snapping_enabled = false;
     if (!res.snapping_layer) res.snapping_layer = '';
+    if (!res.title) res.title = 'callsign';
     if (res.hidden === undefined) res.hidden = false;
     if (!Array.isArray(res.tiles)) res.tiles = res.url ? [res.url] : [];
 
     basemaps.value[mode.value] = res;
+
+    vectorLayers.value[mode.value] = [];
+    if (res.type === 'vector') {
+        const tileUrl = stdurl(`/api/basemap/${route.params.overlay}/tiles`);
+        const tileRes = await std(tileUrl);
+        vectorLayers.value[mode.value] = Array.isArray(tileRes.vector_layers) ? tileRes.vector_layers : [];
+    }
+
     loading.value = false;
 }
 </script>
