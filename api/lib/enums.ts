@@ -43,6 +43,13 @@ export enum ExportFeatureFormat {
     KML = 'kml'
 }
 
+export enum Basemap_Protocol {
+    ZXY = 'zxy',
+    MapServer = 'mapserver',
+    ImageServer = 'imageserver',
+    FeatureServer = 'featureserver',
+}
+
 export enum Basemap_FeatureAction {
     QUERY = 'query',
     FETCH = 'fetch',

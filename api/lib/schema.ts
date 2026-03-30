@@ -11,7 +11,7 @@ import { Layer_Config } from './models/Layer.js';
 import {
     Layer_Priority,
     Import_Status,
-    Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType
+    Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
 } from  './enums.js';
 import { boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
@@ -213,7 +213,7 @@ export const Basemap = pgTable('basemaps', {
     name: text().notNull(),
     url: text().notNull(),
 
-    protocol: text().notNull().default('xyz'),
+    protocol: text().notNull().default(Basemap_Protocol.ZXY),
 
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
     center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
