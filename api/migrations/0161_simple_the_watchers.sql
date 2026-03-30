@@ -1,0 +1,1 @@
+ALTER TABLE "basemaps" ADD COLUMN "protocol" text DEFAULT 'zxy' NOT NULL;
