@@ -506,6 +506,7 @@ import { liveQuery } from 'dexie';
 import Upload from '../util/Upload.vue';
 import { stdurl } from '../../std.ts';
 import ProfileConfig from '../../base/profile.ts';
+import { cutOverlayFeature } from './util/featureCut.ts';
 
 const mapStore = useMapStore();
 const floatStore = useFloatStore();
@@ -857,6 +858,9 @@ async function handleRadial(event: string): Promise<void> {
         closeRadial()
     } else if (event === 'feat:view') {
         selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
+        closeRadial()
+    } else if (event === 'feat:cut') {
+        await cutOverlayFeature(mapStore, mapStore.radial.cot as MapGeoJSONFeature);
         closeRadial()
     } else if (event === 'context:new') {
         const feat = toRaw(mapStore.radial.cot as Feature) as Feature;

@@ -38,6 +38,19 @@ const AugmentedTileJSONType = Type.Composite([
     })
 ])
 
+const BasemapImportAuth = Type.Object({
+    username: Type.Optional(Type.String()),
+    password: Type.Optional(Type.String()),
+    referer: Type.Optional(Type.String()),
+    expiration: Type.Optional(Type.Integer())
+});
+
+const BasemapImportRequest = Type.Object({
+    type: Type.String(),
+    url: Type.String(),
+    auth: Type.Optional(BasemapImportAuth)
+});
+
 function isEsriLayerURL(url: string): boolean {
     return !!(
         String(url).match(/\/FeatureServer\/\d+$/)
@@ -46,38 +59,101 @@ function isEsriLayerURL(url: string): boolean {
     );
 }
 
+async function importBasemapURL(
+    config: Config,
+    rawURL: string,
+    auth?: Static<typeof BasemapImportAuth>
+): Promise<Static<typeof OptionalTileJSON>> {
+    const imported: Static<typeof OptionalTileJSON> = {
+        type: Basemap_Type.RASTER
+    };
+
+    let url: URL;
+    try {
+        url = new URL(rawURL);
+    } catch (err) {
+        throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL');
+    }
+
+    if (isEsriLayerURL(String(url))) {
+        const esriAuth = auth?.username && auth?.password
+            ? {
+                username: auth.username,
+                password: auth.password,
+                referer: auth.referer || config.API_URL,
+                expiration: auth.expiration
+            }
+            : undefined;
+
+        const base = await EsriBase.from(url, esriAuth);
+        const layer = new EsriProxyLayer(base);
+        return await layer.tilejson();
+    }
+
+    const tjres = await fetch(url);
+    if (!tjres.ok) {
+        throw new Err(400, null, 'Unable to fetch TileJSON from source URL');
+    }
+
+    const tjbody = await tjres.json() as Record<string, any>;
+
+    if (tjbody.name) imported.name = tjbody.name;
+    if (tjbody.attribution) imported.attribution = tjbody.attribution;
+    if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
+    if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
+    if (Array.isArray(tjbody.vector_layers)) imported.vector_layers = tjbody.vector_layers;
+    if (Array.isArray(tjbody.tiles) && tjbody.tiles.length) {
+        imported.url = tjbody.tiles[0]
+            .replace('{z}', '{$z}')
+            .replace('{x}', '{$x}')
+            .replace('{y}', '{$y}');
+    }
+
+    if (imported.url) {
+        const tileURL = new URL(imported.url);
+        imported.format = toEnum.fromString(Type.Enum(Basemap_Format), path.parse(tileURL.pathname).ext.replace('.', ''));
+    }
+
+    return imported;
+}
+
 export default async function router(schema: Schema, config: Config) {
     await schema.put('/basemap', {
         name: 'Import Basemaps',
         group: 'BaseMap',
         description: `
-            If the Content-Type if text/plain, then assume the body contains a TileJSON URL
+            If the Content-Type is text/plain, then assume the body contains a TileJSON URL
+            If the Content-Type is application/json, then assume the body contains a URL import request
             Alternatively, if the Content-Type is a MultiPart upload, assume the input is a TAK XML document
 
             Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
         `,
+        body: Type.Optional(Type.Union([
+            Type.String(),
+            BasemapImportRequest
+        ])),
         res: OptionalTileJSON
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
-
-            const imported: {
-                name?: string;
-                type: Basemap_Type;
-                url?: string;
-                attribution?: string;
-                bounds?: object;
-                center?: object;
-                minzoom?: number;
-                maxzoom?: number;
-                format?: Basemap_Format;
-                serverParts?: string;
-            } = {
-                type: Basemap_Type.RASTER
-            };
             const contentType = req.headers['content-type'];
 
             if (contentType && contentType.startsWith('multipart/form-data')) {
+                const imported: {
+                    name?: string;
+                    type: Basemap_Type;
+                    url?: string;
+                    attribution?: string;
+                    bounds?: object;
+                    center?: object;
+                    minzoom?: number;
+                    maxzoom?: number;
+                    format?: Basemap_Format;
+                    serverParts?: string;
+                } = {
+                    type: Basemap_Type.RASTER
+                };
+
                 const bb = new Busboy({
                     headers: {
                         'content-type': contentType
@@ -128,45 +204,11 @@ export default async function router(schema: Schema, config: Config) {
 
                 req.pipe(bb);
             } else if (contentType && contentType.startsWith('text/plain')) {
-                let url: URL;
-                try {
-                    url = new URL(String(await stream2buffer(req)));
-                } catch (err) {
-                    throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL');
-                }
-
-                if (
-                    String(url).match(/\/FeatureServer\/\d+$/)
-                    || String(url).match(/\/MapServer\/\d+$/)
-                    || String(url).match(/\/ImageServer$/)
-                ) {
-                    const base = new EsriBase(url);
-                    const layer = new EsriProxyLayer(base);
-                    const tilejson = await layer.tilejson();
-
-                    res.json(tilejson);
-                } else {
-                    const tjres = await fetch(url);
-                    const tjbody = await tjres.json();
-
-                    if (tjbody.name) imported.name = tjbody.name;
-                    if (tjbody.attribution) imported.attribution = tjbody.attribution;
-                    if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
-                    if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
-                    if (tjbody.tiles.length) {
-                        imported.url = tjbody.tiles[0]
-                            .replace('{z}', '{$z}')
-                            .replace('{x}', '{$x}')
-                            .replace('{y}', '{$y}')
-                    }
-
-                    if (imported.url) {
-                        const url = new URL(imported.url)
-                        imported.format = toEnum.fromString(Type.Enum(Basemap_Format), path.parse(url.pathname).ext.replace('.', ''));
-                    }
-
-                    res.json(imported);
-                }
+                const imported = await importBasemapURL(config, String(await stream2buffer(req)));
+                res.json(imported);
+            } else if (contentType && contentType.startsWith('application/json')) {
+                const imported = await importBasemapURL(config, req.body.url, req.body.auth);
+                res.json(imported);
             } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }

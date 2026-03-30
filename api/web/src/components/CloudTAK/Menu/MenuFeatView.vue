@@ -138,16 +138,14 @@
 </template>
 
 <script setup lang='ts'>
-import { v4 as randomUUID } from 'uuid';
 import { ref, computed } from 'vue';
 import { useMapStore } from '../../../stores/map.ts';
-import { server } from '../../../std.ts';
-import Overlay from '../../../base/overlay.ts';
 import type { LngLatLike, MapGeoJSONFeature } from 'maplibre-gl';
 import type { Feature } from 'geojson';
 import pointOnFeature from '@turf/point-on-feature';
 import Coordinate from '../util/Coordinate.vue';
 import CopyField from '../util/CopyField.vue';
+import { cutOverlayFeature, getFeatureOverlay } from '../util/featureCut.ts';
 import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
@@ -172,14 +170,7 @@ const feature = computed(() => {
 
 const mode = ref('default');
 
-const overlay = computed<Overlay | null>(() => {
-    if (!feature.value) return null;
-    // @ts-expect-error Doesn't exist in typedef
-    const source: number | undefined = Number(feature.value.source);
-    if (!source || isNaN(source)) return null
-    const ov = mapStore.getOverlayById(source);
-    return ov;
-})
+const overlay = computed(() => getFeatureOverlay(mapStore, feature.value));
 
 const center = computed(() => {
     if (!feature.value) return [0, 0];
@@ -200,46 +191,7 @@ const htmlDescription = computed(() => {
 });
 
 async function cutFeature() {
-    if (!overlay.value || !feature.value) throw new Error("Could not determine Overlay");
-
-    const { data: rawFeature, error } = await server.GET('/api/basemap/{:basemapid}/feature/{:featureid}', {
-        params: {
-            path: {
-                ':basemapid': Number(overlay.value.mode_id),
-                ':featureid': String(feature.value.id)
-            }
-        }
-    });
-    if (error || !rawFeature) throw new Error("Failed to load feature");
-
-    const id = randomUUID();
-
-    if (
-        rawFeature.geometry.type !== "Point"
-        && rawFeature.geometry.type !== "LineString"
-        && rawFeature.geometry.type !== "Polygon"
-    ) {
-        throw new Error(`Geometry type is not currently supported`);
-    }
-
-    mapStore.toImport.push({
-        id,
-        type: 'Feature',
-        path: '/',
-        properties: {
-            id,
-            type: 'u-d-p',
-            how: 'h-g-i-g-o',
-            color: '#00FF00',
-            archived: true,
-            time: new Date().toISOString(),
-            start: new Date().toISOString(),
-            stale: new Date().toISOString(),
-            center: pointOnFeature(rawFeature).geometry.coordinates,
-            callsign: 'New Feature'
-        },
-        geometry: rawFeature.geometry
-    });
+    await cutOverlayFeature(mapStore, feature.value);
 }
 
 function zoomTo() {
