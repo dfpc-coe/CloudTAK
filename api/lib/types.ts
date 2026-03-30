@@ -6,7 +6,7 @@ import { Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Stal
 import { VideoLease_SourceType} from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
-import { Basemap_Format, Basemap_Scheme, Basemap_Type } from '../lib/enums.js';
+import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type } from '../lib/enums.js';
 import { Feature } from '@tak-ps/node-cot';
 
 export const LayerResponse = AugmentedLayer;
@@ -418,6 +418,7 @@ export const BasemapResponse = Type.Object({
     updated: Type.String(),
     name: Type.String(),
     url: Type.String(),
+    protocol: Type.Enum(Basemap_Protocol),
     bounds: Type.Any(),
     center: Type.Any(),
     minzoom: Type.Integer(),
