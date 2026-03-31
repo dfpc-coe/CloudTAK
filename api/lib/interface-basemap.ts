@@ -1,14 +1,14 @@
 import { tileToBBOX } from './tilebelt.js';
 import { bbox } from '@turf/bbox';
 import { InferSelectModel } from 'drizzle-orm';
-import type { BBox } from 'geojson';
+import type { BBox, Geometry } from 'geojson';
 import type { Response } from 'express';
 import Config from './config.js';
 import { Basemap } from './schema.js';
 import { Static, Type } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import { Basemap_FeatureAction, Basemap_Protocol } from './enums.js';
-import { validateStyleMin } from '@maplibre/maplibre-gl-style-spec';
+import { StyleSpecification, validateStyleMin } from '@maplibre/maplibre-gl-style-spec';
 import { pointOnFeature } from '@turf/point-on-feature';
 import { bboxPolygon } from '@turf/bbox-polygon';
 import { Feature } from '@tak-ps/node-cot';
@@ -116,8 +116,8 @@ export class BasemapProtocol implements BasemapProtocolInterface {
         const errors = validateStyleMin({
             version: 8,
             glyphs: '/fonts/{fontstack}/{range}.pbf',
-            sources: sources as any,
-            layers: layers as any
+            sources: sources as StyleSpecification['sources'],
+            layers: layers as StyleSpecification['layers']
         });
 
         if (errors.length) throw new Err(400, null, JSON.stringify(errors));
@@ -270,7 +270,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
             if (!headers[key]) delete headers[key];
         }
 
-        const bounds = this.basemap?.bounds ? bbox(this.basemap.bounds as any) : undefined;
+        const bounds = this.basemap?.bounds ? bbox(this.basemap.bounds as Geometry) : undefined;
         if (bounds && bounds.length === 4) {
             const tileBbox = tileToBBOX([x, y, z]);
             const [minLon, minLat, maxLon, maxLat] = bounds;
@@ -295,10 +295,11 @@ export class BasemapProtocol implements BasemapProtocolInterface {
     }
 
     protected async _tile(
-        _z: number, _x: number, _y: number,
-        _res: Response,
-        _opts: Required<TileOpts>
+        z: number, x: number, y: number,
+        res: Response,
+        opts: Required<TileOpts>
     ): Promise<void> {
+        void z; void x; void y; void res; void opts;
         throw new Err(501, null, 'Protocol does not implement tile()');
     }
 }
