@@ -55,7 +55,6 @@
             <component
                 :is='activeSelectorComponent'
                 v-else-if='activeSelectorComponent'
-                :type='selectedBasemapType'
                 :basemap-id='props.basemap.id'
                 :editing='editing'
                 :vector-layers='vectorLayers'
@@ -101,7 +100,9 @@ import { computed, ref, onMounted } from 'vue';
 import { std, stdurl } from '../../../../std.ts';
 import ProfileConfig from '../../../../base/profile.ts';
 import BasemapTypeSelector from './TypeSelector.vue';
-import TypeSelectorArcGIS from './TypeSelectorArcGIS.vue';
+import TypeSelectorFeatureServer from './TypeSelectorFeatureServer.vue';
+import TypeSelectorImageServer from './TypeSelectorImageServer.vue';
+import TypeSelectorMapServer from './TypeSelectorMapServer.vue';
 import TypeSelectorZxy_Tilejson from './TypeSelectorZxy_Tilejson.vue';
 import TypeSelectorZxy_Upload from './TypeSelectorZxy_Upload.vue';
 import TypeSelectorZxy from './TypeSelectorZxy.vue';
@@ -188,9 +189,9 @@ const showFormFooter = computed(() => {
 const activeSelectorComponent = computed(() => {
     switch (selectedBasemapType.value) {
     case 'zxy': return TypeSelectorZxy;
-    case 'imageserver':
-    case 'mapserver':
-    case 'featureserver': return TypeSelectorArcGIS;
+    case 'imageserver': return TypeSelectorImageServer;
+    case 'mapserver': return TypeSelectorMapServer;
+    case 'featureserver': return TypeSelectorFeatureServer;
     case 'tilejson': return TypeSelectorZxy_Tilejson;
     case 'upload': return TypeSelectorZxy_Upload;
     default: return null;
@@ -335,12 +336,12 @@ async function create(): Promise<void> {
         if (props.basemap.id) {
             await std(`/api/basemap/${props.basemap.id}`, {
                 method: 'PATCH',
-                body: { scope: scope.value, ...body },
+                body: { scope: scope.value, protocol: selectedBasemapType.value, ...body },
             });
         } else {
             await std('/api/basemap', {
                 method: 'POST',
-                body: { scope: scope.value, ...body },
+                body: { scope: scope.value, protocol: selectedBasemapType.value, ...body },
             });
         }
 
