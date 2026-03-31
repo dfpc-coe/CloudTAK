@@ -1,7 +1,7 @@
 import undici from 'undici';
 import type { Response } from 'express';
 import Err from '@openaddresses/batch-error';
-import { BasemapProtocol, TileJSONInterface, TileOpts } from '../interface-basemap.js';
+import { BasemapProtocol, TileOpts } from '../interface-basemap.js';
 
 /**
  * @class
@@ -11,13 +11,25 @@ import { BasemapProtocol, TileJSONInterface, TileOpts } from '../interface-basem
  * by streaming the upstream response directly to the client.
  */
 export default class ZXYBasemap extends BasemapProtocol {
+    isValidURL(str: string): void {
+        super.isValidURL(str);
+
+        // Consistent Mapbox Style XYZ Endpoints: {z} vs TAK: {$z}
+        const pathname = decodeURIComponent(str).replace(/\{\$/g, '{');
+
+        if (
+            !(pathname.includes('{z}') && pathname.includes('{x}') && pathname.includes('{y}'))
+            && !pathname.includes('{q}')
+        ) {
+            throw new Err(400, null, 'ZXY protocol requires {z}/{x}/{y} tile variables or a {q} quadkey variable');
+        }
+    }
     protected async _tile(
-        config: TileJSONInterface,
         z: number, x: number, y: number,
         res: Response,
         opts: Required<TileOpts>
     ): Promise<void> {
-        const url = new URL(config.url
+        const url = new URL(this.basemap!.url
             .replace(/\{\$?z\}/, String(z))
             .replace(/\{\$?x\}/, String(x))
             .replace(/\{\$?y\}/, String(y))

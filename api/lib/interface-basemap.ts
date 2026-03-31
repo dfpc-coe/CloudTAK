@@ -1,4 +1,5 @@
 import { tileToBBOX } from './tilebelt.js';
+import { bbox } from '@turf/bbox';
 import { InferSelectModel } from 'drizzle-orm';
 import type { BBox } from 'geojson';
 import type { Response } from 'express';
@@ -68,21 +69,19 @@ export interface TileOpts {
  */
 export interface BasemapProtocolInterface {
     actions(): Static<typeof TileJSONActions>;
+    isValidURL(str: string): void;
 
     tile(
-        config: TileJSONInterface,
         z: number, x: number, y: number,
         res: Response,
         opts?: TileOpts
     ): Promise<void>;
 
     featureQuery?(
-        url: string,
         polygon: Static<typeof Feature.Polygon>
     ): Promise<Static<typeof GeoJSONFeatureCollection>>;
 
     featureFetch?(
-        url: string,
         id: string
     ): Promise<Static<typeof GeoJSONFeature>>;
 }
@@ -95,7 +94,12 @@ export interface BasemapProtocolInterface {
  * normalisation and bounds checking) before delegating to the protocol-specific
  * _tile() implementation.
  */
-export abstract class BasemapProtocol implements BasemapProtocolInterface {
+export class BasemapProtocol implements BasemapProtocolInterface {
+    basemap?: InferSelectModel<typeof Basemap>;
+
+    constructor(basemap?: InferSelectModel<typeof Basemap>) {
+        this.basemap = basemap;
+    }
 
     /**
      * Validate a MapLibre Style JSON
@@ -120,11 +124,13 @@ export abstract class BasemapProtocol implements BasemapProtocolInterface {
     }
 
     /**
-     * Validate a basemap tile URL
+     * Validate a basemap tile URL.
+     * Subclasses override this to enforce protocol-specific URL patterns.
+     * The base implementation only checks that the URL is well-formed and uses HTTP/S.
      *
      * @param str - Tile URL to validate
      */
-    static isValidURL(str: string): void {
+    isValidURL(str: string): void {
         let url: URL;
         try {
             url = new URL(str);
@@ -135,30 +141,18 @@ export abstract class BasemapProtocol implements BasemapProtocolInterface {
         if (!['http:', 'https:'].includes(url.protocol)) {
             throw new Err(400, null, 'Only HTTP and HTTPS Protocols are supported');
         }
-
-        // Consistent Mapbox Style XYZ Endpoints: {z} vs TAK: {$z}
-        const pathname = decodeURIComponent(str).replace(/\{\$/g, '{');
-
-        if (
-            !(pathname.includes('{z}') && pathname.includes('{x}') && pathname.includes('{y}'))
-            && !pathname.includes('{q}')
-            && !pathname.match(/\/FeatureServer\/\d+$/)
-            && !pathname.match(/\/MapServer\/\d+$/)
-            && !pathname.includes('/ImageServer')
-        ) {
-            throw new Err(400, null, 'Either XYZ, Quadkey variables OR ESRI FeatureServer/ImageServer must be used');
-        }
     }
 
     /**
-     * Determine the proxied tile URL to use when sharing a basemap.
+     * Determine the proxied tile URL to use when sharing this basemap.
      * ESRI-protocol basemaps route through the CloudTAK tile proxy; others
      * expose their URL directly.
      *
-     * @param config  - Application config
-     * @param basemap - Basemap row from the database
+     * @param config - Application config
      */
-    static proxyShare(config: Config, basemap: InferSelectModel<typeof Basemap>): string {
+    proxyShare(config: Config): string {
+        const basemap = this.basemap!;
+
         if (!basemap.sharing_enabled) {
             throw new Err(400, null, `Basemap Sharing has been disabled for ${basemap.name}`);
         } else if (!basemap.sharing_token) {
@@ -247,16 +241,16 @@ export abstract class BasemapProtocol implements BasemapProtocolInterface {
      * Subclasses that support feature querying should override this method.
      */
     actions(): Static<typeof TileJSONActions> {
-        return { feature: [] };
+        return {
+            feature: []
+        };
     }
 
     featureQuery?(
-        url: string,
         polygon: Static<typeof Feature.Polygon>
     ): Promise<Static<typeof GeoJSONFeatureCollection>>;
 
     featureFetch?(
-        url: string,
         id: string
     ): Promise<Static<typeof GeoJSONFeature>>;
 
@@ -267,7 +261,6 @@ export abstract class BasemapProtocol implements BasemapProtocolInterface {
      * checking) before delegating to the protocol-specific _tile() method.
      */
     async tile(
-        config: TileJSONInterface,
         z: number, x: number, y: number,
         res: Response,
         opts?: TileOpts
@@ -277,9 +270,10 @@ export abstract class BasemapProtocol implements BasemapProtocolInterface {
             if (!headers[key]) delete headers[key];
         }
 
-        if (config.bounds && config.bounds.length === 4) {
+        const bounds = this.basemap?.bounds ? bbox(this.basemap.bounds as any) : undefined;
+        if (bounds && bounds.length === 4) {
             const tileBbox = tileToBBOX([x, y, z]);
-            const [minLon, minLat, maxLon, maxLat] = config.bounds;
+            const [minLon, minLat, maxLon, maxLat] = bounds;
             const [tileMinLon, tileMinLat, tileMaxLon, tileMaxLat] = tileBbox;
 
             if (tileMaxLat < minLat || tileMinLat > maxLat) {
@@ -297,13 +291,14 @@ export abstract class BasemapProtocol implements BasemapProtocolInterface {
             }
         }
 
-        return this._tile(config, z, x, y, res, { headers });
+        return this._tile(z, x, y, res, { headers });
     }
 
-    protected abstract _tile(
-        config: TileJSONInterface,
-        z: number, x: number, y: number,
-        res: Response,
-        opts: Required<TileOpts>
-    ): Promise<void>;
+    protected async _tile(
+        _z: number, _x: number, _y: number,
+        _res: Response,
+        _opts: Required<TileOpts>
+    ): Promise<void> {
+        throw new Err(501, null, 'Protocol does not implement tile()');
+    }
 }
