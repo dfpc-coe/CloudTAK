@@ -213,7 +213,6 @@ import {
     TablerDropdown
 } from '@tak-ps/vue-tabler';
 import {
-    IconMap,
     IconPlus,
     IconFolder,
     IconShare2,

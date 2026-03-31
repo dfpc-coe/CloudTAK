@@ -1,43 +1,60 @@
 <template>
-  <div class="hb-container" ref="container">
-    <div ref="backdrop" class="hb-backdrop" :style="backdropStyle" v-html="highlightedContent"></div>
-
-    <TablerInput
-      ref="inputComponent"
-      v-model="internalValue"
-      class="hb-input"
-      :label="props.label"
-      :description="props.description"
-      :rows="inputRows"
-      :placeholder="props.placeholder"
-      :disabled="props.disabled"
-      @focus="isFocused = true"
-      @blur="isFocused = false"
-      @update:model-value="handleModelUpdate"
-    />
-
-    <ul 
-      v-if="showSuggestions && filteredVariables.length" 
-      class="hb-suggestions" 
-      :style="{ top: suggestionPos.y + 'px', left: suggestionPos.x + 'px' }"
+    <div
+        ref='container'
+        class='hb-container'
     >
-      <li 
-        v-for="(opt, i) in filteredVariables" 
-        :key="opt.key"
-        :class="{ active: i === activeIndex }"
-        @mousedown.prevent="selectSuggestion(opt)"
-      >
-        <span class="var-name">{{ opt.key }}</span>
-        <span v-if="opt.hasChildren" class="var-indicator">❯</span>
-      </li>
-    </ul>
+        <div
+            ref='backdrop'
+            class='hb-backdrop'
+            :style='backdropStyle'
+            v-html='highlightedContent'
+        />
 
-    <div v-if="isFocused" class="hb-helper form-hint">
-      <span>Type:</span>
-      <span class="hb-helper-token" v-pre>{{</span>
-      <span>to see template suggestions</span>
+        <TablerInput
+            ref='inputComponent'
+            v-model='internalValue'
+            class='hb-input'
+            :label='props.label'
+            :description='props.description'
+            :rows='inputRows'
+            :placeholder='props.placeholder'
+            :disabled='props.disabled'
+            @focus='isFocused = true'
+            @blur='isFocused = false'
+            @update:model-value='handleModelUpdate'
+        />
+
+        <ul 
+            v-if='showSuggestions && filteredVariables.length' 
+            class='hb-suggestions' 
+            :style='{ top: `${suggestionPos.y}px`, left: `${suggestionPos.x}px` }'
+        >
+            <li 
+                v-for='(opt, i) in filteredVariables' 
+                :key='opt.key'
+                :class='{ active: i === activeIndex }'
+                @mousedown.prevent='selectSuggestion(opt)'
+            >
+                <span class='var-name'>{{ opt.key }}</span>
+                <span
+                    v-if='opt.hasChildren'
+                    class='var-indicator'
+                >❯</span>
+            </li>
+        </ul>
+
+        <div
+            v-if='isFocused'
+            class='hb-helper form-hint'
+        >
+            <span>Type:</span>
+            <span
+                v-pre
+                class='hb-helper-token'
+            >{{</span>
+            <span>to see template suggestions</span>
+        </div>
     </div>
-  </div>
 </template>
 
 <script setup>

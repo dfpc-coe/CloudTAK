@@ -16,13 +16,17 @@
                 v-if='basemap.username'
                 class='mx-1'
                 background-color='#d63939'
-            >Private</TablerBadge>
+            >
+                Private
+            </TablerBadge>
 
             <TablerBadge
                 v-if='basemap.hidden'
                 class='mx-1'
                 background-color='#d63939'
-            >Hidden</TablerBadge>
+            >
+                Hidden
+            </TablerBadge>
 
             <slot name='actions' />
         </div>

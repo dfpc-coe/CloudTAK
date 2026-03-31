@@ -41,7 +41,9 @@
                         >
                             <template v-if='isEditing(item.index)'>
                                 <div class='d-flex align-items-center mb-2'>
-                                    <div class='subheader user-select-none'>External Link</div>
+                                    <div class='subheader user-select-none'>
+                                        External Link
+                                    </div>
                                     <div class='ms-auto d-flex align-items-center flex-nowrap'>
                                         <TablerIconButton
                                             title='Save Link'
@@ -138,7 +140,9 @@
                             class='rounded border-0 bg-default mb-2 px-2 py-2'
                         >
                             <div class='d-flex align-items-center mb-2'>
-                                <div class='subheader user-select-none'>External Link</div>
+                                <div class='subheader user-select-none'>
+                                    External Link
+                                </div>
                                 <div class='ms-auto d-flex align-items-center flex-nowrap'>
                                     <TablerIconButton
                                         title='Save Link'

@@ -34,22 +34,23 @@
         <template v-else>
             <TypeSelectorBase
                 v-bind='props'
+                v-model:editing='editing'
                 type='mapserver'
                 @change-type='emit("change-type")'
                 @update:scope='emit("update:scope", $event)'
-                @update:warnSharing='emit("update:warnSharing", $event)'
+                @update:warn-sharing='emit("update:warnSharing", $event)'
             >
                 <template #advanced>
                     <div class='col-md-6'>
                         <TablerInput
-                            v-model='props.editing.minzoom'
+                            v-model='editing.minzoom'
                             required
                             label='MinZoom'
                         />
                     </div>
                     <div class='col-md-6'>
                         <TablerInput
-                            v-model='props.editing.maxzoom'
+                            v-model='editing.maxzoom'
                             required
                             label='MaxZoom'
                         />
@@ -68,9 +69,10 @@ import { BasemapTypeConfig } from './types.ts';
 import { TablerInput } from '@tak-ps/vue-tabler';
 import type { EditingBasemap, VectorLayerDescriptor } from './types.ts';
 
+const editing = defineModel<EditingBasemap>('editing', { required: true });
+
 const props = defineProps<{
     basemapId?: number;
-    editing: EditingBasemap;
     vectorLayers: VectorLayerDescriptor[];
     errors: Record<'name' | 'url', string>;
     scope: 'user' | 'server';
@@ -88,5 +90,5 @@ const emit = defineEmits<{
 }>();
 
 const config = BasemapTypeConfig['mapserver'];
-const showImportPrompt = computed(() => !props.basemapId && !props.editing.url);
+const showImportPrompt = computed(() => !props.basemapId && !editing.value.url);
 </script>

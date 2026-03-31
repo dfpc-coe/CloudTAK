@@ -223,9 +223,10 @@ import TypeSelectorSelected from './TypeSelectorSelected.vue';
 import { BasemapTypeConfig } from './types.ts';
 import type { BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
 
+const editing = defineModel<EditingBasemap>('editing', { required: true });
+
 const props = defineProps<{
     basemapId?: number;
-    editing: EditingBasemap;
     vectorLayers: VectorLayerDescriptor[];
     errors: Record<'name' | 'url', string>;
     type: BasemapSourceType;
@@ -268,7 +269,7 @@ const vectorTitleSchema = computed(() => {
 
 const vectorTitleField = computed({
     get: () => {
-        const title = props.editing.title;
+        const title = editing.value.title;
         if (!title) return '';
         if (/^\{\{\s*[a-zA-Z0-9_]+\s*\}\}$/.test(title)) return title;
         if (!/^[a-zA-Z0-9_]+$/.test(title)) return title;
@@ -276,12 +277,12 @@ const vectorTitleField = computed({
     },
     set: (value: string) => {
         if (!value) {
-            props.editing.title = '';
+            editing.value.title = '';
             return;
         }
 
         const match = String(value).trim().match(/^\{\{\s*([a-zA-Z0-9_]+)\s*\}\}$/);
-        props.editing.title = match ? match[1] : value;
+        editing.value.title = match ? match[1] : value;
     }
 });
 
@@ -292,7 +293,7 @@ const vectorLayerOptions = computed(() => {
         if (layer.id) ids.add(layer.id);
     }
 
-    const current = props.editing.snapping_layer;
+    const current = editing.value.snapping_layer;
     if (current) ids.add(current);
 
     return Array.from(ids).sort();
