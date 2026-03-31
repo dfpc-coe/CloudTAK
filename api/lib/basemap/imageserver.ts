@@ -1,7 +1,7 @@
 import type { Response } from 'express';
 import Err from '@openaddresses/batch-error';
 import typedFetch from '../fetch.js';
-import { BasemapProtocol, TileJSONInterface, TileOpts } from '../interface-basemap.js';
+import { BasemapProtocol, TileOpts } from '../interface-basemap.js';
 
 /**
  * @class
@@ -11,6 +11,13 @@ import { BasemapProtocol, TileJSONInterface, TileOpts } from '../interface-basem
  * request and returning the resulting JPEG image to the client.
  */
 export default class ImageServerBasemap extends BasemapProtocol {
+    isValidURL(str: string): void {
+        super.isValidURL(str);
+
+        if (!str.includes('/ImageServer')) {
+            throw new Err(400, null, 'ImageServer protocol requires a URL ending with /ImageServer');
+        }
+    }
 
     /**
      * Build an ESRI ImageServer exportImage URL for the given tile coordinates.
@@ -41,13 +48,12 @@ export default class ImageServerBasemap extends BasemapProtocol {
     }
 
     protected async _tile(
-        config: TileJSONInterface,
         z: number, x: number, y: number,
         res: Response,
         opts: Required<TileOpts>
     ): Promise<void> {
         try {
-            const url = ImageServerBasemap.esriRasterTileURL(config.url, z, x, y);
+            const url = ImageServerBasemap.esriRasterTileURL(this.basemap!.url, z, x, y);
 
             const tileRes = await typedFetch(url);
 

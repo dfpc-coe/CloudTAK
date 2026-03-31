@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import { bbox } from '@turf/bbox';
 import { BasemapProtocol, TileJSONType, TileJSONActions } from '../lib/interface-basemap.js';
-import { fromProtocol } from '../lib/basemap/index.js';
+import { fromProtocol } from '../lib/factory-basemap.js';
 import Auth, { AuthUserAccess, AuthUser, AuthResource, ResourceCreationScope, AuthResourceAccess } from '../lib/auth.js';
 import { Busboy } from '@fastify/busboy';
 import Config from '../lib/config.js';
@@ -454,7 +454,7 @@ export default async function router(schema: Schema, config: Config) {
                 delete req.body.center;
             }
 
-            BasemapProtocol.isValidURL(req.body.url);
+            fromProtocol(req.body.protocol).isValidURL(req.body.url);
 
             let username: string | null = null;
             if (user.access !== AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
@@ -549,9 +549,10 @@ export default async function router(schema: Schema, config: Config) {
             let center: Geometry | undefined = undefined;
             if (req.body.bounds) bounds = bboxPolygon(req.body.bounds as BBox).geometry;
             if (req.body.center) center = { type: 'Point', coordinates: req.body.center };
-            if (req.body.url) BasemapProtocol.isValidURL(req.body.url);
 
             const existing = await config.models.Basemap.from(req.params.basemapid);
+
+            if (req.body.url) fromProtocol(req.body.protocol ?? existing.protocol).isValidURL(req.body.url);
 
             if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -653,7 +654,7 @@ export default async function router(schema: Schema, config: Config) {
                         maxZoom: { _text: basemap.maxzoom },
                         tileType: { _text: basemap.format },
                         tileUpdate: { _text: 'None' },
-                        url: { _text: BasemapProtocol.proxyShare(config, basemap) },
+                        url: { _text: fromProtocol(basemap.protocol, basemap).proxyShare(config) },
                         backgroundColor: { _text: '#000000' },
                     }
                 })).to_xml();
@@ -814,8 +815,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            return await fromProtocol(basemap.protocol).tile(
-                basemap,
+            return await fromProtocol(basemap.protocol, basemap).tile(
                 req.params.z,
                 req.params.x,
                 req.params.y,
@@ -854,8 +854,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
-            const fc = await fromProtocol(basemap.protocol).featureQuery!(
-                basemap.url,
+            const fc = await fromProtocol(basemap.protocol, basemap).featureQuery!(
                 req.body.polygon
             );
 
@@ -884,7 +883,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
-            res.json(await fromProtocol(basemap.protocol).featureFetch!(basemap.url, req.params.featureid));
+            res.json(await fromProtocol(basemap.protocol, basemap).featureFetch!(req.params.featureid));
         } catch (err) {
             Err.respond(err, res);
         }

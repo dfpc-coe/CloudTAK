@@ -1,6 +1,6 @@
 import { Static, Type } from '@sinclair/typebox'
 import { BasemapProtocol, TileJSONActions } from '../lib/interface-basemap.js';
-import { fromProtocol } from '../lib/basemap/index.js';
+import { fromProtocol } from '../lib/factory-basemap.js';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import S3 from '../lib/aws/s3.js';

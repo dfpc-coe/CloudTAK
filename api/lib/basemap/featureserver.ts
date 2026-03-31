@@ -9,7 +9,7 @@ import { Static } from '@sinclair/typebox';
 import { Basemap_FeatureAction } from '../enums.js';
 import { GeoJSONFeatureCollection, GeoJSONFeature, MultiGeoJSONFeatureCollection } from '../types.js';
 import { EsriPolygon } from '../esri/types.js';
-import { BasemapProtocol, TileJSONInterface, TileJSONActions, TileOpts } from '../interface-basemap.js';
+import { BasemapProtocol, TileJSONActions, TileOpts } from '../interface-basemap.js';
 
 /**
  * @class
@@ -20,6 +20,13 @@ import { BasemapProtocol, TileJSONInterface, TileJSONActions, TileOpts } from '.
  * fetching.
  */
 export default class FeatureServerBasemap extends BasemapProtocol {
+    isValidURL(str: string): void {
+        super.isValidURL(str);
+
+        if (!str.match(/\/FeatureServer\/\d+$/)) {
+            throw new Err(400, null, 'FeatureServer protocol requires a URL ending with /FeatureServer/{id}');
+        }
+    }
 
     /**
      * Build an ESRI FeatureServer/MapServer query URL for the given tile
@@ -87,13 +94,13 @@ export default class FeatureServerBasemap extends BasemapProtocol {
     /**
      * Query features within a polygon from the FeatureServer.
      *
-     * @param url     - FeatureServer layer URL
      * @param polygon - GeoJSON Polygon to query within
      */
     async featureQuery(
-        url: string,
         polygon: Static<typeof Feature.Polygon>
     ): Promise<Static<typeof GeoJSONFeatureCollection>> {
+        const url = this.basemap!.url;
+
         const esriPolygon: Static<typeof EsriPolygon> = {
             rings: polygon.coordinates,
             spatialReference: { wkid: 4326, latestWkid: 4326 }
@@ -119,14 +126,12 @@ export default class FeatureServerBasemap extends BasemapProtocol {
     /**
      * Fetch a single feature by objectId from the FeatureServer.
      *
-     * @param url - FeatureServer layer URL
-     * @param id  - Feature objectId
+     * @param id - Feature objectId
      */
     async featureFetch(
-        url: string,
         id: string
     ): Promise<Static<typeof GeoJSONFeature>> {
-        const urlBuilder = new URL(url + '/query');
+        const urlBuilder = new URL(this.basemap!.url + '/query');
         urlBuilder.searchParams.set('f', 'geojson');
         urlBuilder.searchParams.set('objectIds', String(id));
 
@@ -145,13 +150,12 @@ export default class FeatureServerBasemap extends BasemapProtocol {
     }
 
     protected async _tile(
-        config: TileJSONInterface,
         z: number, x: number, y: number,
         res: Response,
         opts: Required<TileOpts>
     ): Promise<void> {
         try {
-            const url = FeatureServerBasemap.esriVectorTileURL(config.url, z, x, y);
+            const url = FeatureServerBasemap.esriVectorTileURL(this.basemap!.url, z, x, y);
 
             const tileRes = await typedFetch(url);
 
