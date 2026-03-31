@@ -123,7 +123,7 @@
             />
             <div
                 v-else
-                class='d-flex flex-column gap-2 p-3'
+                class='d-flex flex-column gap-2 p-3 pb-5'
             >
                 <StandardItemBasemap
                     v-for='ov in list.items'
@@ -149,9 +149,9 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { server, stdclick } from '../../../src/std.ts';
-import type { BasemapList } from '../../../src/types.ts';
-import StandardItemBasemap from '../../CloudTAK/util/StandardItemBasemap.vue';
+import { server, stdclick } from '../../std.ts';
+import type { BasemapList } from '../../types.ts';
+import StandardItemBasemap from '../CloudTAK/util/StandardItemBasemap.vue';
 import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
