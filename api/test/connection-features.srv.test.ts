@@ -70,6 +70,7 @@ test('PUT: api/connection/1/feature', async () => {
             properties: {
                 type: 'a-f-g',
                 how: 'm-g',
+                archived: true,
                 callsign: 'Test Callsign',
                 time: time,
                 start: time,
@@ -104,6 +105,7 @@ test('GET: api/connection/1/feature - List', async () => {
                 properties: {
                     type: 'a-f-g',
                     how: 'm-g',
+                    archived: true,
                     callsign: 'Test Callsign',
                     time: time,
                     start: time,
@@ -138,6 +140,7 @@ test('GET: api/connection/1/feature/:id', async () => {
             properties: {
                 type: 'a-f-g',
                 how: 'm-g',
+                archived: true,
                 callsign: 'Test Callsign',
                 time: time,
                 start: time,
