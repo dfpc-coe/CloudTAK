@@ -36,6 +36,7 @@
                         placeholder='End Location'
                         :autofocus='false'
                         :location-picker='true'
+                        :initial-value='endInitialValue'
                         @select='routePlan.end = $event || null'
                     />
                 </div>
@@ -64,7 +65,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import SearchBox from '../util/SearchBox.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
@@ -77,7 +78,18 @@ import { useMapStore } from '../../../stores/map.ts';
 import type { Search } from '../../../types.ts';
 
 const router = useRouter();
+const route = useRoute();
 const mapStore = useMapStore();
+
+const endInitialValue = computed<string>(() => {
+    if (!route.query.end) return '';
+    const parts = String(route.query.end).split(',').map(Number);
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+        const [lng, lat] = parts;
+        return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    }
+    return '';
+});
 
 const loading = ref(true);
 
@@ -116,6 +128,17 @@ const modes = computed(() => {
 
 onMounted(async () => {
     await settings();
+
+    if (route.query.end) {
+        const parts = String(route.query.end).split(',').map(Number);
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            const [lng, lat] = parts;
+            routePlan.value.end = {
+                name: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+                coordinates: [lng, lat]
+            };
+        }
+    }
 });
 
 async function settings() {

@@ -2,15 +2,15 @@
     <div class='row row-cards'>
         <template v-if='showImportPrompt'>
             <TypeSelectorSelected
-                type='mapserver'
+                :type='type'
                 @change-type='emit("change-type")'
             />
 
             <div class='col-md-12 mt-3'>
                 <TablerInput
                     :model-value='props.url'
-                    label='MapServer URL'
-                    placeholder='https://example.com/arcgis/rest/services/WorldTopo/MapServer/1'
+                    :label='config.urlLabel'
+                    :placeholder='config.urlPlaceholder'
                     @update:model-value='emit("update:url", $event)'
                 />
             </div>
@@ -34,7 +34,6 @@
         <template v-else>
             <TypeSelectorBase
                 v-bind='props'
-                type='mapserver'
                 @change-type='emit("change-type")'
                 @update:scope='emit("update:scope", $event)'
                 @update:warnSharing='emit("update:warnSharing", $event)'
@@ -64,10 +63,12 @@
 import { computed } from 'vue';
 import TypeSelectorBase from './TypeSelectorBase.vue';
 import TypeSelectorSelected from './TypeSelectorSelected.vue';
+import { BasemapTypeConfig } from './types.ts';
 import { TablerInput } from '@tak-ps/vue-tabler';
-import type { EditingBasemap, VectorLayerDescriptor } from './types.ts';
+import type { BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
 
 const props = defineProps<{
+    type: BasemapSourceType;
     basemapId?: number;
     editing: EditingBasemap;
     vectorLayers: VectorLayerDescriptor[];
@@ -86,5 +87,6 @@ const emit = defineEmits<{
     'update:url': [value: string];
 }>();
 
+const config = BasemapTypeConfig[props.type];
 const showImportPrompt = computed(() => !props.basemapId && !props.editing.url);
 </script>

@@ -1,7 +1,6 @@
 import type { Basemap, BasemapList } from '../../../../types.ts';
 import type { paths } from '@cloudtak/api-types';
 import {
-    IconBraces,
     IconFileImport,
     IconFileUpload,
     IconGridDots,
@@ -50,7 +49,7 @@ export type BasemapImport = paths['/api/basemap']['put']['responses']['200']['co
     vector_layers?: VectorLayerDescriptor[];
 };
 
-export type BasemapSourceType = 'zxy' | 'quadkey' | 'imageserver' | 'mapserver' | 'featureserver' | 'tilejson' | 'upload';
+export type BasemapSourceType = 'zxy' | 'imageserver' | 'mapserver' | 'featureserver' | 'tilejson' | 'upload';
 
 export const BasemapTypeConfig: Record<BasemapSourceType, {
     label: string;
@@ -73,23 +72,6 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
             { value: '{$z}', tooltip: 'Insert Zoom Variable' },
             { value: '{$x}', tooltip: 'Insert X Variable' },
             { value: '{$y}', tooltip: 'Insert Y Variable' },
-        ],
-        defaults: {
-            type: 'raster',
-            format: 'png',
-            minzoom: 0,
-            maxzoom: 16,
-            tilesize: 256,
-        },
-    },
-    quadkey: {
-        label: 'Quadkey',
-        description: 'Configure a quadkey tile template.',
-        icon: IconBraces,
-        urlLabel: 'Tile URL Template',
-        urlDescription: 'Provide a quadkey template using the {$q} variable.',
-        urlPlaceholder: 'https://example.com/tiles/{$q}.png',
-        urlTokens: [
             { value: '{$q}', tooltip: 'Insert Quadkey Variable' },
         ],
         defaults: {
@@ -184,7 +166,7 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
 
 export function inferBasemapType(url?: string | null): BasemapSourceType | null {
     if (!url) return null;
-    if (url.includes('{$q}')) return 'quadkey';
+    if (url.includes('{$q}')) return 'zxy';
     if (url.match(/\/FeatureServer\/\d+$/)) return 'featureserver';
     if (url.match(/\/MapServer\/\d+$/)) return 'mapserver';
     if (url.endsWith('/ImageServer')) return 'imageserver';
