@@ -75,7 +75,7 @@
         <div class='row g-2'>
             <div
                 v-if='showTypeField'
-                class='col-12 col-lg-3 mt-3'
+                class='col-12 mt-3'
             >
                 <TablerEnum
                     v-model='editing.type'

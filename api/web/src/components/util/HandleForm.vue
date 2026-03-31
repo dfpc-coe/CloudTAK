@@ -9,7 +9,6 @@
             :style='backdropStyle'
             v-html='highlightedContent'
         />
-
         <TablerInput
             ref='inputComponent'
             v-model='internalValue'
@@ -23,7 +22,6 @@
             @blur='isFocused = false'
             @update:model-value='handleModelUpdate'
         />
-
         <ul 
             v-if='showSuggestions && filteredVariables.length' 
             class='hb-suggestions' 
@@ -39,10 +37,11 @@
                 <span
                     v-if='opt.hasChildren'
                     class='var-indicator'
-                >❯</span>
+                >
+                    ❯
+                </span>
             </li>
         </ul>
-
         <div
             v-if='isFocused'
             class='hb-helper form-hint'
@@ -51,7 +50,9 @@
             <span
                 v-pre
                 class='hb-helper-token'
-            >{{</span>
+            >
+                {{
+            </span>
             <span>to see template suggestions</span>
         </div>
     </div>
@@ -306,7 +307,7 @@ const handleInput = (target) => {
   const cursor = target.selectionStart;
   const textBefore = internalValue.value.substring(0, cursor);
   const match = textBefore.match(/\{\{([^}]*)$/);
-  
+
   if (match) {
     showSuggestions.value = true;
     currentPath.value = match[1].trim();
@@ -327,9 +328,9 @@ const filteredVariables = computed(() => {
   const parts = currentPath.value.split('.');
   const lastPart = parts.pop();
   const parentPath = parts.join('.');
-  
+
   const target = parentPath === '' ? props.schema : getTargetSchema(parentPath);
-  
+
   if (!target || !target.properties) return [];
 
   return Object.keys(target.properties)
@@ -356,11 +357,11 @@ const selectSuggestion = (option) => {
   const textBefore = internalValue.value.substring(0, cursor);
   const textAfter = internalValue.value.substring(cursor);
   const selectedPath = getSelectedPath(option.key);
-  
+
   const replacement = option.hasChildren ? selectedPath + '.' : selectedPath + '}}';
   const newBefore = textBefore.replace(/([a-zA-Z0-9_.]*)$/, replacement);
   internalValue.value = newBefore + textAfter;
-  
+
   if (!option.hasChildren) {
     showSuggestions.value = false;
   } else {
@@ -380,16 +381,16 @@ const selectSuggestion = (option) => {
 
 const highlightedContent = computed(() => {
   let content = internalValue.value.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  
+
   const hbsRegex = /(\{\{\{?#?\/?)\s*([a-zA-Z0-9_.]+)\s*(\}?\}\})/g;
-  
+
   return content.replace(hbsRegex, (match, open, path, close) => {
     const isValid = getTargetSchema(path) !== null;
     const delimiterStyle = 'color: var(--tblr-warning-text-emphasis, var(--tblr-warning, #f59f00));';
     const pathStyle = isValid
       ? 'color: var(--tblr-primary-text-emphasis, rgb(var(--tblr-primary-rgb, 32, 107, 196)));'
       : 'color: var(--tblr-danger-text-emphasis, rgb(var(--tblr-danger-rgb, 214, 57, 57))); text-decoration: underline wavy;';
-    
+
     return `<span style="${delimiterStyle}">${open}</span>` +
            `<span style="${pathStyle}">${path}</span>` +
            `<span style="${delimiterStyle}">${close}</span>`;
@@ -463,32 +464,32 @@ watch(() => props.disabled, async () => {
 .hb-backdrop { position: absolute; z-index: 1; pointer-events: none; overflow: hidden; }
 .hb-input { position: relative; z-index: 2; margin: 0; --bs-gutter-x: 0; }
 .hb-input :deep(.form-control) {
-  color: transparent;
-  caret-color: var(--tblr-emphasis-color, var(--tblr-body-color, #e5e7eb));
-  background-color: transparent !important;
-  -webkit-text-fill-color: transparent;
+    color: transparent;
+    caret-color: var(--tblr-emphasis-color, var(--tblr-body-color, #e5e7eb));
+    background-color: transparent !important;
+    -webkit-text-fill-color: transparent;
 }
 .hb-input :deep(.form-control:focus) { background-color: transparent !important; }
 .hb-input :deep(.form-control:disabled) { background-color: transparent !important; }
 .hb-input :deep(.form-control::placeholder) { color: var(--tblr-secondary, #667382); }
 .hb-suggestions {
-  position: absolute; z-index: 100; background: var(--tblr-bg-surface, #fff); border: 1px solid var(--tblr-border-color, #dce1e7);
-  list-style: none; padding: 4px 0; margin: 0; box-shadow: var(--tblr-box-shadow-dropdown, 0 0.5rem 1rem rgba(0, 0, 0, 0.15));
-  border-radius: var(--tblr-border-radius, 4px); min-width: 180px;
+    position: absolute; z-index: 100; background: var(--tblr-bg-surface, #fff); border: 1px solid var(--tblr-border-color, #dce1e7);
+    list-style: none; padding: 4px 0; margin: 0; box-shadow: var(--tblr-box-shadow-dropdown, 0 0.5rem 1rem rgba(0, 0, 0, 0.15));
+    border-radius: var(--tblr-border-radius, 4px); min-width: 180px;
 }
 .hb-suggestions li { padding: 6px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
 .hb-suggestions li.active { background: var(--tblr-primary, #206bc4); color: var(--tblr-bg-surface, #fff); }
 .hb-helper { display: flex; align-items: center; gap: 0.375rem; margin-top: 0.375rem; }
 .hb-helper-token {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.125rem 0.375rem;
-  border-radius: var(--tblr-border-radius-sm, 4px);
-  background: var(--tblr-bg-surface-secondary, rgba(127, 127, 127, 0.12));
-  color: var(--tblr-emphasis-color, var(--tblr-body-color, #e5e7eb));
-  font-family: var(--tblr-font-monospace, monospace);
-  font-size: 0.75rem;
-  line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--tblr-border-radius-sm, 4px);
+    background: var(--tblr-bg-surface-secondary, rgba(127, 127, 127, 0.12));
+    color: var(--tblr-emphasis-color, var(--tblr-body-color, #e5e7eb));
+    font-family: var(--tblr-font-monospace, monospace);
+    font-size: 0.75rem;
+    line-height: 1.2;
 }
 .var-indicator { font-size: 10px; opacity: 0.6; }
 </style>
