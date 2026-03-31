@@ -19,6 +19,10 @@ const ProfilePatchBody = Type.Object({
     display_icon_rotation: Type.Optional(Type.Boolean()),
     display_text: Type.Optional(Type.Enum(Profile_Text)),
 
+    geometry_point_type: Type.Optional(Type.String()),
+    geometry_point_color: Type.Optional(Type.String()),
+    geometry_point_icon: Type.Optional(Type.String()),
+
     menu_order: Type.Optional(Type.Array(Type.Object({
         key: Type.String({
             description: 'Menu Key'
