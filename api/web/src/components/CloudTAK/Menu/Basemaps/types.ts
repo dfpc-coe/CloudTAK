@@ -198,7 +198,7 @@ export function inferBasemapType(url?: string | null): BasemapSourceType | null 
     return null;
 }
 
-export function normalizeEditing(data: Basemap | BasemapImport): EditingBasemap {
+export function normalizeEditing(data: Basemap | BasemapImport | BasemapListItem): EditingBasemap {
     return {
         name: data.name ?? '',
         url: data.url ?? '',
