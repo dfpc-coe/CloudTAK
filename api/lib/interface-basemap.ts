@@ -9,7 +9,7 @@ import { Static, Type } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import { Basemap_FeatureAction, Basemap_Protocol } from './enums.js';
 import { StyleSpecification, validateStyleMin } from '@maplibre/maplibre-gl-style-spec';
-import { pointOnFeature } from '@turf/point-on-feature';
+import pointOnFeature from '@turf/point-on-feature';
 import { bboxPolygon } from '@turf/bbox-polygon';
 import { Feature } from '@tak-ps/node-cot';
 import { GeoJSONFeatureCollection, GeoJSONFeature } from './types.js';
