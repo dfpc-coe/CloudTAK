@@ -163,6 +163,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
             basemap.protocol === Basemap_Protocol.FeatureServer
             || basemap.protocol === Basemap_Protocol.MapServer
             || basemap.protocol === Basemap_Protocol.ImageServer
+            || basemap.protocol === Basemap_Protocol.Hosted
         ) {
             return `${config.API_URL}/api/basemap/${basemap.id}/tiles/{$z}/{$x}/{$y}?token=${basemap.sharing_token}`;
         }

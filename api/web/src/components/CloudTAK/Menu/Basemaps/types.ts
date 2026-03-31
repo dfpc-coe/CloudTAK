@@ -1,6 +1,7 @@
 import type { Basemap, BasemapList } from '../../../../types.ts';
 import type { paths } from '@cloudtak/api-types';
 import {
+    IconDatabase,
     IconFileImport,
     IconFileUpload,
     IconGridDots,
@@ -34,6 +35,13 @@ export interface EditingBasemap {
     center: number[];
     collection: string;
     title: string;
+    overlay: boolean;
+    hidden: boolean;
+    frequency: number | null;
+    snapping_enabled: boolean;
+    snapping_layer: string;
+    styles: unknown[];
+    tilejson: string;
 }
 
 export interface VectorLayerFieldMap {
@@ -49,7 +57,7 @@ export type BasemapImport = paths['/api/basemap']['put']['responses']['200']['co
     vector_layers?: VectorLayerDescriptor[];
 };
 
-export type BasemapSourceType = 'zxy' | 'imageserver' | 'mapserver' | 'featureserver' | 'tilejson' | 'upload';
+export type BasemapSourceType = 'zxy' | 'imageserver' | 'mapserver' | 'featureserver' | 'tilejson' | 'upload' | 'hosted';
 
 export const BasemapTypeConfig: Record<BasemapSourceType, {
     label: string;
@@ -162,6 +170,22 @@ export const BasemapTypeConfig: Record<BasemapSourceType, {
             tilesize: 256,
         },
     },
+    hosted: {
+        label: 'Hosted Tileset',
+        description: 'Select from hosted PMTiles tilesets on this server.',
+        icon: IconDatabase,
+        urlLabel: 'TileJSON URL',
+        urlDescription: 'The hosted tileset TileJSON endpoint.',
+        urlPlaceholder: '',
+        urlTokens: [],
+        defaults: {
+            type: 'raster',
+            format: 'png',
+            minzoom: 0,
+            maxzoom: 16,
+            tilesize: 256,
+        },
+    },
 };
 
 export function inferBasemapType(url?: string | null): BasemapSourceType | null {
@@ -189,6 +213,13 @@ export function normalizeEditing(data: Basemap | BasemapImport): EditingBasemap 
         center: ('center' in data && Array.isArray(data.center) ? data.center : null) ?? [0, 0],
         collection: ('collection' in data ? data.collection : undefined) ?? '',
         title: ('title' in data ? data.title : undefined) ?? 'callsign',
+        overlay: ('overlay' in data ? data.overlay : undefined) ?? false,
+        hidden: ('hidden' in data ? data.hidden : undefined) ?? false,
+        frequency: ('frequency' in data ? data.frequency : undefined) ?? null,
+        snapping_enabled: ('snapping_enabled' in data ? data.snapping_enabled : undefined) ?? false,
+        snapping_layer: ('snapping_layer' in data ? data.snapping_layer : undefined) ?? '',
+        styles: ('styles' in data && Array.isArray(data.styles) ? data.styles : null) ?? [],
+        tilejson: String(('tilejson' in data ? data.tilejson : undefined) ?? ''),
     };
 }
 
