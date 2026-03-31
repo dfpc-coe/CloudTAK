@@ -124,6 +124,86 @@
             </div>
 
             <slot name='advanced' />
+
+            <template v-if='isSystemAdmin'>
+                <div class='col-12'>
+                    <TablerToggle
+                        v-model='editing.overlay'
+                        label='Overlay'
+                        description='If true, this layer is treated as an overlay on top of base maps'
+                    >
+                        <TablerBadge>admin</TablerBadge>
+                    </TablerToggle>
+                </div>
+                <div class='col-12'>
+                    <TablerToggle
+                        v-model='editing.hidden'
+                        label='Hidden'
+                        description='Hide this layer from the default list'
+                    >
+                        <TablerBadge>admin</TablerBadge>
+                    </TablerToggle>
+                </div>
+                <div class='col-12'>
+                    <TablerInput
+                        v-if='editing.frequency !== undefined && editing.frequency !== null'
+                        v-model='editing.frequency'
+                        label='Update Frequency (Seconds)'
+                        description='How often to refresh the tiles in seconds'
+                    >
+                        <TablerBadge>admin</TablerBadge>
+                        <TablerToggle
+                            :model-value='true'
+                            label='Enabled'
+                            @click='editing.frequency = null'
+                        />
+                    </TablerInput>
+                    <div v-else>
+                        <TablerToggle
+                            :model-value='false'
+                            label='Enable Auto-Update Frequency'
+                            description='Automatically refresh the tiles periodically'
+                            @click='editing.frequency = 60'
+                        >
+                            <TablerBadge>admin</TablerBadge>
+                        </TablerToggle>
+                    </div>
+                </div>
+                <div
+                    v-if='editing.type === "vector"'
+                    class='col-12'
+                >
+                    <div class='row g-2 my-2 border rounded'>
+                        <div class='col-12'>
+                            <TablerToggle
+                                v-model='editing.snapping_enabled'
+                                label='Enable Snapping'
+                                description='Allow drawing tools to snap to the underlying vector features'
+                            >
+                                <TablerBadge>admin</TablerBadge>
+                            </TablerToggle>
+                        </div>
+                        <div
+                            v-if='editing.snapping_enabled'
+                            class='col-12'
+                        >
+                            <TablerEnum
+                                v-if='vectorLayerOptions.length'
+                                v-model='editing.snapping_layer'
+                                label='Snapping Layer'
+                                description='Choose the vector layer to snap drawing tools to'
+                                :options='vectorLayerOptions'
+                            />
+                            <TablerInput
+                                v-else
+                                v-model='editing.snapping_layer'
+                                label='Snapping Layer'
+                                description='The specific layer name within the vector tiles to snap to'
+                            />
+                        </div>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 </template>
@@ -131,6 +211,7 @@
 <script setup lang='ts'>
 import { computed, ref } from 'vue';
 import {
+    TablerBadge,
     TablerInlineAlert,
     TablerToggle,
     TablerEnum,
@@ -202,5 +283,18 @@ const vectorTitleField = computed({
         const match = String(value).trim().match(/^\{\{\s*([a-zA-Z0-9_]+)\s*\}\}$/);
         props.editing.title = match ? match[1] : value;
     }
+});
+
+const vectorLayerOptions = computed(() => {
+    const ids = new Set<string>();
+
+    for (const layer of props.vectorLayers || []) {
+        if (layer.id) ids.add(layer.id);
+    }
+
+    const current = props.editing.snapping_layer;
+    if (current) ids.add(current);
+
+    return Array.from(ids).sort();
 });
 </script>

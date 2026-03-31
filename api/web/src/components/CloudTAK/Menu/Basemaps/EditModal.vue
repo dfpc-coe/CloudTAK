@@ -50,6 +50,7 @@
             <TablerLoading v-if='loading' />
             <BasemapTypeSelector
                 v-else-if='showTypeSelector'
+                :is-system-admin='isSystemAdmin'
                 @select='setBasemapType'
             />
             <component
@@ -106,6 +107,7 @@ import TypeSelectorMapServer from './TypeSelectorMapServer.vue';
 import TypeSelectorZxy_Tilejson from './TypeSelectorZxy_Tilejson.vue';
 import TypeSelectorZxy_Upload from './TypeSelectorZxy_Upload.vue';
 import TypeSelectorZxy from './TypeSelectorZxy.vue';
+import TypeSelectorHosted from './TypeSelectorHosted.vue';
 import { BasemapTypeConfig, inferBasemapType, normalizeEditing } from './types.ts';
 import type { BasemapListItem, BasemapImport, BasemapImportRequest, BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
 import {
@@ -162,6 +164,13 @@ const editing = ref<EditingBasemap>({
     center: [0, 0],
     collection: '',
     title: 'callsign',
+    overlay: false,
+    hidden: false,
+    frequency: null,
+    snapping_enabled: false,
+    snapping_layer: '',
+    styles: [],
+    tilejson: '',
 });
 
 const showTypeSelector = computed(() => {
@@ -183,7 +192,8 @@ const showFormFooter = computed(() => {
         && !showMetadataImportPrompt.value
         && !!selectedBasemapType.value
         && selectedBasemapType.value !== 'upload'
-        && selectedBasemapType.value !== 'tilejson';
+        && selectedBasemapType.value !== 'tilejson'
+        && selectedBasemapType.value !== 'hosted';
 });
 
 const activeSelectorComponent = computed(() => {
@@ -194,6 +204,7 @@ const activeSelectorComponent = computed(() => {
     case 'featureserver': return TypeSelectorFeatureServer;
     case 'tilejson': return TypeSelectorZxy_Tilejson;
     case 'upload': return TypeSelectorZxy_Upload;
+    case 'hosted': return TypeSelectorHosted;
     default: return null;
     }
 });
@@ -310,12 +321,14 @@ async function create(): Promise<void> {
 
     loading.value = true;
     try {
-        const body: Omit<Partial<EditingBasemap>, 'tilesize' | 'collection' | 'attribution' | 'bounds' | 'center'> & {
+        const body: Omit<Partial<EditingBasemap>, 'tilesize' | 'collection' | 'attribution' | 'bounds' | 'center' | 'frequency' | 'snapping_layer'> & {
             bounds?: number[];
             center?: number[];
             tilesize?: number | null;
             collection?: string | null;
             attribution?: string | null;
+            frequency?: number | null;
+            snapping_layer?: string | null;
         } = {
             ...editing.value,
         };

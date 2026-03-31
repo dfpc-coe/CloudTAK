@@ -123,62 +123,14 @@
             />
             <div
                 v-else
-                class='table-responsive'
+                class='d-flex flex-column gap-2 p-3'
             >
-                <table class='table card-table table-hover table-vcenter datatable'>
-                    <TableHeader
-                        v-model:sort='paging.sort'
-                        v-model:order='paging.order'
-                        v-model:header='header'
-                    />
-                    <tbody>
-                        <tr
-                            v-for='ov in list.items'
-                            :key='ov.id'
-                            tabindex='0'
-                            class='cursor-pointer'
-                            @keyup.enter='stdclick(router, $event, `/admin/overlay/${ov.id}`)'
-                            @click='stdclick(router, $event, `/admin/overlay/${ov.id}`)'
-                        >
-                            <template v-for='h in header'>
-                                <template v-if='h.display'>
-                                    <td>
-                                        <div class='d-flex align-items-center'>
-                                            <span v-text='ov[h.name]' />
-
-                                            <template v-if='h.name === "name"'>
-                                                <div class='ms-auto'>
-                                                    <span
-                                                        v-if='!ov.username'
-                                                        class='mx-3 ms-auto badge border bg-blue text-white'
-                                                    >Public</span>
-                                                    <span
-                                                        v-else
-                                                        class='mx-3 ms-auto badge border bg-red text-white'
-                                                    >Private</span>
-
-                                                    <span
-                                                        v-if='!ov.overlay'
-                                                        class='mx-3 ms-auto badge border bg-purple text-white'
-                                                    >Basemap</span>
-                                                    <span
-                                                        v-else
-                                                        class='mx-3 ms-auto badge border bg-green text-white'
-                                                    >Overlay</span>
-
-                                                    <span
-                                                        v-if='ov.hidden'
-                                                        class='mx-3 ms-auto badge border bg-red text-white'
-                                                    >Hidden</span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </td>
-                                </template>
-                            </template>
-                        </tr>
-                    </tbody>
-                </table>
+                <StandardItemBasemap
+                    v-for='ov in list.items'
+                    :key='ov.id'
+                    :basemap='ov'
+                    @click='stdclick(router, $event, `/admin/overlay/${ov.id}`)'
+                />
             </div>
             <div
                 class='position-absolute bottom-0 w-100'
@@ -198,8 +150,8 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { server, stdclick } from '../../../src/std.ts';
-import type { Basemap, BasemapList } from '../../../src/types.ts';
-import TableHeader from '../util/TableHeader.vue'
+import type { BasemapList } from '../../../src/types.ts';
+import StandardItemBasemap from '../../CloudTAK/util/StandardItemBasemap.vue';
 import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
@@ -215,14 +167,11 @@ import {
     IconPlus,
 } from '@tabler/icons-vue'
 
-type Header = { name: keyof Basemap, display: boolean };
-
 const router = useRouter();
 
 const advanced = ref(false);
 const error = ref<Error | undefined>();
 const loading = ref(true);
-const header = ref<Array<Header>>([]);
 
 const paging = ref({
     filter: '',
@@ -246,46 +195,8 @@ watch(paging.value, async () => {
 });
 
 onMounted(async () => {
-    await listBasemapSchema();
     await fetchList();
 });
-
-async function listBasemapSchema() {
-    const res = await server.GET('/api/schema', {
-        params: {
-            query: {
-                method: 'GET',
-                url: '/basemap'
-            }
-        }
-    });
-
-    if (res.error) {
-        error.value = new Error(res.error.message);
-        return;
-    } else if (!res.data) {
-        error.value = new Error('No data returned');
-        return;
-    }
-
-    const defaults: Array<keyof Basemap> = ['id', 'name'];
-    header.value = defaults.map((h) => {
-        return { name: h, display: true };
-    });
-
-    // @ts-expect-error Worth trying to type at some point maybe but not now
-    header.value.push(...res.data.query.properties.sort.enum.map((h) => {
-        return {
-            name: h,
-            display: false
-        } as Header
-    }).filter((h: Header) => {
-        for (const hknown of header.value) {
-            if (hknown.name === h.name) return false;
-        }
-        return true;
-    }));
-}
 
 async function fetchList() {
     error.value = undefined;

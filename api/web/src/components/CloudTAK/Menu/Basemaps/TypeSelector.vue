@@ -48,10 +48,12 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
     modelValue?: string | null;
+    isSystemAdmin?: boolean;
 }>(), {
     modelValue: null,
+    isSystemAdmin: false,
 });
 
 const emit = defineEmits<{
@@ -61,19 +63,23 @@ const emit = defineEmits<{
 
 const filter = ref('');
 
-const options = (Object.keys(BasemapTypeConfig) as BasemapSourceType[]).map((id) => ({
-    id,
-    label: BasemapTypeConfig[id].label,
-    description: BasemapTypeConfig[id].description,
-    icon: BasemapTypeConfig[id].icon,
-}));
+const options = computed(() => {
+    return (Object.keys(BasemapTypeConfig) as BasemapSourceType[])
+        .filter((id) => id !== 'hosted' || props.isSystemAdmin)
+        .map((id) => ({
+            id,
+            label: BasemapTypeConfig[id].label,
+            description: BasemapTypeConfig[id].description,
+            icon: BasemapTypeConfig[id].icon,
+        }));
+});
 
 const filteredOptions = computed(() => {
-    if (!filter.value) return options;
+    if (!filter.value) return options.value;
 
     const search = filter.value.toLowerCase();
 
-    return options.filter((option) => {
+    return options.value.filter((option) => {
         return option.label.toLowerCase().includes(search)
             || option.description.toLowerCase().includes(search);
     });
