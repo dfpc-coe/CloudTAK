@@ -72,7 +72,18 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             if (!req.query.download) {
-                res.json(list)
+                res.json({
+                    total: list.total,
+                    items: list.items.map((feat) => {
+                        return {
+                            id: feat.id,
+                            path: feat.path,
+                            type: 'Feature',
+                            properties: feat.properties,
+                            geometry: feat.geometry
+                        } as Static<typeof FeatureResponse>
+                    })
+                })
             } else {
                 const filename = `connection-${connection.id}-export-${new Date().toISOString()}`;
 

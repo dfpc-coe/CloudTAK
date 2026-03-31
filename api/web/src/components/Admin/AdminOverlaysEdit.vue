@@ -47,8 +47,8 @@
                 <component
                     :is='activeSelectorComponent'
                     v-else-if='activeSelectorComponent'
+                    v-model:editing='editing'
                     :basemap-id='basemapId'
-                    :editing='editing'
                     :vector-layers='vectorLayers'
                     :errors='errors'
                     :scope='scope'
@@ -167,8 +167,6 @@ const editing = ref<EditingBasemap>({
 const showTypeSelector = computed(() => {
     return isNew.value && !selectedBasemapType.value;
 });
-
-const metadataImportTypes: BasemapSourceType[] = ['imageserver', 'mapserver', 'featureserver'];
 
 const showStylesAndFooter = computed(() => {
     return !loading.value

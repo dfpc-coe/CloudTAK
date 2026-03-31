@@ -56,8 +56,8 @@
             <component
                 :is='activeSelectorComponent'
                 v-else-if='activeSelectorComponent'
+                v-model:editing='editing'
                 :basemap-id='props.basemap.id'
-                :editing='editing'
                 :vector-layers='vectorLayers'
                 :errors='errors'
                 :scope='scope'
@@ -68,7 +68,7 @@
                 :upload-headers='uploadHeadersValue'
                 @change-type='resetBasemapType'
                 @update:scope='scope = $event'
-                @update:warnSharing='warnSharing = $event'
+                @update:warn-sharing='warnSharing = $event'
                 @update:url='tilejson.url = $event'
                 @fetch='fetchTileJSON'
                 @done='processUpload($event)'
