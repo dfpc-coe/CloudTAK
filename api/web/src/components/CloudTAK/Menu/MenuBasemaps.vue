@@ -100,7 +100,8 @@
                         @click='setBasemap(basemap)'
                     >
                         <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 my-2'>
-                            <IconMap
+                            <component
+                                :is='protocolIcon(basemap.protocol)'
                                 :size='24'
                                 stroke='1'
                             />
@@ -238,11 +239,23 @@ import {
     IconSettings,
     IconBoxMultiple,
     IconDotsVertical,
-    IconChevronRight
+    IconChevronRight,
+    IconGridDots,
+    IconPhoto,
+    IconVector
 } from '@tabler/icons-vue'
 import type { LayerSpecification } from 'maplibre-gl'
 import { useRouter } from 'vue-router';
 import { useMapStore } from '../../../stores/map.ts';
+function protocolIcon(protocol?: string) {
+    switch (protocol) {
+    case 'imageserver': return IconPhoto;
+    case 'mapserver': return IconVector;
+    case 'featureserver': return IconVector;
+    default: return IconGridDots;
+    }
+}
+
 const mapStore = useMapStore();
 
 const overlayBasemapIds = computed<Set<string>>(() => {

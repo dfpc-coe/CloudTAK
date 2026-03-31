@@ -769,6 +769,7 @@ export interface paths {
                                 updated: string;
                                 name: string;
                                 url: string;
+                                protocol: "zxy" | "mapserver" | "imageserver" | "featureserver";
                                 minzoom: number;
                                 maxzoom: number;
                                 format: "png" | "jpeg" | "mvt";
@@ -1024,6 +1025,7 @@ export interface paths {
                         minzoom?: number;
                         maxzoom?: number;
                         format?: "png" | "jpeg" | "mvt";
+                        protocol?: "zxy" | "mapserver" | "imageserver" | "featureserver";
                         /** @constant */
                         style?: "xyz";
                         type?: "raster" | "raster-dem" | "vector";
@@ -1049,6 +1051,7 @@ export interface paths {
                             updated: string;
                             name: string;
                             url: string;
+                            protocol: "zxy" | "mapserver" | "imageserver" | "featureserver";
                             minzoom: number;
                             maxzoom: number;
                             format: "png" | "jpeg" | "mvt";
@@ -1184,6 +1187,7 @@ export interface paths {
                             updated: string;
                             name: string;
                             url: string;
+                            protocol: "zxy" | "mapserver" | "imageserver" | "featureserver";
                             minzoom: number;
                             maxzoom: number;
                             format: "png" | "jpeg" | "mvt";
@@ -1402,6 +1406,7 @@ export interface paths {
                         minzoom?: number;
                         maxzoom?: number;
                         format?: "png" | "jpeg" | "mvt";
+                        protocol?: "zxy" | "mapserver" | "imageserver" | "featureserver";
                         /** @constant */
                         style?: "xyz";
                         type?: "raster" | "raster-dem" | "vector";
@@ -1427,6 +1432,7 @@ export interface paths {
                             updated: string;
                             name: string;
                             url: string;
+                            protocol: "zxy" | "mapserver" | "imageserver" | "featureserver";
                             minzoom: number;
                             maxzoom: number;
                             format: "png" | "jpeg" | "mvt";
@@ -35409,6 +35415,1281 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/video/auth": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Authenticate a request to view a lease */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        user: string;
+                        password: string;
+                        ip: string;
+                        action: "publish" | "read" | "playback" | "api" | "metrics" | "pprof";
+                        path: string;
+                        protocol: string;
+                        id: null | string;
+                        query: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/video/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Return information about an active lease given read credentials
+         *
+         *                 If a user has a valid read URL, the API endpoint will allow an authenticated user
+         *                 to get metadata to agument the video stream itself
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    url: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @description If a lease request is made, is it likely to succeed */
+                            leasable: boolean;
+                            message?: string;
+                            metadata?: {
+                                name: string;
+                                username: null | string;
+                                active: boolean;
+                                watchers: number;
+                                source_id?: null | string;
+                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                                source_model: string;
+                                protocols: {
+                                    rtmp?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                    rtsp?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                    webrtc?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                    hls?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                    srt?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                };
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/video/lease": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all video leases */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    impersonate?: boolean | string;
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "id" | "name" | "created" | "updated" | "username" | "connection" | "layer" | "source_id" | "source_type" | "source_model" | "publish" | "recording" | "share" | "ephemeral" | "channel" | "expiration" | "path" | "stream_user" | "stream_pass" | "read_user" | "read_pass" | "proxy" | "enableRLS";
+                    /** @description No Description */
+                    expired: "true" | "false" | "all";
+                    /** @description No Description */
+                    ephemeral: "true" | "false" | "all";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                name: string;
+                                created: string;
+                                updated: string;
+                                username: string | null;
+                                connection: number | null;
+                                layer: number | null;
+                                source_id: string | null;
+                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                                source_model: string;
+                                publish: boolean;
+                                recording: boolean;
+                                share: boolean;
+                                ephemeral: boolean;
+                                channel: null | string;
+                                expiration: null | string;
+                                path: string;
+                                stream_user: string | null;
+                                stream_pass: string | null;
+                                read_user: string | null;
+                                read_pass: string | null;
+                                proxy: null | string;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new video Lease */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        /**
+                         * @description CloudTAK View lease - hidden in streaming list
+                         * @default false
+                         */
+                        ephemeral: boolean;
+                        /**
+                         * @description Duration in Seconds
+                         * @default 3600
+                         */
+                        duration: number;
+                        /**
+                         * @description System Admins can create non-expiring leases
+                         * @default false
+                         */
+                        permanent: boolean;
+                        /**
+                         * @description Record streams to disk
+                         * @default false
+                         */
+                        recording: boolean;
+                        /**
+                         * @description Publish stream URL to TAK Server Video Manager
+                         * @default false
+                         */
+                        publish: boolean;
+                        /**
+                         * @description Allow other users to manage lease if they are also members of the channel
+                         * @default false
+                         */
+                        share: boolean;
+                        /**
+                         * @description Increase stream security by enforcing a seperate read and write username/password
+                         * @default false
+                         */
+                        secure: boolean;
+                        source_id?: null | string;
+                        source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                        source_model?: string;
+                        channel?: null | string;
+                        proxy?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            name: string;
+                            created: string;
+                            updated: string;
+                            username: string | null;
+                            connection: number | null;
+                            layer: number | null;
+                            source_id: string | null;
+                            source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                            source_model: string;
+                            publish: boolean;
+                            recording: boolean;
+                            share: boolean;
+                            ephemeral: boolean;
+                            channel: null | string;
+                            expiration: null | string;
+                            path: string;
+                            stream_user: string | null;
+                            stream_pass: string | null;
+                            read_user: string | null;
+                            read_pass: string | null;
+                            proxy: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/video/lease/{:lease}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single Video Lease */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":lease": number | string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            name: string;
+                            created: string;
+                            updated: string;
+                            username: string | null;
+                            connection: number | null;
+                            layer: number | null;
+                            source_id: string | null;
+                            source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                            source_model: string;
+                            publish: boolean;
+                            recording: boolean;
+                            share: boolean;
+                            ephemeral: boolean;
+                            channel: null | string;
+                            expiration: null | string;
+                            path: string;
+                            stream_user: string | null;
+                            stream_pass: string | null;
+                            read_user: string | null;
+                            read_pass: string | null;
+                            proxy: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a video Lease */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":lease": number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a video Lease */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":lease": number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        /**
+                         * @description Duration in Seconds
+                         * @default 3600
+                         */
+                        duration: number;
+                        source_id?: null | string;
+                        source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                        source_model?: string;
+                        channel?: null | string;
+                        secure?: boolean;
+                        /** @description Record streams to disk */
+                        recording?: boolean;
+                        /** @description Publish stream URL to TAK Server Video Manager */
+                        publish?: boolean;
+                        /** @description Allow other users to manage lease if they are also members of the channel */
+                        share?: boolean;
+                        /** @description System Admins can create non-expiring leases */
+                        permanent?: boolean;
+                        proxy?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            name: string;
+                            created: string;
+                            updated: string;
+                            username: string | null;
+                            connection: number | null;
+                            layer: number | null;
+                            source_id: string | null;
+                            source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                            source_model: string;
+                            publish: boolean;
+                            recording: boolean;
+                            share: boolean;
+                            ephemeral: boolean;
+                            channel: null | string;
+                            expiration: null | string;
+                            path: string;
+                            stream_user: string | null;
+                            stream_pass: string | null;
+                            read_user: string | null;
+                            read_pass: string | null;
+                            proxy: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/video/lease/{:lease}/metadata": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single Video Lease Metadata */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":lease": number | string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            path?: {
+                                name: string;
+                                confName: string;
+                                source: {
+                                    id: string;
+                                    type: string;
+                                } | null;
+                                ready: boolean;
+                                readyTime: null | string;
+                                tracks: string[];
+                                bytesReceived: number;
+                                bytesSent: number;
+                                readers: {
+                                    type: string;
+                                    id: string;
+                                }[];
+                            };
+                            protocols: {
+                                rtmp?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                rtsp?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                webrtc?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                hls?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                srt?: {
+                                    name: string;
+                                    url: string;
+                                };
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/video/service": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Video Service Configuration */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            configured: boolean;
+                            url?: string;
+                            external?: string;
+                            config?: {
+                                api: boolean;
+                                apiAddress: string;
+                                metrics: boolean;
+                                metricsAddress: string;
+                                pprof: boolean;
+                                pprofAddress: string;
+                                playback: boolean;
+                                playbackAddress: string;
+                                rtsp: boolean;
+                                rtspAddress: string;
+                                rtspsAddress: string;
+                                rtspAuthMethods: string[];
+                                rtmp: boolean;
+                                rtmpAddress: string;
+                                rtmpsAddress: string;
+                                hls: boolean;
+                                hlsAddress: string;
+                                webrtc: boolean;
+                                webrtcAddress: string;
+                                srt: boolean;
+                                srtAddress: string;
+                            };
+                            paths?: {
+                                name: string;
+                                confName: string;
+                                source: {
+                                    id: string;
+                                    type: string;
+                                } | null;
+                                ready: boolean;
+                                readyTime: null | string;
+                                tracks: string[];
+                                bytesReceived: number;
+                                bytesSent: number;
+                                readers: {
+                                    type: string;
+                                    id: string;
+                                }[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/video/service/path/{:path}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get information about a given path */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":path": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            path: {
+                                name: string;
+                                confName: string;
+                                source: {
+                                    id: string;
+                                    type: string;
+                                } | null;
+                                ready: boolean;
+                                readyTime: null | string;
+                                tracks: string[];
+                                bytesReceived: number;
+                                bytesSent: number;
+                                readers: {
+                                    type: string;
+                                    id: string;
+                                }[];
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/iconset": {
         parameters: {
             query?: never;
@@ -36753,1281 +38034,6 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/video/auth": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Authenticate a request to view a lease */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        user: string;
-                        password: string;
-                        ip: string;
-                        action: "publish" | "read" | "playback" | "api" | "metrics" | "pprof";
-                        path: string;
-                        protocol: string;
-                        id: null | string;
-                        query: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/video/active": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Return information about an active lease given read credentials
-         *
-         *                 If a user has a valid read URL, the API endpoint will allow an authenticated user
-         *                 to get metadata to agument the video stream itself
-         */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    url: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @description If a lease request is made, is it likely to succeed */
-                            leasable: boolean;
-                            message?: string;
-                            metadata?: {
-                                name: string;
-                                username: null | string;
-                                active: boolean;
-                                watchers: number;
-                                source_id?: null | string;
-                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
-                                source_model: string;
-                                protocols: {
-                                    rtmp?: {
-                                        name: string;
-                                        url: string;
-                                    };
-                                    rtsp?: {
-                                        name: string;
-                                        url: string;
-                                    };
-                                    webrtc?: {
-                                        name: string;
-                                        url: string;
-                                    };
-                                    hls?: {
-                                        name: string;
-                                        url: string;
-                                    };
-                                    srt?: {
-                                        name: string;
-                                        url: string;
-                                    };
-                                };
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/video/lease": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all video leases */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    impersonate?: boolean | string;
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort: "id" | "name" | "created" | "updated" | "username" | "connection" | "layer" | "source_id" | "source_type" | "source_model" | "publish" | "recording" | "share" | "ephemeral" | "channel" | "expiration" | "path" | "stream_user" | "stream_pass" | "read_user" | "read_pass" | "proxy" | "enableRLS";
-                    /** @description No Description */
-                    expired: "true" | "false" | "all";
-                    /** @description No Description */
-                    ephemeral: "true" | "false" | "all";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                name: string;
-                                created: string;
-                                updated: string;
-                                username: string | null;
-                                connection: number | null;
-                                layer: number | null;
-                                source_id: string | null;
-                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
-                                source_model: string;
-                                publish: boolean;
-                                recording: boolean;
-                                share: boolean;
-                                ephemeral: boolean;
-                                channel: null | string;
-                                expiration: null | string;
-                                path: string;
-                                stream_user: string | null;
-                                stream_pass: string | null;
-                                read_user: string | null;
-                                read_pass: string | null;
-                                proxy: null | string;
-                            }[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create a new video Lease */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        /**
-                         * @description CloudTAK View lease - hidden in streaming list
-                         * @default false
-                         */
-                        ephemeral: boolean;
-                        /**
-                         * @description Duration in Seconds
-                         * @default 3600
-                         */
-                        duration: number;
-                        /**
-                         * @description System Admins can create non-expiring leases
-                         * @default false
-                         */
-                        permanent: boolean;
-                        /**
-                         * @description Record streams to disk
-                         * @default false
-                         */
-                        recording: boolean;
-                        /**
-                         * @description Publish stream URL to TAK Server Video Manager
-                         * @default false
-                         */
-                        publish: boolean;
-                        /**
-                         * @description Allow other users to manage lease if they are also members of the channel
-                         * @default false
-                         */
-                        share: boolean;
-                        /**
-                         * @description Increase stream security by enforcing a seperate read and write username/password
-                         * @default false
-                         */
-                        secure: boolean;
-                        source_id?: null | string;
-                        source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
-                        source_model?: string;
-                        channel?: null | string;
-                        proxy?: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            name: string;
-                            created: string;
-                            updated: string;
-                            username: string | null;
-                            connection: number | null;
-                            layer: number | null;
-                            source_id: string | null;
-                            source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
-                            source_model: string;
-                            publish: boolean;
-                            recording: boolean;
-                            share: boolean;
-                            ephemeral: boolean;
-                            channel: null | string;
-                            expiration: null | string;
-                            path: string;
-                            stream_user: string | null;
-                            stream_pass: string | null;
-                            read_user: string | null;
-                            read_pass: string | null;
-                            proxy: null | string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/video/lease/{:lease}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a single Video Lease */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":lease": number | string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            name: string;
-                            created: string;
-                            updated: string;
-                            username: string | null;
-                            connection: number | null;
-                            layer: number | null;
-                            source_id: string | null;
-                            source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
-                            source_model: string;
-                            publish: boolean;
-                            recording: boolean;
-                            share: boolean;
-                            ephemeral: boolean;
-                            channel: null | string;
-                            expiration: null | string;
-                            path: string;
-                            stream_user: string | null;
-                            stream_pass: string | null;
-                            read_user: string | null;
-                            read_pass: string | null;
-                            proxy: null | string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Delete a video Lease */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":lease": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update a video Lease */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":lease": number;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name?: string;
-                        /**
-                         * @description Duration in Seconds
-                         * @default 3600
-                         */
-                        duration: number;
-                        source_id?: null | string;
-                        source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
-                        source_model?: string;
-                        channel?: null | string;
-                        secure?: boolean;
-                        /** @description Record streams to disk */
-                        recording?: boolean;
-                        /** @description Publish stream URL to TAK Server Video Manager */
-                        publish?: boolean;
-                        /** @description Allow other users to manage lease if they are also members of the channel */
-                        share?: boolean;
-                        /** @description System Admins can create non-expiring leases */
-                        permanent?: boolean;
-                        proxy?: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            name: string;
-                            created: string;
-                            updated: string;
-                            username: string | null;
-                            connection: number | null;
-                            layer: number | null;
-                            source_id: string | null;
-                            source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
-                            source_model: string;
-                            publish: boolean;
-                            recording: boolean;
-                            share: boolean;
-                            ephemeral: boolean;
-                            channel: null | string;
-                            expiration: null | string;
-                            path: string;
-                            stream_user: string | null;
-                            stream_pass: string | null;
-                            read_user: string | null;
-                            read_pass: string | null;
-                            proxy: null | string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/api/video/lease/{:lease}/metadata": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a single Video Lease Metadata */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":lease": number | string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            path?: {
-                                name: string;
-                                confName: string;
-                                source: {
-                                    id: string;
-                                    type: string;
-                                } | null;
-                                ready: boolean;
-                                readyTime: null | string;
-                                tracks: string[];
-                                bytesReceived: number;
-                                bytesSent: number;
-                                readers: {
-                                    type: string;
-                                    id: string;
-                                }[];
-                            };
-                            protocols: {
-                                rtmp?: {
-                                    name: string;
-                                    url: string;
-                                };
-                                rtsp?: {
-                                    name: string;
-                                    url: string;
-                                };
-                                webrtc?: {
-                                    name: string;
-                                    url: string;
-                                };
-                                hls?: {
-                                    name: string;
-                                    url: string;
-                                };
-                                srt?: {
-                                    name: string;
-                                    url: string;
-                                };
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/video/service": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Video Service Configuration */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            configured: boolean;
-                            url?: string;
-                            external?: string;
-                            config?: {
-                                api: boolean;
-                                apiAddress: string;
-                                metrics: boolean;
-                                metricsAddress: string;
-                                pprof: boolean;
-                                pprofAddress: string;
-                                playback: boolean;
-                                playbackAddress: string;
-                                rtsp: boolean;
-                                rtspAddress: string;
-                                rtspsAddress: string;
-                                rtspAuthMethods: string[];
-                                rtmp: boolean;
-                                rtmpAddress: string;
-                                rtmpsAddress: string;
-                                hls: boolean;
-                                hlsAddress: string;
-                                webrtc: boolean;
-                                webrtcAddress: string;
-                                srt: boolean;
-                                srtAddress: string;
-                            };
-                            paths?: {
-                                name: string;
-                                confName: string;
-                                source: {
-                                    id: string;
-                                    type: string;
-                                } | null;
-                                ready: boolean;
-                                readyTime: null | string;
-                                tracks: string[];
-                                bytesReceived: number;
-                                bytesSent: number;
-                                readers: {
-                                    type: string;
-                                    id: string;
-                                }[];
-                            }[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/video/service/path/{:path}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get information about a given path */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":path": string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            path: {
-                                name: string;
-                                confName: string;
-                                source: {
-                                    id: string;
-                                    type: string;
-                                } | null;
-                                ready: boolean;
-                                readyTime: null | string;
-                                tracks: string[];
-                                bytesReceived: number;
-                                bytesSent: number;
-                                readers: {
-                                    type: string;
-                                    id: string;
-                                }[];
-                            };
-                        };
-                    };
                 };
                 /** @description Error Response */
                 400: {

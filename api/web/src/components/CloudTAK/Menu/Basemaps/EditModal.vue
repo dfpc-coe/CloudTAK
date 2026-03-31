@@ -55,6 +55,7 @@
             <component
                 :is='activeSelectorComponent'
                 v-else-if='activeSelectorComponent'
+                :type='selectedBasemapType'
                 :basemap-id='props.basemap.id'
                 :editing='editing'
                 :vector-layers='vectorLayers'
@@ -100,14 +101,11 @@ import { computed, ref, onMounted } from 'vue';
 import { std, stdurl } from '../../../../std.ts';
 import ProfileConfig from '../../../../base/profile.ts';
 import BasemapTypeSelector from './TypeSelector.vue';
-import TypeSelectorFeatureServer from './TypeSelectorFeatureServer.vue';
-import TypeSelectorImageServer from './TypeSelectorImageServer.vue';
-import TypeSelectorMapServer from './TypeSelectorMapServer.vue';
-import TypeSelectorQuadkey from './TypeSelectorQuadkey.vue';
-import TypeSelectorTilejson from './TypeSelectorTilejson.vue';
-import TypeSelectorUpload from './TypeSelectorUpload.vue';
+import TypeSelectorArcGIS from './TypeSelectorArcGIS.vue';
+import TypeSelectorZxy_Tilejson from './TypeSelectorZxy_Tilejson.vue';
+import TypeSelectorZxy_Upload from './TypeSelectorZxy_Upload.vue';
 import TypeSelectorZxy from './TypeSelectorZxy.vue';
-import { inferBasemapType, normalizeEditing } from './types.ts';
+import { BasemapTypeConfig, inferBasemapType, normalizeEditing } from './types.ts';
 import type { BasemapListItem, BasemapImport, BasemapImportRequest, BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
 import {
     IconMap,
@@ -190,12 +188,11 @@ const showFormFooter = computed(() => {
 const activeSelectorComponent = computed(() => {
     switch (selectedBasemapType.value) {
     case 'zxy': return TypeSelectorZxy;
-    case 'quadkey': return TypeSelectorQuadkey;
-    case 'imageserver': return TypeSelectorImageServer;
-    case 'mapserver': return TypeSelectorMapServer;
-    case 'featureserver': return TypeSelectorFeatureServer;
-    case 'tilejson': return TypeSelectorTilejson;
-    case 'upload': return TypeSelectorUpload;
+    case 'imageserver':
+    case 'mapserver':
+    case 'featureserver': return TypeSelectorArcGIS;
+    case 'tilejson': return TypeSelectorZxy_Tilejson;
+    case 'upload': return TypeSelectorZxy_Upload;
     default: return null;
     }
 });
@@ -234,38 +231,7 @@ function setBasemapType(type: string): void {
     const inferred = inferBasemapType(editing.value.url);
     if (props.basemap.id && inferred === selectedBasemapType.value) return;
 
-    if (selectedBasemapType.value === 'zxy') {
-        editing.value.type = 'raster';
-        editing.value.format = 'png';
-        editing.value.minzoom = 0;
-        editing.value.maxzoom = 16;
-        editing.value.tilesize = 256;
-    } else if (selectedBasemapType.value === 'quadkey') {
-        editing.value.type = 'raster';
-        editing.value.format = 'png';
-        editing.value.minzoom = 0;
-        editing.value.maxzoom = 16;
-        editing.value.tilesize = 256;
-    } else if (selectedBasemapType.value === 'imageserver') {
-        editing.value.type = 'raster';
-        editing.value.format = 'png';
-        editing.value.minzoom = 0;
-        editing.value.maxzoom = 20;
-        editing.value.tilesize = 256;
-    } else if (selectedBasemapType.value === 'mapserver') {
-        editing.value.type = 'vector';
-        editing.value.format = 'mvt';
-        editing.value.minzoom = 0;
-        editing.value.maxzoom = 20;
-        editing.value.tilesize = 256;
-    } else if (selectedBasemapType.value === 'featureserver') {
-        editing.value.type = 'vector';
-        editing.value.format = 'mvt';
-        editing.value.minzoom = 0;
-        editing.value.maxzoom = 20;
-        editing.value.tilesize = 256;
-    }
-
+    Object.assign(editing.value, BasemapTypeConfig[selectedBasemapType.value].defaults);
     editing.value.url = '';
 }
 
