@@ -2,7 +2,7 @@
     <div class='row row-cards'>
         <template v-if='showImportPrompt'>
             <TypeSelectorSelected
-                :type='type'
+                type='imageserver'
                 @change-type='emit("change-type")'
             />
 
@@ -34,6 +34,7 @@
         <template v-else>
             <TypeSelectorBase
                 v-bind='props'
+                type='imageserver'
                 @change-type='emit("change-type")'
                 @update:scope='emit("update:scope", $event)'
                 @update:warnSharing='emit("update:warnSharing", $event)'
@@ -65,10 +66,9 @@ import TypeSelectorBase from './TypeSelectorBase.vue';
 import TypeSelectorSelected from './TypeSelectorSelected.vue';
 import { BasemapTypeConfig } from './types.ts';
 import { TablerInput } from '@tak-ps/vue-tabler';
-import type { BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
+import type { EditingBasemap, VectorLayerDescriptor } from './types.ts';
 
 const props = defineProps<{
-    type: BasemapSourceType;
     basemapId?: number;
     editing: EditingBasemap;
     vectorLayers: VectorLayerDescriptor[];
@@ -87,6 +87,6 @@ const emit = defineEmits<{
     'update:url': [value: string];
 }>();
 
-const config = BasemapTypeConfig[props.type];
+const config = BasemapTypeConfig['imageserver'];
 const showImportPrompt = computed(() => !props.basemapId && !props.editing.url);
 </script>
