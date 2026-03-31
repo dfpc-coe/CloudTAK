@@ -10,7 +10,7 @@ import { Type, Static } from '@sinclair/typebox'
 import { sql } from 'drizzle-orm';
 import S3 from '../lib/aws/s3.js';
 import { CoTParser, FileShare, DataPackage } from '@tak-ps/node-cot';
-import { BasemapProtocol } from '../lib/interface-basemap.js';
+import { fromProtocol } from '../lib/factory-basemap.js';
 import { StandardResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -239,7 +239,7 @@ export default async function router(schema: Schema, config: Config) {
                         maxZoom: { _text: basemap.maxzoom },
                         tileType: { _text: basemap.format },
                         tileUpdate: { _text: 'None' },
-                        url: { _text: BasemapProtocol.proxyShare(config, basemap) },
+                        url: { _text: fromProtocol(basemap.protocol, basemap).proxyShare(config) },
                         backgroundColor: { _text: '#000000' },
                     }
                 })).to_xml();
