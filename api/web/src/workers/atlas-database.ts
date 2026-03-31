@@ -135,7 +135,6 @@ export default class AtlasDatabase {
         const display_stale = (await ProfileConfig.get('display_stale'))?.value || 'Immediate';
 
         for (const cot of this.cots.values()) {
-            const render = cot.as_rendered();
             const stale = new Date(cot.properties.stale).getTime();
 
             if (this.pendingHidden.has(String(cot.id))) {
