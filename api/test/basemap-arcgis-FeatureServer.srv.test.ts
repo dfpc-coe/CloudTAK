@@ -40,7 +40,8 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
                 url: ARCGIS_FEATURE_URL,
                 sharing_enabled: false,
                 type: 'vector',
-                format: 'mvt'
+                format: 'mvt',
+                protocol: 'featureserver'
             }
         }, true);
 
@@ -66,6 +67,7 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
             minzoom: 0,
             maxzoom: 16,
             format: 'mvt',
+            protocol: 'featureserver',
             scheme: 'xyz',
             styles: [],
             type: 'vector',
