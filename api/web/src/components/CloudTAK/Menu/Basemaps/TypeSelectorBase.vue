@@ -9,7 +9,7 @@
         v-if='warnSharing'
         severity='danger'
         title='You are disabling sharing'
-        description='Disabling sharing will prevent other users from sharing the basemap and will also disable their access if they basemap has already been shared'
+        description='Disabling sharing will prevent other users from sharing the basemap and will also disable their access if the basemap has already been shared'
         :dismissable='true'
     />
 

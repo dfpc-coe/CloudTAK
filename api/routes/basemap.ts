@@ -19,7 +19,7 @@ import { StandardResponse, BasemapResponse, OptionalTileJSON, GeoJSONFeature, Ge
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
-import { toEnum, Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, AllBoolean, AllBooleanCast } from '../lib/enums.js';
+import { toEnum, Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, Basemap_FeatureAction, AllBoolean, AllBooleanCast } from '../lib/enums.js';
 import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
 import * as Default from '../lib/limits.js';
 
@@ -854,7 +854,13 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
-            const fc = await fromProtocol(basemap.protocol, basemap).featureQuery!(
+            const protocol = fromProtocol(basemap.protocol, basemap);
+
+            if (!protocol.actions().feature.includes(Basemap_FeatureAction.QUERY)) {
+                throw new Err(400, null, 'Feature querying is not supported by this basemap protocol');
+            }
+
+            const fc = await protocol.featureQuery!(
                 req.body.polygon
             );
 
@@ -883,7 +889,13 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
-            res.json(await fromProtocol(basemap.protocol, basemap).featureFetch!(req.params.featureid));
+            const protocol = fromProtocol(basemap.protocol, basemap);
+
+            if (!protocol.actions().feature.includes(Basemap_FeatureAction.FETCH)) {
+                throw new Err(400, null, 'Feature fetching is not supported by this basemap protocol');
+            }
+
+            res.json(await protocol.featureFetch!(req.params.featureid));
         } catch (err) {
             Err.respond(err, res);
         }
