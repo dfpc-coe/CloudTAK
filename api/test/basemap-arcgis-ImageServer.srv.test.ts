@@ -38,7 +38,8 @@ test('POST: api/basemap - ArcGIS Imagery Source', async () => {
             body: {
                 name: 'USGS NAIP Imagery',
                 url: ARCGIS_IMAGERY_URL,
-                sharing_enabled: false
+                sharing_enabled: false,
+                protocol: 'imageserver'
             }
         }, true);
 
@@ -64,6 +65,7 @@ test('POST: api/basemap - ArcGIS Imagery Source', async () => {
             minzoom: 0,
             maxzoom: 16,
             format: 'png',
+            protocol: 'imageserver',
             scheme: 'xyz',
             styles: [],
             type: 'raster',
@@ -85,7 +87,8 @@ test('POST: api/basemap - ArcGIS Imagery Source WKT Spatial Reference', async ()
             body: {
                 name: 'Jefferson County 2020 Ortho',
                 url: JEFFERSON_COUNTY_IMAGERY_URL,
-                sharing_enabled: false
+                sharing_enabled: false,
+                protocol: 'imageserver'
             }
         }, true);
 

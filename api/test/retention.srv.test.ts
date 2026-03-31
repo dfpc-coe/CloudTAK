@@ -122,7 +122,6 @@ test('GET api/connection/1/feature - only fresh remains', async () => {
                     start: fresh,
                     stale: fresh,
                     center: [2, 2],
-                    archived: true,
                     callsign: 'Fresh Feature'
                 },
                 geometry: {
