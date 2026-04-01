@@ -8,7 +8,7 @@
     >
         <div
             v-for='feat in mapStore.select.feats'
-            :key='feat.properties.id'
+            :key='feat.properties.id || feat.id'
             role='menuitem'
             tabindex='0'
             class='col-12 text-white'
