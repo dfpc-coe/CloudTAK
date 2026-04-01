@@ -4,14 +4,14 @@ import Flight from './flight.js';
 
 const flight = new Flight();
 
-const ARCGIS_FEATURE_URL = 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/Wildfire/FeatureServer/0';
+const ARCGIS_FEATURE_URL = 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/EmergencyFacilities/FeatureServer/0';
 
 const SAMPLE_TILES = [
-    { label: 'Pacific Northwest overview', z: 6, x: 10, y: 23 },
-    { label: 'Cascade Range detail', z: 7, x: 20, y: 47 },
-    { label: 'Upper Klamath region', z: 8, x: 41, y: 94 },
-    { label: 'Crater Lake approach', z: 9, x: 83, y: 188 },
-    { label: 'Klamath Falls close-up', z: 10, x: 166, y: 376 }
+    { label: 'Southern California overview', z: 6, x: 11, y: 25 },
+    { label: 'Inland Empire region', z: 7, x: 22, y: 51 },
+    { label: 'San Bernardino area', z: 8, x: 44, y: 102 },
+    { label: 'Redlands approach', z: 9, x: 89, y: 204 },
+    { label: 'Redlands close-up', z: 10, x: 178, y: 408 }
 ];
 
 function assertBoundsIn4326(bounds: Array<number>): void {
@@ -36,7 +36,7 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
                 bearer: flight.token.admin
             },
             body: {
-                name: 'Wildfire Response Points',
+                name: 'Emergency Facilities',
                 url: ARCGIS_FEATURE_URL,
                 sharing_enabled: false,
                 type: 'vector',
@@ -50,7 +50,7 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
 
         assert.deepEqual(res.body, {
             id: 1,
-            name: 'Wildfire Response Points',
+            name: 'Emergency Facilities',
             actions: { feature: ['fetch', 'query'] },
             url: ARCGIS_FEATURE_URL,
             overlay: false,
@@ -120,7 +120,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server direct source', async () 
             version: '1.0.0',
             description: '',
             scheme: 'xyz',
-            name: 'Wildfire Response Points',
+            name: 'Emergency Facilities',
             type: 'vector',
             bounds: undefined,
             center: undefined,
@@ -133,14 +133,25 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server direct source', async () 
                 id: 'out',
                 fields: {
                     objectid: 'number',
-                    rotation: 'integer',
-                    description: 'string',
-                    eventdate: 'date-time',
-                    eventtype: 'integer',
-                    created_user: 'string',
-                    created_date: 'date-time',
-                    last_edited_user: 'string',
-                    last_edited_date: 'date-time'
+                    facilityid: 'string',
+                    facname: 'string',
+                    factype: 'integer',
+                    organiz: 'string',
+                    jurisdict: 'string',
+                    pocname: 'string',
+                    pocemail: 'string',
+                    pocphone: 'string',
+                    capacity: 'string',
+                    hoursoper: 'string',
+                    daysoper: 'string',
+                    opendate: 'date-time',
+                    closeddate: 'date-time',
+                    opsstatus: 'string',
+                    lastupdate: 'date-time',
+                    lasteditor: 'string',
+                    globalid: 'string',
+                    imageurl: 'string',
+                    curcapacity: 'integer'
                 }
             }]
         });
@@ -170,7 +181,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server TileJSON', async () => {
             version: '1.0.0',
             description: '',
             scheme: 'xyz',
-            name: 'Wildfire Response Points',
+            name: 'Emergency Facilities',
             type: 'vector',
             bounds: undefined,
             center: undefined,
@@ -183,14 +194,25 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server TileJSON', async () => {
                 id: 'out',
                 fields: {
                     objectid: 'number',
-                    rotation: 'integer',
-                    description: 'string',
-                    eventdate: 'date-time',
-                    eventtype: 'integer',
-                    created_user: 'string',
-                    created_date: 'date-time',
-                    last_edited_user: 'string',
-                    last_edited_date: 'date-time'
+                    facilityid: 'string',
+                    facname: 'string',
+                    factype: 'integer',
+                    organiz: 'string',
+                    jurisdict: 'string',
+                    pocname: 'string',
+                    pocemail: 'string',
+                    pocphone: 'string',
+                    capacity: 'string',
+                    hoursoper: 'string',
+                    daysoper: 'string',
+                    opendate: 'date-time',
+                    closeddate: 'date-time',
+                    opsstatus: 'string',
+                    lastupdate: 'date-time',
+                    lasteditor: 'string',
+                    globalid: 'string',
+                    imageurl: 'string',
+                    curcapacity: 'integer'
                 }
             }]
         });
