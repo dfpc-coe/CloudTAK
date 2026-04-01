@@ -6,7 +6,7 @@ import { Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Stal
 import { VideoLease_SourceType} from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
-import { Basemap_Format, Basemap_Scheme, Basemap_Type } from '../lib/enums.js';
+import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type } from '../lib/enums.js';
 import { Feature } from '@tak-ps/node-cot';
 
 export const LayerResponse = AugmentedLayer;
@@ -75,16 +75,26 @@ export const GeoJSONFeatureCollection = Type.Object({
     features: Type.Array(GeoJSONFeature)
 });
 
+const OptionalVectorLayer = Type.Object({
+    id: Type.String(),
+    fields: Type.Record(Type.String(), Type.String()),
+    minzoom: Type.Optional(Type.Integer()),
+    maxzoom: Type.Optional(Type.Integer()),
+    description: Type.Optional(Type.String())
+});
+
 export const OptionalTileJSON = Type.Object({
     name: Type.Optional(Type.String()),
     type: Type.Optional(Type.Enum(Basemap_Type)),
     url: Type.Optional(Type.String()),
+    attribution: Type.Optional(Type.String()),
     bounds: Type.Optional(Type.Any()),
     center: Type.Optional(Type.Any()),
     minzoom: Type.Optional(Type.Integer()),
     maxzoom: Type.Optional(Type.Integer()),
     style: Type.Optional(Type.Enum(Basemap_Scheme)),
-    format: Type.Optional(Type.Enum(Basemap_Format))
+    format: Type.Optional(Type.Enum(Basemap_Format)),
+    vector_layers: Type.Optional(Type.Array(OptionalVectorLayer))
 });
 
 export const LayerError = Type.Object({
@@ -408,6 +418,7 @@ export const BasemapResponse = Type.Object({
     updated: Type.String(),
     name: Type.String(),
     url: Type.String(),
+    protocol: Type.Enum(Basemap_Protocol),
     bounds: Type.Any(),
     center: Type.Any(),
     minzoom: Type.Integer(),

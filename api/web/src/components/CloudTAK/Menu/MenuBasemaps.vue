@@ -92,32 +92,14 @@
                         <span class='fw-semibold ms-3'>{{ collection.name }}</span>
                     </StandardItem>
 
-                    <StandardItem
+                    <StandardItemBasemap
                         v-for='basemap in list.items'
                         :key='basemap.id'
-                        class='d-flex align-items-center'
+                        :basemap='basemap'
                         :class='{ "bg-blue text-white": isCurrentBasemap(basemap.id) }'
                         @click='setBasemap(basemap)'
                     >
-                        <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 my-2'>
-                            <IconMap
-                                :size='24'
-                                stroke='1'
-                            />
-                        </div>
-                        <span class='fw-semibold ms-3 flex-grow-1'>{{ basemap.name }}</span>
-
-                        <div class='d-flex align-items-center me-2'>
-                            <span
-                                v-if='!basemap.username'
-                                class='mx-3 badge border'
-                                :class='isCurrentBasemap(basemap.id) ? "bg-white text-blue" : "bg-blue text-white"'
-                            >Public</span>
-                            <span
-                                v-else
-                                class='mx-3 badge border bg-red text-white'
-                            >Private</span>
-
+                        <template #actions>
                             <TablerDropdown>
                                 <TablerIconButton
                                     title='More Options'
@@ -182,8 +164,8 @@
                                     </div>
                                 </template>
                             </TablerDropdown>
-                        </div>
-                    </StandardItem>
+                        </template>
+                    </StandardItemBasemap>
                 </div>
 
                 <div class='col-lg-12 d-flex'>
@@ -212,6 +194,7 @@
 <script setup lang='ts'>
 import { onMounted, ref, watch, computed } from 'vue';
 import StandardItem from '../util/StandardItem.vue';
+import StandardItemBasemap from '../util/StandardItemBasemap.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { server, stdurl } from '../../../std.ts';
@@ -230,7 +213,6 @@ import {
     TablerDropdown
 } from '@tak-ps/vue-tabler';
 import {
-    IconMap,
     IconPlus,
     IconFolder,
     IconShare2,
@@ -238,11 +220,12 @@ import {
     IconSettings,
     IconBoxMultiple,
     IconDotsVertical,
-    IconChevronRight
+    IconChevronRight,
 } from '@tabler/icons-vue'
 import type { LayerSpecification } from 'maplibre-gl'
 import { useRouter } from 'vue-router';
 import { useMapStore } from '../../../stores/map.ts';
+
 const mapStore = useMapStore();
 
 const overlayBasemapIds = computed<Set<string>>(() => {

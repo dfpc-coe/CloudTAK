@@ -11,15 +11,17 @@
             <span class='modal-title'>Edit Link</span>
         </div>
         <div class='modal-body py-4'>
-            <StyleTemplate
+            <HandleForm
                 v-model='link.remarks'
                 label='Link Name'
+                rows=''
                 :schema='props.schema'
                 class='py-1'
             />
-            <StyleTemplate
+            <HandleForm
                 v-model='link.url'
                 label='Link URL'
+                rows=''
                 :schema='props.schema'
                 class='py-1'
             />
@@ -44,7 +46,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import StyleTemplate from './StyleTemplate.vue';
+import HandleForm from '../../../util/HandleForm.vue';
 import {
     TablerModal,
 } from '@tak-ps/vue-tabler';

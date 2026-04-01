@@ -135,7 +135,6 @@ export default class AtlasDatabase {
         const display_stale = (await ProfileConfig.get('display_stale'))?.value || 'Immediate';
 
         for (const cot of this.cots.values()) {
-            const render = cot.as_rendered();
             const stale = new Date(cot.properties.stale).getTime();
 
             if (this.pendingHidden.has(String(cot.id))) {
@@ -160,25 +159,27 @@ export default class AtlasDatabase {
 
                     if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
 
+                    const fresh = cot.as_rendered();
                     diff.update.push({
-                        id: Number(render.id),
-                        addOrUpdateProperties: Object.keys(render.properties).map((key) => {
-                            return { key, value: render.properties ? render.properties[key] : '' }
+                        id: Number(fresh.id),
+                        addOrUpdateProperties: Object.keys(fresh.properties).map((key) => {
+                            return { key, value: fresh.properties ? fresh.properties[key] : '' }
                         }),
-                        newGeometry: render.geometry
+                        newGeometry: fresh.geometry
                     })
-                } else if (now > stale && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['marker-opacity'] !== 127)) {
-                    render.properties['icon-opacity'] = 0.5;
-                    render.properties['marker-opacity'] = 0.5;
+                } else if (now > stale && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['marker-opacity'] !== 0.5)) {
+                    cot.properties['icon-opacity'] = 0.5;
+                    cot.properties['marker-opacity'] = 0.5;
 
-                    if (!['Point', 'Polygon', 'LineString'].includes(render.geometry.type)) continue;
+                    if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
 
+                    const dimmed = cot.as_rendered();
                     diff.update.push({
-                        id: Number(render.id),
-                        addOrUpdateProperties: Object.keys(render.properties).map((key) => {
-                            return { key, value: cot.properties ? render.properties[key] : '' }
+                        id: Number(dimmed.id),
+                        addOrUpdateProperties: Object.keys(dimmed.properties).map((key) => {
+                            return { key, value: dimmed.properties ? dimmed.properties[key] : '' }
                         }),
-                        newGeometry: render.geometry
+                        newGeometry: dimmed.geometry
                     })
                 }
             }
@@ -202,6 +203,8 @@ export default class AtlasDatabase {
         this.pendingCreate.clear();
 
         for (const cot of this.pendingUpdate.values()) {
+            if (staleDelete.has(cot.id) || this.pendingDelete.has(cot.id)) continue;
+
             const render = cot.as_rendered();
 
             diff.update.push({
@@ -213,7 +216,7 @@ export default class AtlasDatabase {
             })
         }
 
-        this.pendingCreate.clear();
+        this.pendingUpdate.clear();
 
         for (const id of staleDelete) {
             this.cots.delete(id);

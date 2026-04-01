@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type, Static } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -8,6 +8,45 @@ import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { sql } from 'drizzle-orm';
 import { Profile_Menu_Visibility, Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Projection, Profile_Zoom } from  '../lib/enums.js';
 import ProfileControl from '../lib/control/profile.js';
+
+const ProfilePatchBody = Type.Object({
+    display_stale: Type.Optional(Type.Enum(Profile_Stale)),
+    display_distance: Type.Optional(Type.Enum(Profile_Distance)),
+    display_elevation: Type.Optional(Type.Enum(Profile_Elevation)),
+    display_projection: Type.Optional(Type.Enum(Profile_Projection)),
+    display_speed: Type.Optional(Type.Enum(Profile_Speed)),
+    display_zoom: Type.Optional(Type.Enum(Profile_Zoom)),
+    display_icon_rotation: Type.Optional(Type.Boolean()),
+    display_text: Type.Optional(Type.Enum(Profile_Text)),
+
+    geometry_point_type: Type.Optional(Type.String()),
+    geometry_point_color: Type.Optional(Type.String()),
+    geometry_point_icon: Type.Optional(Type.String()),
+
+    menu_order: Type.Optional(Type.Array(Type.Object({
+        key: Type.String({
+            description: 'Menu Key'
+        }),
+        visibility: Type.Enum(Profile_Menu_Visibility, {
+            description: 'Menu Visibility',
+            default: Profile_Menu_Visibility.FULL
+        })
+    }))),
+
+    tak_callsign: Type.Optional(Type.String()),
+    tak_remarks: Type.Optional(Type.String()),
+    tak_group: Type.Optional(Type.Enum(TAKGroup)),
+    tak_type: Type.Optional(Type.String()),
+    tak_role: Type.Optional(Type.Enum(TAKRole)),
+    tak_loc_freq: Type.Optional(Type.Integer()),
+    tak_loc: Type.Optional(Type.Union([Type.Null(), Type.Object({
+        type: Type.String(),
+        coordinates: Type.Array(Type.Number())
+    })]))
+});
+
+type ProfilePatchBodyType = Static<typeof ProfilePatchBody>;
+type ProfilePatchValue = ProfilePatchBodyType[keyof ProfilePatchBodyType];
 
 export default async function router(schema: Schema, config: Config) {
     const profileControl = new ProfileControl(config);
@@ -32,45 +71,16 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Update Profile',
         group: 'Profile',
         description: 'Update User\'s Profile',
-        body: Type.Object({
-            display_stale: Type.Optional(Type.Enum(Profile_Stale)),
-            display_distance: Type.Optional(Type.Enum(Profile_Distance)),
-            display_elevation: Type.Optional(Type.Enum(Profile_Elevation)),
-            display_projection: Type.Optional(Type.Enum(Profile_Projection)),
-            display_speed: Type.Optional(Type.Enum(Profile_Speed)),
-            display_zoom: Type.Optional(Type.Enum(Profile_Zoom)),
-            display_icon_rotation: Type.Optional(Type.Boolean()),
-            display_text: Type.Optional(Type.Enum(Profile_Text)),
-
-            menu_order: Type.Optional(Type.Array(Type.Object({
-                key: Type.String({
-                    description: 'Menu Key'
-                }),
-                visibility: Type.Enum(Profile_Menu_Visibility, {
-                    description: 'Menu Visibility',
-                    default: Profile_Menu_Visibility.FULL
-                })
-            }))),
-
-            tak_callsign: Type.Optional(Type.String()),
-            tak_remarks: Type.Optional(Type.String()),
-            tak_group: Type.Optional(Type.Enum(TAKGroup)),
-            tak_type: Type.Optional(Type.String()),
-            tak_role: Type.Optional(Type.Enum(TAKRole)),
-            tak_loc_freq: Type.Optional(Type.Integer()),
-            tak_loc: Type.Optional(Type.Union([Type.Null(), Type.Object({
-                type: Type.String(),
-                coordinates: Type.Array(Type.Number())
-            })]))
-        }),
+        body: ProfilePatchBody,
         res: ProfileResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
-            const profile_config: any = {};
-            for (const key of Object.keys(req.body)) {
-                profile_config[key.replace('_', '::')] = (req.body as any)[key];
+            const profileBody = req.body as ProfilePatchBodyType;
+            const profile_config: Record<string, ProfilePatchValue> = {};
+            for (const key of Object.keys(profileBody) as Array<keyof ProfilePatchBodyType>) {
+                profile_config[String(key).replace('_', '::')] = profileBody[key];
             }
 
             await config.models.ProfileConfig.commit(user.email, profile_config);

@@ -9,6 +9,15 @@
             </div>
             <div class='ms-auto btn-list'>
                 <TablerIconButton
+                    title='Create Route'
+                    @click='openRoute'
+                >
+                    <IconRoute
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerIconButton
                     title='Refresh'
                     @click='fetch'
                 >
@@ -66,10 +75,11 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, watch, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import type { SearchReverse } from '../../types.ts';
 import {
-    IconRefresh
+    IconRefresh,
+    IconRoute
 } from '@tabler/icons-vue';
 import { server } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
@@ -85,6 +95,7 @@ import {
 import Coordinate from './util/Coordinate.vue';
 
 const route = useRoute();
+const router = useRouter();
 const mapStore = useMapStore();
 
 const error = ref<Error | undefined>();
@@ -103,6 +114,12 @@ watch(coords, async () => {
 onMounted(async () => {
     await fetch();
 });
+
+function openRoute() {
+    if (coords.value && coords.value.length >= 2) {
+        router.push(`/menu/routes/new?end=${coords.value[0]},${coords.value[1]}`);
+    }
+}
 
 async function fetch() {
     query.value = undefined;

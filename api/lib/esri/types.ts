@@ -1,9 +1,17 @@
 import { Type } from '@sinclair/typebox';
 
-export const EsriSpatialReference = Type.Object({
-    wkid: Type.Integer(),
-    latestWkid: Type.Integer()
-});
+export const EsriSpatialReference = Type.Union([
+    Type.Object({
+        wkid: Type.Integer(),
+        latestWkid: Type.Optional(Type.Integer()),
+        wkt: Type.Optional(Type.String())
+    }),
+    Type.Object({
+        wkt: Type.String(),
+        wkid: Type.Optional(Type.Integer()),
+        latestWkid: Type.Optional(Type.Integer())
+    })
+]);
 
 export const EsriPolygon = Type.Object({
     rings: Type.Array(Type.Array(Type.Array(Type.Number()))),

@@ -35,7 +35,7 @@
         "res": false
     },
     "PUT /basemap": {
-        "body": false,
+        "body": true,
         "query": false,
         "res": true
     },

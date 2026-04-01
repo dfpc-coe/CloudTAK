@@ -75,9 +75,6 @@ export default async function router(schema: Schema, config: Config) {
                 res.json({
                     total: list.total,
                     items: list.items.map((feat) => {
-                        // @ts-expect-error Legacy features
-                        feat.properties.archived = true;
-
                         return {
                             id: feat.id,
                             path: feat.path,
@@ -211,9 +208,6 @@ export default async function router(schema: Schema, config: Config) {
                 upsertTarget: [ ConnectionFeature.connection, ConnectionFeature.id ]
             });
 
-            // @ts-expect-error Legacy features
-            feature.properties.archived = true;
-
             res.json({
                 type: 'Feature',
                 ...feature
@@ -281,9 +275,6 @@ export default async function router(schema: Schema, config: Config) {
                 id = ${req.params.id}
                 AND connection = ${req.params.connectionid}
             `);
-
-            // @ts-expect-error Legacy features
-            feat.properties.archived = true;
 
             res.json({
                 type: 'Feature',

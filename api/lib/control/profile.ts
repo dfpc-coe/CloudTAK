@@ -18,6 +18,10 @@ export const ProfileConfigDefaults = {
     'display::text': Profile_Text.Medium,
     'display::icon_rotation': true,
 
+    'geometry::point::type': 'u-d-p',
+    'geometry::point::color': '#ff0000',
+    'geometry::point::icon': '',
+
     'menu::order': [],
 
     'tak::callsign': 'CloudTAK User',
