@@ -12,7 +12,7 @@ import { StyleSpecification, validateStyleMin } from '@maplibre/maplibre-gl-styl
 import pointOnFeature from '@turf/point-on-feature';
 import { bboxPolygon } from '@turf/bbox-polygon';
 import { Feature } from '@tak-ps/node-cot';
-import { GeoJSONFeatureCollection, GeoJSONFeature } from './types.js';
+import { MultiGeoJSONFeatureCollection, MultiGeoJSONFeature } from './types.js';
 
 export const TileJSONActions = Type.Object({
     feature: Type.Array(Type.Enum(Basemap_FeatureAction))
@@ -79,11 +79,11 @@ export interface BasemapProtocolInterface {
 
     featureQuery?(
         polygon: Static<typeof Feature.Polygon>
-    ): Promise<Static<typeof GeoJSONFeatureCollection>>;
+    ): Promise<Static<typeof MultiGeoJSONFeatureCollection>>;
 
     featureFetch?(
         id: string
-    ): Promise<Static<typeof GeoJSONFeature>>;
+    ): Promise<Static<typeof MultiGeoJSONFeature>>;
 }
 
 /**
@@ -249,11 +249,11 @@ export class BasemapProtocol implements BasemapProtocolInterface {
 
     featureQuery?(
         polygon: Static<typeof Feature.Polygon>
-    ): Promise<Static<typeof GeoJSONFeatureCollection>>;
+    ): Promise<Static<typeof MultiGeoJSONFeatureCollection>>;
 
     featureFetch?(
         id: string
-    ): Promise<Static<typeof GeoJSONFeature>>;
+    ): Promise<Static<typeof MultiGeoJSONFeature>>;
 
     /**
      * Proxy a tile request to the upstream source.

@@ -269,20 +269,10 @@ const vectorTitleSchema = computed(() => {
 
 const vectorTitleField = computed({
     get: () => {
-        const title = editing.value.title;
-        if (!title) return '';
-        if (/^\{\{\s*[a-zA-Z0-9_]+\s*\}\}$/.test(title)) return title;
-        if (!/^[a-zA-Z0-9_]+$/.test(title)) return title;
-        return `{{${title}}}`;
+        return editing.value.title || '';
     },
     set: (value: string) => {
-        if (!value) {
-            editing.value.title = '';
-            return;
-        }
-
-        const match = String(value).trim().match(/^\{\{\s*([a-zA-Z0-9_]+)\s*\}\}$/);
-        editing.value.title = match ? match[1] : value;
+        editing.value.title = value.trim();
     }
 });
 

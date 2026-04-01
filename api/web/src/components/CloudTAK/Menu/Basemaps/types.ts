@@ -212,7 +212,7 @@ export function normalizeEditing(data: Basemap | BasemapImport | BasemapListItem
         bounds: ('bounds' in data && Array.isArray(data.bounds) ? data.bounds : null) ?? [-180, -90, 180, 90],
         center: ('center' in data && Array.isArray(data.center) ? data.center : null) ?? [0, 0],
         collection: ('collection' in data ? data.collection : undefined) ?? '',
-        title: ('title' in data ? data.title : undefined) ?? 'callsign',
+        title: ('title' in data ? data.title : undefined) ?? '{{callsign}}',
         overlay: ('overlay' in data ? data.overlay : undefined) ?? false,
         hidden: ('hidden' in data ? data.hidden : undefined) ?? false,
         frequency: ('frequency' in data ? data.frequency : undefined) ?? null,

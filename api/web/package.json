@@ -59,6 +59,7 @@
         "floating-vue": "^2.0.0-beta.17",
         "geo-coordinates-parser": "^1.7.4",
         "geomagnetism": "^0.2.0",
+        "handlebars": "^4.7.9",
         "hls.js": "^1.6.5",
         "imask": "^6.0.0",
         "jsonata": "^2.0.4",

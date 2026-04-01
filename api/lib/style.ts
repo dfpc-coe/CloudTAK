@@ -652,3 +652,16 @@ export default class Style {
         }
     }
 }
+
+export function validateTemplate(template: string, label = 'Title'): void {
+    try {
+        handlebars.compile(template)({});
+    } catch (err) {
+        throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid ${label} Template: ${template}`);
+    }
+}
+
+export function renderTemplate(template: string, properties: Record<string, unknown>): string | null {
+    const result = handlebars.compile(template)(properties);
+    return result.trim() || null;
+}

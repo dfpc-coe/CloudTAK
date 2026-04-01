@@ -71,7 +71,7 @@ export async function cutOverlayFeature(mapStore: MapStore, feature?: FeatureLik
             start: now,
             stale: now,
             center: pointOnFeature(rawFeature).geometry.coordinates,
-            callsign: 'New Feature'
+            callsign: String(rawFeature.properties?.title || 'New Feature')
         },
         geometry: rawFeature.geometry
     });
