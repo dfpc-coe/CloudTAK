@@ -2,7 +2,8 @@ import path from 'node:path';
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import { bbox } from '@turf/bbox';
-import TileJSON, { TileJSONType, TileJSONActions } from '../lib/control/tilejson.js';
+import { BasemapProtocol, TileJSONType, TileJSONActions } from '../lib/interface-basemap.js';
+import { fromProtocol } from '../lib/factory-basemap.js';
 import Auth, { AuthUserAccess, AuthUser, AuthResource, ResourceCreationScope, AuthResourceAccess } from '../lib/auth.js';
 import { Busboy } from '@fastify/busboy';
 import Config from '../lib/config.js';
@@ -12,13 +13,14 @@ import bboxPolygon from '@turf/bbox-polygon';
 import { Param } from '@openaddresses/batch-generic'
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
+import { validateTemplate, renderTemplate } from '../lib/style.js';
 import { Geometry, BBox } from 'geojson';
 import { Static, Type } from '@sinclair/typebox'
-import { StandardResponse, BasemapResponse, OptionalTileJSON, GeoJSONFeature, GeoJSONFeatureCollection } from '../lib/types.js';
+import { StandardResponse, BasemapResponse, OptionalTileJSON, MultiGeoJSONFeature, MultiGeoJSONFeatureCollection } from '../lib/types.js';
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
-import { toEnum, Basemap_Format, Basemap_Scheme, Basemap_Type, AllBoolean, AllBooleanCast } from '../lib/enums.js';
+import { toEnum, Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, Basemap_FeatureAction, AllBoolean, AllBooleanCast } from '../lib/enums.js';
 import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
 import * as Default from '../lib/limits.js';
 
@@ -38,38 +40,129 @@ const AugmentedTileJSONType = Type.Composite([
     })
 ])
 
+const BasemapImportAuth = Type.Object({
+    username: Type.Optional(Type.String()),
+    password: Type.Optional(Type.String()),
+    referer: Type.Optional(Type.String()),
+    expiration: Type.Optional(Type.Integer())
+});
+
+const BasemapImportRequest = Type.Object({
+    type: Type.String(),
+    url: Type.String(),
+    auth: Type.Optional(BasemapImportAuth)
+});
+
+function isBasemapImportRequest(body: unknown): body is Static<typeof BasemapImportRequest> {
+    return !!body
+        && typeof body === 'object'
+        && 'url' in body
+        && typeof body.url === 'string';
+}
+
+function isEsriLayerURL(url: string): boolean {
+    return !!(
+        String(url).match(/\/FeatureServer\/\d+$/)
+        || String(url).match(/\/MapServer\/\d+$/)
+        || String(url).match(/\/ImageServer$/)
+    );
+}
+
+async function importBasemapURL(
+    config: Config,
+    rawURL: string,
+    auth?: Static<typeof BasemapImportAuth>
+): Promise<Static<typeof OptionalTileJSON>> {
+    const imported: Static<typeof OptionalTileJSON> = {
+        type: Basemap_Type.RASTER
+    };
+
+    let url: URL;
+    try {
+        url = new URL(rawURL);
+    } catch (err) {
+        throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL');
+    }
+
+    if (isEsriLayerURL(String(url))) {
+        const esriAuth = auth?.username && auth?.password
+            ? {
+                username: auth.username,
+                password: auth.password,
+                referer: auth.referer || config.API_URL,
+                expiration: auth.expiration
+            }
+            : undefined;
+
+        const base = await EsriBase.from(url, esriAuth);
+        const layer = new EsriProxyLayer(base);
+        return await layer.tilejson();
+    }
+
+    const tjres = await fetch(url);
+    if (!tjres.ok) {
+        throw new Err(400, null, 'Unable to fetch TileJSON from source URL');
+    }
+
+    const tjbody = await tjres.json() as Record<string, any>;
+
+    if (tjbody.name) imported.name = tjbody.name;
+    if (tjbody.attribution) imported.attribution = tjbody.attribution;
+    if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
+    if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
+    if (Array.isArray(tjbody.vector_layers)) imported.vector_layers = tjbody.vector_layers;
+    if (Array.isArray(tjbody.tiles) && tjbody.tiles.length) {
+        imported.url = tjbody.tiles[0]
+            .replace('{z}', '{$z}')
+            .replace('{x}', '{$x}')
+            .replace('{y}', '{$y}');
+    }
+
+    if (imported.url) {
+        const tileURL = new URL(imported.url);
+        imported.format = toEnum.fromString(Type.Enum(Basemap_Format), path.parse(tileURL.pathname).ext.replace('.', ''));
+    }
+
+    return imported;
+}
+
 export default async function router(schema: Schema, config: Config) {
     await schema.put('/basemap', {
         name: 'Import Basemaps',
         group: 'BaseMap',
         description: `
-            If the Content-Type if text/plain, then assume the body contains a TileJSON URL
+            If the Content-Type is text/plain, then assume the body contains a TileJSON URL
+            If the Content-Type is application/json, then assume the body contains a URL import request
             Alternatively, if the Content-Type is a MultiPart upload, assume the input is a TAK XML document
 
             Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
         `,
+        body: Type.Optional(Type.Union([
+            Type.String(),
+            BasemapImportRequest
+        ])),
         res: OptionalTileJSON
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
-
-            const imported: {
-                name?: string;
-                type: Basemap_Type;
-                url?: string;
-                attribution?: string;
-                bounds?: object;
-                center?: object;
-                minzoom?: number;
-                maxzoom?: number;
-                format?: Basemap_Format;
-                serverParts?: string;
-            } = {
-                type: Basemap_Type.RASTER
-            };
             const contentType = req.headers['content-type'];
 
             if (contentType && contentType.startsWith('multipart/form-data')) {
+                const imported: {
+                    name?: string;
+                    type: Basemap_Type;
+                    url?: string;
+                    attribution?: string;
+                    bounds?: object;
+                    center?: object;
+                    minzoom?: number;
+                    maxzoom?: number;
+                    format?: Basemap_Format;
+                    serverParts?: string;
+                } = {
+                    type: Basemap_Type.RASTER
+                };
+
                 const bb = new Busboy({
                     headers: {
                         'content-type': contentType
@@ -120,45 +213,15 @@ export default async function router(schema: Schema, config: Config) {
 
                 req.pipe(bb);
             } else if (contentType && contentType.startsWith('text/plain')) {
-                let url: URL;
-                try {
-                    url = new URL(String(await stream2buffer(req)));
-                } catch (err) {
-                    throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL');
+                const imported = await importBasemapURL(config, String(await stream2buffer(req)));
+                res.json(imported);
+            } else if (contentType && contentType.startsWith('application/json')) {
+                if (!isBasemapImportRequest(req.body)) {
+                    throw new Err(400, null, 'Invalid import request');
                 }
 
-                if (
-                    String(url).match(/\/FeatureServer\/\d+$/)
-                    || String(url).match(/\/MapServer\/\d+$/)
-                    || String(url).match(/\/ImageServer$/)
-                ) {
-                    const base = new EsriBase(url);
-                    const layer = new EsriProxyLayer(base);
-                    const tilejson = await layer.tilejson();
-
-                    res.json(tilejson);
-                } else {
-                    const tjres = await fetch(url);
-                    const tjbody = await tjres.json();
-
-                    if (tjbody.name) imported.name = tjbody.name;
-                    if (tjbody.attribution) imported.attribution = tjbody.attribution;
-                    if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
-                    if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
-                    if (tjbody.tiles.length) {
-                        imported.url = tjbody.tiles[0]
-                            .replace('{z}', '{$z}')
-                            .replace('{x}', '{$x}')
-                            .replace('{y}', '{$y}')
-                    }
-
-                    if (imported.url) {
-                        const url = new URL(imported.url)
-                        imported.format = toEnum.fromString(Type.Enum(Basemap_Format), path.parse(url.pathname).ext.replace('.', ''));
-                    }
-
-                    res.json(imported);
-                }
+                const imported = await importBasemapURL(config, req.body.url, req.body.auth);
+                res.json(imported);
             } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
@@ -323,7 +386,7 @@ export default async function router(schema: Schema, config: Config) {
                         ...basemap,
                         bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                         center: basemap.center ? basemap.center.coordinates : undefined,
-                        actions: TileJSON.actions(basemap.url)
+                        actions: fromProtocol(basemap.protocol).actions()
                     };
                 })
             });
@@ -363,6 +426,7 @@ export default async function router(schema: Schema, config: Config) {
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.Enum(Basemap_Format)),
+            protocol: Type.Optional(Type.Enum(Basemap_Protocol)),
             style: Type.Optional(Type.Enum(Basemap_Scheme)),
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
@@ -391,7 +455,9 @@ export default async function router(schema: Schema, config: Config) {
                 delete req.body.center;
             }
 
-            TileJSON.isValidURL(req.body.url);
+            fromProtocol(req.body.protocol).isValidURL(req.body.url);
+
+            if (req.body.title) validateTemplate(req.body.title);
 
             let username: string | null = null;
             if (user.access !== AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
@@ -428,7 +494,7 @@ export default async function router(schema: Schema, config: Config) {
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                 center: basemap.center ? basemap.center.coordinates : undefined,
-                actions: TileJSON.actions(basemap.url)
+                actions: fromProtocol(basemap.protocol).actions()
             });
         } catch (err) {
             Err.respond(err, res);
@@ -465,6 +531,7 @@ export default async function router(schema: Schema, config: Config) {
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.Enum(Basemap_Format)),
+            protocol: Type.Optional(Type.Enum(Basemap_Protocol)),
             style: Type.Optional(Type.Enum(Basemap_Scheme)),
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
@@ -485,9 +552,12 @@ export default async function router(schema: Schema, config: Config) {
             let center: Geometry | undefined = undefined;
             if (req.body.bounds) bounds = bboxPolygon(req.body.bounds as BBox).geometry;
             if (req.body.center) center = { type: 'Point', coordinates: req.body.center };
-            if (req.body.url) TileJSON.isValidURL(req.body.url);
 
             const existing = await config.models.Basemap.from(req.params.basemapid);
+
+            if (req.body.url) fromProtocol(req.body.protocol ?? existing.protocol).isValidURL(req.body.url);
+
+            if (req.body.title) validateTemplate(req.body.title);
 
             if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -545,7 +615,7 @@ export default async function router(schema: Schema, config: Config) {
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                 center: basemap.center ? basemap.center.coordinates : undefined,
-                actions: TileJSON.actions(basemap.url)
+                actions: fromProtocol(basemap.protocol).actions()
             });
         } catch (err) {
             Err.respond(err, res);
@@ -589,7 +659,7 @@ export default async function router(schema: Schema, config: Config) {
                         maxZoom: { _text: basemap.maxzoom },
                         tileType: { _text: basemap.format },
                         tileUpdate: { _text: 'None' },
-                        url: { _text: TileJSON.proxyShare(config, basemap) },
+                        url: { _text: fromProtocol(basemap.protocol, basemap).proxyShare(config) },
                         backgroundColor: { _text: '#000000' },
                     }
                 })).to_xml();
@@ -600,7 +670,7 @@ export default async function router(schema: Schema, config: Config) {
                     ...basemap,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                     center: basemap.center ? basemap.center.coordinates : undefined,
-                    actions: TileJSON.actions(basemap.url)
+                    actions: fromProtocol(basemap.protocol).actions()
                 });
             }
         } catch (err) {
@@ -642,6 +712,40 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
+            let tileURL: string;
+
+            if (basemap.url.includes(new URL(config.PMTILES_URL || 'http://localhost:5001').hostname)) {
+                tileURL = basemap.url;
+                if (req.query.token) tileURL = tileURL + `?token=${req.query.token}`;
+            } else {
+                tileURL = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
+                if (req.query.token) tileURL = tileURL + `?token=${req.query.token}`;
+            }
+
+            const esriMetadataURL = basemap.tilejson || basemap.url;
+
+            if (isEsriLayerURL(esriMetadataURL)) {
+                const base = new EsriBase(new URL(esriMetadataURL));
+                const layer = new EsriProxyLayer(base);
+                const metadata = await layer.tilejson();
+                const json = BasemapProtocol.json({
+                    ...basemap,
+                    ...metadata,
+                    minzoom: basemap.minzoom ?? metadata.minzoom,
+                    maxzoom: basemap.maxzoom ?? metadata.maxzoom,
+                    bounds: basemap.bounds ? bbox(basemap.bounds) : metadata.bounds,
+                    center: basemap.center ? basemap.center.coordinates : metadata.center,
+                    url: tileURL,
+                });
+
+                res.json({
+                    ...json,
+                    actions: fromProtocol(basemap.protocol).actions()
+                });
+
+                return;
+            }
+
             if (basemap.tilejson) {
                 const url = new URL(basemap.tilejson);
 
@@ -660,29 +764,19 @@ export default async function router(schema: Schema, config: Config) {
                 res.json({
                     ...json,
                     type: basemap.type,
-                    actions: TileJSON.actions(basemap.url)
+                    actions: fromProtocol(basemap.protocol).actions()
                 });
             } else {
-                let url: string;
-
-                if (basemap.url.includes(new URL(config.PMTILES_URL || "http://localhost:5001").hostname)) {
-                    url = basemap.url;
-                    if (req.query.token) url = url + `?token=${req.query.token}`;
-                } else {
-                    url = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
-                    if (req.query.token) url = url + `?token=${req.query.token}`;
-                }
-
-                const json = TileJSON.json({
+                const json = BasemapProtocol.json({
                     ...basemap,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                     center: basemap.center ? basemap.center.coordinates : undefined,
-                    url,
+                    url: tileURL,
                 });
 
                 res.json({
                     ...json,
-                    actions: TileJSON.actions(basemap.url),
+                    actions: fromProtocol(basemap.protocol).actions(),
                 });
             }
         } catch (err) {
@@ -726,8 +820,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            return await TileJSON.tile(
-                basemap,
+            return await fromProtocol(basemap.protocol, basemap).tile(
                 req.params.z,
                 req.params.x,
                 req.params.y,
@@ -755,7 +848,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             polygon: Feature.Polygon
         }),
-        res: GeoJSONFeatureCollection
+        res: MultiGeoJSONFeatureCollection
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
@@ -766,10 +859,24 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
-            const fc = await TileJSON.featureQuery(
-                basemap.url,
+            const protocol = fromProtocol(basemap.protocol, basemap);
+
+            if (!protocol.actions().feature.includes(Basemap_FeatureAction.QUERY)) {
+                throw new Err(400, null, 'Feature querying is not supported by this basemap protocol');
+            }
+
+            const fc = await protocol.featureQuery!(
                 req.body.polygon
             );
+
+            if (basemap.title) {
+                for (const feat of fc.features) {
+                    if (feat.properties) {
+                        const resolved = renderTemplate(basemap.title, feat.properties);
+                        if (resolved) feat.properties.title = resolved;
+                    }
+                }
+            }
 
             res.json(fc);
         } catch (err) {
@@ -785,7 +892,7 @@ export default async function router(schema: Schema, config: Config) {
             basemapid: Type.Integer({ minimum: 1 }),
             featureid: Type.String()
         }),
-        res: GeoJSONFeature
+        res: MultiGeoJSONFeature
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
@@ -796,7 +903,20 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
-            res.json(await TileJSON.featureFetch(basemap.url, req.params.featureid));
+            const protocol = fromProtocol(basemap.protocol, basemap);
+
+            if (!protocol.actions().feature.includes(Basemap_FeatureAction.FETCH)) {
+                throw new Err(400, null, 'Feature fetching is not supported by this basemap protocol');
+            }
+
+            const feat = await protocol.featureFetch!(req.params.featureid);
+
+            if (basemap.title && feat.properties) {
+                const resolved = renderTemplate(basemap.title, feat.properties);
+                if (resolved) feat.properties.title = resolved;
+            }
+
+            res.json(feat);
         } catch (err) {
             Err.respond(err, res);
         }

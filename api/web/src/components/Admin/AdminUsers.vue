@@ -32,7 +32,7 @@
             />
             <div
                 v-else
-                class='table-responsive'
+                class='table-responsive pb-5'
             >
                 <table class='table card-table table-hover table-vcenter datatable'>
                     <TableHeader

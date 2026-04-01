@@ -232,7 +232,6 @@ test('PUT: api/connection/1/feature - Create another', async () => {
                 start: time,
                 stale: time,
                 center: [0, 0],
-                archived: true,
                 callsign: 'UNKNOWN'
             },
             geometry: {

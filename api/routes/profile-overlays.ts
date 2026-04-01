@@ -1,13 +1,13 @@
 import { Static, Type } from '@sinclair/typebox'
-import TileJSON from '../lib/control/tilejson.js';
-import path from 'node:path';
+import { BasemapProtocol, TileJSONActions } from '../lib/interface-basemap.js';
+import { fromProtocol } from '../lib/factory-basemap.js';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import S3 from '../lib/aws/s3.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { ProfileOverlay } from '../lib/schema.js';
-import { TileJSONActions } from '../lib/control/tilejson.js';
+import path from 'node:path';
 import { StandardResponse, ProfileOverlayResponse } from '../lib/types.js'
 import { sql } from 'drizzle-orm';
 import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
@@ -109,7 +109,7 @@ export default async function router(schema: Schema, config: Config) {
                     try {
                         if (!item.mode_id) throw new Error('mode_id is required');
                         const basemap = await config.models.Basemap.from(parseInt(item.mode_id));
-                        return { keep: true as const, item, actions: TileJSON.actions(basemap.url) };
+                        return { keep: true as const, item, actions: fromProtocol(basemap.protocol).actions() };
                     } catch (err) {
                         console.error('Could not find basemap', err);
                         return { keep: false as const, item };
@@ -121,7 +121,7 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 }
 
-                return { keep: true as const, item, actions: TileJSON.actions() };
+                return { keep: true as const, item, actions: fromProtocol().actions() };
             }));
 
             // Batch all deletions in parallel
@@ -169,13 +169,13 @@ export default async function router(schema: Schema, config: Config) {
 
                 res.json({
                     ...overlay,
-                    actions: TileJSON.actions(basemap.url),
+                    actions: fromProtocol(basemap.protocol).actions(),
                     opacity: Number(overlay.opacity)
                 });
             } else {
                 res.json({
                     ...overlay,
-                    actions: TileJSON.actions(),
+                    actions: fromProtocol().actions(),
                     opacity: Number(overlay.opacity)
                 });
             }
@@ -213,7 +213,7 @@ export default async function router(schema: Schema, config: Config) {
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot edit another\'s overlay');
 
             if (req.body.styles && req.body.styles.length) {
-                TileJSON.isValidStyle(req.body.type || overlay.type, req.body.styles);
+                BasemapProtocol.isValidStyle(req.body.type || overlay.type, req.body.styles);
             }
 
             if (overlay.mode === 'profile' && req.body.url && req.body.url.startsWith('http')) {
@@ -239,13 +239,13 @@ export default async function router(schema: Schema, config: Config) {
 
                 res.json({
                     ...overlay,
-                    actions: TileJSON.actions(basemap.url),
+                    actions: fromProtocol(basemap.protocol).actions(),
                     opacity: Number(overlay.opacity)
                 });
             } else {
                 res.json({
                     ...overlay,
-                    actions: TileJSON.actions(),
+                    actions: fromProtocol().actions(),
                     opacity: Number(overlay.opacity)
                 });
             }
@@ -279,7 +279,7 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
 
             if (req.body.styles && req.body.styles.length) {
-                TileJSON.isValidStyle(req.body.type || 'raster', req.body.styles);
+                BasemapProtocol.isValidStyle(req.body.type || 'raster', req.body.styles);
             }
 
             if (req.body.active && req.body.mode !== 'mission') {
@@ -330,13 +330,13 @@ export default async function router(schema: Schema, config: Config) {
 
                 res.json({
                     ...overlay,
-                    actions: TileJSON.actions(basemap.url),
+                    actions: fromProtocol(basemap.protocol).actions(),
                     opacity: Number(overlay.opacity)
                 });
             } else {
                 res.json({
                     ...overlay,
-                    actions: TileJSON.actions(),
+                    actions: fromProtocol().actions(),
                     opacity: Number(overlay.opacity)
                 });
             }

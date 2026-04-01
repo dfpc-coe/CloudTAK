@@ -104,7 +104,7 @@ import {
     IconMapPin,
     IconCrosshair
 } from '@tabler/icons-vue';
-import { ref, watch, computed, onUnmounted } from 'vue';
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
     label: {
@@ -122,6 +122,10 @@ const props = defineProps({
     locationPicker: {
         type: Boolean,
         default: false
+    },
+    initialValue: {
+        type: String,
+        default: ''
     }
 });
 
@@ -132,6 +136,13 @@ const emit = defineEmits(['select']);
 const selected = ref(false);
 const partialLoading = ref(false);
 const pickingLocation = ref(false);
+
+onMounted(() => {
+    if (props.initialValue) {
+        query.value.filter = props.initialValue;
+        selected.value = true;
+    }
+});
 
 function startPickingLocation(): void {
     pickingLocation.value = true;

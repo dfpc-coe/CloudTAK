@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type, Static } from '@sinclair/typebox'
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -9,6 +9,19 @@ import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { Profile } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
 import ProfileControl from '../lib/control/profile.js';
+
+const UserPatchBody = Type.Object({
+    tak_callsign: Type.Optional(Type.String()),
+    tak_remarks: Type.Optional(Type.String()),
+    tak_group: Type.Optional(Type.Enum(TAKGroup)),
+    tak_type: Type.Optional(Type.String()),
+    tak_role: Type.Optional(Type.Enum(TAKRole)),
+
+    system_admin: Type.Optional(Type.Boolean())
+});
+
+type UserPatchBodyType = Static<typeof UserPatchBody>;
+type UserPatchValue = UserPatchBodyType[keyof UserPatchBodyType];
 
 export default async function router(schema: Schema, config: Config) {
     const profileControl = new ProfileControl(config);
@@ -66,28 +79,21 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             username: Type.String(),
         }),
-        body: Type.Object({
-            tak_callsign: Type.Optional(Type.String()),
-            tak_remarks: Type.Optional(Type.String()),
-            tak_group: Type.Optional(Type.Enum(TAKGroup)),
-            tak_type: Type.Optional(Type.String()),
-            tak_role: Type.Optional(Type.Enum(TAKRole)),
-
-            system_admin: Type.Optional(Type.Boolean())
-        }),
+        body: UserPatchBody,
         res: ProfileResponse
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            const profile_body: any = {};
-            const profile_config: any = {};
+            const profileBody = req.body as UserPatchBodyType;
+            const profile_body: { system_admin?: boolean } = {};
+            const profile_config: Record<string, UserPatchValue> = {};
 
-            for (const key of Object.keys(req.body)) {
+            for (const key of Object.keys(profileBody) as Array<keyof UserPatchBodyType>) {
                 if (key === 'system_admin') {
-                     profile_body[key] = (req.body as any)[key];
+                     profile_body.system_admin = profileBody[key];
                 } else {
-                     profile_config[key.replace('_', '::')] = (req.body as any)[key];
+                     profile_config[String(key).replace('_', '::')] = profileBody[key];
                 }
             }
 

@@ -42,23 +42,18 @@
 <script setup lang='ts'>
 import { computed, ref } from 'vue';
 import StandardItem from '../../util/StandardItem.vue';
-import {
-    IconBraces,
-    IconFileImport,
-    IconFileUpload,
-    IconGridDots,
-    IconMap,
-    IconPhoto,
-    IconVector
-} from '@tabler/icons-vue';
+import { BasemapTypeConfig } from './types.ts';
+import type { BasemapSourceType } from './types.ts';
 import {
     TablerInput
 } from '@tak-ps/vue-tabler';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
     modelValue?: string | null;
+    isSystemAdmin?: boolean;
 }>(), {
     modelValue: null,
+    isSystemAdmin: false,
 });
 
 const emit = defineEmits<{
@@ -68,57 +63,23 @@ const emit = defineEmits<{
 
 const filter = ref('');
 
-const options = [
-    {
-        id: 'zxy',
-        label: 'ZXY',
-        description: 'Standard XYZ tile template',
-        icon: IconGridDots,
-    },
-    {
-        id: 'quadkey',
-        label: 'Quadkey',
-        description: 'Quadkey tile template',
-        icon: IconBraces,
-    },
-    {
-        id: 'imageserver',
-        label: 'ImageServer',
-        description: 'ArcGIS image service endpoint',
-        icon: IconPhoto,
-    },
-    {
-        id: 'mapserver',
-        label: 'MapServer',
-        description: 'ArcGIS map service layer endpoint',
-        icon: IconMap,
-    },
-    {
-        id: 'featureserver',
-        label: 'FeatureServer',
-        description: 'ArcGIS feature layer endpoint',
-        icon: IconVector,
-    },
-    {
-        id: 'tilejson',
-        label: 'TileJSON Import',
-        description: 'Fetch defaults from a TileJSON URL',
-        icon: IconFileImport,
-    },
-    {
-        id: 'upload',
-        label: 'TAK XML Upload',
-        description: 'Import settings from a TAK XML basemap file',
-        icon: IconFileUpload,
-    },
-] as const;
+const options = computed(() => {
+    return (Object.keys(BasemapTypeConfig) as BasemapSourceType[])
+        .filter((id) => id !== 'hosted' || props.isSystemAdmin)
+        .map((id) => ({
+            id,
+            label: BasemapTypeConfig[id].label,
+            description: BasemapTypeConfig[id].description,
+            icon: BasemapTypeConfig[id].icon,
+        }));
+});
 
 const filteredOptions = computed(() => {
-    if (!filter.value) return options;
+    if (!filter.value) return options.value;
 
     const search = filter.value.toLowerCase();
 
-    return options.filter((option) => {
+    return options.value.filter((option) => {
         return option.label.toLowerCase().includes(search)
             || option.description.toLowerCase().includes(search);
     });

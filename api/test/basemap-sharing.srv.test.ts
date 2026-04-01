@@ -49,6 +49,7 @@ test('POST: api/basemap - Sharing Turned On Initially', async () => {
             minzoom: 0,
             maxzoom: 16,
             format: 'png',
+            protocol: 'zxy',
             scheme: 'xyz',
             styles: [],
             type: 'raster',
@@ -102,7 +103,6 @@ test('GET: api/basemap/1/tiles - Ensure Token Works', async () => {
             minzoom: 0,
             maxzoom: 16,
             tiles: [ 'http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}' ],
-            vector_layers: [ { id: 'out', fields: {} } ],
             actions: { feature: [] }
         })
     } catch (err) {
@@ -144,6 +144,7 @@ test('PATCH: api/basemap/1 - Turn off Sharing', async () => {
             minzoom: 0,
             maxzoom: 16,
             format: 'png',
+            protocol: 'zxy',
             scheme: 'xyz',
             styles: [],
             type: 'raster',
@@ -210,6 +211,7 @@ test('PATCH: api/basemap/1 - Turn on Sharing', async () => {
             minzoom: 0,
             maxzoom: 16,
             format: 'png',
+            protocol: 'zxy',
             scheme: 'xyz',
             styles: [],
             type: 'raster',
