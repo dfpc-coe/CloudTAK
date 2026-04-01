@@ -18,6 +18,11 @@
 
 ### Pending Release
 
+### v12.116.3 - 2026-04-01
+
+- :bug: Ensure Render Creates with pending Render removals are short circuited and not added
+- :bug: Ensure CoTs that call `add()` with stale times in the past are not added to the rendering stack if they would not product a visible result per the user's stale rules
+
 ### v12.116.2 - 2026-04-01
 
 - :bug: Allow MultiSelect panel to show both CoT and Overlay Features
