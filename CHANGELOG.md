@@ -18,6 +18,20 @@
 
 ### Pending Release
 
+### v12.115.0 - 2026-04-01
+
+- :tada: Introduce Basemap Protocol to explicity set the protocol for better management vs the current URL based sniffing
+- :rocket: Refactor TileJSON generation for ESRI sources to use the new ESRI-Dump TileJSON utility
+- :rocket: Refactor Basemap Protocols into their own classes to allow for more flexible management and addition of new protocols in the future
+- :tada: `UI` Significant UI rewrite to Basemap Management
+- :tada: `UI` Add the ability to cut a feature from an ESRI source from the radial menu
+- :tada: `UI` Create a `HandleForm` utility for visually representing HandleBar templates and prompting the user to fill a given template
+- :rocket: `UI` FeatView now uses the optional `Basemap.title` property to set the Title of a feature
+- :rocket: Basemap Feature endpoint now set the `title` property on features if the Basemap has a `title` property which is a handlebar template that can reference feature properties to allow dynamic titling of features based on their properties
+- :rocket: `UI` Unifiy Basemap Management UI between Map View and Admin Config
+- :bug: `UI` Fix rendering bug where features that were in the update & delete queue at the same time would not be properly removed from the map
+- :bug: `UI` Fix rendering bug where the pendingUpdate queue was not being cleared
+
 ### v12.114.0 - 2026-03-27
 
 - :bug: PropertySensor resulted in a recursive loop that would eventually take down chrome or lock up firefox
