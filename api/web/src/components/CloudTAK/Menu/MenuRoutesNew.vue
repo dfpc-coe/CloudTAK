@@ -212,6 +212,8 @@ async function generateRoute(): Promise<void> {
                 authored: true
             });
 
+            if (!cot) throw new Error('Failed to add route');
+
             cot.flyTo();
 
             router.push(`/cot/${cot.id}`);
