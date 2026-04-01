@@ -196,6 +196,7 @@ export default class AtlasDatabase {
         this.pendingUnhide.clear();
 
         for (const cot of this.pendingCreate.values()) {
+            if (staleDelete.has(cot.id) || this.pendingDelete.has(cot.id)) continue;
             const render = cot.as_rendered();
             diff.add.push(render);
         }
@@ -601,7 +602,7 @@ export default class AtlasDatabase {
             skipBroadcast?: boolean;
             authored?: boolean,
         }
-    ): Promise<COT> {
+    ): Promise<COT | void> {
         if (!opts) opts = {};
 
         feature.properties.id = feature.id;
@@ -705,6 +706,25 @@ export default class AtlasDatabase {
                     }
                 }
             } else {
+                // Don't add already-stale CoTs to the map
+                if (!feat.properties.archived) {
+                    const display_stale = (await ProfileConfig.get('display_stale'))?.value || 'Immediate';
+                    const stale = new Date(feat.properties.stale).getTime();
+                    const now = Date.now();
+
+                    if (
+                        !['Never'].includes(display_stale)
+                        && (
+                            display_stale === 'Immediate'       && now > stale
+                            || display_stale === '10 Minutes'   && now > stale + 600000
+                            || display_stale === '30 Minutes'   && now > stale + 600000 * 3
+                            || display_stale === '1 Hour'       && now > stale + 600000 * 6
+                        )
+                    ) {
+                        return;
+                    }
+                }
+
                 exists = await COT.load(feat, {
                     mode: OriginMode.CONNECTION
                 }, opts);

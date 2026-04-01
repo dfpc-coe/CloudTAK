@@ -18,6 +18,10 @@
 
 ### Pending Release
 
+### v12.116.2 - 2026-04-01
+
+- :bug: Allow MultiSelect panel to show both CoT and Overlay Features
+
 ### v12.116.1 - 2026-04-01
 
 - :bug: Fix context in Github Release process
