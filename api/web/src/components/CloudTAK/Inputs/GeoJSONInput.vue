@@ -208,7 +208,7 @@ async function saveToMap() {
         }
     });
 
-    const adding: Array<Promise<CoT>> = feats.value.map((feat: InputFeature) =>
+    const adding = feats.value.map((feat: InputFeature) =>
         mapStore.worker.db.add(JSON.parse(JSON.stringify(feat)), {
             authored: true
         })
