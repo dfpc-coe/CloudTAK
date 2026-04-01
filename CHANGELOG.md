@@ -18,6 +18,10 @@
 
 ### Pending Release
 
+### v12.115.1 - 2026-04-01
+
+- :bug: Fix context in Github Release process
+
 ### v12.115.0 - 2026-04-01
 
 - :tada: Introduce Basemap Protocol to explicity set the protocol for better management vs the current URL based sniffing
