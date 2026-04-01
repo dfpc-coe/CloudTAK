@@ -24,12 +24,13 @@ jobs:
           - task: api
             context: ./api/
           - task: pmtiles
-            context: ./tasks/pmtiles/
+            context: .
             file: ./tasks/pmtiles/Dockerfile.compose
           - task: events
-            context: ./tasks/events/
+            context: .
+            file: ./tasks/events/Dockerfile
           - task: retention
-            context: ./tasks/retention/
+            context: .
             file: ./tasks/retention/Dockerfile.compose
     steps:
       - uses: actions/checkout@v6
