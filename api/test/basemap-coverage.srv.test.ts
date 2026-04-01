@@ -529,7 +529,7 @@ test('DELETE: api/basemap/1 - Cannot delete default basemap', async () => {
 });
 
 test('PUT: api/config - Unset default basemap', async () => {
-    const res = await flight.fetch('/api/config', {
+    await flight.fetch('/api/config', {
         method: 'PUT',
         auth: { bearer: flight.token.admin },
         body: { 'map::basemap': null }
