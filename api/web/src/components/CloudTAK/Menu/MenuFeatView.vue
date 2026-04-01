@@ -11,7 +11,7 @@
                 <div
                     class='card-title mx-2 text-truncate'
                     style='width: 280px'
-                    v-text='feature.properties?.name || "No Name"'
+                    v-text='featureTitle'
                 />
             </div>
             <div class='col-12 btn-list my-2 d-flex align-items-center mx-2'>
@@ -138,11 +138,13 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useMapStore } from '../../../stores/map.ts';
 import type { LngLatLike, MapGeoJSONFeature } from 'maplibre-gl';
 import type { Feature } from 'geojson';
 import pointOnFeature from '@turf/point-on-feature';
+import Handlebars from 'handlebars';
+import { server } from '../../../std.ts';
 import Coordinate from '../util/Coordinate.vue';
 import CopyField from '../util/CopyField.vue';
 import { cutOverlayFeature, getFeatureOverlay } from '../util/featureCut.ts';
@@ -171,6 +173,42 @@ const feature = computed(() => {
 const mode = ref('default');
 
 const overlay = computed(() => getFeatureOverlay(mapStore, feature.value));
+
+const titleTemplate = ref<string | null>(null);
+
+watch(overlay, async (ov) => {
+    titleTemplate.value = null;
+    if (!ov || !ov.mode_id || !['basemap', 'overlay'].includes(ov.mode)) return;
+
+    const { data } = await server.GET('/api/basemap/{:basemapid}', {
+        params: { path: { ':basemapid': Number(ov.mode_id) } }
+    });
+
+    if (data && typeof data === 'object' && 'title' in data && data.title) {
+        titleTemplate.value = data.title;
+    }
+}, { immediate: true });
+
+const featureTitle = computed(() => {
+    if (!feature.value) return 'No Name';
+    const props = feature.value.properties || {};
+
+    if (titleTemplate.value) {
+        try {
+            let tmpl = titleTemplate.value;
+            // Bare property name (e.g. "callsign") => wrap as handlebars expression
+            if (/^[a-zA-Z0-9_]+$/.test(tmpl)) {
+                tmpl = `{{${tmpl}}}`;
+            }
+            const result = Handlebars.compile(tmpl)(props);
+            if (result && result.trim().length > 0) return result;
+        } catch {
+            // Fall through to default
+        }
+    }
+
+    return props.name || props.callsign || 'No Name';
+});
 
 const center = computed(() => {
     if (!feature.value) return [0, 0];

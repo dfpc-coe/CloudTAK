@@ -7,7 +7,7 @@ import typedFetch from '../fetch.js';
 import { Feature } from '@tak-ps/node-cot';
 import { Static } from '@sinclair/typebox';
 import { Basemap_FeatureAction } from '../enums.js';
-import { GeoJSONFeatureCollection, GeoJSONFeature, MultiGeoJSONFeatureCollection } from '../types.js';
+import { MultiGeoJSONFeatureCollection, MultiGeoJSONFeature } from '../types.js';
 import { EsriPolygon } from '../esri/types.js';
 import { BasemapProtocol, TileJSONActions, TileOpts } from '../interface-basemap.js';
 
@@ -98,7 +98,7 @@ export default class FeatureServerBasemap extends BasemapProtocol {
      */
     async featureQuery(
         polygon: Static<typeof Feature.Polygon>
-    ): Promise<Static<typeof GeoJSONFeatureCollection>> {
+    ): Promise<Static<typeof MultiGeoJSONFeatureCollection>> {
         const url = this.basemap!.url;
 
         const esriPolygon: Static<typeof EsriPolygon> = {
@@ -118,7 +118,7 @@ export default class FeatureServerBasemap extends BasemapProtocol {
         const fc = await (await fetch(urlBuilder, {
             method: 'POST',
             body: formData
-        })).json() as Static<typeof GeoJSONFeatureCollection>;
+        })).json() as Static<typeof MultiGeoJSONFeatureCollection>;
 
         return fc;
     }
@@ -130,13 +130,14 @@ export default class FeatureServerBasemap extends BasemapProtocol {
      */
     async featureFetch(
         id: string
-    ): Promise<Static<typeof GeoJSONFeature>> {
+    ): Promise<Static<typeof MultiGeoJSONFeature>> {
         const urlBuilder = new URL(this.basemap!.url + '/query');
         urlBuilder.searchParams.set('f', 'geojson');
         urlBuilder.searchParams.set('objectIds', String(id));
+        urlBuilder.searchParams.set('outFields', '*');
 
         const res = await typedFetch(urlBuilder);
-        const fc = await res.typed(GeoJSONFeatureCollection);
+        const fc = await res.typed(MultiGeoJSONFeatureCollection);
 
         if (fc.features.length === 0) {
             throw new Err(404, null, `Could not find feature with ID: ${id}`);

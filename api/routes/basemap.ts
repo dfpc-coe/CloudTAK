@@ -13,9 +13,10 @@ import bboxPolygon from '@turf/bbox-polygon';
 import { Param } from '@openaddresses/batch-generic'
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
+import { validateTemplate, renderTemplate } from '../lib/style.js';
 import { Geometry, BBox } from 'geojson';
 import { Static, Type } from '@sinclair/typebox'
-import { StandardResponse, BasemapResponse, OptionalTileJSON, GeoJSONFeature, GeoJSONFeatureCollection } from '../lib/types.js';
+import { StandardResponse, BasemapResponse, OptionalTileJSON, MultiGeoJSONFeature, MultiGeoJSONFeatureCollection } from '../lib/types.js';
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
@@ -456,6 +457,8 @@ export default async function router(schema: Schema, config: Config) {
 
             fromProtocol(req.body.protocol).isValidURL(req.body.url);
 
+            if (req.body.title) validateTemplate(req.body.title);
+
             let username: string | null = null;
             if (user.access !== AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
                 throw new Err(400, null, 'Only Server Admins can create Server scoped basemaps');
@@ -553,6 +556,8 @@ export default async function router(schema: Schema, config: Config) {
             const existing = await config.models.Basemap.from(req.params.basemapid);
 
             if (req.body.url) fromProtocol(req.body.protocol ?? existing.protocol).isValidURL(req.body.url);
+
+            if (req.body.title) validateTemplate(req.body.title);
 
             if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -843,7 +848,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             polygon: Feature.Polygon
         }),
-        res: GeoJSONFeatureCollection
+        res: MultiGeoJSONFeatureCollection
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
@@ -864,6 +869,15 @@ export default async function router(schema: Schema, config: Config) {
                 req.body.polygon
             );
 
+            if (basemap.title) {
+                for (const feat of fc.features) {
+                    if (feat.properties) {
+                        const resolved = renderTemplate(basemap.title, feat.properties);
+                        if (resolved) feat.properties.title = resolved;
+                    }
+                }
+            }
+
             res.json(fc);
         } catch (err) {
             Err.respond(err, res);
@@ -878,7 +892,7 @@ export default async function router(schema: Schema, config: Config) {
             basemapid: Type.Integer({ minimum: 1 }),
             featureid: Type.String()
         }),
-        res: GeoJSONFeature
+        res: MultiGeoJSONFeature
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
@@ -895,7 +909,14 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Feature fetching is not supported by this basemap protocol');
             }
 
-            res.json(await protocol.featureFetch!(req.params.featureid));
+            const feat = await protocol.featureFetch!(req.params.featureid);
+
+            if (basemap.title && feat.properties) {
+                const resolved = renderTemplate(basemap.title, feat.properties);
+                if (resolved) feat.properties.title = resolved;
+            }
+
+            res.json(feat);
         } catch (err) {
             Err.respond(err, res);
         }

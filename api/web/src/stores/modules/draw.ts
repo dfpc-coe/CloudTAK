@@ -312,7 +312,7 @@ export default class DrawTool {
                                        start: new Date().toISOString(),
                                        stale: new Date().toISOString(),
                                        center: pointOnFeature(f).geometry.coordinates,
-                                       callsign: 'New Feature'
+                                       callsign: String(f.properties?.title || 'New Feature')
                                     },
                                     geometry: f.geometry
                                 }
