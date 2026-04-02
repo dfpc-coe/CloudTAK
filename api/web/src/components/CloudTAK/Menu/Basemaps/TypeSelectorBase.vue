@@ -96,13 +96,10 @@
                     @update:model-value='emit("update:scope", $event)'
                 />
             </div>
-            <div class='col-12 mt-3'>
-                <TablerInput
-                    v-model='editing.collection'
-                    label='Collection Folder'
-                    placeholder='Optional Collection Folder'
-                />
-            </div>
+            <SelectBasemapCollection
+                v-model='editing.collection'
+                :overlay='editing.overlay'
+            />
             <div class='col-12'>
                 <TablerInput
                     v-model='editing.attribution'
@@ -219,6 +216,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import { IconChevronDown, IconSquareChevronRight } from '@tabler/icons-vue';
 import HandleForm from '../../../util/HandleForm.vue';
+import SelectBasemapCollection from '../../util/SelectBasemapCollection.vue';
 import TypeSelectorSelected from './TypeSelectorSelected.vue';
 import { BasemapTypeConfig } from './types.ts';
 import type { BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';

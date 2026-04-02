@@ -32,29 +32,7 @@
                     v-if='paging.collection'
                     class='d-flex align-items-center gap-2'
                 >
-                    <div
-                        class='d-flex align-items-center gap-2 cursor-pointer hover-opacity'
-                    >
-                        <TablerIconButton
-                            title='Home'
-                            @click='paging.collection = ""'
-                        >
-                            <IconFolder
-                                :size='20'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
-                    </div>
-
-                    <IconChevronRight
-                        :size='20'
-                        stroke='1'
-                        class='text-white-50'
-                    />
-
-                    <div class='d-flex align-items-center gap-2'>
-                        <span class='h3 mb-0'>{{ paging.collection }}</span>
-                    </div>
+                    <BasemapCollection v-model:collection='paging.collection' />
                 </div>
             </div>
 
@@ -187,6 +165,7 @@
 import { onMounted, ref, watch, computed } from 'vue';
 import StandardItemBasemap from '../util/StandardItemBasemap.vue';
 import StandardItemFolder from '../util/StandardItemFolder.vue';
+import BasemapCollection from '../util/BasemapCollection.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { server, stdurl } from '../../../std.ts';
@@ -206,13 +185,11 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
-    IconFolder,
     IconShare2,
     IconDownload,
     IconSettings,
     IconBoxMultiple,
     IconDotsVertical,
-    IconChevronRight,
 } from '@tabler/icons-vue'
 import type { LayerSpecification } from 'maplibre-gl'
 import { useRouter } from 'vue-router';
