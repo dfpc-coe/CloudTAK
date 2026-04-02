@@ -15,6 +15,19 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import * as pgtypes from '../lib/schema.js';
 import { Pool } from '@openaddresses/batch-generic';
+import Sinon from 'sinon';
+import {
+    ECRClient,
+    BatchGetImageCommand,
+} from '@aws-sdk/client-ecr';
+import {
+    DescribeStacksCommand,
+    CloudFormationClient
+} from '@aws-sdk/client-cloudformation';
+import {
+    CloudWatchLogsClient,
+    DeleteLogGroupCommand
+} from '@aws-sdk/client-cloudwatch-logs';
 const ajv = addFormats(new Ajv({ allErrors: true }));
 
 /**
@@ -412,6 +425,85 @@ export default class Flight {
                 setTimeout(resolve, 1000);
             })
        })
+    }
+
+    layer(opts: {
+        connectionid?: number;
+        name?: string;
+        description?: string;
+        task?: string;
+    } = {}) {
+        if (opts.connectionid === undefined) opts.connectionid = 1;
+        if (opts.name === undefined) opts.name = 'Test Layer';
+        if (opts.description === undefined) opts.description = 'This is a test layer';
+        if (opts.task === undefined) opts.task = 'etl-test-v1.0.0';
+
+        test('Creating Layer', async () => {
+            process.env.ECR_TASKS_REPOSITORY_NAME = process.env.ECR_TASKS_REPOSITORY_NAME || 'example-ecr';
+
+            const stubs: Sinon.SinonStub[] = [];
+
+            if (!('restore' in (CloudFormationClient.prototype.send as any))) {
+                stubs.push(Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
+                    if (command instanceof DescribeStacksCommand) {
+                        return Promise.resolve({});
+                    } else {
+                        throw new Error('Unexpected command');
+                    }
+                }));
+            }
+
+            if (!('restore' in (CloudWatchLogsClient.prototype.send as any))) {
+                stubs.push(Sinon.stub(CloudWatchLogsClient.prototype, 'send').callsFake((command) => {
+                    if (command instanceof DeleteLogGroupCommand) {
+                        return Promise.resolve({});
+                    } else {
+                        throw new Error('Unexpected command');
+                    }
+                }));
+            }
+
+            if (!('restore' in (ECRClient.prototype.send as any))) {
+                stubs.push(Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
+                    if (command instanceof BatchGetImageCommand) {
+                        return Promise.resolve({
+                            images: [{
+                                imageId: {
+                                    imageTag: opts.task,
+                                    imageDigest: 'sha256:abcdef1234567890'
+                                },
+                                imageManifest: '{}'
+                            }]
+                        });
+                    } else {
+                        throw new Error('Unexpected command');
+                    }
+                }));
+            }
+
+            try {
+                const res = await this.fetch(`/api/connection/${opts.connectionid}/layer`, {
+                    method: 'POST',
+                    auth: {
+                        bearer: this.token.admin
+                    },
+                    body: {
+                        name: opts.name,
+                        description: opts.description,
+                        task: opts.task
+                    }
+                }, true);
+
+                assert.ok(res.body.id, 'has id');
+                assert.ok(res.body.uuid, 'has uuid');
+                assert.equal(res.body.name, opts.name);
+                assert.equal(res.body.description, opts.description);
+                assert.equal(res.body.task, opts.task);
+                assert.equal(res.body.connection, opts.connectionid);
+            } finally {
+                for (const stub of stubs) stub.restore();
+            }
+        });
     }
 
     /**
