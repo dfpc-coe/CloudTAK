@@ -161,13 +161,12 @@ export class EsriBase {
      * a version string that can be parsed and verified
      */
     async fetchVersion(): Promise<number> {
-        try {
-            const url = new URL(this.base);
-            url.searchParams.append('f', 'json');
+        const fetchCurrentVersion = async (url: URL): Promise<number> => {
+            url.searchParams.set('f', 'json');
             const res = await fetch(url);
 
             const json = await res.typed(Type.Object({
-                currentVersion: Type.String(),
+                currentVersion: Type.Optional(Type.String()),
                 error: Type.Optional(Type.Object({
                     message: Type.String()
                 }))
@@ -176,22 +175,38 @@ export class EsriBase {
             })
 
             if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
-
             if (!json.currentVersion) throw new Err(400, null, 'Could not determine ESRI Server Version, is this an ESRI Server?');
 
             if (this.type === EsriType.PORTAL || this.type === EsriType.SERVER) {
-                if (String(json.currentVersion).split('.').length < 2) {
-                    throw new Err(400, null, `Could not parse ESRI Server Version (${json.currentVersion}) - this version may not be supported`);
-                }
-
                 const major = parseInt(String(json.currentVersion).split('.')[0])
                 if (isNaN(major)) throw new Err(400, null, `Could not parse ESRI Server Version (${json.currentVersion}) - non-integer - this version may not be supported`);
                 if (major < 8) throw new Err(400, null, `ESRI Server version (${json.currentVersion}) is too old - Update to at least version 8.x`)
             }
 
             // ArcGIS Online (AGOL) uses a <year>.<month?> format - assume it's always at the bleeding edge
-
             return Number(json.currentVersion);
+        };
+
+        try {
+            const url = new URL(this.base);
+            try {
+                return await fetchCurrentVersion(url);
+            } catch (err) {
+                // Some ArcGIS Server deployments expose version metadata at /rest/services
+                // even when /rest itself cannot be used for version detection.
+                if (this.type === EsriType.SERVER && url.pathname.endsWith('/rest')) {
+                    const fallback = new URL(url);
+                    fallback.pathname = `${fallback.pathname}/services`;
+
+                    try {
+                        return await fetchCurrentVersion(fallback);
+                    } catch {
+                        throw err;
+                    }
+            }
+
+                throw err;
+            }
         } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             if (err instanceof Error) {
