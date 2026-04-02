@@ -213,7 +213,7 @@ async function fetchList(): Promise<void> {
             params: {
                 query: {
                     filter: paging.value.filter,
-                    collection: paging.value.collection || null,
+                    collection: paging.value.collection || undefined,
                     overlay: true,
                     limit: paging.value.limit,
                     page: paging.value.page,

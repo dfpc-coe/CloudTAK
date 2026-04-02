@@ -176,7 +176,7 @@ async function fetchCollections(): Promise<void> {
                 params: {
                     query: {
                         filter: '',
-                        collection: null,
+                        collection: undefined,
                         overlay: props.overlay,
                         limit,
                         page,
