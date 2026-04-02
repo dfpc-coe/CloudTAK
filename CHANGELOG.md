@@ -18,6 +18,13 @@
 
 ### Pending Release
 
+### v12.117.0 - 2026-04-02
+
+- :rocket: Create Standard Basemap UI Component
+- :rocket: Create Standard Folder Component
+- :rocket: Add support for folders in Overlay UI
+- :rocket: Add support for folders in Admin UI
+
 ### v12.116.3 - 2026-04-01
 
 - :bug: Ensure Render Creates with pending Render removals are short circuited and not added
