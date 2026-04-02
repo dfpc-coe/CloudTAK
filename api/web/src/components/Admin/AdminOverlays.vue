@@ -113,23 +113,7 @@
                 v-if='paging.collection'
                 class='d-flex align-items-center gap-2 mx-3 mt-2'
             >
-                <TablerIconButton
-                    title='Home'
-                    @click='paging.collection = ""'
-                >
-                    <IconFolder
-                        :size='20'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-
-                <IconChevronRight
-                    :size='20'
-                    stroke='1'
-                    class='text-white-50'
-                />
-
-                <span class='h3 mb-0'>{{ paging.collection }}</span>
+                <BasemapCollection v-model:collection='paging.collection' />
             </div>
 
             <TablerLoading
@@ -184,6 +168,7 @@ import { server, stdclick } from '../../std.ts';
 import type { BasemapList } from '../../types.ts';
 import StandardItemBasemap from '../CloudTAK/util/StandardItemBasemap.vue';
 import StandardItemFolder from '../CloudTAK/util/StandardItemFolder.vue';
+import BasemapCollection from '../CloudTAK/util/BasemapCollection.vue';
 import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
@@ -197,8 +182,6 @@ import {
 import {
     IconFilter,
     IconPlus,
-    IconFolder,
-    IconChevronRight,
 } from '@tabler/icons-vue'
 
 const router = useRouter();

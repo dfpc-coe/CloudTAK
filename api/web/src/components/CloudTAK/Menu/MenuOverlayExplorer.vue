@@ -21,31 +21,7 @@
                     v-if='paging.collection'
                     class='mx-2 d-flex align-items-center gap-2'
                 >
-                    <div
-                        class='d-flex align-items-center gap-2'
-                    >
-                        <div class='d-flex align-items-center gap-2 cursor-pointer hover-opacity'>
-                            <TablerIconButton
-                                title='Home'
-                                @click='paging.collection = ""'
-                            >
-                                <IconFolder
-                                    :size='20'
-                                    stroke='1'
-                                />
-                            </TablerIconButton>
-                        </div>
-
-                        <IconChevronRight
-                            :size='20'
-                            stroke='1'
-                            class='text-white-50'
-                        />
-
-                        <div class='d-flex align-items-center gap-2'>
-                            <span class='h3 mb-0'>{{ paging.collection }}</span>
-                        </div>
-                    </div>
+                    <BasemapCollection v-model:collection='paging.collection' />
                 </div>
 
                 <TablerLoading v-if='loading' />
@@ -135,12 +111,12 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconUser,
-    IconFolder,
-    IconChevronRight
+    IconFolder
 } from '@tabler/icons-vue';
 import StandardItem from '../util/StandardItem.vue';
 import StandardItemBasemap from '../util/StandardItemBasemap.vue';
 import StandardItemFolder from '../util/StandardItemFolder.vue';
+import BasemapCollection from '../util/BasemapCollection.vue';
 import Overlay from '../../../base/overlay.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
