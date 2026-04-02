@@ -5,17 +5,13 @@
         "allowImportingTsExtensions": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "module": "es2022",
+        "module": "nodenext",
         "target": "es2022",
-        "moduleResolution": "node",
+        "moduleResolution": "nodenext",
         "sourceMap": true,
         "outDir": "dist",
-        "baseUrl": ".",
         "paths": {
-            "@cloudtak/api-types": ["../../api/derived-types.d.ts"],
-            "*": [
-                "node_modules/*"
-            ]
+            "@cloudtak/api-types": ["../../api/derived-types.d.ts"]
         }
     },
     "exclude": [],
