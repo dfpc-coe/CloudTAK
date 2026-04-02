@@ -28,7 +28,7 @@
         "@mapbox/tilebelt": "^2.0.3",
         "@openaddresses/batch-alarms": "^5.0.4",
         "@openaddresses/cloudfriend": "^7.0.0",
-        "@openaddresses/deploy": "^9.0.0"
+        "@openaddresses/deploy": "^10.0.0"
     },
     "devDependencies": {
         "@types/mapbox__tile-cover": "^3.0.4",

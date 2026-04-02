@@ -7,6 +7,7 @@ import StreamZip from 'node-stream-zip';
 import { kml } from '@tmcw/togeojson';
 import { DOMParser } from '@xmldom/xmldom';
 import { isSafeUrl } from '../safeurl.ts';
+import { fetch } from 'undici';
 
 const MAX_NETWORK_LINK_DEPTH = 3;
 const NETWORK_LINK_FETCH_TIMEOUT_MS = 10_000;
