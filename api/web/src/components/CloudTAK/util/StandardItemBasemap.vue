@@ -1,6 +1,6 @@
 <template>
     <StandardItem
-        class='d-flex align-items-center p-2'
+        class='d-flex align-items-center'
     >
         <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 my-2'>
             <component

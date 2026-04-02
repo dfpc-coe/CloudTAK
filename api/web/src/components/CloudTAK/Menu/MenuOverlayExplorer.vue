@@ -33,9 +33,6 @@
                                 <div class='flex-grow-1 min-w-0'>
                                     <div class='d-flex align-items-center gap-2'>
                                         <span class='fw-semibold'>Your Files</span>
-                                        <span class='badge rounded-pill small bg-success-subtle text-success-emphasis border border-success border-opacity-50 d-inline-flex align-items-center gap-1 px-2 py-1'>
-                                            Local
-                                        </span>
                                     </div>
                                     <p class='mb-0 small text-white-50'>
                                         Access overlays you have uploaded
