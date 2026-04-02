@@ -265,7 +265,7 @@ class EsriProxyPortal {
         query.push('type:("Feature Service")');
         url.searchParams.append('q', query.join(' '));
 
-        const headers = this.esri.standardHeaders();
+        const headers = this.esri.standardHeaderObject();
         const res = await fetch(url, {
             method: 'GET',
             headers
@@ -284,7 +284,7 @@ class EsriProxyPortal {
             const url = new URL(this.esri.base + '/portals/self');
             url.searchParams.append('f', 'json');
 
-            const headers = this.esri.standardHeaders();
+            const headers = this.esri.standardHeaderObject();
             const res = await fetch(url, {
                 headers
             });
@@ -315,7 +315,7 @@ class EsriProxyPortal {
         const url = new URL(this.esri.base + `/community/self`);
         url.searchParams.append('f', 'json');
 
-        const headers = this.esri.standardHeaders();
+        const headers = this.esri.standardHeaderObject();
         const res = await fetch(url, {
             method: 'GET',
             headers
@@ -333,7 +333,7 @@ class EsriProxyPortal {
         const url = new URL(this.esri.base + '/portals/self/servers');
         url.searchParams.append('f', 'json');
 
-        const headers = this.esri.standardHeaders();
+        const headers = this.esri.standardHeaderObject();
         const res = await fetch(url, {
             method: 'GET',
             headers
@@ -357,11 +357,11 @@ class EsriProxyPortal {
         const url = new URL(this.esri.base + `/content/users/${meta.username}/createService`);
         url.searchParams.append('f', 'json');
 
-        const headers = this.esri.standardHeaders();
-        headers.append('Content-Type', 'application/x-www-form-urlencoded');
+        const headerObj = this.esri.standardHeaderObject();
+        headerObj['Content-Type'] = 'application/x-www-form-urlencoded';
         const res = await fetch(url, {
             method: 'POST',
-            headers,
+            headers: headerObj,
             body: new URLSearchParams({
                 'f': 'json',
                 'createParameters': JSON.stringify({
@@ -395,11 +395,11 @@ class EsriProxyServer {
         const url = new URL(this.esri.base)
         url.pathname = url.pathname.replace(/\/rest/i, '/rest/admin' + this.esri.postfix + '/deleteFromDefinition');
 
-        const headers = this.esri.standardHeaders();
-        headers.append('Content-Type', 'application/x-www-form-urlencoded');
+        const headerObj = this.esri.standardHeaderObject();
+        headerObj['Content-Type'] = 'application/x-www-form-urlencoded';
         const res = await fetch(url, {
             method: 'POST',
-            headers,
+            headers: headerObj,
             body: new URLSearchParams({
                 'f': 'json',
                 'deleteFromDefinition': JSON.stringify({
@@ -422,11 +422,11 @@ class EsriProxyServer {
         const url = new URL(this.esri.base)
         url.pathname = url.pathname.replace(/\/rest/i, '/rest/admin' + this.esri.postfix + '/addToDefinition');
 
-        const headers = this.esri.standardHeaders();
-        headers.append('Content-Type', 'application/x-www-form-urlencoded');
+        const headerObj = this.esri.standardHeaderObject();
+        headerObj['Content-Type'] = 'application/x-www-form-urlencoded';
         const res = await fetch(url, {
             method: 'POST',
-            headers,
+            headers: headerObj,
             body: new URLSearchParams({
                 'f': 'json',
                 'addToDefinition': JSON.stringify(layerDefinition)
@@ -442,7 +442,7 @@ class EsriProxyServer {
     }
 
     async getList(postfix: string): Promise<object> {
-        const headers = this.esri.standardHeaders();
+        const headers = this.esri.standardHeaderObject();
 
         const url = new URL(this.esri.base + postfix);
         url.searchParams.append('f', 'json');
@@ -528,12 +528,12 @@ class EsriProxyLayer {
             url.searchParams.append('resultRecordCount', '5');
         }
 
-        const headers = this.esri.standardHeaders();
-        headers.append('Content-Type', 'application/x-www-form-urlencoded');
+        const headerObj = this.esri.standardHeaderObject();
+        headerObj['Content-Type'] = 'application/x-www-form-urlencoded';
 
         const res = await fetch(url, {
             method: 'GET',
-            headers
+            headers: headerObj
         });
 
         const json = await res.json()
