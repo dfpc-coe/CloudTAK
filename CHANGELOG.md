@@ -18,6 +18,11 @@
 
 ### Pending Release
 
+### v12.117.1 - 2026-04-02
+
+- :bug: ESRI Server versions ~12 failed to pass versions checks
+- :bug: Enterprise server 12 doesn't return version information on `/rest` add a fallback for `/rest/services`
+
 ### v12.117.0 - 2026-04-02
 
 - :rocket: Create Standard Basemap UI Component
