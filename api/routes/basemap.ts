@@ -459,6 +459,8 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.body.title) validateTemplate(req.body.title);
 
+            const collection = req.body.collection === '' ? null : req.body.collection;
+
             let username: string | null = null;
             if (user.access !== AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
                 throw new Err(400, null, 'Only Server Admins can create Server scoped basemaps');
@@ -479,6 +481,7 @@ export default async function router(schema: Schema, config: Config) {
 
             let basemap = await config.models.Basemap.generate({
                 ...req.body,
+                collection,
                 bounds,
                 center,
                 username
@@ -559,6 +562,8 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.body.title) validateTemplate(req.body.title);
 
+            const collection = req.body.collection === '' ? null : req.body.collection;
+
             if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             } else if (!existing.username && (user.access !== AuthUserAccess.ADMIN && !user.impersonate)) {
@@ -596,6 +601,7 @@ export default async function router(schema: Schema, config: Config) {
                 username,
                 updated: sql`Now()`,
                 ...req.body,
+                collection,
                 bounds, center,
             });
 

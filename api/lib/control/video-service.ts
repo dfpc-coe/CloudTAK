@@ -214,7 +214,7 @@ export default class VideoServiceControl {
         const url = new URL('/v3/config/global/get', video.url);
         url.port = '9997';
 
-        const res = await fetch(url, { headers })
+        const res = await fetch(url, { headers: Object.fromEntries(headers.entries()) })
         if (!res.ok) throw new Err(500, null, await res.text())
         const body = await res.typed(VideoConfig);
 
@@ -222,7 +222,7 @@ export default class VideoServiceControl {
         const urlPaths = new URL('/path', video.url);
         urlPaths.port = '9997';
 
-        const resPaths = await fetch(urlPaths, { headers })
+        const resPaths = await fetch(urlPaths, { headers: Object.fromEntries(headers.entries()) })
         if (!resPaths.ok) throw new Err(500, null, await resPaths.text())
 
         const paths = await resPaths.typed(PathsList);
@@ -533,7 +533,7 @@ export default class VideoServiceControl {
                 } else {
                     const res = await fetch(url, {
                         method: 'POST',
-                        headers,
+                        headers: Object.fromEntries(headers.entries()),
                         body: JSON.stringify({
                             name: lease.path,
                             source: lease.proxy,
@@ -556,7 +556,7 @@ export default class VideoServiceControl {
         } else {
             const res = await fetch(url, {
                 method: 'POST',
-                headers,
+                headers: Object.fromEntries(headers.entries()),
                 body: JSON.stringify({
                     name: lease.path,
                     record: lease.recording,
@@ -726,7 +726,7 @@ export default class VideoServiceControl {
 
             const res = await fetch(url, {
                 method: 'PATCH',
-                headers,
+                headers: Object.fromEntries(headers.entries()),
                 body: JSON.stringify({
                     name: lease.path,
                     source: lease.proxy,
@@ -745,7 +745,7 @@ export default class VideoServiceControl {
 
                 const res = await fetch(url, {
                     method: 'POST',
-                    headers,
+                    headers: Object.fromEntries(headers.entries()),
                     body: JSON.stringify({
                         name: lease.path,
                         source: lease.proxy,
@@ -776,7 +776,7 @@ export default class VideoServiceControl {
 
         const res = await fetch(url, {
             method: 'GET',
-            headers,
+            headers: Object.fromEntries(headers.entries()),
         });
 
         if (res.ok) {
@@ -797,7 +797,7 @@ export default class VideoServiceControl {
 
         const res = await fetch(url, {
             method: 'GET',
-            headers,
+            headers: Object.fromEntries(headers.entries()),
         });
 
         if (res.ok) {
@@ -842,7 +842,7 @@ export default class VideoServiceControl {
 
         await fetch(url, {
             method: 'DELETE',
-            headers,
+            headers: Object.fromEntries(headers.entries()),
         })
 
         try {

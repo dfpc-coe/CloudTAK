@@ -21,41 +21,19 @@
                 v-if='!share'
                 class='col-12 px-2 py-2 d-flex flex-column gap-2'
             >
-                <div
-                    v-if='paging.collection'
-                    class='d-flex align-items-center gap-2'
-                >
-                    <div
-                        class='d-flex align-items-center gap-2 cursor-pointer hover-opacity'
-                    >
-                        <TablerIconButton
-                            title='Home'
-                            @click='paging.collection = ""'
-                        >
-                            <IconFolder
-                                :size='20'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
-                    </div>
-
-                    <IconChevronRight
-                        :size='20'
-                        stroke='1'
-                        class='text-white-50'
-                    />
-
-                    <div class='d-flex align-items-center gap-2'>
-                        <span class='h3 mb-0'>{{ paging.collection }}</span>
-                    </div>
-                </div>
-
                 <TablerInput
                     v-model='paging.filter'
                     class='w-100'
                     icon='search'
                     placeholder='Filter'
                 />
+
+                <div
+                    v-if='paging.collection'
+                    class='d-flex align-items-center gap-2'
+                >
+                    <BasemapCollection v-model:collection='paging.collection' />
+                </div>
             </div>
 
             <TablerLoading v-if='loading' />
@@ -77,20 +55,12 @@
             />
             <template v-else>
                 <div class='col-12 d-flex flex-column gap-2 p-3'>
-                    <StandardItem
+                    <StandardItemFolder
                         v-for='collection in list.collections'
                         :key='collection.name'
-                        class='d-flex align-items-center'
+                        :name='collection.name'
                         @click='setCollection(collection.name)'
-                    >
-                        <div class='icon-wrapper d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25 ms-2 my-2'>
-                            <IconFolder
-                                :size='24'
-                                stroke='1'
-                            />
-                        </div>
-                        <span class='fw-semibold ms-3'>{{ collection.name }}</span>
-                    </StandardItem>
+                    />
 
                     <StandardItemBasemap
                         v-for='basemap in list.items'
@@ -193,8 +163,9 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, watch, computed } from 'vue';
-import StandardItem from '../util/StandardItem.vue';
 import StandardItemBasemap from '../util/StandardItemBasemap.vue';
+import StandardItemFolder from '../util/StandardItemFolder.vue';
+import BasemapCollection from '../util/BasemapCollection.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { server, stdurl } from '../../../std.ts';
@@ -214,13 +185,11 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
-    IconFolder,
     IconShare2,
     IconDownload,
     IconSettings,
     IconBoxMultiple,
     IconDotsVertical,
-    IconChevronRight,
 } from '@tabler/icons-vue'
 import type { LayerSpecification } from 'maplibre-gl'
 import { useRouter } from 'vue-router';
@@ -398,14 +367,6 @@ async function fetchList() {
 </script>
 
 <style scoped>
-.icon-wrapper {
-    width: 3rem;
-    height: 3rem;
-    min-width: 3rem;
-    min-height: 3rem;
-    flex-shrink: 0;
-}
-
 .text-decoration-underline-hover:hover {
     text-decoration: underline;
 }
