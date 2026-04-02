@@ -1,5 +1,6 @@
 import type { Message } from './types.ts';
 import jwt from 'jsonwebtoken';
+import { fetch } from 'undici';
 
 export async function createImportResult(
     msg: Message,

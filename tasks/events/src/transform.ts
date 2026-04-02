@@ -16,6 +16,7 @@ import Translate from './transforms/translate.ts';
 import GeoJSON from './transforms/geojson.ts';
 import MBTiles from './transforms/mbtiles.ts';
 import { createImportResult } from './api.ts';
+import { fetch } from 'undici';
 
 const FORMATS = [KML, Translate, GeoJSON, MBTiles];
 const formats = new Map();

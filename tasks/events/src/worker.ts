@@ -14,6 +14,7 @@ import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
 import { CoTParser, DataPackage, Iconset, Basemap } from '@tak-ps/node-cot';
 import { createImportResult } from './api.ts';
+import { fetch } from 'undici';
 
 export default class Worker extends EventEmitter {
     msg: Message;

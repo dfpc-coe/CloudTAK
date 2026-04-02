@@ -2,7 +2,10 @@ import os from 'node:os';
 import type { Import, ImportList } from './src/types.js';
 import EventEmitter from 'node:events';
 import { Worker } from 'node:worker_threads';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import jwt from 'jsonwebtoken';
+import { fetch } from 'undici';
 
 export default class WorkerPool extends EventEmitter {
     interval: NodeJS.Timer;
@@ -193,7 +196,11 @@ export default class WorkerPool extends EventEmitter {
     }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+const isMainModule = process.argv[1]
+    ? path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+    : false;
+
+if (isMainModule) {
     if (!process.env.SigningSecret) throw new Error('SigningSecret environment variable is required');
     if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET environment variable is required');
 
