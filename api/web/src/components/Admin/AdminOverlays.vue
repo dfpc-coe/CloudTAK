@@ -78,6 +78,7 @@
                     </TablerIconButton>
                 </div>
             </div>
+
             <div
                 v-if='advanced'
                 class='row col-12 mx-1 my-2'
@@ -108,6 +109,29 @@
                 </div>
             </div>
 
+            <div
+                v-if='paging.collection'
+                class='d-flex align-items-center gap-2 mx-3 mt-2'
+            >
+                <TablerIconButton
+                    title='Home'
+                    @click='paging.collection = ""'
+                >
+                    <IconFolder
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <IconChevronRight
+                    :size='20'
+                    stroke='1'
+                    class='text-white-50'
+                />
+
+                <span class='h3 mb-0'>{{ paging.collection }}</span>
+            </div>
+
             <TablerLoading
                 v-if='loading'
                 desc='Loading Overlays'
@@ -117,7 +141,7 @@
                 :err='error'
             />
             <TablerNone
-                v-else-if='!list.items.length'
+                v-else-if='!list.items.length && !list.collections.length'
                 label='No Overlays'
                 :create='false'
             />
@@ -125,6 +149,13 @@
                 v-else
                 class='d-flex flex-column gap-2 p-3 pb-5'
             >
+                <StandardItemFolder
+                    v-for='collection in list.collections'
+                    :key='collection.name'
+                    :name='collection.name'
+                    @click='setCollection(collection.name)'
+                />
+
                 <StandardItemBasemap
                     v-for='ov in list.items'
                     :key='ov.id'
@@ -152,6 +183,7 @@ import { useRouter } from 'vue-router';
 import { server, stdclick } from '../../std.ts';
 import type { BasemapList } from '../../types.ts';
 import StandardItemBasemap from '../CloudTAK/util/StandardItemBasemap.vue';
+import StandardItemFolder from '../CloudTAK/util/StandardItemFolder.vue';
 import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
@@ -165,6 +197,8 @@ import {
 import {
     IconFilter,
     IconPlus,
+    IconFolder,
+    IconChevronRight,
 } from '@tabler/icons-vue'
 
 const router = useRouter();
@@ -175,6 +209,7 @@ const loading = ref(true);
 
 const paging = ref({
     filter: '',
+    collection: '',
     sort: 'name',
     order: 'asc',
     limit: 100,
@@ -198,6 +233,12 @@ onMounted(async () => {
     await fetchList();
 });
 
+function setCollection(collection: string) {
+    paging.value.collection = collection;
+    paging.value.filter = '';
+    paging.value.page = 0;
+}
+
 async function fetchList() {
     error.value = undefined;
     loading.value = true;
@@ -205,6 +246,7 @@ async function fetchList() {
     // Build standard query object manually to pacify typescript
     const query: Record<string, unknown> = {
         filter: paging.value.filter,
+        collection: paging.value.collection || null,
         limit: paging.value.limit,
         page: paging.value.page,
         sort: paging.value.sort,

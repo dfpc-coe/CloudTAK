@@ -17,6 +17,37 @@
                     />
                 </div>
 
+                <div
+                    v-if='paging.collection'
+                    class='mx-2 d-flex align-items-center gap-2'
+                >
+                    <div
+                        class='d-flex align-items-center gap-2'
+                    >
+                        <div class='d-flex align-items-center gap-2 cursor-pointer hover-opacity'>
+                            <TablerIconButton
+                                title='Home'
+                                @click='paging.collection = ""'
+                            >
+                                <IconFolder
+                                    :size='20'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                        </div>
+
+                        <IconChevronRight
+                            :size='20'
+                            stroke='1'
+                            class='text-white-50'
+                        />
+
+                        <div class='d-flex align-items-center gap-2'>
+                            <span class='h3 mb-0'>{{ paging.collection }}</span>
+                        </div>
+                    </div>
+                </div>
+
                 <TablerLoading v-if='loading' />
                 <template v-else>
                     <StandardItem
@@ -54,9 +85,16 @@
                     </StandardItem>
 
                     <div
-                        v-if='list.items.length'
+                        v-if='list.items.length || list.collections.length'
                         class='mx-2 d-flex flex-column gap-2'
                     >
+                        <StandardItemFolder
+                            v-for='collection in list.collections'
+                            :key='collection.name'
+                            :name='collection.name'
+                            @click='setCollection(collection.name)'
+                        />
+
                         <StandardItemBasemap
                             v-for='basemap in list.items'
                             :key='basemap.id'
@@ -97,10 +135,12 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconUser,
-    IconFolder
+    IconFolder,
+    IconChevronRight
 } from '@tabler/icons-vue';
 import StandardItem from '../util/StandardItem.vue';
 import StandardItemBasemap from '../util/StandardItemBasemap.vue';
+import StandardItemFolder from '../util/StandardItemFolder.vue';
 import Overlay from '../../../base/overlay.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
@@ -111,6 +151,7 @@ const loading = ref(false);
 
 const paging = ref({
     filter: '',
+    collection: '',
     limit: 30,
     page: 0
 });
@@ -134,7 +175,7 @@ const overlayBasemapIds = computed<Set<string>>(() => {
 });
 
 watch(
-    () => [paging.value.filter, paging.value.limit, paging.value.page],
+    () => [paging.value.filter, paging.value.collection, paging.value.limit, paging.value.page],
     async () => {
         await fetchList();
     }
@@ -156,6 +197,12 @@ async function handleExplorerSelect(basemap: Basemap) {
 
 function goToFiles() {
     router.push('/menu/files');
+}
+
+function setCollection(name: string): void {
+    paging.value.collection = name;
+    paging.value.filter = '';
+    paging.value.page = 0;
 }
 
 async function createOverlay(overlay: Basemap) {
@@ -190,6 +237,7 @@ async function fetchList(): Promise<void> {
             params: {
                 query: {
                     filter: paging.value.filter,
+                    collection: paging.value.collection || null,
                     overlay: true,
                     limit: paging.value.limit,
                     page: paging.value.page,
