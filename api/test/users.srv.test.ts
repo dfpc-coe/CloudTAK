@@ -85,6 +85,7 @@ test('PATCH: api/user/admin@example.com', async () => {
              display_projection: 'globe',
              display_icon_rotation: true,
              display_zoom: 'conditional',
+             display_coordinate: 'dd',
              display_text: 'Medium',
              system_admin: true,
              agency_admin: []
@@ -129,6 +130,7 @@ test('GET: api/user/admin@example.com', async () => {
              display_projection: 'globe',
              display_icon_rotation: true,
              display_zoom: 'conditional',
+             display_coordinate: 'dd',
              display_text: 'Medium',
              system_admin: true,
              agency_admin: []

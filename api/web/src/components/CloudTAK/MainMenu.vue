@@ -30,8 +30,8 @@
             }'
             style='z-index: 1; top: 56px;'
             :style='`
-            width: ${compact ? "60px" : `${menuWidth}px`};
-            min-width: ${compact ? "60px" : `400px`};
+            width: ${compact ? "var(--map-compact-menu-size, 60px)" : `${menuWidth}px`};
+            min-width: ${compact ? "var(--map-compact-menu-size, 60px)" : `400px`};
             ${compact ? "background-color: rgb(0, 0, 0, 0.5)" : ""}
         `'
         >

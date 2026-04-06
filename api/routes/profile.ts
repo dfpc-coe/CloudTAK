@@ -6,7 +6,7 @@ import { ProfileResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { sql } from 'drizzle-orm';
-import { Profile_Menu_Visibility, Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Projection, Profile_Zoom } from  '../lib/enums.js';
+import { Profile_Menu_Visibility, Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Projection, Profile_Zoom, Profile_Coordinate } from  '../lib/enums.js';
 import ProfileControl from '../lib/control/profile.js';
 
 const ProfilePatchBody = Type.Object({
@@ -16,6 +16,7 @@ const ProfilePatchBody = Type.Object({
     display_projection: Type.Optional(Type.Enum(Profile_Projection)),
     display_speed: Type.Optional(Type.Enum(Profile_Speed)),
     display_zoom: Type.Optional(Type.Enum(Profile_Zoom)),
+    display_coordinate: Type.Optional(Type.Enum(Profile_Coordinate)),
     display_icon_rotation: Type.Optional(Type.Boolean()),
     display_text: Type.Optional(Type.Enum(Profile_Text)),
 

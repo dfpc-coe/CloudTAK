@@ -761,6 +761,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.callsign = (await ProfileConfig.get('tak_callsign'))?.value || 'Unknown';
             this.zoom = (await ProfileConfig.get('display_zoom'))?.value || 'conditional';
+            this.coordFormat = (await ProfileConfig.get('display_coordinate'))?.value || 'dd';
 
             const icon_rotation = (await ProfileConfig.get('display_icon_rotation'))?.value;
 

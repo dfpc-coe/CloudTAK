@@ -1,46 +1,56 @@
 <template>
     <div
         v-if='coord'
-        class='map-status-bar__coords position-relative text-white user-select-none ms-auto'
+        class='position-relative text-white user-select-none border-start border-white border-opacity-25 px-2 py-1'
+        style='width: clamp(220px, 26vw, 340px); min-width: 220px; max-width: 340px;'
     >
-        <div
-            class='map-status-bar__coords-trigger rounded text-truncate px-2 py-2 d-flex flex-column justify-content-center cursor-pointer hover-button h-100'
-            @click='showMenu = !showMenu'
+        <TablerDropdown
+            class='h-100'
+            position='top-end'
+            width='100%'
         >
-            <span class='map-status-bar__coords-label'>Cursor Position</span>
-            <span class='map-status-bar__coords-text'>{{ formattedCoord }}</span>
-        </div>
+            <template #default>
+                <div
+                    class='px-2 py-2 d-flex flex-column justify-content-center cursor-pointer hover-button h-100 pe-5'
+                >
+                    <span
+                        class='d-block text-uppercase text-white-50'
+                        style='font-size: 0.65rem; line-height: 1.1; letter-spacing: 0.04em;'
+                    >Cursor Position</span>
+                    <span
+                        class='d-block text-truncate'
+                        style='font-size: 0.85rem; line-height: 1.2; font-variant-numeric: tabular-nums;'
+                    >{{ formattedCoord }}</span>
+                </div>
+            </template>
+
+            <template #dropdown>
+                <li
+                    v-for='mode in COORD_MODES'
+                    :key='mode.value'
+                    class='tabler-dropdown__item px-3 py-2 text-white'
+                    :class='{ "tabler-dropdown__item--active": mapStore.coordFormat === mode.value }'
+                    @click='void setCoordFormat(mode.value)'
+                >
+                    <span class='fw-semibold'>{{ mode.label }}</span>
+                    <span class='text-white-50 ms-2 small'>{{ mode.title }}</span>
+                </li>
+            </template>
+        </TablerDropdown>
 
         <CopyButton
             v-tooltip='"Copy Coordinates"'
             :text='formattedCoord'
-            class='map-status-bar__coords-copy position-absolute'
+            class='position-absolute top-50 end-0 translate-middle-y me-2'
             :size='24'
             :stroke='1'
         />
-
-        <!-- drop-up format selector -->
-        <div
-            v-if='showMenu'
-            class='map-coord-menu position-absolute'
-            @click.stop
-        >
-            <div
-                v-for='mode in COORD_MODES'
-                :key='mode.value'
-                class='map-coord-menu__item'
-                :class='{ "map-coord-menu__item--active": mapStore.coordFormat === mode.value }'
-                @click='mapStore.coordFormat = mode.value; showMenu = false'
-            >
-                <span class='fw-semibold'>{{ mode.label }}</span>
-                <span class='text-white-50 ms-2' style='font-size: 0.75rem;'>{{ mode.title }}</span>
-            </div>
-        </div>
     </div>
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch } from 'vue';
+import { computed } from 'vue';
+import { TablerDropdown } from '@tak-ps/vue-tabler';
 import { formatCoordPair, COORD_MODES, type CoordMode } from '../../../base/utils/coordinateFormat.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import CopyButton from '../util/CopyButton.vue';
@@ -50,12 +60,13 @@ const props = defineProps<{
 }>();
 
 const mapStore = useMapStore();
-const showMenu = ref(false);
 
-// Close menu when cursor leaves the map (coord becomes null)
-watch(() => props.coord, (val) => {
-    if (!val) showMenu.value = false;
-});
+async function setCoordFormat(mode: CoordMode): Promise<void> {
+    mapStore.coordFormat = mode;
+    await mapStore.worker.profile.update({
+        display_coordinate: mode
+    });
+}
 
 const formattedCoord = computed(() => {
     if (!props.coord) return '';

@@ -94,6 +94,14 @@ export enum Profile_Projection {
     GLOBE = 'globe',
 }
 
+export enum Profile_Coordinate {
+    DD = 'dd',
+    DM = 'dm',
+    DMS = 'dms',
+    MGRS = 'mgrs',
+    UTM = 'utm'
+}
+
 export enum Basemap_Format {
     PNG = 'png',
     JPEG = 'jpeg',
