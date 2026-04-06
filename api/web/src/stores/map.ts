@@ -38,15 +38,11 @@ export type TAKNotification = { type: string; name: string; body: string; url: s
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        _map?: any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        _draw?: any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        _icons?: any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        _menu?: any;
-        _bottomBar?: any;
+        _map?: mapgl.Map;
+        _draw?: DrawTool;
+        _icons?: IconManager;
+        _menu?: unknown;
+        _bottomBar?: unknown;
 
         _boundOnOnline?: () => void;
         _boundOnOffline?: () => void;
@@ -750,7 +746,7 @@ export const useMapStore = defineStore('cloudtak', {
             this._draw = new DrawTool(this);
             this._icons = markRaw(new IconManager(map));
             this._menu = markRaw(new MenuManager(this));
-            await this._menu!.init();
+            await (this._menu as MenuManager).init();
             this._bottomBar = markRaw(new BottomBarManager());
 
             // If we missed the Profile_Location_Source make sure it gets synced
