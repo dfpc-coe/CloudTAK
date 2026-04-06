@@ -6,6 +6,7 @@ import type { Pinia } from 'pinia';
 import { useMapStore } from './src/stores/map.ts';
 import { useFloatStore } from './src/stores/float.ts';
 import type { MenuItemConfig } from './src/stores/modules/menu.ts';
+import type { BottomBarItemConfig } from './src/stores/modules/bottombar.ts';
 import { db, type DBFeature } from './src/base/database.ts';
 import { liveQuery } from 'dexie';
 import { from, type Observable } from 'rxjs';
@@ -14,6 +15,7 @@ import mapgl from 'maplibre-gl';
 const FloatingGeneric = defineAsyncComponent(() => import('./src/components/CloudTAK/util/FloatingGeneric.vue'));
 
 export type { MenuItemConfig };
+export type { BottomBarItemConfig };
 export type { DBFeature };
 
 /**
@@ -298,4 +300,35 @@ export class PluginAPI {
             }
         }
     }
-};
+
+    /**
+     * Manage the Map Status Bar
+     */
+    get bottomBar() {
+        const mapStore = useMapStore(this.pinia);
+        return {
+            /**
+             * Add an icon button to the centre of the bottom status bar
+             * @param item The bottom bar item configuration
+             */
+            add: (item: BottomBarItemConfig) => {
+                try {
+                    mapStore.bottomBar.addItem(item);
+                } catch (err) {
+                    console.warn('Failed to add bottom bar item, map not loaded?', err);
+                }
+            },
+            /**
+             * Remove a previously registered icon button by key
+             * @param key The key of the item to remove
+             */
+            remove: (key: string) => {
+                try {
+                    mapStore.bottomBar.removeItem(key);
+                } catch (err) {
+                    // Ignore error if bottomBar is not loaded
+                }
+            }
+        }
+    }
+}

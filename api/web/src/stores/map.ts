@@ -13,6 +13,7 @@ import { markRaw } from 'vue';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
 import MenuManager from './modules/menu.ts';
+import BottomBarManager from './modules/bottombar.ts';
 import { usePermissionStore } from './modules/permissions.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
@@ -45,6 +46,7 @@ export const useMapStore = defineStore('cloudtak', {
         _icons?: any;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _menu?: any;
+        _bottomBar?: any;
 
         _boundOnOnline?: () => void;
         _boundOnOffline?: () => void;
@@ -64,6 +66,7 @@ export const useMapStore = defineStore('cloudtak', {
         zoom: string;
         location: LocationState;
         distanceUnit: string;
+        coordFormat: string;
         manualLocationMode: boolean;
         isMobileDetected: boolean;
         gpsWatchId: number | null;
@@ -130,6 +133,7 @@ export const useMapStore = defineStore('cloudtak', {
             channel: new BroadcastChannel("cloudtak"),
             zoom: 'conditional',
             distanceUnit: 'meter',
+            coordFormat: 'dd',
             toastOffset: { x: 70, y: 10 },
             manualLocationMode: false,
             gpsWatchId: null,
@@ -186,6 +190,10 @@ export const useMapStore = defineStore('cloudtak', {
         menu: function(): MenuManager {
             if (!this._menu) throw new Error('Menu Manager has not yet initialized');
             return this._menu as MenuManager;
+        },
+        bottomBar: function(): BottomBarManager {
+            if (!this._bottomBar) throw new Error('BottomBar Manager has not yet initialized');
+            return this._bottomBar as BottomBarManager;
         }
     },
     actions: {
@@ -718,8 +726,7 @@ export const useMapStore = defineStore('cloudtak', {
                 maxWidth: 100,
                 unit: 'metric'
             });
-            map.addControl(scaleControl, 'bottom-left');
-            // Store reference for later use
+            map.addControl(scaleControl, 'bottom-right');
             (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
 
             map.once('idle', async () => {
@@ -744,6 +751,7 @@ export const useMapStore = defineStore('cloudtak', {
             this._icons = markRaw(new IconManager(map));
             this._menu = markRaw(new MenuManager(this));
             await this._menu!.init();
+            this._bottomBar = markRaw(new BottomBarManager());
 
             // If we missed the Profile_Location_Source make sure it gets synced
             const loc = await this.worker.profile.location;
@@ -1185,7 +1193,7 @@ export const useMapStore = defineStore('cloudtak', {
                     maxWidth: 100,
                     unit: unit === 'mile' ? 'imperial' : 'metric'
                 });
-                this.map.addControl(scaleControl, 'bottom-left');
+                this.map.addControl(scaleControl, 'bottom-right');
                 mapWithControl._scaleControl = scaleControl;
             }
         },
