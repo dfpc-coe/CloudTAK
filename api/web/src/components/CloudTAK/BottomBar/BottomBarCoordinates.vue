@@ -28,7 +28,7 @@
                 <li
                     v-for='mode in COORD_MODES'
                     :key='mode.value'
-                    class='tabler-dropdown__item px-3 py-2 text-white'
+                    class='tabler-dropdown__item hover-button cursor-pointer px-3 py-2 text-white'
                     :class='{ "tabler-dropdown__item--active": mapStore.coordFormat === mode.value }'
                     @click='void setCoordFormat(mode.value)'
                 >
