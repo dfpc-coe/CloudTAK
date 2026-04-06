@@ -15,7 +15,6 @@ const E = 0.00669438;
 const E_P2 = E / (1 - E);
 const E2 = Math.pow(E, 2);
 const E3 = Math.pow(E, 3);
-const E4 = Math.pow(E, 4);
 const R = 6378137;
 
 const M1 = 1 - E / 4 - 3 * E2 / 64 - 5 * E3 / 256;
