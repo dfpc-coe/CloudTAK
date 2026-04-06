@@ -2,6 +2,7 @@
     <div
         class='d-flex position-relative'
         style='height: calc(100vh) !important;'
+        :style='{ "--map-side-offset": `${mapSideOffset}px` }'
         data-bs-theme='dark'
         data-bs-theme-base='neutral'
         data-bs-theme-primary='blue'
@@ -72,75 +73,12 @@
                     </div>
                 </div>
             </GenericBottomPane>
-            <div
-                class='position-absolute bottom-0 begin-0 text-white'
-                style='
-                    z-index: 1;
-                    width: 250px;
-                    height: 40px;
-                    background-color: rgba(0, 0, 0, 0.5);
-                '
-                :style='{
-                    "border-radius": mapStore.selected.size ? "0px" : "0px 6px 0px 0px"
-                }'
-            >
-                <div
-                    class='d-flex align-items-center'
-                    style='height: 40px'
-                >
-                    <div
-                        class='hover-button h-100 d-flex align-items-center'
-                        style='width: 40px;'
-                    >
-                        <TablerIconButton
-                            v-if='mapStore.location === LocationState.Live'
-                            :title='locationTooltip'
-                            :hover='false'
-                            @click='setLocation'
-                        >
-                            <IconLocation
-                                style='margin: 5px 8px'
-                                :size='20'
-                                stroke='1'
-                                :color='locationColor'
-                            />
-                        </TablerIconButton>
-                        <TablerIconButton
-                            v-else-if='mapStore.location === LocationState.Preset'
-                            :title='locationTooltip'
-                            :hover='false'
-                            @click='setLocation'
-                        >
-                            <IconLocationPin
-                                title='Manual Location - Click to enable GPS'
-                                style='margin: 5px 8px'
-                                :size='20'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
-                        <TablerIconButton
-                            v-else
-                            title='Set Your Location Button'
-                            :hover='false'
-                            @click='setLocation'
-                        >
-                            <IconLocationOff
-                                title='Set Your Location Button (No Location currently set)'
-                                style='margin: 5px 8px'
-                                :size='20'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
-                    </div>
-                    <div
-                        v-tooltip='"Zoom To Location"'
-                        style='line-height: 40px; width: calc(100% - 40px);'
-                        class='h-100 cursor-pointer text-center px-2 text-truncate subheader text-white hover-button user-select-none'
-                        @click='toLocation'
-                        v-text='mapStore.callsign'
-                    />
-                </div>
-            </div>
+            <BottomBar
+                :mode='mode'
+                :mouse-coord='mouseCoord'
+                @set-location='setLocation'
+                @to-location='toLocation'
+            />
             <div
                 v-if='mapStore.selected.size'
                 class='position-absolute begin-0 text-white bg-dark'
@@ -452,6 +390,7 @@
 import GeoJSONInput from './Inputs/GeoJSONInput.vue';
 import BufferInput from './Inputs/BufferInput.vue';
 import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
+import BottomBar from './BottomBar/BottomBar.vue';
 import {useRoute, useRouter } from 'vue-router';
 import ActiveMission from './ActiveMission.vue';
 import DrawOverlay from './util/DrawOverlay.vue';
@@ -465,9 +404,6 @@ import type { MapGeoJSONFeature, LngLatLike, MapMouseEvent } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
 import {
     IconSearch,
-    IconLocationOff,
-    IconLocationPin,
-    IconLocation,
     IconMenu2,
     IconPlus,
     IconMinus,
@@ -596,60 +532,20 @@ const toggleCompass = () => {
     }
 }
 
-// Reactive location accuracy
-const locationAccuracy = ref<number | undefined>(undefined);
-
-// Watch for location updates and get accuracy
-watch(() => mapStore.location, async () => {
-    if (mapStore.location === LocationState.Live && !mapStore.manualLocationMode) {
-        try {
-            const location = await mapStore.worker.profile.location;
-            locationAccuracy.value = location.accuracy;
-        } catch {
-            locationAccuracy.value = undefined;
-        }
-    } else {
-        locationAccuracy.value = undefined;
-    }
-}, { immediate: true });
-
-const locationColor = computed(() => {
-    if (mapStore.location !== LocationState.Live || !locationAccuracy.value) return '#ffffff';
-
-    const accuracy = locationAccuracy.value;
-    // Color-code based on accuracy ranges
-    if (accuracy <= 50) return '#22c55e';      // Green - high accuracy
-    if (accuracy <= 200) return '#eab308';     // Yellow - medium accuracy
-    return '#ef4444';                          // Red - low accuracy
-})
-
-const locationTooltip = computed(() => {
-    if (mode.value === 'SetLocation') {
-        return 'Click on map to set location';
-    }
-
-    if (mapStore.location === LocationState.Preset) {
-        return 'Manual Location - Click to adjust or switch to GPS';
-    }
-
-    if (mapStore.location === LocationState.Live && locationAccuracy.value) {
-        const accuracy = locationAccuracy.value;
-        // Convert to user's preferred distance unit
-        if (mapStore.distanceUnit === 'mile') {
-            const accuracyFt = Math.round(accuracy * 3.28084);
-            return `Live Location (±${accuracyFt}ft) - Click to set manually`;
-        } else {
-            return `Live Location (±${Math.round(accuracy)}m) - Click to set manually`;
-        }
-    }
-
-    return 'Set Your Location - Click to enable GPS or set manually';
-})
-
 const mapRef = useTemplateRef<HTMLElement>('map');
+
+const mouseCoord = ref<{ lat: number; lng: number } | null>(null);
 
 const noMenuShown = computed<boolean>(() => {
     return (!route.name || !String(route.name).startsWith('home-menu'))
+});
+
+const mapSideOffset = computed(() => {
+    if (isMobileDetected.value) return 0;
+
+    // `toastOffset.x` includes a 10px buffer for notification toasts.
+    // Remove that padding so the footer aligns flush with the visible menu edge.
+    return Math.max(mapStore.toastOffset.x - 10, 0);
 });
 
 onMounted(async () => {
@@ -667,6 +563,17 @@ onMounted(async () => {
 
     if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
     await mapStore.init(mapRef.value);
+
+    mapStore.map.on('mousemove', (e) => {
+        mouseCoord.value = {
+            lat: e.lngLat.lat,
+            lng: e.lngLat.lng,
+        };
+    });
+
+    mapStore.map.on('mouseleave', () => {
+        mouseCoord.value = null;
+    });
 
     // TODO these are no longer reactive, does it matter?
     warnChannels.value = await mapStore.worker.profile.hasNoChannels();
@@ -953,11 +860,14 @@ async function handleRadial(event: string): Promise<void> {
 .maplibregl-ctrl-scale {
     background-color: transparent !important;
     color: #ffffff;
+    text-align: center;
     text-shadow: 1px 0 0 black, -1px 0 0 black, 0 1px 0 black, 0 -1px 0 black;
     border-bottom: 1px solid #fff;
     border-left: 1px solid #fff;
     border-right: 1px solid #fff;
+    margin: 0;
 }
+
 .maplibregl-ctrl-scale::before {
     background-color: transparent !important;
     border-bottom: 1px solid #000;
@@ -971,17 +881,35 @@ async function handleRadial(event: string): Promise<void> {
     right: 1px;
     bottom: 1px;
 }
+
 .maplibregl-ctrl-bottom-left {
-    bottom: 0;
-    left: 260px;
+    bottom: calc(48px + 4px);
+    left: 8px;
+    right: auto;
+    margin: 0;
+    z-index: 3 !important;
+    pointer-events: none;
 }
+
 .maplibregl-ctrl-bottom-right {
-    bottom: 0;
-    right: 60px;
-    z-index: 1 !important;
+    bottom: calc(48px + 4px);
+    right: calc(var(--map-side-offset, 0px) + 8px);
+    left: auto;
+    z-index: 3 !important;
     color: black !important;
 }
+
 .maplibregl-ctrl-attrib a {
     color: black !important;
+}
+
+@media (max-width: 600px) {
+    .maplibregl-ctrl-bottom-left {
+        left: 4px;
+    }
+
+    .maplibregl-ctrl-bottom-right {
+        right: 4px;
+    }
 }
 </style>

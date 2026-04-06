@@ -25,7 +25,6 @@
                 v-model='config.coordinates'
                 :edit='true'
                 :hover='true'
-                :modes='["dd"]'
                 @submit='submitPoint'
             />
             <Div class='d-flex justify-content-center'>
