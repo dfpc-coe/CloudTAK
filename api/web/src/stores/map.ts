@@ -742,6 +742,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }, 500);
             });
 
+            // @ts-ignore Excessively Deep Types
             this._map = markRaw(map);
             this._draw = new DrawTool(this);
             this._icons = markRaw(new IconManager(map));
