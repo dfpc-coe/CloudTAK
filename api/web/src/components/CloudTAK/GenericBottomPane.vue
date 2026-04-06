@@ -15,8 +15,8 @@
  */
 .generic-bottom-pane {
     position: absolute;
-    z-index: 3;
-    bottom: calc(48px + 8px);
+    z-index: 5;
+    bottom: calc(var(--map-bottom-bar-size, 50px) + 8px);
     left: calc(50% - 250px);
     width: 500px;
 }

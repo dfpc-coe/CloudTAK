@@ -81,7 +81,7 @@ import {
     IconX
 } from '@tabler/icons-vue';
 
-type DisplayKey = 'stale' | 'distance' | 'elevation' | 'speed' | 'projection' | 'zoom' | 'text' | 'icon_rotation';
+type DisplayKey = 'stale' | 'distance' | 'elevation' | 'speed' | 'projection' | 'zoom' | 'coordinate' | 'text' | 'icon_rotation';
 type DisplayConfigKey = `display::${DisplayKey}`;
 type DisplayOptionValue = string | boolean;
 
@@ -101,6 +101,7 @@ const displayKeys: DisplayConfigKey[] = [
     'display::speed',
     'display::projection',
     'display::zoom',
+    'display::coordinate',
     'display::text',
     'display::icon_rotation',
 ];
@@ -113,6 +114,7 @@ function createDisplayConfig(): DisplayConfig {
         'display::speed': '',
         'display::projection': '',
         'display::zoom': '',
+        'display::coordinate': '',
         'display::text': '',
         'display::icon_rotation': true,
     };
@@ -126,6 +128,7 @@ function createDisplayOptions(): DisplayOptions {
         'display::speed': [],
         'display::projection': [],
         'display::zoom': [],
+        'display::coordinate': [],
         'display::text': [],
         'display::icon_rotation': [],
     };
@@ -133,6 +136,7 @@ function createDisplayOptions(): DisplayOptions {
 
 function labelForKey(key: DisplayConfigKey): string {
     if (key === 'display::icon_rotation') return 'Rotate Icons with Course';
+    if (key === 'display::coordinate') return 'Coordinate Format';
 
     return key
         .replace('display::', '')

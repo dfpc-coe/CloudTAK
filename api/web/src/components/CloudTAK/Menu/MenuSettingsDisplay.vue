@@ -73,6 +73,13 @@
                 </div>
                 <div class='col-12'>
                     <TablerEnum
+                        v-model='profile.display_coordinate'
+                        label='Coordinate Format'
+                        :options='coordFormatOptions'
+                    />
+                </div>
+                <div class='col-12'>
+                    <TablerEnum
                         v-model='profile.display_zoom'
                         label='Display Zoom Controls'
                         :options='[
@@ -114,11 +121,13 @@ import {
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../../stores/map.ts';
 import ProfileConfig from '../../../base/profile.ts';
+import { COORD_MODES, type CoordMode } from '../../../base/utils/coordinateFormat.ts';
 const mapStore = useMapStore();
 
 const router = useRouter();
 const loading = ref(false);
 const profile = ref<Profile | undefined>();
+const coordFormatOptions = COORD_MODES.map((mode) => mode.value);
 
 async function getProfile() {
     return {
@@ -128,6 +137,7 @@ async function getProfile() {
         display_elevation: (await ProfileConfig.get('display_elevation'))?.value,
         display_speed: (await ProfileConfig.get('display_speed'))?.value,
         display_projection: (await ProfileConfig.get('display_projection'))?.value,
+        display_coordinate: (await ProfileConfig.get('display_coordinate'))?.value,
         display_zoom: (await ProfileConfig.get('display_zoom'))?.value,
         display_icon_rotation: (await ProfileConfig.get('display_icon_rotation'))?.value,
     } as Profile;
@@ -147,7 +157,8 @@ async function updateProfile() {
     // Update distance unit
     mapStore.updateDistanceUnit(profile.value.display_distance);
 
-    // Immediately update icon rotation to avoid requiring page reload
+    // Immediately update coordinate format and icon rotation to avoid requiring page reload
+    mapStore.coordFormat = (profile.value.display_coordinate as CoordMode) || 'dd';
     mapStore.updateIconRotation(profile.value.display_icon_rotation as unknown as boolean);
 
     // Refresh profile data to reflect persisted changes

@@ -4,7 +4,7 @@ import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import Config from '../config.js';
 import { Profile } from '../schema.js';
 import {
-    toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
+    toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_Coordinate,
 } from '../enums.js'
 import { ProfileResponse } from '../types.js';
 
@@ -15,6 +15,7 @@ export const ProfileConfigDefaults = {
     'display::speed': Profile_Speed.MPH,
     'display::projection': Profile_Projection.GLOBE,
     'display::zoom': Profile_Zoom.CONDITIONAL,
+    'display::coordinate': Profile_Coordinate.DD,
     'display::text': Profile_Text.Medium,
     'display::icon_rotation': true,
 
@@ -68,6 +69,12 @@ export const DefaultUnits = Type.Object({
     'zoom': Type.Object({
         value: Type.Enum(Profile_Zoom, {
             default: ProfileConfigDefaults['display::zoom']
+        }),
+        options: Type.Array(Type.String())
+    }),
+    'coordinate': Type.Object({
+        value: Type.Enum(Profile_Coordinate, {
+            default: ProfileConfigDefaults['display::coordinate']
         }),
         options: Type.Array(Type.String())
     }),
@@ -128,6 +135,7 @@ export default class ProfileControl {
             'display::speed': ProfileConfigDefaults['display::speed'],
             'display::projection': ProfileConfigDefaults['display::projection'],
             'display::zoom': ProfileConfigDefaults['display::zoom'],
+            'display::coordinate': ProfileConfigDefaults['display::coordinate'],
             'display::text': ProfileConfigDefaults['display::text'],
             'display::icon_rotation': ProfileConfigDefaults['display::icon_rotation'],
         };
@@ -160,6 +168,7 @@ export default class ProfileControl {
             'display::speed',
             'display::projection',
             'display::zoom',
+            'display::coordinate',
             'display::text',
             'display::icon_rotation',
         ];
@@ -200,6 +209,10 @@ export default class ProfileControl {
             zoom: {
                 value: toEnum.fromString(Type.Enum(Profile_Zoom), final.zoom || Profile_Zoom.CONDITIONAL),
                 options: Object.values(Profile_Zoom)
+            },
+            coordinate: {
+                value: toEnum.fromString(Type.Enum(Profile_Coordinate), final.coordinate || Profile_Coordinate.DD),
+                options: Object.values(Profile_Coordinate)
             },
             text: {
                 value: toEnum.fromString(Type.Enum(Profile_Text), final.text || Profile_Text.Medium),

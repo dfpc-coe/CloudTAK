@@ -42,6 +42,7 @@ test('GET: api/profile', async () => {
             display_speed: 'mi/h',
             display_projection: 'globe',
             display_zoom: 'conditional',
+            display_coordinate: 'dd',
             display_icon_rotation: true,
             display_text: 'Medium',
             system_admin: true,
@@ -89,6 +90,7 @@ test('PATCH: api/profile', async () => {
             display_speed: 'mi/h',
             display_projection: 'globe',
             display_zoom: 'conditional',
+            display_coordinate: 'dd',
             display_text: 'Medium',
             display_icon_rotation: true,
             system_admin: true,
@@ -113,6 +115,7 @@ test('PUT: api/config - Change Defaults', async () => {
                 'display::speed': 'm/s',
                 'display::projection': 'mercator',
                 'display::zoom': 'always',
+                'display::coordinate': 'mgrs',
                 'display::text': 'Large',
                 'display::icon_rotation': false,
             }
@@ -141,6 +144,7 @@ test('GET: api/profile - New User / New Defaults', async () => {
         assert.deepEqual(res.body.display_speed, 'm/s');
         assert.deepEqual(res.body.display_projection, 'mercator');
         assert.deepEqual(res.body.display_zoom, 'always');
+        assert.deepEqual(res.body.display_coordinate, 'mgrs');
         assert.deepEqual(res.body.display_text, 'Large');
         assert.deepEqual(res.body.display_icon_rotation, false);
     } catch (err) {

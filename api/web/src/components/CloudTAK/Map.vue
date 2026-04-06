@@ -2,7 +2,11 @@
     <div
         class='d-flex position-relative'
         style='height: calc(100vh) !important;'
-        :style='{ "--map-side-offset": `${mapSideOffset}px` }'
+        :style='{
+            "--map-side-offset": `${mapSideOffset}px`,
+            "--map-compact-menu-size": "60px",
+            "--map-bottom-bar-size": "50px"
+        }'
         data-bs-theme='dark'
         data-bs-theme-base='neutral'
         data-bs-theme-primary='blue'
@@ -83,7 +87,7 @@
                 v-if='mapStore.selected.size'
                 class='position-absolute begin-0 text-white bg-dark'
                 style='
-                    bottom: 40px;
+                    bottom: var(--map-bottom-bar-size, 50px);
                     width: 250px;
                 '
             >
@@ -256,7 +260,7 @@
                 style='
                     z-index: 2;
                     width: 120px;
-                    right: 60px;
+                    right: var(--map-compact-menu-size, 60px);
                     padding-left: 10px;
                     background-color: rgba(0, 0, 0, 0.5);
                     border-radius: 0px 0px 0px 6px;
@@ -294,7 +298,7 @@
             <div
                 v-if='mode === "Default"'
                 class='position-absolute top-0 end-0 text-white py-2'
-                style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
+                style='z-index: 1; width: var(--map-compact-menu-size, 60px); background-color: rgba(0, 0, 0, 0.5);'
             >
                 <TablerIconButton
                     v-if='noMenuShown'
@@ -883,7 +887,7 @@ async function handleRadial(event: string): Promise<void> {
 }
 
 .maplibregl-ctrl-bottom-left {
-    bottom: calc(48px + 4px);
+    bottom: calc(var(--map-bottom-bar-size, 50px) + 4px);
     left: 8px;
     right: auto;
     margin: 0;
@@ -892,7 +896,7 @@ async function handleRadial(event: string): Promise<void> {
 }
 
 .maplibregl-ctrl-bottom-right {
-    bottom: calc(48px + 4px);
+    bottom: calc(var(--map-bottom-bar-size, 50px) + 4px);
     right: calc(var(--map-side-offset, 0px) + 8px);
     left: auto;
     z-index: 3 !important;
