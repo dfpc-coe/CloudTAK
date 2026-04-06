@@ -1,7 +1,7 @@
 import type Atlas from './atlas.ts';
 import { std } from '../std.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts'
-import type { Feature, GroupChannel, Server, Profile_Update, FeaturePropertyCreator } from '../types.ts';
+import type { Feature, GroupChannel, Server, Profile, Profile_Update, FeaturePropertyCreator } from '../types.ts';
 import ProfileConfig from '../base/profile.ts';
 import ServerManager from '../base/server.ts';
 import GroupManager from '../base/group.ts';
@@ -321,13 +321,13 @@ export default class AtlasProfile {
             freqChanged = true;
         }
 
-        await std('/api/profile', {
+        const profile = await std('/api/profile', {
             method: 'PATCH',
             token: this.atlas.token,
             body
-        });
+        }) as Profile;
 
-        await ProfileConfig.sync({ token: this.atlas.token, refresh: true });
+        await ProfileConfig.saveAll(profile);
 
         if (freqChanged) {
             this.setupTimer();
