@@ -85,12 +85,12 @@
             <TablerIconButton
                 v-if='edit'
                 title='Edit Field'
-                class='position-absolute cloudtak-accent'
+                class='position-absolute'
                 :class='{
                     "cloudtak-hover-hidden": hover,
                 }'
-                style='right: 36px; top: 8px;'
-                @click='editing = true'
+                style='right: 40px; top: 8px;'
+                @click.stop.prevent='editing = true'
             >
                 <IconPencil
                     :size='24'
@@ -126,12 +126,12 @@
             <TablerIconButton
                 v-if='edit'
                 title='Edit'
-                class='position-absolute cloudtak-accent'
+                class='position-absolute'
                 :class='{
                     "cloudtak-hover-hidden": hover,
                 }'
-                style='right: 32px; top: 6px;'
-                @click='editing = true'
+                style='right: 36px; top: 6px;'
+                @click.stop.prevent='editing = true'
             >
                 <IconPencil
                     :size='24'

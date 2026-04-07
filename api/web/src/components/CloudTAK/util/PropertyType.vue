@@ -216,13 +216,13 @@ onMounted(async () => {
 
 const background = computed(() => {
     if (config.value.affiliation === 'f' || config.value.affiliation === 'a') {
-        return 'border border-blue bg-blue-lt text-blue-fg';
+        return 'border border-blue bg-blue-lt';
     } else if (config.value.affiliation === 'n') {
-        return 'border border-green bg-green-lt text-green-fg';
+        return 'border border-green bg-green-lt';
     } else if (config.value.affiliation === 'h' || config.value.affiliation === 's' || config.value.affiliation === 'j' || config.value.affiliation === 'k') {
-        return 'border border-red bg-red-lt text-red-fg';
+        return 'border border-red bg-red-lt';
     } else if (config.value.affiliation === 'p') {
-        return 'border border-yellow bg-yellow-lt text-yellow-fg';
+        return 'border border-yellow bg-yellow-lt';
     } else {
         return 'cloudtak-accent';
     }

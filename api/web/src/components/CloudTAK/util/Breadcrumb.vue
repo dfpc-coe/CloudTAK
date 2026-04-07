@@ -1,68 +1,62 @@
 <template>
-    <div class='card'>
-        <div class='card-header d-flex align-items-center'>
+    <div>
+        <div class='px-3 pt-2 pb-1 fw-bold d-flex align-items-center'>
             <IconRoute
                 :size='20'
                 stroke='1'
                 class='me-2'
             />
-            <h3 class='card-title mb-0'>
-                Breadcrumb
-            </h3>
+            <span>Breadcrumb</span>
         </div>
 
-        <div class='card-body p-0'>
-            <!-- Live Breadcrumb -->
-            <div class='px-3 py-2 d-flex align-items-center justify-content-between'>
-                <div class='d-flex align-items-center'>
-                    <IconRadar
-                        :size='18'
-                        stroke='1'
-                        class='me-2 text-muted'
-                    />
-                    <span class='text-body'>Live Trail</span>
-                </div>
-                <TablerToggle
-                    v-model='liveEnabled'
-                    @update:model-value='onLiveToggle'
+        <div class='px-3 py-2 d-flex align-items-center justify-content-between'>
+            <div class='d-flex align-items-center'>
+                <IconRadar
+                    :size='18'
+                    stroke='1'
+                    class='me-2 text-muted'
+                />
+                <span class='text-body'>Live Trail</span>
+            </div>
+            <TablerToggle
+                v-model='liveEnabled'
+                @update:model-value='onLiveToggle'
+            />
+        </div>
+
+        <div class='dropdown-divider my-0' />
+
+        <TablerLoading
+            v-if='loading'
+            desc='Loading…'
+            :inline='true'
+        />
+        <template v-else>
+            <div class='px-3 pt-2 pb-1 d-flex align-items-center'>
+                <IconHistory
+                    :size='18'
+                    stroke='1'
+                    class='me-2 text-muted'
+                />
+                <span class='text-body'>Load History</span>
+            </div>
+
+            <div class='px-3 pb-2'>
+                <TablerEnum
+                    v-model='query.relative'
+                    :options='["1 Hour", "4 Hours", "8 Hours", "24 Hours"]'
                 />
             </div>
 
-            <div class='dropdown-divider my-0' />
-
-            <!-- Historical Loader -->
-            <TablerLoading
-                v-if='loading'
-                desc='Loading…'
-                :inline='true'
-            />
-            <template v-else>
-                <div class='px-3 pt-2 pb-1 d-flex align-items-center'>
-                    <IconHistory
-                        :size='18'
-                        stroke='1'
-                        class='me-2 text-muted'
-                    />
-                    <span class='text-body'>Load History</span>
-                </div>
-
-                <div class='px-3 pb-2'>
-                    <TablerEnum
-                        v-model='query.relative'
-                        :options='["1 Hour", "4 Hours", "8 Hours", "24 Hours"]'
-                    />
-                </div>
-
-                <div class='px-3 pb-3'>
-                    <TablerButton
-                        class='btn-primary w-100'
-                        @click.stop.prevent='loadBreadcrumb'
-                    >
-                        Load
-                    </TablerButton>
-                </div>
-            </template>
-        </div>
+            <div class='px-3 pb-3'>
+                <TablerButton
+                    class='btn-primary w-100'
+                    @click.stop.prevent='loadBreadcrumb'
+                >
+                    Load
+                </TablerButton>
+            </div>
+        </template>
     </div>
 </template>
 
