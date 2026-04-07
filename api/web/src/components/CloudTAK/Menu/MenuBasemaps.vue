@@ -81,7 +81,7 @@
                                 </TablerIconButton>
 
                                 <template #dropdown>
-                                    <div clas='col-12'>
+                                    <div class='col-12'>
                                         <div
                                             v-if='(!basemap.username && isSystemAdmin) || basemap.username'
                                             class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'

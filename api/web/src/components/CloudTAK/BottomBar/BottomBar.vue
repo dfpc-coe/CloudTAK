@@ -43,7 +43,13 @@ defineEmits(['set-location', 'to-location']);
 
 const mapStore = useMapStore();
 
-const bottomBarItems = computed(() => mapStore.bottomBar.pluginItems.value);
+const bottomBarItems = computed(() => {
+    try {
+        return mapStore.bottomBar.pluginItems.value;
+    } catch {
+        return [];
+    }
+});
 </script>
 
 <style>

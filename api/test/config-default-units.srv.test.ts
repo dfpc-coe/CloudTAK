@@ -46,6 +46,10 @@ test('GET api/config/display', async () => {
                  value: 'System Default',
                  options: [ 'System Default', 'Light', 'Dark' ]
              },
+             coordinate: {
+                 value: 'dd',
+                 options: [ 'dd', 'dm', 'dms', 'mgrs', 'utm' ]
+             },
              text: {
                  value: 'Medium',
                  options: [ 'Small', 'Medium', 'Large' ]
@@ -153,10 +157,38 @@ test('GET api/profile', async () => {
             },
         }, true);
 
-        assert.equal(res.body.display_stale, '30 Minutes', 'default stale value');
-        assert.equal(res.body.display_distance, 'kilometer', 'default distance value');
-        assert.equal(res.body.display_elevation, 'meter', 'default elevation value');
-        assert.equal(res.body.display_style, 'Light', 'default style value');
+        assert.ok(res.body.last_login);
+        delete res.body.last_login;
+        assert.ok(res.body.created);
+        delete res.body.created;
+        assert.ok(res.body.updated);
+        delete res.body.updated;
+
+        assert.deepEqual(res.body, {
+            active: false,
+            username: 'defaults@example.com',
+            phone: '',
+            tak_callsign: 'CloudTAK User',
+            tak_remarks: 'CloudTAK User',
+            tak_group: 'Orange',
+            tak_role: 'Team Member',
+            tak_type: 'a-f-G-E-V-C',
+            tak_loc: null,
+            tak_loc_freq: 2000,
+            menu_order: [],
+            display_stale: '30 Minutes',
+            display_distance: 'kilometer',
+            display_elevation: 'meter',
+            display_speed: 'mi/h',
+            display_projection: 'globe',
+            display_zoom: 'conditional',
+            display_style: 'Light',
+            display_coordinate: 'dd',
+            display_text: 'Medium',
+            display_icon_rotation: true,
+            system_admin: false,
+            agency_admin: []
+        });
     } catch (err) {
         assert.ifError(err);
     }
