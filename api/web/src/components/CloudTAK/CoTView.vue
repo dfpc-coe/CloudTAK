@@ -39,12 +39,12 @@
                         />
                     </div>
                 </div>
-                <div class='col-12 d-flex my-2 mx-2'>
-                    <div class='btn-list'>
+                <div class='col-12 d-flex align-items-center flex-nowrap gap-0 my-1 px-1'>
+                    <div class='btn-list d-flex flex-nowrap align-items-center gap-0 mb-0'>
                         <IconStarFilled
                             v-if='cot.properties.archived'
                             title='Saved Feature'
-                            :size='32'
+                            :size='actionIconSize'
                             stroke='1'
                         />
                         <TablerIconButton
@@ -53,7 +53,7 @@
                             @click='cot.properties.archived = true'
                         >
                             <IconStar
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
@@ -63,7 +63,7 @@
                             @click='cot.flyTo()'
                         >
                             <IconZoomPan
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
@@ -75,12 +75,12 @@
                         >
                             <IconLock
                                 v-if='isLocked'
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                             <IconLockOpen
                                 v-else
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
@@ -92,7 +92,7 @@
                             @click='floatStore.addCOT(String(route.params.uid))'
                         >
                             <IconPlayerPlay
-                                size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
@@ -101,12 +101,12 @@
                             @click='share = true'
                         >
                             <IconShare2
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
                     </div>
-                    <div class='ms-auto btn-list mx-2'>
+                    <div class='ms-auto btn-list d-flex flex-nowrap align-items-center gap-0 mb-0'>
                         <TablerDropdown
                             v-if='cot.geometry.type === "Point"'
                         >
@@ -115,7 +115,7 @@
                             >
                                 <div style='position: relative; display: inline-flex;'>
                                     <IconRoute
-                                        size='32'
+                                        :size='actionIconSize'
                                         stroke='1'
                                     />
                                     <span
@@ -153,7 +153,7 @@
                             @click='editGeometry'
                         >
                             <IconPencil
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
@@ -165,8 +165,8 @@
                                 title='Transforms'
                             >
                                 <svg
-                                    width='32'
-                                    height='32'
+                                    :width='actionIconSize'
+                                    :height='actionIconSize'
                                     viewBox='0 0 24 24'
                                     fill='none'
                                     stroke='currentColor'
@@ -214,7 +214,7 @@
                             @click='router.push(`/menu/chats/new?callsign=${cot.properties.callsign}&uid=${cot.id}`)'
                         >
                             <IconMessage
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
@@ -232,7 +232,7 @@
                                 title='Add Properties'
                             >
                                 <IconDotsVertical
-                                    :size='32'
+                                    :size='actionIconSize'
                                     stroke='1'
                                 />
                             </TablerIconButton>
@@ -767,6 +767,7 @@ const mode = ref('default');
 const breadcrumbLive = ref(false);
 const remarksExpanded = ref(true);
 const bufferCotId = ref<string | null>(null);
+const actionIconSize = 28;
 
 const currentTime = ref(new Date());
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
