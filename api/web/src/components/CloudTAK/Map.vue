@@ -547,7 +547,7 @@ const mapSideOffset = computed(() => {
     if (isMobileDetected.value) return 0;
 
     // `toastOffset.x` includes a 10px buffer for notification toasts.
-    // Remove that padding so the footer aligns flush with the visible menu edge.
+    // Remove that padding so right-side map controls align flush with the visible menu edge.
     return Math.max(mapStore.toastOffset.x - 10, 0);
 });
 

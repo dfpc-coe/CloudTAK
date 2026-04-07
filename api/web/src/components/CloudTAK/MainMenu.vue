@@ -23,12 +23,12 @@
             }'
         />
         <div
-            class='position-absolute end-0 bottom-0 text-white d-flex'
+            class='position-absolute end-0 text-white d-flex'
             role='menubar'
             :class='{
                 "cloudtak-bg": !compact,
             }'
-            style='z-index: 1; top: 56px;'
+            style='z-index: 1; top: 56px; bottom: var(--map-bottom-bar-size, 50px);'
             :style='`
             width: ${compact ? "var(--map-compact-menu-size, 60px)" : `${menuWidth}px`};
             min-width: ${compact ? "var(--map-compact-menu-size, 60px)" : `400px`};
