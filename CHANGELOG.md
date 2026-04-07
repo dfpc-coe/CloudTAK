@@ -18,6 +18,17 @@
 
 ### Pending Release
 
+### v12.118.0 - 2026-04-07
+
+- :tada: Allow saving preferred coordinate system
+- :rocket: Optimize bottom bar for mobile experience
+- :rocket: Allow rapidly changing coordinate system via Cursor Coordinate Menu
+- :rocket: Show location accuracy in bottom bar
+- :rocket: Allow entering coordinates in systems other than `DD` - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1386
+- :rocket: Update Dropdown UI to be more visually consistent with overall app
+- :rocket: Allow Plugin API to create Bottom Bar components
+- :tada: Preliminary support for Light vs Dark mode
+
 ### v12.117.1 - 2026-04-02
 
 - :bug: ESRI Server versions ~12 failed to pass versions checks
