@@ -16,7 +16,7 @@
 
                 <template #dropdown>
                     <div
-                        class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                        class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
                         @click.stop.prevent='download("geojson")'
                     >
                         <IconFile
@@ -26,7 +26,7 @@
                         <span class='mx-2'>GeoJSON</span>
                     </div>
                     <div
-                        class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                        class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
                         @click.stop.prevent='download("kml")'
                     >
                         <IconFile
@@ -69,7 +69,7 @@
                     >
                         <TablerDelete
                             displaytype='menu'
-                            class='hover'
+                            class='cloudtak-hover'
                             label='Delete All Features'
                             @delete='deleteFeatures'
                         />
@@ -119,7 +119,7 @@
                             <StandardItem
                                 :id='`foldertarget-${path.id}`'
                                 class='px-3 py-3 user-select-none'
-                                :style='hover === path ? "background-color: rgba(255, 255, 255, 0.1);" : ""'
+                                :style='hoverPath === path ? "background-color: rgba(255, 255, 255, 0.1);" : ""'
                                 @drop.stop.prevent='onFolderDrop(path)'
                                 @dragover.prevent='dragOverFolder(path)'
                                 @dragleave='dragLeaveFolder()'
@@ -342,7 +342,7 @@ const dragging = ref(false);
 const draggedId = ref<string | undefined>();
 const loading = ref(true);
 
-const hover = ref<Path | undefined>();
+const hoverPath = ref<Path | undefined>();
 const hoverTimer = ref<ReturnType<typeof setTimeout> | undefined>();
 
 watch(query.value, async () => {
@@ -542,7 +542,7 @@ async function dragOverFolder(path: Path): Promise<void> {
     if (!dragging.value || path.opened) return;
 
     if (!path.opened) {
-        hover.value = path;
+        hoverPath.value = path;
         hoverTimer.value = setTimeout(async () => {
             await openPath(path);
 
@@ -553,7 +553,7 @@ async function dragOverFolder(path: Path): Promise<void> {
 }
 
 async function dragLeaveFolder(): Promise<void> {
-    hover.value = undefined;
+    hoverPath.value = undefined;
 
     if (hoverTimer.value) {
         clearTimeout(hoverTimer.value);

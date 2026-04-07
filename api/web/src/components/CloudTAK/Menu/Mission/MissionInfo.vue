@@ -9,7 +9,7 @@
         <div class='container-fluid px-2 px-sm-3'>
             <div class='row gy-3 gx-0 gx-lg-3'>
                 <div class='col-12'>
-                    <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
+                    <div class='card h-100 cloudtak-bg text-white border border-light-subtle shadow-sm'>
                         <div class='card-body d-flex flex-column gap-4'>
                             <div class='d-flex align-items-center gap-3'>
                                 <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-1 d-flex align-items-center justify-content-center'>
@@ -108,7 +108,7 @@
                 </div>
 
                 <div class='col-12'>
-                    <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
+                    <div class='card h-100 cloudtak-bg text-white border border-light-subtle shadow-sm'>
                         <div class='card-body d-flex flex-column gap-3'>
                             <p class='text-uppercase text-white-50 small mb-1'>
                                 Quick Actions
@@ -171,7 +171,7 @@
                             </template>
 
                             <button
-                                class='btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2'
+                                class='btn w-100 d-flex align-items-center justify-content-center gap-2 invite-qr-btn'
                                 @click='showQR = true'
                             >
                                 <IconQrcode
@@ -198,7 +198,7 @@
             aria-label='Close'
             @click='showQR = false'
         />
-        <div class='modal-header text-white'>
+        <div class='modal-header invite-qr-header'>
             <div class='d-flex align-items-center'>
                 <IconQrcode
                     :size='28'
@@ -210,13 +210,11 @@
                 />
             </div>
         </div>
-        <div class='modal-body'>
-            <div class='col-12'>
+        <div class='modal-body invite-qr-body'>
+            <div class='col-12 text-center'>
                 <img
                     :src='missionQRURL'
-                    style='
-                        filter: invert(100%);
-                    '
+                    class='invite-qr-image img-fluid'
                 >
             </div>
         </div>
@@ -356,3 +354,39 @@ async function subscribe(subscribe: boolean) {
     loading.value.subscribe = false;
 }
 </script>
+
+<style scoped>
+.invite-qr-header {
+    color: var(--tblr-body-color);
+}
+
+.invite-qr-body {
+    display: flex;
+    justify-content: center;
+}
+
+.invite-qr-image {
+    max-width: min(100%, 420px);
+    height: auto;
+}
+
+:global(html[data-bs-theme='dark']) .invite-qr-btn {
+    --bs-btn-color: rgba(255, 255, 255, 0.92);
+    --bs-btn-border-color: rgba(255, 255, 255, 0.35);
+    --bs-btn-hover-color: #182433;
+    --bs-btn-hover-bg: rgba(255, 255, 255, 0.92);
+    --bs-btn-hover-border-color: rgba(255, 255, 255, 0.92);
+}
+
+:global(html[data-bs-theme='light']) .invite-qr-btn {
+    --bs-btn-color: var(--tblr-body-color);
+    --bs-btn-border-color: var(--tblr-border-color);
+    --bs-btn-hover-color: var(--tblr-bg-surface);
+    --bs-btn-hover-bg: var(--tblr-primary);
+    --bs-btn-hover-border-color: var(--tblr-primary);
+}
+
+:global(html[data-bs-theme='dark']) .invite-qr-image {
+    filter: invert(100%);
+}
+</style>

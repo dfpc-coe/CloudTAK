@@ -1,5 +1,11 @@
 <template>
-    <div class='page h-100 cloudtak-gradient'>
+    <div
+        class='page h-100'
+        :class='resolvedTheme === "dark" ? "cloudtak-gradient" : "cloudtak-gradient-light"'
+        :data-bs-theme='resolvedTheme'
+        data-bs-theme-base='neutral'
+        data-bs-theme-primary='blue'
+    >
         <!-- New-version upgrade banner -->
         <div
             v-if='updateAvailable'
@@ -88,7 +94,7 @@
                                 aria-labelledby='userProfileButton'
                             >
                                 <div
-                                    class='d-flex dropdown-item cursor-pointer hover'
+                                    class='d-flex dropdown-item cursor-pointer cloudtak-hover'
                                     @click='external("/connection")'
                                 >
                                     <IconNetwork
@@ -98,7 +104,7 @@
                                     <span class='mx-2'>Connections</span>
                                 </div>
                                 <div
-                                    class='d-flex dropdown-item cursor-pointer hover'
+                                    class='d-flex dropdown-item cursor-pointer cloudtak-hover'
                                     @click='external("/admin")'
                                 >
                                     <IconSettings
@@ -109,7 +115,7 @@
                                     <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
                                 </div>
                                 <div
-                                    class='d-flex dropdown-item cursor-pointer hover'
+                                    class='d-flex dropdown-item cursor-pointer cloudtak-hover'
                                     @click='logout'
                                 >
                                     <IconLogout
@@ -153,6 +159,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, onErrorCaptured, onMounted, onUnmounted } from 'vue'
+import { liveQuery, type Subscription } from 'dexie';
 import { useRouter, useRoute } from 'vue-router';
 import Config from './base/config.ts';
 import ServerManager from './base/server.ts';
@@ -213,7 +220,12 @@ const onSwUpdated = async (e: Event) => {
     updateAvailable.value = true;
 };
 
+type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
+type ResolvedThemeMode = 'light' | 'dark';
+
 const loading = ref(true);
+const resolvedTheme = ref<ResolvedThemeMode>('dark');
+const displayStyle = ref<DisplayStyleMode>('System Default');
 const inviteMission = ref<{
     name: string;
     guid: string;
@@ -226,6 +238,32 @@ const channelChange = ref(false);
 const mounted = ref(false);
 const user = ref(false);
 const error = ref<Error | undefined>();
+
+let displayStyleSub: Subscription | undefined;
+const systemThemeQuery = typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-color-scheme: dark)')
+    : undefined;
+
+function resolveTheme(style: string | undefined): ResolvedThemeMode {
+    if (style === 'Light') return 'light';
+    if (style === 'Dark') return 'dark';
+    return systemThemeQuery?.matches ? 'dark' : 'light';
+}
+
+function applyTheme(style: string | undefined = displayStyle.value): void {
+    const theme = resolveTheme(style);
+    resolvedTheme.value = theme;
+
+    document.documentElement.setAttribute('data-bs-theme', theme);
+    document.documentElement.setAttribute('data-bs-theme-base', 'neutral');
+    document.documentElement.setAttribute('data-bs-theme-primary', 'blue');
+}
+
+function onSystemThemeChange(): void {
+    if (displayStyle.value === 'System Default') {
+        applyTheme(displayStyle.value);
+    }
+}
 
 const navShown = computed<boolean>(() => {
     if (!route || !route.name) {
@@ -263,6 +301,14 @@ onMounted(async () => {
     window.addEventListener('unhandledrejection', (e) => {
         error.value = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
     });
+
+    applyTheme();
+    displayStyleSub = liveQuery(() => db.profile.get('display_style')).subscribe((entry) => {
+        const style = entry?.value;
+        displayStyle.value = style === 'Light' || style === 'Dark' ? style : 'System Default';
+        applyTheme(displayStyle.value);
+    });
+    systemThemeQuery?.addEventListener('change', onSystemThemeChange);
 
     let status;
 
@@ -351,6 +397,8 @@ onMounted(async () => {
 
 onUnmounted(() => {
     window.removeEventListener('sw:updated', onSwUpdated);
+    systemThemeQuery?.removeEventListener('change', onSystemThemeChange);
+    displayStyleSub?.unsubscribe();
 });
 
 function logout() {
@@ -412,44 +460,114 @@ $cloudtak-orange: #FF9820;
 $cloudtak-navy: #023047;
 $cloudtak-blue: #07556D;
 
+:root {
+    --cloudtak-light: rgba(var(--tblr-primary-rgb), 0.08);
+}
+
 .cloudtak-gradient {
     background: radial-gradient(at left top, $cloudtak-blue, $cloudtak-navy);
+}
+
+.cloudtak-gradient-light {
+    background: radial-gradient(at left top, #f7fbff, #dde8f4);
 }
 
 .btn-primary {
     background-color: $cloudtak-blue !important;
 }
 
-.bg-accent {
+html[data-bs-theme='dark'] {
+    --tabler-input-bg: var(--tblr-bg-forms, var(--tblr-bg-surface, var(--tblr-body-bg)));
+}
+
+html[data-bs-theme='light'] {
+    --tabler-input-bg: var(--cloudtak-light);
+}
+
+html[data-bs-theme='dark'] .cloudtak-accent {
+    background-color: #192f45 !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+}
+
+html[data-bs-theme='light'] .cloudtak-accent {
+    background-color: var(--tblr-primary-lt) !important;
+}
+
+html[data-bs-theme='light'] .cloudtak-accent.text-white {
+    color: var(--tblr-body-color) !important;
+}
+
+html[data-bs-theme='dark'] .cloudtak-bg {
     background-color: #283547 !important;
+}
+
+html[data-bs-theme='light'] .cloudtak-bg {
+    background-color: var(--tblr-light) !important;
+    color: var(--tblr-body-color);
+}
+
+html[data-bs-theme='light'] .cloudtak-bg.text-white {
+    color: var(--tblr-body-color) !important;
+}
+
+html[data-bs-theme='light'] .cloudtak-bg .text-white:not(.badge):not(.btn):not([class*='bg-']),
+html[data-bs-theme='light'] .cloudtak-accent .text-white:not(.badge):not(.btn):not([class*='bg-']) {
+    color: var(--tblr-body-color) !important;
+}
+
+html[data-bs-theme='light'] .cloudtak-bg .text-white-50:not(.badge):not(.btn):not([class*='bg-']),
+html[data-bs-theme='light'] .cloudtak-accent .text-white-50:not(.badge):not(.btn):not([class*='bg-']) {
+    color: var(--tblr-secondary-color) !important;
 }
 
 .bg-child {
     background-color: $cloudtak-child !important;
 }
 
-html[data-bs-theme='dark'] .hover:hover {
-    background: #0f172a;
+.cloudtak-hover {
+    border: 1px solid transparent;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-html[data-bs-theme='light'] .hover:hover {
-    background: #f5f5f5;
+html[data-bs-theme='dark'] .cloudtak-hover:hover,
+html[data-bs-theme='dark'] .cloudtak-hover:focus-visible,
+html[data-bs-theme='dark'] .cloudtak-hover:focus-within {
+    border-radius: 6px;
+    border-color: color-mix(in srgb, var(--tblr-light) 30%, transparent);
+    background: color-mix(in srgb, var(--tblr-light) 12%, transparent);
 }
 
-.hover-button-hidden {
+html[data-bs-theme='light'] .cloudtak-hover:hover,
+html[data-bs-theme='light'] .cloudtak-hover:focus-visible,
+html[data-bs-theme='light'] .cloudtak-hover:focus-within {
+    border-radius: 6px;
+    border-color: color-mix(in srgb, var(--tblr-body-color) 18%, transparent);
+    background: color-mix(in srgb, var(--tblr-body-color) 8%, transparent);
+}
+
+html[data-bs-theme='dark'] .cloudtak-accent.cloudtak-hover:hover,
+html[data-bs-theme='dark'] .cloudtak-accent.cloudtak-hover:focus-visible,
+html[data-bs-theme='dark'] .cloudtak-accent.cloudtak-hover:focus-within {
+    background-color: color-mix(in srgb, #192f45 82%, white 18%) !important;
+}
+
+html[data-bs-theme='light'] .cloudtak-accent.cloudtak-hover:hover,
+html[data-bs-theme='light'] .cloudtak-accent.cloudtak-hover:focus-visible,
+html[data-bs-theme='light'] .cloudtak-accent.cloudtak-hover:focus-within {
+    background-color: color-mix(in srgb, var(--tblr-primary-lt) 82%, var(--tblr-body-color) 18%) !important;
+}
+
+.cloudtak-hover-hidden {
     visibility: hidden;
 }
 
-.hover-button:hover .hover-button-hidden {
+.cloudtak-hover:hover .cloudtak-hover-hidden,
+.cloudtak-hover:focus-within .cloudtak-hover-hidden {
     visibility: visible;
 }
 
 .border-light {
-    border-radius: 6px;
-    background-color: rgba(0, 0, 0, 0.2);
-}
-
-.hover-button:hover {
     border-radius: 6px;
     background-color: rgba(0, 0, 0, 0.2);
 }

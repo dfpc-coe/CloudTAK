@@ -1,6 +1,6 @@
 <template>
     <div
-        class='position-absolute end-0 text-white bg-dark card rounded'
+        class='position-absolute end-0 text-white cloudtak-bg card rounded'
         style='
             top: 56px;
             z-index: 1;

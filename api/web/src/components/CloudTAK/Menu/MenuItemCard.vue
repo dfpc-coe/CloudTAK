@@ -21,7 +21,7 @@
                 v-tooltip='tooltipBinding'
                 :title='tooltip'
                 :size='iconSize'
-                :color='iconColor'
+                :color='resolvedIconColor'
                 stroke='1'
                 class='menu-item-card__icon'
             />
@@ -133,21 +133,29 @@ const props = defineProps({
 const classes = computed(() => ({
     'menu-item-card': true,
     [`menu-item-card--${props.layout}`]: true,
-    'menu-item-card--compact position-relative hover-button': props.compact,
+    'menu-item-card--compact position-relative cloudtak-hover': props.compact,
 }));
 
 const iconSize = computed(() => props.layout === 'tiles' ? 36 : 32);
+const resolvedIconColor = computed(() => props.compact ? '#fff' : props.iconColor);
 const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, placement: 'left' } : undefined);
 </script>
 
 <style scoped>
 .menu-item-card {
+    --menu-item-card-color: var(--standard-item-color, rgba(255, 255, 255, 0.92));
+    --menu-item-card-muted-color: var(--standard-item-muted-color, rgba(255, 255, 255, 0.78));
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: #fff;
+    color: var(--menu-item-card-color);
     cursor: pointer;
     user-select: none;
+}
+
+[data-bs-theme='light'] .menu-item-card {
+    --menu-item-card-color: var(--standard-item-color, var(--tblr-body-color));
+    --menu-item-card-muted-color: var(--standard-item-muted-color, var(--tblr-secondary-color));
 }
 
 .menu-item-card--list:not(.menu-item-card--compact) {
@@ -161,6 +169,9 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
 }
 
 .menu-item-card--compact {
+    --menu-item-card-color: #fff;
+    --menu-item-card-muted-color: rgba(255, 255, 255, 0.78);
+    color: #fff;
     padding: 0.5rem 0.75rem;
 }
 
@@ -189,6 +200,7 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
 
 .menu-item-card__icon {
     flex-shrink: 0;
+    color: inherit;
 }
 
 .menu-item-card__body {
@@ -212,7 +224,7 @@ const tooltipBinding = computed(() => props.tooltip ? { content: props.tooltip, 
 
 .menu-item-card__description {
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.78);
+    color: var(--menu-item-card-muted-color);
 }
 
 .menu-item-card__badge {

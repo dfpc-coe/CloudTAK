@@ -5,7 +5,7 @@
             v-for='layer in layers'
             :key='layer.uid'
         >
-            <div class='col-12 hover d-flex align-items-center px-3 py-2'>
+            <div class='col-12 cloudtak-hover d-flex align-items-center px-3 py-2'>
                 <IconChevronRight
                     v-if='layer.type === "GROUP" && !opened.has(layer.uid)'
                     :size='20'

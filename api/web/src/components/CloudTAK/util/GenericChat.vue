@@ -73,7 +73,7 @@
                 </div>
                 <div
                     v-else
-                    class='ms-auto bg-accent px-2 py-2 rounded'
+                    class='ms-auto cloudtak-accent px-2 py-2 rounded'
                     style='max-width: 80%;'
                 >
                     <div v-text='chat.message' />

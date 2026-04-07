@@ -23,22 +23,26 @@
             }'
         />
         <div
-            class='position-absolute end-0 bottom-0 text-white d-flex'
+            class='position-absolute end-0 text-white d-flex'
             role='menubar'
             :class='{
-                "bg-dark": !compact,
+                "cloudtak-bg": !compact,
             }'
-            style='z-index: 1; top: 56px;'
+            style='
+                z-index: 1;
+                top: 60px;
+                bottom: var(--map-bottom-bar-size, 50px);
+            '
             :style='`
-            width: ${compact ? "60px" : `${menuWidth}px`};
-            min-width: ${compact ? "60px" : `400px`};
-            ${compact ? "background-color: rgb(0, 0, 0, 0.5)" : ""}
-        `'
+                width: ${compact ? "var(--map-compact-menu-size, 60px)" : `${menuWidth}px`};
+                min-width: ${compact ? "var(--map-compact-menu-size, 60px)" : `400px`};
+                ${compact ? "background-color: rgb(0, 0, 0, 0.5)" : ""}
+            `'
         >
             <div
                 v-if='!compact'
                 ref='resize'
-                class='resize hover cursor-drag'
+                class='resize cloudtak-hover cursor-drag'
             />
             <div
                 ref='menu'
@@ -71,20 +75,30 @@ const container = useTemplateRef('container');
 
 const menuWidth = ref<number>(400);
 
+const COMPACT_MENU_WIDTH = 60;
+const TOAST_OFFSET_BUFFER = 10;
+const MENU_RESIZE_HANDLE_WIDTH = 14;
+
 const props = defineProps({
     compact: Boolean,
 })
 
-watch(props, () => {
-    if (props.compact && mapStore.toastOffset.x !== 70) {
-        mapStore.toastOffset.x = 70;
-    } else if (!props.compact && mapStore.toastOffset.x !== menuWidth.value + 10) {
-        mapStore.toastOffset.x = menuWidth.value + 10;
+const syncToastOffset = () => {
+    const nextOffset = props.compact
+        ? COMPACT_MENU_WIDTH + TOAST_OFFSET_BUFFER
+        : menuWidth.value + MENU_RESIZE_HANDLE_WIDTH + TOAST_OFFSET_BUFFER;
+
+    if (mapStore.toastOffset.x !== nextOffset) {
+        mapStore.toastOffset.x = nextOffset;
     }
+};
+
+watch(() => props.compact, () => {
+    syncToastOffset();
 });
 
 watch(menuWidth, () => {
-    mapStore.toastOffset.x = menuWidth.value + 10;
+    if (!props.compact) syncToastOffset();
 });
 
 watch(resize, (newVal, oldVal, onCleanup) => {
@@ -166,7 +180,7 @@ watch(resize, (newVal, oldVal, onCleanup) => {
 })
 
 onMounted(async () => {
-    mapStore.toastOffset.x = props.compact ? 70 : menuWidth.value + 10;
+    syncToastOffset();
 })
 </script>
 

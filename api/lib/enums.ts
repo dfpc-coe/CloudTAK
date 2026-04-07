@@ -83,6 +83,12 @@ export enum Profile_Zoom {
     NEVER = 'never',
 }
 
+export enum Profile_Style {
+    SYSTEM_DEFAULT = 'System Default',
+    LIGHT = 'Light',
+    DARK = 'Dark',
+}
+
 export enum Profile_Menu_Visibility {
     FULL = 'full',
     PARTIAL = 'partial',
@@ -92,6 +98,14 @@ export enum Profile_Menu_Visibility {
 export enum Profile_Projection {
     MERCATOR = 'mercator',
     GLOBE = 'globe',
+}
+
+export enum Profile_Coordinate {
+    DD = 'dd',
+    DM = 'dm',
+    DMS = 'dms',
+    MGRS = 'mgrs',
+    UTM = 'utm'
 }
 
 export enum Basemap_Format {

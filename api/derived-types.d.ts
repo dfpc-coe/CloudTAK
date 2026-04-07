@@ -2149,6 +2149,7 @@ export interface paths {
                             "display::speed"?: "m/s" | "km/h" | "mi/h";
                             "display::projection"?: "mercator" | "globe";
                             "display::zoom"?: "always" | "conditional" | "never";
+                            "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm";
                             "display::text"?: "Small" | "Medium" | "Large";
                             "display::icon_rotation"?: boolean;
                             "group::Yellow"?: string;
@@ -2327,6 +2328,7 @@ export interface paths {
                         "display::speed"?: "m/s" | "km/h" | "mi/h";
                         "display::projection"?: "mercator" | "globe";
                         "display::zoom"?: "always" | "conditional" | "never";
+                        "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm";
                         "display::text"?: "Small" | "Medium" | "Large";
                         "display::icon_rotation"?: boolean;
                         "group::Yellow"?: string;
@@ -2440,6 +2442,7 @@ export interface paths {
                             "display::speed"?: "m/s" | "km/h" | "mi/h";
                             "display::projection"?: "mercator" | "globe";
                             "display::zoom"?: "always" | "conditional" | "never";
+                            "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm";
                             "display::text"?: "Small" | "Medium" | "Large";
                             "display::icon_rotation"?: boolean;
                             "group::Yellow"?: string;
@@ -2625,6 +2628,11 @@ export interface paths {
                             zoom: {
                                 /** @default conditional */
                                 value: "always" | "conditional" | "never";
+                                options: string[];
+                            };
+                            coordinate: {
+                                /** @default dd */
+                                value: "dd" | "dm" | "dms" | "mgrs" | "utm";
                                 options: string[];
                             };
                             text: {
@@ -32516,6 +32524,7 @@ export interface paths {
                             }[];
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
+                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
@@ -32609,6 +32618,7 @@ export interface paths {
                         display_projection?: "mercator" | "globe";
                         display_speed?: "m/s" | "km/h" | "mi/h";
                         display_zoom?: "always" | "conditional" | "never";
+                        display_coordinate?: "dd" | "dm" | "dms" | "mgrs" | "utm";
                         display_icon_rotation?: boolean;
                         display_text?: "Small" | "Medium" | "Large";
                         geometry_point_type?: string;
@@ -32675,6 +32685,7 @@ export interface paths {
                             }[];
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
+                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
@@ -33856,1561 +33867,6 @@ export interface paths {
                                 validFrom: string;
                                 validTo: string;
                             };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/api/swagger": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return Swagger Doc in JSON */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": unknown;
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/task": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Tasks */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort: "id" | "prefix" | "favorite" | "created" | "updated" | "name" | "logo" | "repo" | "readme" | "enableRLS";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                prefix: string;
-                                favorite: boolean;
-                                created: string;
-                                updated: string;
-                                name: string;
-                                logo: string | null;
-                                repo: string | null;
-                                readme: string | null;
-                            }[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create Registered Task */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name: string;
-                        prefix: string;
-                        /**
-                         * @description Displayed first in the Task List
-                         * @default false
-                         */
-                        favorite: boolean;
-                        logo?: string;
-                        repo?: string;
-                        readme?: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            prefix: string;
-                            favorite: boolean;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            logo: string | null;
-                            repo: string | null;
-                            readme: string | null;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/task/{:taskid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Create Registered Task */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":taskid": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/task/raw": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Tasks */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                [key: string]: string[];
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/task/raw/{:task}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Version for a specific task */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":task": string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            versions: string[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/task/raw/{:task}/version/{:version}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete a given task version */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":task": string;
-                    /** @description No Description */
-                    ":version": string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/task/{:task}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update Registered Task */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":task": string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name?: string;
-                        repo?: string;
-                        logo?: string;
-                        readme?: string;
-                        /** @description Displayed first in the Task List */
-                        favorite?: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            prefix: string;
-                            favorite: boolean;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            logo: string | null;
-                            repo: string | null;
-                            readme: string | null;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/api/task/{:task}/readme": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return README Contents */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":task": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            body: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/type/cot": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Type */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    filter: string;
-                    /** @description No Description */
-                    domain?: "a" | "b" | "r" | "t" | "c" | "y";
-                    /** @description No Description */
-                    identity: "p" | "u" | "a" | "f" | "n" | "s" | "h" | "j" | "k" | "o";
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                cot: string;
-                                desc: string;
-                                full?: string;
-                            }[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/type/cot/{:type}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Type */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":type": string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            cot: string;
-                            desc: string;
-                            full?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/user": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Let Admins see users of the system */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "system_admin" | "agency_admin" | "enableRLS";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                username: string;
-                                created: string;
-                                updated: string;
-                                phone: string;
-                                last_login: string;
-                                /** @description Does the user have an active CloudTAK Session */
-                                active: boolean;
-                                system_admin: boolean;
-                                agency_admin: number[];
-                            }[];
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/user/{:username}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Let Admins see a given user of the system */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":username": string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            username: string;
-                            created: string;
-                            updated: string;
-                            phone: string;
-                            last_login: string;
-                            /** @description Does the user have an active CloudTAK Session */
-                            active: boolean;
-                            system_admin: boolean;
-                            agency_admin: number[];
-                            tak_callsign: string;
-                            tak_remarks: string;
-                            tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
-                            tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
-                            tak_type: string;
-                            tak_loc: {
-                                /** @constant */
-                                type: "Point";
-                                coordinates: number[];
-                            } | null;
-                            tak_loc_freq: number;
-                            menu_order: {
-                                /** @description Menu Key */
-                                key: string;
-                                /**
-                                 * @description Menu Visibility
-                                 * @default full
-                                 */
-                                visibility: "full" | "partial" | "hidden";
-                            }[];
-                            display_projection: "mercator" | "globe";
-                            display_zoom: "always" | "conditional" | "never";
-                            display_icon_rotation: boolean;
-                            display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
-                            display_text: "Small" | "Medium" | "Large";
-                            display_distance: "meter" | "kilometer" | "mile";
-                            display_elevation: "meter" | "feet";
-                            display_speed: "m/s" | "km/h" | "mi/h";
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update a User */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":username": string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        tak_callsign?: string;
-                        tak_remarks?: string;
-                        tak_group?: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
-                        tak_type?: string;
-                        tak_role?: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
-                        system_admin?: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            username: string;
-                            created: string;
-                            updated: string;
-                            phone: string;
-                            last_login: string;
-                            /** @description Does the user have an active CloudTAK Session */
-                            active: boolean;
-                            system_admin: boolean;
-                            agency_admin: number[];
-                            tak_callsign: string;
-                            tak_remarks: string;
-                            tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
-                            tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
-                            tak_type: string;
-                            tak_loc: {
-                                /** @constant */
-                                type: "Point";
-                                coordinates: number[];
-                            } | null;
-                            tak_loc_freq: number;
-                            menu_order: {
-                                /** @description Menu Key */
-                                key: string;
-                                /**
-                                 * @description Menu Visibility
-                                 * @default full
-                                 */
-                                visibility: "full" | "partial" | "hidden";
-                            }[];
-                            display_projection: "mercator" | "globe";
-                            display_zoom: "always" | "conditional" | "never";
-                            display_icon_rotation: boolean;
-                            display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
-                            display_text: "Small" | "Medium" | "Large";
-                            display_distance: "meter" | "kilometer" | "mile";
-                            display_elevation: "meter" | "feet";
-                            display_speed: "m/s" | "km/h" | "mi/h";
                         };
                     };
                 };
@@ -36891,6 +35347,1563 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/swagger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return Swagger Doc in JSON */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/task": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tasks */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "id" | "prefix" | "favorite" | "created" | "updated" | "name" | "logo" | "repo" | "readme" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                prefix: string;
+                                favorite: boolean;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                logo: string | null;
+                                repo: string | null;
+                                readme: string | null;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create Registered Task */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        prefix: string;
+                        /**
+                         * @description Displayed first in the Task List
+                         * @default false
+                         */
+                        favorite: boolean;
+                        logo?: string;
+                        repo?: string;
+                        readme?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            prefix: string;
+                            favorite: boolean;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            logo: string | null;
+                            repo: string | null;
+                            readme: string | null;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/task/{:taskid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Create Registered Task */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":taskid": number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/task/raw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tasks */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                [key: string]: string[];
+                            };
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/task/raw/{:task}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Version for a specific task */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":task": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            versions: string[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/task/raw/{:task}/version/{:version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a given task version */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":task": string;
+                    /** @description No Description */
+                    ":version": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/task/{:task}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Registered Task */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":task": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        repo?: string;
+                        logo?: string;
+                        readme?: string;
+                        /** @description Displayed first in the Task List */
+                        favorite?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            prefix: string;
+                            favorite: boolean;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            logo: string | null;
+                            repo: string | null;
+                            readme: string | null;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/task/{:task}/readme": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return README Contents */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":task": number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            body: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/type/cot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Type */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    filter: string;
+                    /** @description No Description */
+                    domain?: "a" | "b" | "r" | "t" | "c" | "y";
+                    /** @description No Description */
+                    identity: "p" | "u" | "a" | "f" | "n" | "s" | "h" | "j" | "k" | "o";
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                cot: string;
+                                desc: string;
+                                full?: string;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/type/cot/{:type}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Type */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":type": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            cot: string;
+                            desc: string;
+                            full?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Let Admins see users of the system */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "system_admin" | "agency_admin" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                username: string;
+                                created: string;
+                                updated: string;
+                                phone: string;
+                                last_login: string;
+                                /** @description Does the user have an active CloudTAK Session */
+                                active: boolean;
+                                system_admin: boolean;
+                                agency_admin: number[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user/{:username}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Let Admins see a given user of the system */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":username": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            username: string;
+                            created: string;
+                            updated: string;
+                            phone: string;
+                            last_login: string;
+                            /** @description Does the user have an active CloudTAK Session */
+                            active: boolean;
+                            system_admin: boolean;
+                            agency_admin: number[];
+                            tak_callsign: string;
+                            tak_remarks: string;
+                            tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
+                            tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                            tak_type: string;
+                            tak_loc: {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: number[];
+                            } | null;
+                            tak_loc_freq: number;
+                            menu_order: {
+                                /** @description Menu Key */
+                                key: string;
+                                /**
+                                 * @description Menu Visibility
+                                 * @default full
+                                 */
+                                visibility: "full" | "partial" | "hidden";
+                            }[];
+                            display_projection: "mercator" | "globe";
+                            display_zoom: "always" | "conditional" | "never";
+                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            display_icon_rotation: boolean;
+                            display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
+                            display_text: "Small" | "Medium" | "Large";
+                            display_distance: "meter" | "kilometer" | "mile";
+                            display_elevation: "meter" | "feet";
+                            display_speed: "m/s" | "km/h" | "mi/h";
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a User */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":username": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        tak_callsign?: string;
+                        tak_remarks?: string;
+                        tak_group?: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
+                        tak_type?: string;
+                        tak_role?: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                        system_admin?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            username: string;
+                            created: string;
+                            updated: string;
+                            phone: string;
+                            last_login: string;
+                            /** @description Does the user have an active CloudTAK Session */
+                            active: boolean;
+                            system_admin: boolean;
+                            agency_admin: number[];
+                            tak_callsign: string;
+                            tak_remarks: string;
+                            tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
+                            tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                            tak_type: string;
+                            tak_loc: {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: number[];
+                            } | null;
+                            tak_loc_freq: number;
+                            menu_order: {
+                                /** @description Menu Key */
+                                key: string;
+                                /**
+                                 * @description Menu Visibility
+                                 * @default full
+                                 */
+                                visibility: "full" | "partial" | "hidden";
+                            }[];
+                            display_projection: "mercator" | "globe";
+                            display_zoom: "always" | "conditional" | "never";
+                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            display_icon_rotation: boolean;
+                            display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
+                            display_text: "Small" | "Medium" | "Large";
+                            display_distance: "meter" | "kilometer" | "mile";
+                            display_elevation: "meter" | "feet";
+                            display_speed: "m/s" | "km/h" | "mi/h";
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/video/auth": {

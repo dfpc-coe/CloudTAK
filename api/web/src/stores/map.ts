@@ -13,6 +13,7 @@ import { markRaw } from 'vue';
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
 import MenuManager from './modules/menu.ts';
+import BottomBarManager from './modules/bottombar.ts';
 import { usePermissionStore } from './modules/permissions.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
@@ -37,14 +38,11 @@ export type TAKNotification = { type: string; name: string; body: string; url: s
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        _map?: any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        _draw?: any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        _icons?: any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        _menu?: any;
+        _map?: mapgl.Map;
+        _draw?: DrawTool;
+        _icons?: IconManager;
+        _menu?: unknown;
+        _bottomBar?: unknown;
 
         _boundOnOnline?: () => void;
         _boundOnOffline?: () => void;
@@ -63,7 +61,9 @@ export const useMapStore = defineStore('cloudtak', {
         callsign: string;
         zoom: string;
         location: LocationState;
+        locationAccuracy: number | undefined;
         distanceUnit: string;
+        coordFormat: string;
         manualLocationMode: boolean;
         isMobileDetected: boolean;
         gpsWatchId: number | null;
@@ -121,15 +121,18 @@ export const useMapStore = defineStore('cloudtak', {
         return {
             _rawWorker: rawWorker,
             worker,
+            _bottomBar: markRaw(new BottomBarManager()),
             timer: null,
             callsign: 'Unknown',
             toImport: [],
             location: LocationState.Loading,
+            locationAccuracy: undefined,
             hasSnapping: false,
             db,
             channel: new BroadcastChannel("cloudtak"),
             zoom: 'conditional',
             distanceUnit: 'meter',
+            coordFormat: 'dd',
             toastOffset: { x: 70, y: 10 },
             manualLocationMode: false,
             gpsWatchId: null,
@@ -186,6 +189,10 @@ export const useMapStore = defineStore('cloudtak', {
         menu: function(): MenuManager {
             if (!this._menu) throw new Error('Menu Manager has not yet initialized');
             return this._menu as MenuManager;
+        },
+        bottomBar: function(): BottomBarManager {
+            if (!this._bottomBar) throw new Error('BottomBar Manager has not yet initialized');
+            return this._bottomBar as BottomBarManager;
         }
     },
     actions: {
@@ -610,6 +617,14 @@ export const useMapStore = defineStore('cloudtak', {
                     map.flyTo(msg.body);
                 } else if (msg.type === WorkerMessageType.Profile_Location_Source) {
                     this.location = msg.body.source as LocationState;
+                    if (this.location !== LocationState.Live) {
+                        this.locationAccuracy = undefined;
+                    }
+                } else if (msg.type === WorkerMessageType.Profile_Location_Coordinates) {
+                    this.locationAccuracy = msg.body.accuracy;
+                    if (!this.manualLocationMode) {
+                        this.location = LocationState.Live;
+                    }
                 } else if (msg.type === WorkerMessageType.Profile_Callsign) {
                     this.callsign = msg.body.callsign;
                 } else if (msg.type === WorkerMessageType.Profile_Display_Zoom) {
@@ -718,8 +733,7 @@ export const useMapStore = defineStore('cloudtak', {
                 maxWidth: 100,
                 unit: 'metric'
             });
-            map.addControl(scaleControl, 'bottom-left');
-            // Store reference for later use
+            map.addControl(scaleControl, 'bottom-right');
             (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
 
             map.once('idle', async () => {
@@ -739,20 +753,24 @@ export const useMapStore = defineStore('cloudtak', {
                 }, 500);
             });
 
+            // @ts-ignore Excessively Deep Types
             this._map = markRaw(map);
             this._draw = new DrawTool(this);
             this._icons = markRaw(new IconManager(map));
             this._menu = markRaw(new MenuManager(this));
-            await this._menu!.init();
+            await (this._menu as MenuManager).init();
+            this._bottomBar = this._bottomBar || markRaw(new BottomBarManager());
 
-            // If we missed the Profile_Location_Source make sure it gets synced
+            // If we missed the initial location update make sure it gets synced
             const loc = await this.worker.profile.location;
             this.location = loc.source;
+            this.locationAccuracy = loc.accuracy;
 
             await this.worker.profile.load();
 
             this.callsign = (await ProfileConfig.get('tak_callsign'))?.value || 'Unknown';
             this.zoom = (await ProfileConfig.get('display_zoom'))?.value || 'conditional';
+            this.coordFormat = (await ProfileConfig.get('display_coordinate'))?.value || 'dd';
 
             const icon_rotation = (await ProfileConfig.get('display_icon_rotation'))?.value;
 
@@ -779,6 +797,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.gpsWatchId = navigator.geolocation.watchPosition((position) => {
                 if (!this.manualLocationMode) {
+                    this.locationAccuracy = position.coords.accuracy;
+
                     this.channel.postMessage({
                         type: WorkerMessageType.Profile_Location_Coordinates,
                         body: {
@@ -1185,7 +1205,7 @@ export const useMapStore = defineStore('cloudtak', {
                     maxWidth: 100,
                     unit: unit === 'mile' ? 'imperial' : 'metric'
                 });
-                this.map.addControl(scaleControl, 'bottom-left');
+                this.map.addControl(scaleControl, 'bottom-right');
                 mapWithControl._scaleControl = scaleControl;
             }
         },

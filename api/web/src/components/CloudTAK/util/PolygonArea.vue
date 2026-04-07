@@ -20,7 +20,7 @@
                     v-tooltip='"Square Feet"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom text-blue": mode === "sqfeet",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "sqfeet",
                         "cursor-pointer": mode !== "sqfeet",
                     }'
                     role='menuitem'
@@ -32,7 +32,7 @@
                     v-tooltip='"Square Meters"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom text-blue": mode === "sqmeter",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "sqmeter",
                         "cursor-pointer": mode !== "sqmeter",
                     }'
                     role='menuitem'
@@ -44,7 +44,7 @@
                     v-tooltip='"Acres"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom": mode === "acre",
+                        "cloudtak-accent rounded-bottom": mode === "acre",
                         "cursor-pointer": mode !== "acre",
                     }'
                     role='menuitem'
@@ -56,7 +56,7 @@
                     v-tooltip='"Hectare"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom": mode === "ha",
+                        "cloudtak-accent rounded-bottom": mode === "ha",
                         "cursor-pointer": mode !== "ha",
                     }'
                     role='menuitem'

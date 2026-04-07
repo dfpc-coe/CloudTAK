@@ -7,10 +7,10 @@
     <template v-else>
         <div
             :key='String(route.params.uid)'
-            class='col-12 border-light border-bottom d-flex'
+            class='col-12 border-bottom d-flex cloudtak-accent'
             style='border-radius: 0px;'
         >
-            <div class='col-12 card-header row my-2 d-flex'>
+            <div class='col-12 row my-2 d-flex px-1 py-2'>
                 <div class='card-title d-flex'>
                     <div class='col-auto ms-2 my-1'>
                         <PropertyBattery
@@ -39,12 +39,12 @@
                         />
                     </div>
                 </div>
-                <div class='col-12 d-flex my-2 mx-2'>
-                    <div class='btn-list'>
+                <div class='col-12 d-flex align-items-center flex-nowrap gap-0 my-1 px-1'>
+                    <div class='btn-list d-flex flex-nowrap align-items-center gap-0 mb-0'>
                         <IconStarFilled
                             v-if='cot.properties.archived'
                             title='Saved Feature'
-                            :size='32'
+                            :size='actionIconSize'
                             stroke='1'
                         />
                         <TablerIconButton
@@ -53,7 +53,7 @@
                             @click='cot.properties.archived = true'
                         >
                             <IconStar
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
@@ -63,7 +63,7 @@
                             @click='cot.flyTo()'
                         >
                             <IconZoomPan
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
@@ -75,12 +75,12 @@
                         >
                             <IconLock
                                 v-if='isLocked'
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                             <IconLockOpen
                                 v-else
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
@@ -92,7 +92,7 @@
                             @click='floatStore.addCOT(String(route.params.uid))'
                         >
                             <IconPlayerPlay
-                                size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
@@ -101,12 +101,12 @@
                             @click='share = true'
                         >
                             <IconShare2
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
                     </div>
-                    <div class='ms-auto btn-list mx-2'>
+                    <div class='ms-auto btn-list d-flex flex-nowrap align-items-center gap-0 mb-0'>
                         <TablerDropdown
                             v-if='cot.geometry.type === "Point"'
                         >
@@ -115,7 +115,7 @@
                             >
                                 <div style='position: relative; display: inline-flex;'>
                                     <IconRoute
-                                        size='32'
+                                        :size='actionIconSize'
                                         stroke='1'
                                     />
                                     <span
@@ -135,10 +135,15 @@
                             </TablerIconButton>
 
                             <template #dropdown>
-                                <Breadcrumb
-                                    :uid='cot.id'
-                                    @live='breadcrumbLive = $event'
-                                />
+                                <div
+                                    class='py-1'
+                                    style='min-width: 260px;'
+                                >
+                                    <Breadcrumb
+                                        :uid='cot.id'
+                                        @live='breadcrumbLive = $event'
+                                    />
+                                </div>
                             </template>
                         </TablerDropdown>
 
@@ -148,7 +153,7 @@
                             @click='editGeometry'
                         >
                             <IconPencil
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
@@ -160,8 +165,8 @@
                                 title='Transforms'
                             >
                                 <svg
-                                    width='32'
-                                    height='32'
+                                    :width='actionIconSize'
+                                    :height='actionIconSize'
                                     viewBox='0 0 24 24'
                                     fill='none'
                                     stroke='currentColor'
@@ -183,19 +188,20 @@
                             </TablerIconButton>
 
                             <template #dropdown>
-                                <div class='card'>
-                                    <div class='card-body'>
-                                        <div
-                                            role='button'
-                                            class='hover px-2 py-2 d-flex align-items-center rounded'
-                                            @click='openBufferInput'
-                                        >
-                                            <IconAdjustments
-                                                stroke='1'
-                                                :size='32'
-                                            /><div class='mx-2'>
-                                                Buffer
-                                            </div>
+                                <div
+                                    class='py-1'
+                                    style='min-width: 220px;'
+                                >
+                                    <div
+                                        role='button'
+                                        class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
+                                        @click='openBufferInput'
+                                    >
+                                        <IconAdjustments
+                                            stroke='1'
+                                            :size='32'
+                                        /><div class='mx-2'>
+                                            Buffer
                                         </div>
                                     </div>
                                 </div>
@@ -208,7 +214,7 @@
                             @click='router.push(`/menu/chats/new?callsign=${cot.properties.callsign}&uid=${cot.id}`)'
                         >
                             <IconMessage
-                                :size='32'
+                                :size='actionIconSize'
                                 stroke='1'
                             />
                         </TablerIconButton>
@@ -226,93 +232,95 @@
                                 title='Add Properties'
                             >
                                 <IconDotsVertical
-                                    :size='32'
+                                    :size='actionIconSize'
                                     stroke='1'
                                 />
                             </TablerIconButton>
 
                             <template #dropdown>
-                                <div class='card'>
-                                    <div class='card-body'>
-                                        <div
-                                            v-if='
-                                                cot.properties.attachments !== undefined
-                                                    && cot.properties.links !== undefined
-                                                    && cot.properties.video !== undefined
-                                                    && cot.properties.sensor !== undefined
-                                                    && (cot.geometry.type !== "Polygon" || cot.properties.geofence !== undefined)
-                                            '
-                                        >
-                                            No Properties to add
-                                        </div>
-                                        <template v-else>
-                                            <div
-                                                v-if='cot.properties.attachments === undefined'
-                                                role='button'
-                                                class='hover px-2 py-2 d-flex align-items-center rounded'
-                                                @click='updatePropertyAttachment([])'
-                                            >
-                                                <IconPaperclip
-                                                    stroke='1'
-                                                    :size='32'
-                                                /><div class='mx-2'>
-                                                    Add Attachment
-                                                </div>
-                                            </div>
-                                            <div
-                                                v-if='cot.properties.links === undefined'
-                                                role='button'
-                                                class='hover px-2 py-2 d-flex align-items-center rounded'
-                                                @click='updateProperty("links", [])'
-                                            >
-                                                <IconLink
-                                                    stroke='1'
-                                                    :size='32'
-                                                /><div class='mx-2'>
-                                                    Add External Links
-                                                </div>
-                                            </div>
-                                            <div
-                                                v-if='cot.properties.video === undefined'
-                                                role='button'
-                                                class='hover px-2 py-2 d-flex align-items-center rounded'
-                                                @click='updateProperty("video", { url: "" })'
-                                            >
-                                                <IconMovie
-                                                    stroke='1'
-                                                    :size='32'
-                                                /><div class='mx-2'>
-                                                    Add Video
-                                                </div>
-                                            </div>
-                                            <div
-                                                v-if='cot.properties.sensor === undefined'
-                                                role='button'
-                                                class='hover px-2 py-2 d-flex align-items-center rounded'
-                                                @click='updateProperty("sensor", {})'
-                                            >
-                                                <IconCone
-                                                    stroke='1'
-                                                    :size='32'
-                                                /><div class='mx-2'>
-                                                    Add Sensor
-                                                </div>
-                                            </div>
-                                            <div
-                                                v-if='cot.properties.geofence === undefined && cot.geometry.type === "Polygon"'
-                                                role='button'
-                                                class='hover px-2 py-2 d-flex align-items-center rounded'
-                                                @click='updateProperty("geofence", { elevationMonitored: false, tracking: false })'
-                                            >
-                                                <IconFence
-                                                    stroke='1'
-                                                    :size='32'
-                                                /><div class='mx-2'>
-                                                    Add Geofence
-                                                </div>
-                                            </div>
-                                        </template>
+                                <div
+                                    class='py-1'
+                                    style='min-width: 260px;'
+                                >
+                                    <div
+                                        v-if='
+                                            cot.properties.attachments !== undefined
+                                                && cot.properties.links !== undefined
+                                                && cot.properties.video !== undefined
+                                                && cot.properties.sensor !== undefined
+                                                && (cot.geometry.type !== "Polygon" || cot.properties.geofence !== undefined)
+                                        '
+                                        class='px-2 py-2 text-muted'
+                                    >
+                                        No Properties to add
                                     </div>
+                                    <template v-else>
+                                        <div
+                                            v-if='cot.properties.attachments === undefined'
+                                            role='button'
+                                            class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
+                                            @click='updatePropertyAttachment([])'
+                                        >
+                                            <IconPaperclip
+                                                stroke='1'
+                                                :size='32'
+                                            /><div class='mx-2'>
+                                                Add Attachment
+                                            </div>
+                                        </div>
+                                        <div
+                                            v-if='cot.properties.links === undefined'
+                                            role='button'
+                                            class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
+                                            @click='updateProperty("links", [])'
+                                        >
+                                            <IconLink
+                                                stroke='1'
+                                                :size='32'
+                                            /><div class='mx-2'>
+                                                Add External Links
+                                            </div>
+                                        </div>
+                                        <div
+                                            v-if='cot.properties.video === undefined'
+                                            role='button'
+                                            class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
+                                            @click='updateProperty("video", { url: "" })'
+                                        >
+                                            <IconMovie
+                                                stroke='1'
+                                                :size='32'
+                                            /><div class='mx-2'>
+                                                Add Video
+                                            </div>
+                                        </div>
+                                        <div
+                                            v-if='cot.properties.sensor === undefined'
+                                            role='button'
+                                            class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
+                                            @click='updateProperty("sensor", {})'
+                                        >
+                                            <IconCone
+                                                stroke='1'
+                                                :size='32'
+                                            /><div class='mx-2'>
+                                                Add Sensor
+                                            </div>
+                                        </div>
+                                        <div
+                                            v-if='cot.properties.geofence === undefined && cot.geometry.type === "Polygon"'
+                                            role='button'
+                                            class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
+                                            @click='updateProperty("geofence", { elevationMonitored: false, tracking: false })'
+                                        >
+                                            <IconFence
+                                                stroke='1'
+                                                :size='32'
+                                            /><div class='mx-2'>
+                                                Add Geofence
+                                            </div>
+                                        </div>
+                                    </template>
                                 </div>
                             </template>
                         </TablerDropdown>
@@ -397,7 +405,7 @@
 
         <div
             v-if='mode === "default"'
-            class='overflow-auto overflow-x-hidden'
+            class='overflow-auto overflow-x-hidden cot-view-properties'
             style='height: calc(100vh - 225px)'
         >
             <div class='row g-0'>
@@ -405,7 +413,7 @@
                     v-if='subscription'
                     class='col-12'
                 >
-                    <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-accent'>
+                    <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded cloudtak-accent'>
                         <IconAmbulance
                             :size='32'
                             stroke='1'
@@ -547,43 +555,29 @@
                 v-if='cot.properties.remarks !== undefined'
                 class='col-12 pt-2'
             >
-                <div
-                    class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
-                    :class='{ "bg-accent": remarksExpanded, "hover": !remarksExpanded }'
-                    @click='remarksExpanded = !remarksExpanded'
+                <SlideDownHeader
+                    v-model='remarksExpanded'
+                    label='Remarks'
                 >
-                    <IconBlockquote
-                        :size='18'
-                        stroke='1'
-                        color='#6b7990'
-                        class='ms-2 me-1'
-                    />
-                    <label class='subheader cursor-pointer m-0'>Remarks</label>
-                    <div class='ms-auto d-flex align-items-center'>
-                        <IconChevronDown
-                            class='transition-transform'
-                            :class='{ "rotate-180": !remarksExpanded }'
+                    <template #icon>
+                        <IconBlockquote
                             :size='18'
+                            stroke='1'
+                            color='#6b7990'
+                            class='ms-2 me-1'
+                        />
+                    </template>
+
+                    <div class='px-2 pt-2'>
+                        <CopyField
+                            :model-value='cot.properties.remarks'
+                            :rows='10'
+                            :edit='is_editable'
+                            :hover='is_editable'
+                            @submit='updateProperty("remarks", $event)'
                         />
                     </div>
-                </div>
-
-                <div
-                    class='grid-transition'
-                    :class='{ expanded: remarksExpanded }'
-                >
-                    <div class='overflow-hidden'>
-                        <div class='px-2 pt-2'>
-                            <CopyField
-                                :model-value='cot.properties.remarks'
-                                :rows='10'
-                                :edit='is_editable'
-                                :hover='is_editable'
-                                @submit='updateProperty("remarks", $event)'
-                            />
-                        </div>
-                    </div>
-                </div>
+                </SlideDownHeader>
             </div>
 
             <PropertyAttachments
@@ -719,6 +713,7 @@ import PropertyTimes from './util/PropertyTimes.vue';
 import PropertyMetadata from './util/PropertyMetadata.vue';
 import PropertyStyle from './util/PropertyStyle.vue';
 import PropertyGeofence from './util/PropertyGeofence.vue';
+import SlideDownHeader from './util/SlideDownHeader.vue';
 import {
     IconPencil,
     IconMovie,
@@ -729,7 +724,6 @@ import {
     IconMessage,
     IconBlockquote,
     IconDotsVertical,
-    IconChevronDown,
     IconAmbulance,
     IconPlayerPlay,
     IconShare2,
@@ -773,6 +767,7 @@ const mode = ref('default');
 const breadcrumbLive = ref(false);
 const remarksExpanded = ref(true);
 const bufferCotId = ref<string | null>(null);
+const actionIconSize = 28;
 
 const currentTime = ref(new Date());
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
@@ -998,6 +993,12 @@ async function deleteCOT() {
 </script>
 
 <style scoped>
+:global(html[data-bs-theme='dark'] .cot-view-properties .cloudtak-accent) {
+    background-color: #192f45 !important;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
 .grid-transition {
     display: grid;
     grid-template-rows: 0fr;

@@ -26,7 +26,7 @@
                 </template>
 
                 <div class='overflow-hidden mb-2'>
-                    <div class='bg-accent rounded mx-2 mt-2 px-2 py-2'>
+                    <div class='cloudtak-accent rounded mx-2 mt-2 px-2 py-2'>
                         <div
                             v-if='!external_links.length'
                             class='px-1 py-1 text-muted'
@@ -212,7 +212,7 @@
                             :key='link_it'
                             class='col-12 mb-2'
                         >
-                            <div class='card bg-accent border-0'>
+                            <div class='card cloudtak-accent border-0'>
                                 <div class='card-body p-2'>
                                     <div class='d-flex align-items-center'>
                                         <span class='avatar me-2 rounded-circle bg-blue-lt'>
