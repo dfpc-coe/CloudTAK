@@ -97,6 +97,7 @@
                         <div class='flex-grow-1 me-2'>
                             <TablerInput
                                 v-model='message'
+                                placeholder='Send Message...'
                                 @keyup.enter='sendMessage'
                             />
                         </div>

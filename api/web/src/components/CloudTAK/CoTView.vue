@@ -7,7 +7,7 @@
     <template v-else>
         <div
             :key='String(route.params.uid)'
-            class='col-12 border-bottom d-flex cloudtak-accent cot-view-header'
+            class='col-12 border-bottom d-flex cloudtak-accent'
             style='border-radius: 0px;'
         >
             <div class='col-12 row my-2 d-flex px-1 py-2'>
@@ -992,12 +992,6 @@ async function deleteCOT() {
 </script>
 
 <style scoped>
-:global(html[data-bs-theme='dark'] .cot-view-header) {
-    background-color: #192f45 !important;
-    border-bottom-color: rgba(255, 255, 255, 0.14) !important;
-    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06);
-}
-
 :global(html[data-bs-theme='dark'] .cot-view-properties .cloudtak-accent) {
     background-color: #192f45 !important;
     border: 1px solid rgba(255, 255, 255, 0.14);

@@ -485,7 +485,9 @@ html[data-bs-theme='light'] {
 }
 
 html[data-bs-theme='dark'] .cloudtak-accent {
-    background-color: #283547 !important;
+    background-color: #192f45 !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06);
 }
 
 html[data-bs-theme='light'] .cloudtak-accent {
@@ -547,7 +549,7 @@ html[data-bs-theme='light'] .cloudtak-hover:focus-within {
 html[data-bs-theme='dark'] .cloudtak-accent.cloudtak-hover:hover,
 html[data-bs-theme='dark'] .cloudtak-accent.cloudtak-hover:focus-visible,
 html[data-bs-theme='dark'] .cloudtak-accent.cloudtak-hover:focus-within {
-    background-color: color-mix(in srgb, #283547 82%, white 18%) !important;
+    background-color: color-mix(in srgb, #192f45 82%, white 18%) !important;
 }
 
 html[data-bs-theme='light'] .cloudtak-accent.cloudtak-hover:hover,
