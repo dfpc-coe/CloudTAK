@@ -1,6 +1,6 @@
 <template>
     <div
-        class='text-white bg-dark rounded position-relative'
+        class='text-white cloudtak-bg rounded position-relative'
     >
         <div class='d-flex align-items-end gap-1'>
             <TablerInput
@@ -13,18 +13,18 @@
                 icon='search'
                 @focus='selected = false'
             />
-            <button
+            <TablerIconButton
                 v-if='props.locationPicker'
-                class='btn btn-icon location-picker-btn'
-                :class='pickingLocation ? "btn-primary" : "btn-dark"'
+                class='location-picker-btn mb-1 d-flex align-items-center justify-content-center flex-shrink-0'
+                :color='pickingLocation ? "var(--tblr-primary)" : undefined'
                 :title='pickingLocation ? "Click on map to select location" : "Select location on map"'
                 @click='pickingLocation ? cancelPickingLocation() : startPickingLocation()'
             >
                 <IconCrosshair
-                    :size='18'
+                    :size='20'
                     stroke='1'
                 />
-            </button>
+            </TablerIconButton>
         </div>
         <div
             v-if='pickingLocation'
@@ -98,7 +98,8 @@ import COT from '../../../base/cot.ts';
 import {
     TablerNone,
     TablerInput,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconMapPin,
@@ -386,10 +387,9 @@ async function fetchSearch(
 }
 
 .location-picker-btn {
-    height: 2.375rem;
     width: 2.375rem;
+    height: 2.375rem;
     min-width: 2.375rem;
-    padding: 0;
-    flex-shrink: 0;
 }
+
 </style>

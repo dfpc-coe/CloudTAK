@@ -104,7 +104,7 @@
                                     <th>Value</th>
                                 </tr>
                             </thead>
-                            <tbody class='bg-accent'>
+                            <tbody class='cloudtak-accent'>
                                 <template v-if='feature.properties'>
                                     <tr
                                         v-for='prop of Object.keys(feature.properties)'

@@ -1,7 +1,7 @@
 <template>
     <div
         ref='container'
-        class='position-absolute bg-dark rounded border resizable-content text-white'
+        class='position-absolute cloudtak-bg rounded border resizable-content text-white'
     >
         <div
             style='height: 50px;'

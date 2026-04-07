@@ -22,15 +22,15 @@
                         </div>
                         <div
                             style='width: 2px; height: 40px; background-color: currentColor;'
-                            class='bg-dark'
+                            class='cloudtak-bg'
                         />
                         <div
                             style='width: 8px; height: 8px; border-radius: 50%;'
-                            class='bg-dark mt-auto mb-auto'
+                            class='cloudtak-bg mt-auto mb-auto'
                         />
                         <div
                             style='width: 2px; height: 40px; background-color: currentColor;'
-                            class='bg-dark'
+                            class='cloudtak-bg'
                         />
                     </div>
 

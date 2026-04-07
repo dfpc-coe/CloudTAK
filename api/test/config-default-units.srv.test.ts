@@ -42,6 +42,10 @@ test('GET api/config/display', async () => {
                  value: 'conditional',
                  options: [ 'always', 'conditional', 'never' ]
              },
+             style: {
+                 value: 'System Default',
+                 options: [ 'System Default', 'Light', 'Dark' ]
+             },
              text: {
                  value: 'Medium',
                  options: [ 'Small', 'Medium', 'Large' ]
@@ -68,6 +72,7 @@ test('PUT api/config', async () => {
                 'display::stale': '30 Minutes',
                 'display::distance': 'kilometer',
                 'display::elevation': 'meter',
+                'display::style': 'Light',
                 'display::icon_rotation': false
             }
         }, false);
@@ -76,6 +81,7 @@ test('PUT api/config', async () => {
             'display::stale': '30 Minutes',
             'display::distance': 'kilometer',
             'display::elevation': 'meter',
+            'display::style': 'Light',
             'display::icon_rotation': false
         });
     } catch (err) {
@@ -150,6 +156,7 @@ test('GET api/profile', async () => {
         assert.equal(res.body.display_stale, '30 Minutes', 'default stale value');
         assert.equal(res.body.display_distance, 'kilometer', 'default distance value');
         assert.equal(res.body.display_elevation, 'meter', 'default elevation value');
+        assert.equal(res.body.display_style, 'Light', 'default style value');
     } catch (err) {
         assert.ifError(err);
     }

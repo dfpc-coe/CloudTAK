@@ -11,7 +11,7 @@
         >
             <template #default>
                 <div
-                    class='px-2 py-2 d-flex flex-column justify-content-center cursor-pointer hover-button h-100 pe-5'
+                    class='px-2 py-2 d-flex flex-column justify-content-center cursor-pointer cloudtak-hover h-100 pe-5'
                 >
                     <span
                         class='d-block text-uppercase text-white-50'
@@ -28,7 +28,7 @@
                 <li
                     v-for='mode in COORD_MODES'
                     :key='mode.value'
-                    class='tabler-dropdown__item hover-button cursor-pointer px-3 py-2 text-white'
+                    class='tabler-dropdown__item cloudtak-hover cursor-pointer px-3 py-2 text-white'
                     :class='{ "tabler-dropdown__item--active": mapStore.coordFormat === mode.value }'
                     @click='void setCoordFormat(mode.value)'
                 >

@@ -105,7 +105,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover py-2 mt-2 cursor-pointer'
+                    class='col-lg-12 cloudtak-hover py-2 mt-2 cursor-pointer'
                     @click='opened.has("tak") ? opened.delete("tak") : opened.add("tak")'
                 >
                     <IconChevronDown v-if='opened.has("tak")' />
@@ -146,7 +146,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover py-2 mt-2 cursor-pointer'
+                    class='col-lg-12 cloudtak-hover py-2 mt-2 cursor-pointer'
                     @click='opened.has("display") ? opened.delete("display") : opened.add("display")'
                 >
                     <IconChevronDown v-if='opened.has("display")' />
@@ -178,7 +178,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover py-2 mt-2 cursor-pointer'
+                    class='col-lg-12 cloudtak-hover py-2 mt-2 cursor-pointer'
                     @click='opened.has("fusion") ? opened.delete("fusion") : opened.add("fusion")'
                 >
                     <IconChevronDown v-if='opened.has("fusion")' />

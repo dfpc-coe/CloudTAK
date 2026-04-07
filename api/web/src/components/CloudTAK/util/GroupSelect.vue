@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class='sticky-top py-2 bg-dark'>
+        <div class='sticky-top py-2 cloudtak-bg'>
             <TablerInput
                 v-model='filter'
                 icon='search'

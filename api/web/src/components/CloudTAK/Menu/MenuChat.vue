@@ -67,7 +67,7 @@
                                 </div>
                                 <div
                                     v-else
-                                    class='ms-auto bg-accent px-2 py-2 rounded'
+                                    class='ms-auto cloudtak-accent px-2 py-2 rounded'
                                 >
                                     <div v-text='item.message' />
                                     <div

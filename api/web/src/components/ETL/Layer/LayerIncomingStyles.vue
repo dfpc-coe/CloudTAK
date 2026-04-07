@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class='card-header sticky-top bg-dark'>
+        <div class='card-header sticky-top cloudtak-bg'>
             <h3 class='card-title'>
                 Style Overrides
             </h3>
@@ -135,7 +135,7 @@
                         <div
                             tabindex='0'
                             role='menuitem'
-                            class='cursor-pointer hover list-group-item list-group-item-action'
+                            class='cursor-pointer cloudtak-hover list-group-item list-group-item-action'
                             @click='query = q_idx'
                         >
                             <div class='d-flex'>

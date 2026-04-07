@@ -41,7 +41,7 @@
             </div>
             <div
                 style='height: 36px; z-index: 2000;'
-                class='position-absolute bottom-0 start-0 end-0 px-2 bg-dark'
+                class='position-absolute bottom-0 start-0 end-0 px-2 cloudtak-bg'
             >
                 <div class='d-flex align-items-center'>
                     <TablerButton
@@ -70,41 +70,39 @@
                         </TablerButton>
 
                         <template #dropdown>
-                            <div class='card'>
-                                <div class='card-body'>
-                                    <div
-                                        class='cursor-pointer col-12 hover rounded d-flex align-items-center px-2'
-                                        @click='share = ShareType.PACKAGE'
-                                    >
-                                        <IconPackages
-                                            :size='32'
-                                            stroke='1'
-                                            class='me-2'
-                                        />
-                                        New Data Package
-                                    </div>
-                                    <div
-                                        class='cursor-pointer col-12 hover rounded d-flex align-items-center px-2'
-                                        @click='share = ShareType.MISSION'
-                                    >
-                                        <IconAmbulance
-                                            :size='32'
-                                            stroke='1'
-                                            class='me-2'
-                                        />
-                                        Move to Data Sync
-                                    </div>
-                                    <div
-                                        class='cursor-pointer col-12 hover rounded d-flex align-items-center px-2'
-                                        @click='deleteFeatures'
-                                    >
-                                        <IconTrash
-                                            :size='32'
-                                            stroke='1'
-                                            class='me-2'
-                                        />
-                                        Delete Features
-                                    </div>
+                            <div class='card-body'>
+                                <div
+                                    class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
+                                    @click='share = ShareType.PACKAGE'
+                                >
+                                    <IconPackages
+                                        :size='32'
+                                        stroke='1'
+                                        class='me-2'
+                                    />
+                                    New Data Package
+                                </div>
+                                <div
+                                    class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
+                                    @click='share = ShareType.MISSION'
+                                >
+                                    <IconAmbulance
+                                        :size='32'
+                                        stroke='1'
+                                        class='me-2'
+                                    />
+                                    Move to Data Sync
+                                </div>
+                                <div
+                                    class='cursor-pointer col-12 cloudtak-hover rounded d-flex align-items-center px-2'
+                                    @click='deleteFeatures'
+                                >
+                                    <IconTrash
+                                        :size='32'
+                                        stroke='1'
+                                        class='me-2'
+                                    />
+                                    Delete Features
                                 </div>
                             </div>
                         </template>

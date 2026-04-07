@@ -33,7 +33,7 @@
                         tabindex='0'
                         class='my-1 px-2 user-select-none'
                         :class='{
-                            "bg-accent rounded-bottom text-blue": config.mode === mode.value,
+                            "cloudtak-accent rounded-bottom text-blue": config.mode === mode.value,
                             "cursor-pointer": config.mode !== mode.value,
                         }'
                         @click='config.mode = mode.value'

@@ -83,6 +83,12 @@ export enum Profile_Zoom {
     NEVER = 'never',
 }
 
+export enum Profile_Style {
+    SYSTEM_DEFAULT = 'System Default',
+    LIGHT = 'Light',
+    DARK = 'Dark',
+}
+
 export enum Profile_Menu_Visibility {
     FULL = 'full',
     PARTIAL = 'partial',

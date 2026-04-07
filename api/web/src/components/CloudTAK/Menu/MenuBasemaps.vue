@@ -84,7 +84,7 @@
                                     <div clas='col-12'>
                                         <div
                                             v-if='(!basemap.username && isSystemAdmin) || basemap.username'
-                                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
                                             @click.stop.prevent='editModal = basemap'
                                         >
                                             <IconSettings
@@ -97,7 +97,7 @@
                                         <div
                                             :class='[
                                                 "col-12 d-flex align-items-center px-2 py-2",
-                                                basemapOverlayExists(basemap) ? "opacity-50 pe-none" : "cursor-pointer hover"
+                                                basemapOverlayExists(basemap) ? "opacity-50 pe-none" : "cursor-pointer cloudtak-hover"
                                             ]'
                                             :aria-disabled='basemapOverlayExists(basemap)'
                                             @click.stop.prevent='!basemapOverlayExists(basemap) && addOverlay(basemap)'
@@ -111,7 +111,7 @@
                                         </div>
                                         <div
                                             v-if='basemap.sharing_enabled'
-                                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
                                             @click.stop.prevent='download(basemap)'
                                         >
                                             <IconDownload
@@ -122,7 +122,7 @@
                                         </div>
                                         <div
                                             v-if='basemap.sharing_enabled'
-                                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
                                             @click.stop.prevent='basemap.sharing_enabled ? share = [basemap.id] : null'
                                         >
                                             <IconShare2

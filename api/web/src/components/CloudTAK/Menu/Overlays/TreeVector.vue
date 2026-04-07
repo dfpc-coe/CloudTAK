@@ -6,7 +6,7 @@
     >
         <template v-if='["fill", "line", "circle", "symbol"].includes(l.type)'>
             <div class='me-2'>
-                <div class='px-3 py-2 d-flex align-items-center hover-button'>
+                <div class='px-3 py-2 d-flex align-items-center cloudtak-hover'>
                     <IconChevronRight
                         v-if='!treeState[l.id]'
                         :size='20'

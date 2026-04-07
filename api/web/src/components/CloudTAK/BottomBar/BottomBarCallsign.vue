@@ -1,6 +1,6 @@
 <template>
     <div
-        class='rounded hover-button h-100 d-flex align-items-center justify-content-center flex-shrink-0'
+        class='rounded cloudtak-hover h-100 d-flex align-items-center justify-content-center flex-shrink-0'
         style='width: 40px; min-width: 40px;'
     >
         <TablerIconButton
@@ -45,7 +45,7 @@
     </div>
     <div
         v-tooltip='"Zoom To Location"'
-        class='rounded text-truncate px-2 py-2 d-flex flex-column justify-content-center text-white user-select-none cursor-pointer hover-button h-100 flex-shrink-1'
+        class='rounded text-truncate px-2 py-2 d-flex flex-column justify-content-center text-white user-select-none cursor-pointer cloudtak-hover h-100 flex-shrink-1'
         style='min-width: 0; max-width: fit-content;'
         @click='$emit("to-location")'
     >

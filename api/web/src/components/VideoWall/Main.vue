@@ -1,5 +1,5 @@
 <template>
-    <div class='h-full w-full bg-dark text-white'>
+    <div class='h-full w-full cloudtak-bg text-white'>
         <div
             v-if='loading'
         >

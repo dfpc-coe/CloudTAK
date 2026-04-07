@@ -94,7 +94,7 @@
                             v-for='item of list.items'
                         >
                             <div
-                                class='d-flex align-items-center px-2 py-2 hover cursor-pointer rounded'
+                                class='d-flex align-items-center px-2 py-2 cloudtak-hover cursor-pointer rounded'
                                 @click='updateType(item)'
                             >
                                 <FeatureIcon
@@ -224,7 +224,7 @@ const background = computed(() => {
     } else if (config.value.affiliation === 'p') {
         return 'border border-yellow bg-yellow-lt text-yellow-fg';
     } else {
-        return 'bg-accent';
+        return 'cloudtak-accent';
     }
 });
 
