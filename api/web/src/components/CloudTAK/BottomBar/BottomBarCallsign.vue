@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch } from 'vue';
+import { computed } from 'vue';
 import { LocationState } from '../../../base/events.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { TablerIconButton } from '@tak-ps/vue-tabler';
@@ -79,20 +79,10 @@ defineEmits(['set-location', 'to-location']);
 
 const mapStore = useMapStore();
 
-const locationAccuracy = ref<number | undefined>(undefined);
-
-watch(() => mapStore.location, async () => {
-    if (mapStore.location === LocationState.Live && !mapStore.manualLocationMode) {
-        try {
-            const location = await mapStore.worker.profile.location;
-            locationAccuracy.value = location.accuracy;
-        } catch {
-            locationAccuracy.value = undefined;
-        }
-    } else {
-        locationAccuracy.value = undefined;
-    }
-}, { immediate: true });
+const locationAccuracy = computed(() => {
+    if (mapStore.location !== LocationState.Live || mapStore.manualLocationMode) return undefined;
+    return mapStore.locationAccuracy;
+});
 
 const locationColor = computed(() => {
     if (mapStore.location !== LocationState.Live || !locationAccuracy.value) return '#ffffff';

@@ -4,6 +4,16 @@ import Flight from './flight.js';
 
 const flight = new Flight();
 
+function assertProfileContains(actual: Record<string, unknown>, expected: Record<string, unknown>) {
+    assert.ok(actual.last_login);
+    assert.ok(actual.created);
+    assert.ok(actual.updated);
+
+    for (const [key, value] of Object.entries(expected)) {
+        assert.deepEqual(actual[key], value, `profile field: ${key}`);
+    }
+}
+
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
@@ -17,14 +27,7 @@ test('GET: api/profile', async () => {
             }
         }, true);
 
-        assert.ok(res.body.last_login);
-        delete res.body.last_login;
-        assert.ok(res.body.created);
-        delete res.body.created;
-        assert.ok(res.body.updated);
-        delete res.body.updated;
-
-        assert.deepEqual(res.body, {
+        assertProfileContains(res.body, {
             active: false,
             username: 'admin@example.com',
             phone: '',
@@ -66,14 +69,7 @@ test('PATCH: api/profile', async () => {
             }
         }, true);
 
-        assert.ok(res.body.last_login);
-        delete res.body.last_login;
-        assert.ok(res.body.created);
-        delete res.body.created;
-        assert.ok(res.body.updated);
-        delete res.body.updated;
-
-        assert.deepEqual(res.body, {
+        assertProfileContains(res.body, {
             active: false,
             username: 'admin@example.com',
             phone: '',
