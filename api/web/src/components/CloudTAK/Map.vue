@@ -255,14 +255,16 @@
 
             <div
                 v-if='mapStore.isLoaded && mode === "Default"'
-                class='d-flex position-absolute top-0 text-white py-2'
+                class='d-flex position-absolute top-0 text-white'
                 style='
                     z-index: 2;
                     width: 120px;
+                    height: 60px;
                     right: var(--map-compact-menu-size, 60px);
                     padding-left: 10px;
                     background-color: rgba(0, 0, 0, 0.5);
                     border-radius: 0px 0px 0px 6px;
+                    padding-top: 8px;
                 '
             >
                 <TablerDropdown>
@@ -296,8 +298,14 @@
 
             <div
                 v-if='mode === "Default"'
-                class='position-absolute top-0 end-0 text-white py-2'
-                style='z-index: 1; width: var(--map-compact-menu-size, 60px); background-color: rgba(0, 0, 0, 0.5);'
+                class='position-absolute top-0 end-0 text-white'
+                style='
+                    z-index: 1;
+                    width: var(--map-compact-menu-size, 60px);
+                    height: 60px;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    padding-top: 8px;
+                '
             >
                 <TablerIconButton
                     v-if='noMenuShown'

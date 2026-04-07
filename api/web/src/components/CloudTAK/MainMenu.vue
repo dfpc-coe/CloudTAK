@@ -28,12 +28,16 @@
             :class='{
                 "cloudtak-bg": !compact,
             }'
-            style='z-index: 1; top: 56px; bottom: var(--map-bottom-bar-size, 50px);'
+            style='
+                z-index: 1;
+                top: 60px;
+                bottom: var(--map-bottom-bar-size, 50px);
+            '
             :style='`
-            width: ${compact ? "var(--map-compact-menu-size, 60px)" : `${menuWidth}px`};
-            min-width: ${compact ? "var(--map-compact-menu-size, 60px)" : `400px`};
-            ${compact ? "background-color: rgb(0, 0, 0, 0.5)" : ""}
-        `'
+                width: ${compact ? "var(--map-compact-menu-size, 60px)" : `${menuWidth}px`};
+                min-width: ${compact ? "var(--map-compact-menu-size, 60px)" : `400px`};
+                ${compact ? "background-color: rgb(0, 0, 0, 0.5)" : ""}
+            `'
         >
             <div
                 v-if='!compact'
