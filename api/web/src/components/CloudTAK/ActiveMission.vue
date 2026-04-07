@@ -1,8 +1,9 @@
 <template>
     <div
-        class='d-flex text-white align-items-center py-2 px-2'
+        class='d-flex text-white align-items-center px-2'
         style='
             z-index: 1;
+            height: 60px;
             max-width: 100%;
             background-color: rgba(0, 0, 0, 0.5);
             border-radius: 0px 0px 6px 0px;

@@ -98,6 +98,14 @@
                 class='position-absolute top-0 beginning-0 text-white'
             >
                 <ActiveMission />
+            </div>
+            <div
+                v-if='mode === "Default"'
+                class='position-absolute beginning-0 text-white'
+                style='
+                    top: 60px;
+                '
+            >
                 <div
                     class='border'
                     style='
