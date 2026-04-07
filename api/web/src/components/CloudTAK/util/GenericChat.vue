@@ -106,6 +106,7 @@
                 <div class='flex-grow-1 me-2'>
                     <TablerInput
                         v-model='message'
+                        :placeholder='placeholder'
                         @keyup.enter='sendMessage'
                     />
                 </div>
@@ -140,7 +141,7 @@ import {
 import timeDiff from '../../../timediff.ts';
 
 export type ChatMessage = {
-    id: string;
+    id: string | number;
     sender_uid: string;
     sender?: string;
     message: string;
@@ -155,23 +156,30 @@ const props = withDefaults(defineProps<{
     canSend?: boolean;
     canDelete?: boolean;
     multiselect?: boolean;
+    placeholder?: string;
 }>(), {
     loading: false,
     error: undefined,
     canSend: false,
     canDelete: false,
     multiselect: false,
+    placeholder: 'Send Message...',
 });
 
 const emit = defineEmits<{
     send: [message: string];
-    delete: [ids: string[]];
+    delete: [ids: Array<string | number>];
+    'at-bottom': [atBottom: boolean];
 }>();
 
 const scrollContainer = ref<HTMLElement | null>(null);
 const atBottom = ref(true);
 const message = ref('');
-const selected = ref<Set<string>>(new Set());
+const selected = ref<Set<string | number>>(new Set());
+
+watch(atBottom, (value) => {
+    emit('at-bottom', value);
+}, { immediate: true });
 
 watch(() => props.chats, async (newChats) => {
     if (atBottom.value && newChats.length) {
@@ -198,7 +206,7 @@ function scrollToBottom() {
     atBottom.value = true;
 }
 
-function toggleSelect(id: string) {
+function toggleSelect(id: string | number) {
     if (selected.value.has(id)) {
         selected.value.delete(id);
     } else {
