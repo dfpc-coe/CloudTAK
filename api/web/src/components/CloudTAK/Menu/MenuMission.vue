@@ -26,7 +26,7 @@
                 </TablerIconButton>
 
                 <template #dropdown>
-                    <div clas='col-12'>
+                    <div class='col-12'>
                         <div
                             class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
                             @click='shareToPackageSetup'

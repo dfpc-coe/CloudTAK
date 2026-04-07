@@ -132,7 +132,6 @@ function coordinateEntry(text: string | number) {
 }
 
 function submitCoordinate(text: string | number) {
-    coordinateEntry(text);
     emit('submit', text);
 }
 </script>

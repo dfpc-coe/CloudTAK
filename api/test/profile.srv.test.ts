@@ -4,16 +4,6 @@ import Flight from './flight.js';
 
 const flight = new Flight();
 
-function assertProfileContains(actual: Record<string, unknown>, expected: Record<string, unknown>) {
-    assert.ok(actual.last_login);
-    assert.ok(actual.created);
-    assert.ok(actual.updated);
-
-    for (const [key, value] of Object.entries(expected)) {
-        assert.deepEqual(actual[key], value, `profile field: ${key}`);
-    }
-}
-
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
@@ -27,7 +17,14 @@ test('GET: api/profile', async () => {
             }
         }, true);
 
-        assertProfileContains(res.body, {
+        assert.ok(res.body.last_login);
+        delete res.body.last_login;
+        assert.ok(res.body.created);
+        delete res.body.created;
+        assert.ok(res.body.updated);
+        delete res.body.updated;
+
+        assert.deepEqual(res.body, {
             active: false,
             username: 'admin@example.com',
             phone: '',
@@ -69,7 +66,14 @@ test('PATCH: api/profile', async () => {
             }
         }, true);
 
-        assertProfileContains(res.body, {
+        assert.ok(res.body.last_login);
+        delete res.body.last_login;
+        assert.ok(res.body.created);
+        delete res.body.created;
+        assert.ok(res.body.updated);
+        delete res.body.updated;
+
+        assert.deepEqual(res.body, {
             active: false,
             username: 'admin@example.com',
             phone: '',
@@ -137,16 +141,38 @@ test('GET: api/profile - New User / New Defaults', async () => {
             }
         }, true);
 
-        assert.deepEqual(res.body.display_stale, 'Immediate');
-        assert.deepEqual(res.body.display_distance, 'meter');
-        assert.deepEqual(res.body.display_elevation, 'meter');
-        assert.deepEqual(res.body.display_speed, 'm/s');
-        assert.deepEqual(res.body.display_projection, 'mercator');
-        assert.deepEqual(res.body.display_zoom, 'always');
-        assert.deepEqual(res.body.display_style, 'Dark');
-        assert.deepEqual(res.body.display_coordinate, 'mgrs');
-        assert.deepEqual(res.body.display_text, 'Large');
-        assert.deepEqual(res.body.display_icon_rotation, false);
+        assert.ok(res.body.last_login);
+        delete res.body.last_login;
+        assert.ok(res.body.created);
+        delete res.body.created;
+        assert.ok(res.body.updated);
+        delete res.body.updated;
+
+        assert.deepEqual(res.body, {
+            active: false,
+            username: 'configtest@example.com',
+            phone: '',
+            tak_callsign: 'CloudTAK User',
+            tak_remarks: 'CloudTAK User',
+            tak_group: 'Orange',
+            tak_role: 'Team Member',
+            tak_type: 'a-f-G-E-V-C',
+            tak_loc: null,
+            tak_loc_freq: 2000,
+            menu_order: [],
+            display_stale: 'Immediate',
+            display_distance: 'meter',
+            display_elevation: 'meter',
+            display_speed: 'm/s',
+            display_projection: 'mercator',
+            display_zoom: 'always',
+            display_style: 'Dark',
+            display_coordinate: 'mgrs',
+            display_text: 'Large',
+            display_icon_rotation: false,
+            system_admin: false,
+            agency_admin: []
+        });
     } catch (err) {
         assert.ifError(err);
     }

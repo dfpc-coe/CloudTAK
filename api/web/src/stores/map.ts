@@ -121,6 +121,7 @@ export const useMapStore = defineStore('cloudtak', {
         return {
             _rawWorker: rawWorker,
             worker,
+            _bottomBar: markRaw(new BottomBarManager()),
             timer: null,
             callsign: 'Unknown',
             toImport: [],
@@ -758,7 +759,7 @@ export const useMapStore = defineStore('cloudtak', {
             this._icons = markRaw(new IconManager(map));
             this._menu = markRaw(new MenuManager(this));
             await (this._menu as MenuManager).init();
-            this._bottomBar = markRaw(new BottomBarManager());
+            this._bottomBar = this._bottomBar || markRaw(new BottomBarManager());
 
             // If we missed the initial location update make sure it gets synced
             const loc = await this.worker.profile.location;

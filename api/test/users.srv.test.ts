@@ -83,10 +83,11 @@ test('PATCH: api/user/admin@example.com', async () => {
              display_elevation: 'feet',
              display_speed: 'mi/h',
              display_projection: 'globe',
-             display_icon_rotation: true,
              display_zoom: 'conditional',
+             display_style: 'System Default',
              display_coordinate: 'dd',
              display_text: 'Medium',
+             display_icon_rotation: true,
              system_admin: true,
              agency_admin: []
         });
@@ -128,10 +129,11 @@ test('GET: api/user/admin@example.com', async () => {
              display_elevation: 'feet',
              display_speed: 'mi/h',
              display_projection: 'globe',
-             display_icon_rotation: true,
              display_zoom: 'conditional',
+             display_style: 'System Default',
              display_coordinate: 'dd',
              display_text: 'Medium',
+             display_icon_rotation: true,
              system_admin: true,
              agency_admin: []
         });
