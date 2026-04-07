@@ -15,13 +15,13 @@
             <template #right>
                 <span
                     v-if='props.cot.properties.start'
-                    class='cursor-pointer me-2 text-muted small'
+                    class='cursor-pointer me-2 text-white small'
                     @click.stop='mode = mode === "relative" ? "absolute" : "relative"'
                     v-text='`Start: ${startProp}`'
                 />
             </template>
             <div class='d-flex mx-3 pt-2 pb-2'>
-                <div class='ms-auto cursor-pointer text-blue subheader'>
+                <div class='ms-auto cursor-pointer subheader text-white'>
                     <span
                         v-if='mode === "relative"'
                         @click='mode = "absolute"'
@@ -32,18 +32,18 @@
                     >Relative</span>
                 </div>
             </div>
-            <div class='list-group list-group-flush cloudtak-accent rounded mx-2 mb-2'>
-                <div class='list-group-item bg-transparent d-flex justify-content-between align-items-center border-0'>
-                    <span class='text-muted'>Time</span>
-                    <span class='font-weight-medium'>{{ timeProp }}</span>
+            <div class='rounded cloudtak-accent mx-2 mb-2 px-2 py-2 d-flex flex-column gap-2'>
+                <div class='d-flex justify-content-between align-items-center'>
+                    <span class='text-white'>Time</span>
+                    <span class='text-white fw-semibold'>{{ timeProp }}</span>
                 </div>
-                <div class='list-group-item bg-transparent d-flex justify-content-between align-items-center border-0'>
-                    <span class='text-muted'>Start</span>
-                    <span class='font-weight-medium'>{{ startProp }}</span>
+                <div class='d-flex justify-content-between align-items-center'>
+                    <span class='text-white'>Start</span>
+                    <span class='text-white fw-semibold'>{{ startProp }}</span>
                 </div>
-                <div class='list-group-item bg-transparent d-flex justify-content-between align-items-center border-0'>
-                    <span class='text-muted'>Stale</span>
-                    <span class='font-weight-medium'>{{ staleProp }}</span>
+                <div class='d-flex justify-content-between align-items-center'>
+                    <span class='text-white'>Stale</span>
+                    <span class='text-white fw-semibold'>{{ staleProp }}</span>
                 </div>
             </div>
         </SlideDownHeader>
