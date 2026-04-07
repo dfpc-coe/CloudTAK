@@ -61,6 +61,7 @@ export const useMapStore = defineStore('cloudtak', {
         callsign: string;
         zoom: string;
         location: LocationState;
+        locationAccuracy: number | undefined;
         distanceUnit: string;
         coordFormat: string;
         manualLocationMode: boolean;
@@ -124,6 +125,7 @@ export const useMapStore = defineStore('cloudtak', {
             callsign: 'Unknown',
             toImport: [],
             location: LocationState.Loading,
+            locationAccuracy: undefined,
             hasSnapping: false,
             db,
             channel: new BroadcastChannel("cloudtak"),
@@ -614,6 +616,14 @@ export const useMapStore = defineStore('cloudtak', {
                     map.flyTo(msg.body);
                 } else if (msg.type === WorkerMessageType.Profile_Location_Source) {
                     this.location = msg.body.source as LocationState;
+                    if (this.location !== LocationState.Live) {
+                        this.locationAccuracy = undefined;
+                    }
+                } else if (msg.type === WorkerMessageType.Profile_Location_Coordinates) {
+                    this.locationAccuracy = msg.body.accuracy;
+                    if (!this.manualLocationMode) {
+                        this.location = LocationState.Live;
+                    }
                 } else if (msg.type === WorkerMessageType.Profile_Callsign) {
                     this.callsign = msg.body.callsign;
                 } else if (msg.type === WorkerMessageType.Profile_Display_Zoom) {
@@ -750,9 +760,10 @@ export const useMapStore = defineStore('cloudtak', {
             await (this._menu as MenuManager).init();
             this._bottomBar = markRaw(new BottomBarManager());
 
-            // If we missed the Profile_Location_Source make sure it gets synced
+            // If we missed the initial location update make sure it gets synced
             const loc = await this.worker.profile.location;
             this.location = loc.source;
+            this.locationAccuracy = loc.accuracy;
 
             await this.worker.profile.load();
 
@@ -785,6 +796,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.gpsWatchId = navigator.geolocation.watchPosition((position) => {
                 if (!this.manualLocationMode) {
+                    this.locationAccuracy = position.coords.accuracy;
+
                     this.channel.postMessage({
                         type: WorkerMessageType.Profile_Location_Coordinates,
                         body: {

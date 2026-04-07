@@ -308,7 +308,7 @@ export class PluginAPI {
         const mapStore = useMapStore(this.pinia);
         return {
             /**
-             * Add an icon button to the centre of the bottom status bar
+             * Add a component to the centre of the bottom status bar
              * @param item The bottom bar item configuration
              */
             add: (item: BottomBarItemConfig) => {
@@ -319,7 +319,7 @@ export class PluginAPI {
                 }
             },
             /**
-             * Remove a previously registered icon button by key
+             * Remove a previously registered bottom bar component by key
              * @param key The key of the item to remove
              */
             remove: (key: string) => {

@@ -6,25 +6,18 @@
                 @set-location='$emit("set-location")'
                 @to-location='$emit("to-location")'
             />
-            <!-- Plugin bottom-bar icons (centred) -->
+            <!-- Plugin bottom-bar components (centred) -->
             <div
                 v-if='bottomBarItems.length'
-                class='d-flex align-items-center justify-content-center gap-1 flex-grow-1'
+                class='d-flex align-items-center justify-content-center gap-2 flex-grow-1 px-2 overflow-visible'
             >
-                <TablerIconButton
+                <div
                     v-for='item in bottomBarItems'
                     :key='item.key'
-                    :title='item.tooltip'
-                    :hover='false'
-                    @click='item.onClick()'
+                    class='d-flex align-items-center flex-shrink-0 position-relative'
                 >
-                    <component
-                        :is='item.icon'
-                        style='margin: 5px 8px'
-                        :size='20'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                    <component :is='item.component' />
+                </div>
             </div>
             <div
                 v-else
@@ -38,7 +31,6 @@
 <script setup lang='ts'>
 import { computed } from 'vue';
 import { useMapStore } from '../../../stores/map.ts';
-import { TablerIconButton } from '@tak-ps/vue-tabler';
 import BottomBarCallsign from './BottomBarCallsign.vue';
 import BottomBarCoordinates from './BottomBarCoordinates.vue';
 
@@ -57,7 +49,8 @@ const bottomBarItems = computed(() => mapStore.bottomBar.pluginItems.value);
 <style>
 .map-status-bar {
     right: 0;
-    z-index: 4;
+    z-index: 10;
+    overflow: visible;
     height: var(--map-bottom-bar-size, 50px);
     background-color: rgba(0, 0, 0, 0.5);
 }
