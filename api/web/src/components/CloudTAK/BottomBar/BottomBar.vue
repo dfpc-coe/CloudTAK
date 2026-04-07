@@ -56,7 +56,7 @@ const bottomBarItems = computed(() => mapStore.bottomBar.pluginItems.value);
 
 <style>
 .map-status-bar {
-    right: var(--map-side-offset, 0px);
+    right: 0;
     z-index: 4;
     height: var(--map-bottom-bar-size, 50px);
     background-color: rgba(0, 0, 0, 0.5);
