@@ -29,7 +29,7 @@
                         class='col-sm-2'
                         @click='router.push(`/menu/iconset/${icon.iconset}/${icon.id}`)'
                     >
-                        <div class='card card-sm hover cursor-pointer'>
+                        <div class='card card-sm cloudtak-hover cursor-pointer'>
                             <div class='col-12'>
                                 <div
                                     class='d-flex justify-content-center mt-3'

@@ -13,7 +13,7 @@
                 />
             </template>
             <div class='mx-2 py-2'>
-                <div class='rounded bg-accent px-2 py-2 user-select-none'>
+                <div class='rounded cloudtak-accent px-2 py-2 user-select-none'>
                     <div class='row g-2'>
                         <div class='col-12'>
                             <TablerToggle

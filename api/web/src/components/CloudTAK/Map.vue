@@ -7,7 +7,6 @@
             "--map-compact-menu-size": "60px",
             "--map-bottom-bar-size": "50px"
         }'
-        data-bs-theme='dark'
         data-bs-theme-base='neutral'
         data-bs-theme-primary='blue'
     >
@@ -41,7 +40,7 @@
 
             <GenericBottomPane v-if='mode === "SetLocation"'>
                 <div
-                    class='card user-select-none text-white bg-dark rounded-top'
+                    class='card user-select-none text-white cloudtak-bg rounded-top'
                 >
                     <div class='card-header'>
                         <div class='col-8'>
@@ -85,7 +84,7 @@
             />
             <div
                 v-if='mapStore.selected.size'
-                class='position-absolute begin-0 text-white bg-dark'
+                class='position-absolute begin-0 text-white cloudtak-bg'
                 style='
                     bottom: var(--map-bottom-bar-size, 50px);
                     width: 250px;
@@ -117,14 +116,14 @@
                             stroke='2'
                             :color='searchBoxShown ? "#1E90FF" : "#ffffff"'
                             style='margin: 3px 2px'
-                            class='cursor-pointer hover-button'
+                            class='cursor-pointer cloudtak-hover'
                             @click='searchBoxShown = !searchBoxShown'
                         />
                     </div>
 
                     <div
                         style='margin: 3px 3px'
-                        class='cursor-pointer hover-button'
+                        class='cursor-pointer cloudtak-hover'
                         @click='toggleCompass'
                     >
                         <IconCompass
@@ -155,7 +154,7 @@
                     <div
                         v-if='mapStore.pitch !== 0'
                         style='margin: 3px 3px'
-                        class='cursor-pointer hover-button'
+                        class='cursor-pointer cloudtak-hover'
                         @click='mapStore.map.setPitch(0)'
                     >
                         <IconAngle
@@ -181,7 +180,7 @@
                             title='Zoom In Button'
                             :size='32'
                             stroke='2'
-                            class='cursor-pointer hover-button'
+                            class='cursor-pointer cloudtak-hover'
                             style='margin: 3px 3px'
                             @click='mapStore.map.setZoom(mapStore.map.getZoom() + 1);'
                         />
@@ -192,7 +191,7 @@
                             title='Zoom Out Button'
                             :size='32'
                             stroke='2'
-                            class='cursor-pointer hover-button'
+                            class='cursor-pointer cloudtak-hover'
                             style='margin: 3px 3px'
                             @click='mapStore.map.setZoom(mapStore.map.getZoom() - 1);'
                         />
@@ -206,7 +205,7 @@
                         title='3D Terrain'
                         :size='32'
                         stroke='2'
-                        class='cursor-pointer hover-button'
+                        class='cursor-pointer cloudtak-hover'
                         :color='mapStore.isTerrainEnabled ? "#1E90FF" : "#FFFFFF"'
                         style='margin: 3px 3px'
                         @click='mapStore.isTerrainEnabled ? mapStore.removeTerrain() : mapStore.addTerrain()'
@@ -219,7 +218,7 @@
                         '
                         v-tooltip='"Map is locked to marker - Click to Unlock"'
                         title='Map is locked to marker - Click to Unlock'
-                        class='cursor-pointer hover-button'
+                        class='cursor-pointer cloudtak-hover'
                         role='button'
                         tabindex='0'
                         color='red'
@@ -270,7 +269,7 @@
                     <TablerIconButton
                         id='map-notifications'
                         title='Notifications Icon'
-                        class='hover-button'
+                        class='cloudtak-hover'
                         :hover='false'
                     >
                         <IconBell
@@ -303,7 +302,7 @@
                 <TablerIconButton
                     v-if='noMenuShown'
                     title='Open Menu'
-                    class='mx-2 hover-button'
+                    class='mx-2 cloudtak-hover'
                     :hover='false'
                     @click='router.push("/menu")'
                 >

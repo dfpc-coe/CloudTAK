@@ -10,7 +10,7 @@
     >
         <template v-if='!mapStore.mission'>
             <div
-                class='hover-button d-flex align-items-center user-select-none cursor-pointer rounded px-2'
+                class='cloudtak-hover d-flex align-items-center user-select-none cursor-pointer rounded px-2'
                 style='height: 40px;'
                 @click='router.push("/menu/missions")'
             >
@@ -26,7 +26,7 @@
         </template>
         <template v-else>
             <div
-                class='d-flex align-items-center user-select-none cursor-pointer hover-button rounded px-2 me-2'
+                class='d-flex align-items-center user-select-none cursor-pointer cloudtak-hover rounded px-2 me-2'
                 style='height: 40px;'
                 @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}`)'
             >
@@ -51,7 +51,7 @@
             <div class='d-none d-md-flex gap-1 ms-2'>
                 <TablerIconButton
                     title='Layers'
-                    class='hover-button'
+                    class='cloudtak-hover'
                     :hover='false'
                     @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/layers`)'
                 >
@@ -63,7 +63,7 @@
 
                 <TablerIconButton
                     title='Changes'
-                    class='hover-button'
+                    class='cloudtak-hover'
                     :hover='false'
                     @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/changes`)'
                 >
@@ -75,7 +75,7 @@
 
                 <TablerIconButton
                     title='Users'
-                    class='hover-button'
+                    class='cloudtak-hover'
                     :hover='false'
                     @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/users`)'
                 >
@@ -88,7 +88,7 @@
                 <div class='position-relative'>
                     <TablerIconButton
                         title='Logs'
-                        class='hover-button'
+                        class='cloudtak-hover'
                         :hover='false'
                         @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/logs`)'
                     >
@@ -109,7 +109,7 @@
                 <div class='position-relative'>
                     <TablerIconButton
                         title='Chats'
-                        class='hover-button'
+                        class='cloudtak-hover'
                         :hover='false'
                         @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/chats`)'
                     >
@@ -129,7 +129,7 @@
 
                 <TablerIconButton
                     title='Files'
-                    class='hover-button'
+                    class='cloudtak-hover'
                     :hover='false'
                     @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}/contents`)'
                 >

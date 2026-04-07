@@ -1,6 +1,6 @@
 <template>
     <div
-        class='sticky-top col-12 border-bottom border-light bg-dark'
+        class='sticky-top col-12 border-bottom border-light cloudtak-bg'
         style='border-radius: 0px;'
     >
         <div class='modal-header px-0 mx-2 d-flex align-items-center'>

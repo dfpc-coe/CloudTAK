@@ -32,7 +32,7 @@
                     >Relative</span>
                 </div>
             </div>
-            <div class='list-group list-group-flush bg-accent rounded mx-2 mb-2'>
+            <div class='list-group list-group-flush cloudtak-accent rounded mx-2 mb-2'>
                 <div class='list-group-item bg-transparent d-flex justify-content-between align-items-center border-0'>
                     <span class='text-muted'>Time</span>
                     <span class='font-weight-medium'>{{ timeProp }}</span>

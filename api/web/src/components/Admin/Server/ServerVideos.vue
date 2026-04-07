@@ -29,7 +29,7 @@
             />
             <template v-else>
                 <template v-for='video in list.videoConnections'>
-                    <div class='col-12 hover d-flex align-items-center px-2 py-2 rounded'>
+                    <div class='col-12 cloudtak-hover d-flex align-items-center px-2 py-2 rounded'>
                         <div class='row'>
                             <div class='col-12'>
                                 <span v-text='video.alias' />

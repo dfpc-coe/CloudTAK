@@ -49,7 +49,7 @@
                         v-else
                     >
                         <div
-                            class='hover px-2 py-2 cursor-pointer row rounded'
+                            class='cloudtak-hover px-2 py-2 cursor-pointer row rounded'
                             @click='selected = layer'
                         >
                             <div class='col-md-4'>

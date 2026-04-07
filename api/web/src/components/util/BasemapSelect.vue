@@ -75,7 +75,7 @@
                     <div
                         v-for='basemap in list.items'
                         :key='basemap.id'
-                        class='d-flex align-items-center p-2 hover cursor-pointer rounded'
+                        class='d-flex align-items-center p-2 cloudtak-hover cursor-pointer rounded'
                         @click='emit("update:modelValue", basemap.id)'
                     >
                         {{ basemap.name }}

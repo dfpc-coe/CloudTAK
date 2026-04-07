@@ -6,7 +6,7 @@
         />
         <template v-else>
             <div
-                class='card bg-dark bg-opacity-50 border rounded text-white w-100 p-2 d-flex gap-3 align-items-start flex-row'
+                class='card cloudtak-bg bg-opacity-50 border rounded text-white w-100 p-2 d-flex gap-3 align-items-start flex-row'
                 :class='{
                     "border-white border-opacity-25 shadow-sm": !!log.read,
                     "border-primary border-2 unread-pulse": !log.read

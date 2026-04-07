@@ -5,7 +5,7 @@
         :style='standalone ? "height: calc(100vh - 64px)" : "min-height: 0"'
     >
         <div
-            class='col-12 bg-dark flex-shrink-0'
+            class='col-12 cloudtak-bg flex-shrink-0'
             :style='`z-index: ${zindex};`'
             style='
                 border-radius: 0px;

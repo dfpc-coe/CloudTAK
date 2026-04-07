@@ -73,7 +73,7 @@
                 <template v-else>
                     <div
                         v-for='path in service.paths'
-                        class='hover px-2 py-2 cursor-pointer d-flex align-items-center'
+                        class='cloudtak-hover px-2 py-2 cursor-pointer d-flex align-items-center'
                         @click='pathid = path.name'
                     >
                         <StatusDot

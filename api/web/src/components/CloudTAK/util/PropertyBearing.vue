@@ -25,7 +25,7 @@
                     v-tooltip='"Degrees"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom text-blue": mode === "deg",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "deg",
                         "cursor-pointer": mode !== "deg",
                     }'
                     role='menuitem'
@@ -37,7 +37,7 @@
                     v-tooltip='"Radians"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom text-blue": mode === "rad",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "rad",
                         "cursor-pointer": mode !== "rad",
                     }'
                     role='menuitem'
@@ -49,7 +49,7 @@
                     v-tooltip='"Mil-Radians"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom text-blue": mode === "mil",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "mil",
                         "cursor-pointer": mode !== "mil",
                     }'
                     role='menuitem'

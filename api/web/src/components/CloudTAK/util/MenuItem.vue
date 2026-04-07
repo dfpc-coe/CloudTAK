@@ -2,7 +2,7 @@
     <div
         tabindex='0'
         role='menuitem'
-        class='cursor-pointer col-12 py-2 px-3 hover'
+        class='cursor-pointer col-12 py-2 px-3 cloudtak-hover'
         :class='{
             "d-flex align-items-center": props.flex
         }'

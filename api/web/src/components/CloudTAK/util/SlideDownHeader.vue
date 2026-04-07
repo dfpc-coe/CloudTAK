@@ -1,7 +1,7 @@
 <template>
     <div
         class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
-        :class='{ "bg-accent": expanded, "hover": !expanded }'
+        :class='{ "cloudtak-accent": expanded, "cloudtak-hover": !expanded }'
         @click='toggle'
     >
         <slot name='icon' />

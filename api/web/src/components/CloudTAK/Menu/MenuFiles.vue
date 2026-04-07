@@ -100,7 +100,7 @@
                                 v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
                                 :class='[
                                     "rounded col-12 d-flex align-items-center px-2 py-2 user-select-none",
-                                    assetOverlayExists(asset) ? "opacity-50 pe-none" : "cursor-pointer hover"
+                                    assetOverlayExists(asset) ? "opacity-50 pe-none" : "cursor-pointer cloudtak-hover"
                                 ]'
                                 role='menuitem'
                                 :tabindex='assetOverlayExists(asset) ? -1 : 0'
@@ -117,7 +117,7 @@
                             <div
                                 v-else
                                 role='menuitem'
-                                class='rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
                             >
                                 <IconMapOff
                                     :size='32'
@@ -127,7 +127,7 @@
                             </div>
 
                             <div
-                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
                                 @click.stop.prevent='downloadAsset(asset)'
                             >
                                 <IconDownload
@@ -137,7 +137,7 @@
                                 <span class='mx-2'>Download Original</span>
                             </div>
                             <div
-                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
                                 role='menuitem'
                                 tabindex='0'
                                 @click.stop.prevent='shareToMission = asset'
@@ -150,7 +150,7 @@
                                 <span class='mx-2'>Add to Data Sync</span>
                             </div>
                             <div
-                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
                                 role='menuitem'
                                 tabindex='0'
                                 @click.stop.prevent='shareToPackage = asset'
@@ -163,7 +163,7 @@
                                 <span class='mx-2'>Create Data Package</span>
                             </div>
                             <div
-                                class='cursor-pointer rounded col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
                                 role='menuitem'
                                 tabindex='0'
                                 @click.stop.prevent='rename = { id: asset.id, name: asset.name, loading: false }'
@@ -189,7 +189,7 @@
 
                             <TablerDelete
                                 displaytype='menu'
-                                class='hover rounded'
+                                class='cloudtak-hover rounded'
                                 label='Delete File'
                                 @delete='deleteAsset(asset)'
                             />

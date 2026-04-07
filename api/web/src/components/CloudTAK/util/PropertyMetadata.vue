@@ -21,7 +21,7 @@
                             <th>Value</th>
                         </tr>
                     </thead>
-                    <tbody class='bg-accent'>
+                    <tbody class='cloudtak-accent'>
                         <tr
                             v-for='prop of Object.keys(cot.properties.takv || {})'
                             :key='prop'

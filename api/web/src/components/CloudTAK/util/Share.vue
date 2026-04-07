@@ -143,7 +143,7 @@
                         <div
                             v-for='ch in visibleChannels'
                             :key='ch.name'
-                            class='col-lg-12 py-2 px-2 hover rounded cursor-pointer user-select-none'
+                            class='col-lg-12 py-2 px-2 cloudtak-hover rounded cursor-pointer user-select-none'
                             @click='selectedGroups.has(ch) ? selectedGroups.delete(ch) : selectedGroups.add(ch)'
                         >
                             <IconAffiliate
@@ -175,7 +175,7 @@
                         <div
                             v-for='m in visibleMissions'
                             :key='m.name'
-                            class='col-lg-12 py-2 px-2 hover rounded cursor-pointer user-select-none'
+                            class='col-lg-12 py-2 px-2 cloudtak-hover rounded cursor-pointer user-select-none'
                             @click='selectedMissions.has(m) ? selectedMissions.delete(m) : selectedMissions.add(m)'
                         >
                             <IconAmbulance

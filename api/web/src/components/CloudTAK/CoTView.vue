@@ -7,10 +7,10 @@
     <template v-else>
         <div
             :key='String(route.params.uid)'
-            class='col-12 border-light border-bottom d-flex'
+            class='col-12 border-bottom d-flex cloudtak-accent'
             style='border-radius: 0px;'
         >
-            <div class='col-12 card-header row my-2 d-flex'>
+            <div class='col-12 row my-2 d-flex px-1 py-2'>
                 <div class='card-title d-flex'>
                     <div class='col-auto ms-2 my-1'>
                         <PropertyBattery
@@ -187,7 +187,7 @@
                                     <div class='card-body'>
                                         <div
                                             role='button'
-                                            class='hover px-2 py-2 d-flex align-items-center rounded'
+                                            class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
                                             @click='openBufferInput'
                                         >
                                             <IconAdjustments
@@ -249,7 +249,7 @@
                                             <div
                                                 v-if='cot.properties.attachments === undefined'
                                                 role='button'
-                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
                                                 @click='updatePropertyAttachment([])'
                                             >
                                                 <IconPaperclip
@@ -262,7 +262,7 @@
                                             <div
                                                 v-if='cot.properties.links === undefined'
                                                 role='button'
-                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
                                                 @click='updateProperty("links", [])'
                                             >
                                                 <IconLink
@@ -275,7 +275,7 @@
                                             <div
                                                 v-if='cot.properties.video === undefined'
                                                 role='button'
-                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
                                                 @click='updateProperty("video", { url: "" })'
                                             >
                                                 <IconMovie
@@ -288,7 +288,7 @@
                                             <div
                                                 v-if='cot.properties.sensor === undefined'
                                                 role='button'
-                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
                                                 @click='updateProperty("sensor", {})'
                                             >
                                                 <IconCone
@@ -301,7 +301,7 @@
                                             <div
                                                 v-if='cot.properties.geofence === undefined && cot.geometry.type === "Polygon"'
                                                 role='button'
-                                                class='hover px-2 py-2 d-flex align-items-center rounded'
+                                                class='cloudtak-hover px-2 py-2 d-flex align-items-center rounded'
                                                 @click='updateProperty("geofence", { elevationMonitored: false, tracking: false })'
                                             >
                                                 <IconFence
@@ -405,7 +405,7 @@
                     v-if='subscription'
                     class='col-12'
                 >
-                    <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-accent'>
+                    <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded cloudtak-accent'>
                         <IconAmbulance
                             :size='32'
                             stroke='1'
@@ -549,7 +549,7 @@
             >
                 <div
                     class='d-flex align-items-center cursor-pointer user-select-none py-2 px-2 rounded transition-all mx-2'
-                    :class='{ "bg-accent": remarksExpanded, "hover": !remarksExpanded }'
+                    :class='{ "cloudtak-accent": remarksExpanded, "cloudtak-hover": !remarksExpanded }'
                     @click='remarksExpanded = !remarksExpanded'
                 >
                     <IconBlockquote

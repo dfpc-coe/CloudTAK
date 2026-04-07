@@ -1,5 +1,6 @@
 import { Static } from '@sinclair/typebox';
 import fs from 'node:fs';
+import { Profile_Style } from './enums.js';
 import { FullConfig } from './types.js';
 
 export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
@@ -10,6 +11,7 @@ export const FullConfigDefaults: Partial<Static<typeof FullConfig>> = {
     'map::zoom': 4,
     'map::pitch': 0,
     'map::bearing': 0,
+    'display::style': Profile_Style.SYSTEM_DEFAULT,
     'proxy::enabled': false,
     'proxy::whitelist': [],
     'login::name': 'CloudTAK',

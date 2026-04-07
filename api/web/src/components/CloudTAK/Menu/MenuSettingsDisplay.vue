@@ -73,6 +73,13 @@
                 </div>
                 <div class='col-12'>
                     <TablerEnum
+                        v-model='profile.display_style'
+                        label='Light / Dark Style'
+                        :options='styleOptions'
+                    />
+                </div>
+                <div class='col-12'>
+                    <TablerEnum
                         v-model='profile.display_coordinate'
                         label='Coordinate Format'
                         :options='coordFormatOptions'
@@ -114,7 +121,7 @@
 import { useRouter } from 'vue-router';
 import { ref, toRaw, onMounted } from 'vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import type { Profile } from '../../../types.ts';
+import type { Profile, Profile_Update } from '../../../types.ts';
 import {
     TablerEnum,
     TablerToggle,
@@ -124,10 +131,19 @@ import ProfileConfig from '../../../base/profile.ts';
 import { COORD_MODES, type CoordMode } from '../../../base/utils/coordinateFormat.ts';
 const mapStore = useMapStore();
 
+type DisplayStyleMode = 'System Default' | 'Light' | 'Dark';
+type DisplayProfile = Profile & {
+    display_style?: DisplayStyleMode
+};
+type DisplayProfileUpdate = Profile_Update & {
+    display_style?: DisplayStyleMode
+};
+
 const router = useRouter();
 const loading = ref(false);
-const profile = ref<Profile | undefined>();
+const profile = ref<DisplayProfile | undefined>();
 const coordFormatOptions = COORD_MODES.map((mode) => mode.value);
+const styleOptions: DisplayStyleMode[] = ['System Default', 'Light', 'Dark'];
 
 async function getProfile() {
     return {
@@ -137,10 +153,11 @@ async function getProfile() {
         display_elevation: (await ProfileConfig.get('display_elevation'))?.value,
         display_speed: (await ProfileConfig.get('display_speed'))?.value,
         display_projection: (await ProfileConfig.get('display_projection'))?.value,
+        display_style: (await ProfileConfig.get('display_style' as keyof Profile))?.value as DisplayStyleMode | undefined,
         display_coordinate: (await ProfileConfig.get('display_coordinate'))?.value,
         display_zoom: (await ProfileConfig.get('display_zoom'))?.value,
         display_icon_rotation: (await ProfileConfig.get('display_icon_rotation'))?.value,
-    } as Profile;
+    } as DisplayProfile;
 }
 
 onMounted(async () => {
@@ -152,7 +169,7 @@ onMounted(async () => {
 async function updateProfile() {
     if (!profile.value) return;
 
-    await mapStore.worker.profile.update(toRaw(profile.value));
+    await mapStore.worker.profile.update(toRaw(profile.value) as DisplayProfileUpdate);
 
     // Update distance unit
     mapStore.updateDistanceUnit(profile.value.display_distance);

@@ -13,7 +13,7 @@
             v-if='Object.keys(groups).length'
             @click.stop
         >
-            <div class='align-items-center px-3 py-2 me-2 hover-button'>
+            <div class='align-items-center px-3 py-2 me-2 cloudtak-hover'>
                 <IconChevronRight
                     v-if='!treeState.groups._shown'
                     :size='20'
@@ -40,7 +40,7 @@
                     v-for='group in Object.keys(groups)'
                     class='ms-3'
                 >
-                    <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
+                    <div class='d-flex align-items-center px-3 py-2 me-2 cloudtak-hover'>
                         <IconChevronRight
                             v-if='!treeState.groups.nodes[group]._shown'
                             :size='20'
@@ -70,7 +70,7 @@
                     <template v-else-if='treeState.groups.nodes[group]._shown'>
                         <div
                             v-for='contact in groups[group].values()'
-                            class='ms-3 d-flex align-items-center hover-button px-3 py-2 me-2'
+                            class='ms-3 d-flex align-items-center cloudtak-hover px-3 py-2 me-2'
                         >
                             <Contact
                                 :compact='true'
@@ -89,7 +89,7 @@
             class='ms-3'
             @click.stop
         >
-            <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
+            <div class='d-flex align-items-center px-3 py-2 me-2 cloudtak-hover'>
                 <IconChevronRight
                     v-if='!treeState.markers._shown'
                     :size='20'
@@ -111,7 +111,7 @@
                 /> Markers
 
                 <div
-                    class='ms-auto btn-list hover-button-hidden'
+                    class='ms-auto btn-list cloudtak-hover-hidden'
                 >
                     <IconTrash
                         :size='20'
@@ -127,7 +127,7 @@
                     v-for='marker in Object.keys(markers)'
                     class='ms-3'
                 >
-                    <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
+                    <div class='d-flex align-items-center px-3 py-2 me-2 cloudtak-hover'>
                         <IconChevronRight
                             v-if='!treeState.markers.nodes[marker]._shown'
                             :size='20'
@@ -148,7 +148,7 @@
                             stroke='2'
                         /> <span v-text='marker' />
 
-                        <div class='ms-auto btn-list hover-button-hidden'>
+                        <div class='ms-auto btn-list cloudtak-hover-hidden'>
                             <IconTrash
                                 :size='20'
                                 stroke='1'
@@ -182,7 +182,7 @@
             class='ms-3'
             @click.stop
         >
-            <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
+            <div class='d-flex align-items-center px-3 py-2 me-2 cloudtak-hover'>
                 <IconChevronRight
                     v-if='!treeState.paths._shown'
                     :size='20'
@@ -203,7 +203,7 @@
                     stroke='2'
                 /> Your Features
 
-                <div class='ms-auto btn-list hover-button-hidden'>
+                <div class='ms-auto btn-list cloudtak-hover-hidden'>
                     <TablerDelete
                         :size='20'
                         class='cursor-pointer'
@@ -232,7 +232,7 @@
                         </template>
                     </template>
                     <template v-else>
-                        <div class='d-flex align-items-center py-2 ps-2 ms-2 hover-button'>
+                        <div class='d-flex align-items-center py-2 ps-2 ms-2 cloudtak-hover'>
                             <IconChevronRight
                                 v-if='!treeState.paths.nodes[path]._shown'
                                 :size='20'

@@ -54,7 +54,7 @@
                 <div
                     class='d-flex align-items-center rounded cursor-pointer'
                     :class='{
-                        "hover": props.hover
+                        "cloudtak-hover": props.hover
                     }'
                     @click='selected.has(item.id) ? selected.delete(item.id) : selected.add(item.id)'
                 >
