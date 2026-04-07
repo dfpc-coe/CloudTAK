@@ -14,7 +14,7 @@
                     v-tooltip='"Feet"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom text-blue": mode === "feet",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "feet",
                         "cursor-pointer": mode !== "feet",
                     }'
                     role='menuitem'
@@ -26,7 +26,7 @@
                     v-tooltip='"Yards"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom text-blue": mode === "yard",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "yard",
                         "cursor-pointer": mode !== "yard",
                     }'
                     role='menuitem'
@@ -38,7 +38,7 @@
                     v-tooltip='"Meters"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom text-blue": mode === "meter",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "meter",
                         "cursor-pointer": mode !== "meter",
                     }'
                     role='menuitem'
@@ -50,7 +50,7 @@
                     v-tooltip='"Kilometers"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom text-blue": mode === "kilometer",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "kilometer",
                         "cursor-pointer": mode !== "kilometer",
                     }'
                     role='menuitem'
@@ -62,7 +62,7 @@
                     v-tooltip='"Miles"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom text-blue": mode === "mile",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "mile",
                         "cursor-pointer": mode !== "mile",
                     }'
                     role='menuitem'

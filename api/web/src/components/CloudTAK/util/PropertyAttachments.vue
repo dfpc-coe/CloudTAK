@@ -25,7 +25,7 @@
             </template>
             <div class='col-12'>
                 <div class='mx-2 py-2'>
-                    <div class='rounded bg-accent px-2 py-2'>
+                    <div class='rounded cloudtak-accent px-2 py-2'>
                         <TablerLoading
                             v-if='loading'
                             :inline='true'
@@ -53,7 +53,7 @@
                             <div class='w-100 d-flex flex-wrap align-items-center justify-content-center'>
                                 <template v-for='file of files'>
                                     <div
-                                        class='px-2 py-2 hover rounded'
+                                        class='px-2 py-2 cloudtak-hover rounded'
                                     >
                                         <div
                                             class='d-flex align-items-center justify-content-center'

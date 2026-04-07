@@ -1,6 +1,5 @@
 <template>
     <div
-        data-bs-theme='dark'
         class='row'
     >
         <div class='col-12 d-flex my-1'>

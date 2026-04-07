@@ -24,7 +24,7 @@
             :class='{
                 "cursor-pointer": isZoomable && props.hover,
                 "cursor-default": !isZoomable || props.hover === false,
-                "hover": hover
+                "cloudtak-hover": hover
             }'
             :hover='hover'
             @click.exact='flyToClick'
@@ -64,7 +64,7 @@
                 </div>
             </div>
 
-            <div class='align-self-center me-2 btn-list hover-button-hidden'>
+            <div class='align-self-center me-2 btn-list cloudtak-hover-hidden'>
                 <TablerIconButton
                     v-if='infoButton'
                     title='View Info'

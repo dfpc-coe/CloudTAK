@@ -3,7 +3,7 @@
         <template #default>
             <TablerIconButton
                 title='Geometry Editing'
-                class='mx-2 hover-button'
+                class='mx-2 cloudtak-hover'
                 :hover='false'
             >
                 <IconPencil
@@ -14,17 +14,15 @@
         </template>
         <template #dropdown>
             <div
-                class='card py-1'
+                class='py-1'
                 style='min-width: 300px;'
             >
-                <div class='card-body'>
-                    <div class='card-title'>
-                        Drawing Tools
-                    </div>
+                <div class='px-3 pt-2 pb-1 fw-bold'>
+                    Drawing Tools
                 </div>
-                <div class='card-body'>
+                <div class='px-2 pb-2'>
                     <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                         @click='modal = ModalInputType.POINT'
                     >
                         <IconCursorText
@@ -34,7 +32,7 @@
                         <span class='ps-2'>Coordinate Input</span>
                     </div>
                     <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                         @click='modal = ModalInputType.RANGE'
                     >
                         <IconCompass
@@ -44,7 +42,7 @@
                         <span class='ps-2'>Range &amp; Bearing</span>
                     </div>
                     <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                         @click='modal = ModalInputType.RANGE_RINGS'
                     >
                         <IconTarget
@@ -54,7 +52,7 @@
                         <span class='ps-2'>Range Rings</span>
                     </div>
                     <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                         @click='mapStore.draw.start(DrawToolMode.POINT)'
                     >
                         <IconPoint
@@ -64,7 +62,7 @@
                         <span class='ps-2'>Draw Point</span>
                     </div>
                     <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                         @click='mapStore.draw.start(DrawToolMode.LINESTRING)'
                     >
                         <IconLine
@@ -74,7 +72,7 @@
                         <span class='ps-2'>Draw Line</span>
                     </div>
                     <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                         @click='mapStore.draw.start(DrawToolMode.POLYGON)'
                     >
                         <IconPolygon
@@ -84,7 +82,7 @@
                         <span class='ps-2'>Draw Polygon</span>
                     </div>
                     <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                         @click='mapStore.draw.start(DrawToolMode.RECTANGLE)'
                     >
                         <IconVector
@@ -94,7 +92,7 @@
                         <span class='ps-2'>Draw Rectangle</span>
                     </div>
                     <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                         @click='mapStore.draw.start(DrawToolMode.CIRCLE)'
                     >
                         <IconCircle
@@ -104,7 +102,7 @@
                         <span class='ps-2'>Draw Circle</span>
                     </div>
                     <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                         @click='mapStore.draw.start(DrawToolMode.SECTOR)'
                     >
                         <IconCone
@@ -114,7 +112,7 @@
                         <span class='ps-2'>Draw Sector</span>
                     </div>
                     <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                         @click='mapStore.draw.start(DrawToolMode.FREEHAND)'
                     >
                         <IconLasso
@@ -124,7 +122,7 @@
                         <span class='ps-2'>Lasso Select</span>
                     </div>
                     <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        class='col-12 py-1 px-2 cloudtak-hover cursor-pointer user-select-none'
                         @click='modal = ModalInputType.IMPORT'
                     >
                         <IconFileImport

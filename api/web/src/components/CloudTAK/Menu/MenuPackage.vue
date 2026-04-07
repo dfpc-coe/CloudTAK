@@ -27,7 +27,7 @@
             <TablerLoading v-else-if='loading || !pkg || !profile' />
             <template v-else-if='mode === "share" && shareFeat'>
                 <div class='container-fluid px-2 px-sm-3 py-4'>
-                    <div class='card border border-light-subtle bg-dark text-white shadow-sm'>
+                    <div class='card border border-light-subtle cloudtak-bg text-white shadow-sm'>
                         <div class='card-header d-flex align-items-center gap-2'>
                             <IconShare2
                                 :size='20'
@@ -55,7 +55,7 @@
                 <div class='container-fluid px-2 px-sm-3 py-4'>
                     <div class='row gy-3 gx-0 gx-lg-3'>
                         <div class='col-12'>
-                            <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
+                            <div class='card h-100 cloudtak-bg text-white border border-light-subtle shadow-sm'>
                                 <div class='card-body d-flex flex-column gap-4'>
                                     <div class='d-flex align-items-center gap-3'>
                                         <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-1 d-flex align-items-center justify-content-center'>
@@ -118,7 +118,7 @@
                             </div>
                         </div>
                         <div class='col-12'>
-                            <div class='card h-100 bg-dark text-white border border-light-subtle shadow-sm'>
+                            <div class='card h-100 cloudtak-bg text-white border border-light-subtle shadow-sm'>
                                 <div class='card-body d-flex flex-column gap-3'>
                                     <p class='text-uppercase text-white-50 small mb-1'>
                                         Quick Actions
@@ -134,7 +134,7 @@
                                         <span>Import Package</span>
                                     </button>
                                     <button
-                                        class='btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2'
+                                        class='btn w-100 d-flex align-items-center justify-content-center gap-2 share-package-btn'
                                         :disabled='!shareFeat'
                                         @click='mode = "share"'
                                     >
@@ -345,3 +345,21 @@ async function createImport() {
     }
 }
 </script>
+
+<style scoped>
+:global(html[data-bs-theme='dark']) .share-package-btn {
+    --bs-btn-color: rgba(255, 255, 255, 0.92);
+    --bs-btn-border-color: rgba(255, 255, 255, 0.35);
+    --bs-btn-hover-color: #182433;
+    --bs-btn-hover-bg: rgba(255, 255, 255, 0.92);
+    --bs-btn-hover-border-color: rgba(255, 255, 255, 0.92);
+}
+
+:global(html[data-bs-theme='light']) .share-package-btn {
+    --bs-btn-color: var(--tblr-body-color);
+    --bs-btn-border-color: var(--tblr-border-color);
+    --bs-btn-hover-color: var(--tblr-bg-surface);
+    --bs-btn-hover-bg: var(--tblr-primary);
+    --bs-btn-hover-border-color: var(--tblr-primary);
+}
+</style>

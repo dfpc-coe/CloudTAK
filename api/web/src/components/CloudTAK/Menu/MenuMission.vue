@@ -26,9 +26,9 @@
                 </TablerIconButton>
 
                 <template #dropdown>
-                    <div clas='col-12'>
+                    <div class='col-12'>
                         <div
-                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
                             @click='shareToPackageSetup'
                         >
                             <IconPackages
@@ -38,7 +38,7 @@
                             <span class='mx-2'>Export Data Package</span>
                         </div>
                         <div
-                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
                             @click='exportToPackage("geojson")'
                         >
                             <IconFile
@@ -48,7 +48,7 @@
                             <span class='mx-2'>Export GeoJSON</span>
                         </div>
                         <div
-                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
                             @click='exportToPackage("kml")'
                         >
                             <IconFile
@@ -58,7 +58,7 @@
                             <span class='mx-2'>Export KML</span>
                         </div>
                         <div
-                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
+                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
                             @click='exportToPackage("zip")'
                         >
                             <IconFileZip

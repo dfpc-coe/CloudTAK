@@ -19,6 +19,7 @@ export default ts.config(
             }
         },
         rules: {
+            "@typescript-eslint/ban-ts-comment": "warn",
             "vue/component-api-style": ["error", ["script-setup"]],
             "vue/html-indent": ["error", 4],
             "vue/html-quotes": ["error", "single", { "avoidEscape": false } ],

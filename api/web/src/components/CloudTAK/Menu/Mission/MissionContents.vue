@@ -103,7 +103,7 @@
                 <div
                     v-for='content in filteredContents'
                     :key='content.uid'
-                    class='px-2 py-2 hover rounded'
+                    class='px-2 py-2 cloudtak-hover rounded'
                 >
                     <div
                         class='d-flex align-items-center justify-content-center'

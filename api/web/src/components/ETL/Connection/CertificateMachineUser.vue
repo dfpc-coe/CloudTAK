@@ -58,7 +58,7 @@
                     v-else
                 >
                     <div
-                        class='hover px-2 py-2 cursor-pointer row'
+                        class='cloudtak-hover px-2 py-2 cursor-pointer row'
                         @click='push(channel)'
                     >
                         <div class='col-md-4'>

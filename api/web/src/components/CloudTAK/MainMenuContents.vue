@@ -27,7 +27,7 @@
             v-if='!compact'
             class='sticky-top col-12 border-bottom border-light'
             :class='{
-                "bg-dark rounded-0": !compact,
+                "cloudtak-bg rounded-0": !compact,
                 "rounded-0": !modal,
                 "rounded-top": modal
             }'
@@ -195,7 +195,7 @@
     <div
         class='position-absolute bottom-0 start-0 end-0'
         :class='{
-            "bg-dark border-top border-white": !compact && String(route.name) === "home-menu",
+            "cloudtak-bg border-top border-white": !compact && String(route.name) === "home-menu",
             "rounded-0": !modal,
             "rounded-bottom": modal
         }'
@@ -225,7 +225,7 @@
             <div
                 role='button'
                 style='width: 40px;'
-                class='py-2 px-2 ms-auto d-flex hover cursor-pointer'
+                class='py-2 px-2 ms-auto d-flex cloudtak-hover cursor-pointer'
                 @click.stop.prevent='logout'
                 @keyup.enter='logout'
             >
@@ -248,7 +248,7 @@
                     <template #default>
                         <TablerIconButton
                             title='Application Switcher'
-                            class='hover-button'
+                            class='cloudtak-hover'
                             :hover='false'
                         >
                             <IconGridDots
@@ -261,7 +261,7 @@
                         <div class='card'>
                             <div class='card-body'>
                                 <div
-                                    class='px-2 py-2 d-flex align-items-center hover rounded cursor-pointer'
+                                    class='px-2 py-2 d-flex align-items-center cloudtak-hover rounded cursor-pointer'
                                     @click='external("/video")'
                                 >
                                     <IconDeviceTv

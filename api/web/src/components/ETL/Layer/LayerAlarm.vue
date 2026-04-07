@@ -142,7 +142,7 @@
                             <div
                                 v-for='(periodData, periodIndex) in periods.slice(EXTRA_PERIODS)'
                                 :key='periodIndex'
-                                class='cursor-pointer hover h-100 d-flex flex-column justify-content-end p-1 border rounded'
+                                class='cursor-pointer cloudtak-hover h-100 d-flex flex-column justify-content-end p-1 border rounded'
                                 :class='{
                                     "border-danger bg-danger-subtle": periodData,
                                     "border-success bd-success-suble": !periodData

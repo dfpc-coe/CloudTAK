@@ -7,8 +7,13 @@
             ref='backdrop'
             class='hb-backdrop'
             :style='backdropStyle'
-            v-html='highlightedContent'
-        />
+        >
+            <span
+                v-for='(segment, index) in highlightedSegments'
+                :key='index'
+                :style='segment.style'
+            >{{ segment.text }}</span>
+        </div>
         <TablerInput
             ref='inputComponent'
             v-model='internalValue'
@@ -379,22 +384,38 @@ const selectSuggestion = (option) => {
   });
 };
 
-const highlightedContent = computed(() => {
-  let content = internalValue.value.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-
+const highlightedSegments = computed(() => {
+  const content = internalValue.value;
   const hbsRegex = /(\{\{\{?#?\/?)\s*([a-zA-Z0-9_.]+)\s*(\}?\}\})/g;
+  const segments = [];
+  let lastIndex = 0;
 
-  return content.replace(hbsRegex, (match, open, path, close) => {
+  for (const match of content.matchAll(hbsRegex)) {
+    const index = match.index ?? 0;
+    const [fullMatch, open, path, close] = match;
+
+    if (index > lastIndex) {
+      segments.push({ text: content.slice(lastIndex, index), style: undefined });
+    }
+
     const isValid = getTargetSchema(path) !== null;
     const delimiterStyle = 'color: var(--tblr-warning-text-emphasis, var(--tblr-warning, #f59f00));';
     const pathStyle = isValid
       ? 'color: var(--tblr-primary-text-emphasis, rgb(var(--tblr-primary-rgb, 32, 107, 196)));'
       : 'color: var(--tblr-danger-text-emphasis, rgb(var(--tblr-danger-rgb, 214, 57, 57))); text-decoration: underline wavy;';
 
-    return `<span style="${delimiterStyle}">${open}</span>` +
-           `<span style="${pathStyle}">${path}</span>` +
-           `<span style="${delimiterStyle}">${close}</span>`;
-  });
+    segments.push({ text: open, style: delimiterStyle });
+    segments.push({ text: path, style: pathStyle });
+    segments.push({ text: close, style: delimiterStyle });
+
+    lastIndex = index + fullMatch.length;
+  }
+
+  if (lastIndex < content.length || !segments.length) {
+    segments.push({ text: content.slice(lastIndex), style: undefined });
+  }
+
+  return segments;
 });
 
 const handleKeyDown = (e) => {

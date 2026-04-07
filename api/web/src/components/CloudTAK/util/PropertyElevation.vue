@@ -23,7 +23,7 @@
                     v-tooltip='"Feet"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom text-blue": mode === "feet",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "feet",
                         "cursor-pointer": mode !== "feet",
                     }'
                     role='menuitem'
@@ -35,7 +35,7 @@
                     v-tooltip='"Meters"'
                     class='my-1 px-2 user-select-none'
                     :class='{
-                        "bg-accent rounded-bottom text-blue": mode === "meter",
+                        "cloudtak-accent rounded-bottom text-blue": mode === "meter",
                         "cursor-pointer": mode !== "meter",
                     }'
                     role='menuitem'

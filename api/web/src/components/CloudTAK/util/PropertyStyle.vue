@@ -17,7 +17,7 @@
             </template>
 
             <div class='mx-2 py-2'>
-                <div class='rounded bg-accent px-2 py-2'>
+                <div class='rounded cloudtak-accent px-2 py-2'>
                     <div class='row g-2'>
                         <template v-if='cot.geometry.type === "Point"'>
                             <div class='col-12'>

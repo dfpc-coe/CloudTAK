@@ -4,7 +4,7 @@
         :class='{
             "cursor-pointer": zoomable,
             "cursor-default": !zoomable,
-            "hover": hover,
+            "cloudtak-hover": hover,
             "contact-card--no-notes": !contact.notes || !contact.notes.trim()
         }'
         :hover='hover'

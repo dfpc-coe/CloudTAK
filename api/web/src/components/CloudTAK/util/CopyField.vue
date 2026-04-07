@@ -50,8 +50,8 @@
         class='position-relative rounded text-truncate'
         :style='rows === 1 ? `min-height: ${minheight}px;` : ``'
         :class='{
-            "px-2 py-2 bg-accent": props.mode !== "pre",
-            "hover-button hover-border cursor-pointer": hover,
+            "px-2 py-2 cloudtak-accent": props.mode !== "pre",
+            "cloudtak-hover hover-border cursor-pointer": hover,
         }'
     >
         <slot />
@@ -73,24 +73,24 @@
                 style='top: 8px;'
                 :size='24'
                 :class='{
-                    "hover-button-hidden": hover,
+                    "cloudtak-hover-hidden": hover,
                 }'
                 :style='{
                     "right": props.edit ? "64px" : "32px",
                 }'
-                class='position-absolute bg-accent'
+                class='position-absolute cloudtak-accent'
                 @delete='$emit("delete")'
             />
 
             <TablerIconButton
                 v-if='edit'
                 title='Edit Field'
-                class='position-absolute bg-accent'
+                class='position-absolute'
                 :class='{
-                    "hover-button-hidden": hover,
+                    "cloudtak-hover-hidden": hover,
                 }'
-                style='right: 36px; top: 8px;'
-                @click='editing = true'
+                style='right: 40px; top: 8px;'
+                @click.stop.prevent='editing = true'
             >
                 <IconPencil
                     :size='24'
@@ -100,7 +100,7 @@
 
             <CopyButton
                 :text='text'
-                class='position-absolute bg-accent'
+                class='position-absolute cloudtak-accent'
                 :size='24'
                 style='right: 8px; top: 8px;'
             />
@@ -114,24 +114,24 @@
                 style='top: 6px;'
                 :size='24'
                 :class='{
-                    "hover-button-hidden": hover,
+                    "cloudtak-hover-hidden": hover,
                 }'
                 :style='{
                     "right": props.edit ? "64px" : "32px",
                 }'
-                class='position-absolute bg-accent'
+                class='position-absolute cloudtak-accent'
                 @delete='$emit("delete")'
             />
 
             <TablerIconButton
                 v-if='edit'
                 title='Edit'
-                class='position-absolute bg-accent'
+                class='position-absolute'
                 :class='{
-                    "hover-button-hidden": hover,
+                    "cloudtak-hover-hidden": hover,
                 }'
-                style='right: 32px; top: 6px;'
-                @click='editing = true'
+                style='right: 36px; top: 6px;'
+                @click.stop.prevent='editing = true'
             >
                 <IconPencil
                     :size='24'

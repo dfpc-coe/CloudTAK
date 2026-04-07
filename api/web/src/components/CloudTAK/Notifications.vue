@@ -1,13 +1,12 @@
 <template>
     <div
-        class='card'
         style='
             min-width: 400px;
             max-height: 50vh;
         '
     >
-        <div class='card-header d-flex align-items-center'>
-            <h3 class='card-title'>
+        <div class='d-flex align-items-center px-3 py-2 border-bottom'>
+            <h3 class='m-0 fw-bold'>
                 Notifications
             </h3>
             <div class='ms-auto btn-list'>
@@ -40,7 +39,7 @@
             <div
                 v-for='type in availableTypes'
                 :key='type'
-                class='d-flex flex-column align-items-center justify-content-center p-2 rounded cursor-pointer border'
+                class='d-flex flex-column align-items-center justify-content-center p-2 rounded cursor-pointer border cloudtak-hover'
                 :class='selectedTypes.includes(type) ? "border-primary" : "border-transparent"'
                 style='width: 60px; height: 60px;'
                 @click.stop.prevent='toggleType(type)'
@@ -74,12 +73,12 @@
         />
         <div
             v-else
-            class='overflow-auto list-group list-group-flush list-group-hoverable'
+            class='overflow-auto list-group list-group-flush'
         >
             <div
                 v-for='n in filteredList'
                 :key='n.id'
-                class='list-group-item cursor-pointer'
+                class='list-group-item cursor-pointer cloudtak-hover'
                 data-toggle='collapse'
                 @click='router.push(n.url)'
             >

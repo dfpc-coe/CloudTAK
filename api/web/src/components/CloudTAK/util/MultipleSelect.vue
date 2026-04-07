@@ -1,7 +1,7 @@
 <template>
     <div
         ref='selectMenu'
-        class='bg-dark rounded p-2'
+        class='cloudtak-bg rounded p-2'
         style='
             width: 200px;
         '
