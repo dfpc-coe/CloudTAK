@@ -265,6 +265,7 @@ import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { version } from '../../package.json';
 import { IconSettings, IconTrash, IconLock } from '@tabler/icons-vue';
 import Config from '../base/config.ts';
+import { getCurrentEntryBuildId } from '../base/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { std } from '../std.ts';
 import {
@@ -323,7 +324,7 @@ const footerLogo = computed(() => {
     }
 });
 
-const buildHash = import.meta.env.HASH;
+const buildHash = getCurrentEntryBuildId();
 
 const showSettings = ref(false);
 const workers = ref<{

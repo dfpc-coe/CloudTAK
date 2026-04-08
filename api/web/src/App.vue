@@ -183,12 +183,14 @@ import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vu
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
 import { db } from './base/database.ts';
+import { getCurrentEntryBuildId } from './base/service-worker.ts';
 import { useMapStore } from './stores/map.ts';
 
 const router = useRouter();
 const route = useRoute();
 const mapStore = useMapStore();
 const externalApplicationsKey = 'external::applications' as keyof FullConfig;
+const currentBuildId = getCurrentEntryBuildId();
 
 const loginLogo = ref<string>();
 const loginName = ref<string>();
@@ -299,6 +301,10 @@ onMounted(async () => {
         error.value = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
     });
 
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('sw:update-available', onSwUpdateAvailable);
+    }
+
     applyTheme();
     displayStyleSub = liveQuery(() => db.profile.get('display_style')).subscribe((entry) => {
         const style = entry?.value;
@@ -362,8 +368,6 @@ onMounted(async () => {
     }
 
     if ('serviceWorker' in navigator) {
-        window.addEventListener('sw:update-available', onSwUpdateAvailable);
-
         navigator.serviceWorker.getRegistrations().then(async (registrations) => {
             for (const registration of registrations) {
                 registration.update().catch((err) => {
@@ -392,7 +396,7 @@ onMounted(async () => {
                         const u = new URL(worker.scriptURL);
                         const swBuild = u.searchParams.get('build');
                         const swVersion = u.searchParams.get('v');
-                        if (swBuild && swBuild !== import.meta.env.HASH) {
+                        if ((swVersion && swVersion !== version) || (swBuild && swBuild !== currentBuildId)) {
                             updatedSW.value = { version: swVersion, build: swBuild };
                             updateAvailable.value = true;
                         }
