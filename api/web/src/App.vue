@@ -189,7 +189,6 @@ import { useMapStore } from './stores/map.ts';
 const router = useRouter();
 const route = useRoute();
 const mapStore = useMapStore();
-const externalApplicationsKey = 'external::applications' as keyof FullConfig;
 const currentBuildId = getCurrentEntryBuildId();
 
 const loginLogo = ref<string>();
@@ -338,8 +337,7 @@ onMounted(async () => {
         'login::background::color',
         'login::signup',
         'login::forgot',
-        'login::username',
-        externalApplicationsKey
+        'login::username'
     ]);
 
     loginLogo.value = config['login::logo'];
