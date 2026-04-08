@@ -258,19 +258,43 @@
                         </TablerIconButton>
                     </template>
                     <template #dropdown>
-                        <div class='card'>
-                            <div class='card-body'>
+                        <div class='d-flex flex-column gap-1'>
+                            <template v-if='appSwitcherApplications.length'>
                                 <div
+                                    v-for='application in appSwitcherApplications'
+                                    :key='application.url'
                                     class='px-2 py-2 d-flex align-items-center cloudtak-hover rounded cursor-pointer'
-                                    @click='external("/video")'
+                                    @click='external(application.url)'
                                 >
-                                    <IconDeviceTv
+                                    <img
+                                        v-if='application.icon'
+                                        :src='application.icon'
+                                        :alt='`${application.name} logo`'
+                                        class='app-switcher-logo'
+                                    >
+                                    <IconWorld
+                                        v-else
                                         size='32'
                                         stroke='1'
                                     />
                                     <div class='mx-2'>
-                                        Video Wall
+                                        {{ application.name }}
                                     </div>
+                                </div>
+
+                                <div class='dropdown-divider my-1' />
+                            </template>
+
+                            <div
+                                class='px-2 py-2 d-flex align-items-center cloudtak-hover rounded cursor-pointer'
+                                @click='external("/video")'
+                            >
+                                <IconDeviceTv
+                                    size='32'
+                                    stroke='1'
+                                />
+                                <div class='mx-2'>
+                                    Video Wall
                                 </div>
                             </div>
                         </div>
@@ -322,6 +346,7 @@ import {
     IconUser,
     IconLogout,
     IconGridDots,
+    IconWorld,
     IconDeviceTv,
     IconLayoutGrid,
     IconLayoutList,
@@ -341,7 +366,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../stores/map.ts';
 import type { MenuItemConfig } from '../../stores/modules/menu.ts';
-import Config from '../../base/config.ts';
+import Config, { type FullConfig } from '../../base/config.ts';
 import { useRouter, useRoute } from 'vue-router';
 import MenuItemCard from './Menu/MenuItemCard.vue';
 import ProfileConfig from '../../base/profile.ts';
@@ -350,18 +375,28 @@ const route = useRoute();
 const router = useRouter();
 
 const mapStore = useMapStore();
+const externalApplicationsKey = 'external::applications' as keyof FullConfig;
 
 const logo = ref('/CloudTAKLogo.svg');
+const appSwitcherApplications = ref<Array<{
+    name: string;
+    icon: string;
+    url: string;
+}>>([]);
 
 let alive = false;
 onMounted(() => { alive = true; });
 onUnmounted(() => { alive = false; });
 
 onMounted(async () => {
-    const config = await Config.list(['login::logo']);
+    const config = await Config.list(['login::logo', externalApplicationsKey]);
 
     if (alive && config['login::logo']) {
         logo.value = config['login::logo'];
+    }
+
+    if (alive) {
+        appSwitcherApplications.value = sanitizeExternalApplications(config[externalApplicationsKey]);
     }
 });
 
@@ -485,6 +520,32 @@ function cycleVisibility(item: MenuItemConfig) {
     mapStore.menu.setVisibility(item.key, next);
 }
 
+function sanitizeExternalApplications(applications: unknown): Array<{ name: string; icon: string; url: string; }> {
+    if (!Array.isArray(applications)) return [];
+
+    return applications.flatMap((application) => {
+        if (!application || typeof application !== 'object') return [];
+
+        const value = application as {
+            name?: unknown;
+            icon?: unknown;
+            url?: unknown;
+        };
+
+        if (typeof value.name !== 'string' || typeof value.url !== 'string') return [];
+
+        const name = value.name.trim();
+        const url = value.url.trim();
+        if (!name || !url) return [];
+
+        return [{
+            name,
+            url,
+            icon: typeof value.icon === 'string' ? value.icon : ''
+        }];
+    });
+}
+
 function external(url: string) {
     window.open(String(new URL(url, window.location.origin)));
 }
@@ -543,5 +604,12 @@ function logout() {
 
 .cursor-move {
     cursor: move !important;
+}
+
+.app-switcher-logo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 </style>

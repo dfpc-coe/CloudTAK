@@ -49,7 +49,8 @@ export const UserConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'group::Dark Blue',
     'group::Teal',
     'group::Dark Green',
-    'group::Brown',]
+    'group::Brown',
+    'external::applications',]
 
 function serializeConfigValue<K extends keyof Static<typeof FullConfig>>(
     key: K,

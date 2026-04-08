@@ -161,7 +161,7 @@
 import { ref, computed, onErrorCaptured, onMounted, onUnmounted } from 'vue'
 import { liveQuery, type Subscription } from 'dexie';
 import { useRouter, useRoute } from 'vue-router';
-import Config from './base/config.ts';
+import Config, { type FullConfig } from './base/config.ts';
 import ServerManager from './base/server.ts';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
@@ -188,35 +188,32 @@ import { useMapStore } from './stores/map.ts';
 const router = useRouter();
 const route = useRoute();
 const mapStore = useMapStore();
+const externalApplicationsKey = 'external::applications' as keyof FullConfig;
 
 const loginLogo = ref<string>();
 const loginName = ref<string>();
 
 const updateAvailable = ref(false);
 const updatedSW = ref<{ version: string | null; build: string | null }>({ version: null, build: null });
+const pendingRegistration = ref<ServiceWorkerRegistration | null>(null);
 
 const applyUpdate = () => {
-    window.location.reload();
+    const waiting = pendingRegistration.value?.waiting;
+    if (waiting) {
+        waiting.postMessage('SKIP_WAITING');
+        // controllerchange handler in main.ts will reload the page
+    } else {
+        window.location.reload();
+    }
 };
 
-const onSwUpdated = async (e: Event) => {
-    e.preventDefault();
-
-    try {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        for (const reg of regs) {
-            const worker = reg.active;
-            if (worker?.scriptURL) {
-                const u = new URL(worker.scriptURL);
-                updatedSW.value = {
-                    version: u.searchParams.get('v'),
-                    build: u.searchParams.get('build')
-                };
-                break;
-            }
-        }
-    } catch { /* ignore */ }
-
+const onSwUpdateAvailable = (e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    updatedSW.value = {
+        version: detail.version,
+        build: detail.build
+    };
+    pendingRegistration.value = detail.registration;
     updateAvailable.value = true;
 };
 
@@ -335,7 +332,8 @@ onMounted(async () => {
         'login::background::color',
         'login::signup',
         'login::forgot',
-        'login::username'
+        'login::username',
+        externalApplicationsKey
     ]);
 
     loginLogo.value = config['login::logo'];
@@ -364,6 +362,8 @@ onMounted(async () => {
     }
 
     if ('serviceWorker' in navigator) {
+        window.addEventListener('sw:update-available', onSwUpdateAvailable);
+
         navigator.serviceWorker.getRegistrations().then(async (registrations) => {
             for (const registration of registrations) {
                 registration.update().catch((err) => {
@@ -373,6 +373,20 @@ onMounted(async () => {
 
             try {
                 for (const reg of registrations) {
+                    // Prefer a waiting worker (new version ready to activate)
+                    if (reg.waiting) {
+                        const u = new URL(reg.waiting.scriptURL);
+                        updatedSW.value = {
+                            version: u.searchParams.get('v'),
+                            build: u.searchParams.get('build')
+                        };
+                        pendingRegistration.value = reg;
+                        updateAvailable.value = true;
+                        break;
+                    }
+
+                    // Fall back to detecting an active SW whose build differs from
+                    // the currently loaded page (e.g. another tab triggered activation).
                     const worker = reg.active;
                     if (worker?.scriptURL) {
                         const u = new URL(worker.scriptURL);
@@ -387,8 +401,6 @@ onMounted(async () => {
                 }
             } catch { /* ignore */ }
         });
-
-        window.addEventListener('sw:updated', onSwUpdated);
     }
 
     loading.value = false;
@@ -396,7 +408,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-    window.removeEventListener('sw:updated', onSwUpdated);
+    window.removeEventListener('sw:update-available', onSwUpdateAvailable);
     systemThemeQuery?.removeEventListener('change', onSystemThemeChange);
     displayStyleSub?.unsubscribe();
 });
