@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import { describe, it, expect, vi, type Mock } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -225,17 +225,16 @@ describe('sw.js', () => {
 
     describe('fetch', () => {
         it('returns cached response when available (cache-first)', async () => {
-            const { emit, cachesMock, scope } = loadSW({ version: '1.0.0', build: 'b1' });
+            const { cachesMock, scope } = loadSW({ version: '1.0.0', build: 'b1' });
 
             // Pre-populate cache with a response
             const cachedBody = 'cached-content';
             const cache = await cachesMock.open('cloudtak-cache-1.0.0-b1');
             (cache.match as Mock).mockResolvedValueOnce(new Response(cachedBody));
 
-            let respondedWith: Response | undefined;
             const event: FakeEvent = {
                 request: new Request('https://example.com/assets/main-b1.js'),
-                respondWith: vi.fn((p: Promise<Response>) => { respondedWith = p as any; }),
+                respondWith: vi.fn(),
             };
 
             // Fire fetch listeners
@@ -246,7 +245,7 @@ describe('sw.js', () => {
             // Since we evaluated the SW via new Function, listeners are captured differently
             // Use the emit helper's approach for fetch
             if (event.respondWith?.mock.calls.length) {
-                respondedWith = await event.respondWith.mock.calls[0][0];
+                await event.respondWith.mock.calls[0][0];
             }
         });
 
