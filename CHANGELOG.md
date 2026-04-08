@@ -18,6 +18,13 @@
 
 ### Pending Release
 
+### v12.119.0 - 2026-04-07
+
+- :bug: Ensure that downloaded attachments are not only displayed correctly but downloaded via the download manager and not just opened in a new tab - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1391
+- :bug: Don't infinitely create alerts when a user activates the alert functionality
+- :bug: Don't infinitely show toasts when a user activates the alert functionality 
+- :rocket: Show a nice pulsing alert icon when an alert is present in the notifications list 
+
 ### v12.118.0 - 2026-04-07
 
 - :tada: Allow saving preferred coordinate system
