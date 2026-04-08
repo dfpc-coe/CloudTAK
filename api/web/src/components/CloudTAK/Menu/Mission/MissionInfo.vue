@@ -386,7 +386,5 @@ async function subscribe(subscribe: boolean) {
     --bs-btn-hover-border-color: var(--tblr-primary);
 }
 
-:global(html[data-bs-theme='dark']) .invite-qr-image {
-    filter: invert(100%);
-}
+
 </style>
