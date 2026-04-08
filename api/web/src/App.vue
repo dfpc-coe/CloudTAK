@@ -161,7 +161,7 @@
 import { ref, computed, onErrorCaptured, onMounted, onUnmounted } from 'vue'
 import { liveQuery, type Subscription } from 'dexie';
 import { useRouter, useRoute } from 'vue-router';
-import Config, { type FullConfig } from './base/config.ts';
+import Config from './base/config.ts';
 import ServerManager from './base/server.ts';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
