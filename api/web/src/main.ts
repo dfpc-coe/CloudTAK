@@ -5,50 +5,9 @@ import type { PluginStatic, PluginInstance } from '../plugin.ts'
 import router from './router.ts'
 import { createPinia } from 'pinia'
 import { useMapStore } from './stores/map.ts';
+import { initServiceWorker } from './base/service-worker.ts';
 
-if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register(`/sw.js?v=${version}&build=${import.meta.env.HASH}`).then((registration) => {
-            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-
-            const notifyWaiting = (worker: ServiceWorker) => {
-                const u = new URL(worker.scriptURL);
-                window.dispatchEvent(new CustomEvent('sw:update-available', {
-                    detail: {
-                        version: u.searchParams.get('v'),
-                        build: u.searchParams.get('build'),
-                        registration
-                    }
-                }));
-            };
-
-            if (registration.waiting) {
-                notifyWaiting(registration.waiting);
-            }
-
-            registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                if (!newWorker) return;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        notifyWaiting(newWorker);
-                    }
-                });
-            });
-        }, (err) => {
-            console.log('ServiceWorker registration failed: ', err);
-        });
-
-        let refreshing = false;
-
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-            if (!refreshing) {
-                refreshing = true;
-                window.location.reload();
-            }
-        })
-    });
-}
+initServiceWorker(version, 'index.html');
 
 import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'
