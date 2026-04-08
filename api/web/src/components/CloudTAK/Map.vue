@@ -430,18 +430,20 @@ import GenericBottomPane from './GenericBottomPane.vue';
 import type { MapGeoJSONFeature, LngLatLike, MapMouseEvent } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
 import {
-    IconSearch,
-    IconMenu2,
-    IconPlus,
-    IconMinus,
-    IconLockAccess,
-    IconX,
-    IconBell,
-    IconAngle,
-    IconAlertTriangle,
     IconCircleArrowUp,
-    IconCompass,
+    IconAlertTriangle,
+    IconLocationPin,
+    IconLockAccess,
+    IconLocation,
     IconMountain,
+    IconCompass,
+    IconSearch,
+    IconMinus,
+    IconMenu2,
+    IconAngle,
+    IconPlus,
+    IconBell,
+    IconX,
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
