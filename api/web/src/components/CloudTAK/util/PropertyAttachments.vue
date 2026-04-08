@@ -122,7 +122,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import { server, stdurl } from '../../../std.ts';
+import { server, std, stdurl } from '../../../std.ts';
 import { useFloatStore } from '../../../stores/float.ts';
 import Upload from '../../util/Upload.vue';
 import SlideDownHeader from './SlideDownHeader.vue';
@@ -252,7 +252,9 @@ function downloadAssetUrl(file: Attachment): string {
 }
 
 async function downloadAsset(file: Attachment): Promise<void> {
-    window.open(downloadAssetUrl(file), '_blank');
+    const url = stdurl(`/api/attachment/${file.hash}`);
+    url.searchParams.set('download', 'true');
+    await std(url, { download: file.name });
 }
 
 async function fetchMetadata(): Promise<void> {

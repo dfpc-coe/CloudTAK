@@ -280,9 +280,17 @@
                         id='map-notifications'
                         title='Notifications Icon'
                         class='cloudtak-hover'
+                        :class='{ "alert-pulse": alertNotifications }'
                         :hover='false'
                     >
+                        <IconAlertTriangle
+                            v-if='alertNotifications'
+                            :size='40'
+                            stroke='1'
+                            class='text-danger'
+                        />
                         <IconBell
+                            v-else
                             :size='40'
                             stroke='1'
                         />
@@ -430,6 +438,7 @@ import {
     IconX,
     IconBell,
     IconAngle,
+    IconAlertTriangle,
     IconCircleArrowUp,
     IconCompass,
     IconMountain,
@@ -445,7 +454,7 @@ import {
     TablerModal,
 } from '@tak-ps/vue-tabler';
 import { LocationState } from '../../base/events.ts';
-import TAKNotification from '../../base/notification.ts';
+import TAKNotification, { NotificationType } from '../../base/notification.ts';
 import { v4 as randomUUID } from 'uuid';
 import { lineString as turfLineString, point as turfPoint } from '@turf/helpers';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
@@ -498,6 +507,12 @@ const loading = ref(true)
 const notifications = useObservable<number>(
     from(liveQuery(async () => {
         return await TAKNotification.count()
+    }))
+);
+
+const alertNotifications = useObservable<number>(
+    from(liveQuery(async () => {
+        return await TAKNotification.countByType(NotificationType.Alert)
     }))
 );
 
@@ -876,6 +891,15 @@ async function handleRadial(event: string): Promise<void> {
 </script>
 
 <style>
+@keyframes alert-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.alert-pulse {
+    animation: alert-pulse 1.2s ease-in-out infinite;
+}
+
 .maplibregl-ctrl-scale {
     background-color: transparent !important;
     color: #ffffff;

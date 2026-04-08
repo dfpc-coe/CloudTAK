@@ -113,13 +113,16 @@ export default class AtlasConnection {
                     'b-a-o-pan',
                     'b-a-o-opn'
                 ].includes(feat.properties.type)) {
-                    await TAKNotification.create(
-                        NotificationType.Alert,
-                        `${feat.properties.callsign} Created`,
-                        '',
-                        `/cot/${feat.id}`,
-                        true
-                    );
+                    const alertUrl = `/cot/${feat.id}`;
+                    if (!await TAKNotification.existsByUrl(alertUrl)) {
+                        await TAKNotification.create(
+                            NotificationType.Alert,
+                            `${feat.properties.callsign} Created`,
+                            '',
+                            alertUrl,
+                            true
+                        );
+                    }
                 } else if ([
                     'b-r-f-h-c'
                 ].includes(feat.properties.type)) {
