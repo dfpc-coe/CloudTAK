@@ -59,7 +59,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue'
-import { stdurl } from '../../../std.ts';
+import { std, stdurl } from '../../../std.ts';
 import type { Attachment } from '../../../types.ts';
 import { useFloatStore } from '../../../stores/float.ts';
 import type { Pane, PaneAttachmentConfig } from '../../../stores/float.ts';
@@ -90,11 +90,12 @@ function downloadAssetUrl(attachment: Attachment & { url?: string }) {
 
     const url = stdurl(`/api/attachment/${attachment.hash}`);
     url.searchParams.set('token', localStorage.token);
+    url.searchParams.set('download', 'true');
     return url;
 }
 
 async function downloadAsset(attachment: Attachment & { url?: string }) {
-    window.open(String(downloadAssetUrl(attachment)), "_blank")
+    await std(downloadAssetUrl(attachment), { download: attachment.name || attachment.hash });
 }
 </script>
 
