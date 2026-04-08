@@ -18,6 +18,11 @@
 
 ### Pending Release
 
+### v12.119.1 - 2026-04-07
+
+- :bug: Fix missing icon
+- :bug: The use of the CSS invert combined with the Modal which relocates the div to the top level App.vue resulted in a full UI inversion
+
 ### v12.119.0 - 2026-04-07
 
 - :bug: Ensure that downloaded attachments are not only displayed correctly but downloaded via the download manager and not just opened in a new tab - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1391
