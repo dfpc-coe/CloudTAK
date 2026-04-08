@@ -133,7 +133,7 @@ export const useMapStore = defineStore('cloudtak', {
             zoom: 'conditional',
             distanceUnit: 'meter',
             coordFormat: 'dd',
-            toastOffset: { x: 70, y: 10 },
+            toastOffset: { x: 70, y: 60 },
             manualLocationMode: false,
             gpsWatchId: null,
             tokenExpiry: null,

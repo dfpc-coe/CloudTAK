@@ -151,7 +151,10 @@ export default async function router(schema: Schema, config: Config) {
             hash: Type.String()
         }),
         query: Type.Object({
-            token: Type.Optional(Type.String())
+            token: Type.Optional(Type.String()),
+            download: Type.Optional(Type.Boolean({
+                description: 'Set Content-Disposition to download the file'
+            }))
         }),
     }, async (req, res) => {
         try {
@@ -162,6 +165,11 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!attachment[0].Key) throw new Err(400, null, 'Count not find attachment');
             const stream = await S3.get(attachment[0].Key);
+
+            if (req.query.download) {
+                const filename = path.basename(attachment[0].Key);
+                res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            }
 
             stream.pipe(res);
         } catch (err) {
