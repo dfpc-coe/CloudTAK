@@ -366,7 +366,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../stores/map.ts';
 import type { MenuItemConfig } from '../../stores/modules/menu.ts';
-import Config, { type FullConfig } from '../../base/config.ts';
+import Config from '../../base/config.ts';
 import { useRouter, useRoute } from 'vue-router';
 import MenuItemCard from './Menu/MenuItemCard.vue';
 import ProfileConfig from '../../base/profile.ts';
@@ -375,29 +375,32 @@ const route = useRoute();
 const router = useRouter();
 
 const mapStore = useMapStore();
-const externalApplicationsKey = 'external::applications' as keyof FullConfig;
 
-const logo = ref('/CloudTAKLogo.svg');
-const appSwitcherApplications = ref<Array<{
+type AppSwitcherApplication = {
     name: string;
     icon: string;
     url: string;
-}>>([]);
+};
+
+const logo = ref('/CloudTAKLogo.svg');
+const appSwitcherApplications = ref<AppSwitcherApplication[]>([]);
 
 let alive = false;
 onMounted(() => { alive = true; });
 onUnmounted(() => { alive = false; });
 
 onMounted(async () => {
-    const config = await Config.list(['login::logo', externalApplicationsKey]);
+    const loginConfig = await Config.list(['login::logo']);
+    const applicationsConfig = await Config.refresh(['external::applications' as never]);
 
-    if (alive && config['login::logo']) {
-        logo.value = config['login::logo'];
+    if (!alive) return;
+
+    const loginLogo = loginConfig['login::logo'];
+    if (typeof loginLogo === 'string' && loginLogo) {
+        logo.value = loginLogo;
     }
 
-    if (alive) {
-        appSwitcherApplications.value = sanitizeExternalApplications(config[externalApplicationsKey]);
-    }
+    appSwitcherApplications.value = normalizeApplications(applicationsConfig['external::applications' as never]);
 });
 
 const emit = defineEmits<{
@@ -520,32 +523,6 @@ function cycleVisibility(item: MenuItemConfig) {
     mapStore.menu.setVisibility(item.key, next);
 }
 
-function sanitizeExternalApplications(applications: unknown): Array<{ name: string; icon: string; url: string; }> {
-    if (!Array.isArray(applications)) return [];
-
-    return applications.flatMap((application) => {
-        if (!application || typeof application !== 'object') return [];
-
-        const value = application as {
-            name?: unknown;
-            icon?: unknown;
-            url?: unknown;
-        };
-
-        if (typeof value.name !== 'string' || typeof value.url !== 'string') return [];
-
-        const name = value.name.trim();
-        const url = value.url.trim();
-        if (!name || !url) return [];
-
-        return [{
-            name,
-            url,
-            icon: typeof value.icon === 'string' ? value.icon : ''
-        }];
-    });
-}
-
 function external(url: string) {
     window.open(String(new URL(url, window.location.origin)));
 }
@@ -568,6 +545,20 @@ function returnHome() {
 function logout() {
     delete localStorage.token;
     router.push("/login");
+}
+
+function normalizeApplications(applications: unknown): AppSwitcherApplication[] {
+    if (!Array.isArray(applications)) return [];
+
+    return applications.map((application) => {
+        const value = application as Partial<AppSwitcherApplication> | null;
+
+        return {
+            name: typeof value?.name === 'string' ? value.name : '',
+            icon: typeof value?.icon === 'string' ? value.icon : '',
+            url: typeof value?.url === 'string' ? value.url : '',
+        };
+    });
 }
 </script>
 
