@@ -10,6 +10,31 @@ if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register(`/sw.js?v=${version}&build=${import.meta.env.HASH}`).then((registration) => {
             console.log('ServiceWorker registration successful with scope: ', registration.scope);
+
+            const notifyWaiting = (worker: ServiceWorker) => {
+                const u = new URL(worker.scriptURL);
+                window.dispatchEvent(new CustomEvent('sw:update-available', {
+                    detail: {
+                        version: u.searchParams.get('v'),
+                        build: u.searchParams.get('build'),
+                        registration
+                    }
+                }));
+            };
+
+            if (registration.waiting) {
+                notifyWaiting(registration.waiting);
+            }
+
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (!newWorker) return;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        notifyWaiting(newWorker);
+                    }
+                });
+            });
         }, (err) => {
             console.log('ServiceWorker registration failed: ', err);
         });
@@ -19,13 +44,7 @@ if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
         navigator.serviceWorker.addEventListener("controllerchange", () => {
             if (!refreshing) {
                 refreshing = true;
-                // Dispatch a cancelable event so that page components (e.g. Login)
-                // can call preventDefault() to show their own upgrade prompt instead
-                // of reloading silently.  When nothing cancels the event, reload.
-                const notCancelled = window.dispatchEvent(new CustomEvent('sw:updated', { cancelable: true }));
-                if (notCancelled) {
-                    window.location.reload();
-                }
+                window.location.reload();
             }
         })
     });

@@ -52,11 +52,13 @@ self.addEventListener('install', (event) => {
         } else {
             console.log('All resources cached successfully.');
         }
-
-        // skipWaiting only after the cache is populated so that when this SW
-        // takes control the full new cache is already in place.
-        self.skipWaiting();
     })());
+});
+
+self.addEventListener('message', (event) => {
+    if (event.data === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
 
 self.addEventListener('activate', async (event) => {
