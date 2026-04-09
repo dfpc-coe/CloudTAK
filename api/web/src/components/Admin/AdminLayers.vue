@@ -17,6 +17,16 @@
                 </TablerIconButton>
 
                 <TablerIconButton
+                    title='Update Management'
+                    @click='router.push("/admin/layer/updates")'
+                >
+                    <IconListDetails
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <TablerIconButton
                     title='Redeploy'
                     @click='redeploy'
                 >
@@ -189,6 +199,7 @@ import {
     IconStackPop,
     IconStackPush,
     IconCloudUpload,
+    IconListDetails,
 } from '@tabler/icons-vue'
 
 const router = useRouter();

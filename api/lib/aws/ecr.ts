@@ -1,6 +1,7 @@
 import AWSECR, { ImageIdentifier, ListImagesCommandInput } from '@aws-sdk/client-ecr';
 import Err from '@openaddresses/batch-error';
 import process from 'node:process';
+import semver from 'semver-sort';
 
 function repositoryName(): string {
     return String(process.env.ECR_TASKS_REPOSITORY_NAME);
@@ -60,6 +61,36 @@ export default class ECR {
         } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to Get ECR Task Digest');
         }
+    }
+
+    static async versions(): Promise<{
+        total: number;
+        tasks: Map<string, Array<string>>;
+    }> {
+        const images = await this.list();
+
+        let total = 0;
+        const tasks = new Map<string, Array<string>>();
+
+        for (const image of images) {
+            const match = String(image.imageTag).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+            if (!match || !match[1] || !match[2]) continue;
+            total++;
+
+            let versions = tasks.get(match[1]);
+            if (!versions) {
+                versions = [];
+                tasks.set(match[1], versions);
+            }
+
+            versions.push(match[2]);
+        }
+
+        for (const [task, versions] of tasks.entries()) {
+            tasks.set(task, semver.desc(versions));
+        }
+
+        return { total, tasks };
     }
 
     static async delete(task: string, version: string): Promise<void> {
