@@ -8,7 +8,7 @@ import Lambda from '../aws/lambda.js';
 import ECR from '../aws/ecr.js';
 import CloudFormation from '../aws/cloudformation.js';
 import Config from '../config.js';
-import { LayerResponse } from '../types.js';
+import { LayerResponse, LayerUpdateManagementItemResponse } from '../types.js';
 import { Layer, LayerIncoming, LayerOutgoing } from '../schema.js';
 
 export default class LayerControl {
@@ -39,6 +39,34 @@ export default class LayerControl {
         }
 
         return layer;
+    }
+
+    async listUpdates(): Promise<Array<Static<typeof LayerUpdateManagementItemResponse>>> {
+        const { tasks } = await ECR.versions();
+        const items: Array<Static<typeof LayerUpdateManagementItemResponse>> = [];
+
+        for await (const layer of this.config.models.Layer.augmented_iter({ pagesize: 100 })) {
+            const match = String(layer.task).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+            const taskPrefix = match?.[1] || String(layer.task);
+            const currentVersion = match?.[2] || String(layer.task);
+            const latestVersion = tasks.get(taskPrefix)?.[0] || null;
+
+            items.push({
+                id: layer.id,
+                name: layer.name,
+                task_prefix: taskPrefix,
+                current_version: currentVersion,
+                latest_version: latestVersion,
+                has_update: Boolean(latestVersion && latestVersion !== currentVersion),
+                template: layer.template,
+                connection: layer.connection,
+                parent_name: layer.parent?.name || null,
+            });
+        }
+
+        items.sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id);
+
+        return items;
     }
 
     async generate(

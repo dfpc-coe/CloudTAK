@@ -5,8 +5,10 @@ import Sinon from 'sinon';
 import {
     ECRClient,
     BatchGetImageCommand,
+    ListImagesCommand,
 } from '@aws-sdk/client-ecr';
 import {
+    CreateStackCommand,
     DescribeStacksCommand,
     CloudFormationClient
 } from '@aws-sdk/client-cloudformation';
@@ -321,6 +323,124 @@ test('PATCH: api/connection/1/layer/1 - unset protected', async () => {
         });
     } catch (err) {
         assert.ifError(err);
+    }
+});
+
+test('GET: api/layer/update-management', async () => {
+    try {
+        Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
+            if (command instanceof ListImagesCommand) {
+                assert.deepEqual(command.input, {
+                    repositoryName: process.env.ECR_TASKS_REPOSITORY_NAME,
+                });
+
+                return Promise.resolve({
+                    imageIds: [
+                        { imageTag: 'etl-test-v1.1.0' },
+                        { imageTag: 'etl-test-v1.0.0' },
+                    ]
+                });
+            }
+
+            throw new Error('Unexpected command');
+        });
+
+        const res = await flight.fetch('/api/layer/update-management', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            },
+        }, false);
+
+        assert.deepEqual(res.body, {
+            total: 1,
+            items: [{
+                id: 1,
+                name: 'Test Layer',
+                task_prefix: 'etl-test',
+                current_version: '1.0.0',
+                latest_version: '1.1.0',
+                has_update: true,
+                template: false,
+                connection: 1,
+                parent_name: 'Test Connection'
+            }]
+        });
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        Sinon.restore();
+    }
+});
+
+test('PATCH: api/connection/1/layer/1 - update task version', async () => {
+    let describeCount = 0;
+
+    try {
+        Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
+            if (command instanceof DescribeStacksCommand) {
+                if (command.input.StackName === 'test-layer-1') {
+                    describeCount++;
+
+                    if (describeCount === 1) {
+                        return Promise.resolve({
+                            Stacks: [{
+                                StackName: 'test-layer-1',
+                                StackStatus: 'UPDATE_COMPLETE',
+                                CreationTime: new Date()
+                            }]
+                        });
+                    }
+
+                    throw new Error('Stack with id test-layer-1 does not exist');
+                } else if (command.input.StackName === 'test') {
+                    return Promise.resolve({
+                        Stacks: [{ Tags: [] }]
+                    });
+                }
+            } else if (command instanceof CreateStackCommand) {
+                return Promise.resolve({});
+            }
+
+            throw new Error(`Unexpected CloudFormation command: ${command.constructor.name}`);
+        });
+
+        Sinon.stub(CloudWatchLogsClient.prototype, 'send').callsFake((command) => {
+            if (command instanceof DeleteLogGroupCommand) {
+                assert.deepEqual(command.input, {
+                    logGroupName: '/aws/lambda/test-layer-1'
+                });
+
+                return Promise.resolve({});
+            }
+
+            throw new Error('Unexpected command');
+        });
+
+        const res = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                task: 'etl-test-v1.1.0'
+            }
+        }, false);
+
+        assert.equal(res.body.task, 'etl-test-v1.1.0');
+
+        const updated = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            },
+        }, true);
+
+        assert.equal(updated.body.task, 'etl-test-v1.1.0');
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        Sinon.restore();
     }
 });
 
