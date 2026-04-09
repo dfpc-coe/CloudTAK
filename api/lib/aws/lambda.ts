@@ -9,8 +9,11 @@ import process from 'node:process';
 import { Static } from '@sinclair/typebox'
 import { StackFrame } from './cloudformation.js';
 import { Capabilities } from '@tak-ps/etl'
+import ECR from './ecr.js';
 
-const ECR_TASKS_REPOSITORY = process.env.ECR_TASKS_REPOSITORY_NAME;
+function repositoryName(): string {
+    return String(process.env.ECR_TASKS_REPOSITORY_NAME);
+}
 
 /**
  * @class
@@ -50,6 +53,36 @@ export default class Lambda {
         } else {
             return
         }
+    }
+
+    static async currentImageExists(config: Config, layerid: number): Promise<boolean> {
+        const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_REGION });
+        const FunctionName = `${config.StackName}-layer-${layerid}`;
+
+        try {
+            const res = await lambda.send(new AWSLambda.GetFunctionCommand({ FunctionName }));
+            const imageUri = res.Code?.ResolvedImageUri || res.Code?.ImageUri;
+
+            if (!imageUri) return true;
+
+            const digest = imageUri.match(/@([^@]+)$/)?.[1];
+            if (digest) return await ECR.existsDigest(digest);
+
+            const tag = imageUri.match(/:([^/:@]+)$/)?.[1];
+            if (!tag) return true;
+
+            return await ECR.exists(tag);
+        } catch (err) {
+            if (err instanceof Error && /ResourceNotFoundException|Function not found/i.test(err.message)) {
+                return false;
+            }
+
+            throw err;
+        }
+    }
+
+    static async requiresRecreate(config: Config, layerid: number): Promise<boolean> {
+        return !(await this.currentImageExists(config, layerid));
     }
 
     static generate(
@@ -95,7 +128,7 @@ export default class Lambda {
                         },
                         Role: cf.importValue(config.StackName + '-etl-role'),
                         Code: {
-                            ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/${ECR_TASKS_REPOSITORY}:`, cf.ref('Task')])
+                            ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/${repositoryName()}:`, cf.ref('Task')])
                         }
                     }
                 }

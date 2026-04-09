@@ -5,6 +5,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
+import LayerDeploy from '../lib/aws/layer-deploy.js';
 import Style, { StyleContainer } from '../lib/style.js';
 import Filter, { FilterContainer } from '../lib/filter.js';
 import Alarm from '../lib/aws/alarm.js';
@@ -27,6 +28,11 @@ export default async function router(schema: Schema, config: Config) {
     const alarm = new Alarm(config.StackName);
     const layerControl = new LayerControl(config);
 
+    async function deployLayer(layer: Static<typeof LayerResponse>): Promise<void> {
+        const stack = await Lambda.generate(config, layer);
+        await LayerDeploy.apply(config, layer.id, stack);
+    }
+
     await schema.post('/layer/redeploy', {
         name: 'Redeploy Layers',
         group: 'LayerAdmin',
@@ -44,12 +50,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 for (const layer of list.items) {
                     try {
-                        const stack = await Lambda.generate(config, layer);
-                        if (await CloudFormation.exists(config, layer.id)) {
-                            await CloudFormation.update(config, layer.id, stack);
-                        } else {
-                            await CloudFormation.create(config, layer.id, stack);
-                        }
+                        await deployLayer(layer);
 
                         await sleep(50) //Otherwise AWS will throw Throttling exceptions
                     } catch (err) {
@@ -287,12 +288,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             try {
-                const stack = await Lambda.generate(config, layer);
-                if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, stack);
-                } else {
-                    await CloudFormation.create(config, layer.id, stack);
-                }
+                await deployLayer(layer);
             } catch (err) {
                 console.error(err);
             }
@@ -413,12 +409,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (changed) {
                 try {
-                    const stack = await Lambda.generate(config, layer);
-                    if (await CloudFormation.exists(config, layer.id)) {
-                        await CloudFormation.update(config, layer.id, stack);
-                    } else {
-                        await CloudFormation.create(config, layer.id, stack);
-                    }
+                    await deployLayer(layer);
                 } catch (err) {
                     console.error(err);
                 }
@@ -489,12 +480,7 @@ export default async function router(schema: Schema, config: Config) {
             layer = await layerControl.from(connection, req.params.layerid);
 
             try {
-                const stack = await Lambda.generate(config, layer);
-                if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, stack);
-                } else {
-                    await CloudFormation.create(config, layer.id, stack);
-                }
+                await deployLayer(layer);
             } catch (err) {
                 console.error(err);
             }
@@ -543,12 +529,7 @@ export default async function router(schema: Schema, config: Config) {
             layer = await layerControl.from(connection, req.params.layerid);
 
             try {
-                const stack = await Lambda.generate(config, layer);
-                if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, stack);
-                } else {
-                    await CloudFormation.create(config, layer.id, stack);
-                }
+                await deployLayer(layer);
             } catch (err) {
                 console.error(err);
             }
@@ -646,12 +627,7 @@ export default async function router(schema: Schema, config: Config) {
             layer = await layerControl.from(connection, req.params.layerid);
 
             try {
-                const stack = await Lambda.generate(config, layer);
-                if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, stack);
-                } else {
-                    await CloudFormation.create(config, layer.id, stack);
-                }
+                await deployLayer(layer);
             } catch (err) {
                 console.error(err);
             }
@@ -737,12 +713,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (changed) {
                 try {
-                    const stack = await Lambda.generate(config, layer);
-                    if (await CloudFormation.exists(config, layer.id)) {
-                        await CloudFormation.update(config, layer.id, stack);
-                    } else {
-                        await CloudFormation.create(config, layer.id, stack);
-                    }
+                    await deployLayer(layer);
                 } catch (err) {
                     console.error(err);
                 }
@@ -883,12 +854,7 @@ export default async function router(schema: Schema, config: Config) {
             if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
 
             try {
-                const stack = await Lambda.generate(config, layer);
-                if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, stack);
-                } else {
-                    await CloudFormation.create(config, layer.id, stack);
-                }
+                await deployLayer(layer);
             } catch (err) {
                 console.error(err);
             }
