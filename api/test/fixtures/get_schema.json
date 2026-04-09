@@ -284,6 +284,11 @@
         "query": false,
         "res": true
     },
+    "GET /layer/update-management": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/layer": {
         "body": false,
         "query": true,
