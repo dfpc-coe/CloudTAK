@@ -18,6 +18,10 @@
 
 ### Pending Release
 
+### v12.121.0 - 2026-04-09
+
+- :tada: Introduce unified Layer Update Management Tool
+
 ### v12.120.0 - 2026-04-08
 
 - :rocket: Continue to improve Server Worker Replacement Behavior
