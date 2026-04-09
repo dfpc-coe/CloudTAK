@@ -1,7 +1,7 @@
 <template>
     <div class='mb-3'>
         <TablerInput
-            id='logoUpload'
+            :id='props.inputId || "logoUpload"'
             :label='props.label || "Upload PNG/SVG Logo"'
             type='file'
             accept='image/png, image/svg+xml'
@@ -35,6 +35,7 @@ const props = defineProps<{
     modelValue?: string | null;
     label?: string;
     disabled?: boolean;
+    inputId?: string;
 }>();
 
 const base64Data = ref<string | undefined | null>(props.modelValue);

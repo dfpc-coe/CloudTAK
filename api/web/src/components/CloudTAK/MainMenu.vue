@@ -29,7 +29,7 @@
                 "cloudtak-bg": !compact,
             }'
             style='
-                z-index: 1;
+                z-index: 4;
                 top: 60px;
                 bottom: var(--map-bottom-bar-size, 50px);
             '

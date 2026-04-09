@@ -13,6 +13,7 @@
             <ConfigProxy />
             <ConfigRetention />
             <ConfigDisplay />
+            <ConfigApplications />
             <ConfigGroups />
             <ConfigMap />
             <ConfigProvider />
@@ -28,6 +29,7 @@ import ConfigMedia from './AdminConfig/ConfigMedia.vue';
 import ConfigProxy from './AdminConfig/ConfigProxy.vue';
 import ConfigRetention from './AdminConfig/ConfigRetention.vue';
 import ConfigDisplay from './AdminConfig/ConfigDisplay.vue';
+import ConfigApplications from './AdminConfig/ConfigApplications.vue';
 import ConfigGroups from './AdminConfig/ConfigGroups.vue';
 import ConfigMap from './AdminConfig/ConfigMap.vue';
 import ConfigProvider from './AdminConfig/ConfigProvider.vue';
