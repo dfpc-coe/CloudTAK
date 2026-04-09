@@ -6,7 +6,6 @@ import CF from '../lib/aws/cloudformation.js';
 import Lambda from '../lib/aws/lambda.js';
 import LayerDeploy from '../lib/aws/layer-deploy.js';
 import LayerControl from '../lib/control/layer.js';
-import CloudFormation from '../lib/aws/cloudformation.js';
 import Logs from '../lib/aws/lambda-logs.js';
 import Config from '../lib/config.js';
 import { Capabilities } from '@tak-ps/etl'
