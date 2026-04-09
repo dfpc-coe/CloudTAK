@@ -1,10 +1,11 @@
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import sleep from '../lib/sleep.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
+import LayerDeploy from '../lib/aws/layer-deploy.js';
 import Style, { StyleContainer } from '../lib/style.js';
 import Filter, { FilterContainer } from '../lib/filter.js';
 import Alarm from '../lib/aws/alarm.js';
@@ -13,8 +14,14 @@ import Schedule from '../lib/schedule.js';
 import LayerControl from '../lib/control/layer.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
-import type { InferInsertModel } from 'drizzle-orm';;
-import { StandardResponse, LayerResponse, LayerIncomingResponse, LayerOutgoingResponse } from '../lib/types.js';
+import type { InferInsertModel } from 'drizzle-orm';
+import {
+    StandardResponse,
+    LayerResponse,
+    LayerIncomingResponse,
+    LayerOutgoingResponse,
+    LayerUpdateManagementListResponse,
+} from '../lib/types.js';
 import { LayerIncoming, LayerOutgoing } from '../lib/schema.js';
 import DataMission from '../lib/data-mission.js';
 import { MAX_LAYERS_IN_DATA_SYNC } from '../lib/data-mission.js';
@@ -26,6 +33,11 @@ import * as Default from '../lib/limits.js';
 export default async function router(schema: Schema, config: Config) {
     const alarm = new Alarm(config.StackName);
     const layerControl = new LayerControl(config);
+
+    async function deployLayer(layer: Static<typeof LayerResponse>): Promise<void> {
+        const stack = await Lambda.generate(config, layer);
+        await LayerDeploy.apply(config, layer.id, stack);
+    }
 
     await schema.post('/layer/redeploy', {
         name: 'Redeploy Layers',
@@ -44,12 +56,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 for (const layer of list.items) {
                     try {
-                        const stack = await Lambda.generate(config, layer);
-                        if (await CloudFormation.exists(config, layer.id)) {
-                            await CloudFormation.update(config, layer.id, stack);
-                        } else {
-                            await CloudFormation.create(config, layer.id, stack);
-                        }
+                        await deployLayer(layer);
 
                         await sleep(50) //Otherwise AWS will throw Throttling exceptions
                     } catch (err) {
@@ -67,6 +74,25 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/layer/update-management', {
+        name: 'Layer Update Management',
+        group: 'LayerAdmin',
+        description: 'List all layers and whether a newer task version is available',
+        res: LayerUpdateManagementListResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            const items = await layerControl.listUpdates();
+
+            res.json({
+                total: items.length,
+                items
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 
     await schema.get('/connection/:connectionid/layer', {
         name: 'List Layers',
@@ -287,12 +313,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             try {
-                const stack = await Lambda.generate(config, layer);
-                if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, stack);
-                } else {
-                    await CloudFormation.create(config, layer.id, stack);
-                }
+                await deployLayer(layer);
             } catch (err) {
                 console.error(err);
             }
@@ -413,12 +434,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (changed) {
                 try {
-                    const stack = await Lambda.generate(config, layer);
-                    if (await CloudFormation.exists(config, layer.id)) {
-                        await CloudFormation.update(config, layer.id, stack);
-                    } else {
-                        await CloudFormation.create(config, layer.id, stack);
-                    }
+                    await deployLayer(layer);
                 } catch (err) {
                     console.error(err);
                 }
@@ -489,12 +505,7 @@ export default async function router(schema: Schema, config: Config) {
             layer = await layerControl.from(connection, req.params.layerid);
 
             try {
-                const stack = await Lambda.generate(config, layer);
-                if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, stack);
-                } else {
-                    await CloudFormation.create(config, layer.id, stack);
-                }
+                await deployLayer(layer);
             } catch (err) {
                 console.error(err);
             }
@@ -543,12 +554,7 @@ export default async function router(schema: Schema, config: Config) {
             layer = await layerControl.from(connection, req.params.layerid);
 
             try {
-                const stack = await Lambda.generate(config, layer);
-                if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, stack);
-                } else {
-                    await CloudFormation.create(config, layer.id, stack);
-                }
+                await deployLayer(layer);
             } catch (err) {
                 console.error(err);
             }
@@ -646,12 +652,7 @@ export default async function router(schema: Schema, config: Config) {
             layer = await layerControl.from(connection, req.params.layerid);
 
             try {
-                const stack = await Lambda.generate(config, layer);
-                if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, stack);
-                } else {
-                    await CloudFormation.create(config, layer.id, stack);
-                }
+                await deployLayer(layer);
             } catch (err) {
                 console.error(err);
             }
@@ -676,7 +677,10 @@ export default async function router(schema: Schema, config: Config) {
             }),
         }),
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 })
+            ]),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
@@ -705,14 +709,24 @@ export default async function router(schema: Schema, config: Config) {
         res: LayerResponse
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
-                ]
-            }, req.params.connectionid);
+            const resources = [
+                { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+            ];
 
-            let layer = await layerControl.from(connection, req.params.layerid);
+            let connection = null;
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.as_user(config, req, { admin: true });
+                layer = await layerControl.from(null, req.params.layerid);
+                if (layer.connection !== null) {
+                    throw new Err(400, null, 'Layer is not a template layer');
+                }
+            } else {
+                const auth = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+                connection = auth.connection;
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
@@ -737,12 +751,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (changed) {
                 try {
-                    const stack = await Lambda.generate(config, layer);
-                    if (await CloudFormation.exists(config, layer.id)) {
-                        await CloudFormation.update(config, layer.id, stack);
-                    } else {
-                        await CloudFormation.create(config, layer.id, stack);
-                    }
+                    await deployLayer(layer);
                 } catch (err) {
                     console.error(err);
                 }
@@ -883,12 +892,7 @@ export default async function router(schema: Schema, config: Config) {
             if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
 
             try {
-                const stack = await Lambda.generate(config, layer);
-                if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, stack);
-                } else {
-                    await CloudFormation.create(config, layer.id, stack);
-                }
+                await deployLayer(layer);
             } catch (err) {
                 console.error(err);
             }

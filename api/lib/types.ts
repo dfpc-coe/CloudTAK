@@ -14,6 +14,23 @@ export const LayerIncomingResponse = AugmentedLayerIncoming;
 export const LayerOutgoingResponse = AugmentedLayerOutgoing;
 export const DataResponse = AugmentedData;
 
+export const LayerUpdateManagementItemResponse = Type.Object({
+    id: Type.Integer(),
+    name: Type.String(),
+    task_prefix: Type.String(),
+    current_version: Type.String(),
+    latest_version: Type.Union([Type.Null(), Type.String()]),
+    has_update: Type.Boolean(),
+    template: Type.Boolean(),
+    connection: Type.Union([Type.Null(), Type.Integer()]),
+    parent_name: Type.Union([Type.Null(), Type.String()]),
+});
+
+export const LayerUpdateManagementListResponse = Type.Object({
+    total: Type.Integer(),
+    items: Type.Array(LayerUpdateManagementItemResponse)
+});
+
 export const GeoJSONFeatureGeometryPoint = Type.Object({
     type: Type.Literal('Point'),
     coordinates: Type.Tuple([Type.Number(), Type.Number()])
