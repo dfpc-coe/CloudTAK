@@ -18,6 +18,11 @@
 
 ### Pending Release
 
+### v12.120.0 - 2026-04-08
+
+- :rocket: Continue to improve Server Worker Replacement Behavior
+- :tada: Allow administrators to set External Application URLs
+
 ### v12.119.1 - 2026-04-07
 
 - :bug: Fix missing icon
