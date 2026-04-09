@@ -14,7 +14,7 @@ import Schedule from '../lib/schedule.js';
 import LayerControl from '../lib/control/layer.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
-import type { InferInsertModel } from 'drizzle-orm';;
+import type { InferInsertModel } from 'drizzle-orm';
 import {
     StandardResponse,
     LayerResponse,
@@ -717,8 +717,11 @@ export default async function router(schema: Schema, config: Config) {
             let connection = null;
             let layer;
             if (req.params.connectionid === 'template') {
-                await Auth.is_auth(config, req, { resources });
+                await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
+                if (layer.connection !== null) {
+                    throw new Err(400, null, 'Layer is not a template layer');
+                }
             } else {
                 const auth = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
                 connection = auth.connection;
