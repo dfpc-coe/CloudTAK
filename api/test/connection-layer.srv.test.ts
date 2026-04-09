@@ -368,9 +368,9 @@ test('GET: api/layer/update-management', async () => {
         });
     } catch (err) {
         assert.ifError(err);
+    } finally {
+        Sinon.restore();
     }
-
-    Sinon.restore();
 });
 
 test('PATCH: api/connection/1/layer/1 - update task version', async () => {
@@ -402,7 +402,7 @@ test('PATCH: api/connection/1/layer/1 - update task version', async () => {
                 return Promise.resolve({});
             }
 
-            return Promise.resolve({});
+            throw new Error(`Unexpected CloudFormation command: ${command.constructor.name}`);
         });
 
         Sinon.stub(CloudWatchLogsClient.prototype, 'send').callsFake((command) => {
@@ -439,9 +439,9 @@ test('PATCH: api/connection/1/layer/1 - update task version', async () => {
         assert.equal(updated.body.task, 'etl-test-v1.1.0');
     } catch (err) {
         assert.ifError(err);
+    } finally {
+        Sinon.restore();
     }
-
-    Sinon.restore();
 });
 
 test('DELETE: api/connection/1/layer/1', async () => {
