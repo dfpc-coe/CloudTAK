@@ -510,6 +510,11 @@ export const FullConfig = Type.Object({
     'login::background::enabled': Type.Boolean({ description: 'Enable or Disable Custom Background on Login Page' }),
     'login::background::color': Type.String({ description: 'Hex Color Code for Login Background' }),
     'login::logo': Type.String({ description: 'Base64 encoded PNG for Logo' }),
+    'external::applications': Type.Array(Type.Object({
+        name: Type.String({ description: 'Application Name' }),
+        icon: Type.String({ description: 'Base64 encoded icon' }),
+        url: Type.String({ description: 'Application URL' }),
+    }), { description: 'External application links' }),
 });
 
 export type FullConfigType = Static<typeof FullConfig>;

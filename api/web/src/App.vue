@@ -183,40 +183,38 @@ import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vu
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
 import { db } from './base/database.ts';
+import { getCurrentEntryBuildId } from './base/service-worker.ts';
 import { useMapStore } from './stores/map.ts';
 
 const router = useRouter();
 const route = useRoute();
 const mapStore = useMapStore();
+const currentBuildId = getCurrentEntryBuildId();
 
 const loginLogo = ref<string>();
 const loginName = ref<string>();
 
 const updateAvailable = ref(false);
 const updatedSW = ref<{ version: string | null; build: string | null }>({ version: null, build: null });
+const pendingRegistration = ref<ServiceWorkerRegistration | null>(null);
 
 const applyUpdate = () => {
-    window.location.reload();
+    const waiting = pendingRegistration.value?.waiting;
+    if (waiting) {
+        waiting.postMessage('SKIP_WAITING');
+        // controllerchange handler in main.ts will reload the page
+    } else {
+        window.location.reload();
+    }
 };
 
-const onSwUpdated = async (e: Event) => {
-    e.preventDefault();
-
-    try {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        for (const reg of regs) {
-            const worker = reg.active;
-            if (worker?.scriptURL) {
-                const u = new URL(worker.scriptURL);
-                updatedSW.value = {
-                    version: u.searchParams.get('v'),
-                    build: u.searchParams.get('build')
-                };
-                break;
-            }
-        }
-    } catch { /* ignore */ }
-
+const onSwUpdateAvailable = (e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    updatedSW.value = {
+        version: detail.version,
+        build: detail.build
+    };
+    pendingRegistration.value = detail.registration;
     updateAvailable.value = true;
 };
 
@@ -302,6 +300,10 @@ onMounted(async () => {
         error.value = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
     });
 
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('sw:update-available', onSwUpdateAvailable);
+    }
+
     applyTheme();
     displayStyleSub = liveQuery(() => db.profile.get('display_style')).subscribe((entry) => {
         const style = entry?.value;
@@ -373,12 +375,26 @@ onMounted(async () => {
 
             try {
                 for (const reg of registrations) {
+                    // Prefer a waiting worker (new version ready to activate)
+                    if (reg.waiting) {
+                        const u = new URL(reg.waiting.scriptURL);
+                        updatedSW.value = {
+                            version: u.searchParams.get('v'),
+                            build: u.searchParams.get('build')
+                        };
+                        pendingRegistration.value = reg;
+                        updateAvailable.value = true;
+                        break;
+                    }
+
+                    // Fall back to detecting an active SW whose build differs from
+                    // the currently loaded page (e.g. another tab triggered activation).
                     const worker = reg.active;
                     if (worker?.scriptURL) {
                         const u = new URL(worker.scriptURL);
                         const swBuild = u.searchParams.get('build');
                         const swVersion = u.searchParams.get('v');
-                        if (swBuild && swBuild !== import.meta.env.HASH) {
+                        if ((swVersion && swVersion !== version) || (swBuild && swBuild !== currentBuildId)) {
                             updatedSW.value = { version: swVersion, build: swBuild };
                             updateAvailable.value = true;
                         }
@@ -387,8 +403,6 @@ onMounted(async () => {
                 }
             } catch { /* ignore */ }
         });
-
-        window.addEventListener('sw:updated', onSwUpdated);
     }
 
     loading.value = false;
@@ -396,7 +410,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-    window.removeEventListener('sw:updated', onSwUpdated);
+    window.removeEventListener('sw:update-available', onSwUpdateAvailable);
     systemThemeQuery?.removeEventListener('change', onSystemThemeChange);
     displayStyleSub?.unsubscribe();
 });

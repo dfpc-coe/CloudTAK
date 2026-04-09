@@ -2,25 +2,9 @@ import { createApp } from 'vue'
 import { version } from '../../../package.json'
 import * as VueRouter from 'vue-router'
 import { createPinia } from 'pinia'
+import { initServiceWorker } from '../../base/service-worker.ts';
 
-if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register(`/sw.js?v=${version}&build=${import.meta.env.HASH}`).then((registration) => {
-            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-        }, (err) => {
-            console.log('ServiceWorker registration failed: ', err);
-        });
-
-        let refreshing = false;
-
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-            if (!refreshing) {
-                refreshing = true;
-                window.location.reload();
-            }
-        })
-    });
-}
+initServiceWorker(version, 'admin.html');
 
 import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'

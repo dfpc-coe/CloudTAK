@@ -258,19 +258,43 @@
                         </TablerIconButton>
                     </template>
                     <template #dropdown>
-                        <div class='card'>
-                            <div class='card-body'>
+                        <div class='d-flex flex-column gap-1'>
+                            <template v-if='appSwitcherApplications.length'>
                                 <div
+                                    v-for='application in appSwitcherApplications'
+                                    :key='application.url'
                                     class='px-2 py-2 d-flex align-items-center cloudtak-hover rounded cursor-pointer'
-                                    @click='external("/video")'
+                                    @click='external(application.url)'
                                 >
-                                    <IconDeviceTv
+                                    <img
+                                        v-if='application.icon'
+                                        :src='application.icon'
+                                        :alt='`${application.name} logo`'
+                                        class='app-switcher-logo'
+                                    >
+                                    <IconWorld
+                                        v-else
                                         size='32'
                                         stroke='1'
                                     />
                                     <div class='mx-2'>
-                                        Video Wall
+                                        {{ application.name }}
                                     </div>
+                                </div>
+
+                                <div class='dropdown-divider my-1' />
+                            </template>
+
+                            <div
+                                class='px-2 py-2 d-flex align-items-center cloudtak-hover rounded cursor-pointer'
+                                @click='external("/video")'
+                            >
+                                <IconDeviceTv
+                                    size='32'
+                                    stroke='1'
+                                />
+                                <div class='mx-2'>
+                                    Video Wall
                                 </div>
                             </div>
                         </div>
@@ -322,6 +346,7 @@ import {
     IconUser,
     IconLogout,
     IconGridDots,
+    IconWorld,
     IconDeviceTv,
     IconLayoutGrid,
     IconLayoutList,
@@ -351,18 +376,31 @@ const router = useRouter();
 
 const mapStore = useMapStore();
 
+type AppSwitcherApplication = {
+    name: string;
+    icon: string;
+    url: string;
+};
+
 const logo = ref('/CloudTAKLogo.svg');
+const appSwitcherApplications = ref<AppSwitcherApplication[]>([]);
 
 let alive = false;
 onMounted(() => { alive = true; });
 onUnmounted(() => { alive = false; });
 
 onMounted(async () => {
-    const config = await Config.list(['login::logo']);
+    const loginConfig = await Config.list(['login::logo']);
+    const applicationsConfig = await Config.refresh(['external::applications' as never]);
 
-    if (alive && config['login::logo']) {
-        logo.value = config['login::logo'];
+    if (!alive) return;
+
+    const loginLogo = loginConfig['login::logo'];
+    if (typeof loginLogo === 'string' && loginLogo) {
+        logo.value = loginLogo;
     }
+
+    appSwitcherApplications.value = normalizeApplications(applicationsConfig['external::applications' as never]);
 });
 
 const emit = defineEmits<{
@@ -508,6 +546,20 @@ function logout() {
     delete localStorage.token;
     router.push("/login");
 }
+
+function normalizeApplications(applications: unknown): AppSwitcherApplication[] {
+    if (!Array.isArray(applications)) return [];
+
+    return applications.map((application) => {
+        const value = application as Partial<AppSwitcherApplication> | null;
+
+        return {
+            name: typeof value?.name === 'string' ? value.name : '',
+            icon: typeof value?.icon === 'string' ? value.icon : '',
+            url: typeof value?.url === 'string' ? value.url : '',
+        };
+    });
+}
 </script>
 
 <style scoped>
@@ -543,5 +595,12 @@ function logout() {
 
 .cursor-move {
     cursor: move !important;
+}
+
+.app-switcher-logo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 </style>

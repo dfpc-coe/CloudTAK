@@ -55,7 +55,7 @@ import {
 import Dropzone from 'dropzone/dist/dropzone.mjs';
 import 'dropzone/dist/dropzone.css';
 import '@tabler/core/dist/css/tabler-vendors.min.css';
-import { convertToPem } from 'p12-pem/lib/lib/p12.js';
+import { convertToPem } from '@tak-ps/node-p12/browser';
 
 const emit = defineEmits([
     'close',

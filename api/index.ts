@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { parseArgs } from 'node:util';
 import cors from 'cors';
 import express from 'express';
 import { StandardResponse } from './lib/types.js';
@@ -8,7 +9,6 @@ import history, {Context} from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
 import { ProfileConnConfig } from './lib/connection-config.js';
 import { ConnectionClient } from './lib/connection-pool.js';
-import minimist from 'minimist';
 import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
 import type WebSocket from 'ws';
@@ -18,18 +18,28 @@ import ServerManager from './lib/server.js';
 import { tokenParser, AuthUser } from './lib/auth.js'
 import process from 'node:process';
 
-const args = minimist(process.argv, {
-    boolean: [
-        'silent',   // Turn off logging as much as possible
-        'nocache',  // Ignore MemCached
-        'noevents', // Disable Initialization of Second Level Events
-        'nosinks',  // Disable Push to Sinks
-    ],
-    string: [
-        'postgres', // Postgres Connection String
-        'env'       // Load a non-default .env file --env local would read .env-local
-    ],
-});
+type CliArgs = {
+    silent?: boolean;
+    nocache?: boolean;
+    noevents?: boolean;
+    nosinks?: boolean;
+    postgres?: string;
+    env?: string;
+};
+
+const { values: args } = parseArgs({
+    args: process.argv.slice(2),
+    options: {
+        silent: { type: 'boolean' },   // Turn off logging as much as possible
+        nocache: { type: 'boolean' },  // Ignore MemCached
+        noevents: { type: 'boolean' }, // Disable Initialization of Second Level Events
+        nosinks: { type: 'boolean' },  // Disable Push to Sinks
+        postgres: { type: 'string' },  // Postgres Connection String
+        env: { type: 'string' }        // Load a non-default .env file --env local would read .env-local
+    },
+    allowPositionals: true,
+    strict: false,
+}) as { values: CliArgs };
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('./package.json', import.meta.url))));
 
