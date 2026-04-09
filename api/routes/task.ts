@@ -4,7 +4,6 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import ECR from '../lib/aws/ecr.js';
-import semver from 'semver-sort';
 import Config from '../lib/config.js';
 import { Task } from '../lib/schema.js';
 import { StandardResponse, TaskResponse } from '../lib/types.js';
@@ -13,36 +12,6 @@ import * as Default from '../lib/limits.js';
 export enum TaskSchemaEnum {
     OUTPUT = 'schema:output',
     INPUT = 'schema:input'
-}
-
-async function listTasks(): Promise<{
-    total: number,
-    tasks: Map<string, Array<string>>
-}> {
-    const images = await ECR.list();
-
-    let total: number = 0;
-    const tasks: Map<string, Array<string>> = new Map();
-
-    for (const image of images) {
-        const match = String(image.imageTag).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
-        if (!match || !match[1] || !match[2]) continue;
-        total++;
-
-        let task = tasks.get(match[1])
-        if (!task) {
-            task = [];
-            tasks.set(match[1], task);
-        }
-
-        task.push(match[2]);
-    }
-
-    for (const key of tasks.keys()) {
-        tasks.set(key, semver.desc(tasks.get(key) || []));
-    }
-
-    return { total, tasks }
 }
 
 export default async function router(schema: Schema, config: Config) {
@@ -150,7 +119,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req);
 
-            const { total, tasks } = await listTasks();
+            const { total, tasks } = await ECR.versions();
 
             res.json({
                 total,
@@ -176,13 +145,12 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req);
 
-            // Stuck with this approach for now - https://github.com/aws/containers-roadmap/issues/418
-            const { tasks } = await listTasks();
+            const { tasks } = await ECR.versions();
 
             const list = tasks.get(req.params.task);
             res.json({
                 total: list ? list.length : 0,
-                versions: semver.desc(list || [])
+                versions: list || []
             });
         } catch (err) {
             Err.respond(err, res);
@@ -202,7 +170,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            const { tasks } = await listTasks();
+            const { tasks } = await ECR.versions();
 
             const versions = tasks.get(req.params.task);
             if (!versions) throw new Err(400, null, 'Task does not exist');

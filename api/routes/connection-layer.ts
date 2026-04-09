@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import sleep from '../lib/sleep.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -15,7 +15,13 @@ import LayerControl from '../lib/control/layer.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 import type { InferInsertModel } from 'drizzle-orm';;
-import { StandardResponse, LayerResponse, LayerIncomingResponse, LayerOutgoingResponse } from '../lib/types.js';
+import {
+    StandardResponse,
+    LayerResponse,
+    LayerIncomingResponse,
+    LayerOutgoingResponse,
+    LayerUpdateManagementListResponse,
+} from '../lib/types.js';
 import { LayerIncoming, LayerOutgoing } from '../lib/schema.js';
 import DataMission from '../lib/data-mission.js';
 import { MAX_LAYERS_IN_DATA_SYNC } from '../lib/data-mission.js';
@@ -68,6 +74,25 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/layer/update-management', {
+        name: 'Layer Update Management',
+        group: 'LayerAdmin',
+        description: 'List all layers and whether a newer task version is available',
+        res: LayerUpdateManagementListResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            const items = await layerControl.listUpdates();
+
+            res.json({
+                total: items.length,
+                items
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 
     await schema.get('/connection/:connectionid/layer', {
         name: 'List Layers',
@@ -652,7 +677,10 @@ export default async function router(schema: Schema, config: Config) {
             }),
         }),
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Union([
+                Type.Literal('template'),
+                Type.Integer({ minimum: 1 })
+            ]),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
@@ -681,14 +709,21 @@ export default async function router(schema: Schema, config: Config) {
         res: LayerResponse
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
-                ]
-            }, req.params.connectionid);
+            const resources = [
+                { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+            ];
 
-            let layer = await layerControl.from(connection, req.params.layerid);
+            let connection = null;
+            let layer;
+            if (req.params.connectionid === 'template') {
+                await Auth.is_auth(config, req, { resources });
+                layer = await layerControl.from(null, req.params.layerid);
+            } else {
+                const auth = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+                connection = auth.connection;
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
