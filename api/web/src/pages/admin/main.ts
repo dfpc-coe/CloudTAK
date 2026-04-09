@@ -1,10 +1,6 @@
 import { createApp } from 'vue'
-import { version } from '../../../package.json'
 import * as VueRouter from 'vue-router'
 import { createPinia } from 'pinia'
-import { initServiceWorker } from '../../base/service-worker.ts';
-
-initServiceWorker(version, 'admin.html');
 
 import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'
