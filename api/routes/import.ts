@@ -383,30 +383,7 @@ export default async function router(schema: Schema, config: Config) {
                 if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
             }
 
-            if (req.body.status && [Import_Status.EMPTY, Import_Status.PENDING].includes(req.body.status)) {
-                throw new Err(400, null, `Cannot set status to ${req.body.status}`);
-            } else if (req.body.status === Import_Status.RUNNING && imported.status === Import_Status.RUNNING) {
-                throw new Err(400, null, `Cannot set status to running on an import that is already running`);
-            }
-
-            const new_import = await config.models.Import.commit(req.params.import, {
-                ...req.body,
-                updated: sql`Now()`
-            });
-
-            const response = {
-                ...new_import,
-                results: imported.results
-            };
-
-            if (req.body.status === Import_Status.FAIL || req.body.status === Import_Status.SUCCESS) {
-                for (const client of config.wsClients.get(imported.username) || []) {
-                    client.ws.send(JSON.stringify({
-                        type: 'import',
-                        properties: response
-                    }))
-                }
-            }
+            const response = await importControl.update(req.params.import, req.body);
 
             res.json(response);
         } catch (err) {
@@ -437,10 +414,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            const ext = path.parse(imported.name).ext
-            await S3.del(`import/${imported.id}${ext}`)
-
-            await config.models.Import.delete(req.params.import);
+            await importControl.delete(req.params.import);
 
             res.json({
                 status: 200,

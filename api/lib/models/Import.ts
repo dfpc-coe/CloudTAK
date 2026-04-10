@@ -1,4 +1,4 @@
-import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
+import Modeler, { GenericList, GenericIterInput, GenericListInput } from '@openaddresses/batch-generic';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Import, ImportResult } from '../schema.js';
 import { sql, eq, asc, desc, SQL, is } from 'drizzle-orm';
@@ -11,6 +11,27 @@ export default class ImportModel extends Modeler<typeof Import> {
         pool: PostgresJsDatabase<Record<string, unknown>>,
     ) {
         super(pool, Import);
+    }
+
+    async *augmented_iter(query: GenericIterInput = {}): AsyncGenerator<Static<typeof ImportResponse>> {
+        const pagesize = query.pagesize || 100;
+        let page = 0;
+
+        let pgres;
+        do {
+            pgres = await this.augmented_list({
+                page,
+                limit: pagesize,
+                order: query.order,
+                where: query.where
+            });
+
+            for (const row of pgres.items) {
+                yield row;
+            }
+
+            page++;
+        } while (pgres.items.length);
     }
 
     async augmented_from(id: string | SQL<unknown>): Promise<Static<typeof ImportResponse>> {
