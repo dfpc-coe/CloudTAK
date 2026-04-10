@@ -1204,11 +1204,6 @@
         "query": false,
         "res": true
     },
-    "POST /retention": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /server/injector": {
         "body": false,
         "query": false,
@@ -1224,13 +1219,8 @@
         "query": true,
         "res": true
     },
-    "GET /server/repeater": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /server/repeater/:uid": {
-        "body": false,
+    "POST /retention": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -1257,6 +1247,16 @@
     "GET /search/suggest": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "GET /server/repeater": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /server/repeater/:uid": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "POST /server/tileset": {
@@ -1347,6 +1347,11 @@
     "GET /user/:username": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "GET /user/:username/session": {
+        "body": false,
+        "query": true,
         "res": true
     },
     "POST /video/auth": {
