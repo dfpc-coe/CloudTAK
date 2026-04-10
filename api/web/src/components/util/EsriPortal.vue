@@ -21,11 +21,11 @@
         <template v-else-if='loading.main'>
             <TablerLoading desc='Connecting to ESRI Portal' />
         </template>
-        <template v-else-if='!url'>
+        <template v-else-if='!url && server'>
             <!-- If no url is given assume auth is directly with a Server-->
             <EsriServer
                 :disabled='disabled'
-                :server='server?.url ?? ""'
+                :server='server.url'
                 :readonly='readonly'
                 :token='token ?? undefined'
                 @layer='$emit("layer", $event)'
