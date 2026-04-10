@@ -807,6 +807,7 @@ interface GeometryProperties {
     remarks: string;
     phone: string;
     callsign: string;
+    type?: string;
     links: StyleLink[];
     icon?: string;
     'marker-color'?: string;

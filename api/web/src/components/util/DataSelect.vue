@@ -86,7 +86,7 @@ import {
 
 const props = withDefaults(defineProps<{
     connection?: number;
-    modelValue?: number;
+    modelValue?: number | null;
     disabled?: boolean;
 }>(), {
     connection: undefined,

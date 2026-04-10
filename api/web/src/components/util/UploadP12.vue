@@ -55,11 +55,11 @@ import {
 import Dropzone from 'dropzone/dist/dropzone.mjs';
 import 'dropzone/dist/dropzone.css';
 import '@tabler/core/dist/css/tabler-vendors.min.css';
-import { convertToPem } from '@tak-ps/node-p12/browser';
+import { convertToPem, type ConvertToPemResult } from '@tak-ps/node-p12/browser';
 
 const emit = defineEmits<{
     (e: 'close'): void;
-    (e: 'certs', certs: unknown): void;
+    (e: 'certs', certs: ConvertToPemResult): void;
 }>();
 
 const dropzone = ref<InstanceType<typeof Dropzone> | null>(null);

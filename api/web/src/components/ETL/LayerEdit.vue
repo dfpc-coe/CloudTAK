@@ -198,7 +198,7 @@ const errors = ref<Record<string, string>>({
     description: '',
 })
 
-const template = ref<Record<string, unknown> | null>(null);
+const template = ref<{ id?: number; [key: string]: unknown } | undefined>();
 
 const layer = ref<LayerForm>({
     name: '',

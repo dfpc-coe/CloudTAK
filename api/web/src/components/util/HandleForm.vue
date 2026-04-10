@@ -256,7 +256,7 @@ const getCaretCoords = () => {
   mirror.style.overflowWrap = textarea.value.tagName === 'TEXTAREA' ? 'break-word' : 'normal';
 
     for (const property of properties) {
-    mirror.style[property as any] = inputStyle[property as any];
+    (mirror.style as unknown as Record<string, string>)[property] = (inputStyle as unknown as Record<string, string>)[property];
   }
 
   mirror.textContent = valueBeforeCursor;
@@ -294,7 +294,7 @@ const bindNativeInput = () => {
 
   if (textarea.value) {
     textarea.value.spellcheck = false;
-    textarea.value.addEventListener('input', handleNativeInput as EventListener);
+    textarea.value.addEventListener('input', handleNativeInput);
     textarea.value.addEventListener('scroll', syncScroll);
     textarea.value.addEventListener('keydown', handleKeyDown);
     observeNativeInput();
@@ -476,7 +476,7 @@ onBeforeUnmount(() => {
 
   if (!textarea.value) return;
 
-  textarea.value.removeEventListener('input', handleNativeInput as EventListener);
+  textarea.value.removeEventListener('input', handleNativeInput);
   textarea.value.removeEventListener('scroll', syncScroll);
   textarea.value.removeEventListener('keydown', handleKeyDown);
 });
