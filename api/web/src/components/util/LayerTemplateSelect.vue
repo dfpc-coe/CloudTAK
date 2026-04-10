@@ -81,9 +81,10 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../std.ts';
+import type { APIList } from '../../types.ts';
 import {
     IconTrash,
 } from '@tabler/icons-vue';
@@ -94,27 +95,30 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
-const props = defineProps({
-    modelValue: {
-        type: Object,
-        default: undefined
-    },
-    disabled: {
-        type: Boolean,
-        default: false
-    }
+interface Template {
+    id?: string | number;
+    name?: string;
+    description?: string;
+}
+
+const props = withDefaults(defineProps<{
+    modelValue?: Template;
+    disabled?: boolean;
+}>(), {
+    modelValue: undefined,
+    disabled: false,
 });
 
-const emit = defineEmits([
-    'update:modelValue'
-]);
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: Template | Record<string, never>): void;
+}>();
 
 const loading = ref({
     main: true,
     list: true,
 });
 
-const selected = ref({
+const selected = ref<Template>({
     id: '',
 });
 
@@ -124,7 +128,7 @@ const paging = ref({
     page: 0
 });
 
-const list = ref({
+const list = ref<APIList<Template>>({
     total: 0,
     items: []
 });
@@ -157,16 +161,17 @@ onMounted(async () => {
 });
 
 async function fetch() {
-    selected.value = await std(`/api/template/${props.modelValue.id}`);
+    if (!props.modelValue?.id) return;
+    selected.value = await std(`/api/template/${props.modelValue.id}`) as Template;
 }
 
 async function listData() {
     loading.value.list = true;
     const url = stdurl('/api/template');
     url.searchParams.set('filter', paging.value.filter);
-    url.searchParams.set('limit', paging.value.limit);
-    url.searchParams.set('page', paging.value.page);
-    list.value = await std(url);
+    url.searchParams.set('limit', String(paging.value.limit));
+    url.searchParams.set('page', String(paging.value.page));
+    list.value = await std(url) as APIList<Template>;
 
     loading.value.list = false;
 }

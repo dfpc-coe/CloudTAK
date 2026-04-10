@@ -1,108 +1,30 @@
 <template>
-    <div
-        class='btn-group'
-        role='group'
+    <TablerPillGroup
+        v-model='config.mode'
+        :options='coordOptions'
+        :rounded='false'
+        :full-width='false'
+        size='default'
+        name='point-type'
+        padding=''
     >
-        <input
-            id='point-default'
-            type='radio'
-            class='btn-check'
-            name='point-type'
-            autocomplete='off'
-            :checked='config.mode === "u-d-p"'
-            @click='config.mode = "u-d-p"'
-        >
-        <label
-            v-tooltip='"Custom Point"'
-            for='point-default'
-            type='button'
-            class='btn'
-        ><IconPoint
-            title='Point Icon'
-            :size='size'
-            stroke='1'
-        /></label>
-
-        <input
-            id='point-unknown'
-            type='radio'
-            class='btn-check'
-            name='point-type'
-            autocomplete='off'
-            :checked='config.mode === "a-u-G"'
-            @click='config.mode = "a-u-G"'
-        >
-        <label
-            v-tooltip='"Unknown Point"'
-            for='point-unknown'
-            type='button'
-            class='btn'
-        ><img
-            :width='size'
-            :height='size'
-            src='/pngs/a-u-G.png'
-        ></label>
-
-        <input
-            id='point-friendly'
-            type='radio'
-            class='btn-check'
-            name='point-type'
-            autocomplete='off'
-            :checked='config.mode === "a-f-G"'
-            @click='config.mode = "a-f-G"'
-        >
-        <label
-            v-tooltip='"Friendly Point"'
-            for='point-friendly'
-            type='button'
-            class='btn'
-        ><img
-            :width='size'
-            :height='size'
-            src='/pngs/a-f-G.png'
-        ></label>
-
-        <input
-            id='point-hostile'
-            type='radio'
-            class='btn-check'
-            name='point-type'
-            autocomplete='off'
-            :checked='config.mode === "a-h-G"'
-            @click='config.mode = "a-h-G"'
-        >
-        <label
-            v-tooltip='"Hostile Point"'
-            for='point-hostile'
-            type='button'
-            class='btn'
-        ><img
-            :width='size'
-            :height='size'
-            src='/pngs/a-h-G.png'
-        ></label>
-
-        <input
-            id='point-neutral'
-            type='radio'
-            class='btn-check'
-            name='point-type'
-            autocomplete='off'
-            :checked='config.mode === "a-n-G"'
-            @click='config.mode = "a-n-G"'
-        >
-        <label
-            v-tooltip='"Neutral Point"'
-            for='point-neutral'
-            type='button'
-            class='btn'
-        ><img
-            :width='size'
-            :height='size'
-            src='/pngs/a-n-G.png'
-        ></label>
-    </div>
+        <template #option='{ option }'>
+            <span v-tooltip='option.label'>
+                <IconPoint
+                    v-if='option.value === "u-d-p"'
+                    title='Point Icon'
+                    :size='size'
+                    stroke='1'
+                />
+                <img
+                    v-else
+                    :width='size'
+                    :height='size'
+                    :src='`/pngs/${option.value}.png`'
+                >
+            </span>
+        </template>
+    </TablerPillGroup>
 </template>
 
 <script setup lang='ts'>
@@ -110,6 +32,15 @@ import { ref, watch } from 'vue';
 import {
     IconPoint
 } from '@tabler/icons-vue';
+import { TablerPillGroup } from '@tak-ps/vue-tabler';
+
+const coordOptions = [
+    { value: 'u-d-p', label: 'Custom Point' },
+    { value: 'a-u-G', label: 'Unknown Point' },
+    { value: 'a-f-G', label: 'Friendly Point' },
+    { value: 'a-h-G', label: 'Hostile Point' },
+    { value: 'a-n-G', label: 'Neutral Point' },
+];
 
 const props = defineProps({
     modelValue: {

@@ -33,9 +33,9 @@
             </div>
 
             <TablerAlert
-                v-if='err'
+                v-if='error'
                 title='ETL Server Error'
-                :err='err'
+                :err='error'
             />
             <TablerLoading v-else-if='loading' />
             <TablerNone
@@ -80,19 +80,19 @@
                                             v-if='layer.incoming && layer.outgoing'
                                             title='Outgoing/Incoming'
                                             size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                         />
                                         <IconStackPop
                                             v-else-if='layer.outgoing'
                                             title='Outgoing'
                                             size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                         />
                                         <IconStackPush
                                             v-else-if='layer.incoming'
                                             title='Incoming'
                                             size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                         />
                                     </div>
                                 </div>
@@ -115,10 +115,11 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import { std, stdurl } from '../../../std.ts';
+import type { ETLLayerList } from '../../../types.ts';
 import TableFooter from '../../util/TableFooter.vue';
 import {
     IconPlus,
@@ -141,7 +142,7 @@ const route = useRoute();
 const router = useRouter();
 
 const loading = ref(true);
-const error = ref();
+const error = ref<Error>();
 
 const paging = ref({
     filter: '',
@@ -149,8 +150,10 @@ const paging = ref({
     page: 0
 })
 
-const list = ref({
+const list = ref<ETLLayerList>({
     total: 0,
+    tasks: [],
+    status: { healthy: 0, alarm: 0, unknown: 0 },
     items: []
 });
 
@@ -167,10 +170,10 @@ async function listLayers() {
     try {
         const url = stdurl(`/api/connection/${route.params.connectionid}/layer`);
         url.searchParams.set('alarms', String(true));
-        url.searchParams.set('limit', paging.value.limit);
-        url.searchParams.set('page', paging.value.page);
+        url.searchParams.set('limit', String(paging.value.limit));
+        url.searchParams.set('page', String(paging.value.page));
         url.searchParams.set('filter', paging.value.filter);
-        list.value = await std(url);
+        list.value = await std(url) as ETLLayerList;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

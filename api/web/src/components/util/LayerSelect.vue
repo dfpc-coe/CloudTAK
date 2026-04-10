@@ -82,9 +82,10 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../std.ts';
+import type { APIList } from '../../types.ts';
 import {
     IconTrash,
 } from '@tabler/icons-vue';
@@ -95,26 +96,25 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
-const props = defineProps({
-    modelValue: {
-        type: Number,
-        default: undefined
-    },
+const props = withDefaults(defineProps<{
+    modelValue?: number;
+}>(), {
+    modelValue: undefined,
 });
 
-const emit = defineEmits([
-    'update:modelValue'
-]);
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: string | number | undefined): void;
+}>();
 
 const loading = ref({
     main: true,
     list: true,
-})
+});
 
-const selected = ref({
+const selected = ref<{ id?: string | number; name?: string; description?: string }>({
     id: '',
     name: ''
-})
+});
 
 const paging = ref({
     filter: '',
@@ -122,7 +122,7 @@ const paging = ref({
     page: 0
 });
 
-const list = ref({
+const list = ref<APIList<{ id: number; name: string; description?: string }>>({
     total: 0,
     items: []
 });
@@ -131,7 +131,7 @@ watch(selected, async () => {
     emit('update:modelValue', selected.value.id);
 }, { deep: true });
 
-watch(props.modelValue, async () => {
+watch(() => props.modelValue, async () => {
     await fetch();
 });
 
@@ -146,16 +146,16 @@ onMounted(async () => {
 });
 
 async function fetch() {
-    selected.value = await std(`/api/layer/${props.modelValue}`);
+    selected.value = await std(`/api/layer/${props.modelValue}`) as typeof selected.value;
 }
 
 async function listData() {
     loading.value.list = true;
     const url = stdurl('/api/layer');
     url.searchParams.set('filter', paging.value.filter);
-    url.searchParams.set('limit', paging.value.limit);
-    url.searchParams.set('page', paging.value.page);
-    list.value = await std(url);
+    url.searchParams.set('limit', String(paging.value.limit));
+    url.searchParams.set('page', String(paging.value.page));
+    list.value = await std(url) as typeof list.value;
 
     loading.value.list = false;
 }

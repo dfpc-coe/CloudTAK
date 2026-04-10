@@ -76,14 +76,14 @@
                             :size='32'
                             stroke='1'
                             class='cursor-pointer'
-                            @click='data[key].splice(0, data[key].length)'
+                            @click='(data[key] as unknown[]).splice(0, (data[key] as unknown[]).length)'
                         />
                         <IconDatabaseImport
                             v-tooltip='"Import CSV"'
                             :size='32'
                             stroke='1'
                             class='cursor-pointer'
-                            @click='importModal(Object.keys(props.schema.properties[key].items.properties), data[key])'
+                            @click='importModal(Object.keys(props.schema.properties[key].items.properties), data[key] as Record<string, unknown>[])'
                         />
                         <IconPlus
                             v-tooltip='"Add Row"'
@@ -109,7 +109,7 @@
                             </thead>
                             <tbody>
                                 <tr
-                                    v-for='(arr, i) in data[key]'
+                                    v-for='(arr, i) in (data[key] as Record<string, unknown>[])'
                                     :key='i'
                                     @click='editModal(props.schema.properties[key].items, arr, key, i)'
                                 >
@@ -134,7 +134,7 @@
                         </table>
                     </div>
                     <TablerNone
-                        v-if='!data[key] || !data[key].length'
+                        v-if='!data[key] || !(data[key] as unknown[]).length'
                         :label='key'
                         :create='!props.disabled'
                         @create='editModal(props.schema.properties[key].items, {}, key)'
@@ -142,7 +142,7 @@
                 </template>
                 <template v-else>
                     <div
-                        v-for='(arr, i) of data[key]'
+                        v-for='(arr, i) of (data[key] as unknown[])'
                         :key='i'
                         class='border rounded my-2 py-2 mx-2 px-2'
                     >
@@ -156,13 +156,13 @@
                                     :size='32'
                                     stroke='1'
                                     class='cursor-pointer'
-                                    @click='data[key].splice(i, 1)'
+                                    @click='(data[key] as unknown[]).splice(i, 1)'
                                 />
                             </div>
                         </div>
 
                         <TablerSchema
-                            v-model='data[key][i]'
+                            v-model='(data[key] as Record<string, unknown>[])[i]'
                             :schema='props.schema.properties[key].items'
                             :disabled='props.disabled'
                         />
@@ -188,8 +188,8 @@
         />
 
         <SchemaModal
-            v-if='edit.shown !== false'
-            :allow-delete='!isNaN(edit.i) && !props.disabled'
+            v-if='edit.shown && edit.schema'
+            :allow-delete='edit.id !== null && !props.disabled'
             :edit='edit.row'
             :disabled='props.disabled'
             :schema='edit.schema'
@@ -200,7 +200,7 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, reactive, watch, onMounted } from 'vue';
 import {
     TablerNone,
@@ -217,39 +217,60 @@ import {
     IconDatabaseImport,
 } from '@tabler/icons-vue'
 
-const props = defineProps({
-    modelValue: {
-        type: Object,
-        required: true
-    },
-    schema: {
-        type: Object,
-        required: true
-    },
-    disabled: {
-        type: Boolean,
-        default: false
-    }
+interface SchemaProperty {
+    type?: string;
+    enum?: string[];
+    default?: unknown;
+    description?: string;
+    items: SchemaDefinition;
+    [key: string]: unknown;
+}
+
+interface SchemaDefinition {
+    type?: string;
+    required: string[];
+    properties: Record<string, SchemaProperty>;
+    [key: string]: unknown;
+}
+
+const props = withDefaults(defineProps<{
+    modelValue: Record<string, unknown>;
+    schema: SchemaDefinition;
+    disabled?: boolean;
+}>(), {
+    disabled: false
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: Record<string, unknown>): void;
+}>();
 
-const data = ref(false);
-const edit = reactive({
-    id: false,
-    key: false,
+const data = ref<Record<string, unknown> | false>(false);
+const edit = reactive<{
+    id: number | null;
+    key: string;
+    shown: boolean;
+    row: Record<string, unknown>;
+    schema: SchemaDefinition | false;
+}>({
+    id: null,
+    key: '',
     shown: false,
-    data: false,
+    row: {},
     schema: false
 });
-const upload = reactive({
+const upload = reactive<{
+    headers: string[];
+    data: Record<string, unknown>[] | null;
+    shown: boolean;
+}>({
     headers: [],
     data: null,
     shown: false
 });
 
 watch(data, () => {
-    emit('update:modelValue', data.value);
+    if (data.value !== false) emit('update:modelValue', data.value);
 }, {
     deep: true
 });
@@ -259,28 +280,30 @@ onMounted(() => {
 
     if (props.schema.type === 'object' && props.schema.properties) {
         for (const key in props.schema.properties) {
-            if (data.value[key] === undefined && props.schema.properties[key].type === 'array') {
-                data.value[key] = props.schema.properties[key].default || [];
-            } else if (data.value[key] === undefined && props.schema.properties[key].type === 'boolean') {
-                data.value[key] = props.schema.properties[key].default || false;
-            } else if (data.value[key] === undefined && props.schema.properties[key].type === 'string') {
-                data.value[key] = props.schema.properties[key].default || '';
-            } else if (data.value[key] === undefined && props.schema.properties[key].type === 'integer') {
-                data.value[key] = props.schema.properties[key].default;
-            } else if (data.value[key] === undefined && props.schema.properties[key].type === 'number') {
-                data.value[key] = props.schema.properties[key].default;
+            const d = data.value as Record<string, unknown>;
+            const prop = props.schema.properties[key];
+            if (d[key] === undefined && prop.type === 'array') {
+                d[key] = prop.default || [];
+            } else if (d[key] === undefined && prop.type === 'boolean') {
+                d[key] = prop.default || false;
+            } else if (d[key] === undefined && prop.type === 'string') {
+                d[key] = prop.default || '';
+            } else if (d[key] === undefined && prop.type === 'integer') {
+                d[key] = prop.default;
+            } else if (d[key] === undefined && prop.type === 'number') {
+                d[key] = prop.default;
             }
         }
     }
 });
 
-function importModal(headers, data) {
+function importModal(headers: string[], targetData: Record<string, unknown>[]) {
     upload.headers = headers;
-    upload.data = data;
+    upload.data = targetData;
     upload.shown = true;
 }
 
-function importCSV(csv) {
+function importCSV(csv: string) {
     upload.shown = false;
 
     const firstLine = csv.split('\n')[0];
@@ -288,30 +311,38 @@ function importCSV(csv) {
 
     for (const line of csv.split('\n')) {
         const row = line.split(delimiter);
-        const obj = {};
+        const obj: Record<string, string> = {};
         for (let i = 0; i < upload.headers.length; i++) {
             obj[upload.headers[i]] = row[i]
         }
-        upload.data.push(obj);
+        if (upload.data) upload.data.push(obj);
     }
 }
 
 function editModalRemove() {
-    if (!isNaN(edit.id)) data.value[edit.key].splice(edit.id, 1)
+    if (edit.id !== null && data.value) {
+        const arr = data.value[edit.key];
+        if (Array.isArray(arr)) arr.splice(edit.id, 1);
+    }
     edit.shown = false;
 }
 
-function editModalDone(row) {
-    if (edit.id) {
-        data.value[edit.key][edit.id] = row;
-    } else {
-        data.value[edit.key].push(row);
+function editModalDone(row: Record<string, unknown>) {
+    if (data.value) {
+        const arr = data.value[edit.key];
+        if (Array.isArray(arr)) {
+            if (edit.id !== null) {
+                arr[edit.id] = row;
+            } else {
+                arr.push(row);
+            }
+        }
     }
 
     edit.shown = false;
 }
 
-function editModal(schema, row, key, id) {
+function editModal(schema: SchemaDefinition, row: Record<string, unknown>, key: string, id?: number) {
     edit.shown = true;
     edit.key = key;
     edit.row = row;

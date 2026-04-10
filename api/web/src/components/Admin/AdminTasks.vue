@@ -4,46 +4,30 @@
             ETL Task Runner Management
         </h1>
     </div>
-    <div
-        class='px-2 py-2 round btn-group w-100'
-        role='group'
+    <TablerPillGroup
+        :model-value='String(route.name)'
+        :options='[
+            { value: "admin-tasks-registered", label: "Registered Tasks" },
+            { value: "admin-tasks-raw", label: "ECR Task Images" }
+        ]'
+        @update:model-value='(v: string) => router.push({ name: v })'
     >
-        <input
-            id='registered'
-            type='radio'
-            class='btn-check'
-            autocomplete='off'
-            :checked='route.name === "admin-tasks-registered"'
-            @click='router.push({ name: `admin-tasks-registered` })'
-        >
-        <label
-            for='registered'
-            type='button'
-            class='btn btn-sm'
-        ><IconBuildingBroadcastTower
-            v-tooltip='"Video Service"'
-            :size='32'
-            stroke='1'
-        /><span class='mx-2'>Registered Tasks</span></label>
-
-        <input
-            id='raw'
-            type='radio'
-            class='btn-check'
-            autocomplete='off'
-            :checked='route.name === "admin-tasks-raw"'
-            @click='router.push({ name: `admin-tasks-raw` })'
-        >
-        <label
-            for='raw'
-            type='button'
-            class='btn btn-sm'
-        ><IconBrandDocker
-            v-tooltip='"Video Leases"'
-            :size='32'
-            stroke='1'
-        /><span class='mx-2'>ECR Task Images</span></label>
-    </div>
+        <template #option='{ option }'>
+            <IconBuildingBroadcastTower
+                v-if='option.value === "admin-tasks-registered"'
+                v-tooltip='"Registered Tasks"'
+                :size='32'
+                stroke='1'
+            />
+            <IconBrandDocker
+                v-else
+                v-tooltip='"ECR Task Images"'
+                :size='32'
+                stroke='1'
+            />
+            <span class='mx-2'>{{ option.label }}</span>
+        </template>
+    </TablerPillGroup>
 
     <router-view />
 </template>
@@ -54,6 +38,7 @@ import {
     IconBrandDocker,
     IconBuildingBroadcastTower
 } from '@tabler/icons-vue'
+import { TablerPillGroup } from '@tak-ps/vue-tabler';
 
 const router = useRouter();
 const route = useRoute();

@@ -330,77 +330,33 @@
         </div>
 
         <div class='col-12 px-2 py-2'>
-            <div
-                class='btn-group w-100'
-                role='group'
+            <TablerPillGroup
+                v-model='mode'
+                :options='modeOptions'
+                :rounded='false'
+                size='default'
+                name='btn-mode'
+                padding=''
             >
-                <input
-                    id='btn-mode-info'
-                    type='radio'
-                    class='btn-check'
-                    name='btn-mode'
-                    autocomplete='off'
-                    :checked='mode === "default"'
-                    @click='mode = "default"'
-                >
-                <label
-                    for='btn-mode-info'
-                    type='button'
-                    class='btn'
-                >
+                <template #option='{ option }'>
                     <IconInfoCircle
+                        v-if='option.value === "default"'
                         :size='20'
                         stroke='1'
-                        class='cursor-pointer'
-                        @click='mode = "raw"'
                     />
-                    <span class='mx-2'>Info</span>
-                </label>
-                <template v-if='cot.is_skittle'>
-                    <input
-                        id='btn-mode-channels'
-                        type='radio'
-                        class='btn-check'
-                        name='btn-mode'
-                        autocomplete='off'
-                        :checked='mode === "channels"'
-                        @click='mode = "channels"'
-                    >
-                    <label
-                        for='btn-mode-channels'
-                        type='button'
-                        class='btn'
-                    >
-                        <IconAffiliate
-                            :size='20'
-                            stroke='1'
-                            class='cursor-pointer'
-                        />
-                        <span class='mx-2'>Channels</span>
-                    </label>
-                </template>
-                <input
-                    id='btn-mode-raw'
-                    type='radio'
-                    class='btn-check'
-                    name='btn-mode'
-                    autocomplete='off'
-                    :checked='mode === "raw"'
-                    @click='mode = "raw"'
-                >
-                <label
-                    for='btn-mode-raw'
-                    type='button'
-                    class='btn'
-                >
+                    <IconAffiliate
+                        v-else-if='option.value === "channels"'
+                        :size='20'
+                        stroke='1'
+                    />
                     <IconCode
+                        v-else
                         :size='20'
                         stroke='1'
-                        class='cursor-pointer'
                     />
-                    <span class='mx-2'>Raw</span>
-                </label>
-            </div>
+                    <span class='mx-2'>{{ option.label }}</span>
+                </template>
+            </TablerPillGroup>
         </div>
 
         <div
@@ -688,6 +644,7 @@ import {
     TablerDelete,
     TablerDropdown,
     TablerIconButton,
+    TablerPillGroup,
 } from '@tak-ps/vue-tabler';
 
 import CopyField from './util/CopyField.vue';
@@ -764,6 +721,13 @@ const units = ref({
 const username = ref<string | undefined>();
 const type = ref<COTType | undefined>();
 const mode = ref('default');
+
+const modeOptions = computed(() => {
+    const opts = [{ value: 'default', label: 'Info' }];
+    if (cot.value?.is_skittle) opts.push({ value: 'channels', label: 'Channels' });
+    opts.push({ value: 'raw', label: 'Raw' });
+    return opts;
+});
 const breadcrumbLive = ref(false);
 const remarksExpanded = ref(true);
 const bufferCotId = ref<string | null>(null);

@@ -21,13 +21,13 @@
         <template v-else-if='loading.main'>
             <TablerLoading desc='Connecting to ESRI Portal' />
         </template>
-        <template v-else-if='!url'>
+        <template v-else-if='!url && server'>
             <!-- If no url is given assume auth is directly with a Server-->
             <EsriServer
                 :disabled='disabled'
                 :server='server.url'
                 :readonly='readonly'
-                :token='token'
+                :token='token ?? undefined'
                 @layer='$emit("layer", $event)'
                 @close='server = null'
             />
@@ -126,10 +126,10 @@
 
                         <EsriServer
                             :disabled='disabled'
-                            :server='server.url'
+                            :server='server?.url ?? ""'
                             :readonly='readonly'
-                            :portal='url'
-                            :token='token'
+                            :portal='String(url ?? "")'
+                            :token='token ?? undefined'
                             @layer='$emit("layer", $event)'
                             @close='server = null'
                         />
@@ -196,8 +196,8 @@
 
                 <EsriPortalCreate
                     v-if='createModal'
-                    :portal='url'
-                    :token='token'
+                    :portal='String(url ?? "")'
+                    :token='token?.token ?? ""'
                     @close='createModal = false'
                     @create='createService($event)'
                 />
@@ -206,9 +206,9 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../std.ts';
 import {
     TablerAlert,
     TablerNone,
@@ -224,59 +224,63 @@ import {
 import EsriServer from './EsriServer.vue';
 import EsriPortalCreate from './EsriPortalCreate.vue';
 
-const props = defineProps({
-    disabled: {
-        type: Boolean,
-        required: false,
-        default: false
-    },
-    readonly: {
-        type: Boolean,
-        default: false,
-        description: 'Hide buttons for CRUD Operations'
-    },
-    url: {
-        type: [URL, String],
-        description: 'ArcGIS Portal URL to authenticate against',
-        default: undefined
-    },
-    layer: {
-        type: [URL, String],
-        description: 'ArcGIS Server/Layer URL',
-        default: undefined
-    },
-    username: {
-        type: String,
-        default: undefined
-    },
-    password: {
-        type: String,
-        default: undefined
-    },
-    pane: {
-        type: Boolean,
-        default: true
-    }
+interface EsriToken {
+    token: string;
+    expires: string;
+}
+
+interface EsriServerItem {
+    id?: string | number;
+    name?: string;
+    url: string;
+    title?: string;
+    [key: string]: unknown;
+}
+
+interface ContentItem {
+    id: string;
+    title: string;
+    access: string;
+    url?: string;
+    [key: string]: unknown;
+}
+
+const props = withDefaults(defineProps<{
+    disabled?: boolean;
+    readonly?: boolean;
+    url?: string | URL;
+    layer?: string | URL;
+    username?: string;
+    password?: string;
+    pane?: boolean;
+}>(), {
+    disabled: false,
+    readonly: false,
+    url: undefined,
+    layer: undefined,
+    username: undefined,
+    password: undefined,
+    pane: true,
 });
 
-const emit = defineEmits([
-    'close',
-    'token',
-    'layer'
-]);
+const emit = defineEmits<{
+    (e: 'close'): void;
+    (e: 'token', token: EsriToken | null): void;
+    (e: 'layer', layer: string): void;
+}>();
 
 const loading = ref({
     main: true,
     content: true
 });
-const createModal = ref(false);
-const type = ref(null);
-const err = ref(null);
-const portal = ref(null);
-const token = ref(null);
-const server = ref(props.layer ? { url: props.layer } : null);
-const servers = ref([]);
-const content = ref([]);
+const createModal = ref<boolean>(false);
+const type = ref<string | null>(null);
+const err = ref<Error | null>(null);
+const portal = ref<Record<string, unknown> | null>(null);
+const token = ref<EsriToken | null>(null);
+const server = ref<EsriServerItem | null>(props.layer ? { url: String(props.layer) } : null);
+const servers = ref<EsriServerItem[]>([]);
+const content = ref<{ total?: number; results?: ContentItem[] }>({});
 const contentFilter = ref({
     title: ''
 });
@@ -303,8 +307,11 @@ onMounted(async () => {
     }
 });
 
-function fmtserver(c) {
-    server.value = c;
+function fmtserver(c: ContentItem | EsriServerItem) {
+    server.value = {
+        ...c,
+        url: c.url ?? ''
+    };
 }
 
 async function generateToken() {
@@ -313,13 +320,13 @@ async function generateToken() {
         const body = {
             username: props.username,
             password: props.password,
-            url: props.url || server.value.url
+            url: props.url || server.value?.url
         }
 
         const res = await std('/api/esri', {
             method: 'POST',
             body
-        });
+        }) as { auth: EsriToken; type: string };
 
         token.value = res.auth;
         type.value = res.type;
@@ -332,7 +339,7 @@ async function generateToken() {
             await fetchServers();
         }
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value.main = false;
 }
@@ -346,15 +353,15 @@ async function fetchPortal() {
             url.searchParams.set('expires', token.value.expires);
         }
 
-        url.searchParams.set('portal', props.url);
+        url.searchParams.set('portal', String(props.url));
 
-        const res = await std(url);
+        const res = await std(url) as Record<string, unknown>;
 
         portal.value = res;
 
         if (portal.value.isReadOnly) throw new Error('Portal is Read Only');
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value.main = false;
 }
@@ -367,14 +374,14 @@ async function fetchContent() {
             url.searchParams.set('token', token.value.token);
             url.searchParams.set('expires', token.value.expires);
         }
-        url.searchParams.set('portal', props.url);
+        url.searchParams.set('portal', String(props.url));
         url.searchParams.set('title', contentFilter.value.title);
 
-        const res = await std(url);
+        const res = await std(url) as { total?: number; results?: ContentItem[] };
 
         content.value = res;
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value.content = false;
 }
@@ -387,19 +394,19 @@ async function fetchServers() {
             url.searchParams.set('token', token.value.token);
             url.searchParams.set('expires', token.value.expires);
         }
-        url.searchParams.set('portal', props.url);
+        url.searchParams.set('portal', String(props.url));
 
-        const res = await std(url);
+        const res = await std(url) as { servers?: EsriServerItem[] };
 
         if (!res.servers) throw new Error('No Servers Present');
         servers.value = res.servers;
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value.main = false;
 }
 
-async function createService(body) {
+async function createService(body: Record<string, unknown>) {
     if (!token.value) throw new Error('Auth Token is required to create a service');
 
     loading.value.main = true;
@@ -407,15 +414,15 @@ async function createService(body) {
         const url = stdurl('/api/esri/portal/service');
         url.searchParams.set('token', token.value.token);
         url.searchParams.set('expires', token.value.expires);
-        url.searchParams.set('portal', props.url);
+        url.searchParams.set('portal', String(props.url));
 
-        const res = await std(url, { method: 'POST', body });
+        const res = await std(url, { method: 'POST', body }) as { encodedServiceURL: string };
 
         server.value = {
             url: res.encodedServiceURL
         };
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value.main = false;
 }

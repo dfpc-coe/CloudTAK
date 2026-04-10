@@ -38,47 +38,29 @@
             </template>
         </template>
         <template #default>
-            <div
-                class='px-2 py-2 round btn-group w-100'
-                role='group'
+            <TablerPillGroup
+                v-model='mode'
+                :options='[
+                    { value: "connections", label: "Streams" },
+                    { value: "lease", label: "Leases" }
+                ]'
             >
-                <input
-                    id='connections'
-                    type='radio'
-                    class='btn-check'
-                    autocomplete='off'
-                    :checked='mode === "connections"'
-                    @click='mode = "connections"'
-                >
-                <label
-                    for='connections'
-                    type='button'
-                    class='btn btn-sm'
-                ><IconVideo
-                    v-tooltip='"Video Connections"'
-                    :size='32'
-                    stroke='1'
-                /><span class='ms-2'>Streams</span></label>
-
-                <input
-                    id='lease'
-                    type='radio'
-                    class='btn-check'
-                    autocomplete='off'
-                    :checked='mode === "lease"'
-                    @click='mode = "lease"'
-                >
-
-                <label
-                    for='lease'
-                    type='button'
-                    class='btn btn-sm'
-                ><IconServer2
-                    v-tooltip='"Video Leases"'
-                    :size='32'
-                    stroke='1'
-                /><span class='ms-2'>Leases</span></label>
-            </div>
+                <template #option='{ option }'>
+                    <IconVideo
+                        v-if='option.value === "connections"'
+                        v-tooltip='"Video Connections"'
+                        :size='32'
+                        stroke='1'
+                    />
+                    <IconServer2
+                        v-else
+                        v-tooltip='"Video Leases"'
+                        :size='32'
+                        stroke='1'
+                    />
+                    <span class='ms-2'>{{ option.label }}</span>
+                </template>
+            </TablerPillGroup>
 
             <template v-if='mode === "connections"'>
                 <div class='col-12 px-2'>
@@ -282,6 +264,7 @@ import {
     TablerLoading,
     TablerIconButton,
     TablerRefreshButton,
+    TablerPillGroup,
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,

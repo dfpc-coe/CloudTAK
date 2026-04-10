@@ -83,7 +83,7 @@
                             <div class='col-sm-6 col-lg-3'>
                                 <div
                                     class='card card-link cursor-pointer cloudtak-hover'
-                                    @click='selected = select(task)'
+                                    @click='select(task)'
                                 >
                                     <div class='card-header d-flex align-items-center user-select-none'>
                                         <IconStar
@@ -186,9 +186,10 @@
     </TablerModal>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../std.ts';
+import type { APIList } from '../../types.ts';
 import {
     IconStar,
     IconTrash,
@@ -206,30 +207,39 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
-const props = defineProps({
-    modelValue: {
-        type: String,
-        default: undefined
-    },
-    disabled: {
-        type: Boolean,
-        default: false
-    }
+interface Task {
+    id?: number;
+    name?: string;
+    prefix?: string;
+    logo?: string;
+    version?: string;
+    versions?: string[];
+    favorite?: boolean;
+    readme_body?: string;
+    [key: string]: unknown;
+}
+
+const props = withDefaults(defineProps<{
+    modelValue?: string;
+    disabled?: boolean;
+}>(), {
+    modelValue: undefined,
+    disabled: false,
 });
 
-const emit = defineEmits([
-    'update:modelValue'
-]);
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: string | undefined): void;
+}>();
 
-const loading = ref({
+const loading = ref<Record<string, boolean>>({
     main: true,
     modal: true,
     list: true,
 });
 
-const infoModal = ref();
+const infoModal = ref<Task>();
 
-const selected = ref({
+const selected = ref<Task>({
     id: undefined
 });
 
@@ -241,7 +251,7 @@ const paging = ref({
     page: 0
 });
 
-const list = ref({
+const list = ref<APIList<Task>>({
     total: 0,
     items: []
 });
@@ -259,14 +269,14 @@ watch(selected, () => {
 watch(infoModal, async function() {
     if (!infoModal.value) return;
 
-    const readme = await std(`/api/task/${infoModal.value.id}/readme`);
+    const readme = await std(`/api/task/${infoModal.value.id}/readme`) as { body: string };
 
     infoModal.value.readme_body = readme.body;
 })
 
-watch(props.modelValue, async function() {
+watch(() => props.modelValue, async function() {
     if (props.modelValue) {
-        select.value  = await select(props.modelValue.split('-v')[0], props.modelValue.split('-v')[1])
+        await select({ prefix: props.modelValue.split('-v')[0] } as Task, props.modelValue.split('-v')[1])
     }
 });
 
@@ -276,17 +286,17 @@ watch(paging.value, async () => {
 
 onMounted(async () => {
     if (props.modelValue) {
-        await select(props.modelValue.split('-v')[0], props.modelValue.split('-v')[1])
+        await select({ prefix: props.modelValue.split('-v')[0] } as Task, props.modelValue.split('-v')[1])
     }
 
     await listTasks();
     loading.value.main = false;
 });
 
-async function select(task, version) {
+async function select(task: Task, version?: string) {
     loading.value.task = true;
 
-    const detail = await std(`/api/task/raw/${task.prefix}`);
+    const detail = await std(`/api/task/raw/${task.prefix}`) as { versions: string[] };
     selected.value = {
         versions: detail.versions,
         version: version || detail.versions[0],
@@ -300,11 +310,11 @@ async function listTasks() {
     loading.value.list = true;
     const url = stdurl('/api/task');
     url.searchParams.set('filter', paging.value.filter);
-    url.searchParams.set('limit', paging.value.limit);
+    url.searchParams.set('limit', String(paging.value.limit));
     url.searchParams.set('order', paging.value.order);
     url.searchParams.set('sort', paging.value.sort);
-    url.searchParams.set('page', paging.value.page);
-    list.value = await std(url);
+    url.searchParams.set('page', String(paging.value.page));
+    list.value = await std(url) as APIList<Task>;
 
     loading.value.list = false;
 }

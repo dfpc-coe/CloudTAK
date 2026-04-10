@@ -1,42 +1,18 @@
 <template>
     <div class='row g-2 mx-2 my-2'>
         <div class='col-12 mb-3'>
-            <div
-                class='btn-group w-100'
-                role='group'
-            >
-                <input
-                    id='agol'
-                    type='radio'
-                    class='btn-check'
-                    name='esri-type'
-                    autocomplete='off'
-                    :disabled='disabled'
-                    :checked='type === "agol"'
-                    @click='type = "agol"'
-                >
-                <label
-                    for='agol'
-                    type='button'
-                    class='btn'
-                >ArcGIS Online</label>
-
-                <input
-                    id='portal'
-                    type='radio'
-                    class='btn-check'
-                    name='esri-type'
-                    autocomplete='off'
-                    :disabled='disabled'
-                    :checked='type === "portal"'
-                    @click='type = "portal"'
-                >
-                <label
-                    for='portal'
-                    type='button'
-                    class='btn'
-                >ArcGIS Enterprise Portal</label>
-            </div>
+            <TablerPillGroup
+                v-model='type'
+                :options='[
+                    { value: "agol", label: "ArcGIS Online" },
+                    { value: "portal", label: "ArcGIS Enterprise Portal" }
+                ]'
+                :disabled='disabled'
+                :rounded='false'
+                size='default'
+                padding=''
+                name='esri-type'
+            />
         </div>
         <template v-if='type === "agol"'>
             <div class='col-12'>
@@ -122,59 +98,38 @@
         <div class='col-12 pb-4'>
             <div class='d-flex justify-content-center'>
                 <div class='btn-list'>
-                    <div
-                        class='btn-group'
-                        role='group'
+                    <TablerPillGroup
+                        v-model='mode'
+                        :options='[
+                            { value: "points", label: "Points" },
+                            { value: "lines", label: "Lines" },
+                            { value: "polys", label: "Polygons" }
+                        ]'
+                        :rounded='false'
+                        :full-width='false'
+                        size='default'
+                        padding=''
+                        name='geom-toolbar'
                     >
-                        <input
-                            v-model='mode'
-                            type='radio'
-                            class='btn-check'
-                            name='geom-toolbar'
-                            value='points'
-                        >
-                        <label
-                            class='btn btn-icon px-3'
-                            @click='mode="points"'
-                        >
+                        <template #option='{ option }'>
                             <IconPoint
+                                v-if='option.value === "points"'
                                 :size='32'
                                 stroke='1'
-                            /> Points
-                        </label>
-                        <input
-                            v-model='mode'
-                            type='radio'
-                            class='btn-check'
-                            name='geom-toolbar'
-                            value='lines'
-                        >
-                        <label
-                            class='btn btn-icon px-3'
-                            @click='mode="lines"'
-                        >
+                            />
                             <IconLine
+                                v-if='option.value === "lines"'
                                 :size='32'
                                 stroke='1'
-                            /> Lines
-                        </label>
-                        <input
-                            v-model='mode'
-                            type='radio'
-                            class='btn-check'
-                            name='geom-toolbar'
-                            value='polys'
-                        >
-                        <label
-                            class='btn btn-icon px-3'
-                            @click='mode="polys"'
-                        >
+                            />
                             <IconPolygon
+                                v-if='option.value === "polys"'
                                 :size='32'
                                 stroke='1'
-                            /> Polygons
-                        </label>
-                    </div>
+                            />
+                            {{ option.label }}
+                        </template>
+                    </TablerPillGroup>
                 </div>
             </div>
 
@@ -208,7 +163,7 @@
                     :pane='false'
                     :username='environment.ARCGIS_USERNAME'
                     :password='environment.ARCGIS_PASSWORD'
-                    :layer='environment[`ARCGIS_${mode.toUpperCase()}_URL`]'
+                    :layer='String(environment[`ARCGIS_${mode.toUpperCase()}_URL`] ?? "")'
                     @layer='environment[`ARCGIS_${mode.toUpperCase()}_URL`] = $event'
                     @close='esriView = false'
                 />
@@ -217,11 +172,12 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch } from 'vue';
 import {
     TablerInput,
     TablerToggle,
+    TablerPillGroup,
 } from '@tak-ps/vue-tabler';
 import EsriPortal from '../../util/EsriPortal.vue';
 import {
@@ -230,18 +186,32 @@ import {
     IconPolygon,
 } from '@tabler/icons-vue'
 
-const props = defineProps({
-    modelValue: {
-        type: Object,
-        required: true
-    },
-    disabled: {
-        type: Boolean,
-        default: true
-    }
+interface ArcGISOutgoingEnvironment {
+    ARCGIS_URL?: string;
+    ARCGIS_PORTAL?: string;
+    ARCGIS_USERNAME?: string;
+    ARCGIS_PASSWORD?: string;
+    ARCGIS_QUERY?: string;
+    ARCGIS_PARAMS?: Record<string, string>[];
+    ARCGIS_TOKEN?: string;
+    ARCGIS_EXPIRES?: string;
+    ARCGIS_POINTS_URL?: string;
+    ARCGIS_LINES_URL?: string;
+    ARCGIS_POLYS_URL?: string;
+    PRESERVE_HISTORY?: boolean;
+    [key: string]: unknown;
+}
+
+const props = withDefaults(defineProps<{
+    modelValue: ArcGISOutgoingEnvironment;
+    disabled?: boolean;
+}>(), {
+    disabled: true,
 })
 
-const emit = defineEmits([ 'update:modelValue' ]);
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: ArcGISOutgoingEnvironment): void;
+}>();
 
 const mode = ref('points');
 
@@ -253,7 +223,7 @@ if (props.modelValue.ARCGIS_PORTAL && props.modelValue.ARCGIS_PORTAL.includes('a
 }
 
 const esriView = ref(false);
-const environment = ref(props.modelValue);
+const environment = ref<ArcGISOutgoingEnvironment>(props.modelValue);
 
 if (!environment.value.ARCGIS_URL) environment.value.ARCGIS_URL = '';
 if (!environment.value.PRESERVE_HISTORY) environment.value.PRESERVE_HISTORY = false;

@@ -44,7 +44,7 @@
                 <div class='col-12 col-xl-5'>
                     <PublicTilesSelect
                         :key='tilesetKey'
-                        @select='selected = $event'
+                        @select='selected = $event as PublicTile'
                     />
                 </div>
 
@@ -116,7 +116,7 @@ type PublicTile = TileJSON & {
 };
 
 const error = ref<Error | undefined>();
-const selected = ref<PublicTile | undefined>();
+const selected = ref<PublicTile>();
 const uploading = ref(false);
 const tilesetKey = ref(0);
 

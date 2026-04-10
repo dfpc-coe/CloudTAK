@@ -71,9 +71,10 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std } from '/src/std.ts';
+import { std } from '../../std.ts';
+import type { ETLData, APIList } from '../../types.ts';
 import {
     IconTrash,
     IconSettings
@@ -83,29 +84,26 @@ import {
     TablerDropdown
 } from '@tak-ps/vue-tabler';
 
-const props = defineProps({
-    connection: {
-        type: Number,
-        default: undefined
-    },
-    modelValue: {
-        type: Number,
-        default: undefined
-    },
-    disabled: {
-        type: Boolean,
-        default: false
-    }
+const props = withDefaults(defineProps<{
+    connection?: number;
+    modelValue?: number | null;
+    disabled?: boolean;
+}>(), {
+    connection: undefined,
+    modelValue: undefined,
+    disabled: false,
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: string | number | null): void;
+}>();
 
-const loading = ref(true);
-const selected = ref({
+const loading = ref<boolean>(true);
+const selected = ref<{ id: string | number; name: string; connection?: number }>({
     id: '',
     name: ''
 });
-const data = ref({
+const data = ref<APIList<ETLData>>({
     total: 0,
     items: []
 });
@@ -128,8 +126,8 @@ onMounted(async () => {
     loading.value = false;
 });
 
-function update(d) {
-    if (d) {
+function update(d?: { id: string | number; name: string } | PointerEvent) {
+    if (d && !(d instanceof Event)) {
         selected.value.id = d.id;
         selected.value.name = d.name;
     } else {
@@ -139,10 +137,10 @@ function update(d) {
 }
 
 async function fetch() {
-    selected.value = await std(`/api/connection/${props.connection}/data/${props.modelValue}`);
+    selected.value = await std(`/api/connection/${props.connection}/data/${props.modelValue}`) as typeof selected.value;
 }
 
 async function listData() {
-    data.value = await std(`/api/connection/${props.connection}/data`);
+    data.value = await std(`/api/connection/${props.connection}/data`) as typeof data.value;
 }
 </script>
