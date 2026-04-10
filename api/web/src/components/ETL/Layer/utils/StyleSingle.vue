@@ -532,7 +532,7 @@
                 </div>
                 <IconSelect
                     v-if='filters[mode].enabled.icon'
-                    v-model='filters[mode].properties.icon'
+                    v-model='filters[mode].properties.icon!'
                     label=''
                     :disabled='disabled || !filters[mode].enabled.icon'
                 />
@@ -573,7 +573,7 @@
                     <span
                         v-if='filters[mode].enabled["marker-opacity"]'
                         class='mx-2 text-muted small'
-                        v-text='`(${Math.round(filters[mode].properties["marker-opacity"] * 100)}%)`'
+                        v-text='`(${Math.round((filters[mode].properties["marker-opacity"] ?? 0) * 100)}%)`'
                     />
                     <div class='ms-auto'>
                         <TablerToggle
@@ -680,7 +680,7 @@
                     <span
                         v-if='filters[mode].enabled["stroke-opacity"]'
                         class='mx-2 text-muted small'
-                        v-text='`(${Math.round(filters[mode].properties["stroke-opacity"] * 100)}%)`'
+                        v-text='`(${Math.round((filters[mode].properties["stroke-opacity"] ?? 0) * 100)}%)`'
                     />
                     <div class='ms-auto'>
                         <TablerToggle
@@ -737,7 +737,7 @@
                     <span
                         v-if='filters[mode].enabled["fill-opacity"]'
                         class='mx-2 text-muted small'
-                        v-text='`(${Math.round(filters[mode].properties["fill-opacity"] * 100)}%)`'
+                        v-text='`(${Math.round((filters[mode].properties["fill-opacity"] ?? 0) * 100)}%)`'
                     />
                     <div class='ms-auto'>
                         <TablerToggle
@@ -801,22 +801,22 @@ interface StyleLink {
 
 interface GeometryProperties {
     id: string;
-    icon: string;
     stale: string;
     minzoom: number;
     maxzoom: number;
-    'marker-color': string;
-    'marker-opacity': number;
-    stroke: string;
-    'stroke-style': string;
-    'stroke-opacity': number;
-    'stroke-width': number;
-    fill: string;
-    'fill-opacity': number;
     remarks: string;
     phone: string;
     callsign: string;
     links: StyleLink[];
+    icon?: string;
+    'marker-color'?: string;
+    'marker-opacity'?: number;
+    stroke?: string;
+    'stroke-style'?: string;
+    'stroke-opacity'?: number;
+    'stroke-width'?: number;
+    fill?: string;
+    'fill-opacity'?: number;
     [key: string]: unknown;
 }
 

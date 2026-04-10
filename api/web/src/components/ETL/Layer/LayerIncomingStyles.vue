@@ -38,7 +38,7 @@
         </div>
 
         <TablerInlineAlert
-            v-if='!props.capabilities || !props.capabilities.incoming.schema.output'
+            v-if='!props.capabilities || !props.capabilities.incoming?.schema?.output'
             severity='danger'
             class='px-2 my-2'
             title='Data Schema Error'
@@ -67,9 +67,9 @@
             <div class='card-body'>
                 <StyleSingle
                     v-model='style'
-                    :schema='capabilities.incoming.schema.output || { properties: {} }'
+                    :schema='(capabilities.incoming?.schema?.output ?? { properties: {} }) as Record<string, unknown>'
                     :disabled='disabled'
-                    :disable-marti='!!props.layer.incoming.data'
+                    :disable-marti='!!props.layer.incoming?.data'
                     :connection='Number(route.params.connectionid)'
                 />
             </div>
@@ -187,7 +187,7 @@
                         ]'
                         :disabled='disabled'
                         name='query-type'
-                        @update:model-value='(v: string) => { queries[query].delete = v === "delete" }'
+                        @update:model-value='(v: string) => { if (query !== null) queries[query].delete = v === "delete" }'
                     >
                         <template #option='{ option }'>
                             <IconBrush
@@ -214,10 +214,10 @@
                     </template>
                     <template v-else>
                         <StyleSingle
-                            v-model='queries[query].styles'
-                            :schema='capabilities.incoming.schema.output'
+                            v-model='queries[query!].styles'
+                            :schema='(capabilities.incoming?.schema?.output ?? {}) as Record<string, unknown>'
                             :disabled='disabled'
-                            :disable-marti='!!props.layer.incoming.data'
+                            :disable-marti='!!props.layer.incoming?.data'
                             :connection='Number(route.params.connectionid)'
                         />
                     </template>
@@ -255,6 +255,7 @@ import QueryInput from './utils/QueryInput.vue';
 interface StyleQuery {
     query: string;
     styles: Record<string, unknown>;
+    delete?: boolean;
 }
 
 const props = defineProps<{
@@ -274,7 +275,7 @@ const loading = ref({
     save: false
 });
 
-const enabled = ref(props.layer.incoming.enabled_styles);
+const enabled = ref(props.layer.incoming?.enabled_styles);
 
 const style = ref<Record<string, unknown>>({
     callsign: '',
@@ -291,11 +292,11 @@ onMounted(() => {
 });
 
 function reload() {
-    const clone = JSON.parse(JSON.stringify(props.layer.incoming.styles));
+    const clone = JSON.parse(JSON.stringify(props.layer.incoming?.styles ?? {}));
     queries.value = clone.queries || [];
     delete clone.queries;
 
-    style.value = Object.assign(style.value, JSON.parse(JSON.stringify(props.layer.incoming.styles)));
+    style.value = Object.assign(style.value, JSON.parse(JSON.stringify(props.layer.incoming?.styles ?? {})));
 
     disabled.value = true;
 }
