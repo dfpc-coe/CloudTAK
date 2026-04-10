@@ -18,6 +18,11 @@
 
 ### Pending Release
 
+### v12.122.0 - 2026-04-10
+
+- :rocket: Update to consistently use the new TablerPillButton to ensure unique ID usage
+- :rocket: Continue to migrate components to pure typescript
+
 ### v12.121.0 - 2026-04-09
 
 - :tada: Introduce unified Layer Update Management Tool
