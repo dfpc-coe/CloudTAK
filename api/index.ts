@@ -240,7 +240,7 @@ export default async function server(config: Config): Promise<ServerManager> {
                     client = config.conns.get(parsedParams.connection) as ConnectionClient;
                 }
 
-                const connClient = new ConnectionWebSocket(ws, parsedParams.format, client);
+                const connClient = new ConnectionWebSocket(ws, parsedParams.format, client, auth.session);
 
                 let webClients = config.wsClients.get(parsedParams.connection)
                 if (!webClients) webClients = [];

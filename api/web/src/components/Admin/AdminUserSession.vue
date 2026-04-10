@@ -18,50 +18,58 @@
             :err='err'
         />
         <template v-else>
+            <TablerNone
+                v-if='!list.items.length'
+                label='No Login Sessions'
+                :create='false'
+            />
             <div
-                v-if='!sessions.length'
-                class='text-muted text-center py-2'
-            >
-                No login sessions recorded
-            </div>
-            <table
                 v-else
-                class='table table-sm table-vcenter'
+                class='table-responsive'
             >
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>IP</th>
-                        <th>Browser</th>
-                        <th>OS</th>
-                        <th>Device</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for='session in sessions'
-                        :key='session.id'
-                    >
-                        <td v-text='new Date(session.created).toLocaleString()' />
-                        <td v-text='session.ip' />
-                        <td v-text='session.browser' />
-                        <td v-text='session.os' />
-                        <td v-text='session.device_type' />
-                    </tr>
-                </tbody>
-            </table>
-
-            <div
-                v-if='total > sessions.length'
-                class='d-flex justify-content-center pt-2'
-            >
-                <button
-                    class='btn btn-sm btn-secondary'
-                    @click='fetchMore'
-                >
-                    Load More
-                </button>
+                <table class='table card-table table-hover table-vcenter datatable'>
+                    <TableHeader
+                        v-model:sort='paging.sort'
+                        v-model:order='paging.order'
+                        v-model:header='header'
+                    />
+                    <tbody>
+                        <tr
+                            v-for='session in list.items'
+                            :key='session.id'
+                        >
+                            <template v-for='h in header'>
+                                <template v-if='h.display'>
+                                    <td>
+                                        <div
+                                            v-if='h.name === "created"'
+                                            class='d-flex align-items-center'
+                                        >
+                                            <StatusDot
+                                                :dark='true'
+                                                :status='session.active ? "Success" : "Unknown"'
+                                            />
+                                            <span
+                                                class='mx-2'
+                                                v-text='new Date(session.created).toLocaleString()'
+                                            />
+                                        </div>
+                                        <span
+                                            v-else
+                                            v-text='session[h.name]'
+                                        />
+                                    </td>
+                                </template>
+                            </template>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
+            <TableFooter
+                :limit='paging.limit'
+                :total='list.total'
+                @page='paging.page = $event'
+            />
         </template>
     </div>
 </template>
@@ -69,7 +77,11 @@
 <script setup lang='ts'>
 import { ref, watch } from 'vue';
 import { std, stdurl } from '../../std.ts';
+import TableHeader from '../util/TableHeader.vue';
+import TableFooter from '../util/TableFooter.vue';
+import StatusDot from '../util/StatusDot.vue';
 import {
+    TablerNone,
     TablerLoading,
     TablerAlert,
 } from '@tak-ps/vue-tabler';
@@ -91,24 +103,43 @@ interface Session {
     browser: string;
     os: string;
     user_agent: string;
+    active: boolean;
+    [key: string]: unknown;
 }
+
+type Header = { name: keyof Session; display: boolean };
 
 const isOpen = ref(false);
 const loading = ref(false);
 const err = ref<Error | null>(null);
-const sessions = ref<Session[]>([]);
-const total = ref(0);
-const page = ref(0);
+const list = ref<{ total: number; items: Session[] }>({ total: 0, items: [] });
+const header = ref<Header[]>([
+    { name: 'created', display: true },
+    { name: 'ip', display: true },
+    { name: 'browser', display: true },
+    { name: 'os', display: true },
+    { name: 'device_type', display: true },
+]);
+const paging = ref({
+    sort: 'created',
+    order: 'desc',
+    limit: 10,
+    page: 0,
+});
 
 function toggle(): void {
     isOpen.value = !isOpen.value;
 }
 
 watch(isOpen, (newState) => {
-    if (newState && !sessions.value.length) {
-        page.value = 0;
+    if (newState && !list.value.items.length) {
+        paging.value.page = 0;
         void fetchSessions();
     }
+});
+
+watch(paging.value, () => {
+    void fetchSessions();
 });
 
 async function fetchSessions(): Promise<void> {
@@ -117,27 +148,14 @@ async function fetchSessions(): Promise<void> {
 
     try {
         const url = stdurl(`/api/user/${encodeURIComponent(props.username)}/session`);
-        url.searchParams.set('limit', '10');
-        url.searchParams.set('page', String(page.value));
+        url.searchParams.set('limit', String(paging.value.limit));
+        url.searchParams.set('page', String(paging.value.page));
 
-        const res = await std(url) as { total: number; items: Session[] };
-
-        if (page.value === 0) {
-            sessions.value = res.items;
-        } else {
-            sessions.value.push(...res.items);
-        }
-
-        total.value = res.total;
+        list.value = await std(url) as { total: number; items: Session[] };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
     }
 
     loading.value = false;
-}
-
-async function fetchMore(): Promise<void> {
-    page.value++;
-    await fetchSessions();
 }
 </script>

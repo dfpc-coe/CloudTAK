@@ -69,14 +69,16 @@ export class AuthUser {
     access: AuthUserAccess;
     email: string;
     token: string;
+    session?: number;
 
     // Username of admin doing the impersonating - if this value is populated the calling user is guarenteed to be an admin
     impersonate?: string;
 
-    constructor(access: AuthUserAccess, email: string, token: string) {
+    constructor(access: AuthUserAccess, email: string, token: string, session?: number) {
         this.access = access;
         this.email = email;
         this.token = token;
+        this.session = session;
     }
 
     is_admin(): boolean {
@@ -350,15 +352,9 @@ export async function tokenParser(
         const access = castUserAccessEnum(decoded.access);
         if (!access) throw new Err(400, null, 'Invalid User Access Value');
 
-        const auth: {
-            access: AuthUserAccess;
-            email: string;
-        } = {
-            email: decoded.email,
-            access
-        };
+        const session = typeof decoded.s === 'number' ? decoded.s : undefined;
 
-        return new AuthUser(auth.access, auth.email, token);
+        return new AuthUser(access, decoded.email, token, session);
     }
 }
 

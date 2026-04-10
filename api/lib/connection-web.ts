@@ -8,11 +8,13 @@ import { ConnectionClient } from './connection-pool.js';
 export class ConnectionWebSocket {
     ws: WebSocket;
     format: string;
+    session?: number;
     client?: ConnectionClient;
 
-    constructor(ws: WebSocket, format = 'raw', client?: ConnectionClient) {
+    constructor(ws: WebSocket, format = 'raw', client?: ConnectionClient, session?: number) {
         this.ws = ws;
         this.format = format;
+        this.session = session;
 
         if (client) {
             this.client = client;
