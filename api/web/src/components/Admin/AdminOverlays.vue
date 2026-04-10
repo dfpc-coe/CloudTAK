@@ -31,39 +31,15 @@
                     />
                 </div>
                 <div class='col-auto d-flex align-items-center'>
-                    <div
-                        class='round btn-group h-100'
-                        role='group'
-                    >
-                        <input
-                            id='entry-manual'
-                            type='radio'
-                            class='btn-check'
-                            autocomplete='off'
-                            :checked='paging.type === "basemap"'
-                            @click='paging.type = "basemap"'
-                        >
-                        <label
-                            for='entry-manual'
-                            type='button'
-                            class='btn btn-sm'
-                        >Basemap</label>
-
-                        <input
-                            id='entry-public'
-                            type='radio'
-                            class='btn-check'
-                            autocomplete='off'
-                            :checked='paging.type === "overlay"'
-                            @click='paging.type = "overlay"'
-                        >
-
-                        <label
-                            for='entry-public'
-                            type='button'
-                            class='btn btn-sm'
-                        >Overlay</label>
-                    </div>
+                    <TablerPillGroup
+                        v-model='paging.type'
+                        :options='[
+                            { value: "basemap", label: "Basemap" },
+                            { value: "overlay", label: "Overlay" }
+                        ]'
+                        :full-width='false'
+                        padding=''
+                    />
 
                     <TablerIconButton
                         :title='advanced ? "Hide Advanced Search" : "Show Advanced Search"'
@@ -177,7 +153,8 @@ import {
     TablerAlert,
     TablerIconButton,
     TablerRefreshButton,
-    TablerLoading
+    TablerLoading,
+    TablerPillGroup
 } from '@tak-ps/vue-tabler';
 import {
     IconFilter,

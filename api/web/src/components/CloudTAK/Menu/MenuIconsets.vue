@@ -41,46 +41,18 @@
                 </div>
             </template>
             <template v-else>
-                <div
-                    class='px-2 py-2 round btn-group w-100'
-                    role='group'
+                <TablerPillGroup
+                    v-model='mode'
+                    :options='[
+                        { value: "iconsets", label: "Iconsets" },
+                        { value: "icons", label: "Icons" }
+                    ]'
                 >
-                    <input
-                        id='iconsets'
-                        type='radio'
-                        class='btn-check'
-                        autocomplete='off'
-                        :checked='mode === "iconsets"'
-                        @click='mode = "iconsets"'
-                    >
-                    <label
-                        for='iconsets'
-                        type='button'
-                        class='btn btn-sm'
-                    ><IconAlbum
-                        v-tooltip='"Iconsets"'
-                        :size='32'
-                        stroke='1'
-                    /></label>
-
-                    <input
-                        id='icons'
-                        type='radio'
-                        class='btn-check'
-                        autocomplete='off'
-                        :checked='mode === "icons"'
-                        @click='mode = "icons"'
-                    >
-                    <label
-                        for='icons'
-                        type='button'
-                        class='btn btn-sm'
-                    ><IconPhoto
-                        v-tooltip='"Icons"'
-                        :size='32'
-                        stroke='1'
-                    /></label>
-                </div>
+                    <template #option='{ option }'>
+                        <IconAlbum v-if='option.value === "iconsets"' v-tooltip='"Iconsets"' :size='32' stroke='1' />
+                        <IconPhoto v-else v-tooltip='"Icons"' :size='32' stroke='1' />
+                    </template>
+                </TablerPillGroup>
 
                 <template v-if='mode === "iconsets"'>
                     <div class='px-3 pt-3'>
@@ -190,7 +162,8 @@ import {
     TablerAlert,
     TablerLoading,
     TablerIconButton,
-    TablerRefreshButton
+    TablerRefreshButton,
+    TablerPillGroup
 } from '@tak-ps/vue-tabler';
 import {
     IconDownload,

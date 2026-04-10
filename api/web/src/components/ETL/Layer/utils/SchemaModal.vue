@@ -38,7 +38,7 @@
     </TablerModal>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import {
     TablerModal,
@@ -46,29 +46,22 @@ import {
     TablerDelete
 } from '@tak-ps/vue-tabler';
 
-const props = defineProps({
-    edit: {
-        type: Object,
-        required: true
-    },
-    disabled: {
-        type: Boolean,
-        default: true
-    },
-    schema: {
-        type: Object,
-        required: true
-    },
+const props = withDefaults(defineProps<{
+    edit: Record<string, unknown>;
+    disabled?: boolean;
+    schema: Record<string, unknown>;
+}>(), {
+    disabled: true,
 });
 
-const emit = defineEmits([
-    'close',
-    'remove',
-    'done'
-]);
+const emit = defineEmits<{
+    (e: 'close'): void;
+    (e: 'remove'): void;
+    (e: 'done', value: Record<string, unknown>): void;
+}>();
 
 const loading = ref(true);
-const row = ref({});
+const row = ref<Record<string, unknown>>({});
 
 onMounted(() => {
     row.value = Object.assign(row.value, JSON.parse(JSON.stringify(props.edit)));

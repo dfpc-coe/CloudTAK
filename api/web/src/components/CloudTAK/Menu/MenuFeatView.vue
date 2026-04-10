@@ -1,7 +1,11 @@
 <template>
-    <div v-if='feature'>
+    <div
+        v-if='feature'
+        class='d-flex flex-column'
+        style='height: 100%;'
+    >
         <div
-            class='col-12 border-light border-bottom sticky-top'
+            class='col-12 border-light border-bottom flex-shrink-0'
             style='
                 height: 90px;
                 border-radius: 0px;
@@ -65,8 +69,8 @@
         </div>
 
         <div
-            class='col-12 overflow-auto'
-            style='height: calc(100vh - 90px)'
+            class='col-12 overflow-auto flex-fill'
+            style='min-height: 0'
         >
             <template v-if='mode === "default"'>
                 <div class='col-12 px-2 py-2'>

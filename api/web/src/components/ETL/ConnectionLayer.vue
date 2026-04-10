@@ -200,48 +200,30 @@
                                                 </div>
                                             </span>
 
-                                            <div
-                                                class='px-2 py-2 round btn-group w-100'
-                                                role='group'
+                                            <TablerPillGroup
+                                                v-model='mode'
+                                                :options='[
+                                                    { value: "incoming", label: "Incoming" },
+                                                    { value: "outgoing", label: "Outgoing" }
+                                                ]'
+                                                name='layer-direction'
                                             >
-                                                <input
-                                                    id='layer-incoming'
-                                                    type='radio'
-                                                    class='btn-check'
-                                                    autocomplete='off'
-                                                    :checked='mode === "incoming"'
-                                                    @keyup.enter='mode = "incoming"'
-                                                    @click='mode = "incoming"'
-                                                >
-                                                <label
-                                                    for='layer-incoming'
-                                                    type='button'
-                                                    class='btn btn-sm'
-                                                ><IconWorldDownload
-                                                    v-tooltip='"Incoming"'
-                                                    :size='32'
-                                                    stroke='1'
-                                                />Incoming</label>
-
-                                                <input
-                                                    id='layer-outgoing'
-                                                    type='radio'
-                                                    class='btn-check'
-                                                    autocomplete='off'
-                                                    :checked='mode === "outgoing"'
-                                                    @keyup.enter='mode = "outgoing"'
-                                                    @click='mode = "outgoing"'
-                                                >
-                                                <label
-                                                    for='layer-outgoing'
-                                                    type='button'
-                                                    class='btn btn-sm'
-                                                ><IconWorldUpload
-                                                    v-tooltip='"Outgoing"'
-                                                    :size='32'
-                                                    stroke='1'
-                                                />Outgoing</label>
-                                            </div>
+                                                <template #option='{ option }'>
+                                                    <IconWorldDownload
+                                                        v-if='option.value === "incoming"'
+                                                        v-tooltip='"Incoming"'
+                                                        :size='32'
+                                                        stroke='1'
+                                                    />
+                                                    <IconWorldUpload
+                                                        v-if='option.value === "outgoing"'
+                                                        v-tooltip='"Outgoing"'
+                                                        :size='32'
+                                                        stroke='1'
+                                                    />
+                                                    {{ option.label }}
+                                                </template>
+                                            </TablerPillGroup>
 
                                             <template v-if='mode === "incoming"'>
                                                 <TablerLoading
@@ -413,7 +395,8 @@ import {
     TablerBreadCrumb,
     TablerIconButton,
     TablerMarkdown,
-    TablerLoading
+    TablerLoading,
+    TablerPillGroup
 } from '@tak-ps/vue-tabler'
 import {
     IconX,

@@ -203,10 +203,11 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { std } from '../../../std.ts';
+import type { ETLLayer, ETLLayerTask } from '../../../types.ts';
 import {
     TablerInlineAlert,
     TablerRange,
@@ -219,26 +220,20 @@ import {
     IconPencil,
 } from '@tabler/icons-vue';
 
-const props = defineProps({
-    stack: {
-        type: Object,
-        required: true
-    },
-    layer: {
-        type: Object,
-        required: true
-    }
-});
+const props = defineProps<{
+    stack: ETLLayerTask;
+    layer: ETLLayer;
+}>();
 
-const emit = defineEmits([
-    'stack',
-    'refresh'
-]);
+const emit = defineEmits<{
+    (e: 'stack'): void;
+    (e: 'refresh'): void;
+}>();
 
 const route = useRoute();
 
 const disabled = ref(true);
-const config = ref(JSON.parse(JSON.stringify(props.layer)));
+const config = ref<ETLLayer>(JSON.parse(JSON.stringify(props.layer)));
 const loading = ref(false);
 
 async function refresh() {
@@ -268,7 +263,7 @@ async function saveLayer() {
 
 // Padd the playground with a few extra periods to make for better viz
 const EXTRA_PERIODS = ref(0);
-const periods = ref(generatePeriodData());
+const periods = ref<boolean[]>(generatePeriodData());
 
 watch(config, (newVal, oldVal) => {
     if (
@@ -282,7 +277,7 @@ watch(config, (newVal, oldVal) => {
     deep: true
 });
 
-const alarmState = computed(() => {
+const alarmState = computed((): 'ALARM' | 'OK' | 'OFF' => {
     const breachingPeriods = periods.value.slice(EXTRA_PERIODS.value).filter(p => p).length;
 
     if (breachingPeriods >= config.value.alarm_points) {
@@ -293,7 +288,7 @@ const alarmState = computed(() => {
 });
 
 function generatePeriodData() {
-    const data = [];
+    const data: boolean[] = [];
 
     EXTRA_PERIODS.value = Math.ceil(config.value.alarm_evals / 2);
 

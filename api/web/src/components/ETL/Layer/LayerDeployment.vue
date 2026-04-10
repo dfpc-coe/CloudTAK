@@ -213,11 +213,12 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import TaskModal from './utils/TaskModal.vue';
 import { std } from '../../../std.ts';
+import type { ETLLayer, ETLLayerTask, ETLTaskVersions } from '../../../types.ts';
 import {
     TablerAlert,
     TablerIconButton,
@@ -231,30 +232,24 @@ import {
     IconCloudUpload,
 } from '@tabler/icons-vue';
 
-const props = defineProps({
-    stack: {
-        type: Object,
-        required: true
-    },
-    layer: {
-        type: Object,
-        required: true
-    }
-});
+const props = defineProps<{
+    stack: ETLLayerTask;
+    layer: ETLLayer;
+}>();
 
-const emit = defineEmits([
-    'stack',
-    'refresh'
-]);
+const emit = defineEmits<{
+    (e: 'stack'): void;
+    (e: 'refresh'): void;
+}>();
 
 const route = useRoute();
 
 const disabled = ref(true);
-const looping = ref(false);
-const config = ref(JSON.parse(JSON.stringify(props.layer)));
-const newTaskVersion = ref();
+const looping = ref<ReturnType<typeof setInterval> | false>(false);
+const config = ref<ETLLayer>(JSON.parse(JSON.stringify(props.layer)));
+const newTaskVersion = ref<string>();
 const taskmodal = ref(false);
-const errors = ref({
+const errors = ref<Record<string, { message: string } | false>>({
     cloudwatch: false
 });
 
@@ -264,7 +259,7 @@ const loading = ref({
     version: false
 });
 
-const logs = ref({});
+const logs = ref<string>('');
 
 onMounted(async () => {
     looping.value = setInterval(async () => {
@@ -287,7 +282,7 @@ async function refresh() {
     await fetchLogs();
 }
 
-async function redeploy(showLoading=true) {
+async function redeploy(showLoading = true) {
     if (showLoading) {
         loading.value.full = true;
     } else {
@@ -303,14 +298,14 @@ async function redeploy(showLoading=true) {
 
         emit('stack');
     } catch (err) {
-        errors.value.cloudformation = err;
+        errors.value.cloudformation = { message: err instanceof Error ? err.message : String(err) };
     }
 
     loading.value.full = false;
     loading.value.small = false;
 }
 
-async function fetchLogs(showLoading=true) {
+async function fetchLogs(showLoading = true) {
     if (showLoading) {
         loading.value.full = true;
     } else {
@@ -320,13 +315,13 @@ async function fetchLogs(showLoading=true) {
     errors.value.cloudwatch = false;
 
     try {
-        logs.value = (await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/logs`))
-            .logs
+        const res = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/logs`) as { logs: { message: string }[] };
+        logs.value = res.logs
             .map((log) => { return log.message })
             .reverse()
             .join('\n');
     } catch (err) {
-        errors.value.cloudwatch = err;
+        errors.value.cloudwatch = { message: err instanceof Error ? err.message : String(err) };
     }
 
     loading.value.full = false;
@@ -376,10 +371,10 @@ async function latestVersion() {
     const task = match[1];
     const version = match[2];
 
-    const list = await std(`/api/task/raw/${task}`);
+    const res = await std(`/api/task/raw/${task}`) as ETLTaskVersions;
 
-    if (list.versions.indexOf(version) !== 0) {
-        newTaskVersion.value = list.versions[0];
+    if (res.versions.indexOf(version) !== 0) {
+        newTaskVersion.value = res.versions[0];
     }
 
     loading.value.version = false;

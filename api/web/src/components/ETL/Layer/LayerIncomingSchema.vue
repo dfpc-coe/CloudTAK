@@ -49,26 +49,21 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, computed } from 'vue';
+import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
 import {
     TablerNone,
     TablerAlert
 } from '@tak-ps/vue-tabler';
 import SchemaRows from './utils/SchemaRows.vue';
 
-const props = defineProps({
-    layer: {
-        type: Object,
-        required: true
-    },
-    capabilities: {
-        type: Object,
-        required: true
-    }
-});
+const props = defineProps<{
+    layer: ETLLayer;
+    capabilities: ETLLayerTaskCapabilities;
+}>();
 
-const expanded = ref(new Set());
+const expanded = ref(new Set<string>());
 
 const hasProperties = computed(() => {
     return props.capabilities
@@ -77,7 +72,7 @@ const hasProperties = computed(() => {
         && Object.keys(props.capabilities.incoming.schema.output.properties).length > 0;
 });
 
-function toggleExpand(path) {
+function toggleExpand(path: string) {
     const next = new Set(expanded.value);
     if (next.has(path)) {
         for (const p of next) {

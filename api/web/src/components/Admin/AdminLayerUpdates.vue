@@ -48,7 +48,9 @@
                             <th>Task</th>
                             <th>Current</th>
                             <th>Latest</th>
-                            <th class='text-end'>Action</th>
+                            <th class='text-end'>
+                                Action
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
