@@ -1,5 +1,6 @@
-<script setup>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { std, stdurl } from '../../../../std.ts';
+import type { ETLTaskVersions } from '../../../../types.ts';
 import {
     TablerMarkdown,
     TablerLoading,
@@ -11,17 +12,23 @@ import {
 } from '@tak-ps/vue-tabler';
 import { ref, reactive, watch, onMounted } from 'vue';
 
-defineProps({
-    task: {
-        type: String,
-        default: ''
-    }
+interface TaskItem {
+    id: number;
+    prefix: string;
+    readme?: string;
+    [key: string]: unknown;
+}
+
+withDefaults(defineProps<{
+    task?: string;
+}>(), {
+    task: '',
 });
 
-const emit = defineEmits([
-    'task',
-    'close'
-]);
+const emit = defineEmits<{
+    (e: 'task', value: string): void;
+    (e: 'close'): void;
+}>();
 
 const loading = reactive({
     version: false,
@@ -29,9 +36,9 @@ const loading = reactive({
     task: false,
 });
 
-const current = ref(null);
+const current = ref<TaskItem | null>(null);
 const version = ref('');
-const versions = ref([]);
+const versions = ref<string[]>([]);
 
 const paging = reactive({
     filter: '',
@@ -39,9 +46,9 @@ const paging = reactive({
     page: 0
 });
 
-const list = reactive({
+const list = reactive<{ total: number; items: TaskItem[] }>({
     total: 0,
-    items: {}
+    items: []
 });
 
 async function fetchTask() {
@@ -49,7 +56,7 @@ async function fetchTask() {
         versions.value = [];
     } else {
         loading.task = true;
-        const task = await std(`/api/task/raw/${current.value.prefix}`);
+        const task = await std(`/api/task/raw/${current.value.prefix}`) as ETLTaskVersions;
         versions.value = task.versions;
 
         if (versions.value.length) {
@@ -57,7 +64,7 @@ async function fetchTask() {
         }
 
         if (current.value.readme) {
-            const readme = await std(`/api/task/${current.value.id}/readme`);
+            const readme = await std(`/api/task/${current.value.id}/readme`) as { body: string };
             current.value.readme = readme.body;
         }
     }
@@ -69,10 +76,10 @@ async function fetchTasks() {
     const url = stdurl('/api/task');
 
     url.searchParams.set('filter', paging.filter);
-    url.searchParams.set('limit', paging.limit);
-    url.searchParams.set('page', paging.page);
+    url.searchParams.set('limit', String(paging.limit));
+    url.searchParams.set('page', String(paging.page));
 
-    const res = await std(url);
+    const res = await std(url) as { total: number; items: TaskItem[] };
     list.total = res.total;
     list.items = res.items;
 

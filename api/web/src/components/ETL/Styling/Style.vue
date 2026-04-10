@@ -162,7 +162,7 @@
     </template>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch } from 'vue';
 import {
     TablerIconButton,
@@ -187,25 +187,30 @@ import {
 } from '@tabler/icons-vue';
 import StyleLayer from './Layer.vue';
 
-const props = defineProps({
-    modelValue: {
-        type: Object,
-        required: true
-    },
-    advanced: {
-        type: Boolean,
-        default: false
-    }
+interface StyleLayerDef {
+    id: string;
+    type: string;
+    name?: string;
+    layout: Record<string, unknown>;
+    paint: Record<string, unknown>;
+    [key: string]: unknown;
+}
+
+const props = withDefaults(defineProps<{
+    modelValue: StyleLayerDef[];
+    advanced?: boolean;
+}>(), {
+    advanced: false
 });
 
-const emit = defineEmits([
-    'update:modelValue'
-]);
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: StyleLayerDef[]): void;
+}>();
 
-const styles = ref(JSON.parse(JSON.stringify(props.modelValue)))
-const code = ref(new Set());
-const open = ref(new Set());
-const mode = ref('visual');
+const styles = ref<StyleLayerDef[]>(JSON.parse(JSON.stringify(props.modelValue)))
+const code = ref<Set<string>>(new Set());
+const open = ref<Set<string>>(new Set());
+const mode = ref<'visual' | 'code'>('visual');
 
 watch(styles, () => {
     emit('update:modelValue', styles.value);
@@ -215,7 +220,7 @@ watch(styles.value, () => {
     emit('update:modelValue', styles.value);
 });
 
-function removeLayer(l, i) {
+function removeLayer(l: StyleLayerDef, i: number) {
     styles.value.splice(i, 1);
     open.value.delete(l.id)
     code.value.delete(l.id)

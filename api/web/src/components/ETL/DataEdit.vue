@@ -44,7 +44,7 @@
                                     <div class='col-md-12'>
                                         <GroupSelect
                                             v-model='data.mission_groups'
-                                            :connection='route.params.connectionid'
+                                            :connection='Number(route.params.connectionid)'
                                         />
                                     </div>
                                     <div class='col-md-12'>
@@ -115,10 +115,11 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { std, stdurl } from '../../std.ts';
+import type { ETLData } from '../../types.ts';
 import PageFooter from '../PageFooter.vue';
 import {
     TablerBreadCrumb,
@@ -130,18 +131,30 @@ import {
 } from '@tak-ps/vue-tabler';
 import GroupSelect from '../util/GroupSelect.vue';
 
+interface DataForm {
+    id?: number;
+    name: string;
+    mission_sync: boolean;
+    mission_groups: string[];
+    mission_role: string;
+    mission_diff: boolean;
+    description: string;
+    connection?: number;
+    [key: string]: unknown;
+}
+
 const route = useRoute();
 const router = useRouter();
 const loading = ref({
     data: true,
 });
 
-const errors = ref({
+const errors = ref<Record<string, string>>({
     name: '',
     description: '',
 });
 
-const data = ref({
+const data = ref<DataForm>({
     name: '',
     mission_sync: true,
     mission_groups: [],
@@ -166,7 +179,7 @@ onMounted(async () => {
 
 async function fetch() {
     loading.value.data = true;
-    data.value = await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}`);
+    data.value = await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}`) as DataForm;
     loading.value.data = false;
 }
 
@@ -179,7 +192,7 @@ async function deleteData() {
 }
 
 async function create() {
-    for (const field of ['name', 'description']) {
+    for (const field of ['name', 'description'] as const) {
         errors.value[field] = !data.value[field] ? 'Cannot be empty' : '';
     }
     for (const e in errors.value) if (errors.value[e]) return;
@@ -187,7 +200,8 @@ async function create() {
     loading.value.data = true;
 
     try {
-        let url, method;
+        let url: URL;
+        let method: string;
         const body = JSON.parse(JSON.stringify(data.value));
 
         if (route.params.dataid) {
@@ -196,14 +210,14 @@ async function create() {
         } else {
             url = stdurl(`/api/connection/${route.params.connectionid}/data`);
             method = 'POST'
-            body.connection = parseInt(route.params.connectionid);
+            body.connection = parseInt(String(route.params.connectionid));
         }
 
-        const create = await std(url, { method, body });
+        const res = await std(url, { method, body }) as ETLData;
 
         loading.value.data = false;
 
-        router.push(`/connection/${route.params.connectionid}/data/${create.id}`);
+        router.push(`/connection/${route.params.connectionid}/data/${res.id}`);
     } catch (err) {
         loading.value.data = false;
         throw err;

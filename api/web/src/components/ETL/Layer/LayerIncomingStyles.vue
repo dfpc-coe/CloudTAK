@@ -179,52 +179,30 @@
                         />
                     </div>
 
-                    <div
-                        class='px-2 py-2 round btn-group w-100'
-                        role='group'
+                    <TablerPillGroup
+                        :model-value='queries[query].delete ? "delete" : "style"'
+                        :options='[
+                            { value: "style", label: "Style Query" },
+                            { value: "delete", label: "Delete Features" }
+                        ]'
+                        :disabled='disabled'
+                        name='query-type'
+                        @update:model-value='(v: string) => { queries[query].delete = v === "delete" }'
                     >
-                        <input
-                            id='query-style'
-                            type='radio'
-                            class='btn-check'
-                            autocomplete='off'
-                            :checked='!queries[query].delete'
-                            :disabled='disabled'
-                            @click='queries[query].delete = false'
-                        >
-                        <label
-                            for='query-style'
-                            type='button'
-                            class='btn btn-sm'
-                        >
+                        <template #option='{ option }'>
                             <IconBrush
+                                v-if='option.value === "style"'
                                 :size='32'
                                 stroke='1'
                             />
-                            <span class='mx-2'>Style Query</span>
-                        </label>
-
-                        <input
-                            id='query-delete'
-                            type='radio'
-                            class='btn-check'
-                            autocomplete='off'
-                            :disabled='disabled'
-                            :checked='queries[query].delete'
-                            @click='queries[query].delete = true'
-                        >
-                        <label
-                            for='query-delete'
-                            type='button'
-                            class='btn btn-sm'
-                        >
                             <IconTrash
+                                v-if='option.value === "delete"'
                                 :size='32'
                                 stroke='1'
                             />
-                            <span class='mx-2'>Delete Features</span>
-                        </label>
-                    </div>
+                            <span class='mx-2'>{{ option.label }}</span>
+                        </template>
+                    </TablerPillGroup>
 
                     <template v-if='queries[query].delete'>
                         <TablerInlineAlert
@@ -249,10 +227,11 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router'
 import { std } from '../../../std.ts';
+import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
 import {
     IconX,
     IconPlus,
@@ -267,23 +246,25 @@ import {
     TablerToggle,
     TablerNone,
     TablerLoading,
-    TablerIconButton
+    TablerIconButton,
+    TablerPillGroup
 } from '@tak-ps/vue-tabler';
 import StyleSingle from './utils/StyleSingle.vue';
 import QueryInput from './utils/QueryInput.vue';
 
-const props = defineProps({
-    layer: {
-        type: Object,
-        required: true
-    },
-    capabilities: {
-        type: Object,
-        required: true
-    }
-});
+interface StyleQuery {
+    query: string;
+    styles: Record<string, unknown>;
+}
 
-const emit = defineEmits(['refresh']);
+const props = defineProps<{
+    layer: ETLLayer;
+    capabilities: ETLLayerTaskCapabilities;
+}>();
+
+const emit = defineEmits<{
+    (e: 'refresh'): void;
+}>();
 
 const route = useRoute();
 
@@ -295,14 +276,14 @@ const loading = ref({
 
 const enabled = ref(props.layer.incoming.enabled_styles);
 
-const style = ref({
+const style = ref<Record<string, unknown>>({
     callsign: '',
     remarks: '',
     links: [],
 });
 
-const queries = ref([]);
-const query = ref(null);
+const queries = ref<StyleQuery[]>([]);
+const query = ref<number | null>(null);
 
 onMounted(() => {
     reload();
@@ -319,7 +300,7 @@ function reload() {
     disabled.value = true;
 }
 
-function help(topic) {
+function help(topic: string) {
     if (topic === "query") {
         window.open('http://docs.jsonata.org/simple', '_blank');
     }

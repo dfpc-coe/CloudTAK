@@ -29,15 +29,15 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref } from 'vue';
 import {
     TablerInput,
 } from '@tak-ps/vue-tabler';
 
-const emit = defineEmits([
-    'certs',
-]);
+const emit = defineEmits<{
+    (e: 'certs', value: { cert: string; key: string }): void;
+}>();
 
 const auth = ref({
     cert: '',

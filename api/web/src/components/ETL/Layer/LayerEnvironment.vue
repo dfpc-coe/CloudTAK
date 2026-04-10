@@ -152,10 +152,11 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { std } from '../../../std.ts';
+import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
 import { validateJSON } from '../../../base/validators.ts';
 import {
     TablerNone,
@@ -174,28 +175,24 @@ import {
     IconPencil,
 } from '@tabler/icons-vue'
 
-const props = defineProps({
-    layer: {
-        type: Object,
-        required: true
-    },
-    capabilities: {
-        type: Object,
-        required: true
-    }
-});
+const props = defineProps<{
+    layer: ETLLayer;
+    capabilities: ETLLayerTaskCapabilities;
+}>();
 
-const emit = defineEmits([ 'refresh' ]);
+const emit = defineEmits<{
+    (e: 'refresh'): void;
+}>();
 
 const route = useRoute();
 
-const direction = ref(route.name.includes('incoming') ? 'incoming' : 'outgoing');
+const direction = ref<'incoming' | 'outgoing'>(String(route.name).includes('incoming') ? 'incoming' : 'outgoing');
 
 const raw = ref(false);
 const softAlert = ref(false);
 const disabled = ref(true);
-const config = ref({});
-const environment = ref();
+const config = ref<Record<string, unknown>>({});
+const environment = ref<Record<string, unknown>>();
 
 const loading = ref({
     save: false

@@ -49,40 +49,15 @@
                         />
 
                         <template v-if='config["agol::enabled"]'>
-                            <div
-                                class='px-2 py-2 round btn-group w-100'
-                                role='group'
-                            >
-                                <input
-                                    id='agol-oauth2'
-                                    type='radio'
-                                    class='btn-check'
-                                    autocomplete='off'
-                                    :checked='config["agol::auth_method"] === "oauth2"'
-                                    :disabled='!config["agol::enabled"] || !edit'
-                                    @click='config["agol::auth_method"] = "oauth2"'
-                                >
-                                <label
-                                    for='agol-oauth2'
-                                    type='button'
-                                    class='btn'
-                                >OAuth2</label>
-
-                                <input
-                                    id='agol-legacy'
-                                    type='radio'
-                                    class='btn-check'
-                                    autocomplete='off'
-                                    :checked='config["agol::auth_method"] === "legacy"'
-                                    :disabled='!config["agol::enabled"] || !edit'
-                                    @click='config["agol::auth_method"] = "legacy"'
-                                >
-                                <label
-                                    for='agol-legacy'
-                                    type='button'
-                                    class='btn'
-                                >Legacy</label>
-                            </div>
+                            <TablerPillGroup
+                                v-model='config["agol::auth_method"]'
+                                :options='[
+                                    { value: "oauth2", label: "OAuth2" },
+                                    { value: "legacy", label: "Legacy" }
+                                ]'
+                                :disabled='!config["agol::enabled"] || !edit'
+                                size='default'
+                            />
 
                             <template v-if='config["agol::auth_method"] === "oauth2"'>
                                 <TablerInput
@@ -127,7 +102,8 @@ import {
     TablerInput,
     TablerToggle,
     TablerIconButton,
-    TablerAlert
+    TablerAlert,
+    TablerPillGroup
 } from '@tak-ps/vue-tabler';
 import {
     IconPencil,

@@ -119,7 +119,7 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import {
     TablerInput,
@@ -134,29 +134,35 @@ import {
 } from '@tabler/icons-vue';
 import GroupSelect from '../../../util/GroupSelect.vue';
 
-const props = defineProps({
-    modelValue: {
-        type: Object,
-        default: function() {
-            return {};
-        }
-    },
-    disabled: {
-        type: Boolean,
-        default: false
-    },
-    connection: {
-        type: Number,
-        default: undefined
-    }
+interface MartiDest {
+    type: 'group' | 'mission' | 'uid' | 'callsign';
+    value: string;
+}
+
+interface MartiConfig {
+    archive?: boolean;
+    dest?: Record<string, string>[];
+    [key: string]: unknown;
+}
+
+const props = withDefaults(defineProps<{
+    modelValue?: MartiConfig;
+    disabled?: boolean;
+    connection?: number;
+}>(), {
+    modelValue: () => ({}),
+    disabled: false,
+    connection: undefined,
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: MartiConfig): void;
+}>();
 
 /** Internal flat representation: { type: 'group' | 'mission' | 'uid' | 'callsign', value: string } */
-const dests = ref([]);
+const dests = ref<MartiDest[]>([]);
 
-const marti = ref({
+const marti = ref<{ archive: boolean | undefined }>({
     archive: undefined
 });
 
@@ -167,8 +173,8 @@ onMounted(() => {
 
     if (Array.isArray(props.modelValue.dest)) {
         dests.value = props.modelValue.dest.map((d) => {
-            const type = ['group', 'mission', 'uid', 'callsign'].find((k) => d[k] !== undefined) || 'group';
-            return { type, value: d[type] || '' };
+            const type = (['group', 'mission', 'uid', 'callsign'] as const).find((k) => d[k] !== undefined) || 'group';
+            return { type, value: (d[type] || '') as string };
         });
     }
 });
@@ -178,13 +184,13 @@ function addDest() {
     format();
 }
 
-function removeDest(index) {
+function removeDest(index: number) {
     dests.value.splice(index, 1);
     format();
 }
 
 function format() {
-    const result = {};
+    const result: MartiConfig = {};
 
     if (marti.value.archive !== undefined) {
         result.archive = marti.value.archive;

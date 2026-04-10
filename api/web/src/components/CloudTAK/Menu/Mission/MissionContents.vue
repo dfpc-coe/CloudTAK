@@ -54,42 +54,19 @@
                 v-if='contents.length'
                 class='px-2 py-2'
             >
-                <div class='px-2 py-2 round btn-group w-100'>
-                    <input
-                        id='photos'
-                        v-model='mode'
-                        value='photos'
-                        type='radio'
-                        class='btn-check'
-                        autocomplete='off'
-                    >
-                    <label
-                        for='photos'
-                        type='button'
-                        class='btn btn-sm'
-                    ><IconPhoto
-                        class='me-1'
-                        :size='20'
-                        stroke='1'
-                    />Photos</label>
-                    <input
-                        id='files'
-                        v-model='mode'
-                        value='files'
-                        type='radio'
-                        class='btn-check'
-                        autocomplete='off'
-                    >
-                    <label
-                        for='files'
-                        type='button'
-                        class='btn btn-sm'
-                    ><IconFiles
-                        class='me-1'
-                        :size='20'
-                        stroke='1'
-                    />Files</label>
-                </div>
+                <TablerPillGroup
+                    v-model='mode'
+                    :options='[
+                        { value: "photos", label: "Photos" },
+                        { value: "files", label: "Files" }
+                    ]'
+                >
+                    <template #option='{ option }'>
+                        <IconPhoto v-if='option.value === "photos"' class='me-1' :size='20' stroke='1' />
+                        <IconFiles v-else class='me-1' :size='20' stroke='1' />
+                        {{ option.label }}
+                    </template>
+                </TablerPillGroup>
             </div>
             <TablerNone
                 v-if='!filteredContents.length'
@@ -242,6 +219,7 @@ import {
     TablerAlert,
     TablerNone,
     TablerDelete,
+    TablerPillGroup,
 } from '@tak-ps/vue-tabler';
 
 import MenuTemplate from '../../util/MenuTemplate.vue';
