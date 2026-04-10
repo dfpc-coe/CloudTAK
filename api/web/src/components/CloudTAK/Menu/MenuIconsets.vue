@@ -49,8 +49,18 @@
                     ]'
                 >
                     <template #option='{ option }'>
-                        <IconAlbum v-if='option.value === "iconsets"' v-tooltip='"Iconsets"' :size='32' stroke='1' />
-                        <IconPhoto v-else v-tooltip='"Icons"' :size='32' stroke='1' />
+                        <IconAlbum
+                            v-if='option.value === "iconsets"'
+                            v-tooltip='"Iconsets"'
+                            :size='32'
+                            stroke='1'
+                        />
+                        <IconPhoto
+                            v-else
+                            v-tooltip='"Icons"'
+                            :size='32'
+                            stroke='1'
+                        />
                     </template>
                 </TablerPillGroup>
 

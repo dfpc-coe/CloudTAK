@@ -32,30 +32,24 @@
     </TablerModal>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref } from 'vue';
 import {
     TablerModal,
     TablerInput,
 } from '@tak-ps/vue-tabler';
 
-defineProps({
-    token: {
-        type: String,
-        required: true
-    },
-    portal: {
-        type: String,
-        required: true
-    }
-});
+defineProps<{
+    token: string;
+    portal: string;
+}>();
 
-const emit = defineEmits([
-    'create',
-    'close'
-]);
+const emit = defineEmits<{
+    (e: 'create', data: { name: string }): void;
+    (e: 'close'): void;
+}>();
 
-const data = ref({
+const data = ref<{ name: string }>({
     name: ''
 });
 

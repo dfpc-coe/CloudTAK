@@ -62,8 +62,18 @@
                     ]'
                 >
                     <template #option='{ option }'>
-                        <IconPhoto v-if='option.value === "photos"' class='me-1' :size='20' stroke='1' />
-                        <IconFiles v-else class='me-1' :size='20' stroke='1' />
+                        <IconPhoto
+                            v-if='option.value === "photos"'
+                            class='me-1'
+                            :size='20'
+                            stroke='1'
+                        />
+                        <IconFiles
+                            v-else
+                            class='me-1'
+                            :size='20'
+                            stroke='1'
+                        />
                         {{ option.label }}
                     </template>
                 </TablerPillGroup>

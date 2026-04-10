@@ -10,8 +10,18 @@
     >
         <template #option='{ option }'>
             <span v-tooltip='option.label'>
-                <IconPoint v-if='option.value === "u-d-p"' title='Point Icon' :size='size' stroke='1' />
-                <img v-else :width='size' :height='size' :src='`/pngs/${option.value}.png`'>
+                <IconPoint
+                    v-if='option.value === "u-d-p"'
+                    title='Point Icon'
+                    :size='size'
+                    stroke='1'
+                />
+                <img
+                    v-else
+                    :width='size'
+                    :height='size'
+                    :src='`/pngs/${option.value}.png`'
+                >
             </span>
         </template>
     </TablerPillGroup>

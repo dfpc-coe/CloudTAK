@@ -54,9 +54,24 @@
                 :disabled='loading'
             >
                 <template #option='{ option }'>
-                    <IconUsers v-if='option.value === "users"' v-tooltip='"Users"' :size='24' stroke='1' />
-                    <IconAffiliate v-else-if='option.value === "groups"' v-tooltip='"Channels"' :size='24' stroke='1' />
-                    <IconAmbulance v-else v-tooltip='"Data Syncs"' :size='24' stroke='1' />
+                    <IconUsers
+                        v-if='option.value === "users"'
+                        v-tooltip='"Users"'
+                        :size='24'
+                        stroke='1'
+                    />
+                    <IconAffiliate
+                        v-else-if='option.value === "groups"'
+                        v-tooltip='"Channels"'
+                        :size='24'
+                        stroke='1'
+                    />
+                    <IconAmbulance
+                        v-else
+                        v-tooltip='"Data Syncs"'
+                        :size='24'
+                        stroke='1'
+                    />
                     <span class='ms-2'>{{ option.label }}</span>
                 </template>
             </TablerPillGroup>

@@ -24,7 +24,7 @@
     </TablerModal>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { std } from '../../../std.ts';
 import {
@@ -32,19 +32,16 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler'
 
-const props = defineProps({
-    pathid: {
-        type: String,
-        required: true
-    }
-});
+const props = defineProps<{
+    pathid: string;
+}>();
 
-const emit = defineEmits([
-    'close',
-]);
+const emit = defineEmits<{
+    (e: 'close'): void;
+}>();
 
-const loading = ref(true);
-const path = ref(false);
+const loading = ref<boolean>(true);
+const path = ref<Record<string, unknown>>({});
 
 onMounted(async () => {
     await fetchPath();
@@ -52,7 +49,7 @@ onMounted(async () => {
 
 async function fetchPath() {
     loading.value = true;
-    path.value = await std(`/api/video/service/path/${props.pathid}`);
+    path.value = await std(`/api/video/service/path/${props.pathid}`) as Record<string, unknown>;
     loading.value = false;
 }
 </script>

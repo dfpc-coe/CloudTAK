@@ -108,7 +108,7 @@
                         <template v-if='ele === "spatialReference"'>
                             <div
                                 class='datagrid-content'
-                                v-text='`${container[ele].wkid} ${container[ele].latestWkid ? "(" + container[ele].latestWkid + ")" : ""}`'
+                                v-text='`${(container[ele] as Record<string, unknown>)?.wkid} ${(container[ele] as Record<string, unknown>)?.latestWkid ? "(" + (container[ele] as Record<string, unknown>)?.latestWkid + ")" : ""}`'
                             />
                         </template>
                         <template v-else>
@@ -142,7 +142,7 @@
                             <tr
                                 v-for='lyr in container.layers'
                                 :key='lyr.id'
-                                @click='!disabled && (layer && layer.id === lyr.id) ? layer = nulll : layer = lyr'
+                                @click='!disabled && (layer && layer.id === lyr.id) ? layer = null : layer = lyr'
                             >
                                 <td>
                                     <div class='d-flex align-items-center'>
@@ -193,9 +193,9 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../std.ts';
 import {
     TablerAlert,
     TablerNone,
@@ -214,46 +214,64 @@ import {
     IconPolygon,
 } from '@tabler/icons-vue';
 
-const props = defineProps({
-    disabled: {
-        type: Boolean,
-        required: false,
-        default: false
-    },
-    readonly: {
-        type: Boolean,
-        default: false
-    },
-    portal: {
-        type: String,
-        default: undefined
-    },
-    token: {
-        type: Object,
-        default: undefined
-    },
-    server: {
-        type: String,
-        required: true
-    },
+interface EsriToken {
+    token: string;
+    expires: string;
+}
+
+interface PathItem {
+    name: string;
+    type: string;
+}
+
+interface ListItem {
+    id: string;
+    name: string;
+    type: string;
+}
+
+interface LayerItem {
+    id: string | number;
+    name: string;
+    geometryType?: string;
+    [key: string]: unknown;
+}
+
+interface ContainerType {
+    layers: LayerItem[];
+    spatialReference?: { wkid?: number; latestWkid?: number };
+    [key: string]: unknown;
+}
+
+const props = withDefaults(defineProps<{
+    disabled?: boolean;
+    readonly?: boolean;
+    portal?: string;
+    token?: EsriToken;
+    server: string;
+}>(), {
+    disabled: false,
+    readonly: false,
+    portal: undefined,
+    token: undefined,
 });
 
-const emit = defineEmits([
-    'close',
-    'layer'
-]);
+const emit = defineEmits<{
+    (e: 'close'): void;
+    (e: 'layer', layer: string): void;
+}>();
 
-const base = ref(props.server);
-const loading = ref(true);
-const err = ref(null);
-const listpath = ref([]);
-const container = ref(null);
-const list = ref([]);
-const layer = ref(null);
+const base = ref<string>(props.server);
+const loading = ref<boolean>(true);
+const err = ref<Error | null>(null);
+const listpath = ref<PathItem[]>([]);
+const container = ref<ContainerType | null>(null);
+const list = ref<ListItem[]>([]);
+const layer = ref<{ id: string | number } | null>(null);
 
 watch(layer, () => {
     if (!layer.value) return emit('layer', '');
-    emit('layer', stdurl_local(true));
+    emit('layer', stdurl_local(true) as string);
 });
 
 watch(listpath, async () => {
@@ -266,16 +284,16 @@ onMounted(async () => {
     let postfix = props.server.replace(/^.*\/services\//, '');
 
     if (postfix.length && !postfix.startsWith('http')) {
-        postfix = postfix.split('/');
+        const parts = postfix.split('/');
 
-        const last = postfix.pop();
+        const last = parts.pop()!;
 
         if (!isNaN(parseInt(last))) {
-            const type = postfix.pop()
-            listpath.value = [{ name: postfix.join('/'), type }]
+            const type = parts.pop()!
+            listpath.value = [{ name: parts.join('/'), type }]
             layer.value = { id: last };
         } else {
-            listpath.value = [{ name: postfix.join('/'), type: last }]
+            listpath.value = [{ name: parts.join('/'), type: last }]
         }
     } else {
         await getList();
@@ -294,7 +312,7 @@ function back() {
     }
 }
 
-function stdurl_local(use_layer=true) {
+function stdurl_local(use_layer=true): string | undefined {
     if (listpath.value.length) {
         const path = listpath.value.map((pth) => {
             if (pth.type === 'folder') return pth.name;
@@ -321,17 +339,17 @@ async function createLayer() {
         url.searchParams.set('token', props.token.token);
         url.searchParams.set('expires', props.token.expires);
         if (props.portal) url.searchParams.set('portal', props.portal);
-        url.searchParams.set('server', stdurl_local(false));
+        url.searchParams.set('server', stdurl_local(false) as string);
 
         await std(url, { method: 'POST' });
 
         await getList();
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
 }
 
-async function deleteLayer(l) {
+async function deleteLayer(l: LayerItem) {
     if (!props.token) throw new Error('Auth Token is required to create a service');
 
     loading.value = true;
@@ -363,24 +381,22 @@ async function getList() {
             url.searchParams.set('expires', props.token.expires);
         }
 
-        url.searchParams.set('server', stdurl_local(false));
+        url.searchParams.set('server', stdurl_local(false) as string);
 
-        const res = await std(url);
+        const res = await std(url) as Record<string, unknown>;
 
-        if (Array.isArray(res.layers)) {
-            container.value = res;
+        if (Array.isArray((res as { layers?: unknown[] }).layers)) {
+            container.value = res as ContainerType;
         } else {
-            list.value = [].concat(res.folders.map((folder) => {
-                return { name: folder, type: 'folder' };
-            }), res.services.map((service) => {
-                return { name: service.name.split('/')[service.name.split('/').length -1], type: service.type };
-            })).map((e) => {
-                e.id = `${e.type}-${e.name}`;
-                return e;
-            });
+            const resTyped = res as { folders: string[]; services: { name: string; type: string }[] };
+            list.value = ([] as ListItem[]).concat(resTyped.folders.map((folder: string) => {
+                return { id: `folder-${folder}`, name: folder, type: 'folder' };
+            }), resTyped.services.map((service: { name: string; type: string }) => {
+                return { id: `${service.type}-${service.name.split('/')[service.name.split('/').length -1]}`, name: service.name.split('/')[service.name.split('/').length -1], type: service.type };
+            }));
         }
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
     loading.value = false;
 }

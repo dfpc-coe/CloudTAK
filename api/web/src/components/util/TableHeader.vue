@@ -3,7 +3,7 @@
         <tr>
             <th
                 v-for='s in shown'
-                :key='s'
+                :key='s.name'
             >
                 <div class='d-flex align-items-center'>
                     <span
@@ -68,7 +68,7 @@
     </thead>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { computed } from 'vue';
 import {
     IconChevronUp,
@@ -79,31 +79,25 @@ import {
     TablerDropdown
 } from '@tak-ps/vue-tabler'
 
-const props = defineProps({
-    header: {
-        type: Array,
-        required: true,
-        description: 'Array of object headers - [{ name: "example", "displayed: true }]'
-    },
-    order: {
-        type: String,
-        required: false,
-        default: 'desc',
-        description: 'Order to sort by asc or desc'
-    },
-    sort: {
-        type: String,
-        required: false,
-        description: 'Field to sort by',
-        default: undefined
-    },
+interface HeaderItem {
+    name: string;
+    display: boolean;
+}
+
+const props = withDefaults(defineProps<{
+    header: HeaderItem[];
+    order?: string;
+    sort?: string;
+}>(), {
+    order: 'desc',
+    sort: undefined,
 });
 
-const emit = defineEmits([
-    'update:order',
-    'update:sort',
-    'update:header'
-]);
+const emit = defineEmits<{
+    (e: 'update:order', order: string): void;
+    (e: 'update:sort', sort: string): void;
+    (e: 'update:header', header: HeaderItem[]): void;
+}>();
 
 const shown = computed(() => {
    return props.header.filter((h) => {
@@ -111,17 +105,17 @@ const shown = computed(() => {
    });
 });
 
-function updateSort(sort) {
+function updateSort(sort: string) {
     emit('update:sort', sort);
 }
 
-function updateOrder(order) {
+function updateOrder(order: string) {
     emit('update:order', order);
 }
 
-function displayHeader(h_it, $event) {
+function displayHeader(h_it: number, $event: Event) {
     const header = JSON.parse(JSON.stringify(props.header));
-    header[h_it].display = $event.target.checked;
+    header[h_it].display = ($event.target as HTMLInputElement).checked;
     emit('update:header', header);
 }
 </script>

@@ -31,15 +31,14 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
-defineProps({
+defineProps<{
     data: {
-        type: Object,
-        required: true
-    }
-});
+        mission_groups: string[];
+    };
+}>();
 </script>

@@ -170,8 +170,18 @@
                                     padding='p-1'
                                 >
                                     <template #option='{ option }'>
-                                        <IconBook2 v-if='option.value === "read"' v-tooltip='"Read User"' :size='24' stroke='1' />
-                                        <IconPencil v-else v-tooltip='"Write User"' :size='24' stroke='1' />
+                                        <IconBook2
+                                            v-if='option.value === "read"'
+                                            v-tooltip='"Read User"'
+                                            :size='24'
+                                            stroke='1'
+                                        />
+                                        <IconPencil
+                                            v-else
+                                            v-tooltip='"Write User"'
+                                            :size='24'
+                                            stroke='1'
+                                        />
                                         <span class='mx-2'>{{ option.label }}</span>
                                     </template>
                                 </TablerPillGroup>
@@ -327,8 +337,18 @@
                         @update:model-value='(v: string) => editLease.proxy = v === "proxy" ? "" : null'
                     >
                         <template #option='{ option }'>
-                            <IconDrone v-if='option.value === "host"' v-tooltip='"Provide a stream URL to push data to"' :size='24' stroke='1' />
-                            <IconServer v-else v-tooltip='"Pull from existing external Stream URL"' :size='24' stroke='1' />
+                            <IconDrone
+                                v-if='option.value === "host"'
+                                v-tooltip='"Provide a stream URL to push data to"'
+                                :size='24'
+                                stroke='1'
+                            />
+                            <IconServer
+                                v-else
+                                v-tooltip='"Pull from existing external Stream URL"'
+                                :size='24'
+                                stroke='1'
+                            />
                             <span class='ms-2'>{{ option.label }}</span>
                         </template>
                     </TablerPillGroup>

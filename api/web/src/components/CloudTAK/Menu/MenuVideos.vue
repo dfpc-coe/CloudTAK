@@ -46,8 +46,18 @@
                 ]'
             >
                 <template #option='{ option }'>
-                    <IconVideo v-if='option.value === "connections"' v-tooltip='"Video Connections"' :size='32' stroke='1' />
-                    <IconServer2 v-else v-tooltip='"Video Leases"' :size='32' stroke='1' />
+                    <IconVideo
+                        v-if='option.value === "connections"'
+                        v-tooltip='"Video Connections"'
+                        :size='32'
+                        stroke='1'
+                    />
+                    <IconServer2
+                        v-else
+                        v-tooltip='"Video Leases"'
+                        :size='32'
+                        stroke='1'
+                    />
                     <span class='ms-2'>{{ option.label }}</span>
                 </template>
             </TablerPillGroup>
