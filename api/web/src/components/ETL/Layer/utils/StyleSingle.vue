@@ -1043,7 +1043,7 @@ function format() {
             if (['minzoom', 'maxzoom', 'stale'].includes(key) && !isNaN(Number(styles[geom][key]))) {
                 styles[geom][key] = Number(styles[geom][key]);
             } else if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
-                if (styles[geom].properties[key] !== undefined) geomRes[key] = Number(styles[geom].properties[key])
+                if (styles[geom].properties[key] !== undefined) geomRes[key] = Number(styles[geom].properties[key]);
             } else if (['remarks', 'callsign', 'phone'].includes(key)) {
                 if (styles[geom].properties[key]) geomRes[key] = styles[geom].properties[key];
             } else {
