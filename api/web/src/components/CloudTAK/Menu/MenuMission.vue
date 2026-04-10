@@ -93,7 +93,12 @@
                     @update:model-value='navigateMissionTab'
                 >
                     <template #option='{ option }'>
-                        <component :is='missionTabIcons[option.value]' v-tooltip='option.label' :size='32' stroke='1' />
+                        <component
+                            :is='missionTabIcons[option.value]'
+                            v-tooltip='option.label'
+                            :size='32'
+                            stroke='1'
+                        />
                     </template>
                 </TablerPillGroup>
 

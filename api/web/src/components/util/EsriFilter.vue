@@ -60,9 +60,9 @@
     </TablerModal>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, computed } from 'vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../std.ts';
 import {
     TablerAlert,
     TablerModal,
@@ -70,44 +70,40 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
-const props = defineProps({
-    disabled: {
-        type: Boolean,
-        default: false
-    },
-    modelValue: {
-        type: String,
-        default: ''
-    },
-    layer: {
-        type: String,
-        default: undefined
-    },
-    token: {
-        type: String,
-        default: undefined
-    }
+const props = withDefaults(defineProps<{
+    disabled?: boolean;
+    modelValue?: string;
+    layer?: string;
+    token?: string;
+}>(), {
+    disabled: false,
+    modelValue: '',
+    layer: undefined,
+    token: undefined,
 });
 
-const emit = defineEmits([
-    'close',
-    'update:modelValue'
-]);
+const emit = defineEmits<{
+    (e: 'close'): void;
+    (e: 'update:modelValue', value: string): void;
+}>();
 
-const err = ref(null);
+const err = ref<Error | null>(null);
 const loading = ref({
     count: false
 });
 const filter = ref({
     query: props.modelValue || ''
 });
-const list = ref({
+const list = ref<{
+    count: number;
+    features: { features: unknown[] };
+}>({
     count: 0,
-    features: {}
+    features: { features: [] }
 });
 
 const features = computed(() => {
-    return list.value.features.features.map((feat) => {
+    return list.value.features.features.map((feat: unknown) => {
         return JSON.stringify(feat);
     }).join('\n');
 });
@@ -118,21 +114,20 @@ function save() {
 }
 
 async function fetch() {
-    err.value = false;
+    err.value = null;
     loading.value.count = true;
 
     try {
         const url = stdurl('/api/esri/server/layer');
         url.searchParams.set('query', filter.value.query);
-        url.searchParams.set('layer', props.layer);
+        if (props.layer) url.searchParams.set('layer', props.layer);
         if (props.token) url.searchParams.set('token', props.token);
 
         list.value = await std(url, {
             method: 'GET',
-            body: props.body
-        });
+        }) as typeof list.value;
     } catch (error) {
-        err.value = error;
+        err.value = error instanceof Error ? error : new Error(String(error));
     }
 
     loading.value.count = false;

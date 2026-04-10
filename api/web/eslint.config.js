@@ -21,6 +21,7 @@ export default ts.config(
         rules: {
             "@typescript-eslint/ban-ts-comment": "warn",
             "vue/component-api-style": ["error", ["script-setup"]],
+            "vue/block-lang": ["error", { "script": { "lang": "ts" } }],
             "vue/html-indent": ["error", 4],
             "vue/html-quotes": ["error", "single", { "avoidEscape": false } ],
             "vue/multi-word-component-names": 0,

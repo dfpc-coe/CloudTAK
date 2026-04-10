@@ -339,9 +339,21 @@
                 padding=''
             >
                 <template #option='{ option }'>
-                    <IconInfoCircle v-if='option.value === "default"' :size='20' stroke='1' />
-                    <IconAffiliate v-else-if='option.value === "channels"' :size='20' stroke='1' />
-                    <IconCode v-else :size='20' stroke='1' />
+                    <IconInfoCircle
+                        v-if='option.value === "default"'
+                        :size='20'
+                        stroke='1'
+                    />
+                    <IconAffiliate
+                        v-else-if='option.value === "channels"'
+                        :size='20'
+                        stroke='1'
+                    />
+                    <IconCode
+                        v-else
+                        :size='20'
+                        stroke='1'
+                    />
                     <span class='mx-2'>{{ option.label }}</span>
                 </template>
             </TablerPillGroup>

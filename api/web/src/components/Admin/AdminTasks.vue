@@ -13,8 +13,18 @@
         @update:model-value='(v: string) => router.push({ name: v })'
     >
         <template #option='{ option }'>
-            <IconBuildingBroadcastTower v-if='option.value === "admin-tasks-registered"' v-tooltip='"Registered Tasks"' :size='32' stroke='1' />
-            <IconBrandDocker v-else v-tooltip='"ECR Task Images"' :size='32' stroke='1' />
+            <IconBuildingBroadcastTower
+                v-if='option.value === "admin-tasks-registered"'
+                v-tooltip='"Registered Tasks"'
+                :size='32'
+                stroke='1'
+            />
+            <IconBrandDocker
+                v-else
+                v-tooltip='"ECR Task Images"'
+                :size='32'
+                stroke='1'
+            />
             <span class='mx-2'>{{ option.label }}</span>
         </template>
     </TablerPillGroup>

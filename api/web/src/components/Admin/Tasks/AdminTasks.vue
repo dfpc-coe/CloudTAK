@@ -176,9 +176,10 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue'
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../../std.ts';
+import type { APIList } from '../../../types.ts';
 import TableHeader from '../../util/TableHeader.vue'
 import TableFooter from '../../util/TableFooter.vue'
 import UploadLogo from '../../util/UploadLogo.vue';
@@ -197,10 +198,24 @@ import {
     IconPlus,
 } from '@tabler/icons-vue'
 
-const error = ref();
-const loading = ref(true);
-const header = ref([]);
-const edit = ref();
+interface HeaderItem {
+    name: string;
+    display: boolean;
+}
+
+interface Task {
+    id?: number;
+    name?: string;
+    prefix?: string;
+    logo?: string;
+    favorite?: boolean;
+    [key: string]: unknown;
+}
+
+const error = ref<Error>();
+const loading = ref<boolean>(true);
+const header = ref<HeaderItem[]>([]);
+const edit = ref<Task | false>();
 const paging = ref({
     filter: '',
     sort: 'name',
@@ -208,7 +223,7 @@ const paging = ref({
     limit: 100,
     page: 0
 });
-const list = ref({
+const list = ref<APIList<Task>>({
     total: 0,
     items: []
 });
@@ -223,17 +238,19 @@ onMounted(async () => {
 });
 
 async function listLayerSchema() {
-    const schema = await std('/api/schema?method=GET&url=/task');
+    const schema = await std('/api/schema?method=GET&url=/task') as {
+        query: { properties: { sort: { enum: string[] } } }
+    };
     header.value = ['logo', 'name', 'prefix'].map((h) => {
         return { name: h, display: true };
     });
 
-    header.value.push(...schema.query.properties.sort.enum.map((h) => {
+    header.value.push(...schema.query.properties.sort.enum.map((h: string) => {
         return {
             name: h,
             display: false
         }
-    }).filter((h) => {
+    }).filter((h: HeaderItem) => {
         for (const hknown of header.value) {
             if (hknown.name === h.name) return false;
         }
@@ -244,12 +261,12 @@ async function listLayerSchema() {
 async function saveTask() {
     loading.value = true;
 
-    if (edit.value.id) {
+    if (edit.value && edit.value.id) {
         await std(`/api/task/${edit.value.id}`, {
             method: 'PATCH',
             body: edit.value
         });
-    } else {
+    } else if (edit.value) {
         await std('/api/task', {
             method: 'POST',
             body: edit.value
@@ -261,7 +278,7 @@ async function saveTask() {
     await fetchList();
 }
 
-async function deleteTask(task) {
+async function deleteTask(task: Task) {
     loading.value = true;
     const url = stdurl(`/api/task/${task.id}`);
     await std(url, {
@@ -278,9 +295,9 @@ async function fetchList() {
     loading.value = true;
     const url = stdurl('/api/task');
     if (paging.value.filter) url.searchParams.set('filter', paging.value.filter);
-    url.searchParams.set('limit', paging.value.limit);
-    url.searchParams.set('page', paging.value.page);
-    list.value = await std(url);
+    url.searchParams.set('limit', String(paging.value.limit));
+    url.searchParams.set('page', String(paging.value.page));
+    list.value = await std(url) as APIList<Task>;
     loading.value = false;
 }
 </script>

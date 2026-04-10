@@ -35,28 +35,22 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch } from 'vue';
 import {
     TablerPager
 } from '@tak-ps/vue-tabler';
 
-defineProps({
-    limit: {
-        type: Number,
-        required: true
-    },
-    total: {
-        type: Number,
-        required: true
-    }
-});
+defineProps<{
+    limit: number;
+    total: number;
+}>();
 
-const emit = defineEmits([
-    'page'
-]);
+const emit = defineEmits<{
+    (e: 'page', page: number): void;
+}>();
 
-const page = ref(0);
+const page = ref<number>(0);
 
 watch(page, () => {
     emit("page", page.value);
