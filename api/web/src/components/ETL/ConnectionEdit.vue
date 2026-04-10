@@ -173,7 +173,7 @@
                                                 </template>
                                                 <template v-else-if='!agencyDisabled && type === "creation"'>
                                                     <CertificateMachineUser
-                                                        :connection='connection'
+                                                        :connection='(connection as ETLConnection)'
                                                         @certs='certificateAttachment($event)'
                                                         @integration='integrationAttachment($event)'
                                                         @err='err = $event'
@@ -263,8 +263,14 @@ import {
 } from '@tak-ps/vue-tabler';
 
 interface ConnectionForm {
+    id?: number;
+    status?: string;
+    certificate?: { subject: string; validFrom: string; validTo: string };
+    created?: string;
+    updated?: string;
+    username?: string | null;
     name: string;
-    agency?: number | null;
+    agency: number | null;
     readonly: boolean;
     description: string;
     enabled: boolean;
@@ -351,12 +357,13 @@ async function fetch() {
     const res = await std(`/api/connection/${route.params.connectionid}`) as ETLConnection;
     connection.value = {
         ...res,
+        agency: res.agency ?? null,
         auth: {
             ca: [],
             cert: '',
             key: ''
         }
-    };
+    } as ConnectionForm;
     loading.value = false;
 }
 

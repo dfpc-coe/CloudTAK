@@ -76,14 +76,14 @@
                             :size='32'
                             stroke='1'
                             class='cursor-pointer'
-                            @click='data[key].splice(0, data[key].length)'
+                            @click='(data[key] as unknown[]).splice(0, (data[key] as unknown[]).length)'
                         />
                         <IconDatabaseImport
                             v-tooltip='"Import CSV"'
                             :size='32'
                             stroke='1'
                             class='cursor-pointer'
-                            @click='importModal(Object.keys(props.schema.properties[key].items.properties), data[key])'
+                            @click='importModal(Object.keys(props.schema.properties[key].items.properties), data[key] as Record<string, unknown>[])'
                         />
                         <IconPlus
                             v-tooltip='"Add Row"'
@@ -109,7 +109,7 @@
                             </thead>
                             <tbody>
                                 <tr
-                                    v-for='(arr, i) in data[key]'
+                                    v-for='(arr, i) in (data[key] as Record<string, unknown>[])'
                                     :key='i'
                                     @click='editModal(props.schema.properties[key].items, arr, key, i)'
                                 >
@@ -134,7 +134,7 @@
                         </table>
                     </div>
                     <TablerNone
-                        v-if='!data[key] || !data[key].length'
+                        v-if='!data[key] || !(data[key] as unknown[]).length'
                         :label='key'
                         :create='!props.disabled'
                         @create='editModal(props.schema.properties[key].items, {}, key)'
@@ -142,7 +142,7 @@
                 </template>
                 <template v-else>
                     <div
-                        v-for='(arr, i) of data[key]'
+                        v-for='(arr, i) of (data[key] as unknown[])'
                         :key='i'
                         class='border rounded my-2 py-2 mx-2 px-2'
                     >
@@ -156,13 +156,13 @@
                                     :size='32'
                                     stroke='1'
                                     class='cursor-pointer'
-                                    @click='data[key].splice(i, 1)'
+                                    @click='(data[key] as unknown[]).splice(i, 1)'
                                 />
                             </div>
                         </div>
 
                         <TablerSchema
-                            v-model='data[key][i]'
+                            v-model='(data[key] as Record<string, unknown>[])[i]'
                             :schema='props.schema.properties[key].items'
                             :disabled='props.disabled'
                         />
@@ -188,7 +188,7 @@
         />
 
         <SchemaModal
-            v-if='edit.shown !== false'
+            v-if='edit.shown && edit.schema'
             :allow-delete='edit.id !== null && !props.disabled'
             :edit='edit.row'
             :disabled='props.disabled'
@@ -222,7 +222,7 @@ interface SchemaProperty {
     enum?: string[];
     default?: unknown;
     description?: string;
-    items?: SchemaDefinition;
+    items: SchemaDefinition;
     [key: string]: unknown;
 }
 
