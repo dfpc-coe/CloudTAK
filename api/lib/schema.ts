@@ -515,6 +515,17 @@ export const ProfileInterest = pgTable('profile_interests', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
+export const ProfileSession = pgTable('profile_sessions', {
+    id: serial().primaryKey(),
+    username: text().notNull().references(() => Profile.username),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    ip: text().notNull(),
+    device_type: text().notNull().default('Unknown'),
+    browser: text().notNull().default('Unknown'),
+    os: text().notNull().default('Unknown'),
+    user_agent: text().notNull().default(''),
+});
+
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial().primaryKey(),
     name: text().notNull(),
