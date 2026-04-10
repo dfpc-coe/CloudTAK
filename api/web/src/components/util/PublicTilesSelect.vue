@@ -62,7 +62,7 @@
                 </template>
             </div>
             <div
-                v-if='!loading.main && !loading.task && list.total > paging.limit && !selected.id'
+                v-if='!loading.main && !loading.task && list.total > paging.limit && !selected?.id'
                 class='card-footer d-flex'
             >
                 <div class='ms-auto'>
@@ -78,9 +78,10 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../std.ts';
+import type { APIList } from '../../types.ts';
 import {
     IconX,
 } from '@tabler/icons-vue';
@@ -91,26 +92,31 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
-const emit = defineEmits([
-    'select'
-]);
+interface TileDetail {
+    name: string;
+    url?: string;
+    [key: string]: unknown;
+}
 
-const props = defineProps({
-    url: {
-        type: String,
-        default: undefined
-    }
+const emit = defineEmits<{
+    (e: 'select', tile: TileDetail | undefined): void;
+}>();
+
+const props = withDefaults(defineProps<{
+    url?: string;
+}>(), {
+    url: undefined,
 });
 
-const loading = ref({
+const loading = ref<Record<string, boolean>>({
     main: true,
     modal: true,
     list: true,
 });
 
-const config = ref();
+const config = ref<{ url: string }>();
 
-const selected = ref();
+const selected = ref<TileDetail>();
 
 const paging = ref({
     filter: '',
@@ -118,7 +124,7 @@ const paging = ref({
     page: 0
 });
 
-const list = ref({
+const list = ref<APIList<TileDetail>>({
     total: 0,
     items: []
 });
@@ -158,9 +164,10 @@ async function fetchSelected() {
 
             if (match && match[1]) {
                 const name = match[1];
+                if (!config.value) config.value = await std('/api/config/tiles') as { url: string };
                 const url = stdurl(new URL(config.value.url + `/tiles/public/${name}`));
                 url.searchParams.set('token', localStorage.token);
-                selected.value = await std(url);
+                selected.value = await std(url) as TileDetail;
                 selected.value.url = url.toString();
             }
         } catch (err) {
@@ -169,11 +176,11 @@ async function fetchSelected() {
     }
 }
 
-async function select(tile) {
+async function select(tile: TileDetail) {
     loading.value.tiles = true;
 
     if (!config.value) {
-        config.value = await std('/api/config/tiles');
+        config.value = await std('/api/config/tiles') as { url: string };
     }
 
     const name = tile.name.replace(/^public\//, "").replace(/\.pmtiles$/, '');
@@ -181,7 +188,7 @@ async function select(tile) {
     const url = stdurl(new URL(config.value.url + `/tiles/public/${name}`));
     url.searchParams.set('token', localStorage.token);
 
-    const detail = await std(url);
+    const detail = await std(url) as TileDetail;
     detail.url = url.toString();
     selected.value = detail;
 
@@ -190,16 +197,16 @@ async function select(tile) {
 
 async function listTiles() {
     if (!config.value) {
-        config.value = await std('/api/config/tiles');
+        config.value = await std('/api/config/tiles') as { url: string };
     }
 
     loading.value.list = true;
     const url = stdurl(new URL(config.value.url + '/tiles/public'));
     url.searchParams.set('token', localStorage.token);
     url.searchParams.set('filter', paging.value.filter);
-    url.searchParams.set('limit', paging.value.limit);
-    url.searchParams.set('page', paging.value.page);
-    list.value = await std(url);
+    url.searchParams.set('limit', String(paging.value.limit));
+    url.searchParams.set('page', String(paging.value.page));
+    list.value = await std(url) as APIList<TileDetail>;
 
     loading.value.list = false;
 }

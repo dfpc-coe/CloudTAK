@@ -42,7 +42,7 @@
                 <tbody>
                     <tr
                         v-for='(link, it) in links'
-                        :key='link.name'
+                        :key='`${link.url}-${link.remarks}`'
                         @click='edit(link)'
                     >
                         <td v-text='link.remarks' />
@@ -75,7 +75,7 @@
     />
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch } from 'vue';
 import {
     TablerNone
@@ -86,30 +86,29 @@ import {
 } from '@tabler/icons-vue';
 import StyleLinkModal from './StyleLinkModal.vue';
 
-const props = defineProps({
-    modelValue: {
-        type: Array,
-        required: true
-    },
-    disabled: {
-        type: Boolean,
-        default: true
-    },
-    schema: {
-        type: Object,
-        required: true
-    },
-    label: {
-        type: String,
-        default: 'Link Override'
-    }
+interface StyleLink {
+    remarks: string;
+    url: string;
+    [key: string]: unknown;
+}
+
+const props = withDefaults(defineProps<{
+    modelValue: StyleLink[];
+    disabled?: boolean;
+    schema: Record<string, unknown>;
+    label?: string;
+}>(), {
+    disabled: true,
+    label: 'Link Override',
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: StyleLink[]): void;
+}>();
 
 const create = ref(false);
-const editLink = ref(false);
-const links = ref(props.modelValue);
+const editLink = ref<StyleLink | undefined>();
+const links = ref<StyleLink[]>(props.modelValue);
 
 watch(() => props.modelValue, () => {
     links.value = props.modelValue;
@@ -117,13 +116,13 @@ watch(() => props.modelValue, () => {
     deep: true
 });
 
-function edit(link) {
+function edit(link: StyleLink) {
     if (props.disabled) return;
     editLink.value = link;
     create.value = true;
 }
 
-function push(link) {
+function push(link: StyleLink) {
     create.value = false;
 
     if (!editLink.value) {
@@ -134,6 +133,6 @@ function push(link) {
 
     emit('update:modelValue', links.value);
 
-    editLink.value = null;
+    editLink.value = undefined;
 }
 </script>

@@ -1,58 +1,19 @@
 <template>
     <div class='row g-2 mx-2 my-2'>
         <div class='col-12 mb-3'>
-            <div
-                class='btn-group w-100'
-                role='group'
-            >
-                <input
-                    id='agol'
-                    type='radio'
-                    class='btn-check'
-                    name='esri-type'
-                    autocomplete='off'
-                    :disabled='disabled'
-                    :checked='type === "agol"'
-                    @click='type = "agol"'
-                >
-                <label
-                    for='agol'
-                    type='button'
-                    class='btn'
-                >ArcGIS Online</label>
-
-                <input
-                    id='portal'
-                    type='radio'
-                    class='btn-check'
-                    name='esri-type'
-                    autocomplete='off'
-                    :disabled='disabled'
-                    :checked='type === "portal"'
-                    @click='type = "portal"'
-                >
-                <label
-                    for='portal'
-                    type='button'
-                    class='btn'
-                >ArcGIS Enterprise Portal</label>
-
-                <input
-                    id='server'
-                    type='radio'
-                    class='btn-check'
-                    name='esri-type'
-                    autocomplete='off'
-                    :disabled='disabled'
-                    :checked='type === "server"'
-                    @click='type = "server"'
-                >
-                <label
-                    for='server'
-                    type='button'
-                    class='btn'
-                >ArcGIS Server</label>
-            </div>
+            <TablerPillGroup
+                v-model='type'
+                :options='[
+                    { value: "agol", label: "ArcGIS Online" },
+                    { value: "portal", label: "ArcGIS Enterprise Portal" },
+                    { value: "server", label: "ArcGIS Server" }
+                ]'
+                :disabled='disabled'
+                :rounded='false'
+                size='default'
+                padding=''
+                name='esri-type'
+            />
         </div>
 
         <template v-if='type === "agol"'>
@@ -278,7 +239,7 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch } from 'vue';
 import {
     TablerIconButton,
@@ -286,6 +247,7 @@ import {
     TablerDelete,
     TablerInput,
     TablerNone,
+    TablerPillGroup,
 } from '@tak-ps/vue-tabler';
 import EsriPortal from '../../util/EsriPortal.vue';
 import EsriFilter from '../../util/EsriFilter.vue';
@@ -296,18 +258,29 @@ import {
     IconFilter,
 } from '@tabler/icons-vue'
 
-const props = defineProps({
-    modelValue: {
-        type: Object,
-        required: true
-    },
-    disabled: {
-        type: Boolean,
-        default: true
-    }
+interface ArcGISEnvironment {
+    ARCGIS_URL?: string;
+    ARCGIS_PORTAL?: string;
+    ARCGIS_USERNAME?: string;
+    ARCGIS_PASSWORD?: string;
+    ARCGIS_QUERY?: string;
+    ARCGIS_QUERY_STRATEGY?: string;
+    ARCGIS_PARAMS?: Record<string, string>[];
+    ARCGIS_TOKEN?: string;
+    ARCGIS_EXPIRES?: string;
+    [key: string]: unknown;
+}
+
+const props = withDefaults(defineProps<{
+    modelValue: ArcGISEnvironment;
+    disabled?: boolean;
+}>(), {
+    disabled: true,
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: ArcGISEnvironment): void;
+}>();
 
 let initialType = 'agol';
 if (!props.modelValue.ARCGIS_PORTAL && !props.modelValue.ARCGIS_USERNAME) {
@@ -321,7 +294,7 @@ if (!props.modelValue.ARCGIS_PORTAL && !props.modelValue.ARCGIS_USERNAME) {
 const type = ref(initialType);
 const advanced = ref(false);
 const esriView = ref(false);
-const environment = ref(JSON.parse(JSON.stringify(props.modelValue)));
+const environment = ref<ArcGISEnvironment>(JSON.parse(JSON.stringify(props.modelValue)));
 const filterModal = ref(false);
 
 if (!Array.isArray(environment.value.ARCGIS_PARAMS)) {

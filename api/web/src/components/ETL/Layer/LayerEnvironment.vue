@@ -78,7 +78,7 @@
                 :err='new Error("Layer failed to return a Capabilities object")'
             />
             <TablerAlert
-                v-else-if='!props.capabilities.incoming.schema.input'
+                v-else-if='!props.capabilities?.incoming?.schema?.input'
                 title='Missing Input Schema'
                 :err='new Error("Layer failed to return an input schema on the Capabilities object")'
             />
@@ -96,8 +96,8 @@
             </template>
             <template
                 v-else-if='
-                    props.capabilities[direction].schema.input.type !== "object"
-                        || !props.capabilities[direction].schema.input.properties
+                    (props.capabilities[direction] as DirectionCapability)?.schema?.input?.type !== "object"
+                        || !(props.capabilities[direction] as DirectionCapability)?.schema?.input?.properties
                 '
             >
                 <div class='d-flex justify-content-center my-4'>
@@ -106,23 +106,23 @@
             </template>
             <template v-else>
                 <TablerNone
-                    v-if='Object.keys(capabilities[direction].schema.input.properties).length === 0'
+                    v-if='Object.keys(inputSchema.properties).length === 0'
                     label='No Schema'
                     :create='false'
                 />
                 <Schema
                     v-else
                     v-model='environment'
-                    :schema='capabilities[direction].schema.input'
+                    :schema='inputSchema'
                     :disabled='disabled'
                 />
             </template>
 
             <div class='px-2 pb-3'>
                 <!-- AutoSuggested Filters -->
-                <template v-if='config.timezone'>
+                <template v-if='(config.timezone as Record<string, unknown>)'>
                     <TablerTimeZone
-                        v-model='config.timezone.timezone'
+                        v-model='(config.timezone as Record<string, string>).timezone'
                         label='Date TimeZone Override'
                         :disabled='disabled'
                     />
@@ -152,10 +152,11 @@
     </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
+<script setup lang='ts'>
+import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { std } from '../../../std.ts';
+import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
 import { validateJSON } from '../../../base/validators.ts';
 import {
     TablerNone,
@@ -174,45 +175,82 @@ import {
     IconPencil,
 } from '@tabler/icons-vue'
 
-const props = defineProps({
-    layer: {
-        type: Object,
-        required: true
-    },
-    capabilities: {
-        type: Object,
-        required: true
-    }
-});
+interface SchemaProperty {
+    type?: string;
+    enum?: string[];
+    default?: unknown;
+    description?: string;
+    items: SchemaDefinition;
+    [key: string]: unknown;
+}
 
-const emit = defineEmits([ 'refresh' ]);
+interface SchemaDefinition {
+    type?: string;
+    required: string[];
+    properties: Record<string, SchemaProperty>;
+    [key: string]: unknown;
+}
+
+interface DirectionCapability {
+    schema: {
+        input: SchemaDefinition;
+        inputError?: { status: number; message: string };
+        output: SchemaDefinition;
+        outputError?: { status: number; message: string };
+    };
+    [key: string]: unknown;
+}
+
+const props = defineProps<{
+    layer: ETLLayer;
+    capabilities: ETLLayerTaskCapabilities;
+}>();
+
+const emit = defineEmits<{
+    (e: 'refresh'): void;
+}>();
 
 const route = useRoute();
 
-const direction = ref(route.name.includes('incoming') ? 'incoming' : 'outgoing');
+const direction = ref<'incoming' | 'outgoing'>(String(route.name).includes('incoming') ? 'incoming' : 'outgoing');
 
 const raw = ref(false);
-const softAlert = ref(false);
+const softAlert = ref<{ message: string } | false>(false);
 const disabled = ref(true);
-const config = ref({});
-const environment = ref();
+const config = ref<Record<string, unknown>>({});
+const environment = ref<Record<string, unknown>>();
 
 const loading = ref({
     save: false
+});
+
+const inputSchema = computed((): SchemaDefinition => {
+    const cap = dirCap();
+    if (!cap?.schema?.input) return { required: [], properties: {} };
+    const input = cap.schema.input as SchemaDefinition;
+    return {
+        ...input,
+        required: input.required ?? [],
+        properties: input.properties ?? {},
+    };
 });
 
 onMounted(async () => {
     await reload();
 });
 
-function hasDateTime() {
-    if (!props.capabilities) return false;
+function dirCap(): DirectionCapability | undefined {
+    return props.capabilities[direction.value] as DirectionCapability | undefined;
+}
 
-    if (props.capabilities[direction.value].schema.output) {
-        for (const prop of Object.keys(props.capabilities[direction.value].schema.output.properties)) {
-            if (props.capabilities[direction.value].schema.output.properties[prop].format && props.capabilities[direction.value].schema.output.properties[prop].format === 'date-time') {
-                return true;
-            }
+function hasDateTime(): boolean {
+    if (!props.capabilities) return false;
+    const cap = dirCap();
+    if (!cap?.schema.output?.properties) return false;
+
+    for (const prop of Object.keys(cap.schema.output.properties)) {
+        if (cap.schema.output.properties[prop].format === 'date-time') {
+            return true;
         }
     }
 
@@ -223,10 +261,11 @@ async function reload() {
     raw.value = false;
     disabled.value = true;
 
-    environment.value = JSON.parse(JSON.stringify(props.layer[direction.value].environment));
+    const layerDir = props.layer[direction.value] as { environment: Record<string, unknown>; config: Record<string, unknown> } | undefined;
+    environment.value = layerDir ? JSON.parse(JSON.stringify(layerDir.environment)) : {};
 
-    if (direction.value === 'incoming')  {
-        const cnf = JSON.parse(JSON.stringify(props.layer[direction.value].config));
+    if (direction.value === 'incoming' && layerDir) {
+        const cnf = JSON.parse(JSON.stringify(layerDir.config)) as Record<string, unknown>;
 
         if (!hasDateTime()) {
             delete cnf.timezone;

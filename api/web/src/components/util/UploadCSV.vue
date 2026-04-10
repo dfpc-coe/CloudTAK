@@ -26,19 +26,19 @@
     </TablerModal>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref } from 'vue';
 import {
     TablerModal,
     TablerInput
 } from '@tak-ps/vue-tabler';
 
-const emit = defineEmits([
-    'import',
-    'close'
-]);
+const emit = defineEmits<{
+    (e: 'import', csv: string): void;
+    (e: 'close'): void;
+}>();
 
-const csv = ref('');
+const csv = ref<string>('');
 
 function close() {
     emit('close');

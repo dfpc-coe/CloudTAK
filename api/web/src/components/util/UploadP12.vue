@@ -14,7 +14,7 @@
                     class='dropzone dz-clickable'
                     action='./'
                     autocomplete='off'
-                    novalidate=''
+                    novalidate
                 >
                     <div class='dz-default dz-message'>
                         <button
@@ -46,7 +46,7 @@
     </TablerModal>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, onMounted, nextTick } from 'vue';
 import { 
     TablerModal,
@@ -55,16 +55,16 @@ import {
 import Dropzone from 'dropzone/dist/dropzone.mjs';
 import 'dropzone/dist/dropzone.css';
 import '@tabler/core/dist/css/tabler-vendors.min.css';
-import { convertToPem } from '@tak-ps/node-p12/browser';
+import { convertToPem, type ConvertToPemResult } from '@tak-ps/node-p12/browser';
 
-const emit = defineEmits([
-    'close',
-    'certs'
-]);
+const emit = defineEmits<{
+    (e: 'close'): void;
+    (e: 'certs', certs: ConvertToPemResult): void;
+}>();
 
-const dropzone = ref(null);
-const password = ref('');
-const file = ref(null);
+const dropzone = ref<InstanceType<typeof Dropzone> | null>(null);
+const password = ref<string>('');
+const file = ref<string | null>(null);
 
 onMounted(() => {
     nextTick(() => {
@@ -72,10 +72,10 @@ onMounted(() => {
             autoProcessQueue: false
         });
 
-        dropzone.value.on('addedfile', (f) => {
+        dropzone.value.on('addedfile', (f: File) => {
             const read = new FileReader();
-            read.onload = (event) => {
-                file.value = event.target.result;
+            read.onload = (event: ProgressEvent<FileReader>) => {
+                file.value = event.target?.result as string;
             };
             read.readAsDataURL(f);
         });
@@ -87,6 +87,7 @@ function close() {
 }
 
 function extract() {
+    if (!file.value) return;
     const certs = convertToPem(atob(file.value.split('base64,')[1]), password.value);
     emit('certs', certs);
 }

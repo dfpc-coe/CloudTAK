@@ -67,8 +67,8 @@ import {
 
 const router = useRouter();
 const loading = ref(false);
-const template = ref({
-    id: null,
+const template = ref<{ id: number | undefined; name: string; description: string }>({
+    id: undefined,
     name: '',
     description: ''
 });

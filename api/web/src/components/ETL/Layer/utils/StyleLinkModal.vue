@@ -44,30 +44,32 @@
     </TablerModal>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import HandleForm from '../../../util/HandleForm.vue';
 import {
     TablerModal,
 } from '@tak-ps/vue-tabler';
 
-const props = defineProps({
-    edit: {
-        type: Object,
-        default: undefined
-    },
-    schema: {
-        type: Object,
-        required: true
-    }
+interface StyleLink {
+    remarks: string;
+    url: string;
+    [key: string]: unknown;
+}
+
+const props = withDefaults(defineProps<{
+    edit?: StyleLink;
+    schema: Record<string, unknown>;
+}>(), {
+    edit: undefined,
 });
 
-const emit = defineEmits([
-    'close',
-    'done'
-]);
+const emit = defineEmits<{
+    (e: 'close'): void;
+    (e: 'done', value: StyleLink): void;
+}>();
 
-const link = ref({
+const link = ref<StyleLink>({
     remarks: '',
     url: '',
 });

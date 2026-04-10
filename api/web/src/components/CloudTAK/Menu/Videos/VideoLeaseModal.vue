@@ -159,50 +159,32 @@
                             </div>
                             <div
                                 v-else
-                                class='p-1 round btn-group w-100'
-                                role='group'
+                                class='col-12'
                             >
-                                <input
-                                    id='read-user'
-                                    type='radio'
-                                    class='btn-check'
-                                    autocomplete='off'
-                                    :checked='mode === "read"'
-                                    @click='mode = "read"'
+                                <TablerPillGroup
+                                    v-model='mode'
+                                    :options='[
+                                        { value: "read", label: "Read User" },
+                                        { value: "publish", label: "Write User" }
+                                    ]'
+                                    padding='p-1'
                                 >
-                                <label
-                                    for='read-user'
-                                    type='button'
-                                    class='btn btn-sm'
-                                >
-                                    <IconBook2
-                                        v-tooltip='"Read User"'
-                                        :size='24'
-                                        stroke='1'
-                                    />
-                                    <span class='mx-2'>Read User</span>
-                                </label>
-
-                                <input
-                                    id='publish-user'
-                                    type='radio'
-                                    class='btn-check'
-                                    autocomplete='off'
-                                    :checked='mode === "publish"'
-                                    @click='mode = "publish"'
-                                >
-                                <label
-                                    for='publish-user'
-                                    type='button'
-                                    class='btn btn-sm'
-                                >
-                                    <IconPencil
-                                        v-tooltip='"Write User"'
-                                        :size='24'
-                                        stroke='1'
-                                    />
-                                    <span class='mx-2'>Write User</span>
-                                </label>
+                                    <template #option='{ option }'>
+                                        <IconBook2
+                                            v-if='option.value === "read"'
+                                            v-tooltip='"Read User"'
+                                            :size='24'
+                                            stroke='1'
+                                        />
+                                        <IconPencil
+                                            v-else
+                                            v-tooltip='"Write User"'
+                                            :size='24'
+                                            stroke='1'
+                                        />
+                                        <span class='mx-2'>{{ option.label }}</span>
+                                    </template>
+                                </TablerPillGroup>
                             </div>
                         </div>
                     </div>
@@ -345,46 +327,31 @@
                 class='modal-body row g-2'
             >
                 <div class='col-12'>
-                    <div
-                        class='p-1 round btn-group w-100'
-                        role='group'
+                    <TablerPillGroup
+                        :model-value='typeof editLease.proxy === "string" ? "proxy" : "host"'
+                        :options='[
+                            { value: "host", label: "Hosted Stream URL" },
+                            { value: "proxy", label: "External Stream URL" }
+                        ]'
+                        padding='p-1'
+                        @update:model-value='(v: string) => editLease.proxy = v === "proxy" ? "" : null'
                     >
-                        <input
-                            id='lease-host'
-                            type='radio'
-                            class='btn-check'
-                            autocomplete='off'
-                            :checked='typeof editLease.proxy !== "string"'
-                            @click='editLease.proxy = null'
-                        >
-                        <label
-                            for='lease-host'
-                            type='button'
-                            class='btn btn-sm'
-                        ><IconDrone
-                            v-tooltip='"Provide a stream URL to push data to"'
-                            :size='24'
-                            stroke='1'
-                        /><span class='ms-2'>Hosted Stream URL</span></label>
-
-                        <input
-                            id='lease-proxy'
-                            type='radio'
-                            class='btn-check'
-                            autocomplete='off'
-                            :checked='typeof editLease.proxy === "string"'
-                            @click='editLease.proxy = ""'
-                        >
-                        <label
-                            for='lease-proxy'
-                            type='button'
-                            class='btn btn-sm'
-                        ><IconServer
-                            v-tooltip='"Pull from existing external Stream URL"'
-                            :size='24'
-                            stroke='1'
-                        /><span class='ms-2'>External Stream URL</span></label>
-                    </div>
+                        <template #option='{ option }'>
+                            <IconDrone
+                                v-if='option.value === "host"'
+                                v-tooltip='"Provide a stream URL to push data to"'
+                                :size='24'
+                                stroke='1'
+                            />
+                            <IconServer
+                                v-else
+                                v-tooltip='"Pull from existing external Stream URL"'
+                                :size='24'
+                                stroke='1'
+                            />
+                            <span class='ms-2'>{{ option.label }}</span>
+                        </template>
+                    </TablerPillGroup>
                 </div>
                 <div class='col-12 col-md-8'>
                     <TablerInput
@@ -573,7 +540,8 @@ import {
     TablerModal,
     TablerInput,
     TablerEnum,
-    TablerDelete
+    TablerDelete,
+    TablerPillGroup
 } from '@tak-ps/vue-tabler'
 
 const props = withDefaults(defineProps<{

@@ -44,66 +44,37 @@
                     placeholder='Filter...'
                 />
             </div>
-            <div
-                class='px-2 py-2 round btn-group w-100'
-                role='group'
+            <TablerPillGroup
+                v-model='mode'
+                :options='[
+                    { value: "users", label: "Users" },
+                    { value: "groups", label: "Channels" },
+                    { value: "missions", label: "Data Syncs" }
+                ]'
+                :disabled='loading'
             >
-                <input
-                    id='mode-users'
-                    type='radio'
-                    class='btn-check'
-                    autocomplete='off'
-                    :checked='mode === "users"'
-                    :disabled='loading'
-                    @click='mode = "users"'
-                >
-                <label
-                    for='mode-users'
-                    type='button'
-                    class='btn btn-sm'
-                ><IconUsers
-                    v-tooltip='"Users"'
-                    :size='24'
-                    stroke='1'
-                /> <span class='ms-2'>Users</span></label>
-
-                <input
-                    id='mode-groups'
-                    type='radio'
-                    class='btn-check'
-                    autocomplete='off'
-                    :checked='mode === "groups"'
-                    :disabled='loading'
-                    @click='mode = "groups"'
-                >
-                <label
-                    for='mode-groups'
-                    type='button'
-                    class='btn btn-sm'
-                ><IconAffiliate
-                    v-tooltip='"Channels"'
-                    :size='24'
-                    stroke='1'
-                /> <span class='ms-2'>Channels</span></label>
-                <input
-                    id='mode-missions'
-                    type='radio'
-                    class='btn-check'
-                    autocomplete='off'
-                    :checked='mode === "missions"'
-                    :disabled='loading'
-                    @click='mode = "missions"'
-                >
-                <label
-                    for='mode-missions'
-                    type='button'
-                    class='btn btn-sm'
-                ><IconAmbulance
-                    v-tooltip='"Data Syncs"'
-                    :size='24'
-                    stroke='1'
-                /> <span class='ms-2'>Data Syncs</span></label>
-            </div>
+                <template #option='{ option }'>
+                    <IconUsers
+                        v-if='option.value === "users"'
+                        v-tooltip='"Users"'
+                        :size='24'
+                        stroke='1'
+                    />
+                    <IconAffiliate
+                        v-else-if='option.value === "groups"'
+                        v-tooltip='"Channels"'
+                        :size='24'
+                        stroke='1'
+                    />
+                    <IconAmbulance
+                        v-else
+                        v-tooltip='"Data Syncs"'
+                        :size='24'
+                        stroke='1'
+                    />
+                    <span class='ms-2'>{{ option.label }}</span>
+                </template>
+            </TablerPillGroup>
 
             <div
                 class='col-12 overflow-auto'
@@ -252,6 +223,7 @@ import {
     TablerModal,
     TablerLoading,
     TablerButton,
+    TablerPillGroup,
 } from '@tak-ps/vue-tabler';
 import {
     IconUsers,

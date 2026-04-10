@@ -63,50 +63,62 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { TablerInput } from '@tak-ps/vue-tabler';
 
-const props = defineProps({
-  modelValue: { type: [String, Number], default: '' },
-  label: { type: String, default: undefined },
-  description: { type: String, default: undefined },
-  placeholder: { type: String, default: undefined },
-  disabled: { type: Boolean, default: false },
-  rows: { type: [Number, String], default: 1 },
-  // Expects a standard JSON Schema object
-  schema: { 
-    type: Object, 
-    default: () => ({
-      type: "object",
-      properties: {
-        user: {
-          type: "object",
-          properties: {
-            id: { type: "string" },
-            profile: {
-              type: "object",
-              properties: {
-                avatar_url: { type: "string" },
-                bio: { type: "string" }
-              }
+interface SchemaNode {
+  type?: string;
+  properties?: Record<string, SchemaNode>;
+  [key: string]: unknown;
+}
+
+const props = withDefaults(defineProps<{
+  modelValue?: string | number;
+  label?: string;
+  description?: string;
+  placeholder?: string;
+  disabled?: boolean;
+  rows?: number | string;
+  schema?: SchemaNode;
+}>(), {
+  modelValue: '',
+  label: undefined,
+  description: undefined,
+  placeholder: undefined,
+  disabled: false,
+  rows: 1,
+  schema: () => ({
+    type: "object",
+    properties: {
+      user: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          profile: {
+            type: "object",
+            properties: {
+              avatar_url: { type: "string" },
+              bio: { type: "string" }
             }
           }
-        },
-        system_date: { type: "string" }
-      }
-    }) 
-  }
+        }
+      },
+      system_date: { type: "string" }
+    }
+  })
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string | number): void;
+}>();
 
-const normalizeValue = (value) => {
+const normalizeValue = (value: string | number | undefined | null): string => {
   if (value === undefined || value === null) return '';
   return String(value);
 };
 
-const getResolvedRows = (rows, value) => {
+const getResolvedRows = (rows: number | string, value: string | number): number => {
   if (rows === '') {
     const lineCount = normalizeValue(value).split('\n').length;
     return Math.max(2, lineCount);
@@ -122,30 +134,30 @@ const getResolvedRows = (rows, value) => {
   return 1;
 };
 
-const inputComponent = ref(null);
-const textarea = ref(null);
-const container = ref(null);
-const backdrop = ref(null);
-const internalValue = ref(normalizeValue(props.modelValue));
-const isFocused = ref(false);
-const showSuggestions = ref(false);
-const suggestionPos = ref({ x: 0, y: 0 });
-const activeIndex = ref(0);
-const currentPath = ref('');
-const backdropStyle = ref({});
+const inputComponent = ref<InstanceType<typeof TablerInput> | null>(null);
+const textarea = ref<HTMLTextAreaElement | HTMLInputElement | null>(null);
+const container = ref<HTMLElement | null>(null);
+const backdrop = ref<HTMLElement | null>(null);
+const internalValue = ref<string>(normalizeValue(props.modelValue));
+const isFocused = ref<boolean>(false);
+const showSuggestions = ref<boolean>(false);
+const suggestionPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
+const activeIndex = ref<number>(0);
+const currentPath = ref<string>('');
+const backdropStyle = ref<Record<string, string>>({});
 
 const inputRows = computed(() => {
   return getResolvedRows(props.rows, internalValue.value);
 });
 
-let resizeObserver;
+let resizeObserver: ResizeObserver | undefined;
 
-const getNativeInput = () => {
+const getNativeInput = (): HTMLTextAreaElement | HTMLInputElement | null => {
   return inputComponent.value?.$el?.querySelector('textarea, input') ?? null;
 };
 
-const handleNativeInput = (e) => {
-  handleInput(e.target);
+const handleNativeInput = (e: Event) => {
+  handleInput(e.target as HTMLTextAreaElement | HTMLInputElement);
   syncBackdropMetrics();
 };
 
@@ -244,7 +256,7 @@ const getCaretCoords = () => {
   mirror.style.overflowWrap = textarea.value.tagName === 'TEXTAREA' ? 'break-word' : 'normal';
 
   for (const property of properties) {
-    mirror.style[property] = inputStyle[property];
+    (mirror.style as unknown as Record<string, string>)[property] = (inputStyle as unknown as Record<string, string>)[property];
   }
 
   mirror.textContent = valueBeforeCursor;
@@ -291,7 +303,7 @@ const bindNativeInput = () => {
 };
 
 // --- Helper: Resolve path in JSON Schema ---
-const getTargetSchema = (pathString) => {
+const getTargetSchema = (pathString: string): SchemaNode | null => {
   const parts = pathString.split('.').filter(p => p);
   let current = props.schema;
 
@@ -306,10 +318,10 @@ const getTargetSchema = (pathString) => {
 };
 
 // --- Logic ---
-const handleInput = (target) => {
+const handleInput = (target: HTMLTextAreaElement | HTMLInputElement | null) => {
   if (!target) return;
 
-  const cursor = target.selectionStart;
+  const cursor = target.selectionStart ?? 0;
   const textBefore = internalValue.value.substring(0, cursor);
   const match = textBefore.match(/\{\{([^}]*)$/);
 
@@ -339,14 +351,14 @@ const filteredVariables = computed(() => {
   if (!target || !target.properties) return [];
 
   return Object.keys(target.properties)
-    .filter(key => key.startsWith(lastPart))
+    .filter(key => key.startsWith(lastPart!))
     .map(key => ({
       key,
-      hasChildren: !!target.properties[key].properties
+      hasChildren: !!target.properties![key].properties
     }));
 });
 
-const getSelectedPath = (key) => {
+const getSelectedPath = (key: string): string => {
   const parts = currentPath.value.split('.');
 
   if (!parts.length) return key;
@@ -355,10 +367,10 @@ const getSelectedPath = (key) => {
   return parts.filter((part) => part !== '').join('.');
 };
 
-const selectSuggestion = (option) => {
+const selectSuggestion = (option: { key: string; hasChildren: boolean }) => {
   if (!textarea.value) return;
 
-  const cursor = textarea.value.selectionStart;
+  const cursor = textarea.value.selectionStart ?? 0;
   const textBefore = internalValue.value.substring(0, cursor);
   const textAfter = internalValue.value.substring(cursor);
   const selectedPath = getSelectedPath(option.key);
@@ -375,8 +387,8 @@ const selectSuggestion = (option) => {
   }
 
   nextTick(() => {
-    textarea.value.focus();
-    textarea.value.setSelectionRange(newBefore.length, newBefore.length);
+    textarea.value?.focus();
+    textarea.value?.setSelectionRange(newBefore.length, newBefore.length);
 
     if (option.hasChildren) {
       updateCursorCoords();
@@ -387,7 +399,7 @@ const selectSuggestion = (option) => {
 const highlightedSegments = computed(() => {
   const content = internalValue.value;
   const hbsRegex = /(\{\{\{?#?\/?)\s*([a-zA-Z0-9_.]+)\s*(\}?\}\})/g;
-  const segments = [];
+  const segments: { text: string; style: string | undefined }[] = [];
   let lastIndex = 0;
 
   for (const match of content.matchAll(hbsRegex)) {
@@ -418,18 +430,19 @@ const highlightedSegments = computed(() => {
   return segments;
 });
 
-const handleKeyDown = (e) => {
+const handleKeyDown = (e: Event) => {
+  const ke = e as KeyboardEvent;
   if (!showSuggestions.value || !filteredVariables.value.length) return;
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
+  if (ke.key === 'ArrowDown') {
+    ke.preventDefault();
     activeIndex.value = (activeIndex.value + 1) % filteredVariables.value.length;
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
+  } else if (ke.key === 'ArrowUp') {
+    ke.preventDefault();
     activeIndex.value = (activeIndex.value - 1 + filteredVariables.value.length) % filteredVariables.value.length;
-  } else if (e.key === 'Enter' || e.key === 'Tab') {
-    e.preventDefault();
+  } else if (ke.key === 'Enter' || ke.key === 'Tab') {
+    ke.preventDefault();
     selectSuggestion(filteredVariables.value[activeIndex.value]);
-  } else if (e.key === 'Escape') {
+  } else if (ke.key === 'Escape') {
     showSuggestions.value = false;
   }
 };

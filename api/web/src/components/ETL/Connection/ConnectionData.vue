@@ -31,7 +31,7 @@
             </div>
 
             <TablerAlert
-                v-if='err'
+                v-if='error'
                 title='ETL Server Error'
                 :err='error'
                 :compact='true'
@@ -107,10 +107,11 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { std, stdurl } from '../../../std.ts';
+import type { ETLConnection, APIList, ETLData } from '../../../types.ts';
 import TableFooter from '../../util/TableFooter.vue';
 import {
     TablerNone,
@@ -129,21 +130,18 @@ import {
 const route = useRoute();
 const router = useRouter();
 
-const props = defineProps({
-    connection: {
-        type: Object,
-        required: true
-    }
-});
+const props = defineProps<{
+    connection: ETLConnection;
+}>();
 
 const loading = ref(true);
-const error = ref();
+const error = ref<Error>();
 const paging = ref({
     filter: '',
     limit: 10,
     page: 0
 })
-const list = ref({
+const list = ref<APIList<ETLData>>({
     total: 0,
     items: []
 });
@@ -160,11 +158,11 @@ async function listData() {
     loading.value = true;
     try {
         const url = stdurl(`/api/connection/${route.params.connectionid}/data`);
-        url.searchParams.set('limit', paging.value.limit);
-        url.searchParams.set('page', paging.value.page);
+        url.searchParams.set('limit', String(paging.value.limit));
+        url.searchParams.set('page', String(paging.value.page));
         url.searchParams.set('filter', paging.value.filter);
-        url.searchParams.set('connection', route.params.connectionid);
-        list.value = await std(url);
+        url.searchParams.set('connection', String(route.params.connectionid));
+        list.value = await std(url) as APIList<ETLData>;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

@@ -4,46 +4,30 @@
             Video Management
         </h1>
     </div>
-    <div
-        class='px-2 py-2 round btn-group w-100'
-        role='group'
+    <TablerPillGroup
+        :model-value='String(route.name)'
+        :options='[
+            { value: "admin-video-service", label: "Video Service" },
+            { value: "admin-video-leases", label: "Video Leases" }
+        ]'
+        @update:model-value='(v: string) => router.push({ name: v })'
     >
-        <input
-            id='service'
-            type='radio'
-            class='btn-check'
-            autocomplete='off'
-            :checked='route.name === "admin-video-service"'
-            @click='router.push({ name: `admin-video-service` })'
-        >
-        <label
-            for='service'
-            type='button'
-            class='btn btn-sm'
-        ><IconVideo
-            v-tooltip='"Video Service"'
-            :size='32'
-            stroke='1'
-        /><span class='mx-2'>Video Service</span></label>
-
-        <input
-            id='leases'
-            type='radio'
-            class='btn-check'
-            autocomplete='off'
-            :checked='route.name === "admin-video-leases"'
-            @click='router.push({ name: `admin-video-leases` })'
-        >
-        <label
-            for='leases'
-            type='button'
-            class='btn btn-sm'
-        ><IconServer2
-            v-tooltip='"Video Leases"'
-            :size='32'
-            stroke='1'
-        /><span class='mx-2'>Video Leases</span></label>
-    </div>
+        <template #option='{ option }'>
+            <IconVideo
+                v-if='option.value === "admin-video-service"'
+                v-tooltip='"Video Service"'
+                :size='32'
+                stroke='1'
+            />
+            <IconServer2
+                v-else
+                v-tooltip='"Video Leases"'
+                :size='32'
+                stroke='1'
+            />
+            <span class='mx-2'>{{ option.label }}</span>
+        </template>
+    </TablerPillGroup>
 
     <router-view />
 </template>
@@ -54,6 +38,7 @@ import {
     IconVideo,
     IconServer2
 } from '@tabler/icons-vue'
+import { TablerPillGroup } from '@tak-ps/vue-tabler';
 
 const router = useRouter();
 const route = useRoute();

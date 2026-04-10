@@ -94,7 +94,7 @@
 
         <SchemaRows
             v-if='field.expandable && expanded.has(field.path)'
-            :properties='field.childProperties'
+            :properties='field.childProperties ?? {}'
             :required='field.childRequired'
             :depth='props.depth + 1'
             :parent-path='field.path'
@@ -104,7 +104,7 @@
     </template>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { computed } from 'vue';
 import {
     IconAlphabetLatin,
@@ -118,36 +118,38 @@ import {
     IconChevronRight,
 } from '@tabler/icons-vue'
 
-const props = defineProps({
-    properties: {
-        type: Object,
-        required: true
-    },
-    required: {
-        type: Array,
-        default: () => []
-    },
-    depth: {
-        type: Number,
-        default: 0
-    },
-    parentPath: {
-        type: String,
-        default: ''
-    },
-    expanded: {
-        type: Set,
-        required: true
-    }
+interface SchemaProperty {
+    type?: string;
+    format?: string;
+    nullable?: boolean;
+    properties?: Record<string, SchemaProperty>;
+    items?: SchemaProperty;
+    required?: string[];
+    anyOf?: SchemaProperty[];
+    [key: string]: unknown;
+}
+
+const props = withDefaults(defineProps<{
+    properties: Record<string, SchemaProperty>;
+    required?: string[];
+    depth?: number;
+    parentPath?: string;
+    expanded: Set<string>;
+}>(), {
+    required: () => [],
+    depth: 0,
+    parentPath: '',
 });
 
-const emit = defineEmits(['toggle']);
+const emit = defineEmits<{
+    (e: 'toggle', path: string): void;
+}>();
 
-function toggleExpand(path) {
+function toggleExpand(path: string) {
     emit('toggle', path);
 }
 
-function resolveAnyOf(prop) {
+function resolveAnyOf(prop: SchemaProperty): SchemaProperty {
     if (!prop.anyOf || !Array.isArray(prop.anyOf)) return prop;
 
     const nullable = prop.anyOf.some(s => s.type === 'null');
@@ -178,14 +180,14 @@ const fields = computed(() => {
             && prop.items.properties;
         const expandable = hasObjectChildren || hasArrayObjectChildren;
 
-        let childProperties = null;
-        let childRequired = [];
+        let childProperties: Record<string, SchemaProperty> | null = null;
+        let childRequired: string[] = [];
         if (hasObjectChildren) {
-            childProperties = prop.properties;
+            childProperties = prop.properties!;
             childRequired = prop.required || [];
         } else if (hasArrayObjectChildren) {
-            childProperties = prop.items.properties;
-            childRequired = prop.items.required || [];
+            childProperties = prop.items!.properties!;
+            childRequired = prop.items!.required || [];
         }
 
         return {

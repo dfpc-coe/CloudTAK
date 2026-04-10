@@ -101,11 +101,12 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router';
 import { std, stdurl } from '../../../std.ts';
 import GroupManager from '../../../base/group.ts';
+import type { Group, GroupChannel } from '../../../types.ts';
 import {
     IconEye,
     IconEyeOff,
@@ -122,9 +123,9 @@ import {
 
 const route = useRoute();
 
-const error = ref();
+const error = ref<Error>();
 const loading = ref(true);
-const rawChannels = ref([]);
+const rawChannels = ref<Group[]>([]);
 
 const paging = ref({
     filter: ''
@@ -133,7 +134,7 @@ const paging = ref({
 const processChannels = computed(() => {
     const merged = GroupManager.merge(rawChannels.value);
 
-    const channels = {};
+    const channels: Record<string, GroupChannel> = {};
 
     merged.sort((a, b) => {
         return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
@@ -155,7 +156,7 @@ async function fetch() {
     error.value = undefined;
 
     try {
-        rawChannels.value = (await std(`/api/connection/${route.params.connectionid}/channel`)).data;
+        rawChannels.value = (await std(`/api/connection/${route.params.connectionid}/channel`) as { data: Group[] }).data;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -163,7 +164,7 @@ async function fetch() {
     }
 }
 
-async function setStatus(channel, active=false) {
+async function setStatus(channel: GroupChannel, active = false) {
     rawChannels.value = rawChannels.value.map((ch) => {
         if (ch.name === channel.name) ch.active = active;
         return ch;

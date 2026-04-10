@@ -12,9 +12,9 @@
             :err='new Error("Layer failed to return an incoming input schema on the Capabilities object")'
         />
         <TablerAlert
-            v-else-if='!props.capabilities.incoming.schema.output || props.capabilities.incoming.schema.outputError'
+            v-else-if='!props.capabilities.incoming?.schema?.output || props.capabilities.incoming?.schema?.outputError'
             title='Missing Output Schema'
-            :err='new Error(props.capabilities.incoming.schema.outputError.message) || new Error("Layer failed to return an output schema on the Capabilities object")'
+            :err='new Error(props.capabilities.incoming?.schema?.outputError?.message || "Layer failed to return an output schema on the Capabilities object")'
         />
         <TablerNone
             v-else-if='!hasProperties'
@@ -36,8 +36,8 @@
                 </thead>
                 <tbody>
                     <SchemaRows
-                        :properties='props.capabilities.incoming.schema.output.properties'
-                        :required='props.capabilities.incoming.schema.output.required || []'
+                        :properties='((props.capabilities.incoming?.schema?.output as Record<string, unknown>)?.properties ?? {}) as Record<string, Record<string, unknown>>'
+                        :required='(props.capabilities.incoming?.schema?.output as Record<string, unknown>)?.required as string[] ?? []'
                         :depth='0'
                         parent-path=''
                         :expanded='expanded'
@@ -49,35 +49,31 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, computed } from 'vue';
+import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
 import {
     TablerNone,
     TablerAlert
 } from '@tak-ps/vue-tabler';
 import SchemaRows from './utils/SchemaRows.vue';
 
-const props = defineProps({
-    layer: {
-        type: Object,
-        required: true
-    },
-    capabilities: {
-        type: Object,
-        required: true
-    }
-});
+const props = defineProps<{
+    layer: ETLLayer;
+    capabilities: ETLLayerTaskCapabilities;
+}>();
 
-const expanded = ref(new Set());
+const expanded = ref(new Set<string>());
 
 const hasProperties = computed(() => {
-    return props.capabilities
-        && props.capabilities.incoming.schema.output
-        && props.capabilities.incoming.schema.output.properties
-        && Object.keys(props.capabilities.incoming.schema.output.properties).length > 0;
+    const incoming = props.capabilities?.incoming;
+    if (!incoming) return false;
+    const output = incoming.schema.output as Record<string, unknown> | undefined;
+    return output?.properties
+        && Object.keys(output.properties as Record<string, unknown>).length > 0;
 });
 
-function toggleExpand(path) {
+function toggleExpand(path: string) {
     const next = new Set(expanded.value);
     if (next.has(path)) {
         for (const p of next) {
