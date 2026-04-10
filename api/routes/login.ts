@@ -79,7 +79,7 @@ export default async function router(schema: Schema, config: Config) {
             const userAgent = req.headers['user-agent'] || '';
             const ua = UAParser(userAgent);
 
-            await config.models.ProfileSession.generate({
+            const session = await config.models.ProfileSession.generate({
                 username: profile.username,
                 created: new Date().toISOString(),
                 ip: String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown'),
@@ -92,7 +92,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 access,
                 email: profile.username,
-                token: jwt.sign({ access, email: profile.username }, config.SigningSecret, { expiresIn: '16h' })
+                token: jwt.sign({ access, email: profile.username, s: session.id }, config.SigningSecret, { expiresIn: '16h' })
             })
         } catch (err) {
              Err.respond(err, res);
