@@ -155,6 +155,7 @@ export default async function router(schema: Schema, config: Config) {
                 browser: Type.String(),
                 os: Type.String(),
                 user_agent: Type.String(),
+                active: Type.Boolean(),
             }))
         })
     }, async (req, res) => {
@@ -169,7 +170,18 @@ export default async function router(schema: Schema, config: Config) {
                 where: eq(ProfileSession.username, req.params.username),
             });
 
-            res.json(list);
+            const activeSessions = new Set<number>();
+            for (const client of config.wsClients.get(req.params.username) || []) {
+                if (client.session !== undefined) activeSessions.add(client.session);
+            }
+
+            res.json({
+                total: list.total,
+                items: list.items.map((item) => ({
+                    ...item,
+                    active: activeSessions.has(item.id),
+                }))
+            });
         } catch (err) {
              Err.respond(err, res);
         }
