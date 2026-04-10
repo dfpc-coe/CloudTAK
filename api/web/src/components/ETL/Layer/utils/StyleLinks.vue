@@ -42,7 +42,7 @@
                 <tbody>
                     <tr
                         v-for='(link, it) in links'
-                        :key='it'
+                        :key='`${link.url}-${link.remarks}`'
                         @click='edit(link)'
                     >
                         <td v-text='link.remarks' />

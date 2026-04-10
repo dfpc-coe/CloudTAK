@@ -255,7 +255,7 @@ const getCaretCoords = () => {
   mirror.style.whiteSpace = textarea.value.tagName === 'TEXTAREA' ? 'pre-wrap' : 'pre';
   mirror.style.overflowWrap = textarea.value.tagName === 'TEXTAREA' ? 'break-word' : 'normal';
 
-    for (const property of properties) {
+  for (const property of properties) {
     (mirror.style as unknown as Record<string, string>)[property] = (inputStyle as unknown as Record<string, string>)[property];
   }
 
