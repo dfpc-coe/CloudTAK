@@ -163,7 +163,7 @@
                     :pane='false'
                     :username='environment.ARCGIS_USERNAME'
                     :password='environment.ARCGIS_PASSWORD'
-                    :layer='environment[`ARCGIS_${mode.toUpperCase()}_URL`]'
+                    :layer='String(environment[`ARCGIS_${mode.toUpperCase()}_URL`] ?? "")'
                     @layer='environment[`ARCGIS_${mode.toUpperCase()}_URL`] = $event'
                     @close='esriView = false'
                 />
