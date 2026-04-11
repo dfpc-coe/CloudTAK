@@ -517,6 +517,7 @@ export const FullConfig = Type.Object({
     'oidc::redirect': Type.String({ description: 'OIDC App Redirect URL' }),
     'oidc::scopes': Type.String({ description: 'OIDC Scopes' }),
     'oidc::logo': Type.String({ description: 'Base64 encoded PNG for OIDC Logo' }),
+    'passkey::enabled': Type.Boolean({ description: 'Enable Passkey Authentication' }),
     'provider::url': Type.String(),
     'provider::secret': Type.String(),
     'provider::client': Type.String(),

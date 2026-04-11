@@ -168,6 +168,13 @@
                                 :disabled='!edit'
                             />
                         </template>
+
+                        <TablerToggle
+                            v-model='config["passkey::enabled"]'
+                            class='mt-3'
+                            label='Enable Passkey Authentication'
+                            :disabled='!edit'
+                        />
                     </div>
                 </div>
             </template>
@@ -215,6 +222,7 @@ interface LoginConfig {
     'oidc::redirect': string;
     'oidc::scopes': string;
     'oidc::logo': string;
+    'passkey::enabled': boolean;
 }
 
 const isOpen = ref<boolean>(false);
@@ -241,6 +249,7 @@ const config = ref<LoginConfig>({
     'oidc::redirect': '',
     'oidc::scopes': '',
     'oidc::logo': '',
+    'passkey::enabled': true,
 });
 
 onMounted(() => {
@@ -279,6 +288,7 @@ async function fetch(): Promise<void> {
             'oidc::redirect': res['oidc::redirect'] ?? '',
             'oidc::scopes': res['oidc::scopes'] ?? '',
             'oidc::logo': res['oidc::logo'] ?? '',
+            'passkey::enabled': res['passkey::enabled'] ?? true,
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));

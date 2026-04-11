@@ -49,6 +49,7 @@
         "@openaddresses/batch-generic": "^24.14.0",
         "@openaddresses/batch-schema": "^10.21.0",
         "@openaddresses/cloudfriend": "^7.0.0",
+        "@simplewebauthn/server": "^13.3.0",
         "@sinclair/typebox": "^0.34.0",
         "@tak-ps/etl": "^10.0.0",
         "@tak-ps/node-cot": "^14.24.3",
