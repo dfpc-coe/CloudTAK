@@ -86,6 +86,7 @@
                                             icon='user'
                                             :label='brandStore.login?.username || "Username or Email"'
                                             :placeholder='brandStore.login?.username || "your@email.com"'
+                                            autocomplete='username webauthn'
                                             @keyup.enter='createLogin'
                                         />
                                     </div>
@@ -405,6 +406,7 @@ watch(showSettings, (val) => {
 });
 
 const loading = ref(false);
+const conditionalAbort = ref<AbortController | null>(null);
 const body = ref<Login_Create>({
     username: '',
     password: ''
@@ -452,6 +454,9 @@ onMounted(async () => {
     brandStore.passkey.enabled = config['passkey::enabled'] !== false;
     brandStore.loaded = true;
 
+    if (brandStore.passkey.enabled) {
+        startConditionalPasskey();
+    }
 
     const deleteDB = indexedDB.deleteDatabase('CloudTAK');
 
@@ -507,7 +512,39 @@ async function createLogin() {
     }
 }
 
+async function startConditionalPasskey() {
+    try {
+        if (!window.PublicKeyCredential
+            || !PublicKeyCredential.isConditionalMediationAvailable
+            || !(await PublicKeyCredential.isConditionalMediationAvailable())
+        ) return;
+
+        const abort = new AbortController();
+        conditionalAbort.value = abort;
+
+        const optionsRes = await std('/api/login/passkey/authenticate/options', {
+            method: 'POST',
+            body: {}
+        }) as Record<string, unknown>;
+
+        const credential = await startAuthentication({
+            optionsJSON: optionsRes as any,
+            useBrowserAutofill: true,
+        });
+
+        conditionalAbort.value = null;
+        await completePasskeyLogin(credential);
+    } catch {
+        conditionalAbort.value = null;
+    }
+}
+
 async function authenticatePasskey() {
+    if (conditionalAbort.value) {
+        conditionalAbort.value.abort();
+        conditionalAbort.value = null;
+    }
+
     loading.value = true;
 
     try {
@@ -518,6 +555,17 @@ async function authenticatePasskey() {
 
         const credential = await startAuthentication({ optionsJSON: optionsRes as any });
 
+        await completePasskeyLogin(credential);
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
+}
+
+async function completePasskeyLogin(credential: Record<string, unknown>) {
+    loading.value = true;
+
+    try {
         const login = await std('/api/login/passkey/authenticate', {
             method: 'POST',
             body: { credential }
