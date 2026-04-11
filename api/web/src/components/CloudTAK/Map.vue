@@ -265,7 +265,7 @@
                 v-if='mapStore.isLoaded && mode === "Default"'
                 class='d-flex position-absolute top-0 text-white'
                 style='
-                    z-index: 2;
+                    z-index: 5;
                     width: 120px;
                     height: 60px;
                     right: var(--map-compact-menu-size, 60px);

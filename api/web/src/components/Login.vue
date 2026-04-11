@@ -151,6 +151,27 @@
                                         Sign in with {{ brandStore.oidc.name || 'SSO' }}
                                     </a>
                                 </template>
+                                <template v-if='brandStore.passkey.enabled && !loading'>
+                                    <div
+                                        v-if='!brandStore.oidc.enabled || !brandStore.oidc.enforced'
+                                        class='my-3 d-flex align-items-center'
+                                    >
+                                        <hr class='flex-grow-1 m-0'>
+                                        <span class='mx-2 text-muted small'>or</span>
+                                        <hr class='flex-grow-1 m-0'>
+                                    </div>
+                                    <button
+                                        type='button'
+                                        class='btn btn-secondary w-100 d-flex align-items-center justify-content-center gap-2'
+                                        @click='authenticatePasskey'
+                                    >
+                                        <IconFingerprint
+                                            :size='20'
+                                            stroke='1.5'
+                                        />
+                                        Sign in with Passkey
+                                    </button>
+                                </template>
                             </div>
                         </div>
                         <div
@@ -263,7 +284,8 @@
 import type { Login_Create, Login_CreateRes, ConfigLogin } from '../types.ts'
 import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { version } from '../../package.json';
-import { IconSettings, IconTrash, IconLock } from '@tabler/icons-vue';
+import { IconSettings, IconTrash, IconLock, IconFingerprint } from '@tabler/icons-vue';
+import { startAuthentication } from '@simplewebauthn/browser';
 import Config from '../base/config.ts';
 import { getCurrentEntryBuildId } from '../base/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
@@ -282,6 +304,9 @@ const router = useRouter();
 const brandStore = reactive<{
     loaded: boolean;
     login: ConfigLogin | undefined;
+    passkey: {
+        enabled: boolean;
+    };
     oidc: {
         enforced: boolean;
         enabled: boolean;
@@ -292,6 +317,9 @@ const brandStore = reactive<{
 }>({
     loaded: false,
     login: undefined,
+    passkey: {
+        enabled: true,
+    },
     oidc: {
         enforced: false,
         enabled: false,
@@ -398,6 +426,7 @@ onMounted(async () => {
         'oidc::discovery',
         'oidc::name',
         'oidc::logo',
+        'passkey::enabled',
     ]);
 
     brandStore.login = {
@@ -420,6 +449,7 @@ onMounted(async () => {
     brandStore.oidc.discovery = config['oidc::discovery'] as string || '';
     brandStore.oidc.name = config['oidc::name'] as string || '';
     brandStore.oidc.logo = config['oidc::logo'] as string || '';
+    brandStore.passkey.enabled = config['passkey::enabled'] !== false;
     brandStore.loaded = true;
 
 
@@ -441,6 +471,57 @@ async function createLogin() {
                 password: body.value.password
              }
         }) as Login_CreateRes
+
+        localStorage.token = login.token;
+
+        emit('login');
+
+        if (route.query.redirect && !String(route.query.redirect).includes('/login')) {
+            const redirectPath = String(route.query.redirect);
+            const resolved = router.resolve(redirectPath);
+
+            const isSafeRedirect = (() => {
+                try {
+                    const url = new URL(redirectPath, window.location.origin);
+                    const isSameOrigin = url.origin === window.location.origin;
+                    const isHttpProtocol = url.protocol === 'http:' || url.protocol === 'https:';
+                    return isSameOrigin && isHttpProtocol;
+                } catch {
+                    return false;
+                }
+            })();
+
+            if (resolved.matched.length > 0) {
+                router.push(redirectPath);
+            } else if (isSafeRedirect) {
+                window.location.href = redirectPath;
+            } else {
+                router.push("/");
+            }
+        } else {
+            router.push("/");
+        }
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
+}
+
+async function authenticatePasskey() {
+    loading.value = true;
+
+    try {
+        const optionsRes = await std('/api/login/passkey/authenticate/options', {
+            method: 'POST',
+            body: {}
+        }) as Record<string, unknown>;
+
+        const credential = await startAuthentication({ optionsJSON: optionsRes as any });
+
+        const login = await std('/api/login/passkey/authenticate', {
+            method: 'POST',
+            body: { credential }
+        }) as Login_CreateRes;
 
         localStorage.token = login.token;
 

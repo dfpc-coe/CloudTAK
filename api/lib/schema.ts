@@ -526,6 +526,24 @@ export const ProfileSession = pgTable('profile_sessions', {
     user_agent: text().notNull().default(''),
 });
 
+export const ProfilePasskey = pgTable('profile_passkeys', {
+    id: serial().primaryKey(),
+    username: text().notNull().references(() => Profile.username),
+    credential_id: text().notNull().unique(),
+    public_key: text().notNull(),
+    counter: integer().notNull().default(0),
+    transports: jsonb().$type<string[]>().default([]),
+    name: text().notNull().default(''),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    last_used: timestamp({ withTimezone: true, mode: 'string' }),
+});
+
+export const ProfilePasskeyChallenge = pgTable('profile_passkey_challenges', {
+    key: text().primaryKey(),
+    challenge: text().notNull(),
+    expires: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+});
+
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial().primaryKey(),
     name: text().notNull(),

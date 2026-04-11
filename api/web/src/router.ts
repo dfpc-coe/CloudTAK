@@ -28,8 +28,10 @@ const router = VueRouter.createRouter({
                     path: 'settings/tokens',
                     name: 'home-menu-settings-tokens',
                     component: () => import('./components/CloudTAK/Menu/MenuSettingsTokens.vue')
-                },{
-                    path: 'settings/callsign',
+                },{                    path: 'settings/passkeys',
+                    name: 'home-menu-settings-passkeys',
+                    component: () => import('./components/CloudTAK/Menu/MenuSettingsPasskeys.vue')
+                },{                    path: 'settings/callsign',
                     name: 'home-menu-settings-callsign',
                     component: () => import('./components/CloudTAK/Menu/MenuSettingsCallsign.vue')
                 },{
