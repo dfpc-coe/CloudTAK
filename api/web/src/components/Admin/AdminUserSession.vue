@@ -107,7 +107,7 @@ interface Session {
     [key: string]: unknown;
 }
 
-type Header = { name: keyof Session; display: boolean };
+type Header = { name: string & keyof Session; display: boolean };
 
 const isOpen = ref(false);
 const loading = ref(false);

@@ -7,6 +7,7 @@ import { ProfileResponse, ProfileListResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { Profile, ProfileSession } from '../lib/schema.js';
+import { GenericListOrder } from '@openaddresses/batch-generic';
 import * as Default from '../lib/limits.js';
 import ProfileControl from '../lib/control/profile.js';
 
@@ -166,7 +167,7 @@ export default async function router(schema: Schema, config: Config) {
                 limit: req.query.limit,
                 page: req.query.page,
                 sort: 'created',
-                order: 'desc',
+                order: GenericListOrder.DESC,
                 where: eq(ProfileSession.username, req.params.username),
             });
 

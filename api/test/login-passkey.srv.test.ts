@@ -101,7 +101,8 @@ test('POST: api/login/passkey/register - rejects invalid credential', async () =
                     response: {
                         attestationObject: 'AAAA',
                         clientDataJSON: 'AAAA',
-                    }
+                    },
+                    clientExtensionResults: {}
                 }
             }
         }, false);
@@ -132,7 +133,8 @@ test('POST: api/login/passkey/authenticate - rejects unknown credential', async 
                         authenticatorData: 'AAAA',
                         clientDataJSON: 'AAAA',
                         signature: 'AAAA',
-                    }
+                    },
+                    clientExtensionResults: {}
                 }
             }
         }, false);

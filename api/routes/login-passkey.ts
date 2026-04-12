@@ -5,6 +5,8 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
 import { UAParser } from 'ua-parser-js';
+import { X509Certificate } from 'crypto';
+import moment from 'moment';
 import {
     generateRegistrationOptions,
     verifyRegistrationResponse,
@@ -13,7 +15,9 @@ import {
 } from '@simplewebauthn/server';
 import type {
     AuthenticatorTransportFuture,
-} from '@simplewebauthn/types';
+    RegistrationResponseJSON as WebAuthnRegistrationResponseJSON,
+    AuthenticationResponseJSON as WebAuthnAuthenticationResponseJSON,
+} from '@simplewebauthn/server';
 
 function rpFromConfig(config: Config, req?: { headers: { origin?: string } }): { rpID: string; origin: string | string[] } {
     const url = new URL(config.API_URL);
@@ -36,6 +40,36 @@ function rpFromConfig(config: Config, req?: { headers: { origin?: string } }): {
 
 export default async function router(schema: Schema, config: Config) {
     const rpName = 'CloudTAK';
+
+    const RegistrationResponseJSON = Type.Object({
+        id: Type.String(),
+        rawId: Type.String(),
+        response: Type.Object({
+            clientDataJSON: Type.String(),
+            attestationObject: Type.String(),
+            authenticatorData: Type.Optional(Type.String()),
+            transports: Type.Optional(Type.Array(Type.String())),
+            publicKeyAlgorithm: Type.Optional(Type.Number()),
+            publicKey: Type.Optional(Type.String()),
+        }),
+        authenticatorAttachment: Type.Optional(Type.String()),
+        clientExtensionResults: Type.Record(Type.String(), Type.Unknown()),
+        type: Type.String(),
+    });
+
+    const AuthenticationResponseJSON = Type.Object({
+        id: Type.String(),
+        rawId: Type.String(),
+        response: Type.Object({
+            clientDataJSON: Type.String(),
+            authenticatorData: Type.String(),
+            signature: Type.String(),
+            userHandle: Type.Optional(Type.String()),
+        }),
+        authenticatorAttachment: Type.Optional(Type.String()),
+        clientExtensionResults: Type.Record(Type.String(), Type.Unknown()),
+        type: Type.String(),
+    });
 
     async function assertPasskeysEnabled(): Promise<void> {
         const settings = await config.models.Setting.typedMany({
@@ -85,7 +119,36 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Passkey Registration Options',
         group: 'Login',
         description: 'Generate WebAuthn registration options for the authenticated user',
-        res: Type.Any()
+        res: Type.Object({
+            rp: Type.Object({
+                name: Type.String(),
+                id: Type.Optional(Type.String()),
+            }),
+            user: Type.Object({
+                id: Type.String(),
+                name: Type.String(),
+                displayName: Type.String(),
+            }),
+            challenge: Type.String(),
+            pubKeyCredParams: Type.Array(Type.Object({
+                alg: Type.Number(),
+                type: Type.String(),
+            })),
+            timeout: Type.Optional(Type.Number()),
+            excludeCredentials: Type.Optional(Type.Array(Type.Object({
+                id: Type.String(),
+                type: Type.String(),
+                transports: Type.Optional(Type.Array(Type.String())),
+            }))),
+            authenticatorSelection: Type.Optional(Type.Object({
+                authenticatorAttachment: Type.Optional(Type.String()),
+                requireResidentKey: Type.Optional(Type.Boolean()),
+                residentKey: Type.Optional(Type.String()),
+                userVerification: Type.Optional(Type.String()),
+            })),
+            attestation: Type.Optional(Type.String()),
+            extensions: Type.Optional(Type.Unknown()),
+        })
     }, async (req, res) => {
         try {
             await assertPasskeysEnabled();
@@ -111,7 +174,7 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.ProfilePasskey.setChallenge(`reg:${user.email}`, options.challenge);
 
-            res.json(options);
+            res.json({ ...options });
         } catch (err) {
             Err.respond(err, res);
         }
@@ -123,7 +186,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Verify WebAuthn registration and store credential',
         body: Type.Object({
             name: Type.String({ default: '' }),
-            credential: Type.Any(),
+            credential: RegistrationResponseJSON,
         }),
         res: Type.Object({
             id: Type.Integer(),
@@ -142,7 +205,7 @@ export default async function router(schema: Schema, config: Config) {
             let verification;
             try {
                 verification = await verifyRegistrationResponse({
-                    response: req.body.credential,
+                    response: req.body.credential as WebAuthnRegistrationResponseJSON,
                     expectedChallenge,
                     expectedOrigin: origin,
                     expectedRPID: rpID,
@@ -186,7 +249,18 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             username: Type.Optional(Type.String()),
         }),
-        res: Type.Any()
+        res: Type.Object({
+            challenge: Type.String(),
+            timeout: Type.Optional(Type.Number()),
+            rpId: Type.Optional(Type.String()),
+            allowCredentials: Type.Optional(Type.Array(Type.Object({
+                id: Type.String(),
+                type: Type.String(),
+                transports: Type.Optional(Type.Array(Type.String())),
+            }))),
+            userVerification: Type.Optional(Type.String()),
+            extensions: Type.Optional(Type.Unknown()),
+        })
     }, async (req, res) => {
         try {
             await assertPasskeysEnabled();
@@ -212,7 +286,7 @@ export default async function router(schema: Schema, config: Config) {
                 : `auth:${options.challenge}`;
             await config.models.ProfilePasskey.setChallenge(challengeKey, options.challenge);
 
-            res.json(options);
+            res.json({ ...options });
         } catch (err) {
             Err.respond(err, res);
         }
@@ -224,12 +298,13 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Verify WebAuthn authentication and return JWT',
         body: Type.Object({
             username: Type.Optional(Type.String()),
-            credential: Type.Any(),
+            credential: AuthenticationResponseJSON,
         }),
         res: Type.Object({
             token: Type.String(),
             access: Type.Enum(AuthUserAccess),
-            email: Type.String()
+            email: Type.String(),
+            certRenewalRequired: Type.Optional(Type.Boolean()),
         })
     }, async (req, res) => {
         try {
@@ -244,7 +319,7 @@ export default async function router(schema: Schema, config: Config) {
             let passkey;
             try {
                 passkey = await config.models.ProfilePasskey.byCredentialId(credentialId);
-            } catch (_err) {
+            } catch {
                 throw new Err(401, null, 'Unknown credential');
             }
 
@@ -266,7 +341,7 @@ export default async function router(schema: Schema, config: Config) {
             let verification;
             try {
                 verification = await verifyAuthenticationResponse({
-                    response: req.body.credential,
+                    response: req.body.credential as WebAuthnAuthenticationResponseJSON,
                     expectedChallenge,
                     expectedOrigin: origin,
                     expectedRPID: rpID,
@@ -317,6 +392,16 @@ export default async function router(schema: Schema, config: Config) {
                 last_login: new Date().toISOString()
             });
 
+            let certRenewalRequired = false;
+            try {
+                const cert = new X509Certificate(profile.auth.cert);
+                if (moment(cert.validTo, 'MMM DD hh:mm:ss YYYY').isBefore(moment().add(7, 'days'))) {
+                    certRenewalRequired = true;
+                }
+            } catch {
+                certRenewalRequired = true;
+            }
+
             res.json({
                 access,
                 email: profile.username,
@@ -325,6 +410,7 @@ export default async function router(schema: Schema, config: Config) {
                     config.SigningSecret,
                     { expiresIn: '16h' }
                 ),
+                ...(certRenewalRequired ? { certRenewalRequired: true } : {}),
             });
         } catch (err) {
             Err.respond(err, res);

@@ -157,7 +157,7 @@ async function registerPasskey(): Promise<void> {
         method: 'POST',
     }) as Record<string, unknown>;
 
-    const credential = await startRegistration({ optionsJSON: options as Parameters<typeof startRegistration>[0]['optionsJSON'] });
+    const credential = await startRegistration({ optionsJSON: options as unknown as Parameters<typeof startRegistration>[0]['optionsJSON'] });
 
     await std('/api/login/passkey/register', {
         method: 'POST',
