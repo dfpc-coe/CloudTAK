@@ -173,6 +173,40 @@
                                         Sign in with Passkey
                                     </button>
                                 </template>
+                                <template v-if='certRenewal.required && !loading'>
+                                    <TablerInlineAlert
+                                        class='mt-3 mb-2'
+                                        title='Certificate Renewal Required'
+                                        description='Your TAK certificate is expiring soon. Please enter your password to renew it.'
+                                        severity='warning'
+                                    />
+                                    <div class='mb-3'>
+                                        <TablerInput
+                                            v-model='certRenewal.password'
+                                            icon='lock'
+                                            type='password'
+                                            label='Password'
+                                            placeholder='Enter your password'
+                                            @keyup.enter='renewCertificate'
+                                        />
+                                    </div>
+                                    <div class='d-flex gap-2'>
+                                        <button
+                                            type='button'
+                                            class='btn btn-primary flex-fill'
+                                            @click='renewCertificate'
+                                        >
+                                            Renew Certificate
+                                        </button>
+                                        <button
+                                            type='button'
+                                            class='btn btn-secondary'
+                                            @click='skipCertRenewal'
+                                        >
+                                            Skip
+                                        </button>
+                                    </div>
+                                </template>
                             </div>
                         </div>
                         <div
@@ -287,7 +321,9 @@ import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { version } from '../../package.json';
 import { IconSettings, IconTrash, IconLock, IconFingerprint } from '@tabler/icons-vue';
 import { startAuthentication } from '@simplewebauthn/browser';
+import type { PublicKeyCredentialRequestOptionsJSON, AuthenticationResponseJSON } from '@simplewebauthn/browser';
 import Config from '../base/config.ts';
+import type { FullConfig } from '../base/config.ts';
 import { getCurrentEntryBuildId } from '../base/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { std } from '../std.ts';
@@ -411,6 +447,15 @@ const body = ref<Login_Create>({
     username: '',
     password: ''
 });
+const certRenewal = reactive<{
+    required: boolean;
+    email: string;
+    password: string;
+}>({
+    required: false,
+    email: '',
+    password: '',
+});
 
 onMounted(async () => {
     const config = await Config.list([
@@ -428,7 +473,7 @@ onMounted(async () => {
         'oidc::discovery',
         'oidc::name',
         'oidc::logo',
-        'passkey::enabled',
+        'passkey::enabled' as keyof FullConfig,
     ]);
 
     brandStore.login = {
@@ -451,7 +496,7 @@ onMounted(async () => {
     brandStore.oidc.discovery = config['oidc::discovery'] as string || '';
     brandStore.oidc.name = config['oidc::name'] as string || '';
     brandStore.oidc.logo = config['oidc::logo'] as string || '';
-    brandStore.passkey.enabled = config['passkey::enabled'] !== false;
+    brandStore.passkey.enabled = (config as Record<string, unknown>)['passkey::enabled'] !== false;
     brandStore.loaded = true;
 
     if (brandStore.passkey.enabled) {
@@ -479,33 +524,7 @@ async function createLogin() {
 
         localStorage.token = login.token;
 
-        emit('login');
-
-        if (route.query.redirect && !String(route.query.redirect).includes('/login')) {
-            const redirectPath = String(route.query.redirect);
-            const resolved = router.resolve(redirectPath);
-
-            const isSafeRedirect = (() => {
-                try {
-                    const url = new URL(redirectPath, window.location.origin);
-                    const isSameOrigin = url.origin === window.location.origin;
-                    const isHttpProtocol = url.protocol === 'http:' || url.protocol === 'https:';
-                    return isSameOrigin && isHttpProtocol;
-                } catch {
-                    return false;
-                }
-            })();
-
-            if (resolved.matched.length > 0) {
-                router.push(redirectPath);
-            } else if (isSafeRedirect) {
-                window.location.href = redirectPath;
-            } else {
-                router.push("/");
-            }
-        } else {
-            router.push("/");
-        }
+        navigateAfterLogin();
     } catch (err) {
         loading.value = false;
         throw err;
@@ -525,10 +544,10 @@ async function startConditionalPasskey() {
         const optionsRes = await std('/api/login/passkey/authenticate/options', {
             method: 'POST',
             body: {}
-        }) as Record<string, unknown>;
+        });
 
         const credential = await startAuthentication({
-            optionsJSON: optionsRes as any,
+            optionsJSON: optionsRes as unknown as PublicKeyCredentialRequestOptionsJSON,
             useBrowserAutofill: true,
         });
 
@@ -551,9 +570,9 @@ async function authenticatePasskey() {
         const optionsRes = await std('/api/login/passkey/authenticate/options', {
             method: 'POST',
             body: {}
-        }) as Record<string, unknown>;
+        });
 
-        const credential = await startAuthentication({ optionsJSON: optionsRes as any });
+        const credential = await startAuthentication({ optionsJSON: optionsRes as unknown as PublicKeyCredentialRequestOptionsJSON });
 
         await completePasskeyLogin(credential);
     } catch (err) {
@@ -562,48 +581,89 @@ async function authenticatePasskey() {
     }
 }
 
-async function completePasskeyLogin(credential: Record<string, unknown>) {
+async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
     loading.value = true;
 
     try {
         const login = await std('/api/login/passkey/authenticate', {
             method: 'POST',
             body: { credential }
-        }) as Login_CreateRes;
+        }) as Login_CreateRes & { certRenewalRequired?: boolean };
 
         localStorage.token = login.token;
 
-        emit('login');
-
-        if (route.query.redirect && !String(route.query.redirect).includes('/login')) {
-            const redirectPath = String(route.query.redirect);
-            const resolved = router.resolve(redirectPath);
-
-            const isSafeRedirect = (() => {
-                try {
-                    const url = new URL(redirectPath, window.location.origin);
-                    const isSameOrigin = url.origin === window.location.origin;
-                    const isHttpProtocol = url.protocol === 'http:' || url.protocol === 'https:';
-                    return isSameOrigin && isHttpProtocol;
-                } catch {
-                    return false;
-                }
-            })();
-
-            if (resolved.matched.length > 0) {
-                router.push(redirectPath);
-            } else if (isSafeRedirect) {
-                window.location.href = redirectPath;
-            } else {
-                router.push("/");
-            }
-        } else {
-            router.push("/");
+        if (login.certRenewalRequired) {
+            certRenewal.required = true;
+            certRenewal.email = login.email;
+            certRenewal.password = '';
+            loading.value = false;
+            return;
         }
+
+        navigateAfterLogin();
     } catch (err) {
         loading.value = false;
         throw err;
     }
+}
+
+function navigateAfterLogin() {
+    emit('login');
+
+    if (route.query.redirect && !String(route.query.redirect).includes('/login')) {
+        const redirectPath = String(route.query.redirect);
+        const resolved = router.resolve(redirectPath);
+
+        const isSafeRedirect = (() => {
+            try {
+                const url = new URL(redirectPath, window.location.origin);
+                const isSameOrigin = url.origin === window.location.origin;
+                const isHttpProtocol = url.protocol === 'http:' || url.protocol === 'https:';
+                return isSameOrigin && isHttpProtocol;
+            } catch {
+                return false;
+            }
+        })();
+
+        if (resolved.matched.length > 0) {
+            router.push(redirectPath);
+        } else if (isSafeRedirect) {
+            window.location.href = redirectPath;
+        } else {
+            router.push("/");
+        }
+    } else {
+        router.push("/");
+    }
+}
+
+async function renewCertificate() {
+    loading.value = true;
+
+    try {
+        const login = await std('/api/login', {
+            method: 'POST',
+            body: {
+                username: certRenewal.email,
+                password: certRenewal.password,
+            }
+        }) as Login_CreateRes;
+
+        localStorage.token = login.token;
+        certRenewal.required = false;
+        certRenewal.password = '';
+
+        navigateAfterLogin();
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
+}
+
+function skipCertRenewal() {
+    certRenewal.required = false;
+    certRenewal.password = '';
+    navigateAfterLogin();
 }
 </script>
 
