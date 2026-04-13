@@ -499,51 +499,6 @@
         "query": false,
         "res": false
     },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PUT /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PUT /import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import/raw": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
-    "POST /import/:import/result": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -609,6 +564,51 @@
         "query": true,
         "res": false
     },
+    "GET /import": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import/raw": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "POST /import/:import/result": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /layer": {
         "body": false,
         "query": true,
@@ -645,6 +645,36 @@
         "res": true
     },
     "PUT /ldap/user/:email": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /login/passkey": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /login/passkey/register/options": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /login/passkey/register": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /login/passkey/authenticate/options": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /login/passkey/authenticate": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /login/passkey/:id": {
         "body": false,
         "query": false,
         "res": true
@@ -1224,6 +1254,16 @@
         "query": false,
         "res": true
     },
+    "GET /server/repeater": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /server/repeater/:uid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /search": {
         "body": false,
         "query": false,
@@ -1247,16 +1287,6 @@
     "GET /search/suggest": {
         "body": false,
         "query": true,
-        "res": true
-    },
-    "GET /server/repeater": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /server/repeater/:uid": {
-        "body": false,
-        "query": false,
         "res": true
     },
     "POST /server/tileset": {
