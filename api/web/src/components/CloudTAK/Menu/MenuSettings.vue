@@ -54,6 +54,19 @@
                 </div>
             </StandardItem>
             <StandardItem
+                @click='router.push("/menu/settings/passkeys")'
+            >
+                <div class='d-flex align-items-center px-2 py-2'>
+                    <IconFingerprint
+                        :size='32'
+                        stroke='1'
+                    />
+                    <div class='ms-2 flex-grow-1 font-weight-bold'>
+                        Login Passkeys
+                    </div>
+                </div>
+            </StandardItem>
+            <StandardItem
                 @click='refreshApp()'
             >
                 <div class='d-flex align-items-center px-2 py-2'>
@@ -80,6 +93,7 @@ import {
     IconUserCog,
     IconAdjustments,
     IconLock,
+    IconFingerprint,
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';
 

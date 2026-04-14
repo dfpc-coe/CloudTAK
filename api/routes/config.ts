@@ -27,6 +27,7 @@ export const PublicConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'oidc::name',
     'oidc::discovery',
     'oidc::logo',
+    'passkey::enabled',
 ];
 
 // Allow Authenticated but Non-Admin Access to these Config Keys

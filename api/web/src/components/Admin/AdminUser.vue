@@ -190,8 +190,12 @@
                     v-if='opened.has("fusion")'
                     class='col-lg-12 card-body border rounded'
                 >
-                    Fused Sensors
+                    <div class='text-muted text-center py-2'>
+                        No fused sensors recorded
+                    </div>
                 </div>
+
+                <AdminUserSession :username='String(route.params.user)' />
             </template>
         </div>
     </div>
@@ -202,6 +206,7 @@ import { server } from '../../std.ts';
 import type { User } from '../../types.ts';
 import CopyField from '../CloudTAK/util/CopyField.vue';
 import StatusDot from '../util/StatusDot.vue';
+import AdminUserSession from './AdminUserSession.vue';
 import {
     TablerLoading,
     TablerToggle,

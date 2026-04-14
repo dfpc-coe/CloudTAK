@@ -86,6 +86,7 @@
                                             icon='user'
                                             :label='brandStore.login?.username || "Username or Email"'
                                             :placeholder='brandStore.login?.username || "your@email.com"'
+                                            autocomplete='username webauthn'
                                             @keyup.enter='createLogin'
                                         />
                                     </div>
@@ -150,6 +151,61 @@
                                         >
                                         Sign in with {{ brandStore.oidc.name || 'SSO' }}
                                     </a>
+                                </template>
+                                <template v-if='brandStore.passkey.enabled && !loading'>
+                                    <div
+                                        v-if='!brandStore.oidc.enabled || !brandStore.oidc.enforced'
+                                        class='my-3 d-flex align-items-center'
+                                    >
+                                        <hr class='flex-grow-1 m-0'>
+                                        <span class='mx-2 text-muted small'>or</span>
+                                        <hr class='flex-grow-1 m-0'>
+                                    </div>
+                                    <button
+                                        type='button'
+                                        class='btn btn-secondary w-100 d-flex align-items-center justify-content-center gap-2'
+                                        @click='authenticatePasskey'
+                                    >
+                                        <IconFingerprint
+                                            :size='20'
+                                            stroke='1.5'
+                                        />
+                                        Sign in with Passkey
+                                    </button>
+                                </template>
+                                <template v-if='certRenewal.required && !loading'>
+                                    <TablerInlineAlert
+                                        class='mt-3 mb-2'
+                                        title='Certificate Renewal Required'
+                                        description='Your TAK certificate is expiring soon. Please enter your password to renew it.'
+                                        severity='warning'
+                                    />
+                                    <div class='mb-3'>
+                                        <TablerInput
+                                            v-model='certRenewal.password'
+                                            icon='lock'
+                                            type='password'
+                                            label='Password'
+                                            placeholder='Enter your password'
+                                            @keyup.enter='renewCertificate'
+                                        />
+                                    </div>
+                                    <div class='d-flex gap-2'>
+                                        <button
+                                            type='button'
+                                            class='btn btn-primary flex-fill'
+                                            @click='renewCertificate'
+                                        >
+                                            Renew Certificate
+                                        </button>
+                                        <button
+                                            type='button'
+                                            class='btn btn-secondary'
+                                            @click='skipCertRenewal'
+                                        >
+                                            Skip
+                                        </button>
+                                    </div>
                                 </template>
                             </div>
                         </div>
@@ -263,8 +319,11 @@
 import type { Login_Create, Login_CreateRes, ConfigLogin } from '../types.ts'
 import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { version } from '../../package.json';
-import { IconSettings, IconTrash, IconLock } from '@tabler/icons-vue';
+import { IconSettings, IconTrash, IconLock, IconFingerprint } from '@tabler/icons-vue';
+import { startAuthentication } from '@simplewebauthn/browser';
+import type { PublicKeyCredentialRequestOptionsJSON, AuthenticationResponseJSON } from '@simplewebauthn/browser';
 import Config from '../base/config.ts';
+import type { FullConfig } from '../base/config.ts';
 import { getCurrentEntryBuildId } from '../base/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { std } from '../std.ts';
@@ -282,6 +341,9 @@ const router = useRouter();
 const brandStore = reactive<{
     loaded: boolean;
     login: ConfigLogin | undefined;
+    passkey: {
+        enabled: boolean;
+    };
     oidc: {
         enforced: boolean;
         enabled: boolean;
@@ -292,6 +354,9 @@ const brandStore = reactive<{
 }>({
     loaded: false,
     login: undefined,
+    passkey: {
+        enabled: true,
+    },
     oidc: {
         enforced: false,
         enabled: false,
@@ -381,6 +446,15 @@ const body = ref<Login_Create>({
     username: '',
     password: ''
 });
+const certRenewal = reactive<{
+    required: boolean;
+    email: string;
+    password: string;
+}>({
+    required: false,
+    email: '',
+    password: '',
+});
 
 onMounted(async () => {
     const config = await Config.list([
@@ -398,6 +472,7 @@ onMounted(async () => {
         'oidc::discovery',
         'oidc::name',
         'oidc::logo',
+        'passkey::enabled' as keyof FullConfig,
     ]);
 
     brandStore.login = {
@@ -420,8 +495,12 @@ onMounted(async () => {
     brandStore.oidc.discovery = config['oidc::discovery'] as string || '';
     brandStore.oidc.name = config['oidc::name'] as string || '';
     brandStore.oidc.logo = config['oidc::logo'] as string || '';
+    brandStore.passkey.enabled = (config as Record<string, unknown>)['passkey::enabled'] !== false;
     brandStore.loaded = true;
 
+    if (brandStore.passkey.enabled) {
+        startConditionalPasskey();
+    }
 
     const deleteDB = indexedDB.deleteDatabase('CloudTAK');
 
@@ -444,37 +523,137 @@ async function createLogin() {
 
         localStorage.token = login.token;
 
-        emit('login');
-
-        if (route.query.redirect && !String(route.query.redirect).includes('/login')) {
-            const redirectPath = String(route.query.redirect);
-            const resolved = router.resolve(redirectPath);
-
-            const isSafeRedirect = (() => {
-                try {
-                    const url = new URL(redirectPath, window.location.origin);
-                    const isSameOrigin = url.origin === window.location.origin;
-                    const isHttpProtocol = url.protocol === 'http:' || url.protocol === 'https:';
-                    return isSameOrigin && isHttpProtocol;
-                } catch {
-                    return false;
-                }
-            })();
-
-            if (resolved.matched.length > 0) {
-                router.push(redirectPath);
-            } else if (isSafeRedirect) {
-                window.location.href = redirectPath;
-            } else {
-                router.push("/");
-            }
-        } else {
-            router.push("/");
-        }
+        navigateAfterLogin();
     } catch (err) {
         loading.value = false;
         throw err;
     }
+}
+
+async function startConditionalPasskey() {
+    try {
+        if (!window.PublicKeyCredential
+            || !PublicKeyCredential.isConditionalMediationAvailable
+            || !(await PublicKeyCredential.isConditionalMediationAvailable())
+        ) return;
+
+        const optionsRes = await std('/api/login/passkey/authenticate/options', {
+            method: 'POST',
+            body: {}
+        });
+
+        const credential = await startAuthentication({
+            optionsJSON: optionsRes as unknown as PublicKeyCredentialRequestOptionsJSON,
+            useBrowserAutofill: true,
+        });
+
+        await completePasskeyLogin(credential);
+    } catch {
+        // Conditional mediation was cancelled or unavailable
+    }
+}
+
+async function authenticatePasskey() {
+    loading.value = true;
+
+    try {
+        const optionsRes = await std('/api/login/passkey/authenticate/options', {
+            method: 'POST',
+            body: {}
+        });
+
+        const credential = await startAuthentication({ optionsJSON: optionsRes as unknown as PublicKeyCredentialRequestOptionsJSON });
+
+        await completePasskeyLogin(credential);
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
+}
+
+async function completePasskeyLogin(credential: AuthenticationResponseJSON) {
+    loading.value = true;
+
+    try {
+        const login = await std('/api/login/passkey/authenticate', {
+            method: 'POST',
+            body: { credential }
+        }) as Login_CreateRes & { certRenewalRequired?: boolean };
+
+        localStorage.token = login.token;
+
+        if (login.certRenewalRequired) {
+            certRenewal.required = true;
+            certRenewal.email = login.email;
+            certRenewal.password = '';
+            loading.value = false;
+            return;
+        }
+
+        navigateAfterLogin();
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
+}
+
+function navigateAfterLogin() {
+    emit('login');
+
+    if (route.query.redirect && !String(route.query.redirect).includes('/login')) {
+        const redirectPath = String(route.query.redirect);
+        const resolved = router.resolve(redirectPath);
+
+        const isSafeRedirect = (() => {
+            try {
+                const url = new URL(redirectPath, window.location.origin);
+                const isSameOrigin = url.origin === window.location.origin;
+                const isHttpProtocol = url.protocol === 'http:' || url.protocol === 'https:';
+                return isSameOrigin && isHttpProtocol;
+            } catch {
+                return false;
+            }
+        })();
+
+        if (resolved.matched.length > 0) {
+            router.push(redirectPath);
+        } else if (isSafeRedirect) {
+            window.location.href = redirectPath;
+        } else {
+            router.push("/");
+        }
+    } else {
+        router.push("/");
+    }
+}
+
+async function renewCertificate() {
+    loading.value = true;
+
+    try {
+        const login = await std('/api/login', {
+            method: 'POST',
+            body: {
+                username: certRenewal.email,
+                password: certRenewal.password,
+            }
+        }) as Login_CreateRes;
+
+        localStorage.token = login.token;
+        certRenewal.required = false;
+        certRenewal.password = '';
+
+        navigateAfterLogin();
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
+}
+
+function skipCertRenewal() {
+    certRenewal.required = false;
+    certRenewal.password = '';
+    navigateAfterLogin();
 }
 </script>
 
