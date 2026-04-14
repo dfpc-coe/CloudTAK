@@ -26,6 +26,29 @@ export default class CloudFormation {
         return `${config.StackName}-layer-${layerid}`;
     }
 
+    static async deployed(config: Config): Promise<Set<number>> {
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
+        const deployed = new Set<number>();
+        const prefix = `${config.StackName}-layer-`;
+        let NextToken: string | undefined;
+
+        do {
+            const res = await cf.send(new AWSCloudFormation.ListStacksCommand({ NextToken }));
+
+            for (const stack of res.StackSummaries || []) {
+                if (stack.StackStatus === 'DELETE_COMPLETE') continue;
+                if (!stack.StackName || !stack.StackName.startsWith(prefix)) continue;
+
+                const layerid = Number.parseInt(stack.StackName.slice(prefix.length), 10);
+                if (Number.isInteger(layerid)) deployed.add(layerid);
+            }
+
+            NextToken = res.NextToken;
+        } while (NextToken);
+
+        return deployed;
+    }
+
     static async self(config: Config): Promise<AWSCloudFormation.Stack> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
 

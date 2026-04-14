@@ -10,6 +10,7 @@ import {
 import {
     CreateStackCommand,
     DescribeStacksCommand,
+    ListStacksCommand,
     CloudFormationClient
 } from '@aws-sdk/client-cloudformation';
 import {
@@ -327,7 +328,18 @@ test('PATCH: api/connection/1/layer/1 - unset protected', async () => {
 });
 
 test('GET: api/layer/update-management', async () => {
+    let stacklessLayerId: number | undefined;
+
     try {
+        const stacklessLayer = await flight.config!.models.Layer.generate({
+            name: 'Undeployed Layer',
+            description: 'This layer has not been deployed',
+            task: 'etl-test-v1.1.0',
+            connection: 1
+        });
+
+        stacklessLayerId = stacklessLayer.id;
+
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             if (command instanceof ListImagesCommand) {
                 assert.deepEqual(command.input, {
@@ -345,6 +357,27 @@ test('GET: api/layer/update-management', async () => {
             throw new Error('Unexpected command');
         });
 
+        Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
+            if (command instanceof ListStacksCommand) {
+                assert.equal(command.input.NextToken, undefined);
+
+                return Promise.resolve({
+                    StackSummaries: [{
+                        StackName: 'test-layer-1',
+                        StackStatus: 'UPDATE_COMPLETE'
+                    }, {
+                        StackName: 'test-layer-99',
+                        StackStatus: 'DELETE_COMPLETE'
+                    }, {
+                        StackName: 'other-stack',
+                        StackStatus: 'CREATE_COMPLETE'
+                    }]
+                });
+            }
+
+            throw new Error(`Unexpected CloudFormation command: ${command.constructor.name}`);
+        });
+
         const res = await flight.fetch('/api/layer/update-management', {
             method: 'GET',
             auth: {
@@ -353,7 +386,7 @@ test('GET: api/layer/update-management', async () => {
         }, false);
 
         assert.deepEqual(res.body, {
-            total: 1,
+            total: 2,
             items: [{
                 id: 1,
                 name: 'Test Layer',
@@ -361,6 +394,18 @@ test('GET: api/layer/update-management', async () => {
                 current_version: '1.0.0',
                 latest_version: '1.1.0',
                 has_update: true,
+                has_stack: true,
+                template: false,
+                connection: 1,
+                parent_name: 'Test Connection'
+            }, {
+                id: 2,
+                name: 'Undeployed Layer',
+                task_prefix: 'etl-test',
+                current_version: '1.1.0',
+                latest_version: '1.1.0',
+                has_update: false,
+                has_stack: false,
                 template: false,
                 connection: 1,
                 parent_name: 'Test Connection'
@@ -369,6 +414,10 @@ test('GET: api/layer/update-management', async () => {
     } catch (err) {
         assert.ifError(err);
     } finally {
+        if (stacklessLayerId !== undefined) {
+            await flight.config!.models.Layer.delete(stacklessLayerId);
+        }
+
         Sinon.restore();
     }
 });
