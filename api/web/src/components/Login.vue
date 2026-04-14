@@ -442,7 +442,6 @@ watch(showSettings, (val) => {
 });
 
 const loading = ref(false);
-const conditionalAbort = ref<AbortController | null>(null);
 const body = ref<Login_Create>({
     username: '',
     password: ''
@@ -538,9 +537,6 @@ async function startConditionalPasskey() {
             || !(await PublicKeyCredential.isConditionalMediationAvailable())
         ) return;
 
-        const abort = new AbortController();
-        conditionalAbort.value = abort;
-
         const optionsRes = await std('/api/login/passkey/authenticate/options', {
             method: 'POST',
             body: {}
@@ -551,19 +547,13 @@ async function startConditionalPasskey() {
             useBrowserAutofill: true,
         });
 
-        conditionalAbort.value = null;
         await completePasskeyLogin(credential);
     } catch {
-        conditionalAbort.value = null;
+        // Conditional mediation was cancelled or unavailable
     }
 }
 
 async function authenticatePasskey() {
-    if (conditionalAbort.value) {
-        conditionalAbort.value.abort();
-        conditionalAbort.value = null;
-    }
-
     loading.value = true;
 
     try {

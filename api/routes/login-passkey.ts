@@ -6,7 +6,6 @@ import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
 import { UAParser } from 'ua-parser-js';
 import { X509Certificate } from 'crypto';
-import moment from 'moment';
 import {
     generateRegistrationOptions,
     verifyRegistrationResponse,
@@ -246,9 +245,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Passkey Authentication Options',
         group: 'Login',
         description: 'Generate WebAuthn authentication options',
-        body: Type.Object({
-            username: Type.Optional(Type.String()),
-        }),
+        body: Type.Object({}),
         res: Type.Object({
             challenge: Type.String(),
             timeout: Type.Optional(Type.Number()),
@@ -266,25 +263,12 @@ export default async function router(schema: Schema, config: Config) {
             await assertPasskeysEnabled();
             const { rpID } = rpFromConfig(config);
 
-            let allowCredentials: { id: string; transports?: AuthenticatorTransportFuture[] }[] | undefined;
-            if (req.body.username) {
-                const passkeys = await config.models.ProfilePasskey.forUser(req.body.username);
-                allowCredentials = passkeys.map((p) => ({
-                    id: p.credential_id,
-                    transports: (p.transports || []) as AuthenticatorTransportFuture[],
-                }));
-            }
-
             const options = await generateAuthenticationOptions({
                 rpID,
                 userVerification: 'preferred',
-                allowCredentials,
             });
 
-            const challengeKey = req.body.username
-                ? `auth:${req.body.username}`
-                : `auth:${options.challenge}`;
-            await config.models.ProfilePasskey.setChallenge(challengeKey, options.challenge);
+            await config.models.ProfilePasskey.setChallenge(`auth:${options.challenge}`, options.challenge);
 
             res.json({ ...options });
         } catch (err) {
@@ -297,7 +281,6 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Login',
         description: 'Verify WebAuthn authentication and return JWT',
         body: Type.Object({
-            username: Type.Optional(Type.String()),
             credential: AuthenticationResponseJSON,
         }),
         res: Type.Object({
@@ -323,9 +306,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(401, null, 'Unknown credential');
             }
 
-            const challengeKey = req.body.username
-                ? `auth:${req.body.username}`
-                : `auth:${req.body.credential.response?.clientDataJSON
+            const challengeKey = `auth:${req.body.credential.response?.clientDataJSON
                     ? (() => {
                         try {
                             const clientData = JSON.parse(
@@ -395,7 +376,8 @@ export default async function router(schema: Schema, config: Config) {
             let certRenewalRequired = false;
             try {
                 const cert = new X509Certificate(profile.auth.cert);
-                if (moment(cert.validTo, 'MMM DD hh:mm:ss YYYY').isBefore(moment().add(7, 'days'))) {
+                const certExpiry = new Date(cert.validTo);
+                if (Number.isNaN(certExpiry.getTime()) || certExpiry.getTime() < Date.now() + (7 * 24 * 60 * 60 * 1000)) {
                     certRenewalRequired = true;
                 }
             } catch {
