@@ -1,4 +1,4 @@
-CREATE TABLE "profile_sessions" (
+CREATE TABLE IF NOT EXISTS "profile_sessions" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"username" text NOT NULL,
 	"created" timestamp with time zone DEFAULT Now() NOT NULL,
@@ -9,4 +9,7 @@ CREATE TABLE "profile_sessions" (
 	"user_agent" text DEFAULT '' NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "profile_sessions" ADD CONSTRAINT "profile_sessions_username_profile_username_fk" FOREIGN KEY ("username") REFERENCES "public"."profile"("username") ON DELETE no action ON UPDATE no action;
+DO $$ BEGIN
+	ALTER TABLE "profile_sessions" ADD CONSTRAINT "profile_sessions_username_profile_username_fk" FOREIGN KEY ("username") REFERENCES "public"."profile"("username") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
