@@ -9,6 +9,7 @@ import Palette from './models/Palette.js';
 import Setting from './models/Setting.js';
 import ProfileChat from './models/ProfileChat.js';
 import ProfileConfig from './models/ProfileConfig.js';
+import ProfilePasskey from './models/ProfilePasskey.js';
 import Icon from './models/Icon.js';
 import * as pgtypes from './schema.js';
 
@@ -39,6 +40,8 @@ export default class Models {
     ProfileFeature: Modeler<typeof pgtypes.ProfileFeature>;
     ProfileOverlay: Modeler<typeof pgtypes.ProfileOverlay>;
     ProfileFile: Modeler<typeof pgtypes.ProfileFile>;
+    ProfileSession: Modeler<typeof pgtypes.ProfileSession>;
+    ProfilePasskey: ProfilePasskey;
     ProfileVideo: Modeler<typeof pgtypes.ProfileVideo>;
 
     VideoLease: Modeler<typeof pgtypes.VideoLease>;
@@ -77,6 +80,8 @@ export default class Models {
         this.ProfileFeature = new Modeler(pg, pgtypes.ProfileFeature);
         this.ProfileOverlay = new Modeler(pg, pgtypes.ProfileOverlay);
         this.ProfileVideo = new Modeler(pg, pgtypes.ProfileVideo);
+        this.ProfileSession = new Modeler(pg, pgtypes.ProfileSession);
+        this.ProfilePasskey = new ProfilePasskey(pg);
         this.Basemap = new Basemap(pg);
         this.Import = new Import(pg);
         this.ImportResult = new Modeler(pg, pgtypes.ImportResult);

@@ -60,6 +60,54 @@
                             label='Enable Connection Feature Retention'
                         />
                     </div>
+
+                    <div
+                        v-if='config["retention::enabled"]'
+                        class='col-lg-12'
+                    >
+                        <TablerToggle
+                            v-model='config["retention::chat::enabled"]'
+                            :disabled='!edit'
+                            label='Enable Chat Retention'
+                        />
+                    </div>
+
+                    <div
+                        v-if='config["retention::enabled"] && config["retention::chat::enabled"]'
+                        class='col-lg-12'
+                    >
+                        <TablerInput
+                            v-model='config["retention::chat::days"]'
+                            :disabled='!edit'
+                            type='number'
+                            label='Chat Retention (Days)'
+                            :min='1'
+                        />
+                    </div>
+
+                    <div
+                        v-if='config["retention::enabled"]'
+                        class='col-lg-12'
+                    >
+                        <TablerToggle
+                            v-model='config["retention::import::enabled"]'
+                            :disabled='!edit'
+                            label='Enable Import Retention'
+                        />
+                    </div>
+
+                    <div
+                        v-if='config["retention::enabled"] && config["retention::import::enabled"]'
+                        class='col-lg-12'
+                    >
+                        <TablerInput
+                            v-model='config["retention::import::days"]'
+                            :disabled='!edit'
+                            type='number'
+                            label='Import Retention (Days)'
+                            :min='1'
+                        />
+                    </div>
                 </div>
             </template>
         </div>
@@ -73,6 +121,7 @@ import { std, stdurl } from '../../../std.ts';
 import {
     TablerLoading,
     TablerToggle,
+    TablerInput,
     TablerIconButton,
     TablerAlert,
 } from '@tak-ps/vue-tabler';
@@ -85,6 +134,10 @@ import {
 interface RetentionConfig {
     'retention::enabled': boolean;
     'retention::connection-feature::enabled': boolean;
+    'retention::chat::enabled': boolean;
+    'retention::chat::days': number;
+    'retention::import::enabled': boolean;
+    'retention::import::days': number;
 }
 
 const isOpen = ref<boolean>(false);
@@ -95,6 +148,10 @@ const err = ref<Error | null>(null);
 const config = ref<RetentionConfig>({
     'retention::enabled': true,
     'retention::connection-feature::enabled': true,
+    'retention::chat::enabled': false,
+    'retention::chat::days': 30,
+    'retention::import::enabled': false,
+    'retention::import::days': 30,
 });
 
 onMounted(() => {
@@ -117,6 +174,10 @@ async function fetch(): Promise<void> {
         config.value = {
             'retention::enabled': res['retention::enabled'] ?? true,
             'retention::connection-feature::enabled': res['retention::connection-feature::enabled'] ?? true,
+            'retention::chat::enabled': res['retention::chat::enabled'] ?? false,
+            'retention::chat::days': res['retention::chat::days'] ?? 30,
+            'retention::import::enabled': res['retention::import::enabled'] ?? false,
+            'retention::import::days': res['retention::import::days'] ?? 30,
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));

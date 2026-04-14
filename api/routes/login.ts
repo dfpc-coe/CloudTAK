@@ -5,6 +5,7 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
 import Provider from '../lib/provider.js';
+import { UAParser } from 'ua-parser-js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.post('/login', {
@@ -75,10 +76,23 @@ export default async function router(schema: Schema, config: Config) {
                 access = AuthUserAccess.AGENCY
             }
 
+            const userAgent = req.headers['user-agent'] || '';
+            const ua = UAParser(userAgent);
+
+            const session = await config.models.ProfileSession.generate({
+                username: profile.username,
+                created: new Date().toISOString(),
+                ip: String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown'),
+                device_type: ua.device.type || 'Desktop',
+                browser: [ua.browser.name, ua.browser.version].filter(Boolean).join(' ') || 'Unknown',
+                os: [ua.os.name, ua.os.version].filter(Boolean).join(' ') || 'Unknown',
+                user_agent: userAgent,
+            });
+
             res.json({
                 access,
                 email: profile.username,
-                token: jwt.sign({ access, email: profile.username }, config.SigningSecret, { expiresIn: '16h' })
+                token: jwt.sign({ access, email: profile.username, s: session.id }, config.SigningSecret, { expiresIn: '16h' })
             })
         } catch (err) {
              Err.respond(err, res);

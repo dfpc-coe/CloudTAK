@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 export interface RetentionTaskConfig {
     'retention::enabled'?: boolean;
     'retention::connection-feature::enabled'?: boolean;
+    'retention::chat::enabled'?: boolean;
+    'retention::import::enabled'?: boolean;
 }
 
 export interface RetentionTaskResult {
@@ -37,7 +39,7 @@ const tasks: RetentionTask[] = [{
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret)}`,
+                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
             },
             body: JSON.stringify({
                 action: 'connection-feature'
@@ -46,6 +48,66 @@ const tasks: RetentionTask[] = [{
 
         if (!res.ok) {
             throw new Error(`Failed to execute connection-feature retention: HTTP ${res.status}`);
+        }
+
+        return await res.json() as RetentionTaskResult;
+    }
+}, {
+    name: 'chat',
+    enabled: (config: RetentionTaskConfig): boolean => {
+        return config['retention::chat::enabled'] === true;
+    },
+    run: async (): Promise<RetentionTaskResult> => {
+        const apiUrl = process.env.API_URL;
+        const signingSecret = process.env.SigningSecret;
+
+        if (!apiUrl || !signingSecret) {
+            throw new Error('API_URL or SigningSecret not set');
+        }
+
+        const res = await fetch(new URL('/api/retention', apiUrl), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
+            },
+            body: JSON.stringify({
+                action: 'chat'
+            })
+        });
+
+        if (!res.ok) {
+            throw new Error(`Failed to execute chat retention: HTTP ${res.status}`);
+        }
+
+        return await res.json() as RetentionTaskResult;
+    }
+}, {
+    name: 'import',
+    enabled: (config: RetentionTaskConfig): boolean => {
+        return config['retention::import::enabled'] === true;
+    },
+    run: async (): Promise<RetentionTaskResult> => {
+        const apiUrl = process.env.API_URL;
+        const signingSecret = process.env.SigningSecret;
+
+        if (!apiUrl || !signingSecret) {
+            throw new Error('API_URL or SigningSecret not set');
+        }
+
+        const res = await fetch(new URL('/api/retention', apiUrl), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
+            },
+            body: JSON.stringify({
+                action: 'import'
+            })
+        });
+
+        if (!res.ok) {
+            throw new Error(`Failed to execute import retention: HTTP ${res.status}`);
         }
 
         return await res.json() as RetentionTaskResult;
@@ -61,9 +123,12 @@ async function runOnce(): Promise<void> {
         return;
     }
 
-    const res = await fetch(new URL('/api/config?keys=retention::enabled,retention::connection-feature::enabled', apiUrl), {
+    const url = new URL('/api/config', apiUrl);
+    url.searchParams.set('keys', 'retention::enabled,retention::connection-feature::enabled,retention::chat::enabled,retention::import::enabled');
+
+    const res = await fetch(url, {
         headers: {
-            Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret)}`,
+            Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
         }
     });
 

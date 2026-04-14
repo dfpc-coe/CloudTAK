@@ -1,7 +1,6 @@
 import Config from './config.js';
 import { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
-import moment from 'moment';
 import type { Profile } from './schema.js';
 import { X509Certificate } from 'crypto';
 import { TAKAPI, APIAuthPassword, APIAuthCertificate } from '@tak-ps/node-tak';
@@ -57,8 +56,8 @@ export default class AuthProvider {
             const cert = new X509Certificate(profile.auth.cert);
 
             validTo = cert.validTo
-            // The validTo date looks like: 'Mar  6 20:38:58 2025 GMT'
-            if (moment(validTo, "MMM DD hh:mm:ss YYYY").isBefore(moment().add(7, 'days'))) {
+            const certExpiry = new Date(validTo);
+            if (Number.isNaN(certExpiry.getTime()) || certExpiry.getTime() < Date.now() + (7 * 24 * 60 * 60 * 1000)) {
                 throw new Error('Expired Certificate has expired or is about to');
             }
         } catch (err) {
