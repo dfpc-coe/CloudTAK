@@ -1,4 +1,5 @@
 import Config from '../config.js';
+import Err from '@openaddresses/batch-error';
 import path from 'node:path';
 import S3 from '../aws/s3.js'
 import { Static } from '@sinclair/typebox';
@@ -84,9 +85,9 @@ export default class ImportControl {
         const imported = await this.config.models.Import.augmented_from(id);
 
         if (body.status && [Import_Status.EMPTY, Import_Status.PENDING].includes(body.status)) {
-            throw new Error(`Cannot set status to ${body.status}`);
+            throw new Err(400, null, `Cannot set status to ${body.status}`);
         } else if (body.status === Import_Status.RUNNING && imported.status === Import_Status.RUNNING) {
-            throw new Error(`Cannot set status to running on an import that is already running`);
+            throw new Err(400, null, `Cannot set status to running on an import that is already running`);
         }
 
         const new_import = await this.config.models.Import.commit(id, {

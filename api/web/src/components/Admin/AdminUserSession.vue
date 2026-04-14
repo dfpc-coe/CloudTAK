@@ -29,8 +29,6 @@
             >
                 <table class='table card-table table-hover table-vcenter datatable'>
                     <TableHeader
-                        v-model:sort='paging.sort'
-                        v-model:order='paging.order'
                         v-model:header='header'
                     />
                     <tbody>
@@ -121,8 +119,6 @@ const header = ref<Header[]>([
     { name: 'device_type', display: true },
 ]);
 const paging = ref({
-    sort: 'created',
-    order: 'desc',
     limit: 10,
     page: 0,
 });
