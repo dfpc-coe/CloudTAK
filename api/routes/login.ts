@@ -51,10 +51,7 @@ export default async function router(schema: Schema, config: Config) {
                     } catch (err) {
                         console.error(err);
 
-                        // If there are upstream errors the user is limited to WebTAK like functionality
                         await config.models.Profile.commit(email, {
-                            system_admin: false,
-                            agency_admin: [],
                             last_login: new Date().toISOString()
                         });
                     }

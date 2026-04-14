@@ -114,7 +114,7 @@ export class EsriBase {
             let json = await res.json() as Record<string, unknown>
 
             if (json.error) {
-                // @ts-expect-error No Typing on JSON Body
+                // @ts-expect-error Need stronger types
                 throw new Err(400, null, `ESRI Server Error: ${json.error.message} - ${String(json.error.details)}`);
             }
 
@@ -288,7 +288,6 @@ class EsriProxyPortal {
 
         const json = await res.json()
 
-        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as { username: string };
@@ -306,9 +305,7 @@ class EsriProxyPortal {
 
             if (!res.ok) {
                 const json = await res.json();
-                // @ts-expect-error Untyped Response
                 if (json.error) {
-                    // @ts-expect-error Untyped Response
                     throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
                 } else {
                     throw new Err(400, null, `ESRI Server returned HTTP ${res.status} ${res.statusText}`);
@@ -338,7 +335,6 @@ class EsriProxyPortal {
 
         const json = await res.json()
 
-        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as { username: string };
@@ -356,7 +352,6 @@ class EsriProxyPortal {
 
         const json = await res.json()
 
-        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as {
@@ -391,7 +386,6 @@ class EsriProxyPortal {
 
         const json = await res.json()
 
-        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as object;
@@ -425,7 +419,6 @@ class EsriProxyServer {
 
         const json = await res.json()
 
-        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as object;
@@ -450,7 +443,6 @@ class EsriProxyServer {
 
         const json = await res.json()
 
-        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, new Error(JSON.stringify(json.error)), 'ESRI Server Error: ' + json.error.message);
 
         return json as object;
@@ -469,9 +461,9 @@ class EsriProxyServer {
 
         const json = await res.json() as Record<string, unknown>
 
-        // @ts-expect-error Untyped Response
+                // @ts-expect-error Need stronger types
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
-        // @ts-expect-error Untyped Response
+                // @ts-expect-error Need stronger types
         else if (json.status === 'error') throw new Err(400, null, 'ESRI Server Error: ' + json.messages[0]);
 
         return json as object;
@@ -553,7 +545,6 @@ class EsriProxyLayer {
 
         const json = await res.json()
 
-        // @ts-expect-error ESRI JSON Format
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as object;
