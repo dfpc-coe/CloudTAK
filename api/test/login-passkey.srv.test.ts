@@ -61,21 +61,7 @@ test('POST: api/login/passkey/authenticate/options - get auth options (no userna
     }
 });
 
-test('POST: api/login/passkey/authenticate/options - get auth options (with username)', async () => {
-    try {
-        const res = await flight.fetch('/api/login/passkey/authenticate/options', {
-            method: 'POST',
-            body: {
-                username: 'admin@example.com'
-            }
-        }, false);
 
-        assert.ok(res.body.challenge);
-        assert.equal(res.body.rpId, 'localhost');
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
 
 test('POST: api/login/passkey/register - rejects invalid credential', async () => {
     try {

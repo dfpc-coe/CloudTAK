@@ -7,7 +7,6 @@ import { ProfileResponse, ProfileListResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
 import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { Profile, ProfileSession } from '../lib/schema.js';
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import * as Default from '../lib/limits.js';
 import ProfileControl from '../lib/control/profile.js';
 
@@ -144,6 +143,11 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             limit: Default.Limit,
             page: Default.Page,
+            order: Default.Order,
+            sort: Type.String({
+                default: 'created',
+                enum: Object.keys(ProfileSession)
+            }),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -166,8 +170,8 @@ export default async function router(schema: Schema, config: Config) {
             const list = await config.models.ProfileSession.list({
                 limit: req.query.limit,
                 page: req.query.page,
-                sort: 'created',
-                order: GenericListOrder.DESC,
+                sort: req.query.sort,
+                order: req.query.order,
                 where: eq(ProfileSession.username, req.params.username),
             });
 

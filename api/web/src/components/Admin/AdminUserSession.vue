@@ -29,6 +29,8 @@
             >
                 <table class='table card-table table-hover table-vcenter datatable'>
                     <TableHeader
+                        v-model:sort='paging.sort'
+                        v-model:order='paging.order'
                         v-model:header='header'
                     />
                     <tbody>
@@ -121,6 +123,8 @@ const header = ref<Header[]>([
 const paging = ref({
     limit: 10,
     page: 0,
+    sort: 'created',
+    order: 'desc',
 });
 
 function toggle(): void {
@@ -146,6 +150,8 @@ async function fetchSessions(): Promise<void> {
         const url = stdurl(`/api/user/${encodeURIComponent(props.username)}/session`);
         url.searchParams.set('limit', String(paging.value.limit));
         url.searchParams.set('page', String(paging.value.page));
+        url.searchParams.set('sort', paging.value.sort);
+        url.searchParams.set('order', paging.value.order);
 
         list.value = await std(url) as { total: number; items: Session[] };
     } catch (error) {
