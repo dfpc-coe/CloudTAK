@@ -18,6 +18,14 @@
 
 ### Pending Release
 
+### v12.123.0 - 2026-04-13
+
+- :tada: Allow signing in with Passkeys
+- :rocket: Support session Management
+- :tada: Allow setting a chat message retention schedule - Closes https://github.com/dfpc-coe/CloudTAK/issues/978
+- :tada: Allow setting an import retention scedule
+- :tada: Add initial support for session management
+
 ### v12.122.0 - 2026-04-10
 
 - :rocket: Update to consistently use the new TablerPillButton to ensure unique ID usage
