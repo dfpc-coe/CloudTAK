@@ -4,10 +4,14 @@
         :create='false'
         label='No CoT Marker'
     />
-    <template v-else>
+    <div
+        v-else
+        class='d-flex flex-column h-100'
+        style='min-height: 0;'
+    >
         <div
             :key='String(route.params.uid)'
-            class='col-12 border-bottom d-flex cloudtak-accent'
+            class='col-12 border-bottom d-flex cloudtak-accent flex-shrink-0'
             style='border-radius: 0px;'
         >
             <div class='col-12 row my-2 d-flex px-1 py-2'>
@@ -361,8 +365,8 @@
 
         <div
             v-if='mode === "default"'
-            class='overflow-auto overflow-x-hidden cot-view-properties'
-            style='height: calc(100vh - 225px)'
+            class='overflow-auto overflow-x-hidden cot-view-properties flex-grow-1'
+            style='min-height: 0;'
         >
             <div class='row g-0'>
                 <div
@@ -595,26 +599,26 @@
         </div>
         <div
             v-else-if='mode === "channels"'
-            style='height: calc(100vh - 225px)'
-            class='overflow-auto overflow-x-hidden'
+            class='overflow-auto overflow-x-hidden flex-grow-1'
+            style='min-height: 0;'
         >
             <Subscriptions :cot='cot' />
         </div>
         <div
             v-else-if='mode === "raw"'
-            style='height: calc(100vh - 225px)'
-            class='overflow-auto col-12'
+            class='overflow-auto col-12 flex-grow-1'
+            style='min-height: 0;'
         >
             <CopyField
                 mode='pre'
                 style='
                     width: calc(100% - 100px);
-                    height: calc(100vh - 225px);
+                    height: 100%;
                 '
                 :model-value='JSON.stringify(cot.as_feature(), null, 4)'
             />
         </div>
-    </template>
+    </div>
 
     <Share
         v-if='share && cot'
