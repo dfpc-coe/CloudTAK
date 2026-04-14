@@ -79,6 +79,7 @@ export default class CoTAKUser implements UserInterface {
             });
 
             if (!authres.ok) throw new Err(500, new Error(await authres.text()), 'Internal Provider Token Generation Error');
+
             const cache = await authres.typed(Type.Object({
                 token_type: Type.String(),
                 expires_in: Type.Integer(),
