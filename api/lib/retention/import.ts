@@ -15,13 +15,18 @@ const task: RetentionTask = {
 
         const importControl = new ImportControl(config);
 
-        let deleted = 0;
+        const expiredIds: string[] = [];
         for await (const imp of config.models.Import.augmented_iter({
             where: sql`
                 ${Import.created} < ${cutoff.toISOString()}::timestamptz
             `
         })) {
-            await importControl.delete(imp.id);
+            expiredIds.push(imp.id);
+        }
+
+        let deleted = 0;
+        for (const id of expiredIds) {
+            await importControl.delete(id);
             deleted++;
         }
 

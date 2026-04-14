@@ -39,7 +39,7 @@ const tasks: RetentionTask[] = [{
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret)}`,
+                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
             },
             body: JSON.stringify({
                 action: 'connection-feature'
@@ -69,7 +69,7 @@ const tasks: RetentionTask[] = [{
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret)}`,
+                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
             },
             body: JSON.stringify({
                 action: 'chat'
@@ -99,7 +99,7 @@ const tasks: RetentionTask[] = [{
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret)}`,
+                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
             },
             body: JSON.stringify({
                 action: 'import'
@@ -128,7 +128,7 @@ async function runOnce(): Promise<void> {
 
     const res = await fetch(url, {
         headers: {
-            Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret)}`,
+            Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
         }
     });
 
