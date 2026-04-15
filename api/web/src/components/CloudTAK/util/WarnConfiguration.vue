@@ -1,7 +1,7 @@
 <template>
     <TablerModal size='lg'>
         <div class='modal-status bg-red' />
-        <div class='modal-header text-white'>
+        <div class='modal-header'>
             <div class='d-flex align-items-center'>
                 <IconInfoSquare
                     :size='28'
@@ -10,7 +10,7 @@
                 <span class='mx-2'>Welcome to CloudTAK</span>
             </div>
         </div>
-        <div class='modal-body text-white'>
+        <div class='modal-body'>
             <SettingsCallsign
                 mode='emit'
                 :force-callsign='true'
