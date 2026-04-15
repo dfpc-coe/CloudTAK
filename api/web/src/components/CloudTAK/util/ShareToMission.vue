@@ -7,7 +7,7 @@
             aria-label='Close'
             @click='emit("close")'
         />
-        <div class='modal-header text-white'>
+        <div class='modal-header text-body'>
             <div class='d-flex align-items-center'>
                 <IconAmbulance
                     :size='28'
@@ -24,7 +24,7 @@
             </div>
         </div>
 
-        <div class='modal-body text-white'>
+        <div class='modal-body text-body'>
             <TablerLoading v-if='loading' />
             <EmptyInfo
                 v-else-if='!missions.length'

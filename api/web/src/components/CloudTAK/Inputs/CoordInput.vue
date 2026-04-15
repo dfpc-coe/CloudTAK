@@ -7,12 +7,12 @@
             aria-label='Close'
             @click='emit("close")'
         />
-        <div class='modal-header text-white'>
+        <div class='modal-header text-body'>
             <div class='modal-title'>
                 Coordinate Entry
             </div>
         </div>
-        <div class='modal-body text-white'>
+        <div class='modal-body text-body'>
             <div class='mx-2 my-2'>
                 <TablerInput
                     v-model='config.name'

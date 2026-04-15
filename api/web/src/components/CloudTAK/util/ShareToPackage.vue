@@ -7,7 +7,7 @@
             aria-label='Close'
             @click='emit("close")'
         />
-        <div class='modal-header text-white'>
+        <div class='modal-header text-body'>
             <div class='d-flex align-items-center'>
                 <IconPackage
                     :size='28'
@@ -16,7 +16,7 @@
                 <span class='mx-2'>Create Data Package</span>
             </div>
         </div>
-        <div class='modal-body text-white'>
+        <div class='modal-body text-body'>
             <TablerLoading v-if='loading' />
             <div
                 v-else

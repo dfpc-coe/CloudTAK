@@ -186,6 +186,7 @@ export const ProfileFeature = pgTable('profile_features', {
     path: text().notNull().default('/'),
     deleted: boolean().notNull().default(false),
     username: text().notNull().references(() => Profile.username),
+    enabled_geofence: boolean().notNull().default(false),
     properties: jsonb().notNull().default({}),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
 }, (table) => {
@@ -372,6 +373,7 @@ export const ConnectionFeature = pgTable('connection_features', {
     id: text().notNull(),
     path: text().notNull().default('/'),
     layer: integer().references(() => Layer.id),
+    enabled_geofence: boolean().notNull().default(false),
     connection: integer().notNull().references(() => Connection.id),
     properties: jsonb().notNull().default({}),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()

@@ -51,7 +51,7 @@
                         >
                             <IconRoute
                                 :size='24'
-                                :color='cot.properties["stroke"] || "#ffffff"'
+                                :color='cot.properties["stroke"] || "currentColor"'
                                 stroke='1'
                             />
                         </div>
