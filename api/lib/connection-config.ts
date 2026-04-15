@@ -96,11 +96,34 @@ export class MachineConnConfig implements ConnectionConfig {
     }
 
     async geofences(): Promise<Array<Feature>> {
-        return [];
+         const features = await this.config.models.ConnectionFeature.list({
+            where: sql`
+                connection = ${this.id}::INT
+                AND enabled_geofence IS True
+            `
+        });
+
+        return (features || []).items.map((feature) => {
+            return {
+                ...feature,
+                type: 'Feature'
+            }
+        });
     }
 
     async geofence(id: string): Promise<Feature | null> {
-        return null;
+         const feature = await this.config.models.ConnectionFeature.from({
+            where: sql`
+                connection = ${this.id}::INT
+                AND enabled_geofence IS True
+                AND id = ${id}
+            `
+        });
+
+        return {
+            ...feature,
+            type: 'Feature'
+        }
     }
 }
 
@@ -160,11 +183,34 @@ export class ProfileConnConfig implements ConnectionConfig {
     }
 
     async geofences(): Promise<Array<Feature>> {
-        return [];
+         const features = await this.config.models.ProfileFeature.list({
+            where: sql`
+                username = ${this.id}
+                AND enabled_geofence IS True
+            `
+        });
+
+        return (features || []).items.map((feature) => {
+            return {
+                ...feature,
+                type: 'Feature'
+            }
+        });
     }
 
     async geofence(id: string): Promise<Feature | null> {
-        return null;
+         const feature = await this.config.models.ProfileFeature.from({
+            where: sql`
+                username = ${this.id}
+                AND enabled_geofence IS True
+                AND id = ${id}
+            `
+        });
+
+        return {
+            ...feature,
+            type: 'Feature'
+        }
     }
 }
 
