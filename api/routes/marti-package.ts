@@ -102,7 +102,7 @@ export default async function router(schema: Schema, config: Config) {
                         try {
                             return await DataPackage.parse(input, {
                                 name: safeName,
-                            })
+                            });
                         } catch (err) {
                             console.error('ok - treating as unique file (not a DataPackage)', err);
 
