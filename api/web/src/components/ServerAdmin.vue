@@ -333,27 +333,27 @@
                                                     class='mx-3'
                                                 >Video Services</span>
                                             </span>
+                                            <span
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
+                                                    "active": String(route.name).includes("admin-geofence"),
+                                                    "cursor-pointer": !String(route.name).includes("admin-geofence")
+                                                }'
+                                                @keyup.enter='router.push(`/admin/geofence`)'
+                                                @click='router.push(`/admin/geofence`)'
+                                            >
+                                                <IconMapPin
+                                                    v-tooltip='nest ? "Geofence Server" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
                                                 <span
-                                                    tabindex='0'
-                                                    role='menuitem'
-                                                    class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                    :class='{
-                                                        "active": String(route.name).includes("admin-geofence"),
-                                                        "cursor-pointer": !String(route.name).includes("admin-geofence")
-                                                    }'
-                                                    @keyup.enter='router.push(`/admin/geofence`)'
-                                                    @click='router.push(`/admin/geofence`)'
-                                                >
-                                                    <IconMapPin
-                                                        v-tooltip='nest ? "Geofence Server" : false'
-                                                        :size='32'
-                                                        stroke='1'
-                                                    />
-                                                    <span
-                                                        v-if='!nest'
-                                                        class='mx-3'
-                                                    >Geofence Server</span>
-                                                </span>
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Geofence Server</span>
+                                            </span>
                                             <span
                                                 tabindex='0'
                                                 role='menuitem'
