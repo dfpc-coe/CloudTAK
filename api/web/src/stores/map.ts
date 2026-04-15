@@ -753,7 +753,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }, 500);
             });
 
-            // @ts-ignore Excessively Deep Types
+            // @ts-expect-error Don't remove me unless npm run doc passes
             this._map = markRaw(map);
             this._draw = new DrawTool(this);
             this._icons = markRaw(new IconManager(map));

@@ -79,6 +79,7 @@ export default async function server(config: Config): Promise<ServerManager> {
         await Bulldozer.fireItUp(config);
     }
 
+    await config.geofence.init();
     await config.conns.init();
 
     if (!config.noevents) await config.events.init(config.pg);
@@ -305,6 +306,7 @@ export default async function server(config: Config): Promise<ServerManager> {
         });
 
         srv.on('close', async () => {
+            await config.geofence.close();
             await config.conns.close();
         });
     });

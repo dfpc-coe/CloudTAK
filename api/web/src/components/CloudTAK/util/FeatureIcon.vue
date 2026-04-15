@@ -14,37 +14,37 @@
     <IconCircle
         v-else-if='feature.properties && feature.properties.type === "u-d-c-c"'
         :size='props.size'
-        :color='feature.properties.stroke || "white"'
+        :color='feature.properties.stroke || "currentColor"'
         stroke='1'
     />
     <IconVideo
         v-else-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
         :size='props.size'
-        :color='feature.properties.stroke || "white"'
+        :color='feature.properties.stroke || "currentColor"'
         stroke='1'
     />
     <IconRoute
         v-else-if='feature.properties && feature.properties.type === "b-m-r"'
         :size='props.size'
-        :color='feature.properties.stroke || "white"'
+        :color='feature.properties.stroke || "currentColor"'
         stroke='1'
     />
     <IconLine
         v-else-if='feature.geometry && feature.geometry.type === "LineString"'
         :size='props.size'
-        :color='feature.properties.stroke || "white"'
+        :color='feature.properties.stroke || "currentColor"'
         stroke='1'
     />
     <IconCone
         v-else-if='feature.properties && feature.properties.sensor'
         :size='props.size'
-        :color='feature.properties.stroke || "white"'
+        :color='feature.properties.stroke || "currentColor"'
         stroke='1'
     />
     <IconPolygon
         v-else-if='feature.geometry && feature.geometry.type === "Polygon"'
         :size='props.size'
-        :color='feature.properties.fill || "white"'
+        :color='feature.properties.fill || "currentColor"'
         stroke='1'
     />
     <ContactPuck

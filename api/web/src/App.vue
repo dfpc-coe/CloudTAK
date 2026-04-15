@@ -111,7 +111,7 @@
                                         size='32'
                                         stroke='1'
                                     />
-                                    <span class='mx-2'>Server</span>
+                                    <span class='mx-2'>Admin</span>
                                     <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
                                 </div>
                                 <div

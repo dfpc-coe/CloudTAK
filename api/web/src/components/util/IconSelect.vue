@@ -95,7 +95,7 @@
                                         :size='32'
                                         stroke='1'
                                         class='ms-auto cursor-pointer mx-2'
-                                        :color='params.showFilter ? "#83b7e8" : "#ffffff"'
+                                        :color='params.showFilter ? "#83b7e8" : "currentColor"'
                                         @click.stop.prevent='params.showFilter = !params.showFilter'
                                     />
                                 </div>

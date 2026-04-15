@@ -28,12 +28,12 @@
                 <li
                     v-for='mode in COORD_MODES'
                     :key='mode.value'
-                    class='tabler-dropdown__item cloudtak-hover cursor-pointer px-3 py-2 text-white'
+                    class='tabler-dropdown__item cloudtak-hover cursor-pointer px-3 py-2 text-body'
                     :class='{ "tabler-dropdown__item--active": mapStore.coordFormat === mode.value }'
                     @click='void setCoordFormat(mode.value)'
                 >
                     <span class='fw-semibold'>{{ mode.label }}</span>
-                    <span class='text-white-50 ms-2 small'>{{ mode.title }}</span>
+                    <span class='text-secondary ms-2 small'>{{ mode.title }}</span>
                 </li>
             </template>
         </TablerDropdown>
