@@ -7,7 +7,7 @@
             aria-label='Close'
             @click='$emit("close")'
         />
-        <div class='modal-header text-white'>
+        <div class='modal-header text-body'>
             <div class='d-flex align-items-center'>
                 <IconInfoSquare
                     :size='28'
@@ -16,7 +16,7 @@
                 <span class='mx-2'>No Channels Active</span>
             </div>
         </div>
-        <div class='modal-body text-white'>
+        <div class='modal-body text-body'>
             <p>Channels are the basis of who and what you are able to see in TAK</p>
 
             <p>At this time you do not have any active channels and as such you will not see any Users, Data Packages, or Data Syncs associated with channels.</p>

@@ -8,7 +8,6 @@
         <div class='card-body row'>
             <ConfigLogin />
             <ConfigAgol />
-            <ConfigGeofence />
             <ConfigMedia />
             <ConfigProxy />
             <ConfigRetention />
@@ -24,7 +23,6 @@
 <script setup lang="ts">
 import ConfigLogin from './AdminConfig/ConfigLogin.vue';
 import ConfigAgol from './AdminConfig/ConfigAgol.vue';
-import ConfigGeofence from './AdminConfig/ConfigGeofence.vue';
 import ConfigMedia from './AdminConfig/ConfigMedia.vue';
 import ConfigProxy from './AdminConfig/ConfigProxy.vue';
 import ConfigRetention from './AdminConfig/ConfigRetention.vue';

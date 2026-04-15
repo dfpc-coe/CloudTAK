@@ -162,6 +162,10 @@ const router = VueRouter.createRouter({
                 name: 'admin-config',
                 component: () => import('../../components/Admin/AdminConfig.vue')
             },{
+                path: 'geofence',
+                name: 'admin-geofence',
+                component: () => import('../../components/Admin/AdminGeofence.vue')
+            },{
                 path: 'export',
                 name: 'admin-export',
                 component: () => import('../../components/Admin/AdminExport.vue')

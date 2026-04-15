@@ -1,4 +1,5 @@
 import { Static, Type } from '@sinclair/typebox';
+import type { Feature } from 'geojson';
 import type { Connection } from './schema.js';
 import { X509Certificate } from 'crypto';
 import { InferSelectModel, sql } from 'drizzle-orm';
@@ -32,6 +33,9 @@ export default interface ConnectionConfig {
 
     subscription: (name: string) => Promise<null | MissionSub>;
     subscriptions: () => Promise<Array<MissionSub>>;
+
+    geofences(): Promise<Array<Feature>>;
+    geofence(id: string): Promise<Feature | null>;
 
     uid(): string;
 }
@@ -90,6 +94,14 @@ export class MachineConnConfig implements ConnectionConfig {
             return { name: m.name, token: m.mission_token }
         });
     }
+
+    async geofences(): Promise<Array<Feature>> {
+        return [];
+    }
+
+    async geofence(id: string): Promise<Feature | null> {
+        return null;
+    }
 }
 
 export class ProfileConnConfig implements ConnectionConfig {
@@ -145,6 +157,14 @@ export class ProfileConnConfig implements ConnectionConfig {
         return missions.items.map((m) => {
             return { name: m.name, token: m.token }
         })
+    }
+
+    async geofences(): Promise<Array<Feature>> {
+        return [];
+    }
+
+    async geofence(id: string): Promise<Feature | null> {
+        return null;
     }
 }
 

@@ -53,7 +53,7 @@
                         <div class='col-4 d-flex align-items-center'>
                             <div class='ms-auto btn-list'>
                                 <button
-                                    class='btn btn-sm btn-outline-light'
+                                    class='btn btn-sm use-gps-btn'
                                     @click='exitManualMode'
                                 >
                                     <IconLocation
@@ -397,7 +397,7 @@
                         aria-label='Close'
                         @click='upload.shown = false'
                     />
-                    <div class='modal-body text-white'>
+                    <div class='modal-body text-body'>
                         <Upload
                             :url='stdurl("/api/import")'
                             :headers='{ Authorization: `Bearer ${token}` }'
@@ -946,6 +946,22 @@ async function handleRadial(event: string): Promise<void> {
 
 .maplibregl-ctrl-attrib a {
     color: black !important;
+}
+
+html[data-bs-theme='dark'] .use-gps-btn {
+    --bs-btn-color: rgba(255, 255, 255, 0.92);
+    --bs-btn-border-color: rgba(255, 255, 255, 0.35);
+    --bs-btn-hover-color: #182433;
+    --bs-btn-hover-bg: rgba(255, 255, 255, 0.92);
+    --bs-btn-hover-border-color: rgba(255, 255, 255, 0.92);
+}
+
+html[data-bs-theme='light'] .use-gps-btn {
+    --bs-btn-color: var(--tblr-body-color);
+    --bs-btn-border-color: var(--tblr-border-color);
+    --bs-btn-hover-color: var(--tblr-bg-surface);
+    --bs-btn-hover-bg: var(--tblr-primary);
+    --bs-btn-hover-border-color: var(--tblr-primary);
 }
 
 @media (max-width: 600px) {

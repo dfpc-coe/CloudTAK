@@ -233,7 +233,7 @@
             aria-label='Close'
             @click='folderModal.shown = false'
         />
-        <div class='modal-header text-white'>
+        <div class='modal-header text-body'>
             <div class='modal-title'>
                 {{ folderModal.editingPath ? 'Rename Folder' : 'Create Folder' }}
             </div>
