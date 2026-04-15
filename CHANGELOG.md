@@ -18,6 +18,11 @@
 
 ### Pending Release
 
+### v12.125.0 - 2026-04-15
+
+- :tada: Sketch out initial Geofence Connection Manager
+- :bug: fix white on white text in new light mode
+
 ### v12.124.1 - 2026-04-15
 
 - :bug: Update Color in initial Modal to match color scheme
