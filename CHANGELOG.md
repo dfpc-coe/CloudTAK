@@ -18,6 +18,10 @@
 
 ### Pending Release
 
+### v12.124.1 - 2026-04-15
+
+- :bug: Update Color in initial Modal to match color scheme
+
 ### v12.124.0 - 2026-04-14
 
 - :arrow_up: Update core deps to reduce dependency use
