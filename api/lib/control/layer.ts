@@ -44,6 +44,7 @@ export default class LayerControl {
     async listUpdates(): Promise<Array<Static<typeof LayerUpdateManagementItemResponse>>> {
         const { tasks } = await ECR.versions();
         const items: Array<Static<typeof LayerUpdateManagementItemResponse>> = [];
+        const deployed = await CloudFormation.deployed(this.config);
 
         for await (const layer of this.config.models.Layer.augmented_iter({ pagesize: 100 })) {
             const match = String(layer.task).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
@@ -58,6 +59,7 @@ export default class LayerControl {
                 current_version: currentVersion,
                 latest_version: latestVersion,
                 has_update: Boolean(latestVersion && latestVersion !== currentVersion),
+                has_stack: deployed.has(layer.id),
                 template: layer.template,
                 connection: layer.connection,
                 parent_name: layer.parent?.name || null,

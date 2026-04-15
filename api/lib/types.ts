@@ -21,6 +21,7 @@ export const LayerUpdateManagementItemResponse = Type.Object({
     current_version: Type.String(),
     latest_version: Type.Union([Type.Null(), Type.String()]),
     has_update: Type.Boolean(),
+    has_stack: Type.Boolean(),
     template: Type.Boolean(),
     connection: Type.Union([Type.Null(), Type.Integer()]),
     parent_name: Type.Union([Type.Null(), Type.String()]),
