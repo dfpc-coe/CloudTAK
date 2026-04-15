@@ -107,7 +107,7 @@ export class MachineConnConfig implements ConnectionConfig {
             return {
                 ...feature,
                 type: 'Feature'
-            }
+            } as Feature
         });
     }
 
@@ -123,7 +123,7 @@ export class MachineConnConfig implements ConnectionConfig {
         return {
             ...feature,
             type: 'Feature'
-        }
+        } as Feature
     }
 }
 
@@ -194,7 +194,7 @@ export class ProfileConnConfig implements ConnectionConfig {
             return {
                 ...feature,
                 type: 'Feature'
-            }
+            } as Feature
         });
     }
 
@@ -210,7 +210,7 @@ export class ProfileConnConfig implements ConnectionConfig {
         return {
             ...feature,
             type: 'Feature'
-        }
+        } as Feature
     }
 }
 
