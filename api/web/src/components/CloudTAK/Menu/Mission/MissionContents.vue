@@ -134,7 +134,7 @@
                                 <IconDownload
                                     :size='24'
                                     stroke='1'
-                                    color='white'
+                                    color='currentColor'
                                     class='cursor-pointer'
                                 />
                             </TablerIconButton>
@@ -191,7 +191,7 @@
                                 <IconDownload
                                     :size='32'
                                     stroke='1'
-                                    color='white'
+                                    color='currentColor'
                                     class='cursor-pointer'
                                 />
                             </TablerIconButton>

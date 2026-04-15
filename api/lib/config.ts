@@ -6,6 +6,7 @@ import SecretsManager from '@aws-sdk/client-secrets-manager';
 import EventsPool from './events-pool.js';
 import { Pool, GenerateUpsert } from '@openaddresses/batch-generic';
 import ConnectionPool from './connection-pool.js';
+import ConnectionGeofence from './connection-geofence.js';
 import { ConnectionWebSocket } from './connection-web.js';
 import type { Server } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
@@ -37,6 +38,7 @@ export default class Config {
     Bucket?: string;
     pg: Pool<typeof pgtypes>;
     conns: ConnectionPool;
+    geofence: ConnectionGeofence;
     server: InferSelectModel<typeof Server>;
     events: EventsPool;
     arnPrefix?: string;
@@ -71,6 +73,7 @@ export default class Config {
         this.server = init.server;
 
         this.conns = new ConnectionPool(this);
+        this.geofence = new ConnectionGeofence(this);
 
         this.events = new EventsPool(this.StackName);
 

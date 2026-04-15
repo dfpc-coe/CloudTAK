@@ -54,7 +54,7 @@ const contact = ref<Contact | undefined>();
 const effectiveContact = computed((): Contact => {
     return contact.value ?? {
         uid: props.creator.uid,
-        callsign: props.creator.callsign,
+        callsign: props.creator.callsign ?? '',
         notes: '',
         team: '',
         role: '',
