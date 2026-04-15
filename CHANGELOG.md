@@ -18,6 +18,13 @@
 
 ### Pending Release
 
+### v12.124.0 - 2026-04-14
+
+- :arrow_up: Update core deps to reduce dependency use
+- :rocket: Add additional Events permissions in CloudFormation
+- :rocket: Add Stack Deployment status to Admin Layer panel
+- :bug: Fix CoTView Overflow in UI
+
 ### v12.123.0 - 2026-04-13
 
 - :tada: Allow signing in with Passkeys
