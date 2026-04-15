@@ -1,11 +1,9 @@
-import os from 'node:os';
 import dns from 'node:dns/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { Busboy } from '@fastify/busboy';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
-import { pipeline } from 'node:stream/promises';
 import { Type, Static } from '@sinclair/typebox'
 import { sql } from 'drizzle-orm';
 import S3 from '../lib/aws/s3.js';
@@ -23,6 +21,7 @@ import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
 import {
     MissionOptions,
 } from '@tak-ps/node-tak/lib/api/mission';
+import stream2buffer from '../lib/stream.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.post('/marti/package', {
@@ -77,33 +76,53 @@ export default async function router(schema: Schema, config: Config) {
                 });
 
                 let singleFile: Promise<DataPackage> | undefined = undefined;
+                let handled = false;
+                let uploadError: Error | undefined;
+
+                function respond(err: unknown) {
+                    if (handled || res.headersSent) return;
+                    handled = true;
+
+                    req.unpipe(bb);
+                    req.resume();
+
+                    Err.respond(err, res);
+                }
+
                 bb.on('file', (fieldname, file, filename) => {
                     singleFile = (async () => {
-                        const { ext } = path.parse(filename);
-                        const filePath = path.resolve(os.tmpdir(), `${crypto.randomUUID()}${ext}`);
+                        const parsedName = path.parse(path.basename(filename || 'package'));
+                        const safeName = parsedName.base || 'package';
+                        const input = await stream2buffer(file);
 
-                        await pipeline(
-                            file,
-                            await fs.createWriteStream(filePath)
-                        )
+                        if (!input.length) {
+                            throw new Err(400, null, 'No File Provided');
+                        }
 
                         try {
-                            return await DataPackage.parse(filePath)
+                            return await DataPackage.parse(input, {
+                                name: safeName,
+                            });
                         } catch (err) {
                             console.error('ok - treating as unique file (not a DataPackage)', err);
 
                             const pkg = new DataPackage(id, id);
 
-                            pkg.settings.name = req.query.name || filename;
-                            await pkg.addFile(fs.createReadStream(filePath), {
-                                name: filename,
+                            pkg.settings.name = req.query.name || safeName;
+                            await pkg.addFile(input, {
+                                name: safeName,
                             });
 
                             return pkg;
                         }
                     })();
+                }).on('error', (err) => {
+                    uploadError = err instanceof Error ? err : new Error(String(err));
+                    respond(uploadError);
                 }).on('finish', async () => {
                     try {
+                        if (handled) return;
+                        if (uploadError) throw uploadError;
                         if (!singleFile) throw new Err(400, null, 'No File Provided');
 
                         const pkg = await singleFile;
@@ -125,9 +144,10 @@ export default async function router(schema: Schema, config: Config) {
 
                         if (!pkgres.results.length) throw new Err(404, null, 'Package not found');
 
+                        handled = true;
                         res.json(pkgres.results[0]);
                     } catch (err) {
-                        Err.respond(err, res);
+                        respond(err);
                     }
                 });
 
