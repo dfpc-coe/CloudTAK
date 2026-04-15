@@ -173,9 +173,21 @@ async function uploadGeoJSON() {
             for (const feat of fc.features) {
                 try {
                     const norm = await normalize_geojson(feat);
+                    const creator = norm.properties.creator;
+                    const normalizedFeature: InputFeature = {
+                        ...norm,
+                        path: `/${name}/`,
+                        properties: {
+                            ...norm.properties,
+                            creator: creator ? {
+                                ...creator,
+                                callsign: creator.callsign ?? ''
+                            } : undefined
+                        }
+                    };
 
                     // TODO Remove once we support the metadata property throughout
-                    feats.value.push({ ...norm, path: `/${name}/` })
+                    feats.value.push(normalizedFeature)
                 } catch (err) {
                     console.error('Error normalizing GeoJSON feature:', feat, err);
                 }
