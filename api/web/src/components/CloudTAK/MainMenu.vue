@@ -42,7 +42,7 @@
             <div
                 v-if='!compact'
                 ref='resize'
-                class='resize cloudtak-hover cursor-drag'
+                class='resize cloudtak-bg cloudtak-hover cursor-drag'
             />
             <div
                 ref='menu'
@@ -186,13 +186,17 @@ onMounted(async () => {
 
 <style scoped>
 .resize {
-   height: 100%;
+   height: 60px;
    width: 14px;
    cursor: col-resize;
    flex-shrink: 0;
-   position: relative;
+   position: absolute;
+   left: -14px;
+   top: 50%;
+   transform: translateY(-50%);
    z-index: 10;
    user-select: none;
+   border-radius: 4px 0 0 4px;
 }
 .resize::before {
    content: "";
@@ -202,6 +206,6 @@ onMounted(async () => {
    transform: translate(-50%, -50%);
    width: 3px;
    height: 15px;
-   border-inline: 1px solid #fff;
+   border-inline: 1px solid currentColor;
 }
 </style>

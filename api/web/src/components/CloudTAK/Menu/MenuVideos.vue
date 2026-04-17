@@ -248,10 +248,10 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import StandardItem from '../util/StandardItem.vue';
-import { std, server } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import ProfileConfig from '../../../base/profile.ts';
-import type { VideoLease, VideoLeaseList, VideoConnectionList } from '../../../types.ts';
+import type { VideoLease, VideoConnectionList } from '../../../types.ts';
 
 import { useMapStore } from '../../../stores/map.ts';
 import { useFloatStore } from '../../../stores/float.ts';
@@ -303,7 +303,7 @@ const loading = ref({
 });
 const lease = ref();
 const isSystemAdmin = ref(false);
-const leases = ref<VideoLeaseList>({ total: 0, items: [] });
+const leases = ref<{ total: number, items: VideoLease[] }>({ total: 0, items: [] });
 const connections = ref<VideoConnectionList>({ videoConnections: [] });
 const videos = ref<Set<COT>>(new Set())
 
@@ -396,7 +396,10 @@ async function fetchConnections(): Promise<void> {
         lease.value = undefined;
         loading.value.connections = true;
         error.value = undefined;
-        connections.value = await std('/api/marti/video') as VideoConnectionList;
+
+        const res = await server.GET('/api/marti/video');
+        if (res.error) throw new Error(res.error.message);
+        connections.value = res.data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
@@ -408,9 +411,10 @@ async function deleteLease(lease: VideoLease): Promise<void> {
     loading.value.main = true;
 
     try {
-        await std(`/api/video/lease/${lease.id}`, {
-            method: 'DELETE'
+        const res = await server.DELETE('/api/video/lease/{:lease}', {
+            params: { path: { ':lease': lease.id } }
         });
+        if (res.error) throw new Error(res.error.message);
 
         await fetchLeases();
 

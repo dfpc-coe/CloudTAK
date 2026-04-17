@@ -5,11 +5,48 @@
             class='card user-select-none'
         >
             <div class='card-header'>
-                <CoordinateType
-                    v-model='mapStore.draw.point.type'
-                />
+                <template v-if='!mapStore.isMobileDetected'>
+                    <CoordinateType
+                        v-model='mapStore.draw.point.type'
+                    />
+                </template>
+                <template v-else>
+                    <IconPoint
+                        :size='24'
+                        stroke='1'
+                    /><span class='mx-2'>Draw Point</span>
+                </template>
 
                 <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        v-if='mapStore.isMobileDetected'
+                        :title='opened ? "Close Settings" : "Open Settings"'
+                        @click='opened = !opened'
+                    >
+                        <span class='d-flex align-items-center'>
+                            <span>More</span>
+                            <IconChevronDown
+                                v-if='opened'
+                                :size='24'
+                                stroke='1'
+                            />
+                            <IconChevronUp
+                                v-else
+                                :size='24'
+                                stroke='1'
+                            />
+                        </span>
+                    </TablerIconButton>
+                    <TablerIconButton
+                        title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                     <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
@@ -20,6 +57,14 @@
                         />
                     </TablerIconButton>
                 </div>
+            </div>
+            <div
+                v-if='mapStore.isMobileDetected && opened'
+                class='card-body'
+            >
+                <CoordinateType
+                    v-model='mapStore.draw.point.type'
+                />
             </div>
         </div>
         <div
@@ -34,6 +79,16 @@
                 <span class='mx-2'>Circle Editing</span>
 
                 <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                     <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
@@ -58,6 +113,16 @@
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
+                        title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
                     >
@@ -81,6 +146,7 @@
 
                 <div class='ms-auto btn-list align-items-center'>
                     <TablerEnum
+                        v-if='!mapStore.isMobileDetected'
                         v-model='mapStore.draw.snappingLayer'
                         description='Choose the type of line to draw.'
                         default='No Snapping'
@@ -88,6 +154,36 @@
                         :disabled='!mapStore.hasSnapping'
                     />
 
+                    <TablerIconButton
+                        v-if='mapStore.isMobileDetected'
+                        :title='opened ? "Close Settings" : "Open Settings"'
+                        @click='opened = !opened'
+                    >
+                        <span class='d-flex align-items-center'>
+                            <span>More</span>
+                            <IconChevronDown
+                                v-if='opened'
+                                :size='24'
+                                stroke='1'
+                            />
+                            <IconChevronUp
+                                v-else
+                                :size='24'
+                                stroke='1'
+                            />
+                        </span>
+                    </TablerIconButton>
+
+                    <TablerIconButton
+                        title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                     <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
@@ -98,6 +194,18 @@
                         />
                     </TablerIconButton>
                 </div>
+            </div>
+            <div
+                v-if='mapStore.isMobileDetected && opened'
+                class='card-body'
+            >
+                <TablerEnum
+                    v-model='mapStore.draw.snappingLayer'
+                    description='Choose the type of line to draw.'
+                    default='No Snapping'
+                    :options='mapStore.draw.snappingOptions'
+                    :disabled='!mapStore.hasSnapping'
+                />
             </div>
         </div>
         <div
@@ -111,6 +219,16 @@
                 /><span class='mx-2'>Polygon Editing</span>
 
                 <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                     <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
@@ -135,6 +253,16 @@
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
+                        title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
                     >
@@ -158,21 +286,35 @@
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
-                        :title='opened ? "Open Settings" : "Close Settings"'
+                        v-if='mapStore.isMobileDetected'
+                        :title='opened ? "Close Settings" : "Open Settings"'
                         @click='opened = !opened'
                     >
-                        <IconChevronDown
-                            v-if='opened'
-                            :size='24'
-                            stroke='1'
-                        />
-                        <IconChevronUp
-                            v-else
+                        <span class='d-flex align-items-center'>
+                            <span>More</span>
+                            <IconChevronDown
+                                v-if='opened'
+                                :size='24'
+                                stroke='1'
+                            />
+                            <IconChevronUp
+                                v-else
+                                :size='24'
+                                stroke='1'
+                            />
+                        </span>
+                    </TablerIconButton>
+
+                    <TablerIconButton
+                        title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
                             :size='24'
                             stroke='1'
                         />
                     </TablerIconButton>
-
                     <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
@@ -185,7 +327,7 @@
                 </div>
             </div>
             <div
-                v-if='opened'
+                v-if='!mapStore.isMobileDetected || opened'
                 class='card-body'
             >
                 <TablerEnum
@@ -208,6 +350,16 @@
                 /><span class='mx-2'>Editing Existing Feature</span>
 
                 <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                     <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
@@ -236,6 +388,7 @@ import {
 import {
     IconX,
     IconLine,
+    IconPoint,
     IconPencil,
     IconChevronUp,
     IconChevronDown,
@@ -244,6 +397,7 @@ import {
     IconCone,
     IconVector,
     IconPolygon,
+    IconCheck,
 } from '@tabler/icons-vue';
 
 const mapStore = useMapStore();
