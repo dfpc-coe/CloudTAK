@@ -5,13 +5,41 @@
             class='card user-select-none'
         >
             <div class='card-header'>
-                <CoordinateType
-                    v-model='mapStore.draw.point.type'
-                />
+                <template v-if='!mapStore.isMobileDetected'>
+                    <CoordinateType
+                        v-model='mapStore.draw.point.type'
+                    />
+                </template>
+                <template v-else>
+                    <IconPoint
+                        :size='24'
+                        stroke='1'
+                    /><span class='mx-2'>Draw Point</span>
+                </template>
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
+                        v-if='mapStore.isMobileDetected'
+                        :title='opened ? "Close Settings" : "Open Settings"'
+                        @click='opened = !opened'
+                    >
+                        <span class='d-flex align-items-center'>
+                            <span>More</span>
+                            <IconChevronDown
+                                v-if='opened'
+                                :size='24'
+                                stroke='1'
+                            />
+                            <IconChevronUp
+                                v-else
+                                :size='24'
+                                stroke='1'
+                            />
+                        </span>
+                    </TablerIconButton>
+                    <TablerIconButton
                         title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
                         @click='mapStore.draw.finish()'
                     >
                         <IconCheck
@@ -30,6 +58,14 @@
                     </TablerIconButton>
                 </div>
             </div>
+            <div
+                v-if='mapStore.isMobileDetected && opened'
+                class='card-body'
+            >
+                <CoordinateType
+                    v-model='mapStore.draw.point.type'
+                />
+            </div>
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.CIRCLE'
@@ -45,6 +81,7 @@
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
                         title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
                         @click='mapStore.draw.finish()'
                     >
                         <IconCheck
@@ -77,6 +114,7 @@
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
                         title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
                         @click='mapStore.draw.finish()'
                     >
                         <IconCheck
@@ -108,6 +146,7 @@
 
                 <div class='ms-auto btn-list align-items-center'>
                     <TablerEnum
+                        v-if='!mapStore.isMobileDetected'
                         v-model='mapStore.draw.snappingLayer'
                         description='Choose the type of line to draw.'
                         default='No Snapping'
@@ -116,7 +155,28 @@
                     />
 
                     <TablerIconButton
+                        v-if='mapStore.isMobileDetected'
+                        :title='opened ? "Close Settings" : "Open Settings"'
+                        @click='opened = !opened'
+                    >
+                        <span class='d-flex align-items-center'>
+                            <span>More</span>
+                            <IconChevronDown
+                                v-if='opened'
+                                :size='24'
+                                stroke='1'
+                            />
+                            <IconChevronUp
+                                v-else
+                                :size='24'
+                                stroke='1'
+                            />
+                        </span>
+                    </TablerIconButton>
+
+                    <TablerIconButton
                         title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
                         @click='mapStore.draw.finish()'
                     >
                         <IconCheck
@@ -135,6 +195,18 @@
                     </TablerIconButton>
                 </div>
             </div>
+            <div
+                v-if='mapStore.isMobileDetected && opened'
+                class='card-body'
+            >
+                <TablerEnum
+                    v-model='mapStore.draw.snappingLayer'
+                    description='Choose the type of line to draw.'
+                    default='No Snapping'
+                    :options='mapStore.draw.snappingOptions'
+                    :disabled='!mapStore.hasSnapping'
+                />
+            </div>
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.POLYGON'
@@ -149,6 +221,7 @@
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
                         title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
                         @click='mapStore.draw.finish()'
                     >
                         <IconCheck
@@ -181,6 +254,7 @@
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
                         title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
                         @click='mapStore.draw.finish()'
                     >
                         <IconCheck
@@ -212,23 +286,28 @@
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
-                        :title='opened ? "Open Settings" : "Close Settings"'
+                        v-if='mapStore.isMobileDetected'
+                        :title='opened ? "Close Settings" : "Open Settings"'
                         @click='opened = !opened'
                     >
-                        <IconChevronDown
-                            v-if='opened'
-                            :size='24'
-                            stroke='1'
-                        />
-                        <IconChevronUp
-                            v-else
-                            :size='24'
-                            stroke='1'
-                        />
+                        <span class='d-flex align-items-center'>
+                            <span>More</span>
+                            <IconChevronDown
+                                v-if='opened'
+                                :size='24'
+                                stroke='1'
+                            />
+                            <IconChevronUp
+                                v-else
+                                :size='24'
+                                stroke='1'
+                            />
+                        </span>
                     </TablerIconButton>
 
                     <TablerIconButton
                         title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
                         @click='mapStore.draw.finish()'
                     >
                         <IconCheck
@@ -248,7 +327,7 @@
                 </div>
             </div>
             <div
-                v-if='opened'
+                v-if='!mapStore.isMobileDetected || opened'
                 class='card-body'
             >
                 <TablerEnum
@@ -273,6 +352,7 @@
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
                         title='Finish Drawing'
+                        :disabled='!mapStore.draw.canFinish'
                         @click='mapStore.draw.finish()'
                     >
                         <IconCheck
@@ -308,6 +388,7 @@ import {
 import {
     IconX,
     IconLine,
+    IconPoint,
     IconPencil,
     IconChevronUp,
     IconChevronDown,
