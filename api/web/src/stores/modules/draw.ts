@@ -466,7 +466,7 @@ export default class DrawTool {
         this.editing = null;
 
         this.point = {
-            type: 'u-d-p'
+            type: this.mapStore.defaultPointType
         }
 
         this.lasso = {
@@ -648,6 +648,8 @@ export default class DrawTool {
         if (mode !== DrawToolMode.SNAPPING) {
             await this.removeNetwork();
         }
+
+        this.point.type = this.mapStore.defaultPointType;
 
         if (mode === DrawToolMode.LINESTRING && this.route.layer !== 'No Snapping') {
             this.route.layer = 'No Snapping';

@@ -257,6 +257,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/config/group', {
+        deprecated: true,
         name: 'List Groups',
         group: 'Config',
         description: 'Return Group Config',

@@ -107,7 +107,8 @@
 import { ref, onMounted } from 'vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
-import { std } from '../../../std.ts';
+import { server } from '../../../std.ts';
+import type { Passkey, PasskeyList } from '../../../types.ts';
 import { startRegistration } from '@simplewebauthn/browser';
 import {
     TablerDelete,
@@ -121,19 +122,11 @@ import {
     IconFingerprint,
 } from '@tabler/icons-vue';
 
-interface Passkey {
-    id: number;
-    name: string;
-    credential_id: string;
-    created: string;
-    last_used: string | null;
-}
-
 const loading = ref<boolean>(true);
 const creating = ref<boolean>(false);
 const newName = ref<string>('');
 const selected = ref<Passkey | null>(null);
-const passkeys = ref<{ total: number; items: Passkey[] }>({
+const passkeys = ref<PasskeyList>({
     total: 0,
     items: []
 });
@@ -145,7 +138,9 @@ onMounted(async () => {
 async function fetch(): Promise<void> {
     selected.value = null;
     loading.value = true;
-    passkeys.value = await std('/api/login/passkey') as { total: number; items: Passkey[] };
+    const res = await server.GET('/api/login/passkey');
+    if (res.error) throw new Error(res.error.message);
+    passkeys.value = res.data;
     loading.value = false;
 }
 
@@ -153,16 +148,15 @@ async function registerPasskey(): Promise<void> {
     const name = newName.value.trim();
     if (!name) return;
 
-    const options = await std('/api/login/passkey/register/options', {
-        method: 'POST',
-    }) as Record<string, unknown>;
+    const res = await server.POST('/api/login/passkey/register/options');
+    if (res.error) throw new Error(res.error.message);
 
-    const credential = await startRegistration({ optionsJSON: options as unknown as Parameters<typeof startRegistration>[0]['optionsJSON'] });
+    const credential = await startRegistration({ optionsJSON: res.data as unknown as Parameters<typeof startRegistration>[0]['optionsJSON'] });
 
-    await std('/api/login/passkey/register', {
-        method: 'POST',
+    const regRes = await server.POST('/api/login/passkey/register', {
         body: { name, credential },
     });
+    if (regRes.error) throw new Error(regRes.error.message);
 
     creating.value = false;
     await fetch();
@@ -170,9 +164,10 @@ async function registerPasskey(): Promise<void> {
 
 async function deletePasskey(): Promise<void> {
     if (!selected.value) return;
-    await std(`/api/login/passkey/${encodeURIComponent(selected.value.id)}`, {
-        method: 'DELETE',
+    const res = await server.DELETE('/api/login/passkey/{:id}', {
+        params: { path: { ':id': selected.value.id } }
     });
+    if (res.error) throw new Error(res.error.message);
     await fetch();
 }
 </script>
