@@ -120,7 +120,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import type { ImportList } from '../../../../src/types.ts';
-import { std, stdurl } from '../../../../src/std.ts';
+import { server, stdurl } from '../../../../src/std.ts';
 import {
     TablerNone,
     TablerInput,
@@ -183,13 +183,19 @@ async function fetchList() {
     error.value = undefined;
 
     try {
-        const url = stdurl('/api/import');
-        url.searchParams.set('order', 'desc');
-        url.searchParams.set('page', String(paging.value.page));
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('filter', paging.value.filter);
-        url.searchParams.set('sort', 'created');
-        list.value = await std(url) as ImportList;
+        const res = await server.GET('/api/import', {
+            params: {
+                query: {
+                    order: 'desc',
+                    page: paging.value.page,
+                    limit: paging.value.limit,
+                    filter: paging.value.filter,
+                    sort: 'created',
+                }
+            }
+        });
+        if (res.error) throw new Error(res.error.message);
+        list.value = res.data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err))
     }

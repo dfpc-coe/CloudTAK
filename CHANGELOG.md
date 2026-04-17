@@ -15,6 +15,7 @@
 - `v12.85.0` Moved the Layer Incoming `groups` property to the Style Object for increased flexibility in desination management
   This array has been retained but in the next major release it will be removed
 - `v12.115.0` Added the ability to set Basemap Protocol with the default being zxy. This will be a required field in v13
+- `v12.126.0` Migrate to the base `/api/config` -> `/api/config/group` will be retired in the next major version
 
 ### Pending Release
 

@@ -39,7 +39,7 @@
                     >
                         <SlideDownHeader
                             :model-value='opened.has(team)'
-                            :label='config.groups[team] ? config.groups[team] : team'
+                            :label='groups[team] || team'
                             @update:model-value='val => val ? opened.add(team) : opened.delete(team)'
                         >
                             <template #icon>
@@ -114,9 +114,10 @@ import type { Ref } from 'vue';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
 import { from } from 'rxjs';
-import { std } from '../../../std.ts';
+import Config from '../../../base/config.ts';
+import type { FullConfig } from '../../../base/config.ts';
 import ContactManager from '../../../base/contact.ts';
-import type { Contact as ContactType, ContactList, ConfigGroups } from '../../../types.ts';
+import type { Contact as ContactType, ContactList } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -138,10 +139,7 @@ const paging = ref({
     filter: ''
 });
 
-const config = ref<ConfigGroups>({
-    groups: {},
-    roles: []
-});
+const groups = ref<Record<string, string>>({});
 
 const opened = ref<Set<string>>(new Set());
 const teams = ref<Set<string>>(new Set());
@@ -165,8 +163,31 @@ watch([contacts, paging.value], async () => {
     await updateContacts();
 });
 
+const groupKeys: (keyof FullConfig)[] = [
+    'group::Yellow',
+    'group::Cyan',
+    'group::Green',
+    'group::Red',
+    'group::Purple',
+    'group::Orange',
+    'group::Blue',
+    'group::Magenta',
+    'group::White',
+    'group::Maroon',
+    'group::Dark Blue',
+    'group::Teal',
+    'group::Dark Green',
+    'group::Brown',
+];
+
 async function fetchConfig() {
-    config.value = await std('/api/config/group') as ConfigGroups;
+    const config = await Config.list(groupKeys);
+    const result: Record<string, string> = {};
+    for (const key of groupKeys) {
+        const val = config[key];
+        if (val) result[key.replace('group::', '')] = String(val);
+    }
+    groups.value = result;
 }
 
 async function updateContacts() {

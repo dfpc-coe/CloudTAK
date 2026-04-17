@@ -64,6 +64,7 @@ export const useMapStore = defineStore('cloudtak', {
         locationAccuracy: number | undefined;
         distanceUnit: string;
         coordFormat: string;
+        defaultPointType: string;
         manualLocationMode: boolean;
         isMobileDetected: boolean;
         gpsWatchId: number | null;
@@ -133,6 +134,7 @@ export const useMapStore = defineStore('cloudtak', {
             zoom: 'conditional',
             distanceUnit: 'meter',
             coordFormat: 'dd',
+            defaultPointType: 'u-d-p',
             toastOffset: { x: 70, y: 60 },
             manualLocationMode: false,
             gpsWatchId: null,
@@ -771,6 +773,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.callsign = (await ProfileConfig.get('tak_callsign'))?.value || 'Unknown';
             this.zoom = (await ProfileConfig.get('display_zoom'))?.value || 'conditional';
             this.coordFormat = (await ProfileConfig.get('display_coordinate'))?.value || 'dd';
+            this.defaultPointType = (await ProfileConfig.get('tak_type'))?.value || 'u-d-p';
 
             const icon_rotation = (await ProfileConfig.get('display_icon_rotation'))?.value;
 
@@ -948,7 +951,7 @@ export const useMapStore = defineStore('cloudtak', {
                         id,
                         callsign: 'New Feature',
                         archived: true,
-                        type: 'u-d-p',
+                        type: this.defaultPointType,
                         how: 'm-g',
                         time: new Date().toISOString(),
                         start: new Date().toISOString(),
@@ -1000,7 +1003,7 @@ export const useMapStore = defineStore('cloudtak', {
                                 id,
                                 callsign: 'New Feature',
                                 archived: true,
-                                type: 'u-d-p',
+                                type: this.defaultPointType,
                                 how: 'm-g',
                                 time: new Date().toISOString(),
                                 start: new Date().toISOString(),
