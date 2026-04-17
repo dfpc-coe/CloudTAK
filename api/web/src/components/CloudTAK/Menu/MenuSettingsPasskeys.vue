@@ -154,7 +154,8 @@ async function registerPasskey(): Promise<void> {
     const credential = await startRegistration({ optionsJSON: res.data as unknown as Parameters<typeof startRegistration>[0]['optionsJSON'] });
 
     const regRes = await server.POST('/api/login/passkey/register', {
-        body: { name, credential },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        body: { name, credential: credential as any },
     });
     if (regRes.error) throw new Error(regRes.error.message);
 

@@ -251,7 +251,7 @@ import StandardItem from '../util/StandardItem.vue';
 import { server } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import ProfileConfig from '../../../base/profile.ts';
-import type { VideoLease } from '../../../types.ts';
+import type { VideoLease, VideoConnectionList } from '../../../types.ts';
 
 import { useMapStore } from '../../../stores/map.ts';
 import { useFloatStore } from '../../../stores/float.ts';
@@ -304,7 +304,7 @@ const loading = ref({
 const lease = ref();
 const isSystemAdmin = ref(false);
 const leases = ref<{ total: number, items: VideoLease[] }>({ total: 0, items: [] });
-const connections = ref<{ videoConnections: Array<{ uuid: string, alias?: string }> }>({ videoConnections: [] });
+const connections = ref<VideoConnectionList>({ videoConnections: [] });
 const videos = ref<Set<COT>>(new Set())
 
 const filteredConnections = computed(() => {

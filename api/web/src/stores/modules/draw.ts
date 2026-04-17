@@ -738,7 +738,7 @@ export default class DrawTool {
                     feat.properties["marker-color"] = this.point.type === 'u-d-p' ? '#00FF00' : '#FFFFFF';
                 }
 
-                this.removeFeature(drawn.id);
+                this.removeFeature(drawn.id as string);
                 await this.stop();
                 await this.mapStore.worker.db.add(feat, { authored: true });
                 await this.mapStore.refresh();
