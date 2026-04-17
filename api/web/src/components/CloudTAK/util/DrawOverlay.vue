@@ -11,6 +11,15 @@
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
+                        title='Finish Drawing'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
                     >
@@ -35,6 +44,15 @@
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
+                        title='Finish Drawing'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
                     >
@@ -57,6 +75,15 @@
                 /><span class='mx-2'>Rectangle Editing</span>
 
                 <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Finish Drawing'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                     <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
@@ -89,6 +116,15 @@
                     />
 
                     <TablerIconButton
+                        title='Finish Drawing'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
                     >
@@ -112,6 +148,15 @@
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
+                        title='Finish Drawing'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
                     >
@@ -134,6 +179,15 @@
                 /><span class='mx-2'>Sector Editing</span>
 
                 <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Finish Drawing'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                     <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
@@ -174,6 +228,15 @@
                     </TablerIconButton>
 
                     <TablerIconButton
+                        title='Finish Drawing'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
                     >
@@ -208,6 +271,15 @@
                 /><span class='mx-2'>Editing Existing Feature</span>
 
                 <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Finish Drawing'
+                        @click='mapStore.draw.finish()'
+                    >
+                        <IconCheck
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                     <TablerIconButton
                         title='Cancel Editing'
                         @click='mapStore.draw.stop()'
@@ -244,6 +316,7 @@ import {
     IconCone,
     IconVector,
     IconPolygon,
+    IconCheck,
 } from '@tabler/icons-vue';
 
 const mapStore = useMapStore();
