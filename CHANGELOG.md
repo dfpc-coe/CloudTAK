@@ -19,6 +19,13 @@
 
 ### Pending Release
 
+### v12.126.0 - 2026-04-17
+
+- :bug: Fix flashing icon that occurred if an archived feature had a custom icon
+- :rocket: Fix badges in overlay menu that were not readable in light mode
+- :rocket: Reduce size of resize handle for Main Menu and style dynamically based on light/dark mode
+- :rocket: Add Check Icon to finish drawing for better UX with new users
+
 ### v12.125.0 - 2026-04-15
 
 - :tada: Sketch out initial Geofence Connection Manager
