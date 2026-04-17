@@ -169,7 +169,10 @@ function updatePropertyIcon(event: string | null) {
     if (!props.cot) return;
 
     if (event) {
-        event = event.replace(/\.png$/g, '').replace(':', '/');
+        event = event.replace(/\.png$/g, '');
+        if (!event.includes(':') && event.includes('/')) {
+            event = event.replace('/', ':');
+        }
     }
 
     const properties = { ...props.cot.properties };
