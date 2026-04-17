@@ -206,11 +206,7 @@ const setsName = computed<string[]>(() => {
 
 watch(selected, () => {
     if (!selected.value.path) return;
-    if (selected.value.path.endsWith('.png')) {
-        emit('update:modelValue', selected.value.path);
-    } else {
-        emit('update:modelValue', selected.value.path.replace(/\.[^/.]+$/, '.png'));
-    }
+    emit('update:modelValue', selected.value.path);
 }, { deep: true });
 
 watch(params.value, async () => {
@@ -275,4 +271,5 @@ async function fetchIcons(): Promise<void> {
     list.value = await std(url) as IconList;
     loading.value.icons = false;
 }
+
 </script>
