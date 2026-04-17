@@ -638,6 +638,76 @@ export default class DrawTool {
         }
     }
 
+    async finish(): Promise<void> {
+        if (this.mode === DrawToolMode.SELECT && this.editing) {
+            // For editing mode, deselectFeature triggers the 'deselect' handler which saves
+            this.draw.deselectFeature(this.editing.id);
+        } else if (
+            this.mode === DrawToolMode.LINESTRING
+            || this.mode === DrawToolMode.POLYGON
+            || this.mode === DrawToolMode.SNAPPING
+        ) {
+            // These modes respond to Enter key to finish drawing
+            const canvas = this.mapStore.map.getCanvas();
+            canvas.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+        } else {
+            // For modes that auto-complete (point, circle, rectangle, sector, freehand),
+            // look for a completed feature in the snapshot and process it
+            const features = this.draw.getSnapshot();
+            const drawn = features.find((f) =>
+                f.properties.mode === this.mode
+                && !f.properties.closingPoint
+                && !f.properties.coordinatePoint
+                && !f.properties.snappingPoint
+                && !f.properties.midPoint
+                && !f.properties.selectionPoint
+            );
+
+            if (drawn) {
+                const now = new Date();
+                const feat: Feature = {
+                    id: String(drawn.id),
+                    type: 'Feature',
+                    path: '/',
+                    properties: {
+                        id: String(drawn.id),
+                        type: 'u-d-p',
+                        how: 'h-g-i-g-o',
+                        archived: true,
+                        callsign: 'New Feature',
+                        time: now.toISOString(),
+                        start: now.toISOString(),
+                        stale: new Date(now.getTime() + 3600).toISOString(),
+                        center: [0, 0]
+                    },
+                    geometry: JSON.parse(JSON.stringify(drawn.geometry))
+                };
+
+                if (this.mode === DrawToolMode.RECTANGLE || this.mode === DrawToolMode.SECTOR) {
+                    feat.properties.type = 'u-d-f';
+                } else if (this.mode === DrawToolMode.CIRCLE) {
+                    feat.properties.type = 'u-d-c-c';
+                    const radius = drawn.properties.radiusKilometers ? (Number(drawn.properties.radiusKilometers) * 1000) : 100;
+                    feat.properties.shape = {
+                        ellipse: { major: radius, minor: radius, angle: 360 }
+                    };
+                } else if (this.mode === DrawToolMode.POINT) {
+                    feat.properties.type = this.point.type;
+                    feat.properties["marker-opacity"] = 1;
+                    feat.properties["marker-color"] = this.point.type === 'u-d-p' ? '#00FF00' : '#FFFFFF';
+                }
+
+                this.removeFeature(drawn.id);
+                await this.stop();
+                await this.mapStore.worker.db.add(feat, { authored: true });
+                await this.mapStore.refresh();
+                router.push(`/cot/${feat.properties.id}`);
+            } else {
+                await this.stop();
+            }
+        }
+    }
+
     async stop(refresh = true): Promise<void> {
         this.mode = DrawToolMode.STATIC;
 
