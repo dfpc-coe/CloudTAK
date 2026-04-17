@@ -128,14 +128,16 @@
                                             v-if='card.badges.length'
                                             class='menu-overlays__badges d-flex flex-wrap gap-2 mt-2'
                                         >
-                                            <span
+                                            <TablerBadge
                                                 v-for='badge in card.badges'
                                                 :key='`${card.overlay.id}-${badge.label}`'
-                                                class='badge rounded-pill small'
-                                                :class='badgeToneClasses[badge.tone]'
+                                                class='rounded-pill small'
+                                                :background-color='badgeToneColors[badge.tone].bg'
+                                                :border-color='badgeToneColors[badge.tone].border'
+                                                :text-color='badgeToneColors[badge.tone].text'
                                             >
                                                 {{ badge.label }}
-                                            </span>
+                                            </TablerBadge>
                                         </div>
                                     </div>
                                 </div>
@@ -144,13 +146,15 @@
                                     style='min-width: 100px;'
                                     class='d-flex flex-column align-items-end gap-2'
                                 >
-                                    <span
-                                        class='badge rounded-pill small d-inline-flex align-items-center gap-1 px-2 py-1'
-                                        :class='statusToneClasses[card.status.tone]'
+                                    <TablerBadge
+                                        class='rounded-pill small d-inline-flex align-items-center gap-1 px-2 py-1'
+                                        :background-color='statusToneColors[card.status.tone].bg'
+                                        :border-color='statusToneColors[card.status.tone].border'
+                                        :text-color='statusToneColors[card.status.tone].text'
                                         :title='card.status.tooltip || ""'
                                     >
                                         {{ card.status.label }}
-                                    </span>
+                                    </TablerBadge>
 
                                     <div class='d-flex align-items-center gap-2 flex-wrap justify-content-end w-100'>
                                         <TablerIconButton
@@ -263,6 +267,7 @@ import { ref, watch, useTemplateRef, computed, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
+    TablerBadge,
     TablerDelete,
     TablerIconButton,
     TablerInput,
@@ -300,18 +305,18 @@ type OverlayCard = { overlay: Overlay; status: OverlayStatus; badges: OverlayBad
 const mapStore = useMapStore();
 const router = useRouter();
 
-const statusToneClasses: Record<OverlayStatusTone, string> = {
-    success: 'bg-success-subtle text-success-emphasis border border-success border-opacity-50',
-    warning: 'bg-warning-subtle text-warning-emphasis border border-warning border-opacity-50',
-    danger: 'bg-danger-subtle text-danger-emphasis border border-danger border-opacity-50'
+const statusToneColors: Record<OverlayStatusTone, { bg: string; border: string; text: string }> = {
+    success: { bg: 'rgba(34, 197, 94, 0.2)', border: 'rgba(34, 197, 94, 0.5)', text: '#16a34a' },
+    warning: { bg: 'rgba(245, 158, 11, 0.2)', border: 'rgba(245, 158, 11, 0.5)', text: '#d97706' },
+    danger: { bg: 'rgba(239, 68, 68, 0.2)', border: 'rgba(239, 68, 68, 0.5)', text: '#dc2626' }
 };
 
-const badgeToneClasses: Record<OverlayBadgeTone, string> = {
-    mission: 'bg-primary text-white border border-primary border-opacity-50',
-    primary: 'bg-info-subtle text-info-emphasis border border-info border-opacity-50',
-    neutral: 'bg-light bg-opacity-10 text-light border border-light border-opacity-25',
-    warning: 'bg-warning-subtle text-warning-emphasis border border-warning border-opacity-50',
-    muted: 'bg-secondary-subtle text-secondary-emphasis border border-secondary border-opacity-50'
+const badgeToneColors: Record<OverlayBadgeTone, { bg: string; border: string; text: string }> = {
+    mission: { bg: 'rgba(59, 130, 246, 0.25)', border: 'rgba(59, 130, 246, 0.5)', text: '#2563eb' },
+    primary: { bg: 'rgba(6, 182, 212, 0.2)', border: 'rgba(6, 182, 212, 0.5)', text: '#0891b2' },
+    neutral: { bg: 'rgba(107, 114, 128, 0.2)', border: 'rgba(107, 114, 128, 0.5)', text: '#4b5563' },
+    warning: { bg: 'rgba(245, 158, 11, 0.2)', border: 'rgba(245, 158, 11, 0.5)', text: '#d97706' },
+    muted: { bg: 'rgba(107, 114, 128, 0.15)', border: 'rgba(107, 114, 128, 0.3)', text: '#6b7280' }
 };
 
 let sortable: Sortable | undefined;

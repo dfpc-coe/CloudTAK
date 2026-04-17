@@ -63,7 +63,7 @@ const center = mapStore.map.getCenter();
 
 const config = ref({
     name: '',
-    type: 'u-d-p',
+    type: mapStore.defaultPointType,
     coordinates: [
         Math.round(center.lng * 1000000) / 1000000,
         Math.round(center.lat * 1000000) / 1000000,
