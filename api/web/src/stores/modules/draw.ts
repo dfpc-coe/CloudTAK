@@ -47,6 +47,9 @@ export default class DrawTool {
 
     public mode: DrawToolMode;
 
+    // Bumped on every TerraDraw change event to drive reactivity for canFinish
+    public _changeCount: number = 0;
+
     public route: {
         graph: Routing;
         finder: TerraRoute & {
@@ -104,6 +107,38 @@ export default class DrawTool {
                 this.start(DrawToolMode.SNAPPING);
             }
         }
+    }
+
+    public get canFinish(): boolean {
+        // Access _changeCount to establish reactivity
+        void this._changeCount;
+
+        if (this.mode === DrawToolMode.SELECT) {
+            return !!this.editing;
+        }
+
+        const features = this.draw.getSnapshot();
+        const drawn = features.find((f) =>
+            f.properties.mode === this.mode
+            && !f.properties.closingPoint
+            && !f.properties.coordinatePoint
+            && !f.properties.snappingPoint
+            && !f.properties.midPoint
+            && !f.properties.selectionPoint
+        );
+
+        if (!drawn) return false;
+
+        if (this.mode === DrawToolMode.LINESTRING || this.mode === DrawToolMode.SNAPPING) {
+            const coords = (drawn.geometry as LineString).coordinates;
+            return coords.length >= 2;
+        } else if (this.mode === DrawToolMode.POLYGON) {
+            const coords = (drawn.geometry as Polygon).coordinates;
+            // Polygon ring needs at least 4 positions (3 unique + closing)
+            return coords.length > 0 && coords[0].length >= 4;
+        }
+
+        return true;
     }
 
     constructor(mapStore: ReturnType<typeof useMapStore>) {
@@ -420,6 +455,10 @@ export default class DrawTool {
                 await this.mapStore.worker.db.unhide(editing.id);
                 await this.mapStore.refresh();
             }
+        });
+
+        this.draw.on('change', () => {
+            this._changeCount++;
         });
 
         this.mode = DrawToolMode.STATIC;
