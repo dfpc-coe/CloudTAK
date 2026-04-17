@@ -171,7 +171,7 @@ const retryCount = ref(0);
 const maxRetries = ref(3); // Maximum retry attempts before giving up
 
 // Video.js player instance
-const player = ref<Player | undefined>()
+const player = ref<Player | undefined>();
 
 // Video streaming data
 const video = ref(floatStore.panes.get(props.uid) as Pane<PaneVideoConfig>);
