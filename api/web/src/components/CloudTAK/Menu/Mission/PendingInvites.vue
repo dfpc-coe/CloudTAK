@@ -97,6 +97,8 @@ async function acceptInvite(invite: MissionInvite) {
 }
 
 async function deleteInvite(invite: MissionInvite) {
+    if (!invite.missionGuid || !invite.invitee || !invite.type) return;
+
     const res = await server.DELETE('/api/marti/missions/{:guid}/invite', {
         params: {
             path: { ':guid': invite.missionGuid },
