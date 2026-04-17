@@ -210,10 +210,10 @@ import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { std, stdurl } from '../../../../std.ts';
+import { std, stdurl, server } from '../../../../std.ts';
 import Subscription from '../../../../base/subscription.ts';
 import type { DBSubscriptionContent } from '../../../../base/database.ts';
-import type { Import, Attachment } from '../../../../types.ts';
+import type { Attachment } from '../../../../types.ts';
 import { useFloatStore } from '../../../../stores/float.ts';
 import {
     IconPlus,
@@ -327,16 +327,16 @@ async function downloadFile(name: string, hash: string): Promise<void> {
 async function importFile(name: string, hash: string) {
     loading.value = true;
 
-    const imp = await std('/api/import', {
-        method: 'POST',
+    const res = await server.POST('/api/import', {
         body: {
             name: name,
             source: 'Mission',
             source_id: hash
         }
-    }) as Import;
+    });
+    if (res.error) throw new Error(res.error.message);
 
-    router.push(`/menu/imports/${imp.id}`)
+    router.push(`/menu/imports/${res.data.id}`)
 }
 
 function downloadAssetUrl(hash: string, name: string) {

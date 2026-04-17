@@ -74,7 +74,7 @@ import {
 import { useRouter } from 'vue-router';
 import { TablerIconButton } from '@tak-ps/vue-tabler';
 import StandardItem from '../../util/StandardItem.vue';
-import { std, stdurl } from '../../../../std.ts';
+import { server } from '../../../../std.ts';
 import type { MissionInvite } from '../../../../types.ts';
 
 const props = defineProps<{
@@ -97,13 +97,16 @@ async function acceptInvite(invite: MissionInvite) {
 }
 
 async function deleteInvite(invite: MissionInvite) {
-    const url = stdurl(`/api/marti/missions/${invite.missionGuid}/invite`);
-    url.searchParams.set('type', String(invite.type));
-    url.searchParams.set('invitee', String(invite.invitee));
-
-    await std(url, {
-        method: 'DELETE'
+    const res = await server.DELETE('/api/marti/missions/{:guid}/invite', {
+        params: {
+            path: { ':guid': invite.missionGuid },
+            query: {
+                type: invite.type as 'clientUid' | 'callsign' | 'userName' | 'group' | 'team',
+                invitee: invite.invitee
+            }
+        }
     });
+    if (res.error) throw new Error(res.error.message);
 
     const newInvites = props.invites.filter(i => i !== invite);
     emit('update:invites', newInvites);
