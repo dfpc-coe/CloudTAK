@@ -40,6 +40,8 @@
                                 >
                                     <img
                                         :src='icon.data'
+                                        class='img-thumbnail'
+                                        style='background-color: rgb(30, 41, 59);'
                                         height='32'
                                         width='32'
                                     >

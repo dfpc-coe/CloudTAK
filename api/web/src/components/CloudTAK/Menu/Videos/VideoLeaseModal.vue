@@ -532,6 +532,7 @@ import {
     IconChevronLeft,
 } from '@tabler/icons-vue';
 import {
+    TablerBadge,
     TablerRefreshButton,
     TablerIconButton,
     TablerLoading,

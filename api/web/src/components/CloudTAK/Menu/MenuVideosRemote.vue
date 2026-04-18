@@ -12,7 +12,7 @@
             />
         </template>
         <template #default>
-            <div class='row g-2 px-2'>
+            <div class='row g-2'>
                 <div class='col-12'>
                     <TablerInput
                         v-model='connection.alias'

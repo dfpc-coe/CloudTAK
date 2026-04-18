@@ -19,7 +19,7 @@
         <template #default>
             <div
                 v-if='!share'
-                class='col-12 px-2 py-2 d-flex flex-column gap-2'
+                class='col-12 py-2 d-flex flex-column gap-2'
             >
                 <TablerInput
                     v-model='paging.filter'
@@ -54,7 +54,7 @@
                 @create='editModal = {}'
             />
             <template v-else>
-                <div class='col-12 d-flex flex-column gap-2 p-3'>
+                <div class='col-12 d-flex flex-column gap-2 py-3'>
                     <StandardItemFolder
                         v-for='collection in list.collections'
                         :key='collection.name'

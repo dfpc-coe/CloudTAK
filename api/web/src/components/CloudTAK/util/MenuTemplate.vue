@@ -54,7 +54,7 @@
         </div>
 
         <div
-            class='d-flex flex-column overflow-x-hidden flex-grow-1'
+            class='d-flex flex-column overflow-x-hidden flex-grow-1 px-2'
             :class='scroll ? "overflow-y-auto" : "overflow-hidden"'
             :style='standalone ? "" : "min-height: 0"'
         >

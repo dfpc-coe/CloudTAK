@@ -35,7 +35,7 @@
 
         <template #default>
             <div class='menu-overlays d-flex flex-column gap-3'>
-                <div class='menu-overlays__controls mt-2 d-flex mx-2 align-items-center gap-3 flex-wrap'>
+                <div class='menu-overlays__controls mt-2 d-flex align-items-center gap-3 flex-wrap'>
                     <TablerInput
                         v-model='overlayFilter'
                         placeholder='Search overlays...'
@@ -57,7 +57,7 @@
                     <div
                         v-if='overlayCards.length'
                         ref='sortableRef'
-                        class='menu-overlays__list d-flex flex-column gap-3 mx-2'
+                        class='menu-overlays__list d-flex flex-column gap-3'
                     >
                         <StandardItem
                             v-for='card in overlayCards'
@@ -254,7 +254,6 @@
                         v-else
                         label='No overlays match your search'
                         :create='false'
-                        class='px-2'
                     />
                 </template>
             </div>

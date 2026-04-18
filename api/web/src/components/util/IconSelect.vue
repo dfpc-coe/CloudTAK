@@ -47,6 +47,7 @@
                         <div>
                             <img
                                 :src='selected.data'
+                                class='img-thumbnail'
                                 style='width: 25px; height: auto; margin-right: 5px;'
                             >
                         </div>
@@ -131,6 +132,7 @@
                                             <img
                                                 v-tooltip='icon.name'
                                                 :src='icon.data'
+                                                class='img-thumbnail'
                                                 style='width: 25px; height: 25px; margin-right: 5px;'
                                             >
                                         </div>

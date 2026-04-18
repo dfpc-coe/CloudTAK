@@ -20,7 +20,7 @@
             />
         </template>
         <template #default>
-            <div class='mx-2 my-2'>
+            <div class='my-2'>
                 <TablerInput
                     v-model='query.filter'
                     icon='search'
@@ -38,7 +38,7 @@
                 label='No Routes'
             />
             <template v-else>
-                <div class='col-12 d-flex flex-column gap-2 p-3'>
+                <div class='col-12 d-flex flex-column gap-2 py-3'>
                     <StandardItem
                         v-for='cot of routes.values()'
                         :key='cot.id'

@@ -13,7 +13,7 @@
                 :err='error'
             />
             <template v-else>
-                <div class='mx-2 my-2'>
+                <div class='my-2'>
                     <TablerEnum
                         v-if='config.providers.length'
                         v-model='routePlan.provider'
@@ -21,7 +21,7 @@
                         :options='config.providers.map(p => p.name)'
                     />
                 </div>
-                <div class='mx-2 my-2'>
+                <div class='my-2'>
                     <SearchBox
                         label='Start Location'
                         placeholder='Start Location'
@@ -30,7 +30,7 @@
                         @select='routePlan.start = $event || null'
                     />
                 </div>
-                <div class='mx-2 my-2'>
+                <div class='my-2'>
                     <SearchBox
                         label='End Location'
                         placeholder='End Location'
@@ -41,7 +41,7 @@
                     />
                 </div>
 
-                <div class='mx-2 my-2'>
+                <div class='my-2'>
                     <TablerEnum
                         v-if='modes.length > 0'
                         v-model='routePlan.travelMode'
@@ -49,7 +49,7 @@
                         :options='modes.map(m => m.name)'
                     />
                 </div>
-                <div class='mx-2 my-3'>
+                <div class='my-3'>
                     <button
                         :disabled='!routePlan.start || !routePlan.end'
                         class='btn btn-primary w-100'

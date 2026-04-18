@@ -63,7 +63,7 @@
             </TablerPillGroup>
 
             <template v-if='mode === "connections"'>
-                <div class='col-12 px-2'>
+                <div class='col-12'>
                     <TablerInput
                         v-model='connectionFilter'
                         icon='search'
@@ -87,7 +87,7 @@
                 />
                 <div
                     v-else
-                    class='col-12 d-flex flex-column gap-2 p-3'
+                    class='col-12 d-flex flex-column gap-2 py-3'
                 >
                     <StandardItem
                         v-for='connection in filteredConnections'
@@ -156,7 +156,7 @@
                 </div>
             </template>
             <template v-else-if='mode === "lease"'>
-                <div class='col-12 px-2'>
+                <div class='col-12'>
                     <TablerInput
                         v-model='leasePaging.filter'
                         icon='search'
@@ -177,7 +177,7 @@
                 />
                 <div
                     v-else
-                    class='col-12 d-flex flex-column gap-2 p-3'
+                    class='col-12 d-flex flex-column gap-2 py-3'
                 >
                     <StandardItem
                         v-for='l in leases.items'

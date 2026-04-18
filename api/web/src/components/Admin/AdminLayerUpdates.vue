@@ -72,10 +72,12 @@
                                             class='subheader'
                                             v-text='layer.parent_name || "Template Layer"'
                                         />
-                                        <span
+                                        <TablerBadge
                                             v-if='!layer.has_stack'
-                                            class='badge bg-warning text-dark'
-                                        >Stack Missing</span>
+                                            background-color='rgba(245, 158, 11, 0.2)'
+                                            border-color='rgba(245, 158, 11, 0.5)'
+                                            text-color='#d97706'
+                                        >Stack Missing</TablerBadge>
                                     </div>
                                 </div>
                             </td>
@@ -112,6 +114,7 @@ import { std } from '../../std.ts';
 import type { AdminLayerUpdate, AdminLayerUpdateList } from '../../types.ts';
 import {
     TablerAlert,
+    TablerBadge,
     TablerButton,
     TablerIconButton,
     TablerLoading,
