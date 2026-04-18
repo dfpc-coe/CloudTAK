@@ -40,12 +40,12 @@
                             <IconCursorText
                                 v-if='option.value === "cursor"'
                                 :size='16'
-                                :stroke='1'
+                                stroke='1'
                             />
                             <IconCurrentLocation
                                 v-else
                                 :size='16'
-                                :stroke='1'
+                                stroke='1'
                             />
                             <span class='ms-1'>{{ option.label }}</span>
                         </template>
