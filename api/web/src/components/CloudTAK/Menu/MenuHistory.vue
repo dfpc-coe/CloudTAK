@@ -7,12 +7,12 @@
                 :create='false'
             />
             <template v-else>
-                <div class='col-12 px-2 pt-2 pb-1'>
+                <div class='col-12 pt-2 pb-1'>
                     <span class='text-muted small'>
                         CoT markers with live breadcrumb recording.
                     </span>
                 </div>
-                <div class='d-flex flex-column gap-2 px-2 py-2'>
+                <div class='d-flex flex-column gap-2 py-2'>
                     <StandardItem
                         v-for='entry in entries'
                         :key='entry.uid'
@@ -35,9 +35,12 @@
                                     class='text-muted small text-truncate'
                                     v-text='entry.uid'
                                 />
-                                <span
+                                <TablerBadge
                                     v-if='entry.coordinates.length'
-                                    class='badge bg-secondary-subtle text-secondary-emphasis border border-secondary border-opacity-50 small flex-shrink-0'
+                                    class='small flex-shrink-0'
+                                    background-color='rgba(107, 114, 128, 0.15)'
+                                    border-color='rgba(107, 114, 128, 0.3)'
+                                    text-color='#6b7280'
                                     v-text='`${entry.coordinates.length} pts`'
                                 />
                             </div>
@@ -90,6 +93,7 @@ import {
     IconTrash,
 } from '@tabler/icons-vue';
 import {
+    TablerBadge,
     TablerNone,
     TablerToggle,
     TablerIconButton,

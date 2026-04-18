@@ -19,7 +19,7 @@
         <template #default>
             <div
                 v-if='upload'
-                class='py-2 px-4'
+                class='py-2'
             >
                 <Upload
                     :url='stdurl(`/api/import`)'
@@ -30,7 +30,7 @@
                 />
             </div>
 
-            <div class='col-12 px-2 py-2'>
+            <div class='col-12 py-2'>
                 <TablerInput
                     v-model='paging.filter'
                     icon='search'
@@ -53,7 +53,7 @@
                 <div
                     v-for='imported in list.items'
                     :key='imported.id'
-                    class='col-12 px-2 py-1'
+                    class='col-12 py-1'
                 >
                     <StandardItem
                         class='d-flex align-items-center py-2 px-3'
@@ -101,7 +101,7 @@
                 </div>
             </template>
 
-            <div class='px-2 py-2 d-flex'>
+            <div class='py-2 d-flex'>
                 <div class='ms-auto'>
                     <TablerPager
                         v-if='list.total > paging.limit'

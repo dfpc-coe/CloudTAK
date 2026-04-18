@@ -178,13 +178,11 @@
                                         />
                                     </td>
                                     <td>
-                                        <span
-                                            class='badge mx-1 mb-1'
-                                            :class='{
-                                                "bg-green text-white": res.access === "public",
-                                                "bg-yellow text-white": res.access === "org",
-                                                "bg-red text-white": res.access === "private"
-                                            }'
+                                        <TablerBadge
+                                            class='mx-1 mb-1'
+                                            :background-color='res.access === "public" ? "rgba(34, 197, 94, 0.2)" : res.access === "org" ? "rgba(245, 158, 11, 0.2)" : "rgba(239, 68, 68, 0.2)"'
+                                            :border-color='res.access === "public" ? "rgba(34, 197, 94, 0.5)" : res.access === "org" ? "rgba(245, 158, 11, 0.5)" : "rgba(239, 68, 68, 0.5)"'
+                                            :text-color='res.access === "public" ? "#16a34a" : res.access === "org" ? "#d97706" : "#dc2626"'
                                             v-text='res.access'
                                         />
                                     </td>
@@ -211,6 +209,7 @@ import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../std.ts';
 import {
     TablerAlert,
+    TablerBadge,
     TablerNone,
     TablerLoading,
     TablerInput,

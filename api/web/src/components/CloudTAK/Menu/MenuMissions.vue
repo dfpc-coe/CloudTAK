@@ -19,7 +19,7 @@
         </template>
         <template #default>
             <div class='d-flex flex-column'>
-                <div class='d-flex mx-2 pt-2 flex-row align-items-sm-center gap-2'>
+                <div class='d-flex pt-2 flex-row align-items-sm-center gap-2'>
                     <TablerInput
                         v-model='paging.filter'
                         :autofocus='true'
@@ -44,11 +44,10 @@
                             v-if='!filteredList.length'
                             :create='false'
                             label='No data syncs match your filter'
-                            class='px-2'
                         />
                         <div
                             v-else
-                            class='d-flex flex-column gap-3 mx-2'
+                            class='d-flex flex-column gap-3'
                         >
                             <PendingInvites
                                 v-model:invites='invites'

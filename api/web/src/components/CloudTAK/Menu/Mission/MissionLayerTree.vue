@@ -55,13 +55,14 @@
                 <div class='ms-auto btn-list d-flex align-items-center'>
                     <span
                         v-if='layer.type === "UID"'
-                        class='mx-3 ms-auto badge border text-white'
-                        :class='{
-                            "bg-blue": layer.uids && layer.uids.length > 0,
-                            "bg-gray": !layer.uids || layer.uids.length === 0
-                        }'
-                        v-text='`${layer.uids ? layer.uids.length : 0} Features`'
-                    />
+                        class='mx-3 ms-auto'
+                    >
+                        <TablerBadge
+                            :background-color='layer.uids && layer.uids.length > 0 ? "rgba(59, 130, 246, 0.25)" : "rgba(107, 114, 128, 0.2)"'
+                            :border-color='layer.uids && layer.uids.length > 0 ? "rgba(59, 130, 246, 0.5)" : "rgba(107, 114, 128, 0.5)"'
+                            :text-color='layer.uids && layer.uids.length > 0 ? "#2563eb" : "#6b7280"'
+                        >{{ `${layer.uids ? layer.uids.length : 0} Features` }}</TablerBadge>
+                    </span>
 
                     <TablerIconButton
                         v-if='props.subscription.role.permissions.includes("MISSION_WRITE")'
@@ -140,6 +141,7 @@ import {
     IconPin,
 } from '@tabler/icons-vue';
 import {
+    TablerBadge,
     TablerNone,
     TablerDelete,
     TablerLoading,

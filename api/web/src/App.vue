@@ -112,7 +112,12 @@
                                         stroke='1'
                                     />
                                     <span class='mx-2'>Admin</span>
-                                    <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
+                                    <TablerBadge
+                                        class='ms-auto'
+                                        background-color='rgba(239, 68, 68, 0.2)'
+                                        border-color='rgba(239, 68, 68, 0.5)'
+                                        text-color='#dc2626'
+                                    >Admin</TablerBadge>
                                 </div>
                                 <div
                                     class='d-flex dropdown-item cursor-pointer cloudtak-hover'
@@ -176,6 +181,7 @@ import {
 import { version } from '../package.json';
 import Loading from './components/Loading.vue';
 import {
+    TablerBadge,
     TablerError
 } from '@tak-ps/vue-tabler';
 import MissionInviteModal from './components/CloudTAK/Menu/Mission/MissionInviteModal.vue';

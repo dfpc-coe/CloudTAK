@@ -31,7 +31,7 @@
             <TablerLoading v-else-if='!imported || loading.initial' />
             <div
                 v-else
-                class='container-fluid px-2 px-sm-3 py-4'
+                class='container-fluid py-4'
             >
                 <div class='row gy-3 gx-0 gx-lg-3'>
                     <div class='col-12'>

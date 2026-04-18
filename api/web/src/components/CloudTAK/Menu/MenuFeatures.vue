@@ -78,7 +78,7 @@
             </TablerDropdown>
         </template>
         <template #default>
-            <div class='mx-2 my-2'>
+            <div class='my-2'>
                 <TablerInput
                     v-model='query.filter'
                     icon='search'
@@ -91,7 +91,7 @@
                 desc='Loading Features'
             />
             <template v-else>
-                <div class='px-2 pb-2'>
+                <div class='pb-2'>
                     <StandardItem
                         class='d-flex align-items-center px-3 py-3 user-select-none'
                         @click='router.push("/menu/features/deleted")'
@@ -111,7 +111,7 @@
                 />
 
                 <template v-else>
-                    <div class='d-flex flex-column gap-2 px-2'>
+                    <div class='d-flex flex-column gap-2'>
                         <template
                             v-for='path of paths'
                             :key='path.id'
@@ -149,7 +149,12 @@
                                     </div>
 
                                     <div class='ms-auto d-flex align-items-center gap-2'>
-                                        <span class='badge rounded-pill bg-secondary bg-opacity-25 text-white-50'>{{ path.count }}</span>
+                                        <TablerBadge
+                                            class='rounded-pill'
+                                            background-color='rgba(107, 114, 128, 0.15)'
+                                            border-color='rgba(107, 114, 128, 0.3)'
+                                            text-color='#6b7280'
+                                        >{{ path.count }}</TablerBadge>
                                         <TablerIconButton
                                             title='Rename Folder'
                                             @click.stop='openEditModal(path)'
@@ -206,7 +211,7 @@
                     <div
                         id='general'
                         ref='sortableFilesRef'
-                        class='px-2 mt-2'
+                        class='mt-2'
                     >
                         <Feature
                             v-for='cot of cots.values()'
@@ -267,6 +272,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import Feature from '../util/FeatureRow.vue';
 import StandardItem from '../util/StandardItem.vue';
 import {
+    TablerBadge,
     TablerNone,
     TablerInput,
     TablerLoading,

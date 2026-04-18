@@ -16,7 +16,7 @@
             </TablerIconButton>
         </template>
         <template #default>
-            <div class='col-12 px-2 pb-2'>
+            <div class='col-12 pb-2'>
                 <TablerInput
                     v-model='paging.filter'
                     icon='search'
@@ -41,7 +41,7 @@
                     <div
                         v-for='conn in list.items'
                         :key='conn.id'
-                        class='col-12 px-2 py-1'
+                        class='col-12 py-1'
                     >
                         <StandardItem
                             class='d-flex align-items-center py-2 px-3'
@@ -78,7 +78,7 @@
                 </div>
             </template>
 
-            <div class='px-2 py-2 d-flex'>
+            <div class='py-2 d-flex'>
                 <div class='ms-auto'>
                     <TablerPager
                         v-if='list.total > paging.limit'
