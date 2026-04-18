@@ -174,12 +174,15 @@ export default async function router(schema: Schema, config: Config) {
                 })())
             }).on('finish', async () => {
                 try {
+                    await Promise.all(uploads);
                     // Refetch to get updated status after commit
                     const refetchedImport = await config.models.Import.augmented_from(req.params.import);
                     res.json(refetchedImport)
                 } catch (err) {
                     Err.respond(err, res);
                 }
+            }).on('error', (err: Error) => {
+                Err.respond(err, res);
             });
 
             req.pipe(bb);
@@ -246,6 +249,8 @@ export default async function router(schema: Schema, config: Config) {
                 } catch (err) {
                     Err.respond(err, res);
                 }
+            }).on('error', (err: Error) => {
+                Err.respond(err, res);
             });
 
             req.pipe(bb);
