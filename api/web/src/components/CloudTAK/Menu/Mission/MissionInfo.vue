@@ -77,8 +77,9 @@
                                             background-color='rgba(107, 114, 128, 0.2)'
                                             border-color='rgba(107, 114, 128, 0.5)'
                                             text-color='#6b7280'
-                                            v-text='group'
-                                        />
+                                        >
+                                            {{ group }}
+                                        </TablerBadge>
                                     </div>
                                     <p
                                         v-else
