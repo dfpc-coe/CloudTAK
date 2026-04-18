@@ -8,14 +8,18 @@
             text-color='#2563eb'
             style='height: 20px'
             @click='info.shown = true'
-        >Agency</TablerBadge>
+        >
+            Agency
+        </TablerBadge>
         <TablerBadge
             v-else
             :background-color='muted ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.2)"'
             :border-color='muted ? "rgba(239, 68, 68, 0.3)" : "rgba(239, 68, 68, 0.5)"'
             text-color='#dc2626'
             style='height: 20px'
-        >Admin</TablerBadge>
+        >
+            Admin
+        </TablerBadge>
 
         <TablerModal v-if='info.shown'>
             <div class='modal-status bg-yellow' />

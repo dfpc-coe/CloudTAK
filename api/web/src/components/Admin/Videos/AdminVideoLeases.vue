@@ -62,13 +62,17 @@
                                                 background-color='rgba(239, 68, 68, 0.2)'
                                                 border-color='rgba(239, 68, 68, 0.5)'
                                                 text-color='#dc2626'
-                                            >Expired</TablerBadge>
+                                            >
+                                                Expired
+                                            </TablerBadge>
                                             <TablerBadge
                                                 v-else-if='lease.expiration === null'
                                                 background-color='rgba(59, 130, 246, 0.25)'
                                                 border-color='rgba(59, 130, 246, 0.5)'
                                                 text-color='#2563eb'
-                                            >Permanent</TablerBadge>
+                                            >
+                                                Permanent
+                                            </TablerBadge>
                                             <span
                                                 v-else
                                                 class='subheader'

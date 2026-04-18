@@ -70,7 +70,9 @@
                         background-color='rgba(239, 68, 68, 0.2)'
                         border-color='rgba(239, 68, 68, 0.5)'
                         text-color='#dc2626'
-                    >Required</TablerBadge>
+                    >
+                        Required
+                    </TablerBadge>
                     <TablerBadge
                         v-if='field.nullable'
                         class='mx-1 mb-1'
@@ -78,7 +80,9 @@
                         background-color='rgba(245, 158, 11, 0.2)'
                         border-color='rgba(245, 158, 11, 0.5)'
                         text-color='#d97706'
-                    >Nullable</TablerBadge>
+                    >
+                        Nullable
+                    </TablerBadge>
                     <span
                         v-if='field.expandable'
                         class='d-flex align-items-center ms-auto'

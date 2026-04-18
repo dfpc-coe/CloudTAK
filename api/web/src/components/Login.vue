@@ -287,7 +287,9 @@
                                                 background-color='rgba(34, 197, 94, 0.2)'
                                                 border-color='rgba(34, 197, 94, 0.5)'
                                                 text-color='#16a34a'
-                                            >{{ w.state }}</TablerBadge>
+                                            >
+                                                {{ w.state }}
+                                            </TablerBadge>
                                             <div
                                                 v-if='w.version'
                                                 class='text-muted small'

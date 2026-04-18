@@ -40,7 +40,9 @@
                                     background-color='rgba(239, 68, 68, 0.2)'
                                     border-color='rgba(239, 68, 68, 0.5)'
                                     text-color='#dc2626'
-                                >Protected</TablerBadge>
+                                >
+                                    Protected
+                                </TablerBadge>
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>

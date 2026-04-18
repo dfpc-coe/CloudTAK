@@ -15,7 +15,9 @@
                 background-color='rgba(239, 68, 68, 0.2)'
                 border-color='rgba(239, 68, 68, 0.5)'
                 text-color='#dc2626'
-            >{{ invites.length }}</TablerBadge>
+            >
+                {{ invites.length }}
+            </TablerBadge>
             <IconChevronDown
                 v-if='!showInvites'
                 :size='20'

@@ -26,7 +26,9 @@
                     background-color='rgba(59, 130, 246, 0.15)'
                     border-color='rgba(59, 130, 246, 0.4)'
                     text-color='#3b82f6'
-                >{{ files.length }}</TablerBadge>
+                >
+                    {{ files.length }}
+                </TablerBadge>
             </template>
             <div class='col-12'>
                 <div class='mx-2 py-2'>

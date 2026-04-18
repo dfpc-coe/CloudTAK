@@ -111,14 +111,18 @@
                                         background-color='rgba(59, 130, 246, 0.25)'
                                         border-color='rgba(59, 130, 246, 0.5)'
                                         text-color='#2563eb'
-                                    >Public</TablerBadge>
+                                    >
+                                        Public
+                                    </TablerBadge>
                                     <TablerBadge
                                         v-else
                                         class='mx-3'
                                         background-color='rgba(239, 68, 68, 0.2)'
                                         border-color='rgba(239, 68, 68, 0.5)'
                                         text-color='#dc2626'
-                                    >Private</TablerBadge>
+                                    >
+                                        Private
+                                    </TablerBadge>
                                     <TablerIconButton
                                         title='Download TAK Zip'
                                         @click.stop='download(iconset)'

@@ -56,7 +56,9 @@
                                     background-color='rgba(107, 114, 128, 0.15)'
                                     border-color='rgba(107, 114, 128, 0.3)'
                                     text-color='#6b7280'
-                                >{{ visibleActiveContacts.filter(c => c.team === team).length }}</TablerBadge>
+                                >
+                                    {{ visibleActiveContacts.filter(c => c.team === team).length }}
+                                </TablerBadge>
                             </template>
 
                             <div class='mx-2 pt-2'>
@@ -87,7 +89,9 @@
                                 background-color='rgba(107, 114, 128, 0.15)'
                                 border-color='rgba(107, 114, 128, 0.3)'
                                 text-color='#6b7280'
-                            >{{ visibleOfflineContacts.length }}</TablerBadge>
+                            >
+                                {{ visibleOfflineContacts.length }}
+                            </TablerBadge>
                         </template>
 
                         <div class='mx-2 pt-2'>

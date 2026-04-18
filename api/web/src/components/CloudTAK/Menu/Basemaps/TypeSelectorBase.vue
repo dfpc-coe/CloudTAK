@@ -49,7 +49,9 @@
                     border-color='rgba(6, 182, 212, 0.4)'
                     text-color='#0891b2'
                     @click='editing.url = editing.url + token.value'
-                >{{ token.value }}</TablerBadge>
+                >
+                    {{ token.value }}
+                </TablerBadge>
             </div>
         </TablerInput>
     </div>

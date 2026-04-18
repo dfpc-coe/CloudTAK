@@ -19,6 +19,11 @@
 
 ### Pending Release
 
+- :tada: Add GPS coordinate source toggle to bottom bar coordinate display
+- :rocket: Migrate badges across menus to TablerBadge component
+- :rocket: Improve icon thumbnail styling consistency across Icon views
+- :bug: Improve large file upload reliability with extended proxy timeouts and error handling
+
 ### v12.126.0 - 2026-04-17
 
 - :bug: Fix flashing icon that occurred if an archived feature had a custom icon
