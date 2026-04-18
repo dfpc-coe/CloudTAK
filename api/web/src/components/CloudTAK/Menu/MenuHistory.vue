@@ -41,8 +41,9 @@
                                     background-color='rgba(107, 114, 128, 0.15)'
                                     border-color='rgba(107, 114, 128, 0.3)'
                                     text-color='#6b7280'
-                                    v-text='`${entry.coordinates.length} pts`'
-                                />
+                                >
+                                    {{ `${entry.coordinates.length} pts` }}
+                                </TablerBadge>
                             </div>
                         </div>
 
