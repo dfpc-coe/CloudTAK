@@ -112,6 +112,27 @@ export default class ImportControl {
         return response;
     }
 
+    async retry(id: string): Promise<Static<typeof ImportResponse>> {
+        const imported = await this.config.models.Import.augmented_from(id);
+
+        if (imported.status !== Import_Status.FAIL) {
+            throw new Err(400, null, 'Only failed imports can be retried');
+        }
+
+        await this.config.models.ImportResult.delete(sql`import = ${id}`);
+
+        const new_import = await this.config.models.Import.commit(id, {
+            status: Import_Status.PENDING,
+            error: null,
+            updated: sql`Now()`
+        });
+
+        return {
+            ...new_import,
+            results: []
+        };
+    }
+
     async delete(id: string): Promise<void> {
         const imported = await this.config.models.Import.from(id);
 
