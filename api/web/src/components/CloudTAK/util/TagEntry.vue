@@ -30,10 +30,11 @@
                         v-if='!disabled'
                         title='Remove Tag'
                         @click.prevent.stop='removeTag(index)'
-                    ><IconX
-                        :size='16'
-                        stroke='2'
-                    />
+                    >
+                        <IconX
+                            :size='16'
+                            stroke='2'
+                        />
                     </TablerIconButton>
                 </TablerBadge>
                 <input

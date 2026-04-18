@@ -27,7 +27,9 @@
                         background-color='rgba(59, 130, 246, 0.15)'
                         border-color='rgba(59, 130, 246, 0.4)'
                         text-color='#3b82f6'
-                    >{{ external_links.length }}</TablerBadge>
+                    >
+                        {{ external_links.length }}
+                    </TablerBadge>
                 </template>
 
                 <div class='overflow-hidden mb-2'>
@@ -212,7 +214,9 @@
                         background-color='rgba(59, 130, 246, 0.15)'
                         border-color='rgba(59, 130, 246, 0.4)'
                         text-color='#3b82f6'
-                    >{{ responder_links.length }}</TablerBadge>
+                    >
+                        {{ responder_links.length }}
+                    </TablerBadge>
                 </template>
 
                 <div class='overflow-hidden'>

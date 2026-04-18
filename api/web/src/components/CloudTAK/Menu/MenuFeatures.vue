@@ -154,7 +154,9 @@
                                             background-color='rgba(107, 114, 128, 0.15)'
                                             border-color='rgba(107, 114, 128, 0.3)'
                                             text-color='#6b7280'
-                                        >{{ path.count }}</TablerBadge>
+                                        >
+                                            {{ path.count }}
+                                        </TablerBadge>
                                         <TablerIconButton
                                             title='Rename Folder'
                                             @click.stop='openEditModal(path)'
