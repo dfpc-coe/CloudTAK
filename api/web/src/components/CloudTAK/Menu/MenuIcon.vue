@@ -77,12 +77,13 @@
                             <div class='card h-100 cloudtak-bg text-white border border-light-subtle shadow-sm'>
                                 <div class='card-body d-flex flex-column gap-4'>
                                     <div class='d-flex align-items-center gap-3'>
-                                        <div class='rounded bg-white p-1 d-flex align-items-center justify-content-center'>
+                                        <div class='d-flex align-items-center justify-content-center'>
                                             <img
                                                 :src='icon.data'
+                                                class='img-thumbnail'
+                                                style='background-color: rgb(30, 41, 59);'
                                                 width='32'
                                                 height='32'
-                                                style='object-fit: contain;'
                                             >
                                         </div>
                                         <div class='flex-grow-1'>
