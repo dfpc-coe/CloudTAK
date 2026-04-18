@@ -84,7 +84,7 @@ http {
         listen [::]:5000;
         absolute_redirect off;
 
-        client_max_body_size 512M;
+        client_max_body_size 2G;
 
         server_tokens off;
 
