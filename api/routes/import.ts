@@ -396,6 +396,30 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.post('/import/:import/retry', {
+        name: 'Retry Import',
+        group: 'Import',
+        description: 'Retry a failed import by resetting its status to Pending',
+        params: Type.Object({
+            import: Type.String()
+        }),
+        res: ImportResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const imported = await config.models.Import.augmented_from(req.params.import);
+
+            if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
+
+            const response = await importControl.retry(req.params.import);
+
+            res.json(response);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.delete('/import/:import', {
         name: 'Delete Import',
         group: 'Import',
