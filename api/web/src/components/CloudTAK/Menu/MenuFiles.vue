@@ -16,16 +16,6 @@
                 :loading='loading'
                 @click='fetchList'
             />
-
-            <TablerIconButton
-                title='Create Folder'
-                @click='folderModal.shown = true'
-            >
-                <IconFolderPlus
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
         </template>
         <template #default>
             <div
@@ -49,6 +39,19 @@
                 />
             </div>
 
+            <div class='col-12 pt-2 d-flex align-items-center justify-content-between'>
+                <PathBreadcrumb v-model:collection='collectionPath' />
+                <TablerIconButton
+                    title='Create Folder'
+                    @click='folderModal.shown = true'
+                >
+                    <IconFolderPlus
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+            </div>
+
             <TablerLoading
                 v-if='loading'
             />
@@ -57,47 +60,22 @@
                 :err='error'
             />
             <TablerNone
-                v-else-if='!list.items.length'
-                label='No Uploaded Files'
+                v-else-if='!currentFolders.length && !currentFiles.length'
+                :label='currentPath === "/" ? "No Uploaded Files" : "Folder is empty"'
                 :create='false'
             />
             <template v-else>
                 <PathBrowser
-                    v-if='paths.length'
-                    :nodes='paths'
-                    @open='openPath'
-                    @close='closePath'
+                    v-if='currentFolders.length'
+                    :nodes='currentFolders'
+                    @navigate='navigateToFolder'
                     @delete='deletePath'
                     @rename='openEditModal'
-                >
-                    <template #items='{ node }'>
-                        <TablerNone
-                            v-if='node.items.size === 0'
-                            :create='false'
-                            label='Folder is empty'
-                        />
-                        <FileRow
-                            v-for='asset in node.items'
-                            :key='asset.id'
-                            :asset='asset'
-                            :overlay-urls='overlayUrls'
-                            :rename='rename'
-                            @create-overlay='createOverlay'
-                            @download='downloadAsset'
-                            @share-mission='shareToMission = $event'
-                            @share-package='shareToPackage = $event'
-                            @rename='rename = { id: $event.id, name: $event.name, loading: false }'
-                            @rename-submit='renameAsset'
-                            @rename-cancel='rename = undefined'
-                            @delete='deleteAsset'
-                            @move='openMoveModal($event)'
-                        />
-                    </template>
-                </PathBrowser>
+                />
 
                 <div class='mt-2'>
                     <FileRow
-                        v-for='asset in rootFiles'
+                        v-for='asset in currentFiles'
                         :key='asset.id'
                         :asset='asset'
                         :overlay-urls='overlayUrls'
@@ -255,8 +233,9 @@ import {
     IconCursorText,
     IconFolder,
     IconFolderPlus,
-    IconFolderSymlink
+    IconFolderSymlink,
 } from '@tabler/icons-vue';
+import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
 import ShareToMission from '../util/ShareToMission.vue';
 import PathBrowser from '../util/PathBrowser.vue';
@@ -296,6 +275,32 @@ const list = ref<ProfileFileList>({
 
 const paths = ref<PathNode<ProfileFile>[]>([]);
 const rootFiles = ref<ProfileFile[]>([]);
+const currentPath = ref('/');
+
+const currentPathName = computed(() => {
+    return PathManager.displayName(currentPath.value);
+});
+
+const collectionPath = computed({
+    get: () => currentPath.value === '/' ? '' : currentPath.value.slice(1),
+    set: (val: string) => { currentPath.value = val ? '/' + val : '/'; }
+});
+
+const currentFolders = computed(() => {
+    if (currentPath.value === '/') {
+        return paths.value;
+    }
+    const node = PathManager.findNode(paths.value, currentPath.value);
+    return node ? node.children : [];
+});
+
+const currentFiles = computed(() => {
+    if (currentPath.value === '/') {
+        return rootFiles.value;
+    }
+    const node = PathManager.findNode(paths.value, currentPath.value);
+    return node ? Array.from(node.items) : [];
+});
 
 const folderModal = ref<{
     shown: boolean;
@@ -365,12 +370,8 @@ function buildPathTree() {
     rootFiles.value = list.value.items.filter(i => !i.path || i.path === '/');
 }
 
-function openPath(node: PathNode<ProfileFile>) {
-    node.opened = true;
-}
-
-function closePath(node: PathNode<ProfileFile>) {
-    node.opened = false;
+function navigateToFolder(node: PathNode<ProfileFile>) {
+    currentPath.value = node.fullPath;
 }
 
 function openEditModal(node: PathNode<ProfileFile>) {
@@ -464,7 +465,8 @@ async function renameFolder() {
 function createFolder() {
     if (!folderModal.value.name) return;
 
-    const name = PathManager.normalize(folderModal.value.name);
+    const prefix = currentPath.value === '/' ? '' : currentPath.value.slice(1) + '/';
+    const name = PathManager.normalize(prefix + folderModal.value.name);
 
     if (PathManager.hasPath(paths.value, name)) {
         folderModal.value.shown = false;

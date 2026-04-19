@@ -21,7 +21,7 @@
                     v-if='paging.collection'
                     class='d-flex align-items-center gap-2'
                 >
-                    <BasemapCollection v-model:collection='paging.collection' />
+                    <PathBreadcrumb v-model:collection='paging.collection' />
                 </div>
 
                 <TablerLoading v-if='loading' />
@@ -115,7 +115,7 @@ import {
 import StandardItem from '../util/StandardItem.vue';
 import StandardItemBasemap from '../util/StandardItemBasemap.vue';
 import StandardItemFolder from '../util/StandardItemFolder.vue';
-import BasemapCollection from '../util/BasemapCollection.vue';
+import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import Overlay from '../../../base/overlay.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
