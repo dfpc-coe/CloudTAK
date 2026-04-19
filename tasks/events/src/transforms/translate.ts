@@ -29,7 +29,22 @@ export default class GDALTranslate implements Transform {
             env['GDAL_PDF_DPI'] = '300';
         }
 
-        cp.execFileSync('gdal_translate', [input, output], { env });
+        const args = [input, output];
+
+        const info = cp.execFileSync('gdalinfo', ['-json', input], { env }).toString();
+        const gdalinfo = JSON.parse(info);
+        if (gdalinfo.geoTransform) {
+            const pixelWidth = Math.abs(gdalinfo.geoTransform[1]);
+            const pixelHeight = Math.abs(gdalinfo.geoTransform[5]);
+            const minRes = Math.min(pixelWidth, pixelHeight);
+            // MBTiles zoom level formula: zoom = log2(360 / (res * 256))
+            const zoom = Math.ceil(Math.log2(360 / (minRes * 256)));
+            if (zoom > 22) {
+                args.unshift('-co', 'ZOOM_LEVEL=22');
+            }
+        }
+
+        cp.execFileSync('gdal_translate', args, { env });
 
         cp.execFileSync('gdaladdo', ['-r', 'cubic', output]);
 
