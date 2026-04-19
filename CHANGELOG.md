@@ -19,6 +19,11 @@
 
 ### Pending Release
 
+### v12.127.2 - 2026-04-19
+
+- :rocket: Increase supported filesize to 5gb.
+- :rocket: Fix MaxZoom support in MBTiles output
+
 ### v12.127.1 - 2026-04-19
 
 - :rocket: Predetermine input resolution before creating MBTiles to prevent over-resolution errors
