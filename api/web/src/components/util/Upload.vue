@@ -2,7 +2,7 @@
     <div class='card-body'>
         <TablerInlineAlert
             severity='warning'
-            title='Uploads are limited to 2 GB'
+            title='Uploads are limited to 5 GB'
         />
         <div
             class='row'
