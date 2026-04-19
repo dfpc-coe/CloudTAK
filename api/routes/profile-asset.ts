@@ -53,7 +53,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const list = await config.models.ProfileFile.list({
+            const list = await config.models.ProfileFile.augmented_list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
@@ -173,7 +173,7 @@ export default async function router(schema: Schema, config: Config) {
                 artifacts
             });
 
-            res.json(file);
+            res.json(await config.models.ProfileFile.augmented_from(file.id));
         } catch (err) {
              Err.respond(err, res);
         }
@@ -234,7 +234,7 @@ export default async function router(schema: Schema, config: Config) {
                 iconset: iconsetValue
             });
 
-            res.json(file);
+            res.json(await config.models.ProfileFile.augmented_from(file.id));
         } catch (err) {
              Err.respond(err, res);
         }
