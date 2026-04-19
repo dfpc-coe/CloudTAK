@@ -19,6 +19,8 @@
 
 ### Pending Release
 
+### v12.127.0 - 2026-04-18
+
 - :tada: Add GPS coordinate source toggle to bottom bar coordinate display
 - :rocket: Migrate badges across menus to TablerBadge component
 - :rocket: Improve icon thumbnail styling consistency across Icon views
