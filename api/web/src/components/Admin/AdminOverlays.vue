@@ -89,7 +89,7 @@
                 v-if='paging.collection'
                 class='d-flex align-items-center gap-2 mx-3 mt-2'
             >
-                <BasemapCollection v-model:collection='paging.collection' />
+                <PathBreadcrumb v-model:collection='paging.collection' />
             </div>
 
             <TablerLoading
@@ -144,7 +144,7 @@ import { server, stdclick } from '../../std.ts';
 import type { BasemapList } from '../../types.ts';
 import StandardItemBasemap from '../CloudTAK/util/StandardItemBasemap.vue';
 import StandardItemFolder from '../CloudTAK/util/StandardItemFolder.vue';
-import BasemapCollection from '../CloudTAK/util/BasemapCollection.vue';
+import PathBreadcrumb from '../CloudTAK/util/PathBreadcrumb.vue';
 import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,

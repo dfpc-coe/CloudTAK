@@ -7,7 +7,7 @@
             @click='toggleOptions()'
         >
             <div @click.stop>
-                <BasemapCollection v-model:collection='collection' />
+                <PathBreadcrumb v-model:collection='collection' />
             </div>
 
             <div class='ms-auto'>
@@ -91,7 +91,7 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import { IconPlus, IconChevronDown, IconChevronRight } from '@tabler/icons-vue';
-import BasemapCollection from './BasemapCollection.vue';
+import PathBreadcrumb from './PathBreadcrumb.vue';
 import StandardItem from './StandardItem.vue';
 import StandardItemFolder from './StandardItemFolder.vue';
 

@@ -29,7 +29,7 @@
         <span
             v-if='!segments.length'
             class='small text-white-50'
-        >None</span>
+        >/</span>
     </div>
 </template>
 
