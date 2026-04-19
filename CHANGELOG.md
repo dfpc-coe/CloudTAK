@@ -19,6 +19,11 @@
 
 ### Pending Release
 
+### v12.127.1 - 2026-04-19
+
+- :rocket: Predetermine input resolution before creating MBTiles to prevent over-resolution errors
+- :rocket: Increase protection from path traversal attacks in the events server
+
 ### v12.127.0 - 2026-04-18
 
 - :tada: Add GPS coordinate source toggle to bottom bar coordinate display
