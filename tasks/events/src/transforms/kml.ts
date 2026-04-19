@@ -161,12 +161,17 @@ export default class KML implements Transform {
 
                             // Validate all ZIP entries before extraction to prevent path traversal
                             const extractDirResolved = path.resolve(extractDir);
+                            let hasUnsafeEntry = false;
                             for (const entry of Object.values(entries)) {
                                 const entryResolved = path.resolve(extractDir, entry.name);
                                 if (!entryResolved.startsWith(extractDirResolved + path.sep) && entryResolved !== extractDirResolved) {
                                     console.warn(`NetworkLink ${normalized} KMZ path traversal attempt detected (${entry.name}), skipping`);
-                                    continue;
+                                    hasUnsafeEntry = true;
                                 }
+                            }
+                            if (hasUnsafeEntry) {
+                                console.warn(`NetworkLink ${normalized} KMZ contains unsafe ZIP entries, skipping extraction`);
+                                continue;
                             }
 
                             let kmlFileName = 'doc.kml';
