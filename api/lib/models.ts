@@ -10,6 +10,7 @@ import Setting from './models/Setting.js';
 import ProfileChat from './models/ProfileChat.js';
 import ProfileConfig from './models/ProfileConfig.js';
 import ProfilePasskey from './models/ProfilePasskey.js';
+import ProfileFile from './models/ProfileFile.js';
 import Icon from './models/Icon.js';
 import * as pgtypes from './schema.js';
 
@@ -39,7 +40,7 @@ export default class Models {
     ProfileInterest: Modeler<typeof pgtypes.ProfileInterest>;
     ProfileFeature: Modeler<typeof pgtypes.ProfileFeature>;
     ProfileOverlay: Modeler<typeof pgtypes.ProfileOverlay>;
-    ProfileFile: Modeler<typeof pgtypes.ProfileFile>;
+    ProfileFile: ProfileFile;
     ProfileSession: Modeler<typeof pgtypes.ProfileSession>;
     ProfilePasskey: ProfilePasskey;
     ProfileVideo: Modeler<typeof pgtypes.ProfileVideo>;
@@ -75,7 +76,7 @@ export default class Models {
         this.Profile = new Modeler(pg, pgtypes.Profile);
         this.ProfileConfig = new ProfileConfig(pg);
         this.ProfileToken = new Modeler(pg, pgtypes.ProfileToken);
-        this.ProfileFile = new Modeler(pg, pgtypes.ProfileFile);
+        this.ProfileFile = new ProfileFile(pg);
         this.ProfileInterest = new Modeler(pg, pgtypes.ProfileInterest);
         this.ProfileFeature = new Modeler(pg, pgtypes.ProfileFeature);
         this.ProfileOverlay = new Modeler(pg, pgtypes.ProfileOverlay);

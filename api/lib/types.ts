@@ -360,14 +360,19 @@ export const JobResponse = Type.Object({
     updated: Type.Optional(Type.Integer())
 });
 
-export const ProfileFileResponse = createSelectSchema(schemas.ProfileFile, {
-    id: Type.String(),
-    iconset: Type.Union([Type.Null(), Type.String()]),
-    artifacts: Type.Array(Type.Object({
-        ext: Type.String(),
-        size: Type.Integer(),
-    }))
-})
+export const ProfileFileResponse = Type.Intersect([
+    createSelectSchema(schemas.ProfileFile, {
+        id: Type.String(),
+        iconset: Type.Union([Type.Null(), Type.String()]),
+        artifacts: Type.Array(Type.Object({
+            ext: Type.String(),
+            size: Type.Integer(),
+        }))
+    }),
+    Type.Object({
+        channels: Type.Array(Type.String())
+    })
+])
 
 export const AssetResponse = Type.Object({
     name: Type.String({ "description": "The filename of the asset" }),
