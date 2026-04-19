@@ -31,17 +31,37 @@ export default class GDALTranslate implements Transform {
 
         const args = [input, output];
 
-        const info = cp.execFileSync('gdalinfo', ['-json', input], { env }).toString();
-        const gdalinfo = JSON.parse(info);
-        if (gdalinfo.geoTransform) {
-            const pixelWidth = Math.abs(gdalinfo.geoTransform[1]);
-            const pixelHeight = Math.abs(gdalinfo.geoTransform[5]);
-            const minRes = Math.min(pixelWidth, pixelHeight);
-            // MBTiles zoom level formula: zoom = log2(360 / (res * 256))
-            const zoom = Math.ceil(Math.log2(360 / (minRes * 256)));
-            if (zoom > 22) {
-                args.unshift('-co', 'ZOOM_LEVEL=22');
+        try {
+            const info = cp.execFileSync('gdalinfo', ['-json', input], { env }).toString();
+            const gdalinfo = JSON.parse(info);
+            const geoTransform = gdalinfo.geoTransform;
+            if (
+                Array.isArray(geoTransform)
+                && typeof geoTransform[1] === 'number'
+                && typeof geoTransform[5] === 'number'
+            ) {
+                const pixelWidth = Math.abs(geoTransform[1]);
+                const pixelHeight = Math.abs(geoTransform[5]);
+                const minRes = Math.min(pixelWidth, pixelHeight);
+
+                if (minRes > 0) {
+                    // Determine whether the resolution is in degrees or meters based on the SRS
+                    let resDegrees = minRes;
+                    const srs: string | undefined = gdalinfo.coordinateSystem?.wkt;
+                    if (srs && /PROJCS|UNIT\["metre"/i.test(srs)) {
+                        // Convert meters to approximate degrees at the equator
+                        resDegrees = minRes / 111320;
+                    }
+
+                    // MBTiles zoom level formula: zoom = log2(360 / (resDegrees * 256))
+                    const zoom = Math.ceil(Math.log2(360 / (resDegrees * 256)));
+                    if (zoom > 22) {
+                        args.unshift('-co', 'ZOOM_LEVEL=22');
+                    }
+                }
             }
+        } catch {
+            // If metadata sniffing fails, continue without zoom clamping
         }
 
         cp.execFileSync('gdal_translate', args, { env });
