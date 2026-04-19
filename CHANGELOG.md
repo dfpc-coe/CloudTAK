@@ -19,6 +19,10 @@
 
 ### Pending Release
 
+### v12.127.3 - 2026-04-19
+
+- :rocket: Fix version mismatch
+
 ### v12.127.2 - 2026-04-19
 
 - :rocket: Increase supported filesize to 5gb.
