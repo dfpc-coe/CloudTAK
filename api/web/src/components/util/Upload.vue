@@ -1,5 +1,9 @@
 <template>
     <div class='card-body'>
+        <TablerInlineAlert
+            severity='warning'
+            title='Uploads are limited to 2 GB'
+        />
         <div
             class='row'
             :class='{ "d-none": file }'
@@ -83,6 +87,7 @@ import {
     IconFile
 } from '@tabler/icons-vue';
 import {
+    TablerInlineAlert,
     TablerLoading,
     TablerProgress
 } from '@tak-ps/vue-tabler';
