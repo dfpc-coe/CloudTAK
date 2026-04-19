@@ -16,6 +16,16 @@
                 :loading='loading'
                 @click='fetchList'
             />
+
+            <TablerIconButton
+                title='Create Folder'
+                @click='folderModal.shown = true'
+            >
+                <IconFolderPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <div
@@ -52,149 +62,56 @@
                 :create='false'
             />
             <template v-else>
-                <div
-                    v-for='asset in list.items'
-                    :key='asset.id'
-                    role='menu'
+                <PathBrowser
+                    v-if='paths.length'
+                    :nodes='paths'
+                    @open='openPath'
+                    @close='closePath'
+                    @delete='deletePath'
+                    @rename='openEditModal'
                 >
-                    <TablerSlidedown
-                        :click-anywhere-expand='true'
-                        :arrow='false'
-                        class='my-2'
-                    >
-                        <template #default>
-                            <div
-                                class='d-flex align-items-center'
-                                role='menuitem'
-                                tabindex='0'
-                            >
-                                <div class='col-auto'>
-                                    <IconMapPlus
-                                        v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                    <IconMapOff
-                                        v-else
-                                        v-tooltip='"Not Cloud Optimized"'
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </div>
-                                <div class='col-auto'>
-                                    <div
-                                        class='col-12 text-truncate px-2 user-select-none'
-                                        style='max-width: 250px;'
-                                        v-text='asset.name'
-                                    />
-                                    <div class='col-12 subheader'>
-                                        <span class='mx-2 user-select-none'>
-                                            <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                        <template #expanded>
-                            <div
-                                v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
-                                :class='[
-                                    "rounded col-12 d-flex align-items-center px-2 py-2 user-select-none",
-                                    assetOverlayExists(asset) ? "opacity-50 pe-none" : "cursor-pointer cloudtak-hover"
-                                ]'
-                                role='menuitem'
-                                :tabindex='assetOverlayExists(asset) ? -1 : 0'
-                                :aria-disabled='assetOverlayExists(asset)'
-                                @click.stop.prevent='!assetOverlayExists(asset) && createOverlay(asset)'
-                                @keyup.enter='!assetOverlayExists(asset) && createOverlay(asset)'
-                            >
-                                <IconMapPlus
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <span class='mx-2'>{{ assetOverlayExists(asset) ? "Overlay already added" : "Add to Map as Overlay" }}</span>
-                            </div>
-                            <div
-                                v-else
-                                role='menuitem'
-                                class='rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                            >
-                                <IconMapOff
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <span class='mx-2'>Cannot Add to Map - Unsupported Format</span>
-                            </div>
+                    <template #items='{ node }'>
+                        <TablerNone
+                            v-if='node.items.size === 0'
+                            :create='false'
+                            label='Folder is empty'
+                        />
+                        <FileRow
+                            v-for='asset in node.items'
+                            :key='asset.id'
+                            :asset='asset'
+                            :overlay-urls='overlayUrls'
+                            :rename='rename'
+                            @create-overlay='createOverlay'
+                            @download='downloadAsset'
+                            @share-mission='shareToMission = $event'
+                            @share-package='shareToPackage = $event'
+                            @rename='rename = { id: $event.id, name: $event.name, loading: false }'
+                            @rename-submit='renameAsset'
+                            @rename-cancel='rename = undefined'
+                            @delete='deleteAsset'
+                            @move='openMoveModal($event)'
+                        />
+                    </template>
+                </PathBrowser>
 
-                            <div
-                                class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                                @click.stop.prevent='downloadAsset(asset)'
-                            >
-                                <IconDownload
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <span class='mx-2'>Download Original</span>
-                            </div>
-                            <div
-                                class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                                role='menuitem'
-                                tabindex='0'
-                                @click.stop.prevent='shareToMission = asset'
-                                @keyup.enter='shareToMission = asset'
-                            >
-                                <IconAmbulance
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <span class='mx-2'>Add to Data Sync</span>
-                            </div>
-                            <div
-                                class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                                role='menuitem'
-                                tabindex='0'
-                                @click.stop.prevent='shareToPackage = asset'
-                                @keyup.enter='shareToPackage = asset'
-                            >
-                                <IconPackage
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <span class='mx-2'>Create Data Package</span>
-                            </div>
-                            <div
-                                class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                                role='menuitem'
-                                tabindex='0'
-                                @click.stop.prevent='rename = { id: asset.id, name: asset.name, loading: false }'
-                                @keyup.enter='rename = { id: asset.id, name: asset.name, loading: false }'
-                            >
-                                <IconCursorText
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <span class='mx-2'>Rename File</span>
-                            </div>
-
-                            <div v-if='rename && rename.id === asset.id'>
-                                <TablerInput
-                                    v-model='rename.name'
-                                    class='m-2'
-                                    :placeholder='asset.name'
-                                    :autofocus='true'
-                                    @blur='rename = undefined'
-                                    @keyup.enter='renameAsset'
-                                />
-                            </div>
-
-                            <TablerDelete
-                                displaytype='menu'
-                                class='cloudtak-hover rounded'
-                                label='Delete File'
-                                @delete='deleteAsset(asset)'
-                            />
-                        </template>
-                    </TablerSlidedown>
+                <div class='mt-2'>
+                    <FileRow
+                        v-for='asset in rootFiles'
+                        :key='asset.id'
+                        :asset='asset'
+                        :overlay-urls='overlayUrls'
+                        :rename='rename'
+                        @create-overlay='createOverlay'
+                        @download='downloadAsset'
+                        @share-mission='shareToMission = $event'
+                        @share-package='shareToPackage = $event'
+                        @rename='rename = { id: $event.id, name: $event.name, loading: false }'
+                        @rename-submit='renameAsset'
+                        @rename-cancel='rename = undefined'
+                        @delete='deleteAsset'
+                        @move='openMoveModal($event)'
+                    />
                 </div>
 
                 <div class='col-12 d-flex justify-content-center pt-3'>
@@ -230,25 +147,103 @@
         }]'
         @close='shareToPackage = undefined'
     />
+
+    <TablerModal
+        v-if='folderModal.shown'
+    >
+        <div class='modal-status bg-white' />
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='folderModal.shown = false'
+        />
+        <div class='modal-header text-body'>
+            <div class='modal-title'>
+                {{ folderModal.editingNode ? 'Rename Folder' : 'Create Folder' }}
+            </div>
+        </div>
+        <div class='modal-body'>
+            <TablerInput
+                v-model='folderModal.name'
+                label='Folder Name'
+                placeholder='Documents'
+                @submit='submitFolder'
+            />
+        </div>
+        <div class='modal-footer'>
+            <TablerButton
+                class='w-100'
+                variant='primary'
+                @click='submitFolder'
+            >
+                {{ folderModal.editingNode ? 'Save' : 'Create' }}
+            </TablerButton>
+        </div>
+    </TablerModal>
+
+    <TablerModal
+        v-if='moveModal.shown'
+    >
+        <div class='modal-status bg-white' />
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='moveModal.shown = false'
+        />
+        <div class='modal-header text-body'>
+            <div class='modal-title'>Move File to Folder</div>
+        </div>
+        <div class='modal-body'>
+            <div
+                class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
+                @click='moveToPath("/")'
+            >
+                <IconFolder
+                    :size='20'
+                    stroke='1'
+                    class='me-2'
+                />
+                <span>/ (Root)</span>
+            </div>
+            <div
+                v-for='p in allPaths'
+                :key='p'
+                class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
+                @click='moveToPath(p)'
+            >
+                <IconFolder
+                    :size='20'
+                    stroke='1'
+                    class='me-2'
+                />
+                <span v-text='p' />
+            </div>
+        </div>
+    </TablerModal>
 </template>
 
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
 import { ref, watch, onMounted, computed } from 'vue';
 import type { ProfileFile, ProfileFileList } from '../../../types.ts';
+import PathManager from '../../../base/path-manager.ts';
+import type { PathNode } from '../../../base/path-manager.ts';
 import { std, stdurl, server } from '../../../std.ts';
 import {
     TablerDelete,
     TablerIconButton,
     TablerRefreshButton,
-    TablerSlidedown,
     TablerInput,
     TablerPager,
     TablerAlert,
     TablerNone,
     TablerLoading,
     TablerBytes,
-    TablerEpoch
+    TablerEpoch,
+    TablerModal,
+    TablerButton
 } from '@tak-ps/vue-tabler';
 import {
     IconAmbulance,
@@ -257,10 +252,15 @@ import {
     IconMapOff,
     IconMapPlus,
     IconDownload,
-    IconCursorText
+    IconCursorText,
+    IconFolder,
+    IconFolderPlus,
+    IconFolderSymlink
 } from '@tabler/icons-vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
 import ShareToMission from '../util/ShareToMission.vue';
+import PathBrowser from '../util/PathBrowser.vue';
+import FileRow from './MenuFilesRow.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import Overlay from '../../../base/overlay.ts';
@@ -275,11 +275,6 @@ const overlayUrls = computed<Set<string>>(() => {
             .map((overlay) => overlay.url as string)
     );
 });
-
-function assetOverlayExists(asset: ProfileFile): boolean {
-    const url = `/api/profile/asset/${encodeURIComponent(asset.id)}.pmtiles/tile`;
-    return overlayUrls.value.has(url);
-}
 
 const router = useRouter();
 const upload = ref(false)
@@ -299,10 +294,33 @@ const list = ref<ProfileFileList>({
     items: [],
 });
 
+const paths = ref<PathNode<ProfileFile>[]>([]);
+const rootFiles = ref<ProfileFile[]>([]);
+
+const folderModal = ref<{
+    shown: boolean;
+    name: string;
+    editingNode?: PathNode<ProfileFile>;
+}>({
+    shown: false,
+    name: ''
+});
+
+const moveModal = ref<{
+    shown: boolean;
+    asset?: ProfileFile;
+}>({
+    shown: false
+});
+
+const allPaths = computed(() => {
+    return PathManager.flatPaths(paths.value);
+});
+
 const paging = ref({
     page: 0,
     filter: '',
-    limit: 20
+    limit: 100
 })
 
 onMounted(async () => {
@@ -312,6 +330,182 @@ onMounted(async () => {
 watch(paging.value, async () => {
     await fetchList();
 });
+
+function buildPathTree() {
+    const pathCounts = new Map<string, number>();
+    const pathItems = new Map<string, ProfileFile[]>();
+
+    for (const item of list.value.items) {
+        const p = item.path || '/';
+        if (p !== '/') {
+            pathCounts.set(p, (pathCounts.get(p) || 0) + 1);
+            if (!pathItems.has(p)) pathItems.set(p, []);
+            pathItems.get(p)!.push(item);
+        }
+    }
+
+    const flatPaths = Array.from(pathCounts.entries()).map(([path, count]) => ({ path, count }));
+    paths.value = PathManager.buildTree<ProfileFile>(flatPaths);
+
+    // Populate items into opened nodes
+    const populateItems = (nodes: PathNode<ProfileFile>[]) => {
+        for (const node of nodes) {
+            const items = pathItems.get(node.fullPath);
+            if (items) {
+                node.items = new Set(items);
+            }
+            // For intermediate nodes that have no direct items but have the path match
+            if (node.children.length) {
+                populateItems(node.children);
+            }
+        }
+    };
+    populateItems(paths.value);
+
+    rootFiles.value = list.value.items.filter(i => !i.path || i.path === '/');
+}
+
+function openPath(node: PathNode<ProfileFile>) {
+    node.opened = true;
+}
+
+function closePath(node: PathNode<ProfileFile>) {
+    node.opened = false;
+}
+
+function openEditModal(node: PathNode<ProfileFile>) {
+    folderModal.value.name = node.fullPath;
+    folderModal.value.editingNode = node;
+    folderModal.value.shown = true;
+}
+
+function openMoveModal(asset: ProfileFile) {
+    moveModal.value.asset = asset;
+    moveModal.value.shown = true;
+}
+
+async function moveToPath(newPath: string) {
+    const asset = moveModal.value.asset;
+    if (!asset) return;
+
+    const normalized = PathManager.normalize(newPath);
+
+    moveModal.value.shown = false;
+    moveModal.value.asset = undefined;
+
+    if (asset.path === normalized) return;
+
+    const res = await server.PATCH('/api/profile/asset/{:asset}', {
+        params: {
+            path: {
+                ':asset': asset.id
+            }
+        },
+        body: {
+            path: normalized
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    await fetchList();
+}
+
+async function submitFolder() {
+    if (folderModal.value.editingNode) {
+        await renameFolder();
+    } else {
+        createFolder();
+    }
+}
+
+async function renameFolder() {
+    if (!folderModal.value.name || !folderModal.value.editingNode) return;
+
+    const newPath = PathManager.normalize(folderModal.value.name);
+    const node = folderModal.value.editingNode;
+
+    if (node.fullPath === newPath) {
+        folderModal.value.shown = false;
+        folderModal.value.editingNode = undefined;
+        folderModal.value.name = '';
+        return;
+    }
+
+    // Update all files in this folder and descendants
+    const allNodePaths = PathManager.flatPaths([node]);
+
+    for (const oldP of allNodePaths) {
+        const newP = oldP.replace(node.fullPath, newPath);
+        const items = list.value.items.filter(i => i.path === oldP);
+        for (const item of items) {
+            const res = await server.PATCH('/api/profile/asset/{:asset}', {
+                params: {
+                    path: {
+                        ':asset': item.id
+                    }
+                },
+                body: {
+                    path: newP
+                }
+            });
+
+            if (res.error) throw new Error(res.error.message);
+        }
+    }
+
+    folderModal.value.shown = false;
+    folderModal.value.editingNode = undefined;
+    folderModal.value.name = '';
+
+    await fetchList();
+}
+
+function createFolder() {
+    if (!folderModal.value.name) return;
+
+    const name = PathManager.normalize(folderModal.value.name);
+
+    if (PathManager.hasPath(paths.value, name)) {
+        folderModal.value.shown = false;
+        folderModal.value.name = '';
+        return;
+    }
+
+    const newNode = PathManager.addPath<ProfileFile>(paths.value, name);
+    newNode.opened = true;
+
+    folderModal.value.shown = false;
+    folderModal.value.name = '';
+}
+
+async function deletePath(node: PathNode<ProfileFile>) {
+    loading.value = true;
+
+    try {
+        const allNodePaths = PathManager.flatPaths([node]);
+
+        for (const p of allNodePaths) {
+            const items = list.value.items.filter(i => i.path === p);
+            for (const item of items) {
+                const res = await server.DELETE('/api/profile/asset/{:asset}', {
+                    params: {
+                        path: {
+                            ':asset': item.id
+                        }
+                    }
+                });
+
+                if (res.error) throw new Error(res.error.message);
+            }
+        }
+
+        await fetchList();
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
+}
 
 async function createOverlay(asset: ProfileFile) {
     if (!asset.artifacts.map(a => a.ext).includes(".pmtiles")) throw new Error('Cannot add an Overlay for an asset that is not Cloud Optimized');
@@ -425,6 +619,7 @@ async function fetchList() {
         if (res.error) throw new Error(res.error.message);
 
         list.value = res.data;
+        buildPathTree();
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

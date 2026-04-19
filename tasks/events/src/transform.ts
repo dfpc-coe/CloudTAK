@@ -241,7 +241,7 @@ export default class DataTransform {
             );
         } else {
             console.log(`ok - converting ${conversion.asset}`);
-            const pmout = cp.execFileSync('pmtiles', ['convert', conversion.asset, path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')]);
+            const pmout = cp.execFileSync('pmtiles', ['convert', conversion.asset, path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')], { maxBuffer: 100 * 1024 * 1024 });
             console.log(String(pmout));
 
             console.log(`ok - converted: ${path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')}`);
