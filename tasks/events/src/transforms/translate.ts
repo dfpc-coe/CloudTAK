@@ -56,7 +56,7 @@ export default class GDALTranslate implements Transform {
                     // MBTiles zoom level formula: zoom = log2(360 / (resDegrees * 256))
                     const zoom = Math.ceil(Math.log2(360 / (resDegrees * 256)));
                     if (zoom > 22) {
-                        args.unshift('-co', 'ZOOM_LEVEL=22');
+                        args.unshift('-co', 'MAXZOOM=22');
                     }
                 }
             }
