@@ -1,6 +1,6 @@
 <template>
     <MenuTemplate name='Callsign &amp; Device'>
-        <div class='mx-2'>
+        <div>
             <SettingsCallsign />
         </div>
     </MenuTemplate>

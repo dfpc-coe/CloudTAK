@@ -84,10 +84,14 @@
                                                 class='mx-3'
                                                 v-text='l.name'
                                             />
-                                            <span
-                                                class='ms-auto badge'
-                                                v-text='l.type'
-                                            />
+                                            <TablerBadge
+                                                class='ms-auto'
+                                                background-color='rgba(107, 114, 128, 0.2)'
+                                                border-color='rgba(107, 114, 128, 0.5)'
+                                                text-color='#6b7280'
+                                            >
+                                                {{ l.type }}
+                                            </TablerBadge>
                                         </template>
                                     </div>
                                 </td>
@@ -198,6 +202,7 @@ import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../std.ts';
 import {
     TablerAlert,
+    TablerBadge,
     TablerNone,
     TablerLoading,
     TablerDelete,

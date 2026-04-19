@@ -65,7 +65,14 @@
                         stroke='1'
                     />
                     <span class='fw-bold'>Pending Invites</span>
-                    <span class='badge rounded-pill small bg-danger text-white ms-auto'>{{ invites.length }}</span>
+                    <TablerBadge
+                        class='rounded-pill small ms-auto'
+                        background-color='rgba(239, 68, 68, 0.2)'
+                        border-color='rgba(239, 68, 68, 0.5)'
+                        text-color='#dc2626'
+                    >
+                        {{ invites.length }}
+                    </TablerBadge>
                     <IconChevronDown
                         v-if='!showInvites'
                         :size='20'
@@ -142,7 +149,7 @@
 <script setup lang='ts'>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { TablerNone, TablerInput, TablerDropdown, TablerIconButton, TablerDelete } from '@tak-ps/vue-tabler';
+import { TablerBadge, TablerNone, TablerInput, TablerDropdown, TablerIconButton, TablerDelete } from '@tak-ps/vue-tabler';
 import { IconPlus, IconMail, IconChevronDown, IconChevronUp } from '@tabler/icons-vue';
 import type { MissionSubscriptions, Contact as ContactType, MissionInvite } from '../../../../types.ts';
 import Subscription from '../../../../base/subscription.ts';

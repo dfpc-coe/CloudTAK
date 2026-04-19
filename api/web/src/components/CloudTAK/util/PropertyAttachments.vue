@@ -21,7 +21,14 @@
                     class='cursor-pointer me-2'
                     @click.stop='upload = true; expanded = true'
                 />
-                <span class='badge bg-blue-lt me-2'>{{ files.length }}</span>
+                <TablerBadge
+                    class='me-2'
+                    background-color='rgba(59, 130, 246, 0.15)'
+                    border-color='rgba(59, 130, 246, 0.4)'
+                    text-color='#3b82f6'
+                >
+                    {{ files.length }}
+                </TablerBadge>
             </template>
             <div class='col-12'>
                 <div class='mx-2 py-2'>
@@ -136,6 +143,7 @@ import {
 } from '@tabler/icons-vue';
 
 import {
+    TablerBadge,
     TablerIconButton,
     TablerLoading,
     TablerNone,

@@ -70,12 +70,16 @@
                                         v-if='props.subscription.meta.groups && props.subscription.meta.groups.length'
                                         class='d-flex flex-wrap gap-2'
                                     >
-                                        <span
+                                        <TablerBadge
                                             v-for='group of props.subscription.meta.groups'
                                             :key='group'
-                                            class='badge rounded-pill text-bg-secondary text-uppercase fw-semibold'
-                                            v-text='group'
-                                        />
+                                            class='rounded-pill text-uppercase fw-semibold'
+                                            background-color='rgba(107, 114, 128, 0.2)'
+                                            border-color='rgba(107, 114, 128, 0.5)'
+                                            text-color='#6b7280'
+                                        >
+                                            {{ group }}
+                                        </TablerBadge>
                                     </div>
                                     <p
                                         v-else
@@ -239,6 +243,7 @@ import {
     IconX,
 } from '@tabler/icons-vue';
 import {
+    TablerBadge,
     TablerLoading,
     TablerModal,
 } from '@tak-ps/vue-tabler';

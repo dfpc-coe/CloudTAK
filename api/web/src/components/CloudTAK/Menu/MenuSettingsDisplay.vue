@@ -4,7 +4,7 @@
         :loading='loading || !profile'
     >
         <template v-if='profile'>
-            <div class='mx-2'>
+            <div>
                 <div class='col-12'>
                     <TablerEnum
                         v-model='profile.display_stale'

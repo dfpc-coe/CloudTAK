@@ -40,13 +40,18 @@
                 v-if='config.urlTokens.length'
                 class='btn-list'
             >
-                <span
+                <TablerBadge
                     v-for='token in config.urlTokens'
                     :key='token.value'
                     v-tooltip='token.tooltip'
-                    class='badge bg-cyan-lt cursor-pointer'
+                    class='cursor-pointer'
+                    background-color='rgba(6, 182, 212, 0.15)'
+                    border-color='rgba(6, 182, 212, 0.4)'
+                    text-color='#0891b2'
                     @click='editing.url = editing.url + token.value'
-                >{{ token.value }}</span>
+                >
+                    {{ token.value }}
+                </TablerBadge>
             </div>
         </TablerInput>
     </div>

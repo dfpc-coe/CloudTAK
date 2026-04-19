@@ -57,14 +57,22 @@
                                 <template v-if='h.display'>
                                     <td>
                                         <template v-if='h.name === "expiration"'>
-                                            <span
+                                            <TablerBadge
                                                 v-if='expired(lease.expiration)'
-                                                class='badge bg-red text-white'
-                                            >Expired</span>
-                                            <span
+                                                background-color='rgba(239, 68, 68, 0.2)'
+                                                border-color='rgba(239, 68, 68, 0.5)'
+                                                text-color='#dc2626'
+                                            >
+                                                Expired
+                                            </TablerBadge>
+                                            <TablerBadge
                                                 v-else-if='lease.expiration === null'
-                                                class='badge bg-blue text-white'
-                                            >Permanent</span>
+                                                background-color='rgba(59, 130, 246, 0.25)'
+                                                border-color='rgba(59, 130, 246, 0.5)'
+                                                text-color='#2563eb'
+                                            >
+                                                Permanent
+                                            </TablerBadge>
                                             <span
                                                 v-else
                                                 class='subheader'
@@ -111,6 +119,7 @@ import TableHeader from '../../util/TableHeader.vue';
 import TableFooter from '../../util/TableFooter.vue';
 import VideoLeaseModal from '../../CloudTAK/Menu/Videos/VideoLeaseModal.vue';
 import {
+    TablerBadge,
     TablerNone,
     TablerInput,
     TablerAlert,

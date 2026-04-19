@@ -3,12 +3,16 @@
         v-if='filteredKeywords.length'
         class='d-flex flex-wrap gap-2 mt-1'
     >
-        <span
+        <TablerBadge
             v-for='keyword in filteredKeywords'
             :key='keyword'
-            class='badge text-bg-secondary text-uppercase rounded-pill px-3 py-1 small'
-            v-text='keyword'
-        />
+            class='text-uppercase rounded-pill px-3 py-1 small'
+            background-color='rgba(107, 114, 128, 0.2)'
+            border-color='rgba(107, 114, 128, 0.5)'
+            text-color='#6b7280'
+        >
+            {{ keyword }}
+        </TablerBadge>
     </div>
     <div
         v-else
@@ -19,6 +23,7 @@
 
 <script setup lang="ts">
 import  { computed } from 'vue';
+import { TablerBadge } from '@tak-ps/vue-tabler';
 
 const filtered = [
     'template:'

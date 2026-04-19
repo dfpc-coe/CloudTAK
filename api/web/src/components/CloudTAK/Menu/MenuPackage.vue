@@ -26,7 +26,7 @@
             />
             <TablerLoading v-else-if='loading || !pkg || !profile' />
             <template v-else-if='mode === "share" && shareFeat'>
-                <div class='container-fluid px-2 px-sm-3 py-4'>
+                <div class='container-fluid py-4'>
                     <div class='card border border-light-subtle cloudtak-bg text-white shadow-sm'>
                         <div class='card-header d-flex align-items-center gap-2'>
                             <IconShare2
@@ -52,7 +52,7 @@
                 </div>
             </template>
             <template v-else>
-                <div class='container-fluid px-2 px-sm-3 py-4'>
+                <div class='container-fluid py-4'>
                     <div class='row gy-3 gx-0 gx-lg-3'>
                         <div class='col-12'>
                             <div class='card h-100 cloudtak-bg text-white border border-light-subtle shadow-sm'>

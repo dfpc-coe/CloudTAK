@@ -1,6 +1,6 @@
 <template>
     <MenuTemplate name='Settings'>
-        <div class='col-12 d-flex flex-column gap-2 p-3'>
+        <div class='col-12 d-flex flex-column gap-2 py-3'>
             <StandardItem
                 @click='router.push("/menu/settings/callsign")'
             >

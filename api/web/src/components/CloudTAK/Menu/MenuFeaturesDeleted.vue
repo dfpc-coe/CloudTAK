@@ -44,7 +44,7 @@
             />
         </template>
         <template #default>
-            <div class='mx-2 my-2'>
+            <div class='my-2'>
                 <TablerInput
                     v-model='query.filter'
                     icon='search'
