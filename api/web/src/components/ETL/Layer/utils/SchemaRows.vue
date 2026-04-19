@@ -63,16 +63,26 @@
             <td v-text='field.format' />
             <td>
                 <div class='d-flex align-items-center'>
-                    <span
+                    <TablerBadge
                         v-if='field.required'
+                        class='mx-1 mb-1'
                         style='height: 20px;'
-                        class='badge mx-1 mb-1 bg-red text-white'
-                    >Required</span>
-                    <span
+                        background-color='rgba(239, 68, 68, 0.2)'
+                        border-color='rgba(239, 68, 68, 0.5)'
+                        text-color='#dc2626'
+                    >
+                        Required
+                    </TablerBadge>
+                    <TablerBadge
                         v-if='field.nullable'
+                        class='mx-1 mb-1'
                         style='height: 20px;'
-                        class='badge mx-1 mb-1 bg-yellow text-dark'
-                    >Nullable</span>
+                        background-color='rgba(245, 158, 11, 0.2)'
+                        border-color='rgba(245, 158, 11, 0.5)'
+                        text-color='#d97706'
+                    >
+                        Nullable
+                    </TablerBadge>
                     <span
                         v-if='field.expandable'
                         class='d-flex align-items-center ms-auto'
@@ -106,6 +116,7 @@
 
 <script setup lang='ts'>
 import { computed } from 'vue';
+import { TablerBadge } from '@tak-ps/vue-tabler';
 import {
     IconAlphabetLatin,
     IconSort09,

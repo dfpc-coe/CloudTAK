@@ -25,7 +25,7 @@
             />
         </template>
         <template #default>
-            <div class='col-12 px-2 py-2'>
+            <div class='col-12 py-2'>
                 <TablerInput
                     v-model='paging.filter'
                     icon='search'

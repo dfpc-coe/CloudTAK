@@ -25,7 +25,10 @@
                 >
                     <TablerBadge
                         v-if='badge.kind === "frequency"'
-                        class='basemap-frequency-badge badge rounded-pill small bg-info-subtle text-info-emphasis border border-info border-opacity-50 d-inline-flex align-items-center gap-1'
+                        class='rounded-pill small d-inline-flex align-items-center gap-1'
+                        background-color='rgba(6, 182, 212, 0.2)'
+                        border-color='rgba(6, 182, 212, 0.5)'
+                        text-color='#0891b2'
                     >
                         <IconClock
                             :size='14'
@@ -34,27 +37,33 @@
                         {{ badge.label }}
                     </TablerBadge>
 
-                    <span
+                    <TablerBadge
                         v-else
-                        class='basemap-badge'
-                        :class='`basemap-badge--${badge.tone}`'
+                        :background-color='badge.tone === "primary" ? "rgba(36, 163, 255, 0.2)" : badge.tone === "neutral" ? "rgba(255, 255, 255, 0.1)" : "rgba(120, 120, 120, 0.2)"'
+                        :border-color='badge.tone === "primary" ? "rgba(36, 163, 255, 0.9)" : badge.tone === "neutral" ? "rgba(255, 255, 255, 0.35)" : "rgba(120, 120, 120, 0.8)"'
+                        :text-color='badge.tone === "primary" ? "#24a3ff" : badge.tone === "neutral" ? "#9ca3af" : "#6b7280"'
+                        class='rounded-pill small'
                     >
                         {{ badge.label }}
-                    </span>
+                    </TablerBadge>
                 </template>
             </div>
         </div>
 
         <div class='d-flex align-items-center gap-2 me-2 flex-nowrap action-container'>
             <TablerBadge
-                :background-color='isPrivate ? "#f7a100" : "#2fb344"'
+                :background-color='isPrivate ? "rgba(247, 161, 0, 0.2)" : "rgba(47, 179, 68, 0.2)"'
+                :border-color='isPrivate ? "rgba(247, 161, 0, 0.5)" : "rgba(47, 179, 68, 0.5)"'
+                :text-color='isPrivate ? "#f7a100" : "#2fb344"'
             >
                 {{ isPrivate ? 'Private' : 'Public' }}
             </TablerBadge>
 
             <TablerBadge
                 v-if='basemap.hidden'
-                background-color='#d63939'
+                background-color='rgba(214, 57, 57, 0.2)'
+                border-color='rgba(214, 57, 57, 0.5)'
+                text-color='#d63939'
             >
                 Hidden
             </TablerBadge>

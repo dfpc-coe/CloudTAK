@@ -283,7 +283,13 @@
                                             {{ w.url }}
                                         </div>
                                         <div class='mt-1 d-flex align-items-center gap-2'>
-                                            <span class='badge bg-green text-white'>{{ w.state }}</span>
+                                            <TablerBadge
+                                                background-color='rgba(34, 197, 94, 0.2)'
+                                                border-color='rgba(34, 197, 94, 0.5)'
+                                                text-color='#16a34a'
+                                            >
+                                                {{ w.state }}
+                                            </TablerBadge>
                                             <div
                                                 v-if='w.version'
                                                 class='text-muted small'
@@ -328,6 +334,7 @@ import { getCurrentEntryBuildId } from '../base/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { std } from '../std.ts';
 import {
+    TablerBadge,
     TablerLoading,
     TablerInput,
     TablerInlineAlert

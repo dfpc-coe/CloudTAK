@@ -28,7 +28,7 @@
             />
         </template>
         <template #default>
-            <div class='col-12 px-2 pb-2 pt-2'>
+            <div class='col-12 pb-2 pt-2'>
                 <TablerInput
                     v-model='paging.filter'
                     icon='search'
@@ -47,7 +47,7 @@
             />
             <div
                 v-else
-                class='col-12 d-flex flex-column gap-2 p-3'
+                class='col-12 d-flex flex-column gap-2 py-3'
             >
                 <StandardItem
                     v-for='ch in processChannels'

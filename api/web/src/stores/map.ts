@@ -62,6 +62,7 @@ export const useMapStore = defineStore('cloudtak', {
         zoom: string;
         location: LocationState;
         locationAccuracy: number | undefined;
+        gpsCoordinates: { lat: number; lng: number } | null;
         distanceUnit: string;
         coordFormat: string;
         defaultPointType: string;
@@ -128,6 +129,7 @@ export const useMapStore = defineStore('cloudtak', {
             toImport: [],
             location: LocationState.Loading,
             locationAccuracy: undefined,
+            gpsCoordinates: null,
             hasSnapping: false,
             db,
             channel: new BroadcastChannel("cloudtak"),
@@ -624,6 +626,12 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 } else if (msg.type === WorkerMessageType.Profile_Location_Coordinates) {
                     this.locationAccuracy = msg.body.accuracy;
+                    if (msg.body.coordinates) {
+                        this.gpsCoordinates = {
+                            lng: msg.body.coordinates[0],
+                            lat: msg.body.coordinates[1]
+                        };
+                    }
                     if (!this.manualLocationMode) {
                         this.location = LocationState.Live;
                     }
@@ -767,6 +775,12 @@ export const useMapStore = defineStore('cloudtak', {
             const loc = await this.worker.profile.location;
             this.location = loc.source;
             this.locationAccuracy = loc.accuracy;
+            if (loc.coordinates) {
+                this.gpsCoordinates = {
+                    lng: loc.coordinates[0],
+                    lat: loc.coordinates[1]
+                };
+            }
 
             await this.worker.profile.load();
 

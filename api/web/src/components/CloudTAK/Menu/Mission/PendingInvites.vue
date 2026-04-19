@@ -10,7 +10,14 @@
                 stroke='1'
             />
             <span class='fw-bold'>Pending Invites</span>
-            <span class='badge rounded-pill small bg-danger text-white ms-auto'>{{ invites.length }}</span>
+            <TablerBadge
+                class='rounded-pill small ms-auto'
+                background-color='rgba(239, 68, 68, 0.2)'
+                border-color='rgba(239, 68, 68, 0.5)'
+                text-color='#dc2626'
+            >
+                {{ invites.length }}
+            </TablerBadge>
             <IconChevronDown
                 v-if='!showInvites'
                 :size='20'
@@ -72,7 +79,7 @@ import {
     IconTrash
 } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
-import { TablerIconButton } from '@tak-ps/vue-tabler';
+import { TablerBadge, TablerIconButton } from '@tak-ps/vue-tabler';
 import StandardItem from '../../util/StandardItem.vue';
 import { server } from '../../../../std.ts';
 import type { MissionInvite } from '../../../../types.ts';

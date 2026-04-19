@@ -10,11 +10,14 @@
             @click='focusNewTag()'
         >
             <div class='tag-entry-content'>
-                <span
+                <TablerBadge
                     v-for='(tag, index) in innerTags'
                     :key='index'
-                    class='mx-1 my-1 d-flex badge badge-outline bg-blue-lt'
+                    class='mx-1 my-1 d-flex'
                     style='height: 24px;'
+                    background-color='rgba(59, 130, 246, 0.15)'
+                    border-color='rgba(59, 130, 246, 0.4)'
+                    text-color='#3b82f6'
                 >
                     <slot
                         v-if='$slots.item'
@@ -27,12 +30,13 @@
                         v-if='!disabled'
                         title='Remove Tag'
                         @click.prevent.stop='removeTag(index)'
-                    ><IconX
-                        :size='16'
-                        stroke='2'
-                    />
+                    >
+                        <IconX
+                            :size='16'
+                            stroke='2'
+                        />
                     </TablerIconButton>
-                </span>
+                </TablerBadge>
                 <input
                     v-model='newTag'
                     :placeholder='placeholder'
@@ -55,7 +59,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import { TablerIconButton } from '@tak-ps/vue-tabler';
+import { TablerBadge, TablerIconButton } from '@tak-ps/vue-tabler';
 import { IconX } from '@tabler/icons-vue';
 
 type ValidateFn = (value: string) => string | false;

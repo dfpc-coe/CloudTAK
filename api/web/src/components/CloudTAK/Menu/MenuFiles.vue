@@ -20,7 +20,7 @@
         <template #default>
             <div
                 v-if='upload'
-                class='py-2 px-4'
+                class='py-2'
             >
                 <Upload
                     :url='stdurl(`/api/import`)'
@@ -31,7 +31,7 @@
                 />
             </div>
 
-            <div class='col-12 pe-2 pt-2'>
+            <div class='col-12 pt-2'>
                 <TablerInput
                     v-model='paging.filter'
                     icon='search'
@@ -60,7 +60,7 @@
                     <TablerSlidedown
                         :click-anywhere-expand='true'
                         :arrow='false'
-                        class='my-2 me-2'
+                        class='my-2'
                     >
                         <template #default>
                             <div

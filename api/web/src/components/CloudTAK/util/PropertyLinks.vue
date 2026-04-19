@@ -22,7 +22,14 @@
                         class='cursor-pointer me-2'
                         @click.stop='addExternalLink'
                     />
-                    <span class='badge bg-blue-lt me-2'>{{ external_links.length }}</span>
+                    <TablerBadge
+                        class='me-2'
+                        background-color='rgba(59, 130, 246, 0.15)'
+                        border-color='rgba(59, 130, 246, 0.4)'
+                        text-color='#3b82f6'
+                    >
+                        {{ external_links.length }}
+                    </TablerBadge>
                 </template>
 
                 <div class='overflow-hidden mb-2'>
@@ -202,7 +209,14 @@
                     />
                 </template>
                 <template #right>
-                    <span class='badge bg-blue-lt me-2'>{{ responder_links.length }}</span>
+                    <TablerBadge
+                        class='me-2'
+                        background-color='rgba(59, 130, 246, 0.15)'
+                        border-color='rgba(59, 130, 246, 0.4)'
+                        text-color='#3b82f6'
+                    >
+                        {{ responder_links.length }}
+                    </TablerBadge>
                 </template>
 
                 <div class='overflow-hidden'>
@@ -249,7 +263,7 @@
 <script setup lang='ts'>
 import { computed, ref } from 'vue';
 import SlideDownHeader from './SlideDownHeader.vue';
-import { TablerInput, TablerIconButton } from '@tak-ps/vue-tabler';
+import { TablerBadge, TablerInput, TablerIconButton } from '@tak-ps/vue-tabler';
 import { IconUsers, IconLink, IconExternalLink, IconPlus, IconTrash, IconPencil, IconCheck } from '@tabler/icons-vue';
 import type COT from '../../../base/cot';
 import timediff from '../../../timediff';

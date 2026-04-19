@@ -29,7 +29,7 @@
         </template>
         <template #default>
             <template v-if='upload'>
-                <div class='mx-4 my-4'>
+                <div class='my-4'>
                     <Upload
                         method='PUT'
                         :url='stdurl(`/api/import`)'
@@ -65,7 +65,7 @@
                 </TablerPillGroup>
 
                 <template v-if='mode === "iconsets"'>
-                    <div class='px-3 pt-3'>
+                    <div class='pt-3'>
                         <TablerInput
                             v-model='paging.filter'
                             icon='search'
@@ -86,7 +86,7 @@
                         label='No Iconsets'
                         :create='false'
                     />
-                    <div class='col-12 d-flex flex-column gap-2 p-3'>
+                    <div class='col-12 d-flex flex-column gap-2 py-3'>
                         <StandardItem
                             v-for='iconset in list.items'
                             :key='iconset.uid'
@@ -105,14 +105,24 @@
                                 </div>
 
                                 <div class='d-flex align-items-center flex-shrink-0'>
-                                    <span
+                                    <TablerBadge
                                         v-if='!iconset.username'
-                                        class='mx-3 badge border bg-blue text-white'
-                                    >Public</span>
-                                    <span
+                                        class='mx-3'
+                                        background-color='rgba(59, 130, 246, 0.25)'
+                                        border-color='rgba(59, 130, 246, 0.5)'
+                                        text-color='#2563eb'
+                                    >
+                                        Public
+                                    </TablerBadge>
+                                    <TablerBadge
                                         v-else
-                                        class='mx-3 badge border bg-red text-white'
-                                    >Private</span>
+                                        class='mx-3'
+                                        background-color='rgba(239, 68, 68, 0.2)'
+                                        border-color='rgba(239, 68, 68, 0.5)'
+                                        text-color='#dc2626'
+                                    >
+                                        Private
+                                    </TablerBadge>
                                     <TablerIconButton
                                         title='Download TAK Zip'
                                         @click.stop='download(iconset)'
@@ -166,6 +176,7 @@ import Upload from '../../util/Upload.vue';
 import IconCombineds from '../util/Icons.vue';
 import IconsetEditModal from './Iconset/EditModal.vue';
 import {
+    TablerBadge,
     TablerNone,
     TablerPager,
     TablerInput,
