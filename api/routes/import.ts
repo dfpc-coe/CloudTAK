@@ -410,7 +410,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const imported = await config.models.Import.augmented_from(req.params.import);
 
-            if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
+            if (imported.username !== user.email && !user.is_admin()) throw new Err(400, null, 'You did not create this import');
 
             const response = await importControl.retry(req.params.import);
 
