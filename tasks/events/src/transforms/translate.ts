@@ -66,7 +66,7 @@ export default class GDALTranslate implements Transform {
 
         cp.execFileSync('gdal_translate', args, { env });
 
-        cp.execFileSync('gdaladdo', ['-r', 'cubic', output]);
+        cp.execFileSync('gdaladdo', ['-r', 'cubic', output, '2', '4', '8', '16', '32', '64', '128', '256']);
 
         return {
             asset: output
