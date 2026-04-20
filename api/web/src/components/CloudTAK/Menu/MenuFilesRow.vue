@@ -109,6 +109,20 @@
                     class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
                     role='menuitem'
                     tabindex='0'
+                    @click.stop.prevent='emit("share-channel", asset)'
+                    @keyup.enter='emit("share-channel", asset)'
+                >
+                    <IconBroadcast
+                        :size='32'
+                        stroke='1'
+                    />
+                    <span class='mx-2'>Share to Channel</span>
+                </div>
+
+                <div
+                    class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
+                    role='menuitem'
+                    tabindex='0'
                     @click.stop.prevent='emit("rename", asset)'
                     @keyup.enter='emit("rename", asset)'
                 >
@@ -172,7 +186,8 @@ import {
     IconMapPlus,
     IconDownload,
     IconCursorText,
-    IconFolderSymlink
+    IconFolderSymlink,
+    IconBroadcast
 } from '@tabler/icons-vue';
 
 const props = defineProps<{
@@ -190,6 +205,7 @@ const emit = defineEmits<{
     'download': [asset: ProfileFile];
     'share-mission': [asset: ProfileFile];
     'share-package': [asset: ProfileFile];
+    'share-channel': [asset: ProfileFile];
     'rename': [asset: ProfileFile];
     'rename-submit': [];
     'rename-cancel': [];
