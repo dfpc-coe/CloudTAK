@@ -1,9 +1,9 @@
 <template>
-    <div role='menu'>
+    <StandardItem class='px-3 py-2'>
         <TablerSlidedown
             :click-anywhere-expand='true'
             :arrow='false'
-            class='my-2'
+            :border='false'
         >
             <template #default>
                 <div
@@ -152,11 +152,12 @@
                 />
             </template>
         </TablerSlidedown>
-    </div>
+    </StandardItem>
 </template>
 
 <script setup lang='ts'>
 import type { ProfileFile } from '../../../types.ts';
+import StandardItem from '../util/StandardItem.vue';
 import {
     TablerDelete,
     TablerSlidedown,
