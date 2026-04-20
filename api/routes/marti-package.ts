@@ -496,6 +496,10 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
+            items.sort((a, b) => {
+                return new Date(b.created).getTime() - new Date(a.created).getTime();
+            });
+
             res.json({
                 total: pkg.resultCount,
                 items
