@@ -72,13 +72,12 @@
                                                 class='h4 mb-0 text-break'
                                                 v-text='pkg.name'
                                             />
-                                            <button
-                                                type='button'
-                                                class='btn btn-link p-0 mt-1 text-start text-body-secondary small menu-package__inline-button'
+                                            <span
+                                                class='cursor-pointer text-sm text-white-50'
                                                 @click='relative = !relative'
                                             >
                                                 Created {{ relative ? timeDiff(pkg.created) : pkg.created }}
-                                            </button>
+                                            </span>
                                         </div>
                                     </div>
 
@@ -611,10 +610,6 @@ async function createImport() {
     --bs-btn-hover-color: inherit;
     --bs-btn-active-color: inherit;
     text-decoration: none;
-}
-
-.menu-package__inline-button:hover {
-    text-decoration: underline;
 }
 
 .menu-package__inline-button:focus-visible {
