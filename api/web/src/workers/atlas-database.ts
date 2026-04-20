@@ -37,6 +37,14 @@ export default class AtlasDatabase {
     // Stores Active Mission if present
     mission?: string;
 
+    static normalizePath(path: string): string {
+        if (!path) return '/';
+        if (!path.startsWith('/')) path = '/' + path;
+        path = path.replace(/\/+/g, '/');
+        if (path !== '/' && path.endsWith('/')) path = path.slice(0, -1);
+        return path;
+    }
+
     pendingCreate: Map<string, COT>;
     pendingUpdate: Map<string, COT>;
     pendingHidden: Set<string>;
@@ -341,7 +349,9 @@ export default class AtlasDatabase {
         const paths = new Map<string, number>();
         for (const value of store.values()) {
             if (value.path && value.path !== '/' && value.properties.archived) {
-                paths.set(value.path, (paths.get(value.path) || 0) + 1);
+                const normalized = AtlasDatabase.normalizePath(value.path);
+                if (normalized === '/') continue;
+                paths.set(normalized, (paths.get(normalized) || 0) + 1);
             }
         }
 
@@ -854,12 +864,14 @@ export default class AtlasDatabase {
     pathFeatures(path?: string, store?: Map<string, COT>): Set<COT> {
         if (!store) store = this.cots;
 
+        const normalizedPath = path ? AtlasDatabase.normalizePath(path) : undefined;
         const feats: Set<COT> = new Set();
 
         for (const value of store.values()) {
-            if (path && value.path === path && value.properties.archived) {
-                feats.add(value);
-            } else if (!path && value.properties.archived) {
+            if (normalizedPath && value.properties.archived) {
+                const valuePath = AtlasDatabase.normalizePath(value.path);
+                if (valuePath === normalizedPath) feats.add(value);
+            } else if (!normalizedPath && value.properties.archived) {
                 feats.add(value);
             }
         }

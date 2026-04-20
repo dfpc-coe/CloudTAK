@@ -11,6 +11,11 @@
         :size='props.size'
         :color='feature.properties["marker-color"]'
     />
+    <IconPointFilled
+        v-else-if='feature.properties && feature.properties.type === "b-m-p-s-m"'
+        :size='props.size'
+        :color='feature.properties["marker-color"] || "currentColor"'
+    />
     <IconCircle
         v-else-if='feature.properties && feature.properties.type === "u-d-c-c"'
         :size='props.size'

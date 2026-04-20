@@ -73,7 +73,7 @@
                     @rename='openEditModal'
                 />
 
-                <div class='mt-2'>
+                <div class='mt-2 d-flex flex-column gap-2'>
                     <FileRow
                         v-for='asset in currentFiles'
                         :key='asset.id'
