@@ -72,6 +72,13 @@
                                                 class='h4 mb-0 text-break'
                                                 v-text='pkg.name'
                                             />
+                                            <button
+                                                type='button'
+                                                class='btn btn-link p-0 mt-1 text-start text-body-secondary small menu-package__inline-button'
+                                                @click='relative = !relative'
+                                            >
+                                                Created {{ relative ? timeDiff(pkg.created) : pkg.created }}
+                                            </button>
                                         </div>
                                     </div>
 
@@ -83,42 +90,99 @@
                                                 v-text='pkg.username'
                                             />
                                         </div>
-                                        <div class='col-6'>
-                                            <small class='text-uppercase text-white-50 d-block mb-2'>Created</small>
-                                            <button
-                                                type='button'
-                                                class='menu-package__created-toggle'
-                                                @click='relative = !relative'
+                                        <div class='col-6' />
+                                        <div class='col-12'>
+                                            <SingleContainer
+                                                label='Expiry'
+                                                :editable='canEditPackage'
+                                                :editing='editingExpiration'
+                                                edit-aria-label='Edit expiry'
+                                                @edit='startEditingExpiration'
                                             >
-                                                <span class='menu-package__created-value'>
-                                                    {{ relative ? timeDiff(pkg.created) : pkg.created }}
-                                                </span>
-                                                <span class='menu-package__created-hint'>
-                                                    {{ relative ? 'Click to show the exact timestamp' : 'Click to return to relative time' }}
-                                                </span>
-                                            </button>
-                                        </div>
-                                        <div class='col-6'>
-                                            <small class='text-uppercase text-white-50 d-block mb-1'>Expires</small>
-                                            <p
-                                                v-if='packageExpiration'
-                                                class='fs-6 fw-semibold text-white mb-0 text-break'
-                                                v-text='packageExpiration'
-                                            />
-                                            <p
-                                                v-else
-                                                class='fs-6 text-white-50 fst-italic mb-0'
-                                            >
-                                                None
-                                            </p>
+                                                <template #editor>
+                                                    <TablerInput
+                                                        label='Expiration Time'
+                                                        type='datetime-local'
+                                                        :model-value='expirationDraft'
+                                                        @update:model-value='expirationDraft = String($event || "")'
+                                                    />
+
+                                                    <div class='d-flex justify-content-end gap-2 pt-2'>
+                                                        <TablerButton
+                                                            :disabled='savingExpiration'
+                                                            @click.stop='cancelEditingExpiration'
+                                                        >
+                                                            Cancel
+                                                        </TablerButton>
+                                                        <TablerButton
+                                                            :disabled='savingExpiration'
+                                                            @click.stop='clearExpiration'
+                                                        >
+                                                            Clear
+                                                        </TablerButton>
+                                                        <TablerButton
+                                                            class='btn-primary'
+                                                            :disabled='savingExpiration'
+                                                            @click.stop='saveExpiration'
+                                                        >
+                                                            {{ savingExpiration ? 'Saving...' : 'Save' }}
+                                                        </TablerButton>
+                                                    </div>
+                                                </template>
+
+                                                <button
+                                                    v-if='packageExpiration'
+                                                    type='button'
+                                                    class='btn btn-link p-0 text-start text-reset fw-semibold menu-package__inline-button'
+                                                    v-text='packageExpiration'
+                                                    @click.stop='expirationRelative = !expirationRelative'
+                                                />
+                                                <p
+                                                    v-else
+                                                    class='text-start text-white fw-semibold p-0 mb-0 text-decoration-none'
+                                                >
+                                                    None
+                                                </p>
+                                            </SingleContainer>
                                         </div>
                                         <div class='col-12'>
-                                            <small class='text-uppercase text-white-50 d-block mb-2'>Hashtags</small>
-                                            <Keywords
-                                                :keywords='pkg.keywords'
-                                                placeholder='No hashtags provided'
-                                                tone='accent'
-                                            />
+                                            <SingleContainer
+                                                label='Hashtags'
+                                                :editable='canEditPackage'
+                                                :editing='editingKeywords'
+                                                edit-aria-label='Edit hashtags'
+                                                @edit='startEditingKeywords'
+                                            >
+                                                <template #editor>
+                                                    <TagEntry
+                                                        :model-value='keywordDraft'
+                                                        placeholder='Add hashtags'
+                                                        @update:model-value='keywordDraft = $event'
+                                                    />
+
+                                                    <div class='d-flex justify-content-end gap-2 pt-2'>
+                                                        <TablerButton
+                                                            :disabled='savingKeywords'
+                                                            @click.stop='cancelEditingKeywords'
+                                                        >
+                                                            Cancel
+                                                        </TablerButton>
+                                                        <TablerButton
+                                                            class='btn-primary'
+                                                            :disabled='savingKeywords'
+                                                            @click.stop='saveKeywords'
+                                                        >
+                                                            {{ savingKeywords ? 'Saving...' : 'Save' }}
+                                                        </TablerButton>
+                                                    </div>
+                                                </template>
+
+                                                <Keywords
+                                                    :keywords='pkg.keywords'
+                                                    placeholder='No hashtags provided'
+                                                    tone='accent'
+                                                />
+                                            </SingleContainer>
                                         </div>
                                         <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Package Hash</small>
@@ -154,7 +218,7 @@
                                         <span>Import Package</span>
                                     </button>
                                     <button
-                                        class='btn w-100 d-flex align-items-center justify-content-center gap-2 share-package-btn'
+                                        class='btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2'
                                         :disabled='!shareFeat'
                                         @click='mode = "share"'
                                     >
@@ -177,14 +241,18 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import type { Server, Package as APIPackage, Feature } from '../../../../src/types.ts';
+import type { Server, Package, Feature } from '../../../../src/types.ts';
 import { server, stdurl, std } from '../../../std.ts';
 import Share from '../util/Share.vue';
 import Keywords from '../util/Keywords.vue';
+import SingleContainer from '../util/SingleContainer.vue';
+import TagEntry from '../util/TagEntry.vue';
 import timeDiff from '../../../timediff.ts';
 import {
     TablerAlert,
+    TablerButton,
     TablerDelete,
+    TablerInput,
     TablerLoading,
     TablerIconButton
 } from '@tak-ps/vue-tabler';
@@ -198,20 +266,23 @@ import {
 import { useMapStore } from '../../../stores/map.ts';
 import ProfileConfig from '../../../base/profile.ts';
 
-type Package = APIPackage & {
-    expiration?: number | string | null;
-};
-
 const route = useRoute();
 const router = useRouter();
 const mapStore = useMapStore();
 
 const relative = ref(true);
+const expirationRelative = ref(true);
 const loading = ref(true);
 const error = ref<Error | undefined>()
 const mode = ref('default');
 const serverConfig = ref<Server | undefined>();
 const pkg = ref<Package | undefined>();
+const editingKeywords = ref(false);
+const savingKeywords = ref(false);
+const keywordDraft = ref<string[]>([]);
+const editingExpiration = ref(false);
+const savingExpiration = ref(false);
+const expirationDraft = ref('');
 
 watch(route, async () => {
     await fetch();
@@ -249,6 +320,12 @@ const shareFeat = computed<Feature | undefined>(() => {
     } as Feature;
 });
 
+const canEditPackage = computed(() => {
+    if (!pkg.value || !profile.value.username) return false;
+
+    return profile.value.username === pkg.value.username || Boolean(profile.value.system_admin);
+});
+
 const packageSize = computed(() => {
     if (!pkg.value?.size) return '—';
 
@@ -262,18 +339,14 @@ const packageExpiration = computed(() => {
     const expiration = pkg.value?.expiration;
     if (expiration === undefined || expiration === null) return null;
 
-    if (typeof expiration === 'number') {
-        return expiration === -1 ? null : formatDateValue(expiration);
-    }
+    const normalizedExpiration = normalizeDateValue(expiration);
 
-    if (expiration.trim() === '' || expiration.trim() === '-1') return null;
+    if (typeof normalizedExpiration === 'number' && normalizedExpiration === -1) return null;
+    if (typeof normalizedExpiration === 'string' && normalizedExpiration.trim() === '') return null;
 
-    const numericExpiration = Number(expiration);
-    if (!Number.isNaN(numericExpiration)) {
-        return numericExpiration === -1 ? null : formatDateValue(numericExpiration);
-    }
-
-    return formatDateValue(expiration);
+    return expirationRelative.value
+        ? timeDiff(normalizedExpiration)
+        : formatDateValue(normalizedExpiration);
 });
 
 function formatBytes(bytes: number): string {
@@ -292,13 +365,28 @@ function formatBytes(bytes: number): string {
 
 function formatDateValue(value: number | string): string {
     if (typeof value === 'number') {
-        const normalized = value > 0 && value < 1_000_000_000_000 ? value * 1000 : value;
-        const date = new Date(normalized);
+        const date = new Date(value);
         return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
     }
 
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
+function normalizeDateValue(value: number | string): number | string {
+    if (typeof value === 'number') {
+        return value > 0 && value < 1_000_000_000_000 ? value * 1000 : value;
+    }
+
+    const trimmed = value.trim();
+    if (trimmed === '' || trimmed === '-1') return trimmed;
+
+    const numericValue = Number(trimmed);
+    if (!Number.isNaN(numericValue)) {
+        return numericValue > 0 && numericValue < 1_000_000_000_000 ? numericValue * 1000 : numericValue;
+    }
+
+    return value;
 }
 
 
@@ -342,6 +430,8 @@ async function fetch() {
         if (res.error) throw new Error(res.error.message);
 
         pkg.value = res.data;
+        if (!editingKeywords.value) keywordDraft.value = [...res.data.keywords];
+        if (!editingExpiration.value) expirationDraft.value = toDatetimeLocal(res.data.expiration);
 
         loading.value = false;
     } catch (err) {
@@ -350,6 +440,122 @@ async function fetch() {
     }
 
     loading.value = false;
+}
+
+function startEditingKeywords(): void {
+    if (!pkg.value || !canEditPackage.value) return;
+
+    keywordDraft.value = [...pkg.value.keywords];
+    editingKeywords.value = true;
+}
+
+function cancelEditingKeywords(): void {
+    editingKeywords.value = false;
+    keywordDraft.value = pkg.value ? [...pkg.value.keywords] : [];
+}
+
+async function saveKeywords(): Promise<void> {
+    try {
+        savingKeywords.value = true;
+
+        const updated = await patchPackage({ keywords: keywordDraft.value });
+
+        keywordDraft.value = [...updated.keywords];
+        editingKeywords.value = false;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        savingKeywords.value = false;
+    }
+}
+
+function startEditingExpiration(): void {
+    if (!pkg.value || !canEditPackage.value) return;
+
+    expirationDraft.value = toDatetimeLocal(pkg.value.expiration);
+    editingExpiration.value = true;
+}
+
+function cancelEditingExpiration(): void {
+    editingExpiration.value = false;
+    expirationDraft.value = pkg.value ? toDatetimeLocal(pkg.value.expiration) : '';
+}
+
+async function clearExpiration(): Promise<void> {
+    try {
+        savingExpiration.value = true;
+
+        const updated = await patchPackage({ expiration: -1 });
+
+        expirationDraft.value = toDatetimeLocal(updated.expiration);
+        editingExpiration.value = false;
+        expirationRelative.value = true;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        savingExpiration.value = false;
+    }
+}
+
+async function saveExpiration(): Promise<void> {
+    try {
+        savingExpiration.value = true;
+
+        const trimmed = expirationDraft.value.trim();
+
+        if (!trimmed) {
+            await clearExpiration();
+            return;
+        }
+
+        const time = new Date(trimmed).getTime();
+        if (Number.isNaN(time)) throw new Error('Invalid expiration date');
+
+        const updated = await patchPackage({ expiration: Math.floor(time / 1000) });
+
+        expirationDraft.value = toDatetimeLocal(updated.expiration);
+        editingExpiration.value = false;
+        expirationRelative.value = true;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        savingExpiration.value = false;
+    }
+}
+
+async function patchPackage(body: {
+    keywords?: string[];
+    expiration?: number;
+}): Promise<Package> {
+    if (!pkg.value) throw new Error('Package not loaded');
+
+    const res = await server.PATCH('/api/marti/package/{:uid}', {
+        params: {
+            path: {
+                ':uid': pkg.value.uid
+            }
+        },
+        body
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    pkg.value = res.data;
+    return res.data;
+}
+
+function toDatetimeLocal(value: number | string | null | undefined): string {
+    if (value === undefined || value === null) return '';
+
+    const normalized = normalizeDateValue(value);
+    if (typeof normalized === 'number' && normalized === -1) return '';
+    if (typeof normalized === 'string' && (normalized.trim() === '' || normalized.trim() === '-1')) return '';
+
+    const date = new Date(normalized);
+    if (Number.isNaN(date.getTime())) return '';
+
+    const local = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+    return local.toISOString().slice(0, 16);
 }
 
 async function deleteFile(pkg: Package) {
@@ -400,68 +606,20 @@ async function createImport() {
 </script>
 
 <style scoped>
-:global(html[data-bs-theme='dark']) .share-package-btn {
-    --bs-btn-color: rgba(255, 255, 255, 0.92);
-    --bs-btn-border-color: rgba(255, 255, 255, 0.35);
-    --bs-btn-hover-color: #182433;
-    --bs-btn-hover-bg: rgba(255, 255, 255, 0.92);
-    --bs-btn-hover-border-color: rgba(255, 255, 255, 0.92);
+.menu-package__inline-button {
+    --bs-btn-color: inherit;
+    --bs-btn-hover-color: inherit;
+    --bs-btn-active-color: inherit;
+    text-decoration: none;
 }
 
-:global(html[data-bs-theme='light']) .share-package-btn {
-    --bs-btn-color: var(--tblr-body-color);
-    --bs-btn-border-color: var(--tblr-border-color);
-    --bs-btn-hover-color: var(--tblr-bg-surface);
-    --bs-btn-hover-bg: var(--tblr-primary);
-    --bs-btn-hover-border-color: var(--tblr-primary);
+.menu-package__inline-button:hover {
+    text-decoration: underline;
 }
 
-.menu-package__created-toggle {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-    padding: 0.8rem 0.95rem;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 0.85rem;
-    background: rgba(255, 255, 255, 0.06);
-    color: inherit;
-    text-align: left;
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.menu-package__created-toggle:hover {
-    background: rgba(255, 255, 255, 0.11);
-    border-color: rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.45);
-}
-
-.menu-package__created-toggle:focus-visible {
+.menu-package__inline-button:focus-visible {
     outline: 2px solid rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.7);
     outline-offset: 2px;
-    box-shadow: 0 0 0 0.2rem rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.2);
-}
-
-.menu-package__created-value {
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.25;
-    color: rgba(255, 255, 255, 0.96);
-    word-break: break-word;
-}
-
-.menu-package__created-hint {
-    font-size: 0.75rem;
-    line-height: 1.3;
-    color: rgba(255, 255, 255, 0.62);
-}
-
-:global(html[data-bs-theme='light']) .menu-package__created-toggle {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.24);
-}
-
-:global(html[data-bs-theme='light']) .menu-package__created-toggle:hover {
-    background: rgba(255, 255, 255, 0.14);
+    border-radius: 0.25rem;
 }
 </style>

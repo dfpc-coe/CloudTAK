@@ -620,17 +620,7 @@ async function fetchList() {
 
         if (res.error) throw new Error(res.error.message);
 
-        const rawItems = res.data.items as Array<typeof res.data.items[number] & {
-            channels?: Array<number | string>;
-        }>;
-
-        list.value = {
-            ...res.data,
-            items: rawItems.map((item) => ({
-                ...item,
-                channels: item.channels?.map((channel) => Number(channel)) || []
-            }))
-        };
+        list.value = res.data;
         buildPathTree();
         loading.value = false;
     } catch (err) {
