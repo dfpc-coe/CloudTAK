@@ -1,5 +1,5 @@
 <template>
-    <TablerModal>
+    <TablerModal size='lg'>
         <div class='modal-status bg-white' />
         <button
             type='button'
@@ -16,7 +16,10 @@
                 <span class='mx-2'>Share to Channels</span>
             </div>
         </div>
-        <div class='modal-body'>
+        <div
+            class='modal-body'
+            style='max-height: 50vh; overflow-y: auto;'
+        >
             <TablerLoading v-if='loading' />
             <GroupSelect
                 v-else

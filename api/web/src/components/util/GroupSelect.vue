@@ -23,7 +23,7 @@
         <template v-else>
             <div
                 class='sticky-top pb-2 border-bottom'
-                style='background-color: var(--tblr-bg-surface, #fff)'
+                style='background-color: var(--tblr-modal-bg, var(--tblr-bg-surface, var(--tblr-body-bg))); z-index: 1;'
             >
                 <TablerInput
                     v-model='filter'
