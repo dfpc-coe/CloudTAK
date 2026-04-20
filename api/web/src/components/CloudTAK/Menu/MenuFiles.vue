@@ -26,6 +26,7 @@
                     :url='stdurl(`/api/import`)'
                     :headers='uploadHeaders()'
                     method='PUT'
+                    size-warning
                     @cancel='upload = false'
                     @done='uploadComplete($event)'
                 />

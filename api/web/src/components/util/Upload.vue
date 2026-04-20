@@ -1,6 +1,7 @@
 <template>
     <div class='card-body'>
         <TablerInlineAlert
+            v-if='props.sizeWarning'
             severity='warning'
             title='Uploads are limited to 5 GB'
         />
@@ -102,6 +103,7 @@ interface Props {
     cancel?: boolean;
     label?: string;
     mimetype?: string;
+    sizeWarning?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -111,7 +113,8 @@ const props = withDefaults(defineProps<Props>(), {
     method: 'POST',
     cancel: true,
     label: 'Select a file to upload',
-    mimetype: '*'
+    mimetype: '*',
+    sizeWarning: false
 });
 
 // Define the events emitted by this component
