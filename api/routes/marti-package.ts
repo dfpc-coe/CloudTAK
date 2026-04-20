@@ -22,35 +22,48 @@ import {
     MissionOptions,
 } from '@tak-ps/node-tak/lib/api/mission';
 import stream2buffer from '../lib/stream.js';
+import { PackageResponse } from './types.js';
 
-const PackageResponse = Type.Object({
-    uid: Type.String({
-        description: 'UID of the package'
-    }),
-    name: Type.String({
-        description: 'Name of the latest package version'
-    }),
-    hash: Type.String({
-        description: 'Hash of the latest package version'
-    }),
-    size: Type.Integer({
-        description: 'Size of the latest package version in bytes'
-    }),
-    username: Type.Optional(Type.String({
-        description: 'Submission User of the latest package version'
-    })),
-    created: Type.String({
-        format: 'date-time',
-        description: 'Submission DateTime of the latest package version'
-    }),
-    keywords: Type.Array(Type.String({
-        description: 'Keywords of the latest package version'
-    })),
-    expiration: Type.Union([Type.Null(), Type.Integer(), Type.String()], {
-        description: 'Expiration value of the latest package version'
-    }),
-    items: Type.Array(Package)
-});
+async function activeChannelNames(config: Config, email: string, api: TAKAPI): Promise<Set<string>> {
+    const groups = await api.Group.list({ useCache: true });
+    const poolConn = config.conns.get(email);
+
+    const activeBitpos = poolConn
+        ? poolConn.channels
+        : new Set(
+            groups.data
+                .filter((group) => group.active)
+                .map((group) => group.bitpos)
+        );
+
+    return new Set(
+        groups.data
+            .filter((group) => activeBitpos.has(group.bitpos))
+            .map((group) => group.name)
+    );
+}
+
+async function packageChannelNames(api: TAKAPI, pkg: Static<typeof Package>): Promise<Set<string>> {
+    const url = new URL('/Marti/api/files/metadata', api.url);
+    url.searchParams.append('missionPackage', 'true');
+    url.searchParams.append('name', pkg.Name);
+
+    const res = await api.fetch(url, {
+        method: 'GET'
+    }) as {
+        data?: Array<Record<string, string>>;
+    };
+
+    const match = (res.data || []).find((entry) => entry.Hash === pkg.Hash);
+    if (!match || !match.Groups) return new Set();
+
+    return new Set(
+        match.Groups
+            .split(',')
+            .map((group) => group.trim())
+            .filter(Boolean)
+    );
+}
 
 function packageSummary(uid: string, packages: Array<Static<typeof Package>>): Static<typeof PackageResponse> {
     const sorted = [...packages].sort((a, b) => {
@@ -598,11 +611,25 @@ export default async function router(schema: Schema, config: Config) {
             const current = packageSummary(req.params.uid, pkgs.results);
             const latest = current.items[current.items.length - 1];
 
-            if (
-                latest.SubmissionUser !== user.email
-                && user.access !== AuthUserAccess.ADMIN
-            ) {
-                throw new Err(403, null, 'Insufficient Access to update Package');
+            if (user.access !== AuthUserAccess.ADMIN) {
+                const profile = await config.models.Profile.from(user.email);
+                const userApi = await TAKAPI.init(
+                    new URL(String(config.server.api)),
+                    new APIAuthCertificate(profile.auth.cert, profile.auth.key)
+                );
+
+                const [userChannels, packageChannels] = await Promise.all([
+                    activeChannelNames(config, user.email, userApi),
+                    packageChannelNames(userApi, latest)
+                ]);
+
+                const hasChannelAccess = Array.from(packageChannels).some((channel) => {
+                    return userChannels.has(channel);
+                });
+
+                if (!hasChannelAccess) {
+                    throw new Err(403, null, 'Insufficient Access to update Package');
+                }
             }
 
             await api.Files.update(latest.Hash, {
