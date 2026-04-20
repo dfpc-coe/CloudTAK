@@ -7,9 +7,9 @@
             v-for='keyword in filteredKeywords'
             :key='keyword'
             class='text-uppercase rounded-pill px-3 py-1 small'
-            background-color='rgba(107, 114, 128, 0.2)'
-            border-color='rgba(107, 114, 128, 0.5)'
-            text-color='#6b7280'
+            :background-color='badgeColors.backgroundColor'
+            :border-color='badgeColors.borderColor'
+            :text-color='badgeColors.textColor'
         >
             {{ keyword }}
         </TablerBadge>
@@ -35,11 +35,29 @@ const filteredKeywords = computed(() => {
     });
 });
 
+const badgeColors = computed(() => {
+    if (props.tone === 'accent') {
+        return {
+            backgroundColor: 'rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.18)',
+            borderColor: 'rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.42)',
+            textColor: 'var(--tblr-primary-text-emphasis, rgb(var(--tblr-primary-rgb, 32, 107, 196)))'
+        };
+    }
+
+    return {
+        backgroundColor: 'rgba(107, 114, 128, 0.2)',
+        borderColor: 'rgba(107, 114, 128, 0.5)',
+        textColor: '#6b7280'
+    };
+});
+
 const props = withDefaults(defineProps<{
     keywords?: string[];
     placeholder?: string;
+    tone?: 'muted' | 'accent';
 }>(), {
     keywords: () => [],
-    placeholder: 'No Keywords'
+    placeholder: 'No Keywords',
+    tone: 'muted'
 });
 </script>

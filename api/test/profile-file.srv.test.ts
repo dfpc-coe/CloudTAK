@@ -77,12 +77,13 @@ test('POST: api/profile/asset', async () => {
             name: 'example.zip',
             iconset: null,
             size: 123,
+            channels: [],
             artifacts: []
         });
-
-        Sinon.restore();
     } catch (err) {
         assert.ifError(err);
+    } finally {
+        Sinon.restore();
     }
 });
 
@@ -108,6 +109,7 @@ test('PATCH: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', async () =
                 bearer: flight.token.admin
             },
             body: {
+                channels: [7, 42]
             }
         }, true);
 
@@ -125,12 +127,13 @@ test('PATCH: api/profile/asset/9e286ca6-1932-4365-804b-7dd4830f01d7', async () =
             name: 'example.zip',
             iconset: null,
             size: 123,
+            channels: [7, 42],
             artifacts: []
         });
-
-        Sinon.restore();
     } catch (err) {
         assert.ifError(err);
+    } finally {
+        Sinon.restore();
     }
 });
 

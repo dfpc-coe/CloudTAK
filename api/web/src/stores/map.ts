@@ -763,6 +763,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }, 500);
             });
 
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore Don't remove me unless npm run doc passes
             this._map = markRaw(map);
             this._draw = new DrawTool(this);

@@ -23,6 +23,60 @@ import {
 } from '@tak-ps/node-tak/lib/api/mission';
 import stream2buffer from '../lib/stream.js';
 
+const PackageResponse = Type.Object({
+    uid: Type.String({
+        description: 'UID of the package'
+    }),
+    name: Type.String({
+        description: 'Name of the latest package version'
+    }),
+    hash: Type.String({
+        description: 'Hash of the latest package version'
+    }),
+    size: Type.Integer({
+        description: 'Size of the latest package version in bytes'
+    }),
+    username: Type.Optional(Type.String({
+        description: 'Submission User of the latest package version'
+    })),
+    created: Type.String({
+        format: 'date-time',
+        description: 'Submission DateTime of the latest package version'
+    }),
+    keywords: Type.Array(Type.String({
+        description: 'Keywords of the latest package version'
+    })),
+    expiration: Type.Union([Type.Null(), Type.Integer(), Type.String()], {
+        description: 'Expiration value of the latest package version'
+    }),
+    items: Type.Array(Package)
+});
+
+function packageSummary(uid: string, packages: Array<Static<typeof Package>>): Static<typeof PackageResponse> {
+    const sorted = [...packages].sort((a, b) => {
+        return new Date(a.SubmissionDateTime).getTime() - new Date(b.SubmissionDateTime).getTime();
+    });
+
+    const latest = sorted[sorted.length - 1];
+    const expiration = latest.EXPIRATION === undefined || latest.EXPIRATION === null
+        ? null
+        : !isNaN(Number(latest.EXPIRATION))
+            ? Number(latest.EXPIRATION)
+            : latest.EXPIRATION;
+
+    return {
+        uid,
+        name: latest.Name,
+        keywords: latest.Keywords || [],
+        hash: latest.Hash,
+        size: !isNaN(Number(latest.Size)) ? Number(latest.Size) : 0,
+        created: latest.SubmissionDateTime,
+        expiration,
+        username: latest.SubmissionUser,
+        items: sorted
+    };
+}
+
 export default async function router(schema: Schema, config: Config) {
     await schema.post('/marti/package', {
         name: 'Create File Package',
@@ -420,31 +474,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(Type.Object({
-                uid: Type.String({
-                    description: 'UID of the package'
-                }),
-                name: Type.String({
-                    description: 'Name of the latest package version'
-                }),
-                hash: Type.String({
-                    description: 'Hash of the latest package version'
-                }),
-                size: Type.Integer({
-                    description: 'Size of the latest package version in bytes'
-                }),
-                username: Type.Optional(Type.String({
-                    description: 'Submission User of the latest package version'
-                })),
-                created: Type.String({
-                    format: 'date-time',
-                    description: 'Submission DateTime of the latest package version'
-                }),
-                keywords: Type.Array(Type.String({
-                    description: 'Keywords of the latest package version'
-                })),
-                items: Type.Array(Package)
-            }))
+            items: Type.Array(PackageResponse)
         })
     }, async (req, res) => {
         try {
@@ -480,20 +510,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const items = [];
             for (const [ uid, packages ] of byUID.entries()) {
-                packages.sort((a, b) => {
-                    return new Date(a.SubmissionDateTime).getTime() - new Date(b.SubmissionDateTime).getTime();
-                });
-
-                items.push({
-                    uid,
-                    name: packages[packages.length - 1].Name,
-                    keywords: packages[packages.length - 1].Keywords || [],
-                    hash: packages[packages.length - 1].Hash,
-                    size: !isNaN(Number(packages[packages.length - 1].Size)) ? Number(packages[packages.length -1].Size) : 0,
-                    created: packages[packages.length - 1].SubmissionDateTime,
-                    username: packages[packages.length - 1].SubmissionUser,
-                    items: packages
-                });
+                items.push(packageSummary(uid, packages));
             }
 
             items.sort((a, b) => {
@@ -521,29 +538,7 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             uid: Type.String()
         }),
-        res: Type.Object({
-            uid: Type.String({
-                description: 'UID of the package'
-            }),
-            name: Type.String({
-                description: 'Name of the latest package version'
-            }),
-            hash: Type.String({
-                description: 'Hash of the latest package version'
-            }),
-            size: Type.Integer({
-                description: 'Size of the latest package version in bytes'
-            }),
-            username: Type.Optional(Type.String({
-                description: 'Submission User of the latest package version'
-            })),
-            created: Type.String({
-                format: 'date-time',
-                description: 'Submission DateTime of the latest package version'
-            }),
-            keywords: Type.Array(Type.String()),
-            items: Type.Array(Package)
-        })
+        res: PackageResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -556,20 +551,74 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!pkg.results.length) throw new Err(404, null, 'Package not found');
 
-            pkg.results.sort((a, b) => {
-                return new Date(a.SubmissionDateTime).getTime() - new Date(b.SubmissionDateTime).getTime();
+            res.json(packageSummary(req.params.uid, pkg.results));
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/marti/package/:uid', {
+        name: 'Update Package',
+        group: 'MartiPackages',
+        description: 'Helper API to update the latest package metadata',
+        params: Type.Object({
+            uid: Type.String()
+        }),
+        body: Type.Object({
+            keywords: Type.Optional(Type.Array(Type.String(), {
+                description: 'Keywords to assign to the latest package version'
+            })),
+            expiration: Type.Optional(Type.Integer({
+                description: 'Expiration as a Unix timestamp in seconds, use -1 to clear expiration'
+            }))
+        }),
+        res: PackageResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            if (req.body.keywords === undefined && req.body.expiration === undefined) {
+                throw new Err(400, null, 'Must provide keywords or expiration');
+            }
+
+            const auth = config.serverCert();
+            const api = await TAKAPI.init(
+                new URL(String(config.server.api)),
+                new APIAuthCertificate(auth.cert, auth.key)
+            );
+
+            const pkgs = await api.Package.list({
+                uid: req.params.uid
             });
 
-            res.json({
-                uid: req.params.uid,
-                name: pkg.results[pkg.results.length - 1].Name,
-                hash: pkg.results[pkg.results.length - 1].Hash,
-                size: !isNaN(Number(pkg.results[pkg.results.length - 1].Size)) ? Number(pkg.results[pkg.results.length -1].Size) : 0,
-                keywords: pkg.results[pkg.results.length - 1].Keywords || [],
-                created: pkg.results[pkg.results.length - 1].SubmissionDateTime,
-                username: pkg.results[pkg.results.length - 1].SubmissionUser,
-                items: pkg.results
+            if (!pkgs.results.length) {
+                throw new Err(404, null, 'Package not found');
+            }
+
+            const current = packageSummary(req.params.uid, pkgs.results);
+            const latest = current.items[current.items.length - 1];
+
+            if (
+                latest.SubmissionUser !== user.email
+                && user.access !== AuthUserAccess.ADMIN
+            ) {
+                throw new Err(403, null, 'Insufficient Access to update Package');
+            }
+
+            await api.Files.update(latest.Hash, {
+                keywords: req.body.keywords,
+                expiration: req.body.expiration
             });
+
+            const updated = await api.Package.list({
+                uid: req.params.uid
+            });
+
+            if (!updated.results.length) {
+                throw new Err(404, null, 'Package not found');
+            }
+
+            res.json(packageSummary(req.params.uid, updated.results));
         } catch (err) {
              Err.respond(err, res);
         }

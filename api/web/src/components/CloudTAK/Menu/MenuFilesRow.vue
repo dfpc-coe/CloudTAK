@@ -2,6 +2,7 @@
     <StandardItem class='px-3 py-2'>
         <TablerSlidedown
             :click-anywhere-expand='true'
+            :click-anywhere-collapse='true'
             :arrow='false'
             :border='false'
         >
@@ -143,10 +144,11 @@
 
                 <div v-if='rename && rename.id === asset.id'>
                     <TablerInput
-                        v-model='rename.name'
+                        :model-value='rename.name'
                         class='m-2'
                         :placeholder='asset.name'
                         :autofocus='true'
+                        @update:model-value='emit("rename-change", String($event || ""))'
                         @blur='emit("rename-cancel")'
                         @keyup.enter='emit("rename-submit")'
                     />
@@ -215,6 +217,7 @@ const emit = defineEmits<{
     'share-package': [asset: ProfileFile];
     'share-channel': [asset: ProfileFile];
     'rename': [asset: ProfileFile];
+    'rename-change': [name: string];
     'rename-submit': [];
     'rename-cancel': [];
     'delete': [asset: ProfileFile];
