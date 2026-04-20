@@ -660,7 +660,7 @@ async function deleteAsset(asset: ProfileFile) {
     await fetchList();
 }
 
-async function saveChannels(channels: string[]) {
+async function saveChannels(channels: number[]) {
     if (!shareToChannel.value) return;
 
     const res = await server.PATCH('/api/profile/asset/{:asset}', {

@@ -195,7 +195,7 @@ export default async function router(schema: Schema, config: Config) {
             }))),
             name: Type.Optional(Type.String()),
             iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
-            channels: Type.Optional(Type.Array(Type.String()))
+            channels: Type.Optional(Type.Array(Type.Integer()))
         }),
         res: ProfileFileResponse
     }, async (req, res) => {
