@@ -87,6 +87,7 @@
                         @share-package='shareToPackage = $event'
                         @share-channel='shareToChannel = $event'
                         @rename='rename = { id: $event.id, name: $event.name, loading: false }'
+                        @rename-change='rename && (rename.name = $event)'
                         @rename-submit='renameAsset'
                         @rename-cancel='rename = undefined'
                         @delete='deleteAsset'
@@ -173,7 +174,9 @@
             @click='moveModal.shown = false'
         />
         <div class='modal-header text-body'>
-            <div class='modal-title'>Move File to Folder</div>
+            <div class='modal-title'>
+                Move File to Folder
+            </div>
         </div>
         <div class='modal-body'>
             <div
@@ -219,7 +222,6 @@ import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
 import { std, stdurl, server } from '../../../std.ts';
 import {
-    TablerDelete,
     TablerIconButton,
     TablerRefreshButton,
     TablerInput,
@@ -227,22 +229,13 @@ import {
     TablerAlert,
     TablerNone,
     TablerLoading,
-    TablerBytes,
-    TablerEpoch,
     TablerModal,
     TablerButton
 } from '@tak-ps/vue-tabler';
 import {
-    IconAmbulance,
-    IconPackage,
     IconUpload,
-    IconMapOff,
-    IconMapPlus,
-    IconDownload,
-    IconCursorText,
     IconFolder,
     IconFolderPlus,
-    IconFolderSymlink,
 } from '@tabler/icons-vue';
 import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
@@ -287,10 +280,6 @@ const list = ref<ProfileFileList>({
 const paths = ref<PathNode<ProfileFile>[]>([]);
 const rootFiles = ref<ProfileFile[]>([]);
 const currentPath = ref('/');
-
-const currentPathName = computed(() => {
-    return PathManager.displayName(currentPath.value);
-});
 
 const collectionPath = computed({
     get: () => currentPath.value === '/' ? '' : currentPath.value.slice(1),
@@ -631,7 +620,17 @@ async function fetchList() {
 
         if (res.error) throw new Error(res.error.message);
 
-        list.value = res.data;
+        const rawItems = res.data.items as Array<typeof res.data.items[number] & {
+            channels?: Array<number | string>;
+        }>;
+
+        list.value = {
+            ...res.data,
+            items: rawItems.map((item) => ({
+                ...item,
+                channels: item.channels?.map((channel) => Number(channel)) || []
+            }))
+        };
         buildPathTree();
         loading.value = false;
     } catch (err) {

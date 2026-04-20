@@ -80,6 +80,7 @@
 
                             <Keywords
                                 :keywords='pkg.keywords.filter((k) => k && k.trim() !== "missionpackage")'
+                                tone='accent'
                             />
 
                             <div class='text-secondary small d-flex flex-wrap align-items-center gap-2'>

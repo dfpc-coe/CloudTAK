@@ -183,7 +183,6 @@
 </template>
 
 <script setup lang='ts'>
-import { v4 as randomUUID } from 'uuid';
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import COT from '../../../base/cot.ts';
 import PathManager from '../../../base/path-manager.ts';
@@ -245,10 +244,6 @@ const currentItems = ref<Set<COT>>(new Set());
 const query = ref({
     filter: ''
 })
-
-const currentPathName = computed(() => {
-    return PathManager.displayName(currentPath.value);
-});
 
 const collectionPath = computed({
     get: () => currentPath.value === '/' ? '' : currentPath.value.slice(1),
