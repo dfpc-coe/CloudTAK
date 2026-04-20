@@ -17,7 +17,7 @@ export default class ProfileFileModel extends Modeler<typeof ProfileFile> {
         const SubTable = this.pool
             .select({
                 file: ProfileFileChannel.file,
-                channels: sql`JSON_AGG(profile_file_channel.channel)`.as('channels')
+                channels: sql`JSON_AGG(profile_file_channel.channel::INTEGER)`.as('channels')
             })
             .from(ProfileFileChannel)
             .groupBy(ProfileFileChannel.file)
@@ -48,7 +48,7 @@ export default class ProfileFileModel extends Modeler<typeof ProfileFile> {
         const SubTable = this.pool
             .select({
                 file: ProfileFileChannel.file,
-                channels: sql`JSON_AGG(profile_file_channel.channel)`.as('channels')
+                channels: sql`JSON_AGG(profile_file_channel.channel::INTEGER)`.as('channels')
             })
             .from(ProfileFileChannel)
             .groupBy(ProfileFileChannel.file)

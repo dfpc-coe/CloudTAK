@@ -369,7 +369,7 @@ export const ProfileFileResponse = Type.Object({
     name: Type.String(),
     iconset: Type.Union([Type.Null(), Type.String()]),
     size: Type.Integer(),
-    channels: Type.Array(Type.String()),
+    channels: Type.Array(Type.Integer()),
     artifacts: Type.Array(Type.Object({
         ext: Type.String(),
         size: Type.Integer(),
