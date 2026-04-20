@@ -236,11 +236,11 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             if (req.body.channels !== undefined) {
-                await config.pool.delete(ProfileFileChannel)
+                await config.pg.delete(ProfileFileChannel)
                     .where(eq(ProfileFileChannel.file, req.params.asset));
 
                 if (req.body.channels.length > 0) {
-                    await config.pool.insert(ProfileFileChannel)
+                    await config.pg.insert(ProfileFileChannel)
                         .values(req.body.channels.map((ch) => ({
                             file: req.params.asset,
                             channel: BigInt(ch)

@@ -26,10 +26,18 @@
                     </div>
                     <div class='col-auto'>
                         <div
-                            class='col-12 text-truncate px-2 user-select-none'
+                            class='col-12 text-truncate px-2 user-select-none d-flex align-items-center'
                             style='max-width: 250px;'
-                            v-text='asset.name'
-                        />
+                        >
+                            <span v-text='asset.name' />
+                            <IconBroadcast
+                                v-if='asset.channels.length'
+                                v-tooltip='"Shared to Channel"'
+                                :size='16'
+                                stroke='1'
+                                class='ms-1 flex-shrink-0 text-blue'
+                            />
+                        </div>
                         <div class='col-12 subheader'>
                             <span class='mx-2 user-select-none'>
                                 <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
