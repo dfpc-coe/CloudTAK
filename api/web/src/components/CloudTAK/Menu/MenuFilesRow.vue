@@ -13,58 +13,65 @@
                     tabindex='0'
                 >
                     <div class='col-auto'>
-                        <IconMapPlus
-                            v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <IconMapOff
-                            v-else
-                            v-tooltip='"Not Cloud Optimized"'
-                            :size='32'
-                            stroke='1'
-                        />
+                        <TablerIconButton
+                            class='flex-shrink-0'
+                            :title='overlayButtonTitle(asset)'
+                            :disabled='!canCreateOverlay(asset)'
+                            @click.stop.prevent='canCreateOverlay(asset) && emit("create-overlay", asset)'
+                        >
+                            <IconMapPlus
+                                v-if='assetSupportsOverlay(asset)'
+                                :size='32'
+                                stroke='1'
+                            />
+                            <IconMapOff
+                                v-else
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
-                    <div class='col-auto'>
+                    <div class='flex-grow-1 min-width-0'>
                         <div
-                            class='col-12 text-truncate px-2 user-select-none d-flex align-items-center'
-                            style='max-width: 250px;'
+                            class='col-12 text-truncate px-2 user-select-none'
                         >
                             <span v-text='asset.name' />
-                            <IconBroadcast
-                                v-if='asset.channels.length'
-                                v-tooltip='"Shared to Channel"'
-                                :size='16'
-                                stroke='1'
-                                class='ms-1 flex-shrink-0 text-blue'
-                            />
                         </div>
-                        <div class='col-12 subheader'>
+                        <div class='col-12 subheader d-flex align-items-center gap-2 px-2'>
                             <span class='mx-2 user-select-none'>
                                 <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
                             </span>
+                            <TablerBadge
+                                v-if='Array.isArray(asset.channels) && asset.channels.length > 0'
+                                class='small flex-shrink-0 ms-auto'
+                                background-color='rgba(36, 163, 255, 0.15)'
+                                border-color='rgba(36, 163, 255, 0.35)'
+                                text-color='#24a3ff'
+                            >
+                                Shared
+                            </TablerBadge>
                         </div>
                     </div>
                 </div>
             </template>
             <template #expanded>
                 <div
-                    v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
+                    v-if='assetSupportsOverlay(asset)'
                     :class='[
                         "rounded col-12 d-flex align-items-center px-2 py-2 user-select-none",
-                        assetOverlayExists(asset) ? "opacity-50 pe-none" : "cursor-pointer cloudtak-hover"
+                        canCreateOverlay(asset) ? "cursor-pointer cloudtak-hover" : "opacity-50 pe-none"
                     ]'
                     role='menuitem'
-                    :tabindex='assetOverlayExists(asset) ? -1 : 0'
-                    :aria-disabled='assetOverlayExists(asset)'
-                    @click.stop.prevent='!assetOverlayExists(asset) && emit("create-overlay", asset)'
-                    @keyup.enter='!assetOverlayExists(asset) && emit("create-overlay", asset)'
+                    :tabindex='canCreateOverlay(asset) ? 0 : -1'
+                    :aria-disabled='!canCreateOverlay(asset)'
+                    @click.stop.prevent='canCreateOverlay(asset) && emit("create-overlay", asset)'
+                    @keyup.enter='canCreateOverlay(asset) && emit("create-overlay", asset)'
                 >
                     <IconMapPlus
                         :size='32'
                         stroke='1'
                     />
-                    <span class='mx-2'>{{ assetOverlayExists(asset) ? "Overlay already added" : "Add to Map as Overlay" }}</span>
+                    <span class='mx-2'>{{ canCreateOverlay(asset) ? "Add to Map as Overlay" : "Overlay already added" }}</span>
                 </div>
                 <div
                     v-else
@@ -185,6 +192,8 @@ import StandardItem from '../util/StandardItem.vue';
 import {
     TablerDelete,
     TablerSlidedown,
+    TablerBadge,
+    TablerIconButton,
     TablerInput,
     TablerBytes,
     TablerEpoch
@@ -227,5 +236,19 @@ const emit = defineEmits<{
 function assetOverlayExists(asset: ProfileFile): boolean {
     const url = `/api/profile/asset/${encodeURIComponent(asset.id)}.pmtiles/tile`;
     return props.overlayUrls.has(url);
+}
+
+function assetSupportsOverlay(asset: ProfileFile): boolean {
+    return asset.artifacts.some((artifact) => artifact.ext === '.pmtiles');
+}
+
+function canCreateOverlay(asset: ProfileFile): boolean {
+    return assetSupportsOverlay(asset) && !assetOverlayExists(asset);
+}
+
+function overlayButtonTitle(asset: ProfileFile): string {
+    if (!assetSupportsOverlay(asset)) return 'Not Cloud Optimized';
+    if (assetOverlayExists(asset)) return 'Overlay already added';
+    return 'Add to Map as Overlay';
 }
 </script>
