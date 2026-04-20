@@ -1,5 +1,5 @@
 <template>
-    <MenuTemplate name='User Files'>
+    <MenuTemplate name='Uploaded Files'>
         <template #buttons>
             <TablerIconButton
                 v-if='!loading && !upload'
@@ -84,6 +84,7 @@
                         @download='downloadAsset'
                         @share-mission='shareToMission = $event'
                         @share-package='shareToPackage = $event'
+                        @share-channel='shareToChannel = $event'
                         @rename='rename = { id: $event.id, name: $event.name, loading: false }'
                         @rename-submit='renameAsset'
                         @rename-cancel='rename = undefined'
@@ -200,6 +201,13 @@
             </div>
         </div>
     </TablerModal>
+
+    <GroupSelectModal
+        v-if='shareToChannel'
+        :model-value='shareToChannel.channels'
+        @close='shareToChannel = undefined'
+        @submit='saveChannels'
+    />
 </template>
 
 <script setup lang='ts'>
@@ -238,6 +246,7 @@ import {
 import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
 import ShareToMission from '../util/ShareToMission.vue';
+import GroupSelectModal from '../../util/GroupSelectModal.vue';
 import PathBrowser from '../util/PathBrowser.vue';
 import FileRow from './MenuFilesRow.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -259,6 +268,7 @@ const router = useRouter();
 const upload = ref(false)
 const shareToPackage = ref<ProfileFile | undefined>();
 const shareToMission = ref<ProfileFile | undefined>();
+const shareToChannel = ref<ProfileFile | undefined>();
 const rename = ref<{
     id: string;
     loading: boolean;
@@ -645,6 +655,27 @@ async function deleteAsset(asset: ProfileFile) {
         loading.value = false
         throw err;
     }
+
+    await fetchList();
+}
+
+async function saveChannels(channels: string[]) {
+    if (!shareToChannel.value) return;
+
+    const res = await server.PATCH('/api/profile/asset/{:asset}', {
+        params: {
+            path: {
+                ':asset': shareToChannel.value.id
+            }
+        },
+        body: {
+            channels
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    shareToChannel.value = undefined;
 
     await fetchList();
 }

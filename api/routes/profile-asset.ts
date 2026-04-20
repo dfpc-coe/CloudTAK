@@ -1,13 +1,13 @@
 import path from 'node:path';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, ProfileFileResponse } from '../lib/types.js';
-import { sql } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import jwt from 'jsonwebtoken';
-import { ProfileFile } from '../lib/schema.js';
+import { ProfileFile, ProfileFileChannel } from '../lib/schema.js';
 import Config from '../lib/config.js';
 import * as Default from '../lib/limits.js'
 
@@ -194,7 +194,8 @@ export default async function router(schema: Schema, config: Config) {
                 ext: Type.String()
             }))),
             name: Type.Optional(Type.String()),
-            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()]))
+            iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            channels: Type.Optional(Type.Array(Type.String()))
         }),
         res: ProfileFileResponse
     }, async (req, res) => {
@@ -233,6 +234,19 @@ export default async function router(schema: Schema, config: Config) {
                 path: req.body.path,
                 iconset: iconsetValue
             });
+
+            if (req.body.channels !== undefined) {
+                await config.pool.delete(ProfileFileChannel)
+                    .where(eq(ProfileFileChannel.file, req.params.asset));
+
+                if (req.body.channels.length > 0) {
+                    await config.pool.insert(ProfileFileChannel)
+                        .values(req.body.channels.map((ch) => ({
+                            file: req.params.asset,
+                            channel: BigInt(ch)
+                        })));
+                }
+            }
 
             res.json(await config.models.ProfileFile.augmented_from(file.id));
         } catch (err) {
