@@ -34,6 +34,9 @@ export const PackageResponse = Type.Object({
     expiration: Type.Union([Type.Null(), Type.Integer(), Type.String()], {
         description: 'Expiration value of the latest package version'
     }),
+    channels: Type.Array(Type.String({
+        description: 'Channels assigned to the latest package version'
+    })),
     items: Type.Array(Package)
 });
 

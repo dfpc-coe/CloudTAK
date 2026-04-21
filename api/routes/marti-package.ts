@@ -78,7 +78,18 @@ function packageSummary(uid: string, packages: Array<Static<typeof Package>>): S
         created: latest.SubmissionDateTime,
         expiration,
         username: latest.SubmissionUser,
+        channels: [],
         items: sorted
+    };
+}
+
+async function packageSummaryWithChannels(api: TAKAPI, uid: string, packages: Array<Static<typeof Package>>): Promise<Static<typeof PackageResponse>> {
+    const summary = packageSummary(uid, packages);
+    const latest = summary.items[summary.items.length - 1];
+
+    return {
+        ...summary,
+        channels: Array.from(await packageChannelNames(api, latest))
     };
 }
 
@@ -556,7 +567,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!pkg.results.length) throw new Err(404, null, 'Package not found');
 
-            res.json(packageSummary(req.params.uid, pkg.results));
+            res.json(await packageSummaryWithChannels(api, req.params.uid, pkg.results));
         } catch (err) {
              Err.respond(err, res);
         }
@@ -637,7 +648,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(404, null, 'Package not found');
             }
 
-            res.json(packageSummary(req.params.uid, updated.results));
+            res.json(await packageSummaryWithChannels(api, req.params.uid, updated.results));
         } catch (err) {
              Err.respond(err, res);
         }

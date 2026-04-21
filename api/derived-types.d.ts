@@ -25309,6 +25309,7 @@ export interface paths {
                             keywords: string[];
                             /** @description Expiration value of the latest package version */
                             expiration: null | number | string;
+                            channels: string[];
                             items: {
                                 EXPIRATION: string;
                                 UID: string;
@@ -25531,6 +25532,7 @@ export interface paths {
                             keywords: string[];
                             /** @description Expiration value of the latest package version */
                             expiration: null | number | string;
+                            channels: string[];
                             items: {
                                 EXPIRATION: string;
                                 UID: string;

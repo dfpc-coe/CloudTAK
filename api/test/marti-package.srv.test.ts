@@ -54,6 +54,80 @@ test('GET: api/marti/package - empty', async () => {
     flight.tak.reset();
 });
 
+test('GET api/marti/package/:uid - includes latest package channels', async () => {
+    try {
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (!request.method || !request.url) {
+                return false;
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=visible-pkg-uid')) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    resultCount: 2,
+                    results: [{
+                        UID: 'visible-pkg-uid',
+                        SubmissionDateTime: '2024-01-01T00:00:00.000Z',
+                        Keywords: ['older'],
+                        Tool: 'public',
+                        Size: 123,
+                        MIMEType: 'application/zip',
+                        EXPIRATION: '-1',
+                        SubmissionUser: 'pkgowner@example.com',
+                        PrimaryKey: 'older-primary',
+                        Hash: 'older-hash',
+                        CreatorUid: 'pkgowner',
+                        Name: 'Visible Package',
+                    }, {
+                        UID: 'visible-pkg-uid',
+                        SubmissionDateTime: '2025-01-01T00:00:00.000Z',
+                        Keywords: ['latest'],
+                        Tool: 'public',
+                        Size: 456,
+                        MIMEType: 'application/zip',
+                        EXPIRATION: '-1',
+                        SubmissionUser: 'someone-else@example.com',
+                        PrimaryKey: 'latest-primary',
+                        Hash: 'latest-hash',
+                        CreatorUid: 'pkgowner',
+                        Name: 'Visible Package',
+                    }]
+                }));
+                response.end();
+
+                return true;
+            } else if (request.method === 'GET' && request.url.includes('/Marti/api/files/metadata')) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    data: [{
+                        Name: 'Visible Package',
+                        Hash: 'latest-hash',
+                        Groups: 'Blue, Red'
+                    }]
+                }));
+                response.end();
+
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        const res = await flight.fetch('/api/marti/package/visible-pkg-uid', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        assert.equal(res.status, 200);
+        assert.equal(res.body.hash, 'latest-hash');
+        assert.deepEqual(res.body.channels, ['Blue', 'Red']);
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    flight.tak.reset();
+});
+
 test('POST api/marti/package - Upload Data Package', async () => {
     const outputPath = path.resolve(os.tmpdir(), randomUUID() + '.zip');
 
@@ -413,6 +487,7 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
         assert.equal(res.body.hash, 'latest-hash');
         assert.deepEqual(res.body.keywords, ['updated']);
         assert.equal(res.body.expiration, 1234567890);
+        assert.deepEqual(res.body.channels, ['Blue']);
         assert.equal(res.body.items[1].Hash, 'latest-hash');
         assert.equal(groupsHandlerHit, true);
     } catch (err) {
@@ -568,6 +643,18 @@ test('PATCH api/marti/package/:uid - Admin can update any package', async () => 
                 response.end();
 
                 return true;
+            } else if (request.method === 'GET' && request.url.includes('/Marti/api/files/metadata')) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    data: [{
+                        Name: 'Admin Package',
+                        Hash: 'admin-hash',
+                        Groups: 'Blue'
+                    }]
+                }));
+                response.end();
+
+                return true;
             } else {
                 return false;
             }
@@ -586,6 +673,7 @@ test('PATCH api/marti/package/:uid - Admin can update any package', async () => 
         assert.equal(res.status, 200);
         assert.equal(res.body.hash, 'admin-hash');
         assert.deepEqual(res.body.keywords, ['admin-updated']);
+        assert.deepEqual(res.body.channels, ['Blue']);
     } catch (err) {
         assert.ifError(err);
     }
