@@ -19,6 +19,6 @@ DO $$ BEGIN
 	IF NOT EXISTS (
 		SELECT 1 FROM pg_constraint WHERE conname = 'profile_file_channel_file_profile_files_id_fk'
 	) THEN
-		ALTER TABLE "profile_file_channel" ADD CONSTRAINT "profile_file_channel_file_profile_files_id_fk" FOREIGN KEY ("file") REFERENCES "public"."profile_files"("id") ON DELETE no action ON UPDATE no action;
+		ALTER TABLE "profile_file_channel" ADD CONSTRAINT "profile_file_channel_file_profile_files_id_fk" FOREIGN KEY ("file") REFERENCES "public"."profile_files"("id") ON DELETE cascade ON UPDATE no action;
 	END IF;
 END $$;

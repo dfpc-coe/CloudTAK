@@ -345,7 +345,7 @@ function buildPathTree() {
     const pathItems = new Map<string, ProfileFile[]>();
 
     for (const item of list.value.items) {
-        const p = item.path || '/';
+        const p = PathManager.normalize(item.path || '/');
         if (p !== '/') {
             pathCounts.set(p, (pathCounts.get(p) || 0) + 1);
             if (!pathItems.has(p)) pathItems.set(p, []);
@@ -371,7 +371,7 @@ function buildPathTree() {
     };
     populateItems(paths.value);
 
-    rootFiles.value = list.value.items.filter(i => !i.path || i.path === '/');
+    rootFiles.value = list.value.items.filter((i) => PathManager.normalize(i.path || '/') === '/');
 }
 
 function navigateToFolder(node: PathNode<ProfileFile>) {

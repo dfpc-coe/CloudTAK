@@ -246,6 +246,7 @@ import Share from '../util/Share.vue';
 import Keywords from '../util/Keywords.vue';
 import SingleContainer from '../util/SingleContainer.vue';
 import TagEntry from '../util/TagEntry.vue';
+import GroupManager from '../../../base/group.ts';
 import timeDiff from '../../../timediff.ts';
 import {
     TablerAlert,
@@ -282,6 +283,7 @@ const keywordDraft = ref<string[]>([]);
 const editingExpiration = ref(false);
 const savingExpiration = ref(false);
 const expirationDraft = ref('');
+const activeChannels = ref<string[]>([]);
 
 watch(route, async () => {
     await fetch();
@@ -322,7 +324,9 @@ const shareFeat = computed<Feature | undefined>(() => {
 const canEditPackage = computed(() => {
     if (!pkg.value || !profile.value.username) return false;
 
-    return profile.value.username === pkg.value.username || Boolean(profile.value.system_admin);
+    if (profile.value.system_admin) return true;
+
+    return pkg.value.channels.some((channel) => activeChannels.value.includes(channel));
 });
 
 const packageSize = computed(() => {
@@ -390,13 +394,22 @@ function normalizeDateValue(value: number | string): number | string {
 
 
 onMounted(async () => {
+    const [username, takCallsign, systemAdmin, channels, loadedServer] = await Promise.all([
+        ProfileConfig.get('username'),
+        ProfileConfig.get('tak_callsign'),
+        ProfileConfig.get('system_admin'),
+        GroupManager.list({ active: true }),
+        mapStore.worker.profile.loadServer()
+    ]);
+
     profile.value = {
-        username: (await ProfileConfig.get('username'))?.value,
-        tak_callsign: (await ProfileConfig.get('tak_callsign'))?.value,
-        system_admin: (await ProfileConfig.get('system_admin'))?.value
+        username: username?.value as string | undefined,
+        tak_callsign: takCallsign?.value as string | undefined,
+        system_admin: systemAdmin?.value as boolean | undefined
     };
 
-    serverConfig.value = await mapStore.worker.profile.loadServer();
+    activeChannels.value = channels.map((channel) => channel.name);
+    serverConfig.value = loadedServer;
     await fetch();
 });
 

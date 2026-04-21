@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
+import Sinon from 'sinon';
+import S3 from '../lib/aws/s3.js';
 
 const flight = new Flight();
 
@@ -65,6 +67,55 @@ test('POST: api/import', async () => {
     } catch (err) {
         assert.ifError(err);
     }
+});
+
+test('PUT: api/import/:import - upload failure marks import failed', async () => {
+    try {
+        const createRes = await flight.fetch('/api/import', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                name: 'failed-upload.zip'
+            }
+        }, true);
+
+        const failedId = createRes.body.id;
+
+        const s3Stub = Sinon.stub(S3, 'put').rejects(new Error('S3 exploded'));
+        const body = new FormData();
+        body.append('file', new Blob(['file-content'], {
+            type: 'application/zip'
+        }), 'test.zip');
+
+        const uploadRes = await flight.fetch(`/api/import/${failedId}`, {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body
+        }, false);
+
+        assert.equal(uploadRes.status, 500, 'should surface upload failure');
+        assert.ok(uploadRes.body.message, 'should include an upload error message');
+
+        const res = await flight.fetch(`/api/import/${failedId}`, {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            },
+        }, false);
+
+        assert.equal(res.status, 200, 'should still be able to fetch failed import');
+        assert.equal(res.body.status, 'Fail', 'should mark the import as failed');
+        assert.equal(res.body.error, 'S3 exploded', 'should persist the upload error');
+        assert.ok(s3Stub.calledOnce);
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    Sinon.restore();
 });
 
 test(`GET: api/import/<id>`, async () => {

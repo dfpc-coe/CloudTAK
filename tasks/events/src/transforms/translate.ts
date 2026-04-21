@@ -2,6 +2,10 @@ import path from 'node:path';
 import type { Message, LocalMessage, Transform, ConvertResponse } from '../types.ts';
 import cp from 'node:child_process';
 
+const MAX_ZOOM = 22;
+const MAX_RESOLUTION_DEGREES = 360 / (Math.pow(2, MAX_ZOOM) * 256);
+const EQUATOR_METERS_PER_DEGREE = 111320;
+
 export default class GDALTranslate implements Transform {
     static register() {
         return {
@@ -55,16 +59,16 @@ export default class GDALTranslate implements Transform {
 
                 if (minRes > 0) {
                     let resDegrees = minRes;
+                    let maxRes = MAX_RESOLUTION_DEGREES;
                     const srs: string | undefined = gdalinfo.coordinateSystem?.wkt;
                     if (srs && /PROJCS|UNIT\["metre"/i.test(srs)) {
                         resDegrees = minRes / 111320;
+                        maxRes = MAX_RESOLUTION_DEGREES * EQUATOR_METERS_PER_DEGREE;
                     }
 
                     // zoom = log2(360 / (resDegrees * 256))
                     const zoom = Math.ceil(Math.log2(360 / (resDegrees * 256)));
-                    if (zoom > 22) {
-                        // Resolution at zoom 22: 360 / (2^22 * 256) ≈ 0.00000134 degrees
-                        const maxRes = 360 / (Math.pow(2, 22) * 256);
+                    if (zoom > MAX_ZOOM) {
                         const warped = path.resolve(this.local.tmpdir, path.parse(this.local.raw).name + '-warped.tif');
                         cp.execFileSync('gdalwarp', [
                             '-tr', String(maxRes), String(maxRes),

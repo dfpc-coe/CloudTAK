@@ -164,11 +164,18 @@ export default async function router(schema: Schema, config: Config) {
                         ext: path.parse(filename).ext,
                     };
 
-                    await S3.put(`import/${imported.id}${res.ext}`, file)
+                    try {
+                        await S3.put(`import/${imported.id}${res.ext}`, file)
 
-                    await config.models.Import.commit(imported.id, {
-                        status: Import_Status.PENDING,
-                    });
+                        await config.models.Import.commit(imported.id, {
+                            status: Import_Status.PENDING,
+                            error: null
+                        });
+                    } catch (err) {
+                        file.resume();
+                        await importControl.fail(imported.id, err);
+                        throw err;
+                    }
 
                     return res;
                 })())
@@ -242,11 +249,18 @@ export default async function router(schema: Schema, config: Config) {
                         status: Import_Status.EMPTY
                     });
 
-                    await S3.put(`import/${res.uid}${res.ext}`, file)
+                    try {
+                        await S3.put(`import/${res.uid}${res.ext}`, file)
 
-                    await config.models.Import.commit(res.uid, {
-                        status: Import_Status.PENDING
-                    });
+                        await config.models.Import.commit(res.uid, {
+                            status: Import_Status.PENDING,
+                            error: null
+                        });
+                    } catch (err) {
+                        file.resume();
+                        await importControl.fail(res.uid, err);
+                        throw err;
+                    }
 
                     return res;
                 })())
