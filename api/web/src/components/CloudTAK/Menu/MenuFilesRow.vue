@@ -8,7 +8,7 @@
         >
             <template #default>
                 <div
-                    class='d-flex align-items-center'
+                    class='d-flex align-items-center overflow-hidden'
                     role='menuitem'
                     tabindex='0'
                 >
@@ -31,25 +31,36 @@
                             />
                         </TablerIconButton>
                     </div>
-                    <div class='flex-grow-1 min-width-0'>
+                    <div class='flex-grow-1 min-width-0 overflow-hidden'>
                         <div
-                            class='col-12 text-truncate px-2 user-select-none'
+                            class='col-12 px-2 user-select-none overflow-hidden'
                         >
-                            <span v-text='asset.name' />
+                            <span
+                                class='d-block text-truncate'
+                                :title='asset.name'
+                                v-text='asset.name'
+                            />
                         </div>
-                        <div class='col-12 subheader d-flex align-items-center gap-2 px-2'>
+                        <div class='col-12 subheader d-flex align-items-center gap-2 px-2 min-width-0'>
                             <span class='mx-2 user-select-none'>
                                 <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
                             </span>
-                            <TablerBadge
+                            <button
                                 v-if='Array.isArray(asset.channels) && asset.channels.length > 0'
-                                class='small flex-shrink-0 ms-auto'
-                                background-color='rgba(36, 163, 255, 0.15)'
-                                border-color='rgba(36, 163, 255, 0.35)'
-                                text-color='#24a3ff'
+                                type='button'
+                                class='menu-files-row__shared-badge-btn ms-auto flex-shrink-0 p-0 border-0 bg-transparent'
+                                title='Share to Channel'
+                                @click.stop.prevent='emit("share-channel", asset)'
                             >
-                                Shared
-                            </TablerBadge>
+                                <TablerBadge
+                                    class='small menu-files-row__shared-badge'
+                                    background-color='rgba(36, 163, 255, 0.15)'
+                                    border-color='rgba(36, 163, 255, 0.35)'
+                                    text-color='#24a3ff'
+                                >
+                                    Shared
+                                </TablerBadge>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -252,3 +263,25 @@ function overlayButtonTitle(asset: ProfileFile): string {
     return 'Add to Map as Overlay';
 }
 </script>
+
+<style scoped>
+.menu-files-row__shared-badge-btn {
+    line-height: 0;
+}
+
+.menu-files-row__shared-badge-btn :deep(.menu-files-row__shared-badge) {
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.menu-files-row__shared-badge-btn:hover :deep(.menu-files-row__shared-badge),
+.menu-files-row__shared-badge-btn:focus-visible :deep(.menu-files-row__shared-badge) {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+
+.menu-files-row__shared-badge-btn:focus-visible {
+    outline: 2px solid rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.7);
+    outline-offset: 2px;
+    border-radius: 999px;
+}
+</style>

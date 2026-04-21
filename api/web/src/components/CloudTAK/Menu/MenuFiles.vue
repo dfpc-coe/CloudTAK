@@ -516,38 +516,43 @@ async function createOverlay(asset: ProfileFile) {
 
     loading.value = true;
 
-    // TODO type PMTiles endpoints
-    const res = await std(url) as {
-        tiles: [ string ];
-    };
+    try {
+        // TODO type PMTiles endpoints
+        const res = await std(url) as {
+            tiles: [ string ];
+        };
 
-    if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
-        mapStore.addOverlay(await Overlay.create({
-            url: String(url),
-            name: asset.name,
-            mode: 'profile',
-            mode_id: asset.name,
-            iconset: asset.iconset,
-            type: 'vector',
-        }, {
-            before: mapStore.getOverlayBeforeId()
-        }));
-    } else {
-        mapStore.addOverlay(await Overlay.create({
-            url: String(url),
-            name: asset.name,
-            mode: 'profile',
-            mode_id: asset.name,
-            iconset: asset.iconset,
-            type: 'raster',
-        }, {
-            before: mapStore.getOverlayBeforeId()
-        }));
+        if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
+            mapStore.addOverlay(await Overlay.create({
+                url: String(url),
+                name: asset.name,
+                mode: 'profile',
+                mode_id: asset.name,
+                iconset: asset.iconset,
+                type: 'vector',
+            }, {
+                before: mapStore.getOverlayBeforeId()
+            }));
+        } else {
+            mapStore.addOverlay(await Overlay.create({
+                url: String(url),
+                name: asset.name,
+                mode: 'profile',
+                mode_id: asset.name,
+                iconset: asset.iconset,
+                type: 'raster',
+            }, {
+                before: mapStore.getOverlayBeforeId()
+            }));
+        }
+
+        loading.value = false;
+
+        router.push('/menu/overlays');
+    } catch (err) {
+        loading.value = false;
+        throw err;
     }
-
-    loading.value = false;
-
-    router.push('/menu/overlays');
 }
 
 function uploadHeaders() {
@@ -624,6 +629,7 @@ async function fetchList() {
         buildPathTree();
         loading.value = false;
     } catch (err) {
+        loading.value = false;
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
