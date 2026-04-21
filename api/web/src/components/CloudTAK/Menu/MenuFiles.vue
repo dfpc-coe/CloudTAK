@@ -219,7 +219,6 @@
 import { useRouter } from 'vue-router';
 import { ref, watch, onMounted, computed } from 'vue';
 import type { ProfileFile, ProfileFileList } from '../../../types.ts';
-import { db } from '../../../base/database.ts';
 import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
 import ProfileConfig from '../../../base/profile.ts';
