@@ -223,7 +223,7 @@ export default class DataTransform {
                 fs.createReadStream(conversion.asset),
                 path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles'), {
                     std: true,
-                    quiet: false,
+                    quiet: true,
                     name: this.msg.job.name,
                     description: 'Automatically Converted by @tak-ps/etl',
                     layer: 'out',
