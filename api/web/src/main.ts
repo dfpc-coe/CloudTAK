@@ -7,7 +7,7 @@ import { createPinia } from 'pinia'
 import { useMapStore } from './stores/map.ts';
 import { initServiceWorker } from './base/service-worker.ts';
 
-initServiceWorker(version, 'index.html');
+initServiceWorker(version);
 
 import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'
