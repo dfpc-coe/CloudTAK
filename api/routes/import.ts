@@ -231,13 +231,22 @@ export default async function router(schema: Schema, config: Config) {
                         uid: crypto.randomUUID()
                     };
 
+                    // Generate the row in the Empty state so the events worker
+                    // (which polls for Pending imports) cannot pick it up before
+                    // the S3 object has been fully written. Once the upload is
+                    // finished we transition the row to Pending.
                     await config.models.Import.generate({
                         name: res.file,
                         username: user.email,
-                        id: res.uid
+                        id: res.uid,
+                        status: Import_Status.EMPTY
                     });
 
                     await S3.put(`import/${res.uid}${res.ext}`, file)
+
+                    await config.models.Import.commit(res.uid, {
+                        status: Import_Status.PENDING
+                    });
 
                     return res;
                 })())
