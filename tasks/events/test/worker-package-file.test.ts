@@ -7,6 +7,9 @@ import {
     S3Client,
     GetObjectCommand,
     PutObjectCommand,
+    CreateMultipartUploadCommand,
+    UploadPartCommand,
+    CompleteMultipartUploadCommand,
 } from '@aws-sdk/client-s3';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
@@ -83,25 +86,49 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
                 })
             },
             (command) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    assert.equal(command.input.Bucket, 'test-bucket');
+                    assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+                    assert.ok(command.input.Key.endsWith('.tiff'));
+                    return Promise.resolve({ UploadId: '123' });
+                }
+
                 assert.ok(command instanceof PutObjectCommand);
                 assert.equal(command.input.Bucket, 'test-bucket');
-                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                assert.ok(command.input.Key.endsWith('.tiff'))
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+                assert.ok(command.input.Key.endsWith('.tiff'));
 
-                return Promise.resolve({})
+                return Promise.resolve({ ETag: '"123"' });
             },
             (command) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    assert.equal(command.input.Bucket, 'test-bucket');
+                    assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+                    assert.ok(command.input.Key.endsWith('.pmtiles'));
+                    return Promise.resolve({ UploadId: '123' });
+                }
+
                 assert.ok(command instanceof PutObjectCommand);
                 assert.equal(command.input.Bucket, 'test-bucket');
-                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                assert.ok(command.input.Key.endsWith('.pmtiles'))
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+                assert.ok(command.input.Key.endsWith('.pmtiles'));
 
-                return Promise.resolve({})
+                return Promise.resolve({ ETag: '"123"' });
             },
     ].reverse();
 
-    Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
-        return ExternalOperations.pop()(command);
+    Sinon.stub(S3Client.prototype, 'send').callsFake(async (command) => {
+        if (command instanceof UploadPartCommand) {
+            return { ETag: '"123"' };
+        }
+        if (command instanceof CompleteMultipartUploadCommand) {
+            return { Location: '...' };
+        }
+
+        const validator = ExternalOperations.pop();
+        if (!validator) throw new Error(`Unexpected command: ${command.constructor.name}`);
+
+        return validator(command);
     });
 
     const worker = new Worker({
