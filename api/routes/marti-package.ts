@@ -26,15 +26,7 @@ import { PackageResponse } from './types.js';
 
 async function activeChannelNames(config: Config, email: string, api: TAKAPI): Promise<Set<string>> {
     const groups = await api.Group.list({ useCache: true });
-    const poolConn = config.conns.get(email);
-
-    const activeBitpos = poolConn
-        ? poolConn.channels
-        : new Set(
-            groups.data
-                .filter((group) => group.active)
-                .map((group) => group.bitpos)
-        );
+    const activeBitpos = await config.conns.activeChannels(email, api);
 
     return new Set(
         groups.data

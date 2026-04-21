@@ -23,18 +23,7 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-
-            let channels: Set<number>;
-            const poolConn = config.conns.get(user.email);
-            if (poolConn) {
-                channels = poolConn.channels;
-            } else {
-                channels = new Set(
-                    (await api.Group.list({ useCache: true })).data
-                        .filter((g) => g.active)
-                        .map((g) => g.bitpos)
-                );
-            }
+            const channels = await config.conns.activeChannels(user.email, api);
 
             const subs = await api.Subscription.list(req.query);
 
@@ -72,18 +61,7 @@ export default async function router(schema: Schema, config: Config) {
                 page: -1,
                 limit: -1
             });
-
-            let channels: Set<number>;
-            const poolConn = config.conns.get(user.email);
-            if (poolConn) {
-                channels = poolConn.channels;
-            } else {
-                channels = new Set(
-                    (await api.Group.list({ useCache: true })).data
-                        .filter((g) => g.active)
-                        .map((g) => g.bitpos)
-                );
-            }
+            const channels = await config.conns.activeChannels(user.email, api);
 
             let done = false;
             for (const sub of subs.data) {

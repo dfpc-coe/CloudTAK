@@ -1,12 +1,27 @@
 <template>
     <TablerModal size='lg'>
         <div class='modal-status bg-white' />
-        <button
-            type='button'
-            class='btn-close'
-            aria-label='Close'
-            @click='emit("close")'
-        />
+        <div class='position-absolute top-0 end-0 z-2 d-flex align-items-center gap-2 mt-3 me-3'>
+            <TablerBadge
+            class='rounded-pill d-inline-flex align-items-center justify-content-center gap-1 px-2 py-1 text-center'
+                background-color='rgba(36, 163, 255, 0.15)'
+                border-color='rgba(36, 163, 255, 0.35)'
+                text-color='#24a3ff'
+                :title='`${selectedCount} selected channel${selectedCount === 1 ? "" : "s"}`'
+            >
+                <IconChecks
+                    :size='14'
+                    stroke='2'
+                />
+                <span v-text='selectedCount' />
+            </TablerBadge>
+            <button
+                type='button'
+                class='btn-close position-static m-0'
+                aria-label='Close'
+                @click='emit("close")'
+            />
+        </div>
         <div class='modal-header text-body'>
             <div class='d-flex align-items-center'>
                 <IconBroadcast
@@ -17,8 +32,8 @@
             </div>
         </div>
         <div
-            class='modal-body'
-            style='max-height: 50vh; overflow-y: auto;'
+            class='modal-body overflow-auto'
+            style='max-height: 50vh;'
         >
             <TablerLoading v-if='loading' />
             <GroupSelect
@@ -40,13 +55,14 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import {
     TablerModal,
     TablerButton,
     TablerLoading,
+    TablerBadge,
 } from '@tak-ps/vue-tabler';
-import { IconBroadcast } from '@tabler/icons-vue';
+import { IconBroadcast, IconChecks } from '@tabler/icons-vue';
 import GroupSelect from './GroupSelect.vue';
 import type { Group } from '../../../src/types.ts';
 import GroupManager from '../../base/group.ts';
@@ -63,6 +79,7 @@ const emit = defineEmits<{
 const loading = ref(true);
 const groups = ref<Group[]>([]);
 const selectedNames = ref<string[]>([]);
+const selectedCount = computed(() => selectedNames.value.length);
 
 onMounted(async () => {
     const list = GroupManager.explode(await GroupManager.list());

@@ -1,7 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
-import auth from '../lib/auth.js';
+import auth, { tokenGrantsFile } from '../lib/auth.js';
 import { FileTiles, TileJSON, QueryResponse, FeaturesResponse } from '../lib/tiles.js';
 
 export default async function router(schema: Schema) {
@@ -20,7 +20,7 @@ export default async function router(schema: Schema) {
     }, async (req, res) => {
         try {
             const token = auth(req.query.token);
-            if (token.email !== req.params.username || token.access !== 'profile') {
+            if (!tokenGrantsFile(token, req.params.username, req.params.file)) {
                 throw new Err(401, null, 'Unauthorized Access');
             }
 
@@ -49,7 +49,7 @@ export default async function router(schema: Schema) {
     }, async (req, res) => {
         try {
             const token = auth(req.query.token);
-            if (token.email !== req.params.username || token.access !== 'profile') {
+            if (!tokenGrantsFile(token, req.params.username, req.params.file)) {
                 throw new Err(401, null, 'Unauthorized Access');
             }
 
@@ -84,7 +84,7 @@ export default async function router(schema: Schema) {
     }, async (req, res) => {
         try {
             const token = auth(req.query.token);
-            if (token.email !== req.params.username || token.access !== 'profile') {
+            if (!tokenGrantsFile(token, req.params.username, req.params.file)) {
                 throw new Err(401, null, 'Unauthorized Access');
             }
 
@@ -120,7 +120,7 @@ export default async function router(schema: Schema) {
     }, async (req, res) => {
         try {
             const token = auth(req.query.token);
-            if (token.email !== req.params.username || token.access !== 'profile') {
+            if (!tokenGrantsFile(token, req.params.username, req.params.file)) {
                 throw new Err(401, null, 'Unauthorized Access');
             }
 
@@ -158,7 +158,7 @@ export default async function router(schema: Schema) {
     }, async (req, res) => {
         try {
             const token = auth(req.query.token);
-            if (token.email !== req.params.username || token.access !== 'profile') {
+            if (!tokenGrantsFile(token, req.params.username, req.params.file)) {
                 throw new Err(401, null, 'Unauthorized Access');
             }
 

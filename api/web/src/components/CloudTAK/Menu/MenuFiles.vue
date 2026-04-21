@@ -79,6 +79,7 @@
                         v-for='asset in currentFiles'
                         :key='asset.id'
                         :asset='asset'
+                        :current-username='currentUsername'
                         :overlay-urls='overlayUrls'
                         :rename='rename'
                         @create-overlay='createOverlay'
@@ -218,6 +219,7 @@
 import { useRouter } from 'vue-router';
 import { ref, watch, onMounted, computed } from 'vue';
 import type { ProfileFile, ProfileFileList } from '../../../types.ts';
+import { db } from '../../../base/database.ts';
 import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
 import { std, stdurl, server } from '../../../std.ts';
@@ -270,6 +272,7 @@ const rename = ref<{
 } | undefined>();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
+const currentUsername = ref('');
 
 const list = ref<ProfileFileList>({
     total: 0,
@@ -329,6 +332,7 @@ const paging = ref({
 })
 
 onMounted(async () => {
+    currentUsername.value = (await db.profile.get('username'))?.value || '';
     await fetchList();
 });
 
