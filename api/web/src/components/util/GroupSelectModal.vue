@@ -3,7 +3,7 @@
         <div class='modal-status bg-white' />
         <div class='position-absolute top-0 end-0 z-2 d-flex align-items-center gap-2 mt-3 me-3'>
             <TablerBadge
-            class='rounded-pill d-inline-flex align-items-center justify-content-center gap-1 px-2 py-1 text-center'
+                class='rounded-pill d-inline-flex align-items-center justify-content-center gap-1 px-2 py-1 text-center'
                 background-color='rgba(36, 163, 255, 0.15)'
                 border-color='rgba(36, 163, 255, 0.35)'
                 text-color='#24a3ff'

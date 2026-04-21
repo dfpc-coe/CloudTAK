@@ -25,7 +25,10 @@
             />
         </TablerIconButton>
 
-        <slot v-if='editing' name='editor' />
+        <slot
+            v-if='editing'
+            name='editor'
+        />
         <slot v-else />
     </div>
 </template>

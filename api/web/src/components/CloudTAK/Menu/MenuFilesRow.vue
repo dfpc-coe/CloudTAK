@@ -118,102 +118,102 @@
                 </div>
 
                 <template v-if='!isSharedAsset(asset)'>
-                <div
-                    class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                    @click.stop.prevent='emit("download", asset)'
-                >
-                    <IconDownload
-                        :size='32'
-                        stroke='1'
-                    />
-                    <span class='mx-2'>Download Original</span>
-                </div>
-                <div
-                    class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                    role='menuitem'
-                    tabindex='0'
-                    @click.stop.prevent='emit("share-mission", asset)'
-                    @keyup.enter='emit("share-mission", asset)'
-                >
-                    <IconAmbulance
-                        :size='32'
-                        stroke='1'
-                    />
-                    <span class='mx-2'>Add to Data Sync</span>
-                </div>
-                <div
-                    class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                    role='menuitem'
-                    tabindex='0'
-                    @click.stop.prevent='emit("share-package", asset)'
-                    @keyup.enter='emit("share-package", asset)'
-                >
-                    <IconPackage
-                        :size='32'
-                        stroke='1'
-                    />
-                    <span class='mx-2'>Create Data Package</span>
-                </div>
-                <div
-                    class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                    role='menuitem'
-                    tabindex='0'
-                    @click.stop.prevent='emit("share-channel", asset)'
-                    @keyup.enter='emit("share-channel", asset)'
-                >
-                    <IconBroadcast
-                        :size='32'
-                        stroke='1'
-                    />
-                    <span class='mx-2'>Share to Channel</span>
-                </div>
+                    <div
+                        class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
+                        @click.stop.prevent='emit("download", asset)'
+                    >
+                        <IconDownload
+                            :size='32'
+                            stroke='1'
+                        />
+                        <span class='mx-2'>Download Original</span>
+                    </div>
+                    <div
+                        class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
+                        role='menuitem'
+                        tabindex='0'
+                        @click.stop.prevent='emit("share-mission", asset)'
+                        @keyup.enter='emit("share-mission", asset)'
+                    >
+                        <IconAmbulance
+                            :size='32'
+                            stroke='1'
+                        />
+                        <span class='mx-2'>Add to Data Sync</span>
+                    </div>
+                    <div
+                        class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
+                        role='menuitem'
+                        tabindex='0'
+                        @click.stop.prevent='emit("share-package", asset)'
+                        @keyup.enter='emit("share-package", asset)'
+                    >
+                        <IconPackage
+                            :size='32'
+                            stroke='1'
+                        />
+                        <span class='mx-2'>Create Data Package</span>
+                    </div>
+                    <div
+                        class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
+                        role='menuitem'
+                        tabindex='0'
+                        @click.stop.prevent='emit("share-channel", asset)'
+                        @keyup.enter='emit("share-channel", asset)'
+                    >
+                        <IconBroadcast
+                            :size='32'
+                            stroke='1'
+                        />
+                        <span class='mx-2'>Share to Channel</span>
+                    </div>
 
-                <div
-                    class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                    role='menuitem'
-                    tabindex='0'
-                    @click.stop.prevent='emit("rename", asset)'
-                    @keyup.enter='emit("rename", asset)'
-                >
-                    <IconCursorText
-                        :size='32'
-                        stroke='1'
-                    />
-                    <span class='mx-2'>Rename File</span>
-                </div>
+                    <div
+                        class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
+                        role='menuitem'
+                        tabindex='0'
+                        @click.stop.prevent='emit("rename", asset)'
+                        @keyup.enter='emit("rename", asset)'
+                    >
+                        <IconCursorText
+                            :size='32'
+                            stroke='1'
+                        />
+                        <span class='mx-2'>Rename File</span>
+                    </div>
 
-                <div v-if='rename && rename.id === asset.id'>
-                    <TablerInput
-                        :model-value='rename.name'
-                        class='m-2'
-                        :placeholder='asset.name'
-                        :autofocus='true'
-                        @update:model-value='emit("rename-change", String($event || ""))'
-                        @blur='emit("rename-cancel")'
-                        @keyup.enter='emit("rename-submit")'
-                    />
-                </div>
+                    <div v-if='rename && rename.id === asset.id'>
+                        <TablerInput
+                            :model-value='rename.name'
+                            class='m-2'
+                            :placeholder='asset.name'
+                            :autofocus='true'
+                            @update:model-value='emit("rename-change", String($event || ""))'
+                            @blur='emit("rename-cancel")'
+                            @keyup.enter='emit("rename-submit")'
+                        />
+                    </div>
 
-                <div
-                    class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
-                    role='menuitem'
-                    tabindex='0'
-                    @click.stop.prevent='emit("move", asset)'
-                    @keyup.enter='emit("move", asset)'
-                >
-                    <IconFolderSymlink
-                        :size='32'
-                        stroke='1'
-                    />
-                    <span class='mx-2'>Move to Folder</span>
-                </div>
+                    <div
+                        class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
+                        role='menuitem'
+                        tabindex='0'
+                        @click.stop.prevent='emit("move", asset)'
+                        @keyup.enter='emit("move", asset)'
+                    >
+                        <IconFolderSymlink
+                            :size='32'
+                            stroke='1'
+                        />
+                        <span class='mx-2'>Move to Folder</span>
+                    </div>
 
-                <TablerDelete
-                    displaytype='menu'
-                    class='cloudtak-hover rounded'
-                    label='Delete File'
-                    @delete='emit("delete", asset)'
-                />
+                    <TablerDelete
+                        displaytype='menu'
+                        class='cloudtak-hover rounded'
+                        label='Delete File'
+                        @delete='emit("delete", asset)'
+                    />
                 </template>
             </template>
         </TablerSlidedown>
