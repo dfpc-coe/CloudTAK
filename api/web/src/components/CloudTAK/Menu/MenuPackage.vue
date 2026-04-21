@@ -133,8 +133,8 @@
                                                     v-if='packageExpiration'
                                                     type='button'
                                                     class='btn btn-link p-0 text-start text-reset fw-semibold menu-package__inline-button'
-                                                    v-text='packageExpiration'
                                                     @click.stop='expirationRelative = !expirationRelative'
+                                                    v-text='packageExpiration'
                                                 />
                                                 <p
                                                     v-else

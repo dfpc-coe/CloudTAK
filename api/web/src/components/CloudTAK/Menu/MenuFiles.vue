@@ -222,6 +222,7 @@ import type { ProfileFile, ProfileFileList } from '../../../types.ts';
 import { db } from '../../../base/database.ts';
 import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
+import ProfileConfig from '../../../base/profile.ts';
 import { std, stdurl, server } from '../../../std.ts';
 import {
     TablerIconButton,
@@ -332,7 +333,7 @@ const paging = ref({
 })
 
 onMounted(async () => {
-    currentUsername.value = (await db.profile.get('username'))?.value || '';
+    currentUsername.value = (await ProfileConfig.get('username'))?.value || '';
     await fetchList();
 });
 
