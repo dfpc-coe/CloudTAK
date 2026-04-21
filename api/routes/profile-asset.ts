@@ -7,6 +7,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import jwt from 'jsonwebtoken';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { ProfileFile, ProfileFileChannel } from '../lib/schema.js';
 import Config from '../lib/config.js';
 import * as Default from '../lib/limits.js'
@@ -52,16 +53,34 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+            const profile = await config.models.Profile.from(user.email);
+            const api = config.conns.get(user.email)?.api
+                ?? await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            const channels = [...await config.conns.activeChannels(user.email, api)];
+            const where = channels.length
+                ? sql`
+                    name ~* ${req.query.filter}
+                    AND (
+                        username = ${user.email}
+                        OR EXISTS (
+                            SELECT 1
+                            FROM profile_file_channel
+                            WHERE profile_file_channel.file = profile_files.id
+                            AND profile_file_channel.channel IN ${channels}
+                        )
+                    )
+                `
+                : sql`
+                    name ~* ${req.query.filter}
+                    AND username = ${user.email}
+                `;
 
             const list = await config.models.ProfileFile.augmented_list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
                 sort: req.query.sort,
-                where: sql`
-                    name ~* ${req.query.filter}
-                    AND username = ${user.email}
-                `
+                where
             });
 
             res.json({
@@ -299,18 +318,34 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
 
-            const file = await config.models.ProfileFile.from(req.params.asset);
+            const file = await config.models.ProfileFile.augmented_from(req.params.asset);
 
             if (file.username !== user.email) {
-                throw new Err(403, null, 'You do not have permission to view this asset');
+                const fileChannels = (file.channels || []).map((c) => Number(c));
+                if (fileChannels.length === 0) {
+                    throw new Err(403, null, 'You do not have permission to view this asset');
+                }
+
+                const profile = await config.models.Profile.from(user.email);
+                const api = config.conns.get(user.email)?.api
+                    ?? await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+                const activeChannels = await config.conns.activeChannels(user.email, api);
+
+                if (!fileChannels.some((bp) => activeChannels.has(bp))) {
+                    throw new Err(403, null, 'You do not have permission to view this asset');
+                }
             }
 
-            if (!await S3.exists(`profile/${user.email}/${req.params.asset}.pmtiles`)) {
+            if (!await S3.exists(`profile/${file.username}/${req.params.asset}.pmtiles`)) {
                 throw new Err(404, null, 'Asset does not exist');
             }
 
-            const token = jwt.sign({ access: 'profile', email: user.email }, config.SigningSecret)
-            const url = new URL(`${config.PMTILES_URL}/tiles/profile/${user.email}/${req.params.asset}`);
+            const token = jwt.sign({
+                access: 'profile',
+                email: user.email,
+                file: `${file.username}/${req.params.asset}`
+            }, config.SigningSecret);
+            const url = new URL(`${config.PMTILES_URL}/tiles/profile/${file.username}/${req.params.asset}`);
             url.searchParams.append('token', token);
 
             res.redirect(String(url));

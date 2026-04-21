@@ -46,7 +46,7 @@
                                 <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
                             </span>
                             <button
-                                v-if='Array.isArray(asset.channels) && asset.channels.length > 0'
+                                v-if='hasSharedChannels(asset) && !isSharedAsset(asset)'
                                 type='button'
                                 class='menu-files-row__shared-badge-btn ms-auto flex-shrink-0 p-0 border-0 bg-transparent'
                                 title='Share to Channel'
@@ -54,18 +54,39 @@
                             >
                                 <TablerBadge
                                     class='small menu-files-row__shared-badge'
-                                    background-color='rgba(36, 163, 255, 0.15)'
-                                    border-color='rgba(36, 163, 255, 0.35)'
-                                    text-color='#24a3ff'
+                                    background-color='rgba(255, 171, 0, 0.15)'
+                                    border-color='rgba(255, 171, 0, 0.35)'
+                                    text-color='#c98500'
                                 >
                                     Shared
                                 </TablerBadge>
                             </button>
+                            <TablerBadge
+                                v-else-if='isSharedAsset(asset) || hasSharedChannels(asset)'
+                                class='small ms-auto flex-shrink-0 menu-files-row__shared-badge'
+                                background-color='rgba(255, 171, 0, 0.15)'
+                                border-color='rgba(255, 171, 0, 0.35)'
+                                text-color='#c98500'
+                                :title='isSharedAsset(asset) ? "Shared file from another user" : "Shared to channel"'
+                            >
+                                Shared
+                            </TablerBadge>
                         </div>
                     </div>
                 </div>
             </template>
             <template #expanded>
+                <div
+                    v-if='isSharedAsset(asset)'
+                    class='rounded col-12 d-flex align-items-center px-2 py-2 user-select-none text-secondary'
+                >
+                    <IconBroadcast
+                        :size='32'
+                        stroke='1'
+                    />
+                    <span class='mx-2'>Shared from {{ asset.username }}. Owner-only actions are unavailable.</span>
+                </div>
+
                 <div
                     v-if='assetSupportsOverlay(asset)'
                     :class='[
@@ -85,7 +106,7 @@
                     <span class='mx-2'>{{ canCreateOverlay(asset) ? "Add to Map as Overlay" : "Overlay already added" }}</span>
                 </div>
                 <div
-                    v-else
+                    v-else-if='!isSharedAsset(asset)'
                     role='menuitem'
                     class='rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
                 >
@@ -96,6 +117,7 @@
                     <span class='mx-2'>Cannot Add to Map - Unsupported Format</span>
                 </div>
 
+                <template v-if='!isSharedAsset(asset)'>
                 <div
                     class='cursor-pointer rounded col-12 cloudtak-hover d-flex align-items-center px-2 py-2 user-select-none'
                     @click.stop.prevent='emit("download", asset)'
@@ -192,6 +214,7 @@
                     label='Delete File'
                     @delete='emit("delete", asset)'
                 />
+                </template>
             </template>
         </TablerSlidedown>
     </StandardItem>
@@ -222,6 +245,7 @@ import {
 
 const props = defineProps<{
     asset: ProfileFile;
+    currentUsername: string;
     overlayUrls: Set<string>;
     rename?: {
         id: string;
@@ -249,8 +273,16 @@ function assetOverlayExists(asset: ProfileFile): boolean {
     return props.overlayUrls.has(url);
 }
 
+function isSharedAsset(asset: ProfileFile): boolean {
+    return Boolean(props.currentUsername) && asset.username !== props.currentUsername;
+}
+
 function assetSupportsOverlay(asset: ProfileFile): boolean {
     return asset.artifacts.some((artifact) => artifact.ext === '.pmtiles');
+}
+
+function hasSharedChannels(asset: ProfileFile): boolean {
+    return Array.isArray(asset.channels) && asset.channels.length > 0;
 }
 
 function canCreateOverlay(asset: ProfileFile): boolean {
