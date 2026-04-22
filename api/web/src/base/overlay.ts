@@ -371,11 +371,9 @@ export default class Overlay {
         }
 
         if (this.iconset) {
-            try {
-                mapStore.icons.addIconset(this.iconset);
-            } catch (err) {
+            mapStore.icons.addIconset(this.iconset).catch((err: unknown) => {
                 console.error('Error adding iconset', this.iconset, err);
-            }
+            });
         }
 
         if (this.type === 'vector' && this. mode !== 'basemap' && opts.clickable === undefined) {
@@ -412,7 +410,9 @@ export default class Overlay {
         }
 
         if (this.iconset) {
-            mapStore.icons.removeIconset(this.iconset);
+            mapStore.icons.removeIconset(this.iconset).catch((err: unknown) => {
+                console.error('Error removing iconset', this.iconset, err);
+            });
         }
 
         if (mapStore.map.getStyle().sources[String(this.id)]) {

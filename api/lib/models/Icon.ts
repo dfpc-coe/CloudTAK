@@ -32,7 +32,9 @@ export default class IconModel extends Modeler<typeof pgschema.Icon> {
         const order = query.order && query.order === 'desc' ? desc : asc;
         const orderBy = order(query.sort ? this.key(query.sort) : this.requiredPrimaryKey());
 
-        const pgres = await this.pool.select({
+        const limit = query.limit || 10;
+
+        const partial = this.pool.select({
             count: sql<string>`count(*) OVER()`.as('count'),
             id: pgschema.Icon.id,
             created: pgschema.Icon.created,
@@ -47,9 +49,15 @@ export default class IconModel extends Modeler<typeof pgschema.Icon> {
         }).from(this.generic)
             .leftJoin(pgschema.Iconset, eq(pgschema.Iconset.uid, pgschema.Icon.iconset))
             .where(query.where)
-            .orderBy(orderBy)
-            .limit(query.limit || 10)
-            .offset((query.page || 0) * (query.limit || 10))
+            .orderBy(orderBy);
+
+        if (limit !== Infinity) {
+            partial
+                .limit(limit)
+                .offset((query.page || 0) * limit);
+        }
+
+        const pgres = await partial;
 
         if (pgres.length === 0) {
             return { total: 0, items: [] };
