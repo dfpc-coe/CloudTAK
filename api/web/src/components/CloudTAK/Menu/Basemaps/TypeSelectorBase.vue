@@ -27,6 +27,33 @@
             />
         </TablerInput>
     </div>
+    <div
+        v-if='isSystemAdmin'
+        class='col-12 mt-3'
+    >
+        <TablerPillGroup
+            :model-value='editing.overlay ? "overlay" : "basemap"'
+            :options='[
+                { value: "basemap", label: "Basemap" },
+                { value: "overlay", label: "Overlay" }
+            ]'
+            @update:model-value='(v: string) => editing.overlay = v === "overlay"'
+        >
+            <template #option='{ option }'>
+                <IconMap
+                    v-if='option.value === "basemap"'
+                    :size='20'
+                    stroke='1'
+                />
+                <IconStack2
+                    v-else
+                    :size='20'
+                    stroke='1'
+                />
+                <span class='mx-2'>{{ option.label }}</span>
+            </template>
+        </TablerPillGroup>
+    </div>
     <div class='col-md-12'>
         <TablerInput
             v-model='editing.url'
@@ -130,15 +157,6 @@
             <template v-if='isSystemAdmin'>
                 <div class='col-12'>
                     <TablerToggle
-                        v-model='editing.overlay'
-                        label='Overlay'
-                        description='If true, this layer is treated as an overlay on top of base maps'
-                    >
-                        <TablerBadge>admin</TablerBadge>
-                    </TablerToggle>
-                </div>
-                <div class='col-12'>
-                    <TablerToggle
                         v-model='editing.hidden'
                         label='Hidden'
                         description='Hide this layer from the default list'
@@ -215,11 +233,12 @@ import { computed, ref } from 'vue';
 import {
     TablerBadge,
     TablerInlineAlert,
+    TablerPillGroup,
     TablerToggle,
     TablerEnum,
     TablerInput,
 } from '@tak-ps/vue-tabler';
-import { IconChevronDown, IconSquareChevronRight } from '@tabler/icons-vue';
+import { IconChevronDown, IconMap, IconSquareChevronRight, IconStack2 } from '@tabler/icons-vue';
 import HandleForm from '../../../util/HandleForm.vue';
 import SelectBasemapCollection from '../../util/SelectBasemapCollection.vue';
 import TypeSelectorSelected from './TypeSelectorSelected.vue';
