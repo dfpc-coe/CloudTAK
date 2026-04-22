@@ -26,6 +26,8 @@ export default class Overlay {
     _error?: Error;
     _loaded: boolean;
 
+    loading: boolean;
+
     id: number;
     name: string;
     active: boolean;
@@ -148,6 +150,8 @@ export default class Overlay {
         this._internal = opts.internal || false;
         this._clickable = [];
         this._loaded = false;
+
+        this.loading = false;
 
         this.id = overlay.id;
         this.name = overlay.name;

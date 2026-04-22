@@ -445,6 +445,14 @@ function resolveOverlayStatus(overlay: Overlay): OverlayStatus {
         };
     }
 
+    if (overlay.loading) {
+        return {
+            label: 'Pending',
+            tone: 'warning',
+            tooltip: 'Overlay is still loading data from the server.'
+        };
+    }
+
     if (!overlay.styles?.length) {
         return {
             label: 'Pending',

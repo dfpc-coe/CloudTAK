@@ -1144,28 +1144,32 @@ export const useMapStore = defineStore('cloudtak', {
             }));
 
             // Data Syncs are specially loaded as they are dynamic
-            // Parallelize Mission Loading
+            // Mission loading is fire-and-forget so logs/changes/features
+            // do not block the rest of map initialization. Each overlay is
+            // marked as `loading` while its mission data is being fetched
+            // and the maplibre source/layer + overlay entry are already in
+            // place from the steps above.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const missionOverlays = (this.overlays as any[]).filter((overlay: Overlay) => overlay.mode === 'mission' && overlay.mode_id);
-            const missionPromises = missionOverlays.map(async (overlay: Overlay) => {
-                    const source = map.getSource(String(overlay.id));
-                    if (!source) return;
+            for (const overlay of missionOverlays) {
+                const source = map.getSource(String(overlay.id));
+                if (!source) continue;
 
-                    try {
-                        const sub = await this.loadMission(overlay.mode_id!, {
-                            reload: true
-                        });
+                overlay.loading = true;
 
-                        if (sub && overlay.active) {
-                            await this.makeActiveMission(sub);
-                        }
-                    } catch (err) {
-                        console.error('Failed to load Mission', err)
-                        overlay._error = err instanceof Error ? err : new Error(String(err));
+                this.loadMission(overlay.mode_id!, {
+                    reload: true
+                }).then(async (sub) => {
+                    if (sub && overlay.active) {
+                        await this.makeActiveMission(sub);
                     }
+                }).catch((err) => {
+                    console.error('Failed to load Mission', err);
+                    overlay._error = err instanceof Error ? err : new Error(String(err));
+                }).finally(() => {
+                    overlay.loading = false;
                 });
-
-            await Promise.all(missionPromises);
+            }
 
             this.isLoaded = true;
 
