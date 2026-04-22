@@ -20,7 +20,7 @@
             />
         </template>
         <template #default>
-            <div class='col-12 d-flex flex-column gap-2 p-3'>
+            <div class='col-12 d-flex flex-column gap-2 py-3'>
                 <div
                     v-if='creating'
                     class='d-flex align-items-center gap-2 px-2 py-2'
@@ -58,7 +58,7 @@
                             />
                         </div>
                     </div>
-                    <div class='row g-2 px-2'>
+                    <div class='row g-2'>
                         <div class='col-12'>
                             <label class='form-label'>Name</label>
                             <div v-text='selected.name || "Unnamed Passkey"' />

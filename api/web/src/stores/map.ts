@@ -62,6 +62,7 @@ export const useMapStore = defineStore('cloudtak', {
         zoom: string;
         location: LocationState;
         locationAccuracy: number | undefined;
+        gpsCoordinates: { lat: number; lng: number } | null;
         distanceUnit: string;
         coordFormat: string;
         defaultPointType: string;
@@ -128,6 +129,7 @@ export const useMapStore = defineStore('cloudtak', {
             toImport: [],
             location: LocationState.Loading,
             locationAccuracy: undefined,
+            gpsCoordinates: null,
             hasSnapping: false,
             db,
             channel: new BroadcastChannel("cloudtak"),
@@ -624,6 +626,12 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 } else if (msg.type === WorkerMessageType.Profile_Location_Coordinates) {
                     this.locationAccuracy = msg.body.accuracy;
+                    if (msg.body.coordinates) {
+                        this.gpsCoordinates = {
+                            lng: msg.body.coordinates[0],
+                            lat: msg.body.coordinates[1]
+                        };
+                    }
                     if (!this.manualLocationMode) {
                         this.location = LocationState.Live;
                     }
@@ -755,6 +763,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }, 500);
             });
 
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore Don't remove me unless npm run doc passes
             this._map = markRaw(map);
             this._draw = new DrawTool(this);
@@ -767,6 +776,12 @@ export const useMapStore = defineStore('cloudtak', {
             const loc = await this.worker.profile.location;
             this.location = loc.source;
             this.locationAccuracy = loc.accuracy;
+            if (loc.coordinates) {
+                this.gpsCoordinates = {
+                    lng: loc.coordinates[0],
+                    lat: loc.coordinates[1]
+                };
+            }
 
             await this.worker.profile.load();
 
@@ -1129,28 +1144,32 @@ export const useMapStore = defineStore('cloudtak', {
             }));
 
             // Data Syncs are specially loaded as they are dynamic
-            // Parallelize Mission Loading
+            // Mission loading is fire-and-forget so logs/changes/features
+            // do not block the rest of map initialization. Each overlay is
+            // marked as `loading` while its mission data is being fetched
+            // and the maplibre source/layer + overlay entry are already in
+            // place from the steps above.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const missionOverlays = (this.overlays as any[]).filter((overlay: Overlay) => overlay.mode === 'mission' && overlay.mode_id);
-            const missionPromises = missionOverlays.map(async (overlay: Overlay) => {
-                    const source = map.getSource(String(overlay.id));
-                    if (!source) return;
+            for (const overlay of missionOverlays) {
+                const source = map.getSource(String(overlay.id));
+                if (!source) continue;
 
-                    try {
-                        const sub = await this.loadMission(overlay.mode_id!, {
-                            reload: true
-                        });
+                overlay.loading = true;
 
-                        if (sub && overlay.active) {
-                            await this.makeActiveMission(sub);
-                        }
-                    } catch (err) {
-                        console.error('Failed to load Mission', err)
-                        overlay._error = err instanceof Error ? err : new Error(String(err));
+                this.loadMission(overlay.mode_id!, {
+                    reload: true
+                }).then(async (sub) => {
+                    if (sub && overlay.active) {
+                        await this.makeActiveMission(sub);
                     }
+                }).catch((err) => {
+                    console.error('Failed to load Mission', err);
+                    overlay._error = err instanceof Error ? err : new Error(String(err));
+                }).finally(() => {
+                    overlay.loading = false;
                 });
-
-            await Promise.all(missionPromises);
+            }
 
             this.isLoaded = true;
 

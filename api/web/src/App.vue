@@ -112,7 +112,14 @@
                                         stroke='1'
                                     />
                                     <span class='mx-2'>Admin</span>
-                                    <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
+                                    <TablerBadge
+                                        class='ms-auto'
+                                        background-color='rgba(239, 68, 68, 0.2)'
+                                        border-color='rgba(239, 68, 68, 0.5)'
+                                        text-color='#dc2626'
+                                    >
+                                        Admin
+                                    </TablerBadge>
                                 </div>
                                 <div
                                     class='d-flex dropdown-item cursor-pointer cloudtak-hover'
@@ -176,6 +183,7 @@ import {
 import { version } from '../package.json';
 import Loading from './components/Loading.vue';
 import {
+    TablerBadge,
     TablerError
 } from '@tak-ps/vue-tabler';
 import MissionInviteModal from './components/CloudTAK/Menu/Mission/MissionInviteModal.vue';
@@ -183,13 +191,12 @@ import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vu
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
 import { db } from './base/database.ts';
-import { getCurrentEntryBuildId } from './base/service-worker.ts';
+import { getPageServiceWorkerBuildId } from './base/service-worker.ts';
 import { useMapStore } from './stores/map.ts';
 
 const router = useRouter();
 const route = useRoute();
 const mapStore = useMapStore();
-const currentBuildId = getCurrentEntryBuildId();
 
 const loginLogo = ref<string>();
 const loginName = ref<string>();
@@ -367,6 +374,8 @@ onMounted(async () => {
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+            const currentBuildId = getPageServiceWorkerBuildId();
+
             for (const registration of registrations) {
                 registration.update().catch((err) => {
                     console.debug('Failed to update ServiceWorker (likely unregistered):', err);
@@ -394,7 +403,7 @@ onMounted(async () => {
                         const u = new URL(worker.scriptURL);
                         const swBuild = u.searchParams.get('build');
                         const swVersion = u.searchParams.get('v');
-                        if ((swVersion && swVersion !== version) || (swBuild && swBuild !== currentBuildId)) {
+                        if ((swVersion && swVersion !== version) || (currentBuildId && swBuild && swBuild !== currentBuildId)) {
                             updatedSW.value = { version: swVersion, build: swBuild };
                             updateAvailable.value = true;
                         }

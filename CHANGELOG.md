@@ -19,6 +19,42 @@
 
 ### Pending Release
 
+### v12.129.0 - 2026-04-21
+
+- :rocket: Load Data Sync asynchronously when loading main map
+- :bug: Fix task selection when creating an ETL Layer
+
+### v12.128.0 - 2026-04-21
+
+- :rocket: Add ability to edit Data Package keywords and hash
+- :tada: Add ability to share profile files with other users
+- :rocket: Improve Folder Management of Features Menu
+- :tada: Add Folder Management of Files Menu
+- :rocket: Add Generic Folder Management Component
+- :bug: Improve large file handling support
+- :bug: Fix Service Worker Update message on Admin Console
+
+### v12.127.3 - 2026-04-19
+
+- :rocket: Fix version mismatch
+
+### v12.127.2 - 2026-04-19
+
+- :rocket: Increase supported filesize to 5gb.
+- :rocket: Fix MaxZoom support in MBTiles output
+
+### v12.127.1 - 2026-04-19
+
+- :rocket: Predetermine input resolution before creating MBTiles to prevent over-resolution errors
+- :rocket: Increase protection from path traversal attacks in the events server
+
+### v12.127.0 - 2026-04-18
+
+- :tada: Add GPS coordinate source toggle to bottom bar coordinate display
+- :rocket: Migrate badges across menus to TablerBadge component
+- :rocket: Improve icon thumbnail styling consistency across Icon views
+- :bug: Improve large file upload reliability with extended proxy timeouts and error handling
+
 ### v12.126.0 - 2026-04-17
 
 - :bug: Fix flashing icon that occurred if an archived feature had a custom icon

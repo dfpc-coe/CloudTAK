@@ -29,6 +29,14 @@ export default class ImportControl {
         this.config = config;
     }
 
+    async fail(id: string, error: unknown): Promise<void> {
+        await this.config.models.Import.commit(id, {
+            status: Import_Status.FAIL,
+            error: error instanceof Error ? error.message : String(error),
+            updated: sql`Now()`
+        });
+    }
+
     async create(body: {
         username: string;
         name: string;
@@ -61,12 +69,18 @@ export default class ImportControl {
                 imp.name = `${imp.name}${ext}`;
             }
 
-            await S3.put(`import/${imp.id}${ext}`, file)
+            try {
+                await S3.put(`import/${imp.id}${ext}`, file)
 
-            await this.config.models.Import.commit(imp.id, {
-                name: imp.name,
-                status: 'Pending'
-            });
+                await this.config.models.Import.commit(imp.id, {
+                    name: imp.name,
+                    status: 'Pending'
+                });
+            } catch (err) {
+                file.resume();
+                await this.fail(imp.id, err);
+                throw err;
+            }
         }
 
         return {
@@ -110,6 +124,27 @@ export default class ImportControl {
         }
 
         return response;
+    }
+
+    async retry(id: string): Promise<Static<typeof ImportResponse>> {
+        const imported = await this.config.models.Import.augmented_from(id);
+
+        if (imported.status !== Import_Status.FAIL) {
+            throw new Err(400, null, 'Only failed imports can be retried');
+        }
+
+        await this.config.models.ImportResult.delete(sql`import = ${id}`);
+
+        const new_import = await this.config.models.Import.commit(id, {
+            status: Import_Status.PENDING,
+            error: null,
+            updated: sql`Now()`
+        });
+
+        return {
+            ...new_import,
+            results: []
+        };
     }
 
     async delete(id: string): Promise<void> {

@@ -2,6 +2,16 @@
     <MenuTemplate name='Import'>
         <template #buttons>
             <div class='d-flex align-items-center gap-2'>
+                <TablerIconButton
+                    v-if='imported && imported.status === "Fail"'
+                    title='Retry Import'
+                    @click='retryImport'
+                >
+                    <IconRestore
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerDelete
                     v-if='imported && (imported.status === "Fail" || imported.status === "Success")'
                     displaytype='icon'
@@ -31,7 +41,7 @@
             <TablerLoading v-else-if='!imported || loading.initial' />
             <div
                 v-else
-                class='container-fluid px-2 px-sm-3 py-4'
+                class='container-fluid py-4'
             >
                 <div class='row gy-3 gx-0 gx-lg-3'>
                     <div class='col-12'>
@@ -195,6 +205,7 @@ import {
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import {
+    IconRestore,
     IconDownload,
     IconAlertTriangle,
     IconDatabaseImport,
@@ -240,6 +251,26 @@ async function downloadImport() {
     await std(url, {
         download: true
     })
+}
+
+async function retryImport() {
+    loading.value.initial = true;
+
+    try {
+        const url = stdurl(`/api/import/${route.params.import}/retry`);
+        await std(url, { method: 'POST' });
+
+        loading.value.run = true;
+        interval.value = setInterval(async () => {
+            await fetch();
+        }, 2000);
+
+        await fetch(true);
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+
+    loading.value.initial = false;
 }
 
 async function deleteImport() {

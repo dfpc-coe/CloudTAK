@@ -146,6 +146,30 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         };
     }
 
+    async activeChannels(connection: number | string, fallbackApi?: TAKAPI): Promise<Set<number>> {
+        const conn = this.get(connection);
+        if (conn?.channels.size) {
+            return new Set(conn.channels);
+        }
+
+        const api = conn?.api || fallbackApi;
+        if (!api) {
+            return new Set();
+        }
+
+        const channels = new Set(
+            (await api.Group.list({ useCache: true })).data
+                .filter((group) => group.active)
+                .map((group) => group.bitpos)
+        );
+
+        if (conn) {
+            conn.channels = channels;
+        }
+
+        return channels;
+    }
+
     async refresh() {
         for (const conn of this.keys()) {
             this.delete(conn);

@@ -158,6 +158,22 @@ export default class KML implements Transform {
                         const zip = new StreamZip.async({ file: tmpKmzPath });
                         try {
                             const entries = await zip.entries();
+
+                            // Validate all ZIP entries before extraction to prevent path traversal
+                            const extractDirResolved = path.resolve(extractDir);
+                            let hasUnsafeEntry = false;
+                            for (const entry of Object.values(entries)) {
+                                const entryResolved = path.resolve(extractDir, entry.name);
+                                if (!entryResolved.startsWith(extractDirResolved + path.sep) && entryResolved !== extractDirResolved) {
+                                    console.warn(`NetworkLink ${normalized} KMZ path traversal attempt detected (${entry.name}), skipping`);
+                                    hasUnsafeEntry = true;
+                                }
+                            }
+                            if (hasUnsafeEntry) {
+                                console.warn(`NetworkLink ${normalized} KMZ contains unsafe ZIP entries, skipping extraction`);
+                                continue;
+                            }
+
                             let kmlFileName = 'doc.kml';
                             
                             if (!entries['doc.kml']) {
@@ -177,7 +193,6 @@ export default class KML implements Transform {
                             }
                             
                             const kmlFileResolved = path.resolve(extractDir, kmlFileName);
-                            const extractDirResolved = path.resolve(extractDir);
                             if (kmlFileResolved !== extractDirResolved && !kmlFileResolved.startsWith(extractDirResolved + path.sep)) {
                                 console.warn(`NetworkLink ${normalized} KMZ path traversal attempt detected (${kmlFileName}), skipping`);
                                 continue;
@@ -223,13 +238,26 @@ export default class KML implements Transform {
                         console.warn(`icon ${feat.properties.icon} not retrievable (${err})`);
                     }
                 } else {
-                    const search = await glob(path.resolve(this.local.tmpdir, '**/' + feat.properties.icon));
-                    if (!search.length) {
-                        console.warn(`icon ${feat.properties.icon} not found`);
+                    const iconName = feat.properties.icon as string;
+                    if (iconName.includes('..') || path.isAbsolute(iconName)) {
+                        console.warn(`icon ${iconName} rejected — invalid path`);
                         continue;
                     }
 
-                    icons.set(feat.properties.icon as string, await fs.readFile(search[0]));
+                    const search = await glob(path.resolve(this.local.tmpdir, '**/' + iconName));
+                    if (!search.length) {
+                        console.warn(`icon ${iconName} not found`);
+                        continue;
+                    }
+
+                    const resolvedIcon = path.resolve(search[0]);
+                    const tmpdirSafe = path.resolve(this.local.tmpdir);
+                    if (!resolvedIcon.startsWith(tmpdirSafe + path.sep)) {
+                        console.warn(`icon ${iconName} resolved outside tmpdir, skipping`);
+                        continue;
+                    }
+
+                    icons.set(iconName, await fs.readFile(resolvedIcon));
                 }
             }
 
@@ -247,11 +275,20 @@ export default class KML implements Transform {
         if (this.local.ext === '.kmz') {
             const zip = new StreamZip.async({
                 file: this.local.raw,
-                skipEntryNameValidation: true
             });
 
             try {
                 const preentries = await zip.entries();
+
+                // Validate all ZIP entries before extraction to prevent path traversal
+                const tmpdirResolved = path.resolve(this.local.tmpdir);
+                for (const entry of Object.values(preentries)) {
+                    const entryResolved = path.resolve(this.local.tmpdir, entry.name);
+                    if (!entryResolved.startsWith(tmpdirResolved + path.sep) && entryResolved !== tmpdirResolved) {
+                        throw new Error(`Path traversal attempt detected in KMZ: ${entry.name}`);
+                    }
+                }
+
                 let kmlFileName = 'doc.kml';
 
                 if (!preentries['doc.kml']) {
@@ -269,7 +306,6 @@ export default class KML implements Transform {
                 }
 
                 const kmlFileResolved = path.resolve(this.local.tmpdir, kmlFileName);
-                const tmpdirResolved = path.resolve(this.local.tmpdir);
                 if (kmlFileResolved !== tmpdirResolved && !kmlFileResolved.startsWith(tmpdirResolved + path.sep)) {
                     throw new Error(`Path traversal attempt detected in KMZ: ${kmlFileName}`);
                 }

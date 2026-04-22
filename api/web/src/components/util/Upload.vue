@@ -1,5 +1,10 @@
 <template>
     <div class='card-body'>
+        <TablerInlineAlert
+            v-if='props.sizeWarning'
+            severity='warning'
+            title='Uploads are limited to 5 GB'
+        />
         <div
             class='row'
             :class='{ "d-none": file }'
@@ -83,6 +88,7 @@ import {
     IconFile
 } from '@tabler/icons-vue';
 import {
+    TablerInlineAlert,
     TablerLoading,
     TablerProgress
 } from '@tak-ps/vue-tabler';
@@ -97,6 +103,7 @@ interface Props {
     cancel?: boolean;
     label?: string;
     mimetype?: string;
+    sizeWarning?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -106,7 +113,8 @@ const props = withDefaults(defineProps<Props>(), {
     method: 'POST',
     cancel: true,
     label: 'Select a file to upload',
-    mimetype: '*'
+    mimetype: '*',
+    sizeWarning: false
 });
 
 // Define the events emitted by this component

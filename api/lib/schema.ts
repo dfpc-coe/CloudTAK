@@ -13,7 +13,7 @@ import {
     Import_Status,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
 } from  './enums.js';
-import { boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
+import { bigint, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
 export const SpatialRefSys = pgTable('spatial_ref_sys', {
@@ -108,6 +108,16 @@ export const ProfileFile = pgTable('profile_files', {
         size: number;
     }>>().notNull().default([]),
 });
+
+export const ProfileFileChannel = pgTable('profile_file_channel', {
+    id: serial().primaryKey(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    file: uuid().notNull().references(() => ProfileFile.id, { onDelete: 'cascade' }),
+    channel: bigint({ mode: 'bigint' }).notNull(),
+}, (table) => ({
+    file_channel_idx: unique().on(table.file, table.channel)
+}));
 
 export const ProfileChatroom = pgTable('profile_chatroom', {
     id: text().primaryKey(),

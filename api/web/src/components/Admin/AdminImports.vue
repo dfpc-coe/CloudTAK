@@ -89,6 +89,16 @@
                                                 <div class='col-2 d-flex'>
                                                     <div class='ms-auto btn-list'>
                                                         <TablerIconButton
+                                                            v-if='imp.status === "Fail"'
+                                                            title='Retry Import'
+                                                            @click.stop='retryImport(imp.id)'
+                                                        >
+                                                            <IconRestore
+                                                                :size='32'
+                                                                stroke='1'
+                                                            />
+                                                        </TablerIconButton>
+                                                        <TablerIconButton
                                                             title='Download File'
                                                             @click='downloadImport(imp.id)'
                                                         >
@@ -143,6 +153,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    IconRestore,
     IconDownload
 } from '@tabler/icons-vue';
 
@@ -218,6 +229,16 @@ async function listImportSchema() {
         }
         return true;
     }));
+}
+
+async function retryImport(id: string) {
+    try {
+        const url = stdurl(`/api/import/${id}/retry`);
+        await std(url, { method: 'POST' });
+        await fetchList();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
 }
 
 async function downloadImport(id: string) {

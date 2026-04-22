@@ -186,7 +186,9 @@ export default class AtlasProfile {
             const me = await this.atlas.db.get(this.uid());
 
             if (me) {
-                this.atlas.conn.sendCOT(me.as_feature())
+                const feat = me.as_feature();
+                feat.properties.archived = false;
+                this.atlas.conn.sendCOT(feat)
             }
         }, (this.profile_loc_freq && this.profile_loc_freq.value) ? Number(this.profile_loc_freq.value) : 5000);
     }

@@ -3,12 +3,16 @@
         v-if='filteredKeywords.length'
         class='d-flex flex-wrap gap-2 mt-1'
     >
-        <span
+        <TablerBadge
             v-for='keyword in filteredKeywords'
             :key='keyword'
-            class='badge text-bg-secondary text-uppercase rounded-pill px-3 py-1 small'
-            v-text='keyword'
-        />
+            class='text-uppercase rounded-pill px-3 py-1 small'
+            :background-color='badgeColors.backgroundColor'
+            :border-color='badgeColors.borderColor'
+            :text-color='badgeColors.textColor'
+        >
+            {{ keyword }}
+        </TablerBadge>
     </div>
     <div
         v-else
@@ -19,6 +23,7 @@
 
 <script setup lang="ts">
 import  { computed } from 'vue';
+import { TablerBadge } from '@tak-ps/vue-tabler';
 
 const filtered = [
     'template:'
@@ -30,11 +35,29 @@ const filteredKeywords = computed(() => {
     });
 });
 
+const badgeColors = computed(() => {
+    if (props.tone === 'accent') {
+        return {
+            backgroundColor: 'rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.18)',
+            borderColor: 'rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.42)',
+            textColor: 'var(--tblr-primary-text-emphasis, rgb(var(--tblr-primary-rgb, 32, 107, 196)))'
+        };
+    }
+
+    return {
+        backgroundColor: 'rgba(107, 114, 128, 0.2)',
+        borderColor: 'rgba(107, 114, 128, 0.5)',
+        textColor: '#6b7280'
+    };
+});
+
 const props = withDefaults(defineProps<{
     keywords?: string[];
     placeholder?: string;
+    tone?: 'muted' | 'accent';
 }>(), {
     keywords: () => [],
-    placeholder: 'No Keywords'
+    placeholder: 'No Keywords',
+    tone: 'muted'
 });
 </script>

@@ -1,26 +1,25 @@
 <template>
     <div>
-        <span
+        <TablerBadge
             v-if='connection.agency'
-            class='badge border text-white cursor-pointer'
-            :class='{
-                "bg-blue": !muted,
-                "bg-blue-lt": muted
-            }'
+            class='cursor-pointer'
+            :background-color='muted ? "rgba(59, 130, 246, 0.15)" : "rgba(59, 130, 246, 0.25)"'
+            :border-color='muted ? "rgba(59, 130, 246, 0.3)" : "rgba(59, 130, 246, 0.5)"'
+            text-color='#2563eb'
             style='height: 20px'
             @click='info.shown = true'
-            v-text='`Agency`'
-        />
-        <span
+        >
+            Agency
+        </TablerBadge>
+        <TablerBadge
             v-else
-            class='badge border text-white'
-            :class='{
-                "bg-red": !muted,
-                "bg-red-lt": muted
-            }'
+            :background-color='muted ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.2)"'
+            :border-color='muted ? "rgba(239, 68, 68, 0.3)" : "rgba(239, 68, 68, 0.5)"'
+            text-color='#dc2626'
             style='height: 20px'
-            v-text='`Admin`'
-        />
+        >
+            Admin
+        </TablerBadge>
 
         <TablerModal v-if='info.shown'>
             <div class='modal-status bg-yellow' />
@@ -72,6 +71,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import {
+    TablerBadge,
     TablerModal,
     TablerLoading
 } from '@tak-ps/vue-tabler';

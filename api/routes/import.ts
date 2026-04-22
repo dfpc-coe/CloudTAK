@@ -164,22 +164,32 @@ export default async function router(schema: Schema, config: Config) {
                         ext: path.parse(filename).ext,
                     };
 
-                    await config.models.Import.commit(imported.id, {
-                        status: Import_Status.PENDING,
-                    });
+                    try {
+                        await S3.put(`import/${imported.id}${res.ext}`, file)
 
-                    await S3.put(`import/${imported.id}${res.ext}`, file)
+                        await config.models.Import.commit(imported.id, {
+                            status: Import_Status.PENDING,
+                            error: null
+                        });
+                    } catch (err) {
+                        file.resume();
+                        await importControl.fail(imported.id, err);
+                        throw err;
+                    }
 
                     return res;
                 })())
             }).on('finish', async () => {
                 try {
+                    await Promise.all(uploads);
                     // Refetch to get updated status after commit
                     const refetchedImport = await config.models.Import.augmented_from(req.params.import);
                     res.json(refetchedImport)
                 } catch (err) {
                     Err.respond(err, res);
                 }
+            }).on('error', (err: Error) => {
+                Err.respond(err, res);
             });
 
             req.pipe(bb);
@@ -228,13 +238,29 @@ export default async function router(schema: Schema, config: Config) {
                         uid: crypto.randomUUID()
                     };
 
+                    // Generate the row in the Empty state so the events worker
+                    // (which polls for Pending imports) cannot pick it up before
+                    // the S3 object has been fully written. Once the upload is
+                    // finished we transition the row to Pending.
                     await config.models.Import.generate({
                         name: res.file,
                         username: user.email,
-                        id: res.uid
+                        id: res.uid,
+                        status: Import_Status.EMPTY
                     });
 
-                    await S3.put(`import/${res.uid}${res.ext}`, file)
+                    try {
+                        await S3.put(`import/${res.uid}${res.ext}`, file)
+
+                        await config.models.Import.commit(res.uid, {
+                            status: Import_Status.PENDING,
+                            error: null
+                        });
+                    } catch (err) {
+                        file.resume();
+                        await importControl.fail(res.uid, err);
+                        throw err;
+                    }
 
                     return res;
                 })())
@@ -246,6 +272,8 @@ export default async function router(schema: Schema, config: Config) {
                 } catch (err) {
                     Err.respond(err, res);
                 }
+            }).on('error', (err: Error) => {
+                Err.respond(err, res);
             });
 
             req.pipe(bb);
@@ -384,6 +412,30 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const response = await importControl.update(req.params.import, req.body);
+
+            res.json(response);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/import/:import/retry', {
+        name: 'Retry Import',
+        group: 'Import',
+        description: 'Retry a failed import by resetting its status to Pending',
+        params: Type.Object({
+            import: Type.String()
+        }),
+        res: ImportResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const imported = await config.models.Import.augmented_from(req.params.import);
+
+            if (imported.username !== user.email && !user.is_admin()) throw new Err(400, null, 'You did not create this import');
+
+            const response = await importControl.retry(req.params.import);
 
             res.json(response);
         } catch (err) {

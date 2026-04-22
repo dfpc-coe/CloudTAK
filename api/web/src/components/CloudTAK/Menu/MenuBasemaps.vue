@@ -19,7 +19,7 @@
         <template #default>
             <div
                 v-if='!share'
-                class='col-12 px-2 py-2 d-flex flex-column gap-2'
+                class='col-12 py-2 d-flex flex-column gap-2'
             >
                 <TablerInput
                     v-model='paging.filter'
@@ -32,7 +32,7 @@
                     v-if='paging.collection'
                     class='d-flex align-items-center gap-2'
                 >
-                    <BasemapCollection v-model:collection='paging.collection' />
+                    <PathBreadcrumb v-model:collection='paging.collection' />
                 </div>
             </div>
 
@@ -54,7 +54,7 @@
                 @create='editModal = {}'
             />
             <template v-else>
-                <div class='col-12 d-flex flex-column gap-2 p-3'>
+                <div class='col-12 d-flex flex-column gap-2 py-3'>
                     <StandardItemFolder
                         v-for='collection in list.collections'
                         :key='collection.name'
@@ -165,7 +165,7 @@
 import { onMounted, ref, watch, computed } from 'vue';
 import StandardItemBasemap from '../util/StandardItemBasemap.vue';
 import StandardItemFolder from '../util/StandardItemFolder.vue';
-import BasemapCollection from '../util/BasemapCollection.vue';
+import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import ProfileConfig from '../../../base/profile.ts';
 import { server, stdurl } from '../../../std.ts';

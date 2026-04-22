@@ -360,14 +360,21 @@ export const JobResponse = Type.Object({
     updated: Type.Optional(Type.Integer())
 });
 
-export const ProfileFileResponse = createSelectSchema(schemas.ProfileFile, {
+export const ProfileFileResponse = Type.Object({
     id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    username: Type.String(),
+    path: Type.String(),
+    name: Type.String(),
     iconset: Type.Union([Type.Null(), Type.String()]),
+    size: Type.Integer(),
+    channels: Type.Array(Type.Integer()),
     artifacts: Type.Array(Type.Object({
         ext: Type.String(),
         size: Type.Integer(),
     }))
-})
+});
 
 export const AssetResponse = Type.Object({
     name: Type.String({ "description": "The filename of the asset" }),

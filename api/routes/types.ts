@@ -5,7 +5,40 @@ import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
 import { CoTTypes } from '@tak-ps/node-cot';
 import { MilSymType } from '@tak-ps/node-cot';
+import { Package } from '@tak-ps/node-tak/lib/api/package';
 import * as Default from '../lib/limits.js';
+
+export const PackageResponse = Type.Object({
+    uid: Type.String({
+        description: 'UID of the package'
+    }),
+    name: Type.String({
+        description: 'Name of the latest package version'
+    }),
+    hash: Type.String({
+        description: 'Hash of the latest package version'
+    }),
+    size: Type.Integer({
+        description: 'Size of the latest package version in bytes'
+    }),
+    username: Type.Optional(Type.String({
+        description: 'Submission User of the latest package version'
+    })),
+    created: Type.String({
+        format: 'date-time',
+        description: 'Submission DateTime of the latest package version'
+    }),
+    keywords: Type.Array(Type.String({
+        description: 'Keywords of the latest package version'
+    })),
+    expiration: Type.Union([Type.Null(), Type.Integer(), Type.String()], {
+        description: 'Expiration value of the latest package version'
+    }),
+    channels: Type.Array(Type.String({
+        description: 'Channels assigned to the latest package version'
+    })),
+    items: Type.Array(Package)
+});
 
 export default async function router(schema: Schema, config: Config) {
     const types = await CoTTypes.default.load();

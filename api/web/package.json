@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/cloudtak",
     "type": "module",
-    "version": "12.126.0",
+    "version": "12.129.0",
     "types": "dist/types/plugin.d.ts",
     "files": [
         "dist/types"
@@ -77,7 +77,6 @@
         "terra-draw-maplibre-gl-adapter": "^1.1.1",
         "terra-draw-route-snap-mode": "^0.4.1",
         "terra-route": "^0.0.14",
-        "uuid": "^13.0.0",
         "video.js": "^8.23.7",
         "vue": "^3.2.31",
         "vue-component-type-helpers": "^3.0.7",

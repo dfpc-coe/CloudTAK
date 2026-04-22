@@ -8,7 +8,7 @@
         </template>
         <template #default>
             <div class='d-flex flex-column gap-3 min-vh-100'>
-                <div class='mx-2 mt-2 d-flex align-items-center gap-3 flex-wrap'>
+                <div class='mt-2 d-flex align-items-center gap-3 flex-wrap'>
                     <TablerInput
                         v-model='paging.filter'
                         icon='search'
@@ -19,15 +19,15 @@
 
                 <div
                     v-if='paging.collection'
-                    class='mx-2 d-flex align-items-center gap-2'
+                    class='d-flex align-items-center gap-2'
                 >
-                    <BasemapCollection v-model:collection='paging.collection' />
+                    <PathBreadcrumb v-model:collection='paging.collection' />
                 </div>
 
                 <TablerLoading v-if='loading' />
                 <template v-else>
                     <StandardItem
-                        class='mx-2 p-3 bg-info-subtle border border-info border-opacity-50'
+                        class='p-3 bg-info-subtle border border-info border-opacity-50'
                         @click='goToFiles'
                     >
                         <div class='d-flex justify-content-between gap-3 w-100'>
@@ -62,7 +62,7 @@
 
                     <div
                         v-if='list.items.length || list.collections.length'
-                        class='mx-2 d-flex flex-column gap-2'
+                        class='d-flex flex-column gap-2'
                     >
                         <StandardItemFolder
                             v-for='collection in list.collections'
@@ -88,7 +88,6 @@
                         v-else
                         label='No Overlays'
                         :create='false'
-                        class='px-2'
                     />
                 </template>
             </div>
@@ -116,7 +115,7 @@ import {
 import StandardItem from '../util/StandardItem.vue';
 import StandardItemBasemap from '../util/StandardItemBasemap.vue';
 import StandardItemFolder from '../util/StandardItemFolder.vue';
-import BasemapCollection from '../util/BasemapCollection.vue';
+import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import Overlay from '../../../base/overlay.ts';
 import { useMapStore } from '../../../stores/map.ts';
 

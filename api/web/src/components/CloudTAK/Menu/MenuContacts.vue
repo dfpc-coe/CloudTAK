@@ -7,7 +7,7 @@
             />
         </template>
         <template #default>
-            <div class='col-12 px-2 py-2'>
+            <div class='col-12 py-2'>
                 <TablerInput
                     v-model='paging.filter'
                     icon='search'
@@ -24,7 +24,7 @@
                 :create='false'
             />
             <template v-else>
-                <label class='subheader mx-2'>Online</label>
+                <label class='subheader'>Online</label>
                 <TablerNone
                     v-if='visibleActiveContacts.length === 0'
                     label='No Online Contacts'
@@ -51,7 +51,14 @@
                             </template>
 
                             <template #right>
-                                <span class='badge rounded-pill small bg-secondary-subtle text-secondary-emphasis border border-secondary border-opacity-50 ms-auto'>{{ visibleActiveContacts.filter(c => c.team === team).length }}</span>
+                                <TablerBadge
+                                    class='rounded-pill small ms-auto'
+                                    background-color='rgba(107, 114, 128, 0.15)'
+                                    border-color='rgba(107, 114, 128, 0.3)'
+                                    text-color='#6b7280'
+                                >
+                                    {{ visibleActiveContacts.filter(c => c.team === team).length }}
+                                </TablerBadge>
                             </template>
 
                             <div class='mx-2 pt-2'>
@@ -77,7 +84,14 @@
                         label='Recently Offline'
                     >
                         <template #right>
-                            <span class='badge rounded-pill small bg-secondary-subtle text-secondary-emphasis border border-secondary border-opacity-50 ms-auto'>{{ visibleOfflineContacts.length }}</span>
+                            <TablerBadge
+                                class='rounded-pill small ms-auto'
+                                background-color='rgba(107, 114, 128, 0.15)'
+                                border-color='rgba(107, 114, 128, 0.3)'
+                                text-color='#6b7280'
+                            >
+                                {{ visibleOfflineContacts.length }}
+                            </TablerBadge>
                         </template>
 
                         <div class='mx-2 pt-2'>
@@ -123,6 +137,7 @@ const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
 import {
+    TablerBadge,
     TablerNone,
     TablerInput,
     TablerLoading,

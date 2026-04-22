@@ -84,7 +84,7 @@ http {
         listen [::]:5000;
         absolute_redirect off;
 
-        client_max_body_size 512M;
+        client_max_body_size 5G;
 
         server_tokens off;
 
@@ -193,6 +193,9 @@ http {
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header Host $host;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_read_timeout 600s;
+            proxy_send_timeout 600s;
+            client_body_timeout 600s;
         }
 
     }

@@ -43,16 +43,6 @@
                 @click='refresh(true)'
             />
 
-            <TablerIconButton
-                title='Create Folder'
-                @click='folderModal.shown = true'
-            >
-                <IconFolderPlus
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
-
             <TablerDropdown>
                 <TablerIconButton
                     title='More Options'
@@ -78,20 +68,37 @@
             </TablerDropdown>
         </template>
         <template #default>
-            <div class='mx-2 my-2'>
+            <div class='my-2'>
                 <TablerInput
                     v-model='query.filter'
                     icon='search'
                     placeholder='Search'
                 />
             </div>
+
+            <div class='my-2 d-flex align-items-center justify-content-between'>
+                <PathBreadcrumb v-model:collection='collectionPath' />
+                <TablerIconButton
+                    title='Create Folder'
+                    @click='folderModal.shown = true'
+                >
+                    <IconFolderPlus
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+            </div>
+
             <TablerLoading
                 v-if='loading'
                 v-model='query.filter'
                 desc='Loading Features'
             />
             <template v-else>
-                <div class='px-2 pb-2'>
+                <div
+                    v-if='currentPath === "/"'
+                    class='pb-2'
+                >
                     <StandardItem
                         class='d-flex align-items-center px-3 py-3 user-select-none'
                         @click='router.push("/menu/features/deleted")'
@@ -105,111 +112,28 @@
                 </div>
 
                 <TablerNone
-                    v-if='cots.size === 0 && paths.length === 0'
+                    v-if='currentItems.size === 0 && currentFolders.length === 0'
                     :create='false'
-                    label='No Archived Features'
+                    :label='currentPath === "/" ? "No Archived Features" : "Folder is empty"'
                 />
 
                 <template v-else>
-                    <div class='d-flex flex-column gap-2 px-2'>
-                        <template
-                            v-for='path of paths'
-                            :key='path.id'
-                        >
-                            <StandardItem
-                                :id='`foldertarget-${path.id}`'
-                                class='px-3 py-3 user-select-none'
-                                :style='hoverPath === path ? "background-color: rgba(255, 255, 255, 0.1);" : ""'
-                                @drop.stop.prevent='onFolderDrop(path)'
-                                @dragover.prevent='dragOverFolder(path)'
-                                @dragleave='dragLeaveFolder()'
-                                @click='path.opened ? closePath(path) : openPath(path)'
-                            >
-                                <div class='d-flex align-items-center justify-content-between'>
-                                    <div class='d-flex align-items-center'>
-                                        <IconChevronRight
-                                            v-if='!path.opened'
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                        <IconChevronDown
-                                            v-else
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                        <IconFolder
-                                            class='mx-2'
-                                            :size='20'
-                                            stroke='2'
-                                        />
-                                        <span
-                                            class='fw-bold'
-                                            v-text='path.name.replace(/(^\/|\/$)/g, "")'
-                                        />
-                                    </div>
-
-                                    <div class='ms-auto d-flex align-items-center gap-2'>
-                                        <span class='badge rounded-pill bg-secondary bg-opacity-25 text-white-50'>{{ path.count }}</span>
-                                        <TablerIconButton
-                                            title='Rename Folder'
-                                            @click.stop='openEditModal(path)'
-                                        >
-                                            <IconPencil
-                                                :size='20'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
-                                        <TablerDelete
-                                            displaytype='icon'
-                                            :size='20'
-                                            @delete='deletePath(path)'
-                                        />
-                                    </div>
-                                </div>
-                                
-                                <div
-                                    v-if='path.opened'
-                                    class='mt-3'
-                                    @click.stop
-                                >
-                                    <div
-                                        :id='`folder-${path.id}`'
-                                        class='folder w-100'
-                                        style='min-height: 40px;'
-                                    >
-                                        <TablerLoading v-if='path.loading' />
-                                        <template v-else>
-                                            <div
-                                                v-if='path.cots.size === 0'
-                                                class='text-center text-muted fst-italic py-2 small user-select-none opacity-50 pe-none position-absolute w-100'
-                                                style='margin-top: -8px;'
-                                            >
-                                                Folder is empty
-                                            </div>
-                                            <Feature
-                                                v-for='cot of path.cots.values()'
-                                                :id='cot.id'
-                                                :key='cot.id'
-                                                :select='true'
-                                                :grip-handle='true'
-                                                :delete-button='true'
-                                                :info-button='true'
-                                                :feature='cot'
-                                            />
-                                        </template>
-                                    </div>
-                                </div>
-                            </StandardItem>
-                        </template>
-                    </div>
+                    <PathBrowser
+                        v-if='currentFolders.length'
+                        :nodes='currentFolders'
+                        @navigate='navigateToFolder'
+                        @delete='deletePath'
+                        @rename='openEditModal'
+                        @folder-drop='onFolderDrop'
+                    />
 
                     <div
                         id='general'
                         ref='sortableFilesRef'
-                        class='px-2 mt-2'
+                        class='mt-2'
                     >
                         <Feature
-                            v-for='cot of cots.values()'
+                            v-for='cot of currentItems.values()'
                             :id='cot.id'
                             :key='cot.id'
                             :select='true'
@@ -235,7 +159,7 @@
         />
         <div class='modal-header text-body'>
             <div class='modal-title'>
-                {{ folderModal.editingPath ? 'Rename Folder' : 'Create Folder' }}
+                {{ folderModal.editingNode ? 'Rename Folder' : 'Create Folder' }}
             </div>
         </div>
         <div class='modal-body'>
@@ -252,18 +176,21 @@
                 variant='primary'
                 @click='submitFolder'
             >
-                {{ folderModal.editingPath ? 'Save' : 'Create' }}
+                {{ folderModal.editingNode ? 'Save' : 'Create' }}
             </TablerButton>
         </div>
     </TablerModal>
 </template>
 
 <script setup lang='ts'>
-import { v4 as randomUUID } from 'uuid';
-import { ref, watch, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import COT from '../../../base/cot.ts';
+import PathManager from '../../../base/path-manager.ts';
+import type { PathNode } from '../../../base/path-manager.ts';
 import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import PathBrowser from '../util/PathBrowser.vue';
+import PathBreadcrumb from '../util/PathBreadcrumb.vue';
 import Feature from '../util/FeatureRow.vue';
 import StandardItem from '../util/StandardItem.vue';
 import {
@@ -282,14 +209,10 @@ import type { WorkerMessage } from '../../../base/events.ts';
 import { WorkerMessageType } from '../../../base/events.ts';
 import {
     IconFile,
-    IconFolder,
     IconFolderPlus,
     IconTrash,
-    IconPencil,
     IconDownload,
     IconDotsVertical,
-    IconChevronRight,
-    IconChevronDown
 } from '@tabler/icons-vue';
 import Sortable from 'sortablejs';
 import type { SortableEvent } from 'sortablejs'
@@ -298,17 +221,8 @@ import { useMapStore } from '../../../stores/map.ts';
 const router = useRouter();
 const mapStore = useMapStore();
 
-type Path = {
-    id: string;
-    name: string;
-    count: number;
-    opened: boolean;
-    loading: boolean;
-    sortable?: Sortable;
-    cots: Set<COT>;
-};
-
 const sortableFilesRef = useTemplateRef<HTMLElement>('sortableFilesRef');
+const sortables = new Map<string, Sortable>();
 
 const channel = new BroadcastChannel("cloudtak");
 
@@ -324,15 +238,32 @@ channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
 }
 
 const cots = ref<Set<COT>>(new Set());
-const paths = ref<Array<Path>>([]);
+const paths = ref<PathNode<COT>[]>([]);
+const currentPath = ref('/');
+const currentItems = ref<Set<COT>>(new Set());
 const query = ref({
     filter: ''
 })
 
+const collectionPath = computed({
+    get: () => currentPath.value === '/' ? '' : currentPath.value.slice(1),
+    set: (val: string) => {
+        navigateTo(val ? '/' + val : '/');
+    }
+});
+
+const currentFolders = computed(() => {
+    if (currentPath.value === '/') {
+        return paths.value;
+    }
+    const node = PathManager.findNode(paths.value, currentPath.value);
+    return node ? node.children : [];
+});
+
 const folderModal = ref<{
     shown: boolean;
     name: string;
-    editingPath?: Path;
+    editingNode?: PathNode<COT>;
 }>({
     shown: false,
     name: ''
@@ -342,8 +273,7 @@ const dragging = ref(false);
 const draggedId = ref<string | undefined>();
 const loading = ref(true);
 
-const hoverPath = ref<Path | undefined>();
-const hoverTimer = ref<ReturnType<typeof setTimeout> | undefined>();
+
 
 watch(query.value, async () => {
     await refresh();
@@ -359,14 +289,47 @@ onBeforeUnmount(() => {
     }
 })
 
-function openEditModal(path: Path) {
-    folderModal.value.name = path.name;
-    folderModal.value.editingPath = path;
+function initSortable(element: HTMLElement, nodeId?: string): Sortable {
+    const sortable = new Sortable(element, {
+        sort: true,
+        group: 'features',
+        handle: '.drag-handle',
+        dataIdAttr: 'id',
+        onAdd: onFeatureAdd,
+        onStart: (evt) => {
+            dragging.value = true;
+            draggedId.value = evt.item.id;
+        },
+        onEnd: () => {
+            dragging.value = false;
+            draggedId.value = undefined;
+        }
+    });
+
+    if (nodeId) {
+        sortables.set(nodeId, sortable);
+    }
+
+    return sortable;
+}
+
+function initRootSortable(): void {
+    if (!sortableFilesRef.value) throw new Error('Could not load sortable');
+
+    const existing = Sortable.get(sortableFilesRef.value);
+    if (existing) existing.destroy();
+
+    initSortable(sortableFilesRef.value);
+}
+
+function openEditModal(node: PathNode<COT>) {
+    folderModal.value.name = node.fullPath;
+    folderModal.value.editingNode = node;
     folderModal.value.shown = true;
 }
 
 async function submitFolder() {
-    if (folderModal.value.editingPath) {
+    if (folderModal.value.editingNode) {
         await renameFolder();
     } else {
         createFolder();
@@ -374,37 +337,38 @@ async function submitFolder() {
 }
 
 async function renameFolder() {
-    if (!folderModal.value.name || !folderModal.value.editingPath) return;
+    if (!folderModal.value.name || !folderModal.value.editingNode) return;
 
-    let newName = folderModal.value.name;
-    if (!newName.startsWith('/')) newName = '/' + newName;
-    const path = folderModal.value.editingPath;
+    const newPath = PathManager.normalize(folderModal.value.name);
+    const node = folderModal.value.editingNode;
 
-    if (path.name === newName) {
+    if (node.fullPath === newPath) {
         folderModal.value.shown = false;
-        folderModal.value.editingPath = undefined;
+        folderModal.value.editingNode = undefined;
         folderModal.value.name = '';
         return;
     }
 
-    if (paths.value.some(p => p.name === newName)) {
+    if (PathManager.hasPath(paths.value, newPath)) {
         folderModal.value.shown = false;
-        folderModal.value.editingPath = undefined;
+        folderModal.value.editingNode = undefined;
         folderModal.value.name = '';
         return;
     }
 
-    const cotsToUpdate = await mapStore.worker.db.pathFeatures(path.name);
+    // Collect all descendant paths that need updating
+    const allPaths = PathManager.flatPaths([node]);
 
-    for (const cot of cotsToUpdate) {
-        cot.path = newName;
+    for (const oldP of allPaths) {
+        const newP = oldP.replace(node.fullPath, newPath);
+        const cotsToUpdate = await mapStore.worker.db.pathFeatures(oldP);
+        for (const cot of cotsToUpdate) {
+            cot.path = newP;
+        }
     }
-
-    path.name = newName;
-    paths.value.sort((a, b) => a.name.localeCompare(b.name));
 
     folderModal.value.shown = false;
-    folderModal.value.editingPath = undefined;
+    folderModal.value.editingNode = undefined;
     folderModal.value.name = '';
 
     await refresh();
@@ -412,69 +376,20 @@ async function renameFolder() {
 
 function createFolder() {
     if (!folderModal.value.name) return;
-    
-    let name = folderModal.value.name;
-    if (!name.startsWith('/')) name = '/' + name;
-    
-    if (paths.value.some(p => p.name === name)) {
+
+    const prefix = currentPath.value === '/' ? '' : currentPath.value.slice(1) + '/';
+    const name = PathManager.normalize(prefix + folderModal.value.name);
+
+    if (PathManager.hasPath(paths.value, name)) {
         folderModal.value.shown = false;
         folderModal.value.name = '';
         return;
     }
 
-    const newPath: Path = {
-        id: randomUUID(),
-        name: name,
-        count: 0,
-        opened: true,
-        loading: false,
-        cots: new Set()
-    };
-
-    paths.value.push(newPath);
-    paths.value.sort((a, b) => a.name.localeCompare(b.name));
+    PathManager.addPath<COT>(paths.value, name);
 
     nextTick(() => {
-        const folderDiv = document.getElementById(`folder-${newPath.id}`);
-        if (folderDiv) {
-             newPath.sortable = new Sortable(folderDiv, {
-                sort: true,
-                group: 'features',
-                handle: '.drag-handle',
-                dataIdAttr: 'id',
-                onAdd: onFeatureAdd,
-                onStart: (evt) => {
-                    dragging.value = true;
-                    draggedId.value = evt.item.id;
-                },
-                onEnd: () => {
-                    dragging.value = false;
-                    draggedId.value = undefined;
-                }
-            })
-        }
-
-        if (!sortableFilesRef.value) throw new Error('Could not load sortable');
-
-        // Re-init global sortable to include new folder
-        const sortable = Sortable.get(sortableFilesRef.value);
-        if (sortable) sortable.destroy();
-
-        new Sortable(sortableFilesRef.value, {
-            sort: true,
-            group: 'features',
-            handle: '.drag-handle',
-            dataIdAttr: 'id',
-            onAdd: onFeatureAdd,
-            onStart: (evt) => {
-                dragging.value = true;
-                draggedId.value = evt.item.id;
-            },
-            onEnd: () => {
-                dragging.value = false;
-                draggedId.value = undefined;
-            }
-        });
+        initRootSortable();
     });
 
     folderModal.value.shown = false;
@@ -503,90 +418,60 @@ async function onFeatureAdd(ev: SortableEvent): Promise<void> {
     if (!target) throw new Error("Sorting Error");
 
     if (target === 'general') {
-        const ps = paths.value.filter((p) => { return p.name === cot.path; });
-        if (ps.length) {
-            deleteFromSet(ps[0].cots, cot.id);
-            ps[0].count--;
+        const sourceNode = PathManager.findNode<COT>(paths.value, cot.path);
+        if (sourceNode) {
+            deleteFromSet(sourceNode.items, cot.id);
+            sourceNode.count--;
         }
 
         cot.path = '/';
         cots.value.add(cot);
     } else {
         target = target.replace('foldertarget-', '').replace('folder-', '');
-        const ps = paths.value.filter((p) => {
-            return p.id === target;
-        });
-
-        if (ps.length !== 1) return;
-        const p = ps[0];
+        const targetNode = PathManager.findNodeById<COT>(paths.value, target);
+        if (!targetNode) return;
 
         if (cot.path === '/') {
-            cot.path = p.name;
+            cot.path = targetNode.fullPath;
             deleteFromSet(cots.value, cot.id);
-            p.cots.add(cot);
-            p.count++;
+            targetNode.items.add(cot);
+            targetNode.count++;
         } else {
-            const ps = paths.value.filter((p) => { return p.name === cot.path; });
-            if (ps.length !== 1) return;
-            deleteFromSet(ps[0].cots, cot.id);
-            ps[0].count--;
+            const sourceNode = PathManager.findNode<COT>(paths.value, cot.path);
+            if (!sourceNode) return;
+            deleteFromSet(sourceNode.items, cot.id);
+            sourceNode.count--;
 
-            cot.path = p.name;
-            p.cots.add(cot);
-            p.count++;
+            cot.path = targetNode.fullPath;
+            targetNode.items.add(cot);
+            targetNode.count++;
         }
     }
 }
 
-async function dragOverFolder(path: Path): Promise<void> {
-    if (!dragging.value || path.opened) return;
-
-    if (!path.opened) {
-        hoverPath.value = path;
-        hoverTimer.value = setTimeout(async () => {
-            await openPath(path);
-
-            clearTimeout(hoverTimer.value);
-            hoverTimer.value = undefined;
-        }, 500);
-    }
-}
-
-async function dragLeaveFolder(): Promise<void> {
-    hoverPath.value = undefined;
-
-    if (hoverTimer.value) {
-        clearTimeout(hoverTimer.value);
-        hoverTimer.value = undefined;
-    }
-}
-
-async function onFolderDrop(path: Path) {
-    // If we dropped inside the actual sortable list, let Sortable handle it
-    if (path.opened) return;
-
+async function onFolderDrop(node: PathNode<COT>) {
     if (!draggedId.value) return;
     const id = draggedId.value;
 
     const cot = await mapStore.worker.db.get(id);
     if (!cot) return;
 
-    if (cot.path === path.name) return;
+    if (cot.path === node.fullPath) return;
 
     if (cot.path === '/') {
          deleteFromSet(cots.value, cot.id);
     } else {
-         const sourcePath = paths.value.find(p => p.name === cot.path);
-         if (sourcePath) {
-             deleteFromSet(sourcePath.cots, cot.id);
-             sourcePath.count--;
+         const sourceNode = PathManager.findNode<COT>(paths.value, cot.path);
+         if (sourceNode) {
+             deleteFromSet(sourceNode.items, cot.id);
+             sourceNode.count--;
          }
     }
 
-    path.cots.add(cot);
-    path.count++;
+    node.items.add(cot);
+    node.count++;
 
-    cot.path = path.name;
+    cot.path = node.fullPath;
 }
 
 async function refresh(load = false): Promise<void> {
@@ -599,54 +484,35 @@ async function refresh(load = false): Promise<void> {
             and $contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")
         `)))
 
-    paths.value = (await mapStore.worker.db.paths())
+    const flatPaths = (await mapStore.worker.db.paths())
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .sort((a: any, b: any) => {
-            if (a.path < b.path) {
-                return -1;
-            } else if (a.path > b.path) {
-                return 1;
-            } else {
-              return 0;
-            }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        }).filter((path: any) => {
-            return path.path !== '/'
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        }).map((path: any) => {
-            return {
-                id: randomUUID(),
-                name: path.path,
-                count: path.count,
-                opened: false,
-                loading: false,
-                cots: new Set()
-            }
-        });
+        .filter((p: any) => p.path !== '/');
+
+    paths.value = PathManager.buildTree<COT>(flatPaths);
+
+    // Reload items for the current folder if navigated into one
+    if (currentPath.value !== '/') {
+        const node = PathManager.findNode(paths.value, currentPath.value);
+        if (node) {
+            node.items = await mapStore.worker.db.pathFeatures(node.fullPath);
+            currentItems.value = node.items;
+        } else {
+            // Folder no longer exists, navigate back to root
+            currentPath.value = '/';
+            currentItems.value = cots.value;
+        }
+    } else {
+        currentItems.value = cots.value;
+    }
 
     loading.value = false
 
     nextTick(() => {
-        // Sortable will throw an error if there are no sortable objects
-        if (cots.value.size === 0) return;
+        if (currentItems.value.size === 0) return;
 
-        if (!sortableFilesRef.value) throw new Error('Could not load sortable');
+        if (!sortableFilesRef.value) return;
 
-        new Sortable(sortableFilesRef.value, {
-            sort: true,
-            group: 'features',
-            handle: '.drag-handle',
-            dataIdAttr: 'id',
-            onAdd: onFeatureAdd,
-            onStart: (evt) => {
-                dragging.value = true;
-                draggedId.value = evt.item.id;
-            },
-            onEnd: () => {
-                dragging.value = false;
-                draggedId.value = undefined;
-            }
-        })
+        initSortable(sortableFilesRef.value);
     })
 }
 
@@ -656,9 +522,34 @@ async function download(format: string): Promise<void> {
     });
 }
 
-async function closePath(path: Path): Promise<void> {
-    path.opened = false;
-    path.cots.clear();
+async function navigateToFolder(node: PathNode<COT>): Promise<void> {
+    node.items = await mapStore.worker.db.pathFeatures(node.fullPath);
+    currentPath.value = node.fullPath;
+    currentItems.value = node.items;
+
+    nextTick(() => {
+        if (!sortableFilesRef.value) return;
+        initSortable(sortableFilesRef.value);
+    });
+}
+
+async function navigateTo(path: string): Promise<void> {
+    if (path !== '/') {
+        const node = PathManager.findNode(paths.value, path);
+        if (node) {
+            node.items = await mapStore.worker.db.pathFeatures(node.fullPath);
+            currentItems.value = node.items;
+        }
+    } else {
+        currentItems.value = cots.value;
+    }
+
+    currentPath.value = path;
+
+    nextTick(() => {
+        if (!sortableFilesRef.value) return;
+        initSortable(sortableFilesRef.value);
+    });
 }
 
 async function deleteFeatures(): Promise<void> {
@@ -680,42 +571,27 @@ async function deleteFeatures(): Promise<void> {
     }
 }
 
-async function deletePath(path: Path): Promise<void> {
-    if (path.sortable) {
-        path.sortable.destroy();
-        path.sortable = undefined;
+async function deletePath(node: PathNode<COT>): Promise<void> {
+    // Destroy sortable instances for this node and all descendants
+    const destroySortables = (n: PathNode<COT>) => {
+        const sortable = sortables.get(n.id);
+        if (sortable) {
+            sortable.destroy();
+            sortables.delete(n.id);
+        }
+        for (const child of n.children) {
+            destroySortables(child);
+        }
+    };
+    destroySortables(node);
+
+    // Delete COTs for this path and all descendant paths
+    const allPaths = PathManager.flatPaths([node]);
+    for (const p of allPaths) {
+        await mapStore.worker.db.filterRemove(`path = "${p}" and properties.archived`);
     }
 
-    await mapStore.worker.db.filterRemove(`path = "${path.name}" and properties.archived`);
     await refresh();
-}
-
-async function openPath(path: Path): Promise<void> {
-    path.opened = true;
-    path.loading = true;
-    path.cots = await mapStore.worker.db.pathFeatures(path.name);
-    path.loading = false;
-
-    nextTick(() => {
-        const folderDiv = document.getElementById(`folder-${path.id}`);
-        if (!folderDiv) throw new Error('Could not load sortable');
-
-        path.sortable = new Sortable(folderDiv, {
-            sort: true,
-            group: 'features',
-            handle: '.drag-handle',
-            dataIdAttr: 'id',
-            onAdd: onFeatureAdd,
-            onStart: (evt) => {
-                dragging.value = true;
-                draggedId.value = evt.item.id;
-            },
-            onEnd: () => {
-                dragging.value = false;
-                draggedId.value = undefined;
-            }
-        })
-    });
 }
 
 </script>
