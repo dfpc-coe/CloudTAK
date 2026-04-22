@@ -19,6 +19,11 @@
 
 ### Pending Release
 
+### v12.129.0 - 2026-04-21
+
+- :rocket: Load Data Sync asynchronously when loading main map
+- :bug: Fix task selection when creating an ETL Layer
+
 ### v12.128.0 - 2026-04-21
 
 - :rocket: Add ability to edit Data Package keywords and hash
