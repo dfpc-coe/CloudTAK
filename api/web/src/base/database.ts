@@ -232,10 +232,12 @@ export type DatabaseType = Dexie & {
 export const db = new Dexie('CloudTAK') as DatabaseType;
 
 db.version(1).stores({
-    icon: 'name',
     server: '_id',
     group: 'name, active',
+
+    icon: 'name, iconset',
     iconset: 'uid, name',
+
     filter: 'id, external',
     video: 'id, username',
     feature: 'id, path',
@@ -260,13 +262,4 @@ db.version(1).stores({
 
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
-});
-
-// v2: extend `icon` rows with full Blob payload + iconset metadata so icons can
-// be served to MapLibre on demand from Dexie instead of via large per-iconset
-// spritesheets. Wipe existing rows so they get repopulated by IconManager.hydrate().
-db.version(2).stores({
-    icon: 'name, iconset',
-}).upgrade(async (tx) => {
-    await tx.table('icon').clear();
 });
