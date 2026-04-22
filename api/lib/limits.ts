@@ -15,7 +15,8 @@ export const Limit = Type.Integer({
 export const LimitAll = Type.Integer({
     default: 10,
     minimum: 0,
-    description: 'Limit the number of responses returned. Use 0 to return all results without pagination.'
+    maximum: 100,
+    description: 'Limit the number of responses returned. Use 0 to return all results without pagination; otherwise the limit is capped at 100.'
 });
 
 export const Page = Type.Integer({
