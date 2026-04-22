@@ -256,6 +256,27 @@ const list = ref<APIList<Task>>({
     items: []
 });
 
+function selectedModelValue(): string | undefined {
+    if (!selected.value.prefix || !selected.value.version) return undefined;
+    return `${selected.value.prefix}-v${selected.value.version}`;
+}
+
+async function resolveTask(task: Task): Promise<Task> {
+    if (task.id) return task;
+
+    const existing = list.value.items.find((item) => item.prefix === task.prefix);
+    if (existing) return existing;
+
+    const url = stdurl('/api/task');
+    url.searchParams.set('filter', String(task.prefix || ''));
+    url.searchParams.set('limit', '1');
+
+    const res = await std(url) as APIList<Task>;
+    const match = res.items.find((item) => item.prefix === task.prefix);
+
+    return match || task;
+}
+
 watch(selected, () => {
     if (selected.value.id) {
         emit('update:modelValue', `${selected.value.prefix}-v${selected.value.version}`);
@@ -275,9 +296,18 @@ watch(infoModal, async function() {
 })
 
 watch(() => props.modelValue, async function() {
-    if (props.modelValue) {
-        await select({ prefix: props.modelValue.split('-v')[0] } as Task, props.modelValue.split('-v')[1])
+    if (!props.modelValue) {
+        selected.value = {
+            id: undefined
+        };
+        return;
     }
+
+    if (props.modelValue === selectedModelValue()) {
+        return;
+    }
+
+    await select({ prefix: props.modelValue.split('-v')[0] } as Task, props.modelValue.split('-v')[1])
 });
 
 watch(paging.value, async () => {
@@ -296,11 +326,12 @@ onMounted(async () => {
 async function select(task: Task, version?: string) {
     loading.value.task = true;
 
+    const resolvedTask = await resolveTask(task);
     const detail = await std(`/api/task/raw/${task.prefix}`) as { versions: string[] };
     selected.value = {
         versions: detail.versions,
         version: version || detail.versions[0],
-        ...task
+        ...resolvedTask
     }
 
     loading.value.task = false;
