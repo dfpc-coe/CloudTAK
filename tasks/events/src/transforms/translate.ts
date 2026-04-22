@@ -61,7 +61,7 @@ export default class GDALTranslate implements Transform {
                     let resDegrees = minRes;
                     let maxRes = MAX_RESOLUTION_DEGREES;
                     const srs: string | undefined = gdalinfo.coordinateSystem?.wkt;
-                    if (srs && /PROJCS|UNIT\["metre"/i.test(srs)) {
+                    if (srs && /(^|[\[,])PROJ(?:CRS|CS)\[/i.test(srs)) {
                         resDegrees = minRes / 111320;
                         maxRes = MAX_RESOLUTION_DEGREES * EQUATOR_METERS_PER_DEGREE;
                     }
