@@ -11,7 +11,13 @@ import type {
 } from '../types.ts';
 
 export interface DBIcon {
+    /** Maplibre image id, e.g. "<iconsetUid>:<icon-path-without-extension>" */
     name: string;
+    iconset: string;
+    path: string;
+    type2525b: string | null;
+    updated: string;
+    data: Blob;
 }
 
 export interface DBFeature {
@@ -254,4 +260,13 @@ db.version(1).stores({
 
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
+});
+
+// v2: extend `icon` rows with full Blob payload + iconset metadata so icons can
+// be served to MapLibre on demand from Dexie instead of via large per-iconset
+// spritesheets. Wipe existing rows so they get repopulated by IconManager.hydrate().
+db.version(2).stores({
+    icon: 'name, iconset',
+}).upgrade(async (tx) => {
+    await tx.table('icon').clear();
 });

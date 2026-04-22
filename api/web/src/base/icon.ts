@@ -1,4 +1,4 @@
-import { db } from './database.ts';
+import { db, type DBIcon } from './database.ts';
 
 export default class Icon {
     static async has(icon: string): Promise<boolean> {
@@ -8,9 +8,7 @@ export default class Icon {
             .count() > 0;
     }
 
-    static async populate(icons: string[]): Promise<void> {
-        await db.icon.bulkPut(
-            icons.map((name) => ({ name })),
-        );
+    static async get(icon: string): Promise<DBIcon | undefined> {
+        return await db.icon.get(icon);
     }
 }
