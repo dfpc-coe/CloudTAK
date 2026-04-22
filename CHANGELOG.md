@@ -19,6 +19,16 @@
 
 ### Pending Release
 
+### v12.128.0 - 2026-04-21
+
+- :rocket: Add ability to edit Data Package keywords and hash
+- :tada: Add ability to share profile files with other users
+- :rocket: Improve Folder Management of Features Menu
+- :tada: Add Folder Management of Files Menu
+- :rocket: Add Generic Folder Management Component
+- :bug: Improve large file handling support
+- :bug: Fix Service Worker Update message on Admin Console
+
 ### v12.127.3 - 2026-04-19
 
 - :rocket: Fix version mismatch
