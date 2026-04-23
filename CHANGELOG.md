@@ -19,6 +19,10 @@
 
 ### Pending Release
 
+### v12.130.0 - 2026-04-22
+
+- :rocket: Store Icons offline for 2-3x faster reload time
+
 ### v12.129.0 - 2026-04-21
 
 - :rocket: Load Data Sync asynchronously when loading main map
