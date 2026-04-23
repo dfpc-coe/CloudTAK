@@ -1,11 +1,12 @@
 import { Type } from '@sinclair/typebox'
-import { sql } from 'drizzle-orm';
+import { sql, inArray } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import ECR from '../lib/aws/ecr.js';
 import Config from '../lib/config.js';
 import { Task } from '../lib/schema.js';
+import { Layer as LayerSchema } from '../lib/schema.js';
 import { StandardResponse, TaskResponse } from '../lib/types.js';
 import * as Default from '../lib/limits.js';
 
@@ -157,9 +158,7 @@ export default async function router(schema: Schema, config: Config) {
                 const taskNames = list.map((v) => `${req.params.task}-v${v}`);
                 const deployedLayers = await config.models.Layer.list({
                     limit: list.length,
-                    where: sql`
-                        task = ANY(${taskNames}::TEXT[])
-                    `
+                    where: inArray(LayerSchema.task, taskNames)
                 });
 
                 for (const layer of deployedLayers.items) {
