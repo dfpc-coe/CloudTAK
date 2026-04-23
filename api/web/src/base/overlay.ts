@@ -226,6 +226,13 @@ export default class Overlay {
     async addLayers(before?: string): Promise<void> {
         const mapStore = useMapStore();
 
+        // If init() failed to register the source (e.g. a /tiles fetch
+        // 404'd), skip layer registration. addLayer would otherwise throw
+        // "source ... not found" and break the rest of map setup.
+        if (this._error || !mapStore.map.getSource(String(this.id))) {
+            return;
+        }
+
         for (const l of this.styles) {
             if (before) {
                 mapStore.map.addLayer(l, before);
@@ -317,23 +324,41 @@ export default class Overlay {
             const url = stdurl(this.url);
             url.searchParams.set('token', localStorage.token);
 
-            const tileJSON = await std(url.toString()) as TileJSON
+            // A failed /tiles lookup (network blip, expired token, deleted
+            // basemap upstream, etc.) must NOT abort map initialization or
+            // every other overlay disappears with it. Capture the error on
+            // the overlay so MenuOverlays.vue surfaces an "Issue" badge,
+            // and skip addSource so addLayers later no-ops cleanly.
+            try {
+                const tileJSON = await std(url.toString()) as TileJSON
 
-            if (!mapStore.map.getSource(String(this.id))) {
-                mapStore.map.addSource(String(this.id), {
-                    ...tileJSON,
-                    type: 'raster',
-                });
+                if (!mapStore.map.getSource(String(this.id))) {
+                    mapStore.map.addSource(String(this.id), {
+                        ...tileJSON,
+                        type: 'raster',
+                    });
+                }
+            } catch (err) {
+                this._error = err instanceof Error ? err : new Error(String(err));
+                console.error(`Failed to load raster tiles for overlay ${this.id} (${this.name}):`, err);
             }
         } else if (this.type === 'vector' && this.url) {
             const url = stdurl(this.url);
             url.searchParams.set('token', localStorage.token);
 
             if (!mapStore.map.getSource(String(this.id))) {
-                mapStore.map.addSource(String(this.id), {
-                    type: 'vector',
-                    url: String(url)
-                });
+                // MapLibre resolves the vector TileJSON lazily on first tile
+                // request, so addSource itself does not throw on a bad URL.
+                // Still wrap defensively for parity with the raster branch.
+                try {
+                    mapStore.map.addSource(String(this.id), {
+                        type: 'vector',
+                        url: String(url)
+                    });
+                } catch (err) {
+                    this._error = err instanceof Error ? err : new Error(String(err));
+                    console.error(`Failed to add vector source for overlay ${this.id} (${this.name}):`, err);
+                }
             }
         } else if (this.type === 'geojson') {
             if (!mapStore.map.getSource(String(this.id))) {
