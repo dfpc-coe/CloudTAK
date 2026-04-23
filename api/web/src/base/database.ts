@@ -203,9 +203,20 @@ export interface DBCache {
     updated: number;
 }
 
+export interface DBSprite {
+    /** Sprite id, e.g. 'default' */
+    id: string;
+    updated: number;
+    /** MapLibre sprite layout JSON */
+    json: Record<string, unknown>;
+    /** Spritesheet PNG */
+    image: Blob;
+}
+
 export type DatabaseType = Dexie & {
     icon: EntityTable<DBIcon, 'name'>,
     iconset: EntityTable<DBIconset, 'uid'>,
+    sprite: EntityTable<DBSprite, 'id'>,
     group: EntityTable<GroupChannel, 'name'>,
     video: EntityTable<DBVideo, 'id'>,
     filter: EntityTable<DBFilter, 'id'>,
@@ -262,4 +273,8 @@ db.version(1).stores({
 
     mission_template: 'id, name',
     mission_template_log: 'id, template, [template+id]',
+});
+
+db.version(2).stores({
+    sprite: 'id',
 });

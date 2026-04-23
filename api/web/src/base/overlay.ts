@@ -234,11 +234,20 @@ export default class Overlay {
             }
         }
 
-        // The above doesn't set vis/opacity initially
-        await this.update({
-            opacity: this.opacity,
-            visible: this.visible
-        })
+        // The above doesn't set vis/opacity initially - apply directly
+        // without round-tripping through update()/save() which would PATCH
+        // the server with unchanged values.
+        for (const l of this.styles) {
+            if (this.type === 'raster') {
+                mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity));
+            }
+            mapStore.map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
+        }
+
+        // Update attribution if this is a basemap
+        if (this.mode === 'basemap') {
+            await mapStore.updateAttribution();
+        }
 
         for (const click of this._clickable) {
             const hoverIds = new Set<string>();
@@ -521,20 +530,24 @@ export default class Overlay {
     }): Promise<void> {
         const mapStore = useMapStore();
 
-        if (body.opacity !== undefined) {
+        let changed = false;
+
+        if (body.opacity !== undefined && body.opacity !== this.opacity) {
             this.opacity = body.opacity;
             for (const l of this.styles) {
                 if (this.type === 'raster') {
                     mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity))
                 }
             }
+            changed = true;
         }
 
-        if (body.visible !== undefined) {
+        if (body.visible !== undefined && body.visible !== this.visible) {
             this.visible = body.visible;
             for (const l of this.styles) {
                 mapStore.map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
             }
+            changed = true;
         }
 
         // Update attribution if this is a basemap
@@ -542,11 +555,14 @@ export default class Overlay {
             await mapStore.updateAttribution();
         }
 
-        if (body.pos !== undefined) {
+        if (body.pos !== undefined && body.pos !== this.pos) {
             this.pos = body.pos;
+            changed = true;
         }
 
-        await this.save();
+        if (changed) {
+            await this.save();
+        }
     }
 
     async save(): Promise<void> {

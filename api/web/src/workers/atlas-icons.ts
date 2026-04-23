@@ -6,7 +6,7 @@
  * `createImageBitmap` calls when MapLibre asks for a missing image.
  */
 
-import { std } from '../std.ts';
+import { std, stdurl } from '../std.ts';
 import { db, type DBIcon, type DBIconset } from '../base/database.ts';
 import type { IconsetList, Iconset, IconList } from '../types.ts';
 import type Atlas from './atlas.ts';
@@ -14,6 +14,9 @@ import type Atlas from './atlas.ts';
 const HYDRATE_CACHE_KEY = 'iconsets:hydrated';
 /** Skip a fresh hydrate if the local cache was last refreshed within this many ms. */
 const HYDRATE_FRESH_MS = 60_000;
+
+/** Built-in sprite ids that ship with the API and are mirrored to Dexie. */
+const BUILTIN_SPRITES = ['default'] as const;
 
 export interface IconHydrateResult {
     /** Iconsets that were added or refreshed during the diff. */
@@ -49,13 +52,14 @@ export default class AtlasIcons {
         if (!force) {
             const marker = await db.cache.get(HYDRATE_CACHE_KEY);
             const iconsetCount = await db.iconset.count();
+            const spriteCount = await db.sprite.count();
             const fresh = !!marker && (Date.now() - marker.updated) < HYDRATE_FRESH_MS;
 
-            if (iconsetCount > 0 && fresh) {
+            if (iconsetCount > 0 && spriteCount >= BUILTIN_SPRITES.length && fresh) {
                 return { changed: [], removed: [], skipped: true };
             }
 
-            if (iconsetCount > 0 && marker) {
+            if (iconsetCount > 0 && spriteCount >= BUILTIN_SPRITES.length && marker) {
                 // Local cache exists but is stale -- run the diff in the
                 // background so callers don't block on icon hydration.
                 void this.runDiffOnce().catch((err: unknown) => {
@@ -155,6 +159,7 @@ export default class AtlasIcons {
 
         await Promise.all(removed.map((uid) => this.removeIconset(uid)));
         await Promise.all(toSync.map((iconset) => this.syncIconset(iconset)));
+        await Promise.all(BUILTIN_SPRITES.map((id) => this.syncBuiltinSprite(id)));
 
         await db.cache.put({ key: HYDRATE_CACHE_KEY, updated: Date.now() });
 
@@ -163,6 +168,39 @@ export default class AtlasIcons {
             removed,
             skipped: false
         };
+    }
+
+    /**
+     * Mirror a built-in spritesheet (PNG + JSON layout) into Dexie so the main
+     * thread can serve it via the `cloudtak-sprite://` MapLibre protocol
+     * without re-hitting the network on every page load.
+     */
+    private async syncBuiltinSprite(id: string): Promise<void> {
+        try {
+            const jsonUrl = stdurl(`/api/iconset/${id}/sprite.json`);
+            const pngUrl = stdurl(`/api/iconset/${id}/sprite.png`);
+            const headers = { Authorization: `Bearer ${this.atlas.token}` };
+
+            const [jsonRes, pngRes] = await Promise.all([
+                fetch(jsonUrl, { headers }),
+                fetch(pngUrl, { headers })
+            ]);
+
+            if (!jsonRes.ok) throw new Error(`sprite json ${jsonRes.status}`);
+            if (!pngRes.ok) throw new Error(`sprite png ${pngRes.status}`);
+
+            const json = await jsonRes.json() as Record<string, unknown>;
+            const image = await pngRes.blob();
+
+            await db.sprite.put({
+                id,
+                updated: Date.now(),
+                json,
+                image
+            });
+        } catch (err) {
+            console.error(`Failed to hydrate built-in sprite '${id}'`, err);
+        }
     }
 
     private async syncIconset(iconset: Iconset): Promise<void> {

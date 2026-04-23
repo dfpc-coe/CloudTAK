@@ -2,16 +2,26 @@
  * Icon Color Manager for runtime icon recoloring
  */
 import ms from 'milsymbol'
+import mapgl from 'maplibre-gl'
 import Icon from '../../base/icon.ts'
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import type * as Comlink from 'comlink';
 import type Atlas from '../../workers/atlas.ts';
 import type { IconHydrateResult } from '../../workers/atlas-icons.ts';
 import { stdurl } from '../../std.ts';
-import { db, type DBIconset } from '../../base/database.ts';
+import { db, type DBIconset, type DBSprite } from '../../base/database.ts';
 
 /** Image id for the on-demand fallback when an iconset icon isn't available locally. */
 const FALLBACK_IMAGE_ID = '__cloudtak_fallback_point__';
+
+/**
+ * Custom MapLibre protocol used to serve built-in spritesheets out of Dexie
+ * (with a network fallback). MapLibre will request `<url>.json` /
+ * `<url>.png` (and the `@2x` variants) so the handler must accept any of
+ * those suffixes.
+ */
+const SPRITE_PROTOCOL = 'cloudtak-sprite';
+let spriteProtocolRegistered = false;
 
 export default class IconManager {
     private cache = new Map<string, HTMLCanvasElement>();
@@ -53,12 +63,45 @@ export default class IconManager {
      * longer loaded here; icons are served on demand from Dexie via
      * `onStyleImageMissing`. Only the small built-in `default` sprite is loaded
      * up-front because it provides the CoT-type fallbacks.
+     *
+     * The default sprite itself is also served from the Dexie cache via the
+     * `cloudtak-sprite://` protocol (see `registerSpriteProtocol`) so it
+     * survives offline reloads instead of re-downloading on every page load.
      */
     static defaultSprite(): Array<{ id: string; url: string }> {
+        IconManager.registerSpriteProtocol();
+
         return [{
             id: 'default',
-            url: String(stdurl(`/api/iconset/default/sprite?token=${localStorage.token}`))
+            url: `${SPRITE_PROTOCOL}://default`
         }];
+    }
+
+    /**
+     * Register the global MapLibre protocol that resolves
+     * `cloudtak-sprite://<id>(@2x)?.(json|png)` requests against the Dexie
+     * `sprite` table, falling back to the API and persisting the response so
+     * subsequent loads are served from disk.
+     */
+    static registerSpriteProtocol(): void {
+        if (spriteProtocolRegistered) return;
+        spriteProtocolRegistered = true;
+
+        mapgl.addProtocol(SPRITE_PROTOCOL, async (params) => {
+            const match = /^cloudtak-sprite:\/\/([^/.]+)(?:\/?@\dx)?\.(json|png)$/.exec(params.url);
+            if (!match) throw new Error(`Unsupported sprite URL: ${params.url}`);
+
+            const [, id, ext] = match;
+
+            let row = await db.sprite.get(id);
+            if (!row) row = await fetchAndCacheSprite(id);
+
+            if (ext === 'json') {
+                return { data: row.json };
+            }
+
+            return { data: await row.image.arrayBuffer() };
+        });
     }
 
     /**
@@ -357,4 +400,26 @@ export default class IconManager {
             parseInt(result[3], 16)
         ] : [0, 255, 0]; // Default to green if parsing fails
     }
+}
+
+/**
+ * Fallback path for the sprite protocol: when Dexie has no row for the
+ * requested built-in sprite (typically only on a brand-new install where
+ * `AtlasIcons.hydrate` hasn't completed yet) fetch it from the API and
+ * persist it so the next request is served from disk.
+ */
+async function fetchAndCacheSprite(id: string): Promise<DBSprite> {
+    const jsonUrl = stdurl(`/api/iconset/${id}/sprite.json?token=${localStorage.token}`);
+    const pngUrl = stdurl(`/api/iconset/${id}/sprite.png?token=${localStorage.token}`);
+
+    const [jsonRes, pngRes] = await Promise.all([fetch(jsonUrl), fetch(pngUrl)]);
+    if (!jsonRes.ok) throw new Error(`Failed to load sprite '${id}' json (${jsonRes.status})`);
+    if (!pngRes.ok) throw new Error(`Failed to load sprite '${id}' png (${pngRes.status})`);
+
+    const json = await jsonRes.json() as Record<string, unknown>;
+    const image = await pngRes.blob();
+
+    const row: DBSprite = { id, updated: Date.now(), json, image };
+    await db.sprite.put(row);
+    return row;
 }
