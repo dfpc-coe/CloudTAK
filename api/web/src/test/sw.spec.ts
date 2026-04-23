@@ -455,6 +455,7 @@ describe('sw.js', () => {
             const event: FakeEvent = {
                 request: new Request('https://example.com/assets/main-rt.js'),
                 respondWith: vi.fn(),
+                waitUntil: vi.fn((p: Promise<any>) => p),
             };
 
             for (const fn of listeners['fetch'] ?? []) fn(event);
@@ -465,6 +466,7 @@ describe('sw.js', () => {
                 'https://example.com/assets/main-rt.js',
                 expect.any(Response)
             );
+            expect(event.waitUntil).toHaveBeenCalledOnce();
         });
 
         it('caches /logos/* responses (PWA touch-icons) on network success', async () => {
@@ -474,6 +476,7 @@ describe('sw.js', () => {
             const event: FakeEvent = {
                 request: new Request('https://example.com/logos/180.png'),
                 respondWith: vi.fn(),
+                waitUntil: vi.fn((p: Promise<any>) => p),
             };
 
             for (const fn of listeners['fetch'] ?? []) fn(event);
@@ -484,6 +487,7 @@ describe('sw.js', () => {
                 'https://example.com/logos/180.png',
                 expect.any(Response)
             );
+            expect(event.waitUntil).toHaveBeenCalledOnce();
         });
 
         it('does NOT cache non-/assets responses even on 200', async () => {
