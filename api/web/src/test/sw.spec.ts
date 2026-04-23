@@ -173,6 +173,67 @@ describe('sw.js', () => {
             expect(addCalls).not.toContain('index.html');
             expect(addCalls).toContain('assets/main-h.js');
         });
+
+        it('pre-caches dynamicImports transitively (e.g. icons-<hash>.js)', async () => {
+            // Regression: dynamically-imported chunks (like the icons chunk)
+            // must be precached; otherwise after an SW update activates and
+            // purges the old cache, the reloaded page 404s on the new
+            // icon-<hash>.js and blank-screens the upgrade.
+            const fetchMock = vi.fn(async (url: string | Request) => {
+                const u = typeof url === 'string' ? url : url.url;
+                if (u.includes('manifest.json')) {
+                    return new Response(JSON.stringify({
+                        'index.html': {
+                            file: 'index.html',
+                            imports: ['src/main.ts'],
+                        },
+                        'src/main.ts': {
+                            file: 'assets/main-abc.js',
+                            imports: [],
+                            dynamicImports: ['_icons-lazy.js', '_float-lazy.js'],
+                        },
+                        '_icons-lazy.js': {
+                            file: 'assets/icons-xyz.js',
+                            css: ['assets/icons-xyz.css'],
+                            imports: ['_shared.js'],
+                            dynamicImports: [],
+                        },
+                        '_float-lazy.js': {
+                            file: 'assets/float-xyz.js',
+                            imports: [],
+                            dynamicImports: ['_nested-lazy.js'],
+                        },
+                        '_nested-lazy.js': {
+                            file: 'assets/nested-xyz.js',
+                            imports: [],
+                            dynamicImports: [],
+                        },
+                        '_shared.js': {
+                            file: 'assets/shared-xyz.js',
+                            imports: [],
+                            dynamicImports: [],
+                        },
+                    }), { status: 200 });
+                }
+                return new Response('ok', { status: 200 });
+            });
+
+            const { emit, scope, cachesMock } = loadSW({ version: '4.0.0', build: 'dyn', fetchMock });
+
+            scope.self.skipWaiting = vi.fn();
+            await emit('install');
+
+            const cache = await cachesMock.open('cloudtak-cache-4.0.0-dyn');
+            const addCalls = (cache.add as Mock).mock.calls.map((c: any[]) => c[0]);
+
+            expect(addCalls).toContain('assets/main-abc.js');
+            expect(addCalls).toContain('assets/icons-xyz.js');
+            expect(addCalls).toContain('assets/icons-xyz.css');
+            expect(addCalls).toContain('assets/float-xyz.js');
+            expect(addCalls).toContain('assets/nested-xyz.js');
+            expect(addCalls).toContain('assets/shared-xyz.js');
+            expect(addCalls).not.toContain('index.html');
+        });
     });
 
     describe('message (SKIP_WAITING)', () => {

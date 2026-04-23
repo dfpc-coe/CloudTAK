@@ -88,7 +88,14 @@ export default class IconManager {
         spriteProtocolRegistered = true;
 
         mapgl.addProtocol(SPRITE_PROTOCOL, async (params) => {
-            const match = /^cloudtak-sprite:\/\/([^/.]+)(?:\/?@\dx)?\.(json|png)$/.exec(params.url);
+            // MapLibre appends `@2x` (no separator) to the sprite id on HiDPI
+            // displays, e.g. `cloudtak-sprite://default@2x.json`. `@` must be
+            // excluded from the id character class so the optional pixel-ratio
+            // suffix is matched by its dedicated group instead of being
+            // greedily swallowed into the id (which would mis-key the Dexie
+            // lookup, fall back to a `/api/iconset/default@2x/sprite.json`
+            // 404, reject the protocol promise, and hang the map style load).
+            const match = /^cloudtak-sprite:\/\/([^/.@]+)(?:@\dx)?\.(json|png)$/.exec(params.url);
             if (!match) throw new Error(`Unsupported sprite URL: ${params.url}`);
 
             const [, id, ext] = match;
