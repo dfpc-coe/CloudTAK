@@ -55,7 +55,13 @@ function collectAssetsFromManifest(manifest) {
 
 async function fetchManifest() {
     try {
-        const res = await fetch('./.vite/manifest.json');
+        // `cache: 'no-store'` is critical: `updateViaCache: 'none'` on the SW
+        // registration only prevents the *sw.js* script from being served by
+        // the HTTP cache. Sub-resource fetches inside the SW (like this one)
+        // still honor intermediary caches by default. A stale manifest here
+        // causes the new SW to precache stale URLs (or 404 mid-install,
+        // aborting the upgrade).
+        const res = await fetch('./.vite/manifest.json', { cache: 'no-store' });
         if (!res.ok) return null;
         return await res.json();
     } catch (err) {
