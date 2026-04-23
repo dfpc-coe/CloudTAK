@@ -3,6 +3,7 @@ interface ManifestEntry {
 }
 
 const SERVICE_WORKER_BUILD_KEY = 'cloudtak-sw-build';
+const UPDATE_REQUESTED_KEY = 'cloudtak-sw-update-requested';
 const SERVICE_WORKER_ENTRIES = [
     'admin.html',
     'connection.html',
@@ -83,6 +84,27 @@ export function getPageServiceWorkerBuildId(): string | null {
     return window.sessionStorage.getItem(SERVICE_WORKER_BUILD_KEY);
 }
 
+/**
+ * Called by the update banner in App.vue immediately before it posts
+ * `SKIP_WAITING` to the waiting worker. Sets a per-tab flag so that when
+ * `controllerchange` fires we know *this* tab asked for the reload and
+ * it is safe to auto-refresh. Other tabs on the same origin observe the
+ * same `controllerchange` but will show their own update prompt instead
+ * of silently reloading (which would lose unsaved state).
+ */
+export function markUpdateRequestedByThisTab(): void {
+    if (typeof window === 'undefined') return;
+    window.sessionStorage.setItem(UPDATE_REQUESTED_KEY, '1');
+}
+
+function consumeLocalUpdateRequest(): boolean {
+    if (typeof window === 'undefined') return false;
+    const value = window.sessionStorage.getItem(UPDATE_REQUESTED_KEY);
+    if (!value) return false;
+    window.sessionStorage.removeItem(UPDATE_REQUESTED_KEY);
+    return true;
+}
+
 function setPageServiceWorkerBuildId(buildId: string): void {
     window.sessionStorage.setItem(SERVICE_WORKER_BUILD_KEY, buildId);
 }
@@ -153,7 +175,14 @@ export function initServiceWorker(version: string): void {
             requestedBuildId = buildId;
 
             try {
-                const registration = await navigator.serviceWorker.register(`/sw.js?v=${encodeURIComponent(version)}&build=${encodeURIComponent(buildId)}`);
+                // `updateViaCache: 'none'` ensures the sw.js script itself
+                // is never served from HTTP cache. Without this, a stale
+                // intermediary could pin users to an old service worker
+                // indefinitely.
+                const registration = await navigator.serviceWorker.register(
+                    `/sw.js?v=${encodeURIComponent(version)}&build=${encodeURIComponent(buildId)}`,
+                    { updateViaCache: 'none' }
+                );
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
                 observeRegistration(registration, lastNotifiedWorker);
 
@@ -230,9 +259,30 @@ export function initServiceWorker(version: string): void {
         }, 30000);
 
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (!refreshing) {
+            if (refreshing) return;
+
+            // Only auto-reload if this tab is the one that clicked "Update
+            // Now". Other tabs observe the same controllerchange; silently
+            // reloading them would drop in-progress form data and map
+            // selections, so we surface an update prompt instead and let
+            // the user choose when to reload.
+            if (consumeLocalUpdateRequest()) {
                 refreshing = true;
                 window.location.reload();
+                return;
+            }
+
+            const controller = navigator.serviceWorker.controller;
+            if (controller?.scriptURL) {
+                const url = new URL(controller.scriptURL);
+                window.dispatchEvent(new CustomEvent('sw:update-available', {
+                    detail: {
+                        version: url.searchParams.get('v'),
+                        build: url.searchParams.get('build'),
+                        registration: null,
+                        activated: true,
+                    }
+                }));
             }
         });
     });
