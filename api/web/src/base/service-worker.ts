@@ -261,26 +261,34 @@ export function initServiceWorker(version: string): void {
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (refreshing) return;
 
+            const localUpdateRequested = consumeLocalUpdateRequest();
+
+            const controller = navigator.serviceWorker.controller;
+            const url = controller?.scriptURL ? new URL(controller.scriptURL) : null;
+            const activatedBuildId = url?.searchParams.get('build') ?? null;
+
+            // Persist the activated build id BEFORE any reload so that the
+            // next page load sees a matching `currentBuildId` and does not
+            // re-trigger the update banner. Without this, App.vue's mount-
+            // time check compares the freshly-loaded page (new build) to a
+            // stale sessionStorage value and mistakenly surfaces the prompt
+            // again until the user manually refreshes a second time.
+            if (activatedBuildId) {
+                setPageServiceWorkerBuildId(activatedBuildId);
+            }
+
             // Only auto-reload if this tab is the one that clicked "Update
             // Now". Other tabs observe the same controllerchange; silently
             // reloading them would drop in-progress form data and map
             // selections, so we surface an update prompt instead and let
             // the user choose when to reload.
-            if (consumeLocalUpdateRequest()) {
+            if (localUpdateRequested) {
                 refreshing = true;
                 window.location.reload();
                 return;
             }
 
-            const controller = navigator.serviceWorker.controller;
-            if (!controller?.scriptURL) return;
-
-            const url = new URL(controller.scriptURL);
-            const activatedBuildId = url.searchParams.get('build');
-
-            if (activatedBuildId) {
-                setPageServiceWorkerBuildId(activatedBuildId);
-            }
+            if (!url) return;
 
             // `clients.claim()` on the first install also triggers
             // controllerchange. Only surface an update prompt when the newly
