@@ -1108,29 +1108,56 @@ export const useMapStore = defineStore('cloudtak', {
                 }
 
                 if (defaultBasemap) {
-                    const basemap = await Overlay.create({
-                        name: defaultBasemap.name,
-                        pos: -1,
-                        type: 'raster',
-                        url: String(stdurl(`/api/basemap/${defaultBasemap.id}/tiles`)),
-                        mode: 'basemap',
-                        mode_id: String(defaultBasemap.id)
-                    });
+                    // Default basemap creation hits /api/profile/overlay
+                    // (POST + PATCH) and the upstream /tiles endpoint. Any
+                    // of those can transiently fail; treat as non-fatal so
+                    // the rest of map initialization still proceeds.
+                    try {
+                        const basemap = await Overlay.create({
+                            name: defaultBasemap.name,
+                            pos: -1,
+                            type: 'raster',
+                            url: String(stdurl(`/api/basemap/${defaultBasemap.id}/tiles`)),
+                            mode: 'basemap',
+                            mode_id: String(defaultBasemap.id)
+                        });
 
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this.overlays as any[]).push(basemap);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (this.overlays as any[]).push(basemap);
+                    } catch (err) {
+                        console.error('Failed to create default basemap overlay:', err);
+                    }
                 }
             }
 
-            // Parallelize Overlay Creation
-            const overlayPromises = profileOverlays.items.map(item =>
+            // Parallelize Overlay Creation. Use allSettled so a single
+            // overlay whose /tiles endpoint fails (404, network blip,
+            // upstream outage) does not prevent every other overlay -- and
+            // the rest of map init -- from completing. Failed entries are
+            // logged and dropped; Overlay.init also records the error on
+            // the overlay instance so the MenuOverlays UI can surface it.
+            const overlayResults = await Promise.allSettled(profileOverlays.items.map(item =>
                 Overlay.create(item as ProfileOverlay, { skipSave: true, skipLayers: true })
-            );
+            ));
 
-            const newOverlays = await Promise.all(overlayPromises);
+            const newOverlays: Overlay[] = [];
+            for (let i = 0; i < overlayResults.length; i++) {
+                const result = overlayResults[i];
+                if (result.status === 'fulfilled') {
+                    newOverlays.push(result.value);
+                } else {
+                    const item = profileOverlays.items[i];
+                    console.error(`Failed to create overlay ${item?.id} (${item?.name}):`, result.reason);
+                }
+            }
 
             for (const overlay of newOverlays) {
-                await overlay.addLayers();
+                try {
+                    await overlay.addLayers();
+                } catch (err) {
+                    overlay._error = err instanceof Error ? err : new Error(String(err));
+                    console.error(`Failed to add layers for overlay ${overlay.id} (${overlay.name}):`, err);
+                }
             }
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

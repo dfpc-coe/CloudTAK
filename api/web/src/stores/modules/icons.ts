@@ -88,7 +88,17 @@ export default class IconManager {
         spriteProtocolRegistered = true;
 
         mapgl.addProtocol(SPRITE_PROTOCOL, async (params) => {
-            const match = /^cloudtak-sprite:\/\/([^/.]+)(?:\/?@\dx)?\.(json|png)$/.exec(params.url);
+            // MapLibre normalizes the declared sprite URL through `new URL()`
+            // before appending the `.json`/`.png` (and `@2x`) suffixes, so the
+            // handler sees URLs in two shapes:
+            //   cloudtak-sprite://<id>.json          (no path separator)
+            //   cloudtak-sprite://<id>/.json         (URL-normalized form)
+            //   cloudtak-sprite://<id>@2x.png        (HiDPI, no separator)
+            //   cloudtak-sprite://<id>/@2x.png       (HiDPI, normalized)
+            // `@` must be excluded from the id class so the optional
+            // pixel-ratio suffix is matched by its dedicated group instead of
+            // being swallowed into the id.
+            const match = /^cloudtak-sprite:\/\/([^/.@]+)\/?(?:@\dx)?\.(json|png)$/.exec(params.url);
             if (!match) throw new Error(`Unsupported sprite URL: ${params.url}`);
 
             const [, id, ext] = match;
