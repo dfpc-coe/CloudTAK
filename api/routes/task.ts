@@ -1,11 +1,12 @@
 import { Type } from '@sinclair/typebox'
-import { sql } from 'drizzle-orm';
+import { sql, inArray } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import ECR from '../lib/aws/ecr.js';
 import Config from '../lib/config.js';
 import { Task } from '../lib/schema.js';
+import { Layer as LayerSchema } from '../lib/schema.js';
 import { StandardResponse, TaskResponse } from '../lib/types.js';
 import * as Default from '../lib/limits.js';
 
@@ -139,7 +140,10 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Version for a specific task',
         res: Type.Object({
             total: Type.Integer(),
-            versions: Type.Array(Type.String())
+            versions: Type.Array(Type.Object({
+                version: Type.String(),
+                deployed: Type.Boolean()
+            }))
         })
     }, async (req, res) => {
         try {
@@ -147,10 +151,28 @@ export default async function router(schema: Schema, config: Config) {
 
             const { tasks } = await ECR.versions();
 
-            const list = tasks.get(req.params.task);
+            const list = tasks.get(req.params.task) || [];
+
+            const deployedVersions = new Set<string>();
+            if (list.length) {
+                const taskNames = list.map((v) => `${req.params.task}-v${v}`);
+                const deployedLayers = await config.models.Layer.list({
+                    limit: list.length,
+                    where: inArray(LayerSchema.task, taskNames)
+                });
+
+                for (const layer of deployedLayers.items) {
+                    const match = layer.task.match(/-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+                    if (match) deployedVersions.add(match[1]);
+                }
+            }
+
             res.json({
-                total: list ? list.length : 0,
-                versions: list || []
+                total: list.length,
+                versions: list.map((version) => ({
+                    version,
+                    deployed: deployedVersions.has(version)
+                }))
             });
         } catch (err) {
             Err.respond(err, res);
@@ -192,6 +214,26 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Deleted Task Version'
             });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/task/:task', {
+        name: 'Get Task',
+        group: 'Task',
+        description: 'Return a single Registered Task',
+        params: Type.Object({
+            task: Type.Integer()
+        }),
+        res: TaskResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const task = await config.models.Task.from(req.params.task);
+
+            res.json(task);
         } catch (err) {
             Err.respond(err, res);
         }
