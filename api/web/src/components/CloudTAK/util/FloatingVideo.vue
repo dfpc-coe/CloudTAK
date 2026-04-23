@@ -103,24 +103,8 @@
                 <div class='position-relative w-100 h-100'>
                     <video
                         ref='videoTag'
-                        class='w-100 h-100 live-video'
-                        controls
-                        autoplay
-                        muted
+                        class='video-js vjs-default-skin vjs-live w-100 h-100 live-video'
                     />
-                    
-                    <!-- Buffering Overlay -->
-                    <div
-                        v-if='isBuffering'
-                        class='buffering-overlay'
-                    >
-                        <div class='buffering-icon'>
-                            <IconPlayerPauseFilled :size='64' />
-                            <div class='mt-2 fw-bold'>
-                                Buffering...
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </template>
         </div>
@@ -132,7 +116,8 @@
  * FloatingVideo Component
  *
  * A draggable, resizable video player component for HLS live streaming.
- * Features resilient error handling, automatic retry logic, and MediaMTX muxer restart recovery.
+ * Uses video.js with built-in HLS support for resilient playback.
+ * Features error handling, automatic retry logic, and MediaMTX muxer restart recovery.
  */
 
 import { ref, computed, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue'
@@ -141,12 +126,13 @@ import StatusDot from './../../util/StatusDot.vue';
 import VideoLeaseSourceType from './VideoLeaseSourceType.vue';
 import FloatingPane from './FloatingPane.vue';
 import type { VideoLeaseResponse, VideoLeaseMetadata } from '../../../types.ts';
-import Hls from 'hls.js'
+import videojs from 'video.js';
+import type Player from 'video.js/dist/types/player';
+import 'video.js/dist/video-js.css';
 import { useFloatStore } from '../../../stores/float.ts';
 import type { Pane, PaneVideoConfig } from '../../../stores/float.ts';
 import {
     IconUsersGroup,
-    IconPlayerPauseFilled
 } from '@tabler/icons-vue';
 import {
     TablerNone,
@@ -180,12 +166,12 @@ const emit = defineEmits(['close']);
 const loading = ref(true);
 const error = ref<Error | undefined>();
 
-// HLS retry logic state
+// Retry logic state
 const retryCount = ref(0);
 const maxRetries = ref(3); // Maximum retry attempts before giving up
 
-// HLS player instance
-const player = ref<Hls | undefined>()
+// Video.js player instance
+const player = ref<Player | undefined>();
 
 // Video streaming data
 const video = ref(floatStore.panes.get(props.uid) as Pane<PaneVideoConfig>);
@@ -194,17 +180,6 @@ const videoProtocols = ref<VideoLeaseMetadata["protocols"] | undefined>(); // Av
 
 // Active stream metadata
 const active = ref();
-
-// Buffer monitoring state
-const isBuffering = ref(false);
-const bufferCheckInterval = ref<number | undefined>();
-const bufferRecoveryTimeout = ref<number | undefined>();
-
-// Buffer monitoring configuration
-const BUFFER_LOW_THRESHOLD = 2; // Pause when buffer falls below 2 seconds
-const BUFFER_RECOVERY_THRESHOLD = 5; // Resume when buffer recovers to 5+ seconds
-const BUFFER_CHECK_INTERVAL_MS = 500; // Check buffer every 500ms
-const BUFFER_RECOVERY_TIMEOUT_MS = 10000; // Escalate if buffering lasts too long
 
 // Computed title - uses stream metadata name if available, falls back to prop
 const title = computed(() => {
@@ -215,117 +190,12 @@ const title = computed(() => {
     }
 });
 
-/**
- * Monitor video buffer levels and pause/resume playback as needed
- * Prevents reaching the end of buffer which causes refresh loops
- */
-function monitorBuffer(): void {
-    const video = videoTag.value;
-    if (!video) return;
-
-    try {
-        const buffered = video.buffered;
-        if (buffered.length === 0) {
-            if (isBuffering.value && !video.ended) return;
-            return;
-        }
-
-        const currentTime = video.currentTime;
-        const bufferedEnd = buffered.end(buffered.length - 1);
-        const bufferAhead = bufferedEnd - currentTime;
-
-        // If buffer is low (less than threshold), show buffering overlay
-        if (bufferAhead < BUFFER_LOW_THRESHOLD && !isBuffering.value && !video.ended) {
-            console.log(`Buffer running low (${bufferAhead.toFixed(2)}s), waiting for more data...`);
-            setBuffering(true);
-        }
-
-        // If buffer has recovered (more than threshold), resume
-        if (bufferAhead > BUFFER_RECOVERY_THRESHOLD && isBuffering.value) {
-            console.log(`Buffer recovered (${bufferAhead.toFixed(2)}s), resuming playback...`);
-            setBuffering(false);
-
-            if (video.paused && !video.ended) {
-                video.play().catch(e => console.error("Failed to resume video playback after buffering:", e));
-            }
-        }
-    } catch (err) {
-        console.error('Error monitoring buffer:', err);
-    }
-}
-
-function clearBufferRecoveryTimeout(): void {
-    if (bufferRecoveryTimeout.value) {
-        clearTimeout(bufferRecoveryTimeout.value);
-        bufferRecoveryTimeout.value = undefined;
-    }
-}
-
-function setBuffering(buffering: boolean): void {
-    isBuffering.value = buffering;
-
-    if (!buffering) {
-        clearBufferRecoveryTimeout();
-        return;
-    }
-
-    clearBufferRecoveryTimeout();
-    bufferRecoveryTimeout.value = window.setTimeout(() => {
-        if (!isBuffering.value) return;
-
-        console.warn('Buffering did not recover in time, attempting stream restart');
-        handleStreamRestart();
-    }, BUFFER_RECOVERY_TIMEOUT_MS);
-}
-
-function clearBufferMonitoring(): void {
-    if (bufferCheckInterval.value) {
-        clearInterval(bufferCheckInterval.value);
-        bufferCheckInterval.value = undefined;
-    }
-
-    clearBufferRecoveryTimeout();
-    isBuffering.value = false;
-}
-
-function startBufferMonitoring(): void {
-    clearBufferMonitoring();
-    bufferCheckInterval.value = window.setInterval(monitorBuffer, BUFFER_CHECK_INTERVAL_MS);
-}
-
-function attachVideoEventHandlers(): void {
-    const video = videoTag.value;
-    if (!video) return;
-
-    video.onwaiting = () => {
-        if (!video.ended) setBuffering(true);
-    };
-
-    video.onstalled = () => {
-        if (!video.ended) setBuffering(true);
-    };
-
-    video.onplaying = () => {
-        setBuffering(false);
-    };
-
-    video.oncanplay = () => {
-        if (isBuffering.value) setBuffering(false);
-    };
-
-    video.onerror = () => {
-        setBuffering(false);
-    };
-}
-
 // Cleanup when component is unmounted
 onUnmounted(async () => {
-    // Stop buffer monitoring
-    clearBufferMonitoring();
-
-    // Destroy HLS player instance
+    // Dispose video.js player instance
     if (player.value) {
-        player.value.destroy();
+        player.value.dispose();
+        player.value = undefined;
     }
 
     // Clean up video lease from server
@@ -358,147 +228,74 @@ async function deleteLease(): Promise<void> {
 }
 
 /**
- * Create and configure HLS.js player with resilient settings for live streaming
+ * Create and configure video.js player for HLS live streaming
  */
 async function createPlayer(): Promise<void> {
     try {
         const url = new URL(videoProtocols.value!.hls!.url);
 
-        attachVideoEventHandlers();
+        const sourceUrl = url.toString();
 
-        player.value = new Hls({
-            enableWorker: true,
-            lowLatencyMode: false, // More forgiving for stream restarts
-            debug: false,
-            backBufferLength: 90, // Keep more buffer for smoother playback
-            maxBufferLength: 30, // Larger buffer for resilience
-            maxMaxBufferLength: 600,
-            liveSyncDurationCount: 3, // More tolerant of discontinuities
-            liveMaxLatencyDurationCount: 10,
-            xhrSetup: (xhr: XMLHttpRequest) => {
-                // Add authentication if stream requires it
-                if (url.username && url.password) {
-                    xhr.setRequestHeader('Authorization', 'Basic ' + btoa(`${url.username}:${url.password}`));
-                }
+        const vjsOptions: Parameters<typeof videojs>[1] = {
+            autoplay: true,
+            muted: true,
+            controls: true,
+            liveui: true,
+            preload: 'auto',
+            html5: {
+                vhs: {
+                    overrideNative: true,
+                    enableLowInitialPlaylist: false,
+                    smoothQualityChange: true,
+                    handleManifestRedirects: true,
+                },
+            },
+            sources: [{
+                src: sourceUrl,
+                type: 'application/x-mpegURL',
+            }],
+        };
+
+        // Add authentication via beforeRequest if stream requires credentials
+        if (url.username && url.password) {
+            const authHeader = 'Basic ' + btoa(`${url.username}:${url.password}`);
+            vjsOptions.html5 = {
+                ...vjsOptions.html5,
+                vhs: {
+                    ...vjsOptions.html5?.vhs,
+                    beforeRequest(options: Record<string, unknown>) {
+                        if (!options.headers) options.headers = {};
+                        (options.headers as Record<string, string>)['Authorization'] = authHeader;
+                        return options;
+                    },
+                },
+            };
+        }
+
+        player.value = videojs(videoTag.value!, vjsOptions);
+
+        player.value.ready(() => {
+            player.value!.play()?.catch((err: unknown) => {
+                console.error('Error auto-playing video:', err);
+            });
+        });
+
+        // Handle errors with retry logic
+        player.value.on('error', () => {
+            const mediaError = player.value?.error();
+            console.log('Video.js Error:', mediaError);
+
+            if (mediaError) {
+                handleStreamError(new Error(mediaError.message || `Video error code ${mediaError.code}`));
             }
         });
 
-        player.value.attachMedia(videoTag.value!);
-
-        player.value.on(Hls.Events.MEDIA_ATTACHED, async () => {
-            if (player.value) player.value.loadSource(url.toString());
+        // Log when playback starts
+        player.value.on('playing', () => {
+            retryCount.value = 0; // Reset retry count on successful playback
         });
-
-        // Auto-play when manifest is loaded and parsed
-        player.value.on(Hls.Events.MANIFEST_PARSED, async () => {
-            try {
-                if (videoTag.value) await videoTag.value.play();
-                
-                // Start buffer monitoring interval
-                startBufferMonitoring();
-            } catch (err) {
-                console.error("Error playing video:", err);
-            }
-        });
-
-        // Enhanced error handling for MediaMTX muxer restarts and network issues
-        player.value.on(Hls.Events.ERROR, (event, data) => {
-            console.log("HLS Error:", data);
-
-            switch (data.type) {
-                case Hls.ErrorTypes.NETWORK_ERROR:
-                    if (!data.fatal) {
-                        setBuffering(true);
-
-                        if (player.value) {
-                            player.value.startLoad();
-                        }
-
-                        break;
-                    } else {
-                        console.log("Fatal network error:", data);
-                        handleStreamError(data.error);
-                        break;
-                    }
-                case Hls.ErrorTypes.MEDIA_ERROR:
-                    if (!data.fatal) {
-                        setBuffering(true);
-
-                        if (player.value) {
-                            try {
-                                player.value.recoverMediaError();
-                            } catch (err) {
-                                console.error('Failed to recover non-fatal media error:', err);
-                            }
-                        }
-
-                        break;
-                    } else {
-                        console.log("Fatal media error:", data);
-
-                        if (data.details === 'bufferAddCodecError' && data.error instanceof Error && data.error.name === 'NotSupportedError') {
-                            error.value = new Error(`Your browser does not support the required video codec for this stream (${data.mimeType}`);
-                        } else if (player.value) {
-                            try {
-                                player.value.recoverMediaError();
-                            } catch {
-                                handleStreamError(data.error);
-                            }
-                        } else {
-                            handleStreamError(data.error);
-                        }
-
-                        break;
-                    }
-                default:
-                    if (!data.fatal) return;
-
-                    // Handle other fatal errors with retry logic
-                    handleStreamError(data.error);
-                    break;
-            }
-        })
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
-    }
-}
-
-/**
- * Handle MediaMTX muxer restarts gracefully
- * This occurs when MediaMTX creates new segment naming due to source hiccups
- */
- function handleStreamRestart(): void {
-    const hls = player.value;
-    if (!hls || !videoProtocols.value?.hls) return;
-
-    console.log('Handling HLS stream restart (muxer restart detected)');
-
-    // Clear buffer monitoring before restarting player
-    clearBufferMonitoring();
-
-    try {
-        hls.recoverMediaError();
-        hls.stopLoad();
-        hls.loadSource(hls.url!); 
-
-        const videoElement = hls.media;
-        if (videoElement) {
-            hls.once(Hls.Events.LEVEL_LOADED, () => {
-                // Seek to the end (live edge) to bypass the stalled gap
-                if (Number.isFinite(videoElement.duration) && videoElement.duration > 0) {
-                    videoElement.currentTime = videoElement.duration;
-                }
-
-                hls.startLoad();
-                videoElement.play().catch(e => console.error("Play failed", e));
-                startBufferMonitoring();
-            });
-
-            setBuffering(true);
-        }
-    } catch (err) {
-        console.error('Error handling stream restart:', err);
-        handleStreamError(err instanceof Error ? err : new Error(String(err)));
     }
 }
 
@@ -507,9 +304,6 @@ async function createPlayer(): Promise<void> {
  * Implements 3-attempt retry system with increasing delays: 1s, 2s, 4s
  */
 function handleStreamError(streamError: Error): void {
-    // Clear buffer monitoring before destroying player
-    clearBufferMonitoring();
-
     if (retryCount.value < maxRetries.value) {
         // Calculate exponential backoff delay
         const delay = 1000 * Math.pow(2, retryCount.value); // 1s, 2s, 4s
@@ -520,18 +314,21 @@ function handleStreamError(streamError: Error): void {
         // Retry after delay
         setTimeout(() => {
             if (player.value) {
-                player.value.destroy();
+                player.value.dispose();
                 player.value = undefined;
             }
 
-            createPlayer();
+            // Need to re-create the video element since dispose removes it
+            nextTick(() => {
+                createPlayer();
+            });
         }, delay);
     } else {
         // Max retries reached - give up and show error to user
         console.error('Max retries reached, giving up');
 
         if (player.value) {
-            player.value.destroy();
+            player.value.dispose();
             player.value = undefined;
         }
 
@@ -547,9 +344,6 @@ function handleStreamError(streamError: Error): void {
 async function requestLease(): Promise<void> {
     if (!video.value) {
         error.value = new Error('Video URL could not be loaded');
-        return;
-    } else if (!Hls.isSupported()) {
-        error.value = new Error('HLS.js is not supported in this browser.');
         return;
     } else {
         error.value = undefined;
@@ -588,7 +382,7 @@ async function requestLease(): Promise<void> {
             error.value = new Error(active.value.message || 'Could not start stream');
         }
 
-        // Initialize HLS player if we have protocols available
+        // Initialize video.js player if we have protocols available
         if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
             retryCount.value = 0; // Reset retry count for new lease
             nextTick(() => {
@@ -603,8 +397,20 @@ async function requestLease(): Promise<void> {
 </script>
 
 <style>
+@import 'video.js/dist/video-js.css';
+
 .video-container {
     container-type: inline-size;
+}
+
+.video-container .video-js {
+    width: 100%;
+    height: 100%;
+}
+
+.video-container .vjs-live .vjs-time-control,
+.video-container .vjs-live .vjs-progress-control {
+    display: none;
 }
 
 .modal-body--error {
@@ -632,51 +438,6 @@ async function requestLease(): Promise<void> {
 @container (max-width: 450px) {
     .watchers-info {
         display: none !important;
-    }
-}
-
-.live-video::-webkit-media-controls-timeline {
-    display: none;
-}
-
-.live-video::-webkit-media-controls-current-time-display {
-    display: none;
-}
-
-.live-video::-webkit-media-controls-time-remaining-display {
-    display: none;
-}
-
-.buffering-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    pointer-events: none;
-    backdrop-filter: blur(2px);
-}
-
-.buffering-icon {
-    color: white;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.6;
     }
 }
 </style>
