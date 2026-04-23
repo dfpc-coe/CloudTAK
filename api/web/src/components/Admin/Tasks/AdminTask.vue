@@ -26,6 +26,15 @@
             <div class='ms-auto btn-list'>
                 <template v-if='task && !edit'>
                     <TablerIconButton
+                        title='Download Task Settings'
+                        @click='downloadTask'
+                    >
+                        <IconDownload
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
                         title='Edit Task'
                         @click='startEdit'
                     >
@@ -200,13 +209,13 @@
                             <td>
                                 <div class='d-flex align-items-center'>
                                     <span v-text='version.version' />
-                                    <TablerBadge
-                                        v-if='version.deployed'
-                                        class='mx-2'
-                                    >
-                                        Deployed
-                                    </TablerBadge>
-                                    <div class='ms-auto'>
+                                    <div class='ms-auto d-flex align-items-center'>
+                                        <TablerBadge
+                                            v-if='version.deployed'
+                                            class='mx-2'
+                                        >
+                                            Deployed
+                                        </TablerBadge>
                                         <TablerDelete
                                             v-if='!version.deployed'
                                             displaytype='icon'
@@ -243,6 +252,7 @@ import {
 import {
     IconStar,
     IconPencil,
+    IconDownload,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
 
@@ -326,6 +336,46 @@ async function deleteTask(): Promise<void> {
         method: 'DELETE'
     });
     router.push('/admin/tasks');
+}
+
+async function downloadTask(): Promise<void> {
+    if (!task.value) return;
+
+    let logoBase64: string | null = null;
+    if (task.value.logo) {
+        try {
+            const res = await window.fetch(task.value.logo);
+            const blob = await res.blob();
+            logoBase64 = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(blob);
+            });
+        } catch {
+            logoBase64 = null;
+        }
+    }
+
+    const payload = {
+        name: task.value.name,
+        prefix: task.value.prefix,
+        repo: task.value.repo ?? null,
+        readme: task.value.readme ?? null,
+        logo: logoBase64
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 4)], {
+        type: 'application/json'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${task.value.prefix}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 async function deleteVersion(version: string): Promise<void> {

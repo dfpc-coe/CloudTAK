@@ -21,6 +21,22 @@
                             stroke='1'
                         />
                     </TablerIconButton>
+                    <TablerIconButton
+                        title='Upload Task Settings'
+                        @click='triggerUpload'
+                    >
+                        <IconUpload
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <input
+                        ref='uploadInput'
+                        type='file'
+                        accept='application/json,.json'
+                        class='d-none'
+                        @change='handleUpload'
+                    >
                     <TablerRefreshButton
                         title='Refresh'
                         :loading='loading'
@@ -190,6 +206,7 @@ import {
 import {
     IconStar,
     IconPlus,
+    IconUpload,
 } from '@tabler/icons-vue'
 
 interface HeaderItem {
@@ -211,6 +228,7 @@ const loading = ref<boolean>(true);
 const header = ref<HeaderItem[]>([]);
 const edit = ref<Task | false>();
 const router = useRouter();
+const uploadInput = ref<HTMLInputElement | null>(null);
 const paging = ref({
     filter: '',
     sort: 'name',
@@ -266,6 +284,63 @@ async function saveTask() {
     edit.value = false
 
     await fetchList();
+}
+
+function triggerUpload(): void {
+    uploadInput.value?.click();
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function safeString(value: unknown, max = 1024): string {
+    if (typeof value !== 'string') return '';
+    return value.slice(0, max);
+}
+
+function safeLogo(value: unknown): string {
+    if (typeof value !== 'string') return '';
+    // Only accept data URLs for an image MIME, capped to a sane size
+    if (!/^data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$/.test(value)) {
+        return '';
+    }
+    if (value.length > 5 * 1024 * 1024) return '';
+    return value;
+}
+
+async function handleUpload(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+        error.value = new Error('Uploaded file is too large');
+        return;
+    }
+
+    let parsed: unknown;
+    try {
+        const text = await file.text();
+        parsed = JSON.parse(text);
+    } catch {
+        error.value = new Error('Uploaded file is not valid JSON');
+        return;
+    }
+
+    if (!isPlainObject(parsed)) {
+        error.value = new Error('Uploaded JSON must be an object');
+        return;
+    }
+
+    edit.value = {
+        name: safeString(parsed.name, 256),
+        prefix: safeString(parsed.prefix, 256),
+        repo: safeString(parsed.repo, 2048),
+        readme: safeString(parsed.readme, 2048),
+        logo: safeLogo(parsed.logo)
+    };
 }
 
 async function fetchList() {
