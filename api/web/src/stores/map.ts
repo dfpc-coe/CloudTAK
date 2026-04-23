@@ -767,7 +767,7 @@ export const useMapStore = defineStore('cloudtak', {
             // @ts-ignore Don't remove me unless npm run doc passes
             this._map = markRaw(map);
             this._draw = new DrawTool(this);
-            this._icons = markRaw(new IconManager(map));
+            this._icons = markRaw(new IconManager(map, this.worker));
             this._menu = markRaw(new MenuManager(this));
             await (this._menu as MenuManager).init();
             this._bottomBar = this._bottomBar || markRaw(new BottomBarManager());

@@ -4,26 +4,27 @@
 import ms from 'milsymbol'
 import Icon from '../../base/icon.ts'
 import type { Map as MapLibreMap } from 'maplibre-gl';
-import type { IconsetList, Iconset, IconList } from '../../types.ts';
-import { std, stdurl } from '../../std.ts';
-import { db, type DBIconset, type DBIcon } from '../../base/database.ts';
+import type * as Comlink from 'comlink';
+import type Atlas from '../../workers/atlas.ts';
+import type { IconHydrateResult } from '../../workers/atlas-icons.ts';
+import { stdurl } from '../../std.ts';
+import { db, type DBIconset } from '../../base/database.ts';
 
-const HYDRATE_CACHE_KEY = 'iconsets:hydrated';
-/** Skip a fresh hydrate if the local cache was last refreshed within this many ms. */
-const HYDRATE_FRESH_MS = 60_000;
 /** Image id for the on-demand fallback when an iconset icon isn't available locally. */
 const FALLBACK_IMAGE_ID = '__cloudtak_fallback_point__';
 
 export default class IconManager {
     private cache = new Map<string, HTMLCanvasElement>();
     private map: MapLibreMap;
+    private worker: Comlink.Remote<Atlas>;
     private loggedMissingImageIds = new Set<string>();
     private loggedErrors = new Set<string>();
     private inflightImage = new Map<string, Promise<void>>();
     private fallbackBitmap: ImageBitmap | null = null;
 
-    constructor(map: MapLibreMap) {
+    constructor(map: MapLibreMap, worker: Comlink.Remote<Atlas>) {
         this.map = map;
+        this.worker = worker;
     }
 
     private logWarnOnce(key: string, message: string, context?: Record<string, unknown>): void {
@@ -63,125 +64,13 @@ export default class IconManager {
     /**
      * Hydrate the local Dexie icon cache from the API.
      *
-     * Diffs the server iconset list against what's stored locally and only
-     * refetches icons for iconsets that are new or whose `version`/`updated`
-     * differs. Iconsets that no longer exist on the server are purged.
-     *
-     * Behaviour:
-     *  - When Dexie already has data and was refreshed recently the call
-     *    returns immediately and the diff runs in the background.
-     *  - When `force` is true the diff always runs inline.
+     * The actual network IO and base64 -> Blob decoding runs inside the Atlas
+     * worker (see `AtlasIcons.hydrate`); this method only handles main-thread
+     * concerns like purging stale MapLibre images.
      */
     async hydrate(opts: { force?: boolean } = {}): Promise<void> {
-        const force = !!opts.force;
-
-        if (!force) {
-            const marker = await db.cache.get(HYDRATE_CACHE_KEY);
-            const iconsetCount = await db.iconset.count();
-            const fresh = marker && (Date.now() - marker.updated) < HYDRATE_FRESH_MS;
-
-            if (iconsetCount > 0 && fresh) {
-                return;
-            }
-
-            if (iconsetCount > 0 && marker) {
-                // Local cache exists but is stale -- run diff in the background
-                // so the map can finish initialising without waiting on icons.
-                setTimeout(() => {
-                    void this.runDiff().catch((err: unknown) => {
-                        console.error('Background icon hydrate failed', err);
-                    });
-                }, 0);
-                return;
-            }
-        }
-
-        await this.runDiff();
-    }
-
-    private async runDiff(): Promise<void> {
-        const remote = await std('/api/iconset?limit=0') as IconsetList;
-
-        const remoteByUid = new Map<string, Iconset>();
-        for (const iconset of remote.items) {
-            remoteByUid.set(iconset.uid, iconset);
-        }
-
-        const local = await db.iconset.toArray();
-        const localByUid = new Map<string, DBIconset>();
-        for (const iconset of local) {
-            localByUid.set(iconset.uid, iconset);
-        }
-
-        const toSync: Iconset[] = [];
-        for (const [uid, iconset] of remoteByUid) {
-            const cached = localByUid.get(uid);
-            if (
-                !cached
-                || cached.version !== iconset.version
-                || cached.updated !== iconset.updated
-            ) {
-                toSync.push(iconset);
-            }
-        }
-
-        const toRemove: string[] = [];
-        for (const uid of localByUid.keys()) {
-            if (!remoteByUid.has(uid)) toRemove.push(uid);
-        }
-
-        await Promise.all(toRemove.map((uid) => this.purgeIconset(uid)));
-
-        await Promise.all(toSync.map((iconset) => this.syncIconset(iconset)));
-
-        await db.cache.put({ key: HYDRATE_CACHE_KEY, updated: Date.now() });
-    }
-
-    private async syncIconset(iconset: Iconset): Promise<void> {
-        const list = await std(`/api/icon?iconset=${encodeURIComponent(iconset.uid)}&limit=0`) as IconList;
-
-        const rows: DBIcon[] = [];
-        for (const icon of list.items) {
-            const blob = await dataUrlToBlob(icon.data);
-            const path = stripExt(icon.name);
-            const name = `${iconset.uid}:${path}`;
-
-            rows.push({
-                name,
-                iconset: iconset.uid,
-                path,
-                type2525b: icon.type2525b ?? null,
-                updated: icon.updated,
-                data: blob
-            });
-        }
-
-        await db.transaction('rw', db.icon, db.iconset, async () => {
-            await db.icon.where('iconset').equals(iconset.uid).delete();
-            if (rows.length) await db.icon.bulkPut(rows);
-            await db.iconset.put(iconset);
-        });
-
-        // Purge any registered map images for this iconset so they get
-        // re-resolved against the new Dexie data on next render.
-        for (const id of this.map.listImages()) {
-            if (id.startsWith(`${iconset.uid}:`)) {
-                this.map.removeImage(id);
-            }
-        }
-    }
-
-    private async purgeIconset(uid: string): Promise<void> {
-        await db.transaction('rw', db.icon, db.iconset, async () => {
-            await db.icon.where('iconset').equals(uid).delete();
-            await db.iconset.delete(uid);
-        });
-
-        for (const id of this.map.listImages()) {
-            if (id.startsWith(`${uid}:`)) {
-                this.map.removeImage(id);
-            }
-        }
+        const result = await this.worker.icons.hydrate({ force: !!opts.force }) as IconHydrateResult;
+        this.applyHydrateResult(result);
     }
 
     /**
@@ -190,22 +79,29 @@ export default class IconManager {
      * hydrate hasn't completed yet.
      */
     async addIconset(uid: string): Promise<void> {
-        const iconset = await std(`/api/iconset/${uid}`) as Iconset;
-        const cached = await db.iconset.get(uid);
-
-        if (
-            cached
-            && cached.version === iconset.version
-            && cached.updated === iconset.updated
-        ) {
-            return;
-        }
-
-        await this.syncIconset(iconset);
+        const updated = await this.worker.icons.addIconset(uid);
+        if (updated) this.purgeMapImagesForIconset(uid);
     }
 
     async removeIconset(uid: string): Promise<void> {
-        await this.purgeIconset(uid);
+        const removed = await this.worker.icons.removeIconset(uid);
+        if (removed) this.purgeMapImagesForIconset(uid);
+    }
+
+    private applyHydrateResult(result: IconHydrateResult): void {
+        if (result.skipped) return;
+
+        for (const uid of result.removed) this.purgeMapImagesForIconset(uid);
+        for (const uid of result.changed) this.purgeMapImagesForIconset(uid);
+    }
+
+    private purgeMapImagesForIconset(uid: string): void {
+        const prefix = `${uid}:`;
+        for (const id of this.map.listImages()) {
+            if (id.startsWith(prefix)) {
+                this.map.removeImage(id);
+            }
+        }
     }
 
     public async onStyleImageMissing(e: { id: string }): Promise<void> {
@@ -221,6 +117,16 @@ export default class IconManager {
                 const parts = e.id.split('-colored-');
                 const originalIconId = parts[0];
                 const color = '#' + parts[1];
+
+                // Iconset icons are only loaded on demand via this same handler.
+                // When MapLibre asks for the colored variant first, the
+                // underlying base image hasn't been registered yet, so we need
+                // to hydrate it from Dexie before recoloring. Without this the
+                // recolor step finds no source image and silently bails out,
+                // leaving the marker with a callsign but no icon.
+                if (originalIconId.includes(':') && !this.map.hasImage(originalIconId)) {
+                    await this.loadIconsetImage(originalIconId);
+                }
 
                 this.getColoredIcon(originalIconId, color);
             } else if (e.id.includes(':')) {
@@ -451,32 +357,4 @@ export default class IconManager {
             parseInt(result[3], 16)
         ] : [0, 255, 0]; // Default to green if parsing fails
     }
-}
-
-function stripExt(name: string): string {
-    return name.replace(/\.(png|svg|jpg|jpeg|gif)$/i, '');
-}
-
-async function dataUrlToBlob(data: string): Promise<Blob> {
-    let mime = 'image/png';
-    let base64 = data;
-
-    if (data.startsWith('data:')) {
-        const match = /^data:([^;,]+);base64,(.*)$/.exec(data);
-        if (!match) {
-            // Non-base64 data URL — fall back to fetch decoding.
-            const res = await fetch(data);
-            return await res.blob();
-        }
-        mime = match[1];
-        base64 = match[2];
-    }
-
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-    }
-
-    return new Blob([bytes], { type: mime });
 }
