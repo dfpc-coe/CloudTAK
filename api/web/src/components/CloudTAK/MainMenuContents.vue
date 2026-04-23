@@ -391,7 +391,7 @@ onUnmounted(() => { alive = false; });
 
 onMounted(async () => {
     const loginConfig = await Config.list(['login::logo']);
-    const applicationsConfig = await Config.refresh(['external::applications' as never]);
+    const applicationsConfig = await Config.list(['external::applications' as never]);
 
     if (!alive) return;
 
