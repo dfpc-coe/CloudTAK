@@ -18,9 +18,6 @@
             />
             <span class='text-white small'>
                 A new version of CloudTAK is ready
-                <template v-if='updatedSW.version && updatedSW.version !== version'>
-                    &mdash; v{{ version }} &rarr; v{{ updatedSW.version }}
-                </template>
             </span>
             <button
                 class='btn btn-sm btn-success py-0'
@@ -180,7 +177,6 @@ import {
     IconSettings,
     IconRefresh,
 } from '@tabler/icons-vue';
-import { version } from '../package.json';
 import Loading from './components/Loading.vue';
 import {
     TablerBadge,
@@ -202,7 +198,6 @@ const loginLogo = ref<string>();
 const loginName = ref<string>();
 
 const updateAvailable = ref(false);
-const updatedSW = ref<{ version: string | null; build: string | null }>({ version: null, build: null });
 const pendingRegistration = ref<ServiceWorkerRegistration | null>(null);
 
 const applyUpdate = () => {
@@ -221,10 +216,6 @@ const applyUpdate = () => {
 
 const onSwUpdateAvailable = (e: Event) => {
     const detail = (e as CustomEvent).detail;
-    updatedSW.value = {
-        version: detail.version,
-        build: detail.build
-    };
     pendingRegistration.value = detail.registration;
     updateAvailable.value = true;
 };
@@ -390,11 +381,6 @@ onMounted(async () => {
                 for (const reg of registrations) {
                     // Prefer a waiting worker (new version ready to activate)
                     if (reg.waiting) {
-                        const u = new URL(reg.waiting.scriptURL);
-                        updatedSW.value = {
-                            version: u.searchParams.get('v'),
-                            build: u.searchParams.get('build')
-                        };
                         pendingRegistration.value = reg;
                         updateAvailable.value = true;
                         break;
@@ -402,13 +388,22 @@ onMounted(async () => {
 
                     // Fall back to detecting an active SW whose build differs from
                     // the currently loaded page (e.g. another tab triggered activation).
+                    //
+                    // IMPORTANT: only compare build fingerprints, not the `?v=`
+                    // package.json version param. The `?v=` value is whatever
+                    // `package.json` happened to be when the *previous* page
+                    // called `register()` for this worker, not what is actually
+                    // deployed. After a SKIP_WAITING + auto-reload, the freshly
+                    // loaded page imports a *newer* `package.json` than the
+                    // value baked into `reg.active.scriptURL`, so a version
+                    // comparison spuriously re-shows the update banner with no
+                    // pending worker present. The build fingerprint is derived
+                    // from deployed asset filenames and is the source of truth.
                     const worker = reg.active;
                     if (worker?.scriptURL) {
                         const u = new URL(worker.scriptURL);
                         const swBuild = u.searchParams.get('build');
-                        const swVersion = u.searchParams.get('v');
-                        if ((swVersion && swVersion !== version) || (currentBuildId && swBuild && swBuild !== currentBuildId)) {
-                            updatedSW.value = { version: swVersion, build: swBuild };
+                        if (currentBuildId && swBuild && swBuild !== currentBuildId) {
                             updateAvailable.value = true;
                         }
                         break;
