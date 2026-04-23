@@ -2,20 +2,39 @@
  * Icon Color Manager for runtime icon recoloring
  */
 import ms from 'milsymbol'
+import mapgl from 'maplibre-gl'
 import Icon from '../../base/icon.ts'
 import type { Map as MapLibreMap } from 'maplibre-gl';
-import type { IconsetList, Iconset } from '../../types.ts';
-import { std, stdurl } from '../../std.ts';
-import { db, type DBIconset } from '../../base/database.ts';
+import type * as Comlink from 'comlink';
+import type Atlas from '../../workers/atlas.ts';
+import type { IconHydrateResult } from '../../workers/atlas-icons.ts';
+import { stdurl } from '../../std.ts';
+import { db, type DBIconset, type DBSprite } from '../../base/database.ts';
+
+/** Image id for the on-demand fallback when an iconset icon isn't available locally. */
+const FALLBACK_IMAGE_ID = '__cloudtak_fallback_point__';
+
+/**
+ * Custom MapLibre protocol used to serve built-in spritesheets out of Dexie
+ * (with a network fallback). MapLibre will request `<url>.json` /
+ * `<url>.png` (and the `@2x` variants) so the handler must accept any of
+ * those suffixes.
+ */
+const SPRITE_PROTOCOL = 'cloudtak-sprite';
+let spriteProtocolRegistered = false;
 
 export default class IconManager {
     private cache = new Map<string, HTMLCanvasElement>();
     private map: MapLibreMap;
+    private worker: Comlink.Remote<Atlas>;
     private loggedMissingImageIds = new Set<string>();
     private loggedErrors = new Set<string>();
+    private inflightImage = new Map<string, Promise<void>>();
+    private fallbackBitmap: ImageBitmap | null = null;
 
-    constructor(map: MapLibreMap) {
+    constructor(map: MapLibreMap, worker: Comlink.Remote<Atlas>) {
         this.map = map;
+        this.worker = worker;
     }
 
     private logWarnOnce(key: string, message: string, context?: Record<string, unknown>): void {
@@ -39,50 +58,93 @@ export default class IconManager {
         return await db.iconset.get(uid);
     }
 
+    /**
+     * MapLibre style sprite descriptor. The custom iconset spritesheets are no
+     * longer loaded here; icons are served on demand from Dexie via
+     * `onStyleImageMissing`. Only the small built-in `default` sprite is loaded
+     * up-front because it provides the CoT-type fallbacks.
+     *
+     * The default sprite itself is also served from the Dexie cache via the
+     * `cloudtak-sprite://` protocol (see `registerSpriteProtocol`) so it
+     * survives offline reloads instead of re-downloading on every page load.
+     */
+    static defaultSprite(): Array<{ id: string; url: string }> {
+        IconManager.registerSpriteProtocol();
+
+        return [{
+            id: 'default',
+            url: `${SPRITE_PROTOCOL}://default`
+        }];
+    }
+
+    /**
+     * Register the global MapLibre protocol that resolves
+     * `cloudtak-sprite://<id>(@2x)?.(json|png)` requests against the Dexie
+     * `sprite` table, falling back to the API and persisting the response so
+     * subsequent loads are served from disk.
+     */
+    static registerSpriteProtocol(): void {
+        if (spriteProtocolRegistered) return;
+        spriteProtocolRegistered = true;
+
+        mapgl.addProtocol(SPRITE_PROTOCOL, async (params) => {
+            const match = /^cloudtak-sprite:\/\/([^/.]+)(?:\/?@\dx)?\.(json|png)$/.exec(params.url);
+            if (!match) throw new Error(`Unsupported sprite URL: ${params.url}`);
+
+            const [, id, ext] = match;
+
+            let row = await db.sprite.get(id);
+            if (!row) row = await fetchAndCacheSprite(id);
+
+            if (ext === 'json') {
+                return { data: row.json };
+            }
+
+            return { data: await row.image.arrayBuffer() };
+        });
+    }
+
+    /**
+     * Hydrate the local Dexie icon cache from the API.
+     *
+     * The actual network IO and base64 -> Blob decoding runs inside the Atlas
+     * worker (see `AtlasIcons.hydrate`); this method only handles main-thread
+     * concerns like purging stale MapLibre images.
+     */
+    async hydrate(opts: { force?: boolean } = {}): Promise<void> {
+        const result = await this.worker.icons.hydrate({ force: !!opts.force }) as IconHydrateResult;
+        this.applyHydrateResult(result);
+    }
+
+    /**
+     * Ensure a single iconset is present in Dexie. Used by overlays that
+     * reference a specific iconset so it is available even if the user-wide
+     * hydrate hasn't completed yet.
+     */
     async addIconset(uid: string): Promise<void> {
-        const iconset = await std(`/api/iconset/${uid}`) as Iconset;
-
-        await db.iconset.put(iconset);
-
-        this.map.addSprite(
-            iconset.uid,
-            String(stdurl(`/api/iconset/${iconset.uid}/sprite?token=${localStorage.token}`))
-        );
+        const updated = await this.worker.icons.addIconset(uid);
+        if (updated) this.purgeMapImagesForIconset(uid);
     }
 
     async removeIconset(uid: string): Promise<void> {
-        this.map.removeSprite(uid);
-        await db.iconset.delete(uid);
+        const removed = await this.worker.icons.removeIconset(uid);
+        if (removed) this.purgeMapImagesForIconset(uid);
     }
 
-    static async sprites(): Promise<Array<{
-        id: string,
-        url: string
-    }>> {
-        const sprites = [{
-            id: 'default',
-            url: String(stdurl(`/api/iconset/default/sprite?token=${localStorage.token}`))
-        }]
+    private applyHydrateResult(result: IconHydrateResult): void {
+        if (result.skipped) return;
 
-        // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
-        const iconsets = await std('/api/iconset?limit=100') as IconsetList;
+        for (const uid of result.removed) this.purgeMapImagesForIconset(uid);
+        for (const uid of result.changed) this.purgeMapImagesForIconset(uid);
+    }
 
-        await db.iconset.bulkPut(iconsets.items);
-
-        for (const iconset of iconsets.items) {
-            sprites.push({
-                id: iconset.uid,
-                url: String(stdurl(`/api/iconset/${iconset.uid}/sprite?token=${localStorage.token}`))
-            });
+    private purgeMapImagesForIconset(uid: string): void {
+        const prefix = `${uid}:`;
+        for (const id of this.map.listImages()) {
+            if (id.startsWith(prefix)) {
+                this.map.removeImage(id);
+            }
         }
-
-        return sprites;
-    }
-
-    public async updateImages(): Promise<void> {
-        const images = this.map.listImages();
-
-        await Icon.populate(images);
     }
 
     public async onStyleImageMissing(e: { id: string }): Promise<void> {
@@ -99,7 +161,19 @@ export default class IconManager {
                 const originalIconId = parts[0];
                 const color = '#' + parts[1];
 
+                // Iconset icons are only loaded on demand via this same handler.
+                // When MapLibre asks for the colored variant first, the
+                // underlying base image hasn't been registered yet, so we need
+                // to hydrate it from Dexie before recoloring. Without this the
+                // recolor step finds no source image and silently bails out,
+                // leaving the marker with a callsign but no icon.
+                if (originalIconId.includes(':') && !this.map.hasImage(originalIconId)) {
+                    await this.loadIconsetImage(originalIconId);
+                }
+
                 this.getColoredIcon(originalIconId, color);
+            } else if (e.id.includes(':')) {
+                await this.loadIconsetImage(e.id);
             } else if (!this.loggedMissingImageIds.has(e.id)) {
                 this.loggedMissingImageIds.add(e.id);
                 console.info('Unhandled style image missing event', {
@@ -116,6 +190,77 @@ export default class IconManager {
 
             throw error;
         }
+    }
+
+    /**
+     * Resolve an `<iconsetUid>:<path>` image id from Dexie and register it with
+     * MapLibre. Falls back to a generic point icon when the icon isn't cached.
+     */
+    private async loadIconsetImage(id: string): Promise<void> {
+        if (this.map.hasImage(id)) return;
+
+        const inflight = this.inflightImage.get(id);
+        if (inflight) return inflight;
+
+        const work = (async () => {
+            try {
+                const row = await Icon.get(id);
+
+                if (row) {
+                    const bitmap = await createImageBitmap(row.data);
+                    if (!this.map.hasImage(id)) {
+                        this.map.addImage(id, bitmap);
+                    }
+                    return;
+                }
+
+                const fallback = await this.getFallbackBitmap();
+                if (!this.map.hasImage(id)) {
+                    this.map.addImage(id, fallback);
+                }
+
+                this.logWarnOnce(
+                    `missing-iconset-icon:${id}`,
+                    'Iconset icon not found in local cache, using fallback',
+                    { imageId: id }
+                );
+            } finally {
+                this.inflightImage.delete(id);
+            }
+        })();
+
+        this.inflightImage.set(id, work);
+        return work;
+    }
+
+    private async getFallbackBitmap(): Promise<ImageBitmap> {
+        if (this.fallbackBitmap) return this.fallbackBitmap;
+
+        const size = 24;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size / 2 - 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        this.fallbackBitmap = await createImageBitmap(canvas);
+
+        // Also register under a stable id so it can be reused via `iconImage`
+        // expressions without going through the missing-image handler.
+        if (!this.map.hasImage(FALLBACK_IMAGE_ID)) {
+            this.map.addImage(FALLBACK_IMAGE_ID, this.fallbackBitmap);
+        }
+
+        return this.fallbackBitmap;
     }
 
     /**
@@ -255,4 +400,26 @@ export default class IconManager {
             parseInt(result[3], 16)
         ] : [0, 255, 0]; // Default to green if parsing fails
     }
+}
+
+/**
+ * Fallback path for the sprite protocol: when Dexie has no row for the
+ * requested built-in sprite (typically only on a brand-new install where
+ * `AtlasIcons.hydrate` hasn't completed yet) fetch it from the API and
+ * persist it so the next request is served from disk.
+ */
+async function fetchAndCacheSprite(id: string): Promise<DBSprite> {
+    const jsonUrl = stdurl(`/api/iconset/${id}/sprite.json?token=${localStorage.token}`);
+    const pngUrl = stdurl(`/api/iconset/${id}/sprite.png?token=${localStorage.token}`);
+
+    const [jsonRes, pngRes] = await Promise.all([fetch(jsonUrl), fetch(pngUrl)]);
+    if (!jsonRes.ok) throw new Error(`Failed to load sprite '${id}' json (${jsonRes.status})`);
+    if (!pngRes.ok) throw new Error(`Failed to load sprite '${id}' png (${pngRes.status})`);
+
+    const json = await jsonRes.json() as Record<string, unknown>;
+    const image = await pngRes.blob();
+
+    const row: DBSprite = { id, updated: Date.now(), json, image };
+    await db.sprite.put(row);
+    return row;
 }

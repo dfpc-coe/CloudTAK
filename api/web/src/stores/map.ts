@@ -667,7 +667,7 @@ export const useMapStore = defineStore('cloudtak', {
                 this.startGPSWatch();
             }
 
-            const sprites = await IconManager.sprites();
+            const sprites = IconManager.defaultSprite();
 
             try {
                 const mapConfig = await Config.list([
@@ -753,7 +753,7 @@ export const useMapStore = defineStore('cloudtak', {
                     map.setProjection({ type: "globe" });
                 }
 
-                await this.icons.updateImages();
+                await this.icons.hydrate();
 
                 await this.initOverlays();
 
@@ -767,7 +767,7 @@ export const useMapStore = defineStore('cloudtak', {
             // @ts-ignore Don't remove me unless npm run doc passes
             this._map = markRaw(map);
             this._draw = new DrawTool(this);
-            this._icons = markRaw(new IconManager(map));
+            this._icons = markRaw(new IconManager(map, this.worker));
             this._menu = markRaw(new MenuManager(this));
             await (this._menu as MenuManager).init();
             this._bottomBar = this._bottomBar || markRaw(new BottomBarManager());
