@@ -19,6 +19,13 @@
 
 ### Pending Release
 
+### v12.132.0 - 2026-04-23
+
+- :bug: Fix Service Worker Upgrade notification persisting after upgrade until hard refresh
+- :tada: Rewrite the Admin tasks API to combine hosted versions and deployment info as well as ETL config
+- :rocket: Allow downloading ETL Config to a JSON file
+- :rocket: Allow uploading ETL Config from a JSON file
+
 ### v12.131.0 - 2026-04-23
 
 - :bug: Fix bug where service worker could become corrupted and prevent an update
