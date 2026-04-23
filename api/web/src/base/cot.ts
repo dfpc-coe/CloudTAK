@@ -1,4 +1,3 @@
-import Icon from './icon.ts';
 import { v4 as randomUUID } from 'uuid';
 import { std } from '../std.ts';
 import { db } from './database.ts';
@@ -550,10 +549,10 @@ export default class COT {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
 
-                if (!await Icon.has(properties.icon)) {
-                    console.warn(`No Icon for: ${properties.icon} fallback to ${properties.type}`);
-                    properties.icon = `${properties.type}`;
-                }
+                // Resolution happens via MapLibre's `styleimagemissing` handler
+                // (see IconManager.onStyleImageMissing). Iconset icons are
+                // loaded from Dexie on demand and unknown ids fall back to a
+                // generic point bitmap, so no preflight check is required.
             } else if (properties.milsym && !isNaN(Number(properties.milsym.id))) {
                 properties.icon = `2525D:${properties.milsym.id}`;
             } else {

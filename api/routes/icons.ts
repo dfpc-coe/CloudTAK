@@ -42,7 +42,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Iconsets',
         query: Type.Object({
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
-            limit: Default.Limit,
+            limit: Default.LimitAll,
             page: Default.Page,
             order: Default.Order,
             sort: Type.String({
@@ -67,7 +67,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const list = await config.models.Iconset.list({
-                limit: req.query.limit,
+                limit: req.query.limit === 0 ? Infinity : req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
                 sort: req.query.sort,
@@ -402,7 +402,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Icons',
         query: Type.Object({
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
-            limit: Type.Optional(Type.Integer({ default: 100 })),
+            limit: Default.LimitAll,
             page: Default.Page,
             order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Icon) })),
@@ -431,7 +431,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const list = await config.models.Icon.list({
-                limit: req.query.limit,
+                limit: req.query.limit === 0 ? Infinity : req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
                 sort: req.query.sort,
