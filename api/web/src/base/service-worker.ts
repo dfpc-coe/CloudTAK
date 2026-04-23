@@ -273,17 +273,36 @@ export function initServiceWorker(version: string): void {
             }
 
             const controller = navigator.serviceWorker.controller;
-            if (controller?.scriptURL) {
-                const url = new URL(controller.scriptURL);
-                window.dispatchEvent(new CustomEvent('sw:update-available', {
-                    detail: {
-                        version: url.searchParams.get('v'),
-                        build: url.searchParams.get('build'),
-                        registration: null,
-                        activated: true,
-                    }
-                }));
+            if (!controller?.scriptURL) return;
+
+            const url = new URL(controller.scriptURL);
+            const activatedBuildId = url.searchParams.get('build');
+
+            if (activatedBuildId) {
+                setPageServiceWorkerBuildId(activatedBuildId);
             }
+
+            // `clients.claim()` on the first install also triggers
+            // controllerchange. Only surface an update prompt when the newly
+            // activated worker differs from the build this page was already
+            // running.
+            if (!currentBuildId || !activatedBuildId || activatedBuildId === currentBuildId) {
+                if (activatedBuildId) {
+                    currentBuildId = activatedBuildId;
+                }
+                return;
+            }
+
+            currentBuildId = activatedBuildId;
+
+            window.dispatchEvent(new CustomEvent('sw:update-available', {
+                detail: {
+                    version: url.searchParams.get('v'),
+                    build: activatedBuildId,
+                    registration: null,
+                    activated: true,
+                }
+            }));
         });
     });
 }

@@ -166,7 +166,7 @@ self.addEventListener('fetch', (event) => {
             const networkResponse = await fetch(event.request);
 
             if (networkResponse && networkResponse.status === 200 && isRuntimeCacheable(url)) {
-                cache.put(url.toString(), networkResponse.clone());
+                event.waitUntil(cache.put(url.toString(), networkResponse.clone()));
             }
 
             return networkResponse;
