@@ -191,7 +191,7 @@ import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vu
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
 import { db } from './base/database.ts';
-import { getPageServiceWorkerBuildId } from './base/service-worker.ts';
+import { getPageServiceWorkerBuildId, markUpdateRequestedByThisTab } from './base/service-worker.ts';
 import { useMapStore } from './stores/map.ts';
 
 const router = useRouter();
@@ -208,8 +208,12 @@ const pendingRegistration = ref<ServiceWorkerRegistration | null>(null);
 const applyUpdate = () => {
     const waiting = pendingRegistration.value?.waiting;
     if (waiting) {
+        // Tell service-worker.ts that THIS tab initiated the update, so its
+        // controllerchange handler auto-reloads us. Other tabs will see the
+        // same controllerchange, not find this flag, and surface their own
+        // prompt instead of silently reloading.
+        markUpdateRequestedByThisTab();
         waiting.postMessage('SKIP_WAITING');
-        // controllerchange handler in main.ts will reload the page
     } else {
         window.location.reload();
     }

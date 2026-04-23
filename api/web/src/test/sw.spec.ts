@@ -53,7 +53,7 @@ function loadSW(opts: { version?: string; build?: string; fetchMock?: Mock } = {
     const fetchMock = opts.fetchMock ?? vi.fn(async () => new Response('{}', { status: 200 }));
 
     const scope: Record<string, any> = {
-        location: `https://example.com/sw.js?v=${v}&build=${b}`,
+        location: new URL(`https://example.com/sw.js?v=${v}&build=${b}`),
         self: undefined as any,  // will alias below
         URL,
         Response,
@@ -151,12 +151,19 @@ describe('sw.js', () => {
             expect(addCalls).toContain('assets/vendor-xyz.js');
         });
 
-        it('excludes HTML files from manifest cache', async () => {
+        it('maps known entry HTMLs to their navigable paths and never caches raw .html', async () => {
+            // nginx 302s `/foo.html` → `/foo`, so caching `admin.html` is
+            // useless. The SW must precache the navigable path instead.
             const fetchMock = vi.fn(async (url: string | Request) => {
                 const u = typeof url === 'string' ? url : url.url;
                 if (u.includes('manifest.json')) {
                     return new Response(JSON.stringify({
                         'index.html': { file: 'index.html', imports: [] },
+                        'admin.html': { file: 'admin.html', imports: [] },
+                        'connection.html': { file: 'connection.html', imports: [] },
+                        'docs.html': { file: 'docs.html', imports: [] },
+                        'video.html': { file: 'video.html', imports: [] },
+                        'unknown.html': { file: 'unknown.html', imports: [] },
                         'src/main.ts': { file: 'assets/main-h.js', imports: [] },
                     }), { status: 200 });
                 }
@@ -170,8 +177,68 @@ describe('sw.js', () => {
 
             const cache = await cachesMock.open('cloudtak-cache-3.0.0-h');
             const addCalls = (cache.add as Mock).mock.calls.map((c: any[]) => c[0]);
+
+            expect(addCalls).toContain('/');
+            expect(addCalls).toContain('/admin');
+            expect(addCalls).toContain('/connection');
+            expect(addCalls).toContain('/docs');
+            expect(addCalls).toContain('/video');
+            expect(addCalls).toContain('assets/main-h.js');
+
+            expect(addCalls).not.toContain('index.html');
+            expect(addCalls).not.toContain('admin.html');
+            expect(addCalls).not.toContain('unknown.html');
+        });
+
+        it('excludes HTML files from manifest cache', async () => {
+            const fetchMock = vi.fn(async (url: string | Request) => {
+                const u = typeof url === 'string' ? url : url.url;
+                if (u.includes('manifest.json')) {
+                    return new Response(JSON.stringify({
+                        'index.html': { file: 'index.html', imports: [] },
+                        'src/main.ts': { file: 'assets/main-h.js', imports: [] },
+                    }), { status: 200 });
+                }
+                return new Response('ok', { status: 200 });
+            });
+
+            const { emit, scope, cachesMock } = loadSW({ version: '3.1.0', build: 'h', fetchMock });
+
+            scope.self.skipWaiting = vi.fn();
+            await emit('install');
+
+            const cache = await cachesMock.open('cloudtak-cache-3.1.0-h');
+            const addCalls = (cache.add as Mock).mock.calls.map((c: any[]) => c[0]);
             expect(addCalls).not.toContain('index.html');
             expect(addCalls).toContain('assets/main-h.js');
+        });
+
+        it('fails install atomically when any asset cannot be fetched', async () => {
+            // Regression: a partially-populated cache followed by activation
+            // would purge the old cache and leave the user stuck. Install
+            // must reject so the browser discards the new SW entirely.
+            const fetchMock = vi.fn(async (url: string | Request) => {
+                const u = typeof url === 'string' ? url : url.url;
+                if (u.includes('manifest.json')) {
+                    return new Response(JSON.stringify({
+                        'src/main.ts': { file: 'assets/main-broken.js', imports: [] },
+                    }), { status: 200 });
+                }
+                return new Response('ok', { status: 200 });
+            });
+
+            const { emit, scope, cachesMock } = loadSW({ version: '5.0.0', build: 'fail', fetchMock });
+
+            const cache = await cachesMock.open('cloudtak-cache-5.0.0-fail');
+            (cache.add as Mock).mockImplementation(async (url: string) => {
+                if (url === 'assets/main-broken.js') {
+                    throw new TypeError('Failed to fetch');
+                }
+            });
+
+            scope.self.skipWaiting = vi.fn();
+
+            await expect(emit('install')).rejects.toThrow(/Failed to fetch/);
         });
 
         it('pre-caches dynamicImports transitively (e.g. icons-<hash>.js)', async () => {
@@ -260,25 +327,54 @@ describe('sw.js', () => {
     });
 
     describe('activate', () => {
-        it('deletes old caches and keeps the current one', async () => {
+        it('deletes old CloudTAK caches when the new cache has a root shell', async () => {
             const { emit, cachesMock } = loadSW({ version: '2.0.0', build: 'new' });
 
-            // Simulate old caches existing
+            // Seed the new cache with '/' so the guard in activate passes.
+            const current = await cachesMock.open('cloudtak-cache-2.0.0-new');
+            (current.match as Mock).mockImplementation(async (url: string) =>
+                url === '/' ? new Response('root') : undefined
+            );
+
+            // Simulate old caches existing alongside the current one and an
+            // unrelated cache that must never be touched.
             cachesMock.stores.set('cloudtak-cache-1.0.0-old', new Map());
             cachesMock.stores.set('cloudtak-cache-2.0.0-new', new Map());
             cachesMock.stores.set('other-cache', new Map());
 
             await emit('activate');
 
-            expect(cachesMock.delete).toHaveBeenCalledWith('cloudtak-cache-1.0.0-old');
-            expect(cachesMock.delete).toHaveBeenCalledWith('other-cache');
-            // The current cache should NOT be deleted
             const deletedNames = (cachesMock.delete as Mock).mock.calls.map((c: any[]) => c[0]);
+            expect(deletedNames).toContain('cloudtak-cache-1.0.0-old');
+            // Unrelated caches are intentionally left alone.
+            expect(deletedNames).not.toContain('other-cache');
+            // The current cache is never deleted.
             expect(deletedNames).not.toContain('cloudtak-cache-2.0.0-new');
         });
 
+        it('keeps old caches if the new cache is missing the root shell', async () => {
+            // Regression: a partial / broken install must NOT lead to the
+            // old generation being purged, otherwise the user can land on
+            // a blank app after reload.
+            const { emit, cachesMock } = loadSW({ version: '2.0.0', build: 'new' });
+
+            // New cache exists but has no '/' entry.
+            const current = await cachesMock.open('cloudtak-cache-2.0.0-new');
+            (current.match as Mock).mockResolvedValue(undefined);
+
+            cachesMock.stores.set('cloudtak-cache-1.0.0-old', new Map());
+            cachesMock.stores.set('cloudtak-cache-2.0.0-new', new Map());
+
+            await emit('activate');
+
+            expect(cachesMock.delete).not.toHaveBeenCalled();
+        });
+
         it('calls clients.claim()', async () => {
-            const { emit, scope } = loadSW();
+            const { emit, scope, cachesMock } = loadSW();
+            const current = await cachesMock.open('cloudtak-cache-1.0.0-abc123');
+            (current.match as Mock).mockResolvedValue(new Response('root'));
+
             await emit('activate');
             expect(scope.clients.claim).toHaveBeenCalled();
         });
@@ -351,6 +447,91 @@ describe('sw.js', () => {
 
             expect(event.respondWith).not.toHaveBeenCalled();
         });
+
+        it('caches /assets/* responses on network success', async () => {
+            const fetchMock = vi.fn(async () => new Response('asset-body', { status: 200 }));
+            const { listeners, cachesMock } = loadSW({ version: '1.0.0', build: 'rt', fetchMock });
+
+            const event: FakeEvent = {
+                request: new Request('https://example.com/assets/main-rt.js'),
+                respondWith: vi.fn(),
+            };
+
+            for (const fn of listeners['fetch'] ?? []) fn(event);
+            await event.respondWith!.mock.calls[0][0];
+
+            const cache = await cachesMock.open('cloudtak-cache-1.0.0-rt');
+            expect((cache.put as Mock)).toHaveBeenCalledWith(
+                'https://example.com/assets/main-rt.js',
+                expect.any(Response)
+            );
+        });
+
+        it('caches /logos/* responses (PWA touch-icons) on network success', async () => {
+            const fetchMock = vi.fn(async () => new Response('png-body', { status: 200 }));
+            const { listeners, cachesMock } = loadSW({ version: '1.0.0', build: 'logo', fetchMock });
+
+            const event: FakeEvent = {
+                request: new Request('https://example.com/logos/180.png'),
+                respondWith: vi.fn(),
+            };
+
+            for (const fn of listeners['fetch'] ?? []) fn(event);
+            await event.respondWith!.mock.calls[0][0];
+
+            const cache = await cachesMock.open('cloudtak-cache-1.0.0-logo');
+            expect((cache.put as Mock)).toHaveBeenCalledWith(
+                'https://example.com/logos/180.png',
+                expect.any(Response)
+            );
+        });
+
+        it('does NOT cache non-/assets responses even on 200', async () => {
+            // Regression: the nginx SPA fallback returns `/index.html` with a
+            // 200 for unknown paths. Caching those under arbitrary URLs used
+            // to pin wrong HTML inside the SW generation.
+            const fetchMock = vi.fn(async () => new Response('<html>root</html>', { status: 200 }));
+            const { listeners, cachesMock } = loadSW({ version: '1.0.0', build: 'rt2', fetchMock });
+
+            const event: FakeEvent = {
+                request: new Request('https://example.com/some/deep/spa/path'),
+                respondWith: vi.fn(),
+            };
+
+            for (const fn of listeners['fetch'] ?? []) fn(event);
+            await event.respondWith!.mock.calls[0][0];
+
+            const cache = await cachesMock.open('cloudtak-cache-1.0.0-rt2');
+            expect((cache.put as Mock)).not.toHaveBeenCalled();
+        });
+
+        it('falls back to the matching entry shell on offline navigation', async () => {
+            const fetchMock = vi.fn(async () => { throw new TypeError('offline'); });
+            const { listeners, cachesMock } = loadSW({ version: '1.0.0', build: 'nav', fetchMock });
+
+            const cache = await cachesMock.open('cloudtak-cache-1.0.0-nav');
+            (cache.match as Mock).mockImplementation(async (url: string) => {
+                if (url === '/admin') return new Response('<html>admin shell</html>');
+                if (url === '/') return new Response('<html>root shell</html>');
+                return undefined;
+            });
+
+            // `mode: 'navigate'` cannot be constructed directly on a Request,
+            // so simulate the navigation request with a plain object the SW
+            // can destructure just like a real FetchEvent.request.
+            const event: FakeEvent = {
+                request: {
+                    url: 'https://example.com/admin/users',
+                    method: 'GET',
+                    mode: 'navigate',
+                } as unknown as Request,
+                respondWith: vi.fn(),
+            };
+
+            for (const fn of listeners['fetch'] ?? []) fn(event);
+            const response = await event.respondWith!.mock.calls[0][0];
+            await expect(response.text()).resolves.toContain('admin shell');
+        });
     });
 
     describe('update lifecycle (no stale-cache gap)', () => {
@@ -392,7 +573,7 @@ describe('sw.js', () => {
             await v2.emit('message', { data: 'SKIP_WAITING' });
             expect(v2.scope.self.skipWaiting).toHaveBeenCalledOnce();
 
-            // Activation deletes old caches
+            // Activation deletes old caches (v2 install populated '/').
             await v2.emit('activate');
             expect(v2.cachesMock.delete).toHaveBeenCalledWith('cloudtak-cache-1.0.0-old');
         });

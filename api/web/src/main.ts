@@ -15,7 +15,14 @@ import FloatingVue from 'floating-vue'
 import App from './App.vue'
 
 // Catch failed resource loads (scripts, stylesheets, images) before Vue initialises.
-// In production, a stale service worker cache is a common cause — purge and reload once.
+// In production, the most common root cause is a stale SW serving a reference
+// to an asset that no longer exists on the origin. We take a targeted
+// recovery path: evict the failing URL from any cache, ask the SW to check
+// for a newer registration, and reload ONCE per tab session. We intentionally
+// do NOT `unregister()` or wipe every cache — doing so while offline deletes
+// the only working copy of the app the user has.
+const SW_RECOVERY_ATTEMPTED_KEY = 'sw-cache-recovery-attempted';
+
 window.addEventListener('error', async (e) => {
     if (!e.target || e.target === window) return;
 
@@ -23,23 +30,31 @@ window.addEventListener('error', async (e) => {
     const url = (el as HTMLScriptElement).src || (el as HTMLLinkElement).href || '';
     console.error('Failed to load resource:', (e.target as HTMLElement).tagName, url);
 
-    if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
-        if (sessionStorage.getItem('sw-cache-purged')) return;
+    if (import.meta.env.DEV || !('serviceWorker' in navigator)) return;
+    if (sessionStorage.getItem(SW_RECOVERY_ATTEMPTED_KEY)) return;
+    if (!url) return;
 
-        sessionStorage.setItem('sw-cache-purged', '1');
-        console.warn('Purging service worker cache and reloading due to resource load failure');
+    sessionStorage.setItem(SW_RECOVERY_ATTEMPTED_KEY, '1');
+    console.warn('Attempting targeted SW cache recovery for:', url);
 
-        try {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            await Promise.all(registrations.map((r) => r.unregister()));
+    try {
+        // Evict just the failing URL from every cache bucket we own, so
+        // the next fetch goes to the network instead of replaying the
+        // same bad cached reference.
+        const cacheKeys = await caches.keys();
+        await Promise.all(cacheKeys.map(async (key) => {
+            const cache = await caches.open(key);
+            await cache.delete(url);
+        }));
 
-            const cacheKeys = await caches.keys();
-            await Promise.all(cacheKeys.map((k) => caches.delete(k)));
-        } catch (err) {
-            console.error('Error while purging service worker cache:', err);
-        } finally {
-            window.location.reload();
-        }
+        // Nudge the SW to re-check the registration; if a newer deploy
+        // is out there, it will install and wait for a user prompt.
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((r) => r.update().catch(() => {})));
+    } catch (err) {
+        console.error('Error during targeted SW cache recovery:', err);
+    } finally {
+        window.location.reload();
     }
 }, true);
 
@@ -78,3 +93,10 @@ watch(() => mapStore.isLoaded, async (isLoaded) => {
 }, { immediate: true });
 
 app.mount('#app');
+
+// Successful mount means the critical path loaded. Clear the recovery
+// guard so an *independent* resource failure later in the session can
+// trigger recovery again instead of being silently swallowed.
+if (!import.meta.env.DEV) {
+    sessionStorage.removeItem(SW_RECOVERY_ATTEMPTED_KEY);
+}
