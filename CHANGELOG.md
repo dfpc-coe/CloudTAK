@@ -19,6 +19,11 @@
 
 ### Pending Release
 
+### v12.131.0 - 2026-04-23
+
+- :bug: Fix bug where service worker could become corrupted and prevent an update
+- :bug: Fix bug where default icons could fail to load
+
 ### v12.130.0 - 2026-04-22
 
 - :rocket: Store Icons offline for 2-3x faster reload time
