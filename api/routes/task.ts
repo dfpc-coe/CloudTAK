@@ -139,7 +139,10 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Version for a specific task',
         res: Type.Object({
             total: Type.Integer(),
-            versions: Type.Array(Type.String())
+            versions: Type.Array(Type.Object({
+                version: Type.String(),
+                deployed: Type.Boolean()
+            }))
         })
     }, async (req, res) => {
         try {
@@ -147,10 +150,30 @@ export default async function router(schema: Schema, config: Config) {
 
             const { tasks } = await ECR.versions();
 
-            const list = tasks.get(req.params.task);
+            const list = tasks.get(req.params.task) || [];
+
+            const deployedVersions = new Set<string>();
+            if (list.length) {
+                const taskNames = list.map((v) => `${req.params.task}-v${v}`);
+                const deployedLayers = await config.models.Layer.list({
+                    limit: list.length,
+                    where: sql`
+                        task = ANY(${taskNames}::TEXT[])
+                    `
+                });
+
+                for (const layer of deployedLayers.items) {
+                    const match = layer.task.match(/-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+                    if (match) deployedVersions.add(match[1]);
+                }
+            }
+
             res.json({
-                total: list ? list.length : 0,
-                versions: list || []
+                total: list.length,
+                versions: list.map((version) => ({
+                    version,
+                    deployed: deployedVersions.has(version)
+                }))
             });
         } catch (err) {
             Err.respond(err, res);
@@ -192,6 +215,26 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Deleted Task Version'
             });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/task/:task', {
+        name: 'Get Task',
+        group: 'Task',
+        description: 'Return a single Registered Task',
+        params: Type.Object({
+            task: Type.Integer()
+        }),
+        res: TaskResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const task = await config.models.Task.from(req.params.task);
+
+            res.json(task);
         } catch (err) {
             Err.respond(err, res);
         }

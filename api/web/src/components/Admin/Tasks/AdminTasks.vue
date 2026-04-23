@@ -27,12 +27,6 @@
                         @click='fetchList'
                     />
                 </template>
-                <template v-else-if='edit.id'>
-                    <TablerDelete
-                        displaytype='icon'
-                        @delete='deleteTask(edit)'
-                    />
-                </template>
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
@@ -125,7 +119,7 @@
                                 v-for='layer in list.items'
                                 :key='layer.id'
                                 class='cursor-pointer'
-                                @click='edit = layer'
+                                @click='router.push(`/admin/tasks/${layer.id}`)'
                             >
                                 <template v-for='h in header'>
                                     <template v-if='h.display'>
@@ -178,6 +172,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../std.ts';
 import type { APIList } from '../../../types.ts';
 import TableHeader from '../../util/TableHeader.vue'
@@ -191,7 +186,6 @@ import {
     TablerLoading,
     TablerIconButton,
     TablerRefreshButton,
-    TablerDelete
 } from '@tak-ps/vue-tabler';
 import {
     IconStar,
@@ -216,6 +210,7 @@ const error = ref<Error>();
 const loading = ref<boolean>(true);
 const header = ref<HeaderItem[]>([]);
 const edit = ref<Task | false>();
+const router = useRouter();
 const paging = ref({
     filter: '',
     sort: 'name',
@@ -261,12 +256,7 @@ async function listLayerSchema() {
 async function saveTask() {
     loading.value = true;
 
-    if (edit.value && edit.value.id) {
-        await std(`/api/task/${edit.value.id}`, {
-            method: 'PATCH',
-            body: edit.value
-        });
-    } else if (edit.value) {
+    if (edit.value) {
         await std('/api/task', {
             method: 'POST',
             body: edit.value
@@ -276,19 +266,6 @@ async function saveTask() {
     edit.value = false
 
     await fetchList();
-}
-
-async function deleteTask(task: Task) {
-    loading.value = true;
-    const url = stdurl(`/api/task/${task.id}`);
-    await std(url, {
-        method: 'DELETE'
-    });
-
-    edit.value = undefined;
-    await fetchList();
-
-    loading.value = false;
 }
 
 async function fetchList() {

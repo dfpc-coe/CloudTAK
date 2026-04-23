@@ -274,14 +274,14 @@
                                                 @click='router.push(`/admin/tasks`)'
                                             >
                                                 <IconBrandDocker
-                                                    v-tooltip='nest ? "ETL Task Runners" : false'
+                                                    v-tooltip='nest ? "Integrations" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
                                                 <span
                                                     v-if='!nest'
                                                     class='mx-3'
-                                                >ETL Task Runners</span>
+                                                >Integrations</span>
                                             </span>
                                             <span
                                                 tabindex='0'

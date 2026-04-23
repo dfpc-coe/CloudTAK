@@ -57,7 +57,7 @@ async function fetchTask() {
     } else {
         loading.task = true;
         const task = await std(`/api/task/raw/${current.value.prefix}`) as ETLTaskVersions;
-        versions.value = task.versions;
+        versions.value = task.versions.map((v) => v.version);
 
         if (versions.value.length) {
             version.value = versions.value[0];

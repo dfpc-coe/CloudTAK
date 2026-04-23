@@ -114,22 +114,11 @@ const router = VueRouter.createRouter({
             },{
                 path: 'tasks',
                 name: 'admin-tasks',
-                component: () => import('../../components/Admin/AdminTasks.vue'),
-                children: [{
-                    path: '',
-                    name: 'admin-tasks-default',
-                    redirect: () => {
-                        return { name: 'admin-tasks-registered' };
-                    }
-                },{
-                    path: 'registered',
-                    name: 'admin-tasks-registered',
-                    component: () => import('../../components/Admin/Tasks/AdminTasks.vue')
-                },{
-                    path: 'raw',
-                    name: 'admin-tasks-raw',
-                    component: () => import('../../components/Admin/Tasks/AdminRawTasks.vue')
-                }]
+                component: () => import('../../components/Admin/Tasks/AdminTasks.vue')
+            },{
+                path: 'tasks/:task',
+                name: 'admin-task',
+                component: () => import('../../components/Admin/Tasks/AdminTask.vue')
             },{
                 path: 'server',
                 name: 'admin-server',
