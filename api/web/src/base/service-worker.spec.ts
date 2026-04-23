@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { initServiceWorker } from './service-worker.ts';
 
 function flushPromises(): Promise<void> {
@@ -12,14 +12,12 @@ describe('service-worker registration lifecycle', () => {
     const originalDocumentAddEventListener = document.addEventListener.bind(document);
 
     let controllerChangeListener: (() => void) | undefined;
-    let updateFoundListener: (() => void) | undefined;
     let windowLoadListener: (() => void) | undefined;
     let windowFocusListener: (() => void) | undefined;
     let visibilityChangeListener: (() => void) | undefined;
 
     beforeEach(() => {
         controllerChangeListener = undefined;
-        updateFoundListener = undefined;
         windowLoadListener = undefined;
         windowFocusListener = undefined;
         visibilityChangeListener = undefined;
@@ -66,7 +64,10 @@ describe('service-worker registration lifecycle', () => {
             installing: null,
             active: null,
             addEventListener: vi.fn((type: string, listener: () => void) => {
-                if (type === 'updatefound') updateFoundListener = listener;
+                if (type === 'updatefound') {
+                    // listener captured but not invoked in tests
+                    void listener;
+                }
             }),
         } as unknown as ServiceWorkerRegistration;
 
