@@ -327,10 +327,11 @@ async function select(task: Task, version?: string) {
     loading.value.task = true;
 
     const resolvedTask = await resolveTask(task);
-    const detail = await std(`/api/task/raw/${task.prefix}`) as { versions: string[] };
+    const detail = await std(`/api/task/raw/${task.prefix}`) as { versions: Array<{ version: string; deployed: boolean }> };
+    const versions = detail.versions.map((v) => v.version);
     selected.value = {
-        versions: detail.versions,
-        version: version || detail.versions[0],
+        versions,
+        version: version || versions[0],
         ...resolvedTask
     }
 

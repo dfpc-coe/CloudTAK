@@ -372,9 +372,10 @@ async function latestVersion() {
     const version = match[2];
 
     const res = await std(`/api/task/raw/${task}`) as ETLTaskVersions;
+    const versions = res.versions.map((v) => v.version);
 
-    if (res.versions.indexOf(version) !== 0) {
-        newTaskVersion.value = res.versions[0];
+    if (versions.indexOf(version) !== 0) {
+        newTaskVersion.value = versions[0];
     }
 
     loading.value.version = false;
