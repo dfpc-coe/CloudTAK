@@ -23,7 +23,7 @@ describe('service-worker registration lifecycle', () => {
         visibilityChangeListener = undefined;
         sessionStorage.clear();
 
-        vi.spyOn(window, 'setInterval').mockImplementation(() => 1 as unknown as number);
+        vi.spyOn(window, 'setInterval').mockImplementation(() => 1 as unknown as ReturnType<typeof setInterval>);
         vi.spyOn(window, 'addEventListener').mockImplementation(((type: string, listener: EventListenerOrEventListenerObject) => {
             if (type === 'load') windowLoadListener = listener as () => void;
             if (type === 'focus') windowFocusListener = listener as () => void;
@@ -78,7 +78,7 @@ describe('service-worker registration lifecycle', () => {
             return registration;
         });
 
-        const getRegistration = vi.fn(async () => null);
+        const getRegistration = vi.fn(async () => undefined);
 
         Object.defineProperty(navigator, 'serviceWorker', {
             configurable: true,

@@ -35745,7 +35745,10 @@ export interface paths {
                     content: {
                         "application/json": {
                             total: number;
-                            versions: string[];
+                            versions: {
+                                version: string;
+                                deployed: boolean;
+                            }[];
                         };
                     };
                 };
