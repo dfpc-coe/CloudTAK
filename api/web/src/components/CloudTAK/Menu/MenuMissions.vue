@@ -47,7 +47,10 @@
                             />
                         </button>
                         <template #dropdown>
-                            <div class='filter-dropdown d-flex flex-column' style='max-height: 320px; overflow-y: auto;'>
+                            <div
+                                class='filter-dropdown d-flex flex-column'
+                                style='max-height: 320px; overflow-y: auto;'
+                            >
                                 <div class='filter-dropdown__header d-flex align-items-center justify-content-between px-3 py-2'>
                                     <strong class='small text-uppercase text-white-50'>Filters</strong>
                                     <button
@@ -62,56 +65,60 @@
 
                                 <div class='px-3 pb-2 d-flex flex-column gap-2'>
                                     <div>
-                                    <div class='small text-uppercase text-white-50 mb-1'>Channels</div>
-                                    <div
-                                        v-if='!availableChannels.length'
-                                        class='small text-secondary'
-                                    >
-                                        No channels available
-                                    </div>
-                                    <label
-                                        v-for='channel in availableChannels'
-                                        :key='"channel-" + channel'
-                                        class='form-check mb-1'
-                                    >
-                                        <input
-                                            class='form-check-input'
-                                            type='checkbox'
-                                            :checked='selectedChannels.includes(channel)'
-                                            @change='toggleChannel(channel)'
+                                        <div class='small text-uppercase text-white-50 mb-1'>
+                                            Channels
+                                        </div>
+                                        <div
+                                            v-if='!availableChannels.length'
+                                            class='small text-secondary'
                                         >
-                                        <span
-                                            class='form-check-label'
-                                            v-text='channel'
-                                        />
-                                    </label>
-                                </div>
+                                            No channels available
+                                        </div>
+                                        <label
+                                            v-for='channel in availableChannels'
+                                            :key='"channel-" + channel'
+                                            class='form-check mb-1'
+                                        >
+                                            <input
+                                                class='form-check-input'
+                                                type='checkbox'
+                                                :checked='selectedChannels.includes(channel)'
+                                                @change='toggleChannel(channel)'
+                                            >
+                                            <span
+                                                class='form-check-label'
+                                                v-text='channel'
+                                            />
+                                        </label>
+                                    </div>
 
-                                <div>
-                                    <div class='small text-uppercase text-white-50 mb-1'>Keywords</div>
-                                    <div
-                                        v-if='!availableKeywords.length'
-                                        class='small text-secondary'
-                                    >
-                                        No keywords available
-                                    </div>
-                                    <label
-                                        v-for='keyword in availableKeywords'
-                                        :key='"keyword-" + keyword'
-                                        class='form-check mb-1'
-                                    >
-                                        <input
-                                            class='form-check-input'
-                                            type='checkbox'
-                                            :checked='selectedKeywords.includes(keyword)'
-                                            @change='toggleKeyword(keyword)'
+                                    <div>
+                                        <div class='small text-uppercase text-white-50 mb-1'>
+                                            Keywords
+                                        </div>
+                                        <div
+                                            v-if='!availableKeywords.length'
+                                            class='small text-secondary'
                                         >
-                                        <span
-                                            class='form-check-label'
-                                            v-text='keyword'
-                                        />
-                                    </label>
-                                </div>
+                                            No keywords available
+                                        </div>
+                                        <label
+                                            v-for='keyword in availableKeywords'
+                                            :key='"keyword-" + keyword'
+                                            class='form-check mb-1'
+                                        >
+                                            <input
+                                                class='form-check-input'
+                                                type='checkbox'
+                                                :checked='selectedKeywords.includes(keyword)'
+                                                @change='toggleKeyword(keyword)'
+                                            >
+                                            <span
+                                                class='form-check-label'
+                                                v-text='keyword'
+                                            />
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </template>
