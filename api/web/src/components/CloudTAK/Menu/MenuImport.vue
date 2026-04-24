@@ -45,9 +45,11 @@
             >
                 <div class='row gy-3 gx-0 gx-lg-3'>
                     <div class='col-12'>
-                        <div class='card h-100 cloudtak-bg text-white border border-light-subtle shadow-sm'>
-                            <div class='card-body d-flex flex-column gap-4'>
-                                <div class='d-flex align-items-center gap-3'>
+                        <TablerBorder
+                            class='cloudtak-bg text-white'
+                            gap='lg'
+                        >
+                            <div class='d-flex align-items-center gap-3'>
                                     <div class='flex-grow-1'>
                                         <p class='text-uppercase text-white-50 small mb-1'>
                                             Import
@@ -122,9 +124,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
+                        </TablerBorder>
                     </div>
                     
                     <div class='col-12'>
@@ -199,6 +199,7 @@ import timeDiff from '../../../timediff.ts';
 import {
     TablerNone,
     TablerAlert,
+    TablerBorder,
     TablerDelete,
     TablerLoading,
     TablerIconButton,
