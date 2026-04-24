@@ -250,4 +250,89 @@ test('GET: api/marti/mission - Filter Groups', async () => {
     flight.tak.reset();
 });
 
+test('PATCH: api/marti/missions/:name - returns refreshed groups after update', async () => {
+    let getCount = 0;
+    let postedGroups: string[] = [];
+
+    flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
+        if (!request.method || !request.url) return false;
+
+        const url = new URL(request.url, 'http://127.0.0.1');
+
+        if (request.method === 'GET' && url.pathname === '/Marti/api/missions/Test%20Mission') {
+            getCount++;
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({
+                data: [{
+                    name: 'Test Mission',
+                    guid: 'test-mission-guid',
+                    description: 'test description',
+                    tool: 'public',
+                    keywords: [],
+                    externalData: [],
+                    feeds: [],
+                    mapLayers: [],
+                    inviteOnly: false,
+                    expiration: 3600,
+                    uids: [],
+                    contents: [],
+                    passwordProtected: false,
+                    role: { role: 'OWNER', permissions: [] },
+                    groups: getCount === 1 ? ['original-group'] : ['updated-group'],
+                }]
+            }));
+            response.end();
+            return true;
+        }
+
+        if (request.method === 'POST' && url.pathname === '/Marti/api/missions/Test%20Mission') {
+            postedGroups = url.searchParams.getAll('group');
+            response.setHeader('Content-Type', 'application/json');
+            response.write(JSON.stringify({
+                data: [{
+                    name: 'Test Mission',
+                    guid: 'test-mission-guid',
+                    description: 'test description',
+                    tool: 'public',
+                    keywords: [],
+                    externalData: [],
+                    feeds: [],
+                    mapLayers: [],
+                    inviteOnly: false,
+                    expiration: 3600,
+                    uids: [],
+                    contents: [],
+                    passwordProtected: false,
+                    role: { role: 'OWNER', permissions: [] },
+                    groups: ['original-group'],
+                }]
+            }));
+            response.end();
+            return true;
+        }
+
+        return false;
+    });
+
+    try {
+        const res = await flight.fetch('/api/marti/missions/Test Mission', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                groups: ['updated-group']
+            }
+        }, true);
+
+        assert.deepEqual(postedGroups, ['updated-group']);
+        assert.equal(getCount, 2);
+        assert.deepEqual(res.body.groups, ['updated-group']);
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    flight.tak.reset();
+});
+
 flight.landing();
