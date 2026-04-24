@@ -134,6 +134,9 @@ export default async function router(schema: Schema, config: Config) {
             import: Type.String()
         }),
         description: 'Import an asset into a previously configured import container',
+        body: {
+            'multipart/form-data': true
+        },
         res: ImportResponse
     }, async (req, res) => {
         try {
@@ -202,6 +205,9 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Import',
         group: 'Import',
         description: 'Import up to 5 unknown assets into the imports manager at a time',
+        body: {
+            'multipart/form-data': true
+        },
         res: Type.Object({
             imports: Type.Array(Type.Object({
                 file: Type.String(),

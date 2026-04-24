@@ -13,6 +13,9 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Upload Hosted Tileset',
         group: 'ServerTilesets',
         description: 'Upload a hosted PMTiles tileset into the public asset prefix',
+        body: {
+            'multipart/form-data': true
+        },
         res: Type.Object({
             status: Type.Integer(),
             message: Type.String(),
