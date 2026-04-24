@@ -67,15 +67,11 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'GUID of a mission to also upload the attachment to'
             }))
         }),
-        body: {
-            'multipart/form-data': true
-        },
         res: Type.Object({
             hash: Type.String()
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
             const contentType = req.headers['content-type'];
 
             if (
@@ -84,6 +80,8 @@ export default async function router(schema: Schema, config: Config) {
             ) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
+
+            const user = await Auth.as_user(config, req);
 
             const bb = new Busboy({
                 headers: {

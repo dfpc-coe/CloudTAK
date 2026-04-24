@@ -67,31 +67,84 @@
                                 />
                             </div>
                             <div class='col-12'>
-                                <small class='text-uppercase text-white-50 d-block mb-1'>Groups (Channels)</small>
-                                <div
-                                    v-if='props.subscription.meta.groups && props.subscription.meta.groups.length'
-                                    class='d-flex flex-wrap gap-2'
+                                <TablerBorder
+                                    class='mission-editable-border'
+                                    background='rgba(0, 0, 0, 0.1)'
+                                    :shadow='false'
+                                    :fill-height='false'
+                                    gap='sm'
                                 >
-                                    <TablerBadge
-                                        v-for='group of props.subscription.meta.groups'
-                                        :key='group'
-                                        class='rounded-pill text-uppercase fw-semibold'
-                                        background-color='rgba(107, 114, 128, 0.2)'
-                                        border-color='rgba(107, 114, 128, 0.5)'
-                                        text-color='#6b7280'
+                                    <template #label>
+                                        <small class='text-uppercase text-white-50 d-block mb-0'>Groups (Channels)</small>
+                                    </template>
+                                    <template
+                                        v-if='canEditGroups && !editingGroups'
+                                        #tools
                                     >
-                                        {{ group }}
-                                    </TablerBadge>
-                                </div>
-                                <p
-                                    v-else
-                                    class='text-white-50 mb-0'
-                                >
-                                    None
-                                </p>
+                                        <TablerIconButton
+                                            title='Edit channels'
+                                            @click.stop.prevent='startEditingGroups'
+                                        >
+                                            <IconPencil
+                                                :size='24'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
+                                    </template>
+
+                                    <template v-if='editingGroups'>
+                                        <GroupSelect
+                                            :model-value='groupDraft'
+                                            :active='true'
+                                            direction='IN'
+                                            @update:model-value='groupDraft = $event'
+                                        />
+
+                                        <div class='d-flex justify-content-end gap-2 pt-2'>
+                                            <TablerButton
+                                                :disabled='savingGroups'
+                                                @click.stop='cancelEditingGroups'
+                                            >
+                                                Cancel
+                                            </TablerButton>
+                                            <TablerButton
+                                                class='btn-primary'
+                                                :disabled='savingGroups'
+                                                @click.stop='saveGroups'
+                                            >
+                                                {{ savingGroups ? 'Saving...' : 'Save' }}
+                                            </TablerButton>
+                                        </div>
+                                    </template>
+
+                                    <template v-else>
+                                        <div
+                                            v-if='groupList.length'
+                                            class='d-flex flex-wrap gap-2'
+                                        >
+                                            <TablerBadge
+                                                v-for='group of groupList'
+                                                :key='group'
+                                                class='rounded-pill text-uppercase fw-semibold'
+                                                background-color='rgba(107, 114, 128, 0.2)'
+                                                border-color='rgba(107, 114, 128, 0.5)'
+                                                text-color='#6b7280'
+                                            >
+                                                {{ group }}
+                                            </TablerBadge>
+                                        </div>
+                                        <p
+                                            v-else
+                                            class='text-white-50 mb-0'
+                                        >
+                                            None
+                                        </p>
+                                    </template>
+                                </TablerBorder>
                             </div>
                             <div class='col-12'>
                                 <TablerBorder
+                                    class='mission-editable-border'
                                     background='rgba(0, 0, 0, 0.1)'
                                     :shadow='false'
                                     :fill-height='false'
@@ -303,6 +356,7 @@ import MissionTemplate from '../../../../base/mission-template.ts';
 import Keywords from '../../util/Keywords.vue';
 import CopyField from '../../util/CopyField.vue';
 import TagEntry from '../../util/TagEntry.vue';
+import GroupSelect from '../../util/GroupSelect.vue';
 import {
     IconQrcode,
     IconBroadcast,
@@ -348,9 +402,48 @@ const canEditMission = computed(() => {
     return props.subscription.subscribed && props.subscription.role.permissions.includes('MISSION_WRITE');
 });
 
+const canEditGroups = computed(() => {
+    return props.subscription.role.type === 'MISSION_OWNER';
+});
+
+const groupList = computed<string[]>(() => {
+    const groups = props.subscription.meta.groups;
+    if (!groups) return [];
+    return Array.isArray(groups) ? groups : [groups];
+});
+
 const editingKeywords = ref(false);
 const savingKeywords = ref(false);
 const keywordDraft = ref<string[]>([...keywords.value]);
+
+const editingGroups = ref(false);
+const savingGroups = ref(false);
+const groupDraft = ref<string[]>([...groupList.value]);
+
+function startEditingGroups(): void {
+    if (!canEditGroups.value) return;
+    groupDraft.value = [...groupList.value];
+    editingGroups.value = true;
+}
+
+function cancelEditingGroups(): void {
+    editingGroups.value = false;
+    groupDraft.value = [...groupList.value];
+}
+
+async function saveGroups(): Promise<void> {
+    try {
+        savingGroups.value = true;
+        await props.subscription.update({
+            groups: groupDraft.value
+        });
+        editingGroups.value = false;
+    } catch (err) {
+        console.error(err);
+    } finally {
+        savingGroups.value = false;
+    }
+}
 
 function startEditingKeywords(): void {
     if (!canEditMission.value) return;
@@ -472,6 +565,18 @@ async function subscribe(subscribe: boolean) {
 </script>
 
 <style scoped>
+.mission-editable-border:deep(.tabler-border__tools) {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.mission-editable-border:hover:deep(.tabler-border__tools),
+.mission-editable-border:focus-within:deep(.tabler-border__tools) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 .invite-qr-header {
     color: var(--tblr-body-color);
 }
