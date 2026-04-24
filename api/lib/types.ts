@@ -106,6 +106,7 @@ export const OptionalTileJSON = Type.Object({
     type: Type.Optional(Type.Enum(Basemap_Type)),
     url: Type.Optional(Type.String()),
     attribution: Type.Optional(Type.String()),
+    serverParts: Type.Optional(Type.String()),
     bounds: Type.Optional(Type.Any()),
     center: Type.Optional(Type.Any()),
     minzoom: Type.Optional(Type.Integer()),

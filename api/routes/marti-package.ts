@@ -109,6 +109,9 @@ export default async function router(schema: Schema, config: Config) {
                 Type.String()
             ])),
         }),
+        body: {
+            'multipart/form-data': true
+        },
         res: Package
     }, async (req, res) => {
         try {

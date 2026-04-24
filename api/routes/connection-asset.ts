@@ -47,6 +47,9 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
         }),
+        body: {
+            'multipart/form-data': true
+        },
         res: StandardResponse
     }, async (req, res) => {
 
