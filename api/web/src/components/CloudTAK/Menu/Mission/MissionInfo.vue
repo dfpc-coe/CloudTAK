@@ -91,8 +91,49 @@
                                     </p>
                                 </div>
                                 <div class='col-12'>
-                                    <small class='text-uppercase text-white-50 d-block mb-2'>Keywords</small>
-                                    <Keywords :keywords='keywords' />
+                                    <TablerBorder
+                                        background='rgba(0, 0, 0, 0.1)'
+                                        :shadow='false'
+                                        :fill-height='false'
+                                        gap='sm'
+                                        :editable='canEditMission'
+                                        :editing='editingKeywords'
+                                        edit-aria-label='Edit keywords'
+                                        @edit='startEditingKeywords'
+                                    >
+                                        <template #label>
+                                            <small class='text-uppercase text-white-50 d-block mb-0'>Keywords</small>
+                                        </template>
+                                        <template #editor>
+                                            <TagEntry
+                                                :model-value='keywordDraft'
+                                                placeholder='Add keywords'
+                                                @update:model-value='keywordDraft = $event'
+                                            />
+
+                                            <div class='d-flex justify-content-end gap-2 pt-2'>
+                                                <TablerButton
+                                                    :disabled='savingKeywords'
+                                                    @click.stop='cancelEditingKeywords'
+                                                >
+                                                    Cancel
+                                                </TablerButton>
+                                                <TablerButton
+                                                    class='btn-primary'
+                                                    :disabled='savingKeywords'
+                                                    @click.stop='saveKeywords'
+                                                >
+                                                    {{ savingKeywords ? 'Saving...' : 'Save' }}
+                                                </TablerButton>
+                                            </div>
+                                        </template>
+
+                                        <Keywords
+                                            :keywords='keywords'
+                                            placeholder='No keywords provided'
+                                            tone='accent'
+                                        />
+                                    </TablerBorder>
                                 </div>
                                 <div class='col-12'>
                                     <small class='text-uppercase text-white-50 d-block mb-1'>Description</small>
@@ -249,6 +290,7 @@ import Subscription from '../../../../base/subscription.ts';
 import MissionTemplate from '../../../../base/mission-template.ts';
 import Keywords from '../../util/Keywords.vue';
 import CopyField from '../../util/CopyField.vue';
+import TagEntry from '../../util/TagEntry.vue';
 import {
     IconQrcode,
     IconBroadcast,
@@ -260,6 +302,7 @@ import {
 import {
     TablerBadge,
     TablerBorder,
+    TablerButton,
     TablerLoading,
     TablerModal,
     TablerNone,
@@ -286,6 +329,43 @@ const keywords = computed(() => {
         .filter((keyword): keyword is string => keyword.length > 0)
         .filter((keyword) => !keyword.startsWith('template:'));
 });
+
+const canEditMission = computed(() => {
+    return props.subscription.subscribed && props.subscription.role.permissions.includes('MISSION_WRITE');
+});
+
+const editingKeywords = ref(false);
+const savingKeywords = ref(false);
+const keywordDraft = ref<string[]>([...keywords.value]);
+
+function startEditingKeywords(): void {
+    if (!canEditMission.value) return;
+    keywordDraft.value = [...keywords.value];
+    editingKeywords.value = true;
+}
+
+function cancelEditingKeywords(): void {
+    editingKeywords.value = false;
+    keywordDraft.value = [...keywords.value];
+}
+
+async function saveKeywords(): Promise<void> {
+    try {
+        savingKeywords.value = true;
+        // Preserve any non-user keywords (eg template:*) that the Keywords component filters out
+        const preserved = (props.subscription.meta.keywords || []).filter((keyword) => {
+            return typeof keyword === 'string' && keyword.startsWith('template:');
+        });
+        await props.subscription.update({
+            keywords: [...preserved, ...keywordDraft.value]
+        });
+        editingKeywords.value = false;
+    } catch (err) {
+        console.error(err);
+    } finally {
+        savingKeywords.value = false;
+    }
+}
 
 const showQR = ref(false);
 const route = useRoute();

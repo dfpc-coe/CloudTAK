@@ -257,7 +257,8 @@ export default class Subscription {
             dirty?: boolean,
             subscribed?: boolean,
             token?: string,
-            description?: string
+            description?: string,
+            keywords?: string[]
         }
     ): Promise<void> {
         if (body.subscribed !== undefined) {
@@ -282,15 +283,17 @@ export default class Subscription {
             token: this.missiontoken
         });
 
-        if (body.description !== undefined) {
+        if (body.description !== undefined || body.keywords !== undefined) {
             const url = stdurl(`/api/marti/missions/${this.guid}`);
+            const patch: { description?: string; keywords?: string[] } = {};
+            if (body.description !== undefined) patch.description = body.description;
+            if (body.keywords !== undefined) patch.keywords = body.keywords;
+
             this.meta = await std(url, {
                 method: 'PATCH',
                 headers: Subscription.headers(this.missiontoken),
                 token: this.token,
-                body: {
-                    description: body.description
-                }
+                body: patch
             }) as Mission;
 
             await db.subscription.update(this.guid, {

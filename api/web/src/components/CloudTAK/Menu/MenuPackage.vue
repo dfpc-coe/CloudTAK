@@ -93,13 +93,19 @@
                                         </div>
                                         <div class='col-6' />
                                         <div class='col-12'>
-                                            <SingleContainer
-                                                label='Expiry'
+                                            <TablerBorder
+                                                background='rgba(0, 0, 0, 0.1)'
+                                                :shadow='false'
+                                                :fill-height='false'
+                                                gap='sm'
                                                 :editable='canEditPackage'
                                                 :editing='editingExpiration'
                                                 edit-aria-label='Edit expiry'
                                                 @edit='startEditingExpiration'
                                             >
+                                                <template #label>
+                                                    <small class='text-uppercase text-white-50 d-block mb-0'>Expiry</small>
+                                                </template>
                                                 <template #editor>
                                                     <TablerInput
                                                         label='Expiration Time'
@@ -144,16 +150,22 @@
                                                 >
                                                     None
                                                 </p>
-                                            </SingleContainer>
+                                            </TablerBorder>
                                         </div>
                                         <div class='col-12'>
-                                            <SingleContainer
-                                                label='Hashtags'
+                                            <TablerBorder
+                                                background='rgba(0, 0, 0, 0.1)'
+                                                :shadow='false'
+                                                :fill-height='false'
+                                                gap='sm'
                                                 :editable='canEditPackage'
                                                 :editing='editingKeywords'
                                                 edit-aria-label='Edit hashtags'
                                                 @edit='startEditingKeywords'
                                             >
+                                                <template #label>
+                                                    <small class='text-uppercase text-white-50 d-block mb-0'>Hashtags</small>
+                                                </template>
                                                 <template #editor>
                                                     <TagEntry
                                                         :model-value='keywordDraft'
@@ -183,7 +195,7 @@
                                                     placeholder='No hashtags provided'
                                                     tone='accent'
                                                 />
-                                            </SingleContainer>
+                                            </TablerBorder>
                                         </div>
                                         <div class='col-12'>
                                             <small class='text-uppercase text-white-50 d-block mb-1'>Package Hash</small>
@@ -245,7 +257,6 @@ import type { Server, Package, Feature } from '../../../../src/types.ts';
 import { server, stdurl, std } from '../../../std.ts';
 import Share from '../util/Share.vue';
 import Keywords from '../util/Keywords.vue';
-import SingleContainer from '../util/SingleContainer.vue';
 import TagEntry from '../util/TagEntry.vue';
 import GroupManager from '../../../base/group.ts';
 import timeDiff from '../../../timediff.ts';
