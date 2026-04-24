@@ -27,6 +27,95 @@
                         placeholder='Filter data syncs'
                         class='flex-grow-1'
                     />
+                    <TablerDropdown
+                        :width='280'
+                        autoclose='outside'
+                    >
+                        <button
+                            type='button'
+                            class='btn btn-outline-secondary d-flex align-items-center gap-1 position-relative filter-btn'
+                            title='Filter data syncs'
+                        >
+                            <IconFilter
+                                :size='20'
+                                stroke='1'
+                            />
+                            <span
+                                v-if='activeFilterCount > 0'
+                                class='badge bg-primary ms-1'
+                                v-text='activeFilterCount'
+                            />
+                        </button>
+                        <template #dropdown>
+                            <div class='filter-dropdown d-flex flex-column' style='max-height: 320px; overflow-y: auto;'>
+                                <div class='filter-dropdown__header d-flex align-items-center justify-content-between px-3 py-2'>
+                                    <strong class='small text-uppercase text-white-50'>Filters</strong>
+                                    <button
+                                        v-if='activeFilterCount > 0'
+                                        type='button'
+                                        class='btn btn-link btn-sm p-0'
+                                        @click='clearFilters'
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+
+                                <div class='px-3 pb-2 d-flex flex-column gap-2'>
+                                    <div>
+                                    <div class='small text-uppercase text-white-50 mb-1'>Channels</div>
+                                    <div
+                                        v-if='!availableChannels.length'
+                                        class='small text-secondary'
+                                    >
+                                        No channels available
+                                    </div>
+                                    <label
+                                        v-for='channel in availableChannels'
+                                        :key='"channel-" + channel'
+                                        class='form-check mb-1'
+                                    >
+                                        <input
+                                            class='form-check-input'
+                                            type='checkbox'
+                                            :checked='selectedChannels.includes(channel)'
+                                            @change='toggleChannel(channel)'
+                                        >
+                                        <span
+                                            class='form-check-label'
+                                            v-text='channel'
+                                        />
+                                    </label>
+                                </div>
+
+                                <div>
+                                    <div class='small text-uppercase text-white-50 mb-1'>Keywords</div>
+                                    <div
+                                        v-if='!availableKeywords.length'
+                                        class='small text-secondary'
+                                    >
+                                        No keywords available
+                                    </div>
+                                    <label
+                                        v-for='keyword in availableKeywords'
+                                        :key='"keyword-" + keyword'
+                                        class='form-check mb-1'
+                                    >
+                                        <input
+                                            class='form-check-input'
+                                            type='checkbox'
+                                            :checked='selectedKeywords.includes(keyword)'
+                                            @change='toggleKeyword(keyword)'
+                                        >
+                                        <span
+                                            class='form-check-label'
+                                            v-text='keyword'
+                                        />
+                                    </label>
+                                </div>
+                                </div>
+                            </div>
+                        </template>
+                    </TablerDropdown>
                 </div>
 
                 <ChannelInfo />
@@ -157,7 +246,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import MissionCreate from './Mission/MissionCreate.vue';
 import PendingInvites from './Mission/PendingInvites.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -171,6 +260,7 @@ import {
     TablerNone,
     TablerAlert,
     TablerModal,
+    TablerDropdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import type { Mission, MissionInvite } from '../../../types.ts';
@@ -179,6 +269,7 @@ import {
     IconPlus,
     IconLock,
     IconLockOpen,
+    IconFilter,
     IconAccessPoint
 } from '@tabler/icons-vue';
 import ChannelInfo from '../util/ChannelInfo.vue';
@@ -198,6 +289,61 @@ const router = useRouter();
 const paging = ref({ filter: '' });
 const list = ref<Array<Mission>>([]);
 const invites = ref<MissionInvite[]>([]);
+const selectedChannels = ref<string[]>([]);
+const selectedKeywords = ref<string[]>([]);
+
+function missionGroups(mission: Mission): string[] {
+    const groups = mission.groups;
+    if (!groups) return [];
+    if (Array.isArray(groups)) {
+        return groups
+            .map((g) => typeof g === 'string' ? g.trim() : '')
+            .filter((g): g is string => g.length > 0);
+    }
+    return typeof groups === 'string' && groups.trim().length
+        ? [groups.trim()]
+        : [];
+}
+
+const availableChannels = computed<string[]>(() => {
+    const set = new Set<string>();
+    for (const mission of list.value) {
+        for (const g of missionGroups(mission)) set.add(g);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+});
+
+const availableKeywords = computed<string[]>(() => {
+    const set = new Set<string>();
+    for (const mission of list.value) {
+        for (const k of missionKeywords(mission)) set.add(k);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+});
+
+const activeFilterCount = computed<number>(() => {
+    return selectedChannels.value.length + selectedKeywords.value.length;
+});
+
+function toggleChannel(channel: string): void {
+    const idx = selectedChannels.value.indexOf(channel);
+    if (idx === -1) selectedChannels.value.push(channel);
+    else selectedChannels.value.splice(idx, 1);
+    generateFilteredList();
+}
+
+function toggleKeyword(keyword: string): void {
+    const idx = selectedKeywords.value.indexOf(keyword);
+    if (idx === -1) selectedKeywords.value.push(keyword);
+    else selectedKeywords.value.splice(idx, 1);
+    generateFilteredList();
+}
+
+function clearFilters(): void {
+    selectedChannels.value = [];
+    selectedKeywords.value = [];
+    generateFilteredList();
+}
 
 onMounted(async () => {
     await fetchMissions();
@@ -225,6 +371,21 @@ async function generateFilteredList() {
         if (!mission.name.toLowerCase().includes(paging.value.filter.toLowerCase())) {
             continue;
         }
+
+        if (selectedChannels.value.length) {
+            const groups = missionGroups(mission);
+            if (!selectedChannels.value.some((c) => groups.includes(c))) {
+                continue;
+            }
+        }
+
+        if (selectedKeywords.value.length) {
+            const keywords = missionKeywords(mission);
+            if (!selectedKeywords.value.some((k) => keywords.includes(k))) {
+                continue;
+            }
+        }
+
         filtered.push(mission);
     }
 
@@ -307,6 +468,18 @@ async function fetchMissions() {
 </script>
 
 <style scoped>
+.filter-btn {
+    height: calc(2.25rem + 2px);
+}
+
+.filter-dropdown__header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--tabler-dropdown-bg, rgba(20, 20, 25, 0.96));
+    border-bottom: 1px solid var(--tabler-dropdown-border-color, rgba(255, 255, 255, 0.1));
+}
+
 .icon-wrapper {
     width: 3rem;
     height: 3rem;
