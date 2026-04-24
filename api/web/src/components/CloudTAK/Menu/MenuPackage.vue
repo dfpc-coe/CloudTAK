@@ -98,15 +98,25 @@
                                                 :shadow='false'
                                                 :fill-height='false'
                                                 gap='sm'
-                                                :editable='canEditPackage'
-                                                :editing='editingExpiration'
-                                                edit-aria-label='Edit expiry'
-                                                @edit='startEditingExpiration'
                                             >
                                                 <template #label>
                                                     <small class='text-uppercase text-white-50 d-block mb-0'>Expiry</small>
                                                 </template>
-                                                <template #editor>
+                                                <template
+                                                    v-if='canEditPackage && !editingExpiration'
+                                                    #tools
+                                                >
+                                                    <TablerIconButton
+                                                        title='Edit expiry'
+                                                        @click.stop.prevent='startEditingExpiration'
+                                                    >
+                                                        <IconPencil
+                                                            :size='24'
+                                                            stroke='1'
+                                                        />
+                                                    </TablerIconButton>
+                                                </template>
+                                                <template v-if='editingExpiration'>
                                                     <TablerInput
                                                         label='Expiration Time'
                                                         type='datetime-local'
@@ -158,15 +168,25 @@
                                                 :shadow='false'
                                                 :fill-height='false'
                                                 gap='sm'
-                                                :editable='canEditPackage'
-                                                :editing='editingKeywords'
-                                                edit-aria-label='Edit hashtags'
-                                                @edit='startEditingKeywords'
                                             >
                                                 <template #label>
                                                     <small class='text-uppercase text-white-50 d-block mb-0'>Hashtags</small>
                                                 </template>
-                                                <template #editor>
+                                                <template
+                                                    v-if='canEditPackage && !editingKeywords'
+                                                    #tools
+                                                >
+                                                    <TablerIconButton
+                                                        title='Edit hashtags'
+                                                        @click.stop.prevent='startEditingKeywords'
+                                                    >
+                                                        <IconPencil
+                                                            :size='24'
+                                                            stroke='1'
+                                                        />
+                                                    </TablerIconButton>
+                                                </template>
+                                                <template v-if='editingKeywords'>
                                                     <TagEntry
                                                         :model-value='keywordDraft'
                                                         placeholder='Add hashtags'
@@ -191,6 +211,7 @@
                                                 </template>
 
                                                 <Keywords
+                                                    v-else
                                                     :keywords='pkg.keywords'
                                                     placeholder='No hashtags provided'
                                                     tone='accent'
@@ -274,7 +295,8 @@ import {
     IconShare2,
     IconDownload,
     IconFileImport,
-    IconPackage
+    IconPackage,
+    IconPencil
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';
 import ProfileConfig from '../../../base/profile.ts';
