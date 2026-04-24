@@ -50,80 +50,81 @@
                             gap='lg'
                         >
                             <div class='d-flex align-items-center gap-3'>
-                                    <div class='flex-grow-1'>
-                                        <p class='text-uppercase text-white-50 small mb-1'>
-                                            Import
-                                        </p>
-                                        <div class='d-flex align-items-center gap-3'>
-                                            <Status
-                                                :dark='true'
-                                                :status='imported.status'
-                                            />
-                                            <h2
-                                                class='h4 mb-0 text-break'
-                                                v-text='imported.name'
-                                            />
+                                <div class='flex-grow-1'>
+                                    <p class='text-uppercase text-white-50 small mb-1'>
+                                        Import
+                                    </p>
+                                    <div class='d-flex align-items-center gap-3'>
+                                        <Status
+                                            :dark='true'
+                                            :status='imported.status'
+                                        />
+                                        <h2
+                                            class='h4 mb-0 text-break'
+                                            v-text='imported.name'
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class='row gy-3 gx-0 gx-sm-3'>
+                                <div class='col-12'>
+                                    <small class='text-uppercase text-white-50 d-block mb-1'>Import Type</small>
+                                    <p
+                                        class='text-start text-white p-0 text-decoration-none text-break'
+                                        v-text='imported.source + ": " + imported.source_id'
+                                    />
+                                </div>
+
+                                <div class='col-12 col-lg-6'>
+                                    <small class='text-uppercase text-white-50 d-block'>Created</small>
+                                    <p
+                                        class='text-white mb-0 text-break'
+                                        v-text='timeDiff(imported.created)'
+                                    />
+                                </div>
+                                <div class='col-12 col-lg-6'>
+                                    <small class='text-uppercase text-white-50 d-block'>Updated</small>
+                                    <p
+                                        class='text-white mb-0 text-break'
+                                        v-text='timeDiff(imported.updated)'
+                                    />
+                                </div>
+                                    
+                                <div
+                                    v-if='imported.status === "Empty"'
+                                    class='col-12'
+                                >
+                                    <TablerNone :create='false' />
+                                </div>
+
+                                <div
+                                    v-else-if='loading.run'
+                                    class='col-12'
+                                >
+                                    <TablerLoading desc='Running Import' />
+                                </div>
+
+                                <div
+                                    v-else-if='imported.status === "Fail"'
+                                    class='col-12'
+                                >
+                                    <div
+                                        class='alert alert-danger d-flex align-items-center'
+                                        role='alert'
+                                    >
+                                        <IconAlertTriangle class='me-2' />
+                                        <div>
+                                            <h4 class='alert-heading h5'>
+                                                Import Error
+                                            </h4>
+                                            <p class='mb-0 text-break text-danger-emphasis'>
+                                                {{ imported.error }}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class='row gy-3 gx-0 gx-sm-3'>
-                                    <div class='col-12'>
-                                        <small class='text-uppercase text-white-50 d-block mb-1'>Import Type</small>
-                                        <p
-                                            class='text-start text-white p-0 text-decoration-none text-break'
-                                            v-text='imported.source + ": " + imported.source_id'
-                                        />
-                                    </div>
-
-                                    <div class='col-12 col-lg-6'>
-                                        <small class='text-uppercase text-white-50 d-block'>Created</small>
-                                        <p
-                                            class='text-white mb-0 text-break'
-                                            v-text='timeDiff(imported.created)'
-                                        />
-                                    </div>
-                                    <div class='col-12 col-lg-6'>
-                                        <small class='text-uppercase text-white-50 d-block'>Updated</small>
-                                        <p
-                                            class='text-white mb-0 text-break'
-                                            v-text='timeDiff(imported.updated)'
-                                        />
-                                    </div>
-                                    
-                                    <div
-                                        v-if='imported.status === "Empty"'
-                                        class='col-12'
-                                    >
-                                        <TablerNone :create='false' />
-                                    </div>
-
-                                    <div
-                                        v-else-if='loading.run'
-                                        class='col-12'
-                                    >
-                                        <TablerLoading desc='Running Import' />
-                                    </div>
-
-                                    <div
-                                        v-else-if='imported.status === "Fail"'
-                                        class='col-12'
-                                    >
-                                        <div
-                                            class='alert alert-danger d-flex align-items-center'
-                                            role='alert'
-                                        >
-                                            <IconAlertTriangle class='me-2' />
-                                            <div>
-                                                <h4 class='alert-heading h5'>
-                                                    Import Error
-                                                </h4>
-                                                <p class='mb-0 text-break text-danger-emphasis'>
-                                                    {{ imported.error }}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
+                            </div>
                         </TablerBorder>
                     </div>
                     
