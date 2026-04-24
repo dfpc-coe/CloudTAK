@@ -60,178 +60,178 @@
                                 gap='lg'
                             >
                                 <div class='d-flex align-items-center gap-3'>
-                                        <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-1 d-flex align-items-center justify-content-center'>
-                                            <IconPackage
-                                                :size='32'
-                                                stroke='1'
-                                            />
-                                        </div>
-                                        <div class='flex-grow-1'>
-                                            <p class='text-uppercase text-white-50 small mb-1'>
-                                                Package
-                                            </p>
-                                            <h2
-                                                class='h4 mb-0 text-break'
-                                                v-text='pkg.name'
-                                            />
-                                            <span
-                                                class='cursor-pointer text-sm text-white-50'
-                                                @click='relative = !relative'
-                                            >
-                                                Created {{ relative ? timeDiff(pkg.created) : pkg.created }}
-                                            </span>
-                                        </div>
+                                    <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-1 d-flex align-items-center justify-content-center'>
+                                        <IconPackage
+                                            :size='32'
+                                            stroke='1'
+                                        />
                                     </div>
-
-                                    <div class='row gy-3 gx-0 gx-sm-3'>
-                                        <div class='col-6'>
-                                            <small class='text-uppercase text-white-50 d-block mb-1'>Created By</small>
-                                            <p
-                                                class='text-start text-white fw-semibold p-0 text-decoration-none'
-                                                v-text='pkg.username'
-                                            />
-                                        </div>
-                                        <div class='col-6' />
-                                        <div class='col-12'>
-                                            <TablerBorder
-                                                background='rgba(0, 0, 0, 0.1)'
-                                                :shadow='false'
-                                                :fill-height='false'
-                                                gap='sm'
-                                            >
-                                                <template #label>
-                                                    <small class='text-uppercase text-white-50 d-block mb-0'>Expiry</small>
-                                                </template>
-                                                <template
-                                                    v-if='canEditPackage && !editingExpiration'
-                                                    #tools
-                                                >
-                                                    <TablerIconButton
-                                                        title='Edit expiry'
-                                                        @click.stop.prevent='startEditingExpiration'
-                                                    >
-                                                        <IconPencil
-                                                            :size='24'
-                                                            stroke='1'
-                                                        />
-                                                    </TablerIconButton>
-                                                </template>
-                                                <template v-if='editingExpiration'>
-                                                    <TablerInput
-                                                        label='Expiration Time'
-                                                        type='datetime-local'
-                                                        :model-value='expirationDraft'
-                                                        @update:model-value='expirationDraft = String($event || "")'
-                                                    />
-
-                                                    <div class='d-flex justify-content-end gap-2 pt-2'>
-                                                        <TablerButton
-                                                            :disabled='savingExpiration'
-                                                            @click.stop='cancelEditingExpiration'
-                                                        >
-                                                            Cancel
-                                                        </TablerButton>
-                                                        <TablerButton
-                                                            :disabled='savingExpiration'
-                                                            @click.stop='clearExpiration'
-                                                        >
-                                                            Clear
-                                                        </TablerButton>
-                                                        <TablerButton
-                                                            class='btn-primary'
-                                                            :disabled='savingExpiration'
-                                                            @click.stop='saveExpiration'
-                                                        >
-                                                            {{ savingExpiration ? 'Saving...' : 'Save' }}
-                                                        </TablerButton>
-                                                    </div>
-                                                </template>
-
-                                                <button
-                                                    v-if='packageExpiration'
-                                                    type='button'
-                                                    class='btn btn-link p-0 text-start text-reset fw-semibold menu-package__inline-button'
-                                                    @click.stop='expirationRelative = !expirationRelative'
-                                                    v-text='packageExpiration'
-                                                />
-                                                <p
-                                                    v-else
-                                                    class='text-start text-white fw-semibold p-0 mb-0 text-decoration-none'
-                                                >
-                                                    None
-                                                </p>
-                                            </TablerBorder>
-                                        </div>
-                                        <div class='col-12'>
-                                            <TablerBorder
-                                                background='rgba(0, 0, 0, 0.1)'
-                                                :shadow='false'
-                                                :fill-height='false'
-                                                gap='sm'
-                                            >
-                                                <template #label>
-                                                    <small class='text-uppercase text-white-50 d-block mb-0'>Hashtags</small>
-                                                </template>
-                                                <template
-                                                    v-if='canEditPackage && !editingKeywords'
-                                                    #tools
-                                                >
-                                                    <TablerIconButton
-                                                        title='Edit hashtags'
-                                                        @click.stop.prevent='startEditingKeywords'
-                                                    >
-                                                        <IconPencil
-                                                            :size='24'
-                                                            stroke='1'
-                                                        />
-                                                    </TablerIconButton>
-                                                </template>
-                                                <template v-if='editingKeywords'>
-                                                    <TagEntry
-                                                        :model-value='keywordDraft'
-                                                        placeholder='Add hashtags'
-                                                        @update:model-value='keywordDraft = $event'
-                                                    />
-
-                                                    <div class='d-flex justify-content-end gap-2 pt-2'>
-                                                        <TablerButton
-                                                            :disabled='savingKeywords'
-                                                            @click.stop='cancelEditingKeywords'
-                                                        >
-                                                            Cancel
-                                                        </TablerButton>
-                                                        <TablerButton
-                                                            class='btn-primary'
-                                                            :disabled='savingKeywords'
-                                                            @click.stop='saveKeywords'
-                                                        >
-                                                            {{ savingKeywords ? 'Saving...' : 'Save' }}
-                                                        </TablerButton>
-                                                    </div>
-                                                </template>
-
-                                                <Keywords
-                                                    v-else
-                                                    :keywords='pkg.keywords'
-                                                    placeholder='No hashtags provided'
-                                                    tone='accent'
-                                                />
-                                            </TablerBorder>
-                                        </div>
-                                        <div class='col-12'>
-                                            <small class='text-uppercase text-white-50 d-block mb-1'>Package Hash</small>
-                                            <p
-                                                class='fs-6 fw-semibold text-white mb-0 text-break'
-                                                v-text='pkg.hash || "—"'
-                                            />
-                                        </div>
-                                        <div class='col-12'>
-                                            <small class='text-uppercase text-white-50 d-block mb-1'>Size</small>
-                                            <p class='fs-6 text-white mb-0'>
-                                                {{ packageSize }}
-                                            </p>
-                                        </div>
+                                    <div class='flex-grow-1'>
+                                        <p class='text-uppercase text-white-50 small mb-1'>
+                                            Package
+                                        </p>
+                                        <h2
+                                            class='h4 mb-0 text-break'
+                                            v-text='pkg.name'
+                                        />
+                                        <span
+                                            class='cursor-pointer text-sm text-white-50'
+                                            @click='relative = !relative'
+                                        >
+                                            Created {{ relative ? timeDiff(pkg.created) : pkg.created }}
+                                        </span>
                                     </div>
+                                </div>
+
+                                <div class='row gy-3 gx-0 gx-sm-3'>
+                                    <div class='col-6'>
+                                        <small class='text-uppercase text-white-50 d-block mb-1'>Created By</small>
+                                        <p
+                                            class='text-start text-white fw-semibold p-0 text-decoration-none'
+                                            v-text='pkg.username'
+                                        />
+                                    </div>
+                                    <div class='col-6' />
+                                    <div class='col-12'>
+                                        <TablerBorder
+                                            background='rgba(0, 0, 0, 0.1)'
+                                            :shadow='false'
+                                            :fill-height='false'
+                                            gap='sm'
+                                        >
+                                            <template #label>
+                                                <small class='text-uppercase text-white-50 d-block mb-0'>Expiry</small>
+                                            </template>
+                                            <template
+                                                v-if='canEditPackage && !editingExpiration'
+                                                #tools
+                                            >
+                                                <TablerIconButton
+                                                    title='Edit expiry'
+                                                    @click.stop.prevent='startEditingExpiration'
+                                                >
+                                                    <IconPencil
+                                                        :size='24'
+                                                        stroke='1'
+                                                    />
+                                                </TablerIconButton>
+                                            </template>
+                                            <template v-if='editingExpiration'>
+                                                <TablerInput
+                                                    label='Expiration Time'
+                                                    type='datetime-local'
+                                                    :model-value='expirationDraft'
+                                                    @update:model-value='expirationDraft = String($event || "")'
+                                                />
+
+                                                <div class='d-flex justify-content-end gap-2 pt-2'>
+                                                    <TablerButton
+                                                        :disabled='savingExpiration'
+                                                        @click.stop='cancelEditingExpiration'
+                                                    >
+                                                        Cancel
+                                                    </TablerButton>
+                                                    <TablerButton
+                                                        :disabled='savingExpiration'
+                                                        @click.stop='clearExpiration'
+                                                    >
+                                                        Clear
+                                                    </TablerButton>
+                                                    <TablerButton
+                                                        class='btn-primary'
+                                                        :disabled='savingExpiration'
+                                                        @click.stop='saveExpiration'
+                                                    >
+                                                        {{ savingExpiration ? 'Saving...' : 'Save' }}
+                                                    </TablerButton>
+                                                </div>
+                                            </template>
+
+                                            <button
+                                                v-if='packageExpiration'
+                                                type='button'
+                                                class='btn btn-link p-0 text-start text-reset fw-semibold menu-package__inline-button'
+                                                @click.stop='expirationRelative = !expirationRelative'
+                                                v-text='packageExpiration'
+                                            />
+                                            <p
+                                                v-else
+                                                class='text-start text-white fw-semibold p-0 mb-0 text-decoration-none'
+                                            >
+                                                None
+                                            </p>
+                                        </TablerBorder>
+                                    </div>
+                                    <div class='col-12'>
+                                        <TablerBorder
+                                            background='rgba(0, 0, 0, 0.1)'
+                                            :shadow='false'
+                                            :fill-height='false'
+                                            gap='sm'
+                                        >
+                                            <template #label>
+                                                <small class='text-uppercase text-white-50 d-block mb-0'>Hashtags</small>
+                                            </template>
+                                            <template
+                                                v-if='canEditPackage && !editingKeywords'
+                                                #tools
+                                            >
+                                                <TablerIconButton
+                                                    title='Edit hashtags'
+                                                    @click.stop.prevent='startEditingKeywords'
+                                                >
+                                                    <IconPencil
+                                                        :size='24'
+                                                        stroke='1'
+                                                    />
+                                                </TablerIconButton>
+                                            </template>
+                                            <template v-if='editingKeywords'>
+                                                <TagEntry
+                                                    :model-value='keywordDraft'
+                                                    placeholder='Add hashtags'
+                                                    @update:model-value='keywordDraft = $event'
+                                                />
+
+                                                <div class='d-flex justify-content-end gap-2 pt-2'>
+                                                    <TablerButton
+                                                        :disabled='savingKeywords'
+                                                        @click.stop='cancelEditingKeywords'
+                                                    >
+                                                        Cancel
+                                                    </TablerButton>
+                                                    <TablerButton
+                                                        class='btn-primary'
+                                                        :disabled='savingKeywords'
+                                                        @click.stop='saveKeywords'
+                                                    >
+                                                        {{ savingKeywords ? 'Saving...' : 'Save' }}
+                                                    </TablerButton>
+                                                </div>
+                                            </template>
+
+                                            <Keywords
+                                                v-else
+                                                :keywords='pkg.keywords'
+                                                placeholder='No hashtags provided'
+                                                tone='accent'
+                                            />
+                                        </TablerBorder>
+                                    </div>
+                                    <div class='col-12'>
+                                        <small class='text-uppercase text-white-50 d-block mb-1'>Package Hash</small>
+                                        <p
+                                            class='fs-6 fw-semibold text-white mb-0 text-break'
+                                            v-text='pkg.hash || "—"'
+                                        />
+                                    </div>
+                                    <div class='col-12'>
+                                        <small class='text-uppercase text-white-50 d-block mb-1'>Size</small>
+                                        <p class='fs-6 text-white mb-0'>
+                                            {{ packageSize }}
+                                        </p>
+                                    </div>
+                                </div>
                             </TablerBorder>
                         </div>
                         <div class='col-12'>
@@ -241,27 +241,27 @@
                                         Quick Actions
                                     </p>
                                 </template>
-                                    <button
-                                        class='btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2'
-                                        @click='createImport'
-                                    >
-                                        <IconFileImport
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                        <span>Import Package</span>
-                                    </button>
-                                    <button
-                                        class='btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2'
-                                        :disabled='!shareFeat'
-                                        @click='mode = "share"'
-                                    >
-                                        <IconShare2
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                        <span>Share Package</span>
-                                    </button>
+                                <button
+                                    class='btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2'
+                                    @click='createImport'
+                                >
+                                    <IconFileImport
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                    <span>Import Package</span>
+                                </button>
+                                <button
+                                    class='btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2'
+                                    :disabled='!shareFeat'
+                                    @click='mode = "share"'
+                                >
+                                    <IconShare2
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                    <span>Share Package</span>
+                                </button>
                             </TablerBorder>
                         </div>
                     </div>

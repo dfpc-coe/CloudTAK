@@ -79,43 +79,43 @@
                                 gap='lg'
                             >
                                 <div class='d-flex align-items-center gap-3'>
-                                        <div class='d-flex align-items-center justify-content-center'>
-                                            <img
-                                                :src='icon.data'
-                                                class='img-thumbnail'
-                                                style='background-color: rgb(30, 41, 59);'
-                                                width='32'
-                                                height='32'
-                                            >
-                                        </div>
-                                        <div class='flex-grow-1'>
-                                            <p class='text-uppercase text-white-50 small mb-1'>
-                                                Icon
-                                            </p>
-                                            <h2
-                                                class='h4 mb-0 text-break'
-                                                v-text='icon.name'
-                                            />
-                                        </div>
+                                    <div class='d-flex align-items-center justify-content-center'>
+                                        <img
+                                            :src='icon.data'
+                                            class='img-thumbnail'
+                                            style='background-color: rgb(30, 41, 59);'
+                                            width='32'
+                                            height='32'
+                                        >
                                     </div>
+                                    <div class='flex-grow-1'>
+                                        <p class='text-uppercase text-white-50 small mb-1'>
+                                            Icon
+                                        </p>
+                                        <h2
+                                            class='h4 mb-0 text-break'
+                                            v-text='icon.name'
+                                        />
+                                    </div>
+                                </div>
 
-                                    <div class='row gy-3 gx-0 gx-sm-3'>
-                                        <div class='col-12'>
-                                            <small class='text-uppercase text-white-50 d-block mb-1'>Iconset</small>
-                                            <p
-                                                class='text-start text-blue fw-semibold cursor-pointer p-0 text-decoration-none'
-                                                @click='router.push(`/menu/iconset/${icon.iconset}`)'
-                                                v-text='iconset.name'
-                                            />
-                                        </div>
-                                        <div class='col-12'>
-                                            <small class='text-uppercase text-white-50 d-block mb-1'>Type 2525b</small>
-                                            <p
-                                                class='text-start text-white fw-semibold p-0 text-decoration-none'
-                                                v-text='icon.type2525b || "None"'
-                                            />
-                                        </div>
+                                <div class='row gy-3 gx-0 gx-sm-3'>
+                                    <div class='col-12'>
+                                        <small class='text-uppercase text-white-50 d-block mb-1'>Iconset</small>
+                                        <p
+                                            class='text-start text-blue fw-semibold cursor-pointer p-0 text-decoration-none'
+                                            @click='router.push(`/menu/iconset/${icon.iconset}`)'
+                                            v-text='iconset.name'
+                                        />
                                     </div>
+                                    <div class='col-12'>
+                                        <small class='text-uppercase text-white-50 d-block mb-1'>Type 2525b</small>
+                                        <p
+                                            class='text-start text-white fw-semibold p-0 text-decoration-none'
+                                            v-text='icon.type2525b || "None"'
+                                        />
+                                    </div>
+                                </div>
                             </TablerBorder>
                         </div>
                     </div>

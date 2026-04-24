@@ -14,154 +14,154 @@
                         gap='lg'
                     >
                         <div class='d-flex align-items-center gap-3'>
-                                <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-1 d-flex align-items-center justify-content-center'>
-                                    <img
-                                        v-if='missionTemplate && missionTemplate.icon'
-                                        :src='String(stdurl(missionTemplate.icon))'
-                                        width='32'
-                                        height='32'
-                                        :title='missionTemplate.name'
-                                    >
-                                    <IconBroadcast
-                                        v-else
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </div>
-                                <div class='flex-grow-1'>
-                                    <p class='text-uppercase text-white-50 small mb-1'>
-                                        Mission
-                                    </p>
-                                    <h2
-                                        class='h4 mb-0 text-truncate'
-                                        style='max-width: calc(100% - 48px);'
-                                        v-text='props.subscription.name'
-                                    />
-                                </div>
+                            <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-1 d-flex align-items-center justify-content-center'>
+                                <img
+                                    v-if='missionTemplate && missionTemplate.icon'
+                                    :src='String(stdurl(missionTemplate.icon))'
+                                    width='32'
+                                    height='32'
+                                    :title='missionTemplate.name'
+                                >
+                                <IconBroadcast
+                                    v-else
+                                    :size='32'
+                                    stroke='1'
+                                />
                             </div>
+                            <div class='flex-grow-1'>
+                                <p class='text-uppercase text-white-50 small mb-1'>
+                                    Mission
+                                </p>
+                                <h2
+                                    class='h4 mb-0 text-truncate'
+                                    style='max-width: calc(100% - 48px);'
+                                    v-text='props.subscription.name'
+                                />
+                            </div>
+                        </div>
 
-                            <div class='row gy-3 gx-0 gx-sm-3'>
-                                <div class='col-12 col-lg-6'>
-                                    <small class='text-uppercase text-white-50 d-block'>Created</small>
-                                    <p class='text-white fw-semibold p-0 mb-0'>
-                                        {{ props.subscription.meta.createTime.replace(/T/, " ").replace(/:[0-9]+\..*/, "") + " UTC" }}
-                                    </p>
-                                </div>
-                                <div class='col-12 col-lg-6'>
-                                    <small class='text-uppercase text-white-50 d-block'>Subscribers</small>
-                                    <TablerLoading
-                                        v-if='loading.users'
-                                        :inline='true'
-                                    />
-                                    <p
-                                        v-else
-                                        class='text-white fw-semibold p-0 mb-0'
-                                        v-text='subscriptions.length + " Users"'
-                                    />
-                                </div>
-                                <div class='col-12'>
-                                    <small class='text-uppercase text-white-50 d-block mb-1'>Contents</small>
-                                    <p
-                                        class='text-white fw-semibold mb-0'
-                                        v-text='(Array.isArray(props.subscription.meta.contents) ? props.subscription.meta.contents.length : 0) + " Files"'
-                                    />
-                                </div>
-                                <div class='col-12'>
-                                    <small class='text-uppercase text-white-50 d-block mb-1'>Groups (Channels)</small>
-                                    <div
-                                        v-if='props.subscription.meta.groups && props.subscription.meta.groups.length'
-                                        class='d-flex flex-wrap gap-2'
+                        <div class='row gy-3 gx-0 gx-sm-3'>
+                            <div class='col-12 col-lg-6'>
+                                <small class='text-uppercase text-white-50 d-block'>Created</small>
+                                <p class='text-white fw-semibold p-0 mb-0'>
+                                    {{ props.subscription.meta.createTime.replace(/T/, " ").replace(/:[0-9]+\..*/, "") + " UTC" }}
+                                </p>
+                            </div>
+                            <div class='col-12 col-lg-6'>
+                                <small class='text-uppercase text-white-50 d-block'>Subscribers</small>
+                                <TablerLoading
+                                    v-if='loading.users'
+                                    :inline='true'
+                                />
+                                <p
+                                    v-else
+                                    class='text-white fw-semibold p-0 mb-0'
+                                    v-text='subscriptions.length + " Users"'
+                                />
+                            </div>
+                            <div class='col-12'>
+                                <small class='text-uppercase text-white-50 d-block mb-1'>Contents</small>
+                                <p
+                                    class='text-white fw-semibold mb-0'
+                                    v-text='(Array.isArray(props.subscription.meta.contents) ? props.subscription.meta.contents.length : 0) + " Files"'
+                                />
+                            </div>
+                            <div class='col-12'>
+                                <small class='text-uppercase text-white-50 d-block mb-1'>Groups (Channels)</small>
+                                <div
+                                    v-if='props.subscription.meta.groups && props.subscription.meta.groups.length'
+                                    class='d-flex flex-wrap gap-2'
+                                >
+                                    <TablerBadge
+                                        v-for='group of props.subscription.meta.groups'
+                                        :key='group'
+                                        class='rounded-pill text-uppercase fw-semibold'
+                                        background-color='rgba(107, 114, 128, 0.2)'
+                                        border-color='rgba(107, 114, 128, 0.5)'
+                                        text-color='#6b7280'
                                     >
-                                        <TablerBadge
-                                            v-for='group of props.subscription.meta.groups'
-                                            :key='group'
-                                            class='rounded-pill text-uppercase fw-semibold'
-                                            background-color='rgba(107, 114, 128, 0.2)'
-                                            border-color='rgba(107, 114, 128, 0.5)'
-                                            text-color='#6b7280'
+                                        {{ group }}
+                                    </TablerBadge>
+                                </div>
+                                <p
+                                    v-else
+                                    class='text-white-50 mb-0'
+                                >
+                                    None
+                                </p>
+                            </div>
+                            <div class='col-12'>
+                                <TablerBorder
+                                    background='rgba(0, 0, 0, 0.1)'
+                                    :shadow='false'
+                                    :fill-height='false'
+                                    gap='sm'
+                                >
+                                    <template #label>
+                                        <small class='text-uppercase text-white-50 d-block mb-0'>Keywords</small>
+                                    </template>
+                                    <template
+                                        v-if='canEditMission && !editingKeywords'
+                                        #tools
+                                    >
+                                        <TablerIconButton
+                                            title='Edit keywords'
+                                            @click.stop.prevent='startEditingKeywords'
                                         >
-                                            {{ group }}
-                                        </TablerBadge>
-                                    </div>
-                                    <p
-                                        v-else
-                                        class='text-white-50 mb-0'
-                                    >
-                                        None
-                                    </p>
-                                </div>
-                                <div class='col-12'>
-                                    <TablerBorder
-                                        background='rgba(0, 0, 0, 0.1)'
-                                        :shadow='false'
-                                        :fill-height='false'
-                                        gap='sm'
-                                    >
-                                        <template #label>
-                                            <small class='text-uppercase text-white-50 d-block mb-0'>Keywords</small>
-                                        </template>
-                                        <template
-                                            v-if='canEditMission && !editingKeywords'
-                                            #tools
-                                        >
-                                            <TablerIconButton
-                                                title='Edit keywords'
-                                                @click.stop.prevent='startEditingKeywords'
-                                            >
-                                                <IconPencil
-                                                    :size='24'
-                                                    stroke='1'
-                                                />
-                                            </TablerIconButton>
-                                        </template>
-
-                                        <template v-if='editingKeywords'>
-                                            <TagEntry
-                                                :model-value='keywordDraft'
-                                                placeholder='Add keywords'
-                                                @update:model-value='keywordDraft = $event'
+                                            <IconPencil
+                                                :size='24'
+                                                stroke='1'
                                             />
+                                        </TablerIconButton>
+                                    </template>
 
-                                            <div class='d-flex justify-content-end gap-2 pt-2'>
-                                                <TablerButton
-                                                    :disabled='savingKeywords'
-                                                    @click.stop='cancelEditingKeywords'
-                                                >
-                                                    Cancel
-                                                </TablerButton>
-                                                <TablerButton
-                                                    class='btn-primary'
-                                                    :disabled='savingKeywords'
-                                                    @click.stop='saveKeywords'
-                                                >
-                                                    {{ savingKeywords ? 'Saving...' : 'Save' }}
-                                                </TablerButton>
-                                            </div>
-                                        </template>
-
-                                        <Keywords
-                                            v-else
-                                            :keywords='keywords'
-                                            placeholder='No keywords provided'
-                                            tone='accent'
+                                    <template v-if='editingKeywords'>
+                                        <TagEntry
+                                            :model-value='keywordDraft'
+                                            placeholder='Add keywords'
+                                            @update:model-value='keywordDraft = $event'
                                         />
-                                    </TablerBorder>
-                                </div>
-                                <div class='col-12'>
-                                    <small class='text-uppercase text-white-50 d-block mb-1'>Description</small>
-                                    <CopyField
-                                        :model-value='props.subscription.meta.description'
-                                        :edit='props.subscription.subscribed && props.subscription.role.permissions.includes("MISSION_WRITE")'
-                                        :rows='5'
-                                        @submit='updateDescription($event)'
-                                    >
-                                        <span
-                                            v-if='!props.subscription.meta.description'
-                                            class='text-white-50 fst-italic'
-                                        >No Feed Description</span>
-                                    </CopyField>
-                                </div>
+
+                                        <div class='d-flex justify-content-end gap-2 pt-2'>
+                                            <TablerButton
+                                                :disabled='savingKeywords'
+                                                @click.stop='cancelEditingKeywords'
+                                            >
+                                                Cancel
+                                            </TablerButton>
+                                            <TablerButton
+                                                class='btn-primary'
+                                                :disabled='savingKeywords'
+                                                @click.stop='saveKeywords'
+                                            >
+                                                {{ savingKeywords ? 'Saving...' : 'Save' }}
+                                            </TablerButton>
+                                        </div>
+                                    </template>
+
+                                    <Keywords
+                                        v-else
+                                        :keywords='keywords'
+                                        placeholder='No keywords provided'
+                                        tone='accent'
+                                    />
+                                </TablerBorder>
                             </div>
+                            <div class='col-12'>
+                                <small class='text-uppercase text-white-50 d-block mb-1'>Description</small>
+                                <CopyField
+                                    :model-value='props.subscription.meta.description'
+                                    :edit='props.subscription.subscribed && props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                    :rows='5'
+                                    @submit='updateDescription($event)'
+                                >
+                                    <span
+                                        v-if='!props.subscription.meta.description'
+                                        class='text-white-50 fst-italic'
+                                    >No Feed Description</span>
+                                </CopyField>
+                            </div>
+                        </div>
                     </TablerBorder>
                 </div>
 
