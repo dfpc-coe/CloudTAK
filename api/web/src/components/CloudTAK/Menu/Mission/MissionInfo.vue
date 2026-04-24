@@ -96,15 +96,26 @@
                                         :shadow='false'
                                         :fill-height='false'
                                         gap='sm'
-                                        :editable='canEditMission'
-                                        :editing='editingKeywords'
-                                        edit-aria-label='Edit keywords'
-                                        @edit='startEditingKeywords'
                                     >
                                         <template #label>
                                             <small class='text-uppercase text-white-50 d-block mb-0'>Keywords</small>
                                         </template>
-                                        <template #editor>
+                                        <template
+                                            v-if='canEditMission && !editingKeywords'
+                                            #tools
+                                        >
+                                            <TablerIconButton
+                                                title='Edit keywords'
+                                                @click.stop.prevent='startEditingKeywords'
+                                            >
+                                                <IconPencil
+                                                    :size='24'
+                                                    stroke='1'
+                                                />
+                                            </TablerIconButton>
+                                        </template>
+
+                                        <template v-if='editingKeywords'>
                                             <TagEntry
                                                 :model-value='keywordDraft'
                                                 placeholder='Add keywords'
@@ -129,6 +140,7 @@
                                         </template>
 
                                         <Keywords
+                                            v-else
                                             :keywords='keywords'
                                             placeholder='No keywords provided'
                                             tone='accent'
@@ -294,6 +306,7 @@ import TagEntry from '../../util/TagEntry.vue';
 import {
     IconQrcode,
     IconBroadcast,
+    IconPencil,
     IconPlus,
     IconMinus,
     IconCheck,
@@ -303,6 +316,7 @@ import {
     TablerBadge,
     TablerBorder,
     TablerButton,
+    TablerIconButton,
     TablerLoading,
     TablerModal,
     TablerNone,
