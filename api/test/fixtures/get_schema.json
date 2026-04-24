@@ -25,7 +25,7 @@
         "res": true
     },
     "PUT /attachment": {
-        "body": true,
+        "body": false,
         "query": true,
         "res": true
     },
