@@ -253,6 +253,8 @@ test('GET: api/marti/mission - Filter Groups', async () => {
 test('PATCH: api/marti/missions/:name - returns refreshed groups after update', async () => {
     let getCount = 0;
     let postedGroups: string[] = [];
+    let missionAuthorization: string | undefined;
+    let allowGroupChange: string | null = null;
 
     flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
         if (!request.method || !request.url) return false;
@@ -287,6 +289,8 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
 
         if (request.method === 'POST' && url.pathname === '/Marti/api/missions/Test%20Mission') {
             postedGroups = url.searchParams.getAll('group');
+            missionAuthorization = request.headers['missionauthorization'] as string | undefined;
+            allowGroupChange = url.searchParams.get('allowGroupChange');
             response.setHeader('Content-Type', 'application/json');
             response.write(JSON.stringify({
                 data: [{
@@ -327,6 +331,8 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
 
         assert.deepEqual(postedGroups, ['updated-group']);
         assert.equal(getCount, 2);
+        assert.equal(missionAuthorization, 'Bearer test-mission-token');
+        assert.equal(allowGroupChange, 'true');
         assert.deepEqual(res.body.groups, ['updated-group']);
     } catch (err) {
         assert.ifError(err);
