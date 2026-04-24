@@ -112,80 +112,94 @@
                 </div>
 
                 <div class='col-12'>
-                    <div class='card h-100 cloudtak-bg text-white border border-light-subtle shadow-sm'>
-                        <div class='card-body d-flex flex-column gap-3'>
-                            <p class='text-uppercase text-white-50 small mb-1'>
+                    <TablerBorder class='cloudtak-bg text-white'>
+                        <template #label>
+                            <p class='text-uppercase text-white-50 small mb-0'>
                                 Quick Actions
                             </p>
+                        </template>
 
-                            <TablerLoading
-                                v-if='loading.subscribe'
-                                :inline='true'
-                                desc='Updating Subscription...'
-                            />
-                            <template v-else>
-                                <button
-                                    v-if='props.subscription.subscribed === false'
-                                    class='btn btn-success w-100 d-flex align-items-center justify-content-center gap-2'
-                                    @click='subscribe(true)'
-                                >
-                                    <IconPlus
-                                        :size='20'
-                                        stroke='1'
-                                    />
-                                    <span>Subscribe</span>
-                                </button>
-                                <template v-else>
-                                    <button
-                                        class='btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2'
-                                        @click='subscribe(false)'
-                                    >
-                                        <IconMinus
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                        <span>Unsubscribe</span>
-                                    </button>
-
-                                    <button
-                                        v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.subscription.meta.guid'
-                                        :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
-                                        class='btn btn-success w-100 d-flex align-items-center justify-content-center gap-2'
-                                        @click='mapStore.makeActiveMission(props.subscription)'
-                                    >
-                                        <IconCheck
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                        <span>Make Active</span>
-                                    </button>
-                                    <button
-                                        v-else
-                                        class='btn btn-secondary w-100 d-flex align-items-center justify-content-center gap-2'
-                                        :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
-                                        @click='mapStore.makeActiveMission()'
-                                    >
-                                        <IconX
-                                            :size='20'
-                                            stroke='1'
-                                        />
-                                        <span>Deactivate</span>
-                                    </button>
-                                </template>
-                            </template>
-
+                        <TablerLoading
+                            v-if='loading.subscribe'
+                            :inline='true'
+                            desc='Updating Subscription...'
+                        />
+                        <template v-else>
                             <button
-                                class='btn w-100 d-flex align-items-center justify-content-center gap-2 invite-qr-btn'
-                                @click='showQR = true'
+                                v-if='props.subscription.subscribed === false'
+                                class='btn btn-success w-100 d-flex align-items-center justify-content-center gap-2'
+                                @click='subscribe(true)'
                             >
-                                <IconQrcode
+                                <IconPlus
                                     :size='20'
                                     stroke='1'
                                 />
-                                <span>Invite QR Code</span>
+                                <span>Subscribe</span>
                             </button>
-                        </div>
-                    </div>
+                            <template v-else>
+                                <button
+                                    class='btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2'
+                                    @click='subscribe(false)'
+                                >
+                                    <IconMinus
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                    <span>Unsubscribe</span>
+                                </button>
+
+                                <button
+                                    v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.subscription.meta.guid'
+                                    :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                    class='btn btn-success w-100 d-flex align-items-center justify-content-center gap-2'
+                                    @click='mapStore.makeActiveMission(props.subscription)'
+                                >
+                                    <IconCheck
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                    <span>Make Active</span>
+                                </button>
+                                <button
+                                    v-else
+                                    class='btn btn-secondary w-100 d-flex align-items-center justify-content-center gap-2'
+                                    :disabled='!props.subscription.role.permissions.includes("MISSION_WRITE")'
+                                    @click='mapStore.makeActiveMission()'
+                                >
+                                    <IconX
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                    <span>Deactivate</span>
+                                </button>
+                            </template>
+                        </template>
+
+                        <button
+                            class='btn w-100 d-flex align-items-center justify-content-center gap-2 invite-qr-btn'
+                            @click='showQR = true'
+                        >
+                            <IconQrcode
+                                :size='20'
+                                stroke='1'
+                            />
+                            <span>Invite QR Code</span>
+                        </button>
+                    </TablerBorder>
+                </div>
+
+                <div class='col-12'>
+                    <TablerBorder class='cloudtak-bg text-white'>
+                        <template #label>
+                            <p class='text-uppercase text-white-50 small mb-0'>
+                                Child Missions
+                            </p>
+                        </template>
+                        <TablerNone
+                            :compact='true'
+                            :create='false'
+                        />
+                    </TablerBorder>
                 </div>
             </div>
         </div>
@@ -244,8 +258,10 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerBadge,
+    TablerBorder,
     TablerLoading,
     TablerModal,
+    TablerNone,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import Overlay from '../../../../base/overlay.ts';

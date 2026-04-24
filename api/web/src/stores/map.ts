@@ -1166,7 +1166,7 @@ export const useMapStore = defineStore('cloudtak', {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.overlays as any[]).push(await Overlay.internal({
                 id: -1,
-                name: 'CoT Icons',
+                name: 'Map Features',
                 type: 'geojson',
             }));
 
