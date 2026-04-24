@@ -9,9 +9,11 @@
         <div class='container-fluid px-2 px-sm-3'>
             <div class='row gy-3 gx-0 gx-lg-3'>
                 <div class='col-12'>
-                    <div class='card h-100 cloudtak-bg text-white border border-light-subtle shadow-sm'>
-                        <div class='card-body d-flex flex-column gap-4'>
-                            <div class='d-flex align-items-center gap-3'>
+                    <TablerBorder
+                        class='cloudtak-bg text-white'
+                        gap='lg'
+                    >
+                        <div class='d-flex align-items-center gap-3'>
                                 <div class='rounded-circle bg-primary-subtle text-primary-emphasis p-1 d-flex align-items-center justify-content-center'>
                                     <img
                                         v-if='missionTemplate && missionTemplate.icon'
@@ -107,8 +109,7 @@
                                     </CopyField>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                    </TablerBorder>
                 </div>
 
                 <div class='col-12'>
