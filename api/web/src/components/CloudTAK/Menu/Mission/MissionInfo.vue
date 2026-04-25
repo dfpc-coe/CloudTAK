@@ -92,37 +92,15 @@
                                         </TablerIconButton>
                                     </template>
 
-                                    <GroupSelectInline
-                                        v-if='editingGroups'
+                                    <InlineGroupSelect
                                         v-model='groupDraft'
+                                        :value='groupList'
+                                        :editing='editingGroups'
                                         :saving='savingGroups'
+                                        badge-text-color='#6b7280'
                                         @cancel='cancelEditingGroups'
                                         @save='saveGroups'
                                     />
-
-                                    <template v-else>
-                                        <div
-                                            v-if='groupList.length'
-                                            class='d-flex flex-wrap gap-2'
-                                        >
-                                            <TablerBadge
-                                                v-for='group of groupList'
-                                                :key='group'
-                                                class='rounded-pill text-uppercase fw-semibold'
-                                                background-color='rgba(107, 114, 128, 0.2)'
-                                                border-color='rgba(107, 114, 128, 0.5)'
-                                                text-color='#6b7280'
-                                            >
-                                                {{ group }}
-                                            </TablerBadge>
-                                        </div>
-                                        <p
-                                            v-else
-                                            class='text-white-50 mb-0'
-                                        >
-                                            None
-                                        </p>
-                                    </template>
                                 </TablerBorder>
                             </div>
                             <div class='col-12'>
@@ -151,35 +129,16 @@
                                         </TablerIconButton>
                                     </template>
 
-                                    <template v-if='editingKeywords'>
-                                        <TagEntry
-                                            :model-value='keywordDraft'
-                                            placeholder='Add keywords'
-                                            @update:model-value='keywordDraft = $event'
-                                        />
-
-                                        <div class='d-flex justify-content-end gap-2 pt-2'>
-                                            <TablerButton
-                                                :disabled='savingKeywords'
-                                                @click.stop='cancelEditingKeywords'
-                                            >
-                                                Cancel
-                                            </TablerButton>
-                                            <TablerButton
-                                                class='btn-primary'
-                                                :disabled='savingKeywords'
-                                                @click.stop='saveKeywords'
-                                            >
-                                                {{ savingKeywords ? 'Saving...' : 'Save' }}
-                                            </TablerButton>
-                                        </div>
-                                    </template>
-
-                                    <Keywords
-                                        v-else
-                                        :keywords='keywords'
+                                    <InlineKeywords
+                                        v-model='keywordDraft'
+                                        :value='keywords'
+                                        :editing='editingKeywords'
+                                        :saving='savingKeywords'
                                         placeholder='No keywords provided'
+                                        input-placeholder='Add keywords'
                                         tone='accent'
+                                        @cancel='cancelEditingKeywords'
+                                        @save='saveKeywords'
                                     />
                                 </TablerBorder>
                             </div>
@@ -336,10 +295,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
 import MissionTemplate from '../../../../base/mission-template.ts';
-import Keywords from '../../util/Keywords.vue';
 import CopyField from '../../util/CopyField.vue';
-import TagEntry from '../../util/TagEntry.vue';
-import GroupSelectInline from '../../util/GroupSelectInline.vue';
+import InlineGroupSelect from '../../util/InlineGroupSelect.vue';
+import InlineKeywords from '../../util/InlineKeywords.vue';
 import {
     IconQrcode,
     IconBroadcast,
@@ -350,7 +308,6 @@ import {
     IconX,
 } from '@tabler/icons-vue';
 import {
-    TablerBadge,
     TablerBorder,
     TablerIconButton,
     TablerLoading,
