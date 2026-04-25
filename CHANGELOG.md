@@ -19,6 +19,13 @@
 
 ### Pending Release
 
+### v12.133.0 - 2026-04-24
+
+- :rocket: Fix bugs in spritesheet loading
+- :rocket: Allow editing keywords in a Mission
+- :bug: Fix bug related to importing XML documents
+- :tada: Allow changing channels on a mission sync
+
 ### v12.132.0 - 2026-04-23
 
 - :bug: Fix Service Worker Upgrade notification persisting after upgrade until hard refresh
