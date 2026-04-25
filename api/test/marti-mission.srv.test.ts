@@ -261,13 +261,20 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
 
         const url = new URL(request.url, 'http://127.0.0.1');
 
-        if (request.method === 'GET' && url.pathname === '/Marti/api/missions/Test%20Mission') {
+        if (
+            request.method === 'GET'
+            && (
+                url.pathname === '/Marti/api/missions/Test%20Mission'
+                || url.pathname === '/Marti/api/missions/test-mission-guid'
+            )
+        ) {
             getCount++;
             response.setHeader('Content-Type', 'application/json');
             response.write(JSON.stringify({
                 data: [{
                     name: 'Test Mission',
                     guid: 'test-mission-guid',
+                    createTime: '2024-01-01T00:00:00Z',
                     description: 'test description',
                     tool: 'public',
                     keywords: [],
@@ -296,6 +303,7 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
                 data: [{
                     name: 'Test Mission',
                     guid: 'test-mission-guid',
+                    createTime: '2024-01-01T00:00:00Z',
                     description: 'test description',
                     tool: 'public',
                     keywords: [],
@@ -323,6 +331,9 @@ test('PATCH: api/marti/missions/:name - returns refreshed groups after update', 
             method: 'PATCH',
             auth: {
                 bearer: flight.token.admin
+            },
+            headers: {
+                missionauthorization: 'test-mission-token'
             },
             body: {
                 groups: ['updated-group']
