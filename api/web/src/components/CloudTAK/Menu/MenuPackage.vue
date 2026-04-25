@@ -100,6 +100,64 @@
                                             gap='sm'
                                         >
                                             <template #label>
+                                                <small class='text-uppercase text-white-50 d-block mb-0'>Channels</small>
+                                            </template>
+                                            <template
+                                                v-if='canEditPackage && !editingChannels'
+                                                #tools
+                                            >
+                                                <TablerIconButton
+                                                    title='Edit channels'
+                                                    @click.stop.prevent='startEditingChannels'
+                                                >
+                                                    <IconPencil
+                                                        :size='24'
+                                                        stroke='1'
+                                                    />
+                                                </TablerIconButton>
+                                            </template>
+
+                                            <GroupSelectInline
+                                                v-if='editingChannels'
+                                                v-model='channelDraft'
+                                                :saving='savingChannels'
+                                                @cancel='cancelEditingChannels'
+                                                @save='saveChannels'
+                                            />
+
+                                            <template v-else>
+                                                <div
+                                                    v-if='pkg.channels.length'
+                                                    class='d-flex flex-wrap gap-2'
+                                                >
+                                                    <TablerBadge
+                                                        v-for='channel of pkg.channels'
+                                                        :key='channel'
+                                                        class='rounded-pill text-uppercase fw-semibold'
+                                                        background-color='rgba(107, 114, 128, 0.2)'
+                                                        border-color='rgba(107, 114, 128, 0.5)'
+                                                        text-color='#d1d5db'
+                                                    >
+                                                        {{ channel }}
+                                                    </TablerBadge>
+                                                </div>
+                                                <p
+                                                    v-else
+                                                    class='text-start text-white fw-semibold p-0 mb-0 text-decoration-none'
+                                                >
+                                                    None
+                                                </p>
+                                            </template>
+                                        </TablerBorder>
+                                    </div>
+                                    <div class='col-12'>
+                                        <TablerBorder
+                                            background='rgba(0, 0, 0, 0.1)'
+                                            :shadow='false'
+                                            :fill-height='false'
+                                            gap='sm'
+                                        >
+                                            <template #label>
                                                 <small class='text-uppercase text-white-50 d-block mb-0'>Expiry</small>
                                             </template>
                                             <template
@@ -277,12 +335,14 @@ import { useRouter, useRoute } from 'vue-router';
 import type { Server, Package, Feature } from '../../../../src/types.ts';
 import { server, stdurl, std } from '../../../std.ts';
 import Share from '../util/Share.vue';
+import GroupSelectInline from '../util/GroupSelectInline.vue';
 import Keywords from '../util/Keywords.vue';
 import TagEntry from '../util/TagEntry.vue';
 import GroupManager from '../../../base/group.ts';
 import timeDiff from '../../../timediff.ts';
 import {
     TablerAlert,
+    TablerBadge,
     TablerBorder,
     TablerButton,
     TablerDelete,
@@ -312,6 +372,9 @@ const error = ref<Error | undefined>()
 const mode = ref('default');
 const serverConfig = ref<Server | undefined>();
 const pkg = ref<Package | undefined>();
+const editingChannels = ref(false);
+const savingChannels = ref(false);
+const channelDraft = ref<string[]>([]);
 const editingKeywords = ref(false);
 const savingKeywords = ref(false);
 const keywordDraft = ref<string[]>([]);
@@ -477,6 +540,7 @@ async function fetch() {
         if (res.error) throw new Error(res.error.message);
 
         pkg.value = res.data;
+        if (!editingChannels.value) channelDraft.value = [...res.data.channels];
         if (!editingKeywords.value) keywordDraft.value = [...res.data.keywords];
         if (!editingExpiration.value) expirationDraft.value = toDatetimeLocal(res.data.expiration);
 
@@ -487,6 +551,33 @@ async function fetch() {
     }
 
     loading.value = false;
+}
+
+function startEditingChannels(): void {
+    if (!pkg.value || !canEditPackage.value) return;
+
+    channelDraft.value = [...pkg.value.channels];
+    editingChannels.value = true;
+}
+
+function cancelEditingChannels(): void {
+    editingChannels.value = false;
+    channelDraft.value = pkg.value ? [...pkg.value.channels] : [];
+}
+
+async function saveChannels(): Promise<void> {
+    try {
+        savingChannels.value = true;
+
+        const updated = await patchPackage({ channels: channelDraft.value });
+
+        channelDraft.value = [...updated.channels];
+        editingChannels.value = false;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        savingChannels.value = false;
+    }
 }
 
 function startEditingKeywords(): void {
@@ -571,6 +662,7 @@ async function saveExpiration(): Promise<void> {
 }
 
 async function patchPackage(body: {
+    channels?: string[];
     keywords?: string[];
     expiration?: number;
 }): Promise<Package> {

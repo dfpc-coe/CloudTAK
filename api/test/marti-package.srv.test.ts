@@ -54,7 +54,7 @@ test('GET: api/marti/package - empty', async () => {
     flight.tak.reset();
 });
 
-test('GET api/marti/package/:uid - includes latest package channels', async () => {
+test('GET api/marti/package/:uid - includes channels from the newest duplicate-hash metadata row', async () => {
     try {
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
@@ -100,6 +100,12 @@ test('GET api/marti/package/:uid - includes latest package channels', async () =
                     data: [{
                         Name: 'Visible Package',
                         Hash: 'latest-hash',
+                        Time: '2024-01-01T00:00:00.000Z',
+                        Groups: 'Blue'
+                    }, {
+                        Name: 'Visible Package',
+                        Hash: 'latest-hash',
+                        Time: '2025-01-01T00:00:00.000Z',
                         Groups: 'Blue, Red'
                     }]
                 }));
@@ -369,6 +375,7 @@ flight.user({ username: 'pkgviewer', admin: false });
 test('PATCH api/marti/package/:uid - User with overlapping active channel can update latest package metadata', async () => {
     let searchCount = 0;
     let groupsHandlerHit = false;
+    let uploadHit = false;
 
     try {
         flight.config?.conns.set('pkgowner@example.com', {
@@ -416,6 +423,13 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
                 response.end();
 
                 return true;
+            } else if (request.method === 'GET' && request.url === '/Marti/sync/content?hash=latest-hash') {
+                response.writeHead(200, {
+                    'Content-Type': 'application/zip'
+                });
+                response.end(Buffer.from('zip-payload'));
+
+                return true;
             } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
                 groupsHandlerHit = true;
                 response.setHeader('Content-Type', 'application/json');
@@ -447,10 +461,22 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
                     data: [{
                         Name: 'Patch Package',
                         Hash: 'latest-hash',
+                        Time: '2024-01-01T00:00:00.000Z',
                         Groups: 'Blue'
+                    }, {
+                        Name: 'Patch Package',
+                        Hash: 'latest-hash',
+                        Time: searchCount > 1 ? '2025-01-01T00:00:00.000Z' : '2024-01-01T00:00:00.000Z',
+                        Groups: searchCount > 1 ? 'Blue, Red' : 'Blue'
                     }]
                 }));
                 response.end();
+
+                return true;
+            } else if (request.method === 'POST' && request.url === '/Marti/sync/missionupload?filename=Patch+Package&creatorUid=pkgowner&hash=latest-hash&mimetype=application%2Fzip&keyword=missionpackage&keyword=updated&Groups=Blue&Groups=Red') {
+                uploadHit = true;
+                response.writeHead(200);
+                response.end('http://takserver/Marti/sync/content?hash=latest-hash');
 
                 return true;
             } else if (request.method === 'PUT' && request.url === '/Marti/api/sync/metadata/latest-hash/keywords') {
@@ -478,6 +504,7 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
                 bearer: flight.token.pkgowner
             },
             body: {
+                channels: ['Blue', 'Red'],
                 keywords: ['updated'],
                 expiration: 1234567890
             }
@@ -487,9 +514,10 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
         assert.equal(res.body.hash, 'latest-hash');
         assert.deepEqual(res.body.keywords, ['updated']);
         assert.equal(res.body.expiration, 1234567890);
-        assert.deepEqual(res.body.channels, ['Blue']);
+        assert.deepEqual(res.body.channels, ['Blue', 'Red']);
         assert.equal(res.body.items[1].Hash, 'latest-hash');
         assert.equal(groupsHandlerHit, true);
+        assert.equal(uploadHit, true);
     } catch (err) {
         assert.ifError(err);
     } finally {
