@@ -117,37 +117,15 @@
                                                 </TablerIconButton>
                                             </template>
 
-                                            <GroupSelectInline
-                                                v-if='editingChannels'
+                                            <InlineGroupSelect
                                                 v-model='channelDraft'
+                                                :value='pkg.channels'
+                                                :editing='editingChannels'
                                                 :saving='savingChannels'
+                                                empty-class='text-start text-white fw-semibold p-0 mb-0 text-decoration-none'
                                                 @cancel='cancelEditingChannels'
                                                 @save='saveChannels'
                                             />
-
-                                            <template v-else>
-                                                <div
-                                                    v-if='pkg.channels.length'
-                                                    class='d-flex flex-wrap gap-2'
-                                                >
-                                                    <TablerBadge
-                                                        v-for='channel of pkg.channels'
-                                                        :key='channel'
-                                                        class='rounded-pill text-uppercase fw-semibold'
-                                                        background-color='rgba(107, 114, 128, 0.2)'
-                                                        border-color='rgba(107, 114, 128, 0.5)'
-                                                        text-color='#d1d5db'
-                                                    >
-                                                        {{ channel }}
-                                                    </TablerBadge>
-                                                </div>
-                                                <p
-                                                    v-else
-                                                    class='text-start text-white fw-semibold p-0 mb-0 text-decoration-none'
-                                                >
-                                                    None
-                                                </p>
-                                            </template>
                                         </TablerBorder>
                                     </div>
                                     <div class='col-12'>
@@ -174,50 +152,18 @@
                                                     />
                                                 </TablerIconButton>
                                             </template>
-                                            <template v-if='editingExpiration'>
-                                                <TablerInput
-                                                    label='Expiration Time'
-                                                    type='datetime-local'
-                                                    :model-value='expirationDraft'
-                                                    @update:model-value='expirationDraft = String($event || "")'
-                                                />
-
-                                                <div class='d-flex justify-content-end gap-2 pt-2'>
-                                                    <TablerButton
-                                                        :disabled='savingExpiration'
-                                                        @click.stop='cancelEditingExpiration'
-                                                    >
-                                                        Cancel
-                                                    </TablerButton>
-                                                    <TablerButton
-                                                        :disabled='savingExpiration'
-                                                        @click.stop='clearExpiration'
-                                                    >
-                                                        Clear
-                                                    </TablerButton>
-                                                    <TablerButton
-                                                        class='btn-primary'
-                                                        :disabled='savingExpiration'
-                                                        @click.stop='saveExpiration'
-                                                    >
-                                                        {{ savingExpiration ? 'Saving...' : 'Save' }}
-                                                    </TablerButton>
-                                                </div>
-                                            </template>
-
-                                            <button
-                                                v-if='packageExpiration'
-                                                type='button'
-                                                class='btn btn-link p-0 text-start text-reset fw-semibold menu-package__inline-button'
-                                                @click.stop='expirationRelative = !expirationRelative'
-                                                v-text='packageExpiration'
+                                            <InlineExpiration
+                                                v-model='expirationDraft'
+                                                :value='packageExpiration'
+                                                :editing='editingExpiration'
+                                                :saving='savingExpiration'
+                                                :interactive='Boolean(packageExpiration)'
+                                                display-class='btn btn-link p-0 text-start text-reset fw-semibold menu-package__inline-button'
+                                                @display-click='expirationRelative = !expirationRelative'
+                                                @cancel='cancelEditingExpiration'
+                                                @clear='clearExpiration'
+                                                @save='saveExpiration'
                                             />
-                                            <p
-                                                v-else
-                                                class='text-start text-white fw-semibold p-0 mb-0 text-decoration-none'
-                                            >
-                                                None
-                                            </p>
                                         </TablerBorder>
                                     </div>
                                     <div class='col-12'>
@@ -244,35 +190,16 @@
                                                     />
                                                 </TablerIconButton>
                                             </template>
-                                            <template v-if='editingKeywords'>
-                                                <TagEntry
-                                                    :model-value='keywordDraft'
-                                                    placeholder='Add hashtags'
-                                                    @update:model-value='keywordDraft = $event'
-                                                />
-
-                                                <div class='d-flex justify-content-end gap-2 pt-2'>
-                                                    <TablerButton
-                                                        :disabled='savingKeywords'
-                                                        @click.stop='cancelEditingKeywords'
-                                                    >
-                                                        Cancel
-                                                    </TablerButton>
-                                                    <TablerButton
-                                                        class='btn-primary'
-                                                        :disabled='savingKeywords'
-                                                        @click.stop='saveKeywords'
-                                                    >
-                                                        {{ savingKeywords ? 'Saving...' : 'Save' }}
-                                                    </TablerButton>
-                                                </div>
-                                            </template>
-
-                                            <Keywords
-                                                v-else
-                                                :keywords='pkg.keywords'
+                                            <InlineKeywords
+                                                v-model='keywordDraft'
+                                                :value='pkg.keywords'
+                                                :editing='editingKeywords'
+                                                :saving='savingKeywords'
                                                 placeholder='No hashtags provided'
+                                                input-placeholder='Add hashtags'
                                                 tone='accent'
+                                                @cancel='cancelEditingKeywords'
+                                                @save='saveKeywords'
                                             />
                                         </TablerBorder>
                                     </div>
@@ -335,18 +262,15 @@ import { useRouter, useRoute } from 'vue-router';
 import type { Server, Package, Feature } from '../../../../src/types.ts';
 import { server, stdurl, std } from '../../../std.ts';
 import Share from '../util/Share.vue';
-import GroupSelectInline from '../util/GroupSelectInline.vue';
-import Keywords from '../util/Keywords.vue';
-import TagEntry from '../util/TagEntry.vue';
+import InlineExpiration from '../util/InlineExpiration.vue';
+import InlineGroupSelect from '../util/InlineGroupSelect.vue';
+import InlineKeywords from '../util/InlineKeywords.vue';
 import GroupManager from '../../../base/group.ts';
 import timeDiff from '../../../timediff.ts';
 import {
     TablerAlert,
-    TablerBadge,
     TablerBorder,
-    TablerButton,
     TablerDelete,
-    TablerInput,
     TablerLoading,
     TablerIconButton
 } from '@tak-ps/vue-tabler';
