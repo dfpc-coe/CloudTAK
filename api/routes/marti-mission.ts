@@ -268,6 +268,9 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             description: Type.Optional(Type.String()),
             keywords: Type.Optional(Type.Array(Type.String())),
+            groups: Type.Optional(Type.Array(Type.String(), {
+                description: 'Updated set of groups (channels) to assign to the Mission. Caller must be MISSION_OWNER or admin.'
+            })),
         }),
         res: Mission
     }, async (req, res) => {
@@ -280,13 +283,18 @@ export default async function router(schema: Schema, config: Config) {
                 ? { token: String(req.headers['missionauthorization']) }
                 : await config.conns.subscription(user.email, req.params.name)
 
+            const { groups, ...rest } = req.body;
+
             const mission = await api.Mission.update(
                 req.params.name,
-                req.body,
+                {
+                    ...rest,
+                    ...(groups !== undefined ? { group: groups } : {})
+                },
                 opts
             );
 
-            res.json(mission);
+            res.json(await api.Mission.get(mission.guid || req.params.name, {}, opts));
         } catch (err) {
              Err.respond(err, res);
         }

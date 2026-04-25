@@ -125,7 +125,7 @@
         "res": true
     },
     "POST /connection/:connectionid/asset": {
-        "body": false,
+        "body": true,
         "query": false,
         "res": true
     },
@@ -150,7 +150,7 @@
         "res": true
     },
     "POST /connection/:connectionid/data/:dataid/asset": {
-        "body": false,
+        "body": true,
         "query": false,
         "res": true
     },
@@ -515,12 +515,12 @@
         "res": true
     },
     "PUT /import/:import": {
-        "body": false,
+        "body": true,
         "query": false,
         "res": true
     },
     "PUT /import": {
-        "body": false,
+        "body": true,
         "query": false,
         "res": true
     },
@@ -880,7 +880,7 @@
         "res": true
     },
     "POST /marti/package": {
-        "body": false,
+        "body": true,
         "query": true,
         "res": true
     },
@@ -1305,7 +1305,7 @@
         "res": true
     },
     "POST /server/tileset": {
-        "body": false,
+        "body": true,
         "query": false,
         "res": true
     },

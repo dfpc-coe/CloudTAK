@@ -308,7 +308,7 @@ export default class DrawTool {
                     this.removeFeature(id);
                     this.stop();
 
-                    if (!this.lasso.overlay || this.lasso.overlay === "CoT Icons") {
+                    if (!this.lasso.overlay || this.lasso.overlay === "Map Features") {
                         const touching = await this.mapStore.worker.db.touching(feat.geometry as Polygon);
 
                         for (const cot of touching.values()) {
@@ -471,7 +471,7 @@ export default class DrawTool {
 
         this.lasso = {
             loading: false,
-            overlay: 'CoT Icons'
+            overlay: 'Map Features'
         }
     }
 

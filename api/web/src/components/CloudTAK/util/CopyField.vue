@@ -48,9 +48,12 @@
         v-else
         ref='infobox'
         class='position-relative rounded text-truncate'
-        :style='rows === 1 ? `min-height: ${minheight}px;` : ``'
+        :style='{
+            ...(rows === 1 ? { minHeight: `${minheight}px` } : {}),
+            ...(props.mode !== "pre" ? { backgroundColor: "rgba(0, 0, 0, 0.1)" } : {}),
+        }'
         :class='{
-            "px-2 py-2 cloudtak-accent": props.mode !== "pre",
+            "px-2 py-2 border border-light-subtle": props.mode !== "pre",
             "cloudtak-hover hover-border cursor-pointer": hover,
         }'
     >
