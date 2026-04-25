@@ -13,7 +13,7 @@
             v-if='Object.keys(groups).length'
             @click.stop
         >
-            <div class='align-items-center px-3 py-2 me-2 cloudtak-hover'>
+            <div class='d-flex align-items-center px-3 py-2 me-2 cloudtak-hover'>
                 <IconChevronRight
                     v-if='!treeState.groups._shown'
                     :size='20'

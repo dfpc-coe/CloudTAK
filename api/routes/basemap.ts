@@ -68,6 +68,10 @@ function isEsriLayerURL(url: string): boolean {
     );
 }
 
+function normalizeBasemapFormat(value: string): string {
+    return value === 'jpg' ? 'jpeg' : value;
+}
+
 async function importBasemapURL(
     config: Config,
     rawURL: string,
@@ -120,7 +124,10 @@ async function importBasemapURL(
 
     if (imported.url) {
         const tileURL = new URL(imported.url);
-        imported.format = toEnum.fromString(Type.Enum(Basemap_Format), path.parse(tileURL.pathname).ext.replace('.', ''));
+        imported.format = toEnum.fromString(
+            Type.Enum(Basemap_Format),
+            normalizeBasemapFormat(path.parse(tileURL.pathname).ext.replace('.', ''))
+        );
     }
 
     return imported;
@@ -137,10 +144,11 @@ export default async function router(schema: Schema, config: Config) {
 
             Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
         `,
-        body: Type.Optional(Type.Union([
-            Type.String(),
-            BasemapImportRequest
-        ])),
+        body: {
+            'text/plain': Type.String(),
+            'application/json': BasemapImportRequest,
+            'multipart/form-data': true
+        },
         res: OptionalTileJSON
     }, async (req, res) => {
         try {
@@ -200,7 +208,7 @@ export default async function router(schema: Schema, config: Config) {
                             if (map.tileType) {
                                 imported.format = toEnum.fromString(
                                     Type.Enum(Basemap_Format),
-                                    map.tileType._text.replace(/^image\//, '')
+                                    normalizeBasemapFormat(map.tileType._text.replace(/^image\//, ''))
                                 );
                             }
 
@@ -213,7 +221,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 req.pipe(bb);
             } else if (contentType && contentType.startsWith('text/plain')) {
-                const imported = await importBasemapURL(config, String(await stream2buffer(req)));
+                const imported = await importBasemapURL(config, String(req.body));
                 res.json(imported);
             } else if (contentType && contentType.startsWith('application/json')) {
                 if (!isBasemapImportRequest(req.body)) {
