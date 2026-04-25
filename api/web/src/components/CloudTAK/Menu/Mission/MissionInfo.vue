@@ -92,30 +92,13 @@
                                         </TablerIconButton>
                                     </template>
 
-                                    <template v-if='editingGroups'>
-                                        <GroupSelect
-                                            :model-value='groupDraft'
-                                            :active='true'
-                                            direction='IN'
-                                            @update:model-value='groupDraft = $event'
-                                        />
-
-                                        <div class='d-flex justify-content-end gap-2 pt-2'>
-                                            <TablerButton
-                                                :disabled='savingGroups'
-                                                @click.stop='cancelEditingGroups'
-                                            >
-                                                Cancel
-                                            </TablerButton>
-                                            <TablerButton
-                                                class='btn-primary'
-                                                :disabled='savingGroups'
-                                                @click.stop='saveGroups'
-                                            >
-                                                {{ savingGroups ? 'Saving...' : 'Save' }}
-                                            </TablerButton>
-                                        </div>
-                                    </template>
+                                    <GroupSelectInline
+                                        v-if='editingGroups'
+                                        v-model='groupDraft'
+                                        :saving='savingGroups'
+                                        @cancel='cancelEditingGroups'
+                                        @save='saveGroups'
+                                    />
 
                                     <template v-else>
                                         <div
@@ -356,7 +339,7 @@ import MissionTemplate from '../../../../base/mission-template.ts';
 import Keywords from '../../util/Keywords.vue';
 import CopyField from '../../util/CopyField.vue';
 import TagEntry from '../../util/TagEntry.vue';
-import GroupSelect from '../../util/GroupSelect.vue';
+import GroupSelectInline from '../../util/GroupSelectInline.vue';
 import {
     IconQrcode,
     IconBroadcast,
@@ -369,7 +352,6 @@ import {
 import {
     TablerBadge,
     TablerBorder,
-    TablerButton,
     TablerIconButton,
     TablerLoading,
     TablerModal,
