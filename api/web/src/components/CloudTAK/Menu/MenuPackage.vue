@@ -211,7 +211,6 @@ import {
     IconDownload,
     IconFileImport,
     IconPackage,
-    IconPencil
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';
 import ProfileConfig from '../../../base/profile.ts';
