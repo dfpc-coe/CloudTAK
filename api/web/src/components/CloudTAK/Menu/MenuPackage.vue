@@ -92,117 +92,48 @@
                                         />
                                     </div>
                                     <div class='col-6' />
-                                    <div class='col-12'>
-                                        <TablerBorder
-                                            background='rgba(0, 0, 0, 0.1)'
-                                            :shadow='false'
-                                            :fill-height='false'
-                                            gap='sm'
-                                        >
-                                            <template #label>
-                                                <small class='text-uppercase text-white-50 d-block mb-0'>Channels</small>
-                                            </template>
-                                            <template
-                                                v-if='canEditPackage && !editingChannels'
-                                                #tools
-                                            >
-                                                <TablerIconButton
-                                                    title='Edit channels'
-                                                    @click.stop.prevent='startEditingChannels'
-                                                >
-                                                    <IconPencil
-                                                        :size='24'
-                                                        stroke='1'
-                                                    />
-                                                </TablerIconButton>
-                                            </template>
-
-                                            <InlineGroupSelect
-                                                v-model='channelDraft'
-                                                :value='pkg.channels'
-                                                :editing='editingChannels'
-                                                :saving='savingChannels'
-                                                empty-class='text-start text-white fw-semibold p-0 mb-0 text-decoration-none'
-                                                @cancel='cancelEditingChannels'
-                                                @save='saveChannels'
-                                            />
-                                        </TablerBorder>
-                                    </div>
-                                    <div class='col-12'>
-                                        <TablerBorder
-                                            background='rgba(0, 0, 0, 0.1)'
-                                            :shadow='false'
-                                            :fill-height='false'
-                                            gap='sm'
-                                        >
-                                            <template #label>
-                                                <small class='text-uppercase text-white-50 d-block mb-0'>Expiry</small>
-                                            </template>
-                                            <template
-                                                v-if='canEditPackage && !editingExpiration'
-                                                #tools
-                                            >
-                                                <TablerIconButton
-                                                    title='Edit expiry'
-                                                    @click.stop.prevent='startEditingExpiration'
-                                                >
-                                                    <IconPencil
-                                                        :size='24'
-                                                        stroke='1'
-                                                    />
-                                                </TablerIconButton>
-                                            </template>
-                                            <InlineExpiration
-                                                v-model='expirationDraft'
-                                                :value='packageExpiration'
-                                                :editing='editingExpiration'
-                                                :saving='savingExpiration'
-                                                :interactive='Boolean(packageExpiration)'
-                                                display-class='btn btn-link p-0 text-start text-reset fw-semibold menu-package__inline-button'
-                                                @display-click='expirationRelative = !expirationRelative'
-                                                @cancel='cancelEditingExpiration'
-                                                @clear='clearExpiration'
-                                                @save='saveExpiration'
-                                            />
-                                        </TablerBorder>
-                                    </div>
-                                    <div class='col-12'>
-                                        <TablerBorder
-                                            background='rgba(0, 0, 0, 0.1)'
-                                            :shadow='false'
-                                            :fill-height='false'
-                                            gap='sm'
-                                        >
-                                            <template #label>
-                                                <small class='text-uppercase text-white-50 d-block mb-0'>Hashtags</small>
-                                            </template>
-                                            <template
-                                                v-if='canEditPackage && !editingKeywords'
-                                                #tools
-                                            >
-                                                <TablerIconButton
-                                                    title='Edit hashtags'
-                                                    @click.stop.prevent='startEditingKeywords'
-                                                >
-                                                    <IconPencil
-                                                        :size='24'
-                                                        stroke='1'
-                                                    />
-                                                </TablerIconButton>
-                                            </template>
-                                            <InlineKeywords
-                                                v-model='keywordDraft'
-                                                :value='pkg.keywords'
-                                                :editing='editingKeywords'
-                                                :saving='savingKeywords'
-                                                placeholder='No hashtags provided'
-                                                input-placeholder='Add hashtags'
-                                                tone='accent'
-                                                @cancel='cancelEditingKeywords'
-                                                @save='saveKeywords'
-                                            />
-                                        </TablerBorder>
-                                    </div>
+                                    <InlineGroupSelect
+                                        v-model='channelDraft'
+                                        :value='pkg.channels'
+                                        :editing='editingChannels'
+                                        :editable='canEditPackage'
+                                        :saving='savingChannels'
+                                        label='Channels'
+                                        empty-class='text-start text-white fw-semibold p-0 mb-0 text-decoration-none'
+                                        @edit='startEditingChannels'
+                                        @cancel='cancelEditingChannels'
+                                        @save='saveChannels'
+                                    />
+                                    <InlineExpiration
+                                        v-model='expirationDraft'
+                                        :value='packageExpiration'
+                                        :editing='editingExpiration'
+                                        :editable='canEditPackage'
+                                        :saving='savingExpiration'
+                                        label='Expiry'
+                                        :interactive='Boolean(packageExpiration)'
+                                        display-class='btn btn-link p-0 text-start text-reset fw-semibold menu-package__inline-button'
+                                        @edit='startEditingExpiration'
+                                        @display-click='expirationRelative = !expirationRelative'
+                                        @cancel='cancelEditingExpiration'
+                                        @clear='clearExpiration'
+                                        @save='saveExpiration'
+                                    />
+                                    <InlineKeywords
+                                        v-model='keywordDraft'
+                                        :value='pkg.keywords'
+                                        :editing='editingKeywords'
+                                        :editable='canEditPackage'
+                                        :saving='savingKeywords'
+                                        label='Hashtags'
+                                        edit-title='Edit hashtags'
+                                        placeholder='No hashtags provided'
+                                        input-placeholder='Add hashtags'
+                                        tone='accent'
+                                        @edit='startEditingKeywords'
+                                        @cancel='cancelEditingKeywords'
+                                        @save='saveKeywords'
+                                    />
                                     <div class='col-12'>
                                         <small class='text-uppercase text-white-50 d-block mb-1'>Package Hash</small>
                                         <p
@@ -464,9 +395,9 @@ async function fetch() {
         if (res.error) throw new Error(res.error.message);
 
         pkg.value = res.data;
-        if (!editingChannels.value) channelDraft.value = [...res.data.channels];
-        if (!editingKeywords.value) keywordDraft.value = [...res.data.keywords];
-        if (!editingExpiration.value) expirationDraft.value = toDatetimeLocal(res.data.expiration);
+        channelDraft.value = [...res.data.channels];
+        keywordDraft.value = [...res.data.keywords];
+        expirationDraft.value = toDatetimeLocal(res.data.expiration);
 
         loading.value = false;
     } catch (err) {
@@ -479,21 +410,19 @@ async function fetch() {
 
 function startEditingChannels(): void {
     if (!pkg.value || !canEditPackage.value) return;
-
-    channelDraft.value = [...pkg.value.channels];
     editingChannels.value = true;
 }
 
 function cancelEditingChannels(): void {
     editingChannels.value = false;
-    channelDraft.value = pkg.value ? [...pkg.value.channels] : [];
 }
 
-async function saveChannels(): Promise<void> {
+async function saveChannels(nextChannels: string[]): Promise<void> {
     try {
         savingChannels.value = true;
+        channelDraft.value = [...nextChannels];
 
-        const updated = await patchPackage({ channels: channelDraft.value });
+        const updated = await patchPackage({ channels: nextChannels });
 
         channelDraft.value = [...updated.channels];
         editingChannels.value = false;
@@ -506,21 +435,19 @@ async function saveChannels(): Promise<void> {
 
 function startEditingKeywords(): void {
     if (!pkg.value || !canEditPackage.value) return;
-
-    keywordDraft.value = [...pkg.value.keywords];
     editingKeywords.value = true;
 }
 
 function cancelEditingKeywords(): void {
     editingKeywords.value = false;
-    keywordDraft.value = pkg.value ? [...pkg.value.keywords] : [];
 }
 
-async function saveKeywords(): Promise<void> {
+async function saveKeywords(nextKeywords: string[]): Promise<void> {
     try {
         savingKeywords.value = true;
+        keywordDraft.value = [...nextKeywords];
 
-        const updated = await patchPackage({ keywords: keywordDraft.value });
+        const updated = await patchPackage({ keywords: nextKeywords });
 
         keywordDraft.value = [...updated.keywords];
         editingKeywords.value = false;
@@ -533,14 +460,11 @@ async function saveKeywords(): Promise<void> {
 
 function startEditingExpiration(): void {
     if (!pkg.value || !canEditPackage.value) return;
-
-    expirationDraft.value = toDatetimeLocal(pkg.value.expiration);
     editingExpiration.value = true;
 }
 
 function cancelEditingExpiration(): void {
     editingExpiration.value = false;
-    expirationDraft.value = pkg.value ? toDatetimeLocal(pkg.value.expiration) : '';
 }
 
 async function clearExpiration(): Promise<void> {
@@ -559,11 +483,12 @@ async function clearExpiration(): Promise<void> {
     }
 }
 
-async function saveExpiration(): Promise<void> {
+async function saveExpiration(nextExpirationDraft: string): Promise<void> {
     try {
         savingExpiration.value = true;
+        expirationDraft.value = nextExpirationDraft;
 
-        const trimmed = expirationDraft.value.trim();
+        const trimmed = nextExpirationDraft.trim();
 
         if (!trimmed) {
             await clearExpiration();
