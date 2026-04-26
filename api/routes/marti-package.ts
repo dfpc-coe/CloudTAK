@@ -399,6 +399,7 @@ export default async function router(schema: Schema, config: Config) {
             } else {
                 content = await api.Files.upload({
                     name: hash,
+                    contentType: 'application/zip',
                     contentLength: size,
                     keywords: req.body.keywords,
                     creatorUid,
