@@ -8,6 +8,8 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import Flight from './flight.js';
 import { DataPackage } from '@tak-ps/node-cot';
+import FileCommands from '@tak-ps/node-tak/lib/api/files';
+import Sinon from 'sinon';
 import stream2buffer from '../lib/stream.js';
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
@@ -522,6 +524,76 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
         assert.ifError(err);
     } finally {
         flight.config?.conns.delete('pkgowner@example.com');
+    }
+
+    flight.tak.reset();
+});
+
+test('PATCH api/marti/package/:uid - closes downloaded content when channel upload fails', async () => {
+    const content = {
+        destroyed: false,
+        readableEnded: false,
+        resume() {},
+        destroy() {
+            this.destroyed = true;
+            return this;
+        }
+    };
+
+    const resumeSpy = Sinon.spy(content, 'resume');
+    const destroySpy = Sinon.spy(content, 'destroy');
+    const uploadError = new Error('mission upload exploded');
+
+    try {
+        Sinon.stub(FileCommands.prototype, 'download').resolves(content as any);
+        Sinon.stub(FileCommands.prototype, 'uploadPackage').rejects(uploadError);
+
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (!request.method || !request.url) {
+                return false;
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=failed-upload-pkg-uid')) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    resultCount: 1,
+                    results: [{
+                        UID: 'failed-upload-pkg-uid',
+                        SubmissionDateTime: '2025-01-01T00:00:00.000Z',
+                        Keywords: ['latest'],
+                        Tool: 'public',
+                        Size: 456,
+                        MIMEType: 'application/zip',
+                        EXPIRATION: '-1',
+                        SubmissionUser: 'pkgowner@example.com',
+                        PrimaryKey: 'failed-primary',
+                        Hash: 'failed-hash',
+                        CreatorUid: 'pkgowner',
+                        Name: 'Failed Upload Package',
+                    }]
+                }));
+                response.end();
+
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        const res = await flight.fetch('/api/marti/package/failed-upload-pkg-uid', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                channels: ['Blue']
+            }
+        }, false);
+
+        assert.equal(res.status, 500);
+        assert.equal(destroySpy.called || resumeSpy.called, true);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        Sinon.restore();
     }
 
     flight.tak.reset();

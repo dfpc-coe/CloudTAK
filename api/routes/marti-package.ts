@@ -671,14 +671,26 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.channels !== undefined) {
                 const content = await api.Files.download(latest.Hash);
 
-                await api.Files.uploadPackage({
-                    name: latest.Name,
-                    creatorUid: latest.CreatorUid || latest.SubmissionUser || user.email,
-                    hash: latest.Hash,
-                    keywords: req.body.keywords ?? latest.Keywords,
-                    mimetype: latest.MIMEType,
-                    groups: req.body.channels
-                }, content);
+                try {
+                    await api.Files.uploadPackage({
+                        name: latest.Name,
+                        creatorUid: latest.CreatorUid || latest.SubmissionUser || user.email,
+                        hash: latest.Hash,
+                        keywords: req.body.keywords ?? latest.Keywords,
+                        mimetype: latest.MIMEType,
+                        groups: req.body.channels
+                    }, content);
+                } catch (err) {
+                    if (!content.destroyed && !content.readableEnded) {
+                        if (content.destroy) {
+                            content.destroy(err instanceof Error ? err : new Error(String(err)));
+                        } else if (content.resume) {
+                            content.resume();
+                        }
+                    }
+
+                    throw err;
+                }
 
                 const expiration = req.body.expiration !== undefined
                     ? req.body.expiration
