@@ -424,9 +424,12 @@ export default async function router(schema: Schema, config: Config) {
                     Name: pkg.settings.name
                 }
             } else {
+                // DataPackage.finalize() always materializes a TAK-compatible ZIP archive,
+                // even though the private upload name is the extensionless package hash.
                 content = await api.Files.upload({
                     name: hash,
                     contentLength: size,
+                    contentType: 'application/zip',
                     keywords: req.body.keywords,
                     creatorUid,
                 }, fs.createReadStream(out));
