@@ -104,7 +104,7 @@
 <script setup lang='ts'>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import GroupManager from '../../../base/group.ts';
 import type { Group, GroupChannel } from '../../../types.ts';
 import {
@@ -131,6 +131,15 @@ const paging = ref({
     filter: ''
 })
 
+function isGroup(value: unknown): value is Group {
+    return !!value
+        && typeof value === 'object'
+        && 'name' in value
+        && typeof value.name === 'string'
+        && 'direction' in value
+        && typeof value.direction === 'string';
+}
+
 const processChannels = computed(() => {
     const merged = GroupManager.merge(rawChannels.value);
 
@@ -156,7 +165,22 @@ async function fetch() {
     error.value = undefined;
 
     try {
-        rawChannels.value = (await std(`/api/connection/${route.params.connectionid}/channel`) as { data: Group[] }).data;
+        const { data, error: reqError } = await server.GET('/api/connection/{:connectionid}/channel', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid)
+                }
+            }
+        });
+
+        if (reqError) throw new Error(reqError.message);
+
+        const channels = data?.data;
+        if (!Array.isArray(channels) || !channels.every(isGroup)) {
+            throw new Error('Malformed channel response');
+        }
+
+        rawChannels.value = channels;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -170,11 +194,15 @@ async function setStatus(channel: GroupChannel, active = false) {
         return ch;
     });
 
-    const url = stdurl('/api/marti/group');
-    url.searchParams.set('connection', String(route.params.connectionid));
-    await std(url, {
-        method: 'PUT',
+    const { error: reqError } = await server.PUT('/api/marti/group', {
+        params: {
+            query: {
+                connection: Number(route.params.connectionid)
+            }
+        },
         body: rawChannels.value
     });
+
+    if (reqError) throw new Error(reqError.message);
 }
 </script>

@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import {
     TablerLoading,
     TablerNone,
@@ -199,13 +199,18 @@ async function fetch() {
     err.value = null;
 
     try {
-        const url = stdurl('/api/config');
-        url.searchParams.set('keys', Object.keys(config.value).join(','));
-        const res = await std(url) as Partial<ProxyConfig>;
+        const { data, error } = await server.GET('/api/config', {
+            params: {
+                query: {
+                    keys: Object.keys(config.value).join(',')
+                }
+            }
+        });
+        if (error) throw new Error(error.message);
 
-        config.value['proxy::enabled'] = Boolean(res['proxy::enabled']);
-        config.value['proxy::whitelist'] = Array.isArray(res['proxy::whitelist'])
-            ? res['proxy::whitelist'].map((entry) => String(entry))
+        config.value['proxy::enabled'] = Boolean(data['proxy::enabled']);
+        config.value['proxy::whitelist'] = Array.isArray(data['proxy::whitelist'])
+            ? data['proxy::whitelist'].map((entry) => String(entry))
             : [];
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
@@ -219,13 +224,13 @@ async function save() {
     err.value = null;
 
     try {
-        await std('/api/config', {
-            method: 'PUT',
+        const { error } = await server.PUT('/api/config', {
             body: {
                 'proxy::enabled': config.value['proxy::enabled'],
                 'proxy::whitelist': config.value['proxy::whitelist'].map((entry) => entry.trim()).filter(Boolean)
             }
         });
+        if (error) throw new Error(error.message);
 
         edit.value = false;
         await fetch();

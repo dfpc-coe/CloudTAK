@@ -96,7 +96,7 @@
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue';
 import type { ETLConnectionList } from '../../../types.ts';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import {
     TablerNone,
     TablerAlert,
@@ -144,20 +144,30 @@ onMounted(async () => {
 
 async function fetchList() {
     loading.value = true;
+    error.value = undefined;
 
     try {
-        const url = stdurl('/api/connection');
-        url.searchParams.set('order', 'desc');
-        url.searchParams.set('page', String(paging.value.page));
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('sort', 'created');
-        url.searchParams.set('filter', paging.value.filter);
-        list.value = await std(url) as ETLConnectionList;
+        const res = await server.GET('/api/connection', {
+            params: {
+                query: {
+                    filter: paging.value.filter,
+                    limit: paging.value.limit,
+                    page: paging.value.page,
+                    sort: 'created',
+                    order: 'desc'
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message || 'Failed to load connections');
+        if (!res.data) throw new Error('Failed to load connections');
+
+        list.value = res.data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        loading.value = false;
     }
-
-    loading.value = false;
 }
 
 function external(url: string) {

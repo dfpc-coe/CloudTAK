@@ -91,8 +91,8 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
-import type { Profile, ETLAgencyList, ETLAgency } from '../../../types.ts';
+import { server } from '../../../std.ts';
+import type { ETLAgencyList, ETLAgency } from '../../../types.ts';
 import { watchDebounced } from '@vueuse/core'
 import {
     IconTrash,
@@ -153,7 +153,9 @@ watch(props, async (newProps, oldProps) => {
 })
 
 onMounted(async () => {
-    const profile = await std('/api/profile') as Profile;
+    const { data: profile, error } = await server.GET('/api/profile');
+    if (error) throw new Error(error.message);
+
     isSystemAdmin.value = profile.system_admin;
 
     if (props.modelValue) await fetch();
@@ -162,14 +164,32 @@ onMounted(async () => {
 });
 
 async function fetch() {
-    selected.value = await std(`/api/agency/${props.modelValue}`) as ETLAgency;
+    const { data, error } = await server.GET('/api/agency/{:agencyid}', {
+        params: {
+            path: {
+                ':agencyid': Number(props.modelValue)
+            }
+        }
+    });
+
+    if (error) throw new Error(error.message);
+    if (!data) return;
+
+    selected.value = data;
 }
 
 async function listData() {
     loading.value.list = true;
-    const url = stdurl('/api/agency');
-    url.searchParams.set('filter', filter.value);
-    const data = await std(url) as ETLAgencyList;
+    const { data, error } = await server.GET('/api/agency', {
+        params: {
+            query: {
+                filter: filter.value
+            }
+        }
+    });
+
+    if (error) throw new Error(error.message);
+    if (!data) return;
 
     if (!isSystemAdmin.value && data.total === 1) {
         selected.value = data.items[0];
