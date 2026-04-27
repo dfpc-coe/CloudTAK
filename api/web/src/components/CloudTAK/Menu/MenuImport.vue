@@ -193,7 +193,7 @@
 <script setup lang='ts'>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { std, stdurl, server } from '../../../../src/std.ts';
+import { server } from '../../../../src/std.ts';
 import type { Import } from '../../../../src/types.ts';
 import Status from '../../util/StatusDot.vue';
 import timeDiff from '../../../timediff.ts';
@@ -246,21 +246,58 @@ onUnmounted(() => {
     }
 });
 
+function downloadBlob(blob: Blob, response: Response, fallbackName: string): void {
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let name = fallbackName;
+
+    if (contentDisposition) {
+        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition);
+        if (matches?.[1]) {
+            name = matches[1].replace(/['"]/g, '');
+        }
+    }
+
+    const fileUrl = URL.createObjectURL(new File([blob], name));
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(fileUrl);
+}
+
 async function downloadImport() {
-    const url = stdurl(`/api/import/${route.params.import}/raw`)
-    url.searchParams.set('token', localStorage.token);
-    url.searchParams.set('download', String(true));
-    await std(url, {
-        download: true
-    })
+    const res = await server.GET('/api/import/{:import}/raw', {
+        params: {
+            path: {
+                ':import': String(route.params.import)
+            },
+            query: {
+                token: localStorage.token,
+                download: true
+            }
+        },
+        parseAs: 'blob'
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    downloadBlob(res.data, res.response, `import-${String(route.params.import)}`);
 }
 
 async function retryImport() {
     loading.value.initial = true;
 
     try {
-        const url = stdurl(`/api/import/${route.params.import}/retry`);
-        await std(url, { method: 'POST' });
+        const res = await server.POST('/api/import/{:import}/retry', {
+            params: {
+                path: {
+                    ':import': String(route.params.import)
+                }
+            }
+        });
+        if (res.error) throw new Error(res.error.message);
 
         loading.value.run = true;
         interval.value = setInterval(async () => {

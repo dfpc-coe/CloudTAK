@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import {
     TablerLoading,
     TablerInput,
@@ -121,12 +121,17 @@ async function fetch(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
-        const url = stdurl('/api/config');
-        url.searchParams.set('keys', Object.keys(config.value).join(','));
-        const res = await std(url) as Partial<GroupConfig>;
+        const { data, error } = await server.GET('/api/config', {
+            params: {
+                query: {
+                    keys: Object.keys(config.value).join(',')
+                }
+            }
+        });
+        if (error) throw new Error(error.message);
         config.value = {
             ...createGroupConfig(),
-            ...res,
+            ...data,
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
@@ -138,10 +143,10 @@ async function save(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
-        await std(`/api/config`, {
-            method: 'PUT',
+        const { error } = await server.PUT('/api/config', {
             body: config.value
         });
+        if (error) throw new Error(error.message);
         edit.value = false;
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));

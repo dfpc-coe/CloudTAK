@@ -128,7 +128,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import IconManager from '../../../stores/modules/icons.ts';
 import {
     TablerBorder,
@@ -141,7 +141,7 @@ import { IconPencil } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import UploadLogo from '../../util/UploadLogo.vue';
 import ProfileConfig from '../../../base/profile.ts';
-import type { Iconset, Icon } from '../../../types.ts';
+import type { Iconset } from '../../../types.ts';
 
 interface IconDraft {
     id?: number;
@@ -184,11 +184,45 @@ async function refresh(): Promise<void> {
 
 async function submit(): Promise<void> {
     if (icon.value.id) {
-        const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${icon.value.id}`);
-        icon.value = await std(url, { method: 'PATCH', body: icon.value }) as Icon;
+        const res = await server.PATCH('/api/iconset/{:iconset}/icon/{:icon}', {
+            params: {
+                path: {
+                    ':iconset': String(route.params.iconset),
+                    ':icon': icon.value.id
+                }
+            },
+            body: {
+                name: icon.value.name,
+                data: icon.value.data,
+                type2525b: icon.value.type2525b
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+        if (!res.data) throw new Error('Failed to update icon');
+
+        icon.value = res.data;
     } else {
-        const url = stdurl(`/api/iconset/${route.params.iconset}/icon`);
-        const created = await std(url, { method: 'POST', body: icon.value }) as Icon;
+        const res = await server.POST('/api/iconset/{:iconset}/icon', {
+            params: {
+                path: {
+                    ':iconset': String(route.params.iconset)
+                },
+                query: {
+                    regen: true
+                }
+            },
+            body: {
+                name: icon.value.name,
+                data: icon.value.data,
+                type2525b: icon.value.type2525b
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+        if (!res.data) throw new Error('Failed to create icon');
+
+        const created = res.data;
         icon.value = created;
         router.push(`/menu/iconset/${route.params.iconset}/${created.id}`);
     }
@@ -198,8 +232,19 @@ async function submit(): Promise<void> {
 }
 
 async function fetch(): Promise<void> {
-    const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${route.params.icon}`);
-    const res = await std(url) as Icon;
+    const result = await server.GET('/api/iconset/{:iconset}/icon/{:icon}', {
+        params: {
+            path: {
+                ':iconset': String(route.params.iconset),
+                ':icon': String(route.params.icon)
+            }
+        }
+    });
+
+    if (result.error) throw new Error(result.error.message);
+    if (!result.data) throw new Error('Failed to fetch icon');
+
+    const res = result.data;
 
     if (res.name.endsWith('.svg') && !res.data.startsWith('data:image/svg+xml;base64,')) {
         res.data = `data:image/svg+xml;base64,${res.data}`;
@@ -215,15 +260,34 @@ async function fetchIconset(): Promise<void> {
     if (cached) {
         iconset.value = cached;
     } else {
-        const url = stdurl(`/api/iconset/${route.params.iconset}`);
-        iconset.value = await std(url) as Iconset;
+        const res = await server.GET('/api/iconset/{:iconset}', {
+            params: {
+                path: {
+                    ':iconset': String(route.params.iconset)
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+        if (!res.data) throw new Error('Failed to fetch iconset');
+
+        iconset.value = res.data;
     }
 }
 
 async function deleteIcon(): Promise<void> {
     loading.value = true;
-    const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${route.params.icon}`);
-    await std(url, { method: 'DELETE' });
+    const res = await server.DELETE('/api/iconset/{:iconset}/icon/{:icon}', {
+        params: {
+            path: {
+                ':iconset': String(route.params.iconset),
+                ':icon': Number(route.params.icon)
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
     router.push(`/menu/iconset/${route.params.iconset}`);
 }
 

@@ -513,11 +513,11 @@
 </template>
 
 <script setup lang='ts'>
-import { std } from '../../../../std.ts';
+import { server } from '../../../../std.ts';
 import { validateURL } from '../../../../base/validators.ts';
 import CopyField from '../../util/CopyField.vue';
 import { ref, onMounted } from 'vue';
-import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols, VideoLeaseMetadata } from '../../../../types.ts';
+import type { VideoLease, VideoLeaseProtocols } from '../../../../types.ts';
 import VideoLeaseSourceType from '../../util/VideoLeaseSourceType.vue'
 import GroupSelect from '../../../util/GroupSelect.vue';
 import {
@@ -624,13 +624,18 @@ async function fetchLease() {
 
     disabled.value = true;
 
-    const res = await std(`/api/video/lease/${editLease.value.id}`, {
-        method: 'GET',
-    }) as VideoLeaseResponse;
+    const res = await server.GET('/api/video/lease/{:lease}', {
+        params: {
+            path: {
+                ':lease': editLease.value.id as number
+            }
+        }
+    });
+    if (res.error) throw new Error(res.error.message);
 
     editLease.value = {
-        ...res,
-        duration: res.expiration ? '16 Hours' : 'Permanent'
+        ...res.data,
+        duration: res.data.expiration ? '16 Hours' : 'Permanent'
     }
 
     if (editLease.value.stream_user && editLease.value.read_user) {
@@ -645,11 +650,16 @@ async function fetchLease() {
         channels.value = [];
     }
 
-    const resMetadata = await std(`/api/video/lease/${editLease.value.id}/metadata`, {
-        method: 'GET',
-    }) as VideoLeaseMetadata;
+    const resMetadata = await server.GET('/api/video/lease/{:lease}/metadata', {
+        params: {
+            path: {
+                ':lease': editLease.value.id as number
+            }
+        }
+    });
+    if (resMetadata.error) throw new Error(resMetadata.error.message);
 
-    protocols.value = resMetadata.protocols;
+    protocols.value = resMetadata.data.protocols;
 
     disabled.value = true;
     loading.value = false;
@@ -659,9 +669,14 @@ async function deleteLease() {
     try {
         loading.value = true;
 
-        await std(`/api/video/lease/${editLease.value.id}`, {
-            method: 'DELETE',
+        const res = await server.DELETE('/api/video/lease/{:lease}', {
+            params: {
+                path: {
+                    ':lease': editLease.value.id as number
+                }
+            }
         });
+        if (res.error) throw new Error(res.error.message);
 
         loading.value = false;
 
@@ -677,8 +692,12 @@ async function saveLease() {
         loading.value = true;
 
         if (editLease.value.id) {
-            await std(`/api/video/lease/${editLease.value.id}`, {
-                method: 'PATCH',
+            const res = await server.PATCH('/api/video/lease/{:lease}', {
+                params: {
+                    path: {
+                        ':lease': editLease.value.id
+                    }
+                },
                 body: {
                     name: editLease.value.name,
                     secure: secure.value,
@@ -693,9 +712,9 @@ async function saveLease() {
                     source_model: editLease.value.source_model,
                 }
             });
+            if (res.error) throw new Error(res.error.message);
         } else {
-            editLease.value.id = ((await std('/api/video/lease', {
-                method: 'POST',
+            const res = await server.POST('/api/video/lease', {
                 body: {
                     name: editLease.value.name,
                     secure: secure.value,
@@ -709,7 +728,9 @@ async function saveLease() {
                     source_type: editLease.value.source_type,
                     source_model: editLease.value.source_model,
                 }
-            })) as VideoLeaseResponse).id;
+            });
+            if (res.error) throw new Error(res.error.message);
+            editLease.value.id = res.data.id;
         }
 
         await fetchLease();

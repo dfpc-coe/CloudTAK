@@ -87,7 +87,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import type { ETLConnectionTokenList, ETLConnectionToken } from '../../../types.ts';
 import TokenModal from './TokenModal.vue';
 import TableFooter from '../../util/TableFooter.vue';
@@ -133,11 +133,24 @@ async function fetch() {
     loading.value = true;
 
     try {
-        const url = stdurl(`/api/connection/${route.params.connectionid}/token`);
-        url.searchParams.set('limit', String(paging.value.limit));
-        url.searchParams.set('page', String(paging.value.page));
-        url.searchParams.set('filter', paging.value.filter);
-        list.value = await std(url) as ETLConnectionTokenList;
+        const { data, error: serverError } = await server.GET('/api/connection/{:connectionid}/token', {
+            params: {
+                path: {
+                    ':connectionid': Number(route.params.connectionid)
+                },
+                query: {
+                    limit: paging.value.limit,
+                    page: paging.value.page,
+                    order: 'asc',
+                    sort: 'created',
+                    filter: paging.value.filter
+                }
+            }
+        });
+
+        if (serverError) throw new Error(serverError.message);
+
+        list.value = data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {

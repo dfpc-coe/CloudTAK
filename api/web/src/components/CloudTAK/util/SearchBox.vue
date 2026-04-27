@@ -87,12 +87,11 @@
 </template>
 
 <script setup lang='ts'>
-import type { SearchForward, SearchSuggest } from '../../../types.ts';
 import { convert } from 'geo-coordinates-parser'
 import { v4 as randomUUID } from 'uuid';
 import Feature from './FeatureRow.vue';
 import StandardItem from './StandardItem.vue';
-import { std, stdurl } from '../../../std.ts'
+import { server } from '../../../std.ts'
 import { useMapStore } from '../../../stores/map.ts';
 import COT from '../../../base/cot.ts';
 import {
@@ -251,15 +250,22 @@ async function fetchSearch(
                 limit: 5
             })
 
-        const url = stdurl('/api/search/suggest');
-        url.searchParams.set('query', query.value.filter);
-        url.searchParams.set('limit', '5');
         const center = mapStore.map.getCenter();
-        url.searchParams.set('longitude', String(center.lng));
-        url.searchParams.set('latitude', String(center.lat));
+        const { data, error } = await server.GET('/api/search/suggest', {
+            params: {
+                query: {
+                    query: query.value.filter,
+                    limit: 5,
+                    longitude: center.lng,
+                    latitude: center.lat
+                }
+            }
+        });
+
+        if (error) throw new Error(error.message);
 
         results.value = [];
-        results.value.push(...((await std(url)) as SearchSuggest).items)
+        results.value.push(...(data?.items || []));
         partialLoading.value = false;
    } else {
         selected.value = true;
@@ -309,13 +315,21 @@ async function fetchSearch(
                 coordinates: [ lon, lat ]
             });
         } else {
-            const url = stdurl('/api/search/forward');
-            url.searchParams.set('query', queryText);
-            url.searchParams.set('magicKey', magicKey);
             const center = mapStore.map.getCenter();
-            url.searchParams.set('longitude', String(center.lng));
-            url.searchParams.set('latitude', String(center.lat));
-            const items = ((await std(url)) as SearchForward).items;
+            const { data, error } = await server.GET('/api/search/forward', {
+                params: {
+                    query: {
+                        query: queryText,
+                        magicKey,
+                        longitude: center.lng,
+                        latitude: center.lat
+                    }
+                }
+            });
+
+            if (error) throw new Error(error.message);
+
+            const items = data?.items || [];
 
             if (!items.length) return;
 

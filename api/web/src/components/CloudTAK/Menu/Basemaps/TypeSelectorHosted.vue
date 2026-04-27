@@ -61,7 +61,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../../std.ts';
+import { server, std, stdurl } from '../../../../std.ts';
 import StandardItem from '../../util/StandardItem.vue';
 import TypeSelectorSelected from './TypeSelectorSelected.vue';
 import {
@@ -103,7 +103,9 @@ watch(paging.value, async () => {
 });
 
 onMounted(async () => {
-    config.value = await std('/api/config/tiles') as { url: string };
+    const { data, error } = await server.GET('/api/config/tiles');
+    if (error) throw new Error(String(error));
+    config.value = data;
     loading.value.config = false;
     await listTiles();
 });
