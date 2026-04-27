@@ -219,7 +219,6 @@
 import { useRouter } from 'vue-router';
 import { ref, watch, onMounted, computed } from 'vue';
 import type { ProfileFile, ProfileFileList } from '../../../types.ts';
-import { openExternalUrl } from '../../../base/capacitor.ts';
 import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
 import ProfileConfig from '../../../base/profile.ts';
@@ -595,7 +594,7 @@ function uploadComplete(event: unknown) {
 async function downloadAsset(asset: ProfileFile) {
     const url = stdurl(`/api/profile/asset/${asset.id}.${asset.name.split('.').pop()}`);
     url.searchParams.set('token', localStorage.token);
-    await openExternalUrl(url)
+    window.open(url, "_blank")
 }
 
 async function renameAsset() {
