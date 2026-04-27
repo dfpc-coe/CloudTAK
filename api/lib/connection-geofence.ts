@@ -90,21 +90,32 @@ export default class ConnectionGeofence  {
         }
 
         const key = `cloudtak:geofence:${connConfig.id}`;
-        await this.tile38.drop(key);
+        const activeFeatures = features.filter((feature) => {
+            if (feature.id !== undefined && feature.id !== null) return true;
 
-        for (const feature of features) {
-            if (feature.id === undefined || feature.id === null) {
-                console.error(`not ok - ${connConfig.id} - ${connConfig.name} - skipping geofence without feature id`);
-                continue;
-            }
+            console.error(`not ok - ${connConfig.id} - ${connConfig.name} - skipping geofence without feature id`);
+            return false;
+        });
+        const activeIds = new Set(activeFeatures.map((feature) => String(feature.id)));
+        const existing = await this.tile38.scan(key).noFields().asIds();
+        let removed = 0;
 
+        for (const existingId of existing.ids) {
+            const id = typeof existingId === 'string' ? existingId : existingId.id;
+            if (activeIds.has(id)) continue;
+
+            await this.tile38.del(key, id);
+            removed += 1;
+        }
+
+        for (const feature of activeFeatures) {
             await this.tile38
                 .set(key, String(feature.id))
                 .object(feature)
                 .exec();
         }
 
-        console.log(`ok - ${connConfig.id} - ${connConfig.name} - loaded ${features.length} geofences`);
+        console.log(`ok - ${connConfig.id} - ${connConfig.name} - synced ${activeFeatures.length} geofences, removed ${removed}`);
     }
 
     async status(): Promise<GeofenceStatus> {

@@ -113,9 +113,10 @@ test('ConnectionPool.loadGeofences - enabled', async () => {
     assert.deepEqual(loadedFeatures, expectedFeatures);
 });
 
-test('ConnectionGeofence.load - writes connection geofences to Tile38', async () => {
+test('ConnectionGeofence.load - synchronizes connection geofences to Tile38', async () => {
     const written: Array<{ key: string; id: string; feature: Feature }> = [];
-    const dropped: string[] = [];
+    const scanned: string[] = [];
+    const deleted: Array<{ key: string; id: string }> = [];
     const connConfig = {
         id: 1,
         name: 'Test Connection'
@@ -136,9 +137,27 @@ test('ConnectionGeofence.load - writes connection geofences to Tile38', async ()
 
     geofence.state = 'connected';
     geofence.tile38 = {
-        drop: async (key: string) => {
-            dropped.push(key);
-            return { ok: true };
+        scan: (key: string) => {
+            scanned.push(key);
+            return {
+                noFields: () => {
+                    return {
+                        asIds: async () => {
+                            return {
+                                ok: true,
+                                elapsed: '0s',
+                                ids: ['feature-a', 'feature-old'],
+                                count: 2,
+                                cursor: 0
+                            };
+                        }
+                    };
+                }
+            };
+        },
+        del: async (key: string, id: string) => {
+            deleted.push({ key, id });
+            return { ok: true, elapsed: '0s' };
         },
         set: (key: string, id: string) => {
             return {
@@ -157,7 +176,10 @@ test('ConnectionGeofence.load - writes connection geofences to Tile38', async ()
     const features = [feature('feature-a'), feature('feature-b')];
     await geofence.load(connConfig, features);
 
-    assert.deepEqual(dropped, ['cloudtak:geofence:1']);
+    assert.deepEqual(scanned, ['cloudtak:geofence:1']);
+    assert.deepEqual(deleted, [
+        { key: 'cloudtak:geofence:1', id: 'feature-old' }
+    ]);
     assert.deepEqual(written, [
         { key: 'cloudtak:geofence:1', id: 'feature-a', feature: features[0] },
         { key: 'cloudtak:geofence:1', id: 'feature-b', feature: features[1] }
