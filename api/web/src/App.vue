@@ -177,6 +177,7 @@ import {
     IconSettings,
     IconRefresh,
 } from '@tabler/icons-vue';
+import { StatusBar } from '@capacitor/status-bar';
 import Loading from './components/Loading.vue';
 import {
     TablerBadge,
@@ -186,7 +187,7 @@ import MissionInviteModal from './components/CloudTAK/Menu/Mission/MissionInvite
 import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vue';
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
-import { supportsServiceWorker } from './base/capacitor.ts';
+import { isNativePlatform, supportsServiceWorker } from './base/capacitor.ts';
 import { db } from './base/database.ts';
 import { getPageServiceWorkerBuildId, markUpdateRequestedByThisTab } from './base/service-worker.ts';
 import { useMapStore } from './stores/map.ts';
@@ -266,6 +267,18 @@ function onSystemThemeChange(): void {
     }
 }
 
+async function configureStatusBar(): Promise<void> {
+    if (!isNativePlatform()) {
+        return;
+    }
+
+    try {
+        await StatusBar.setOverlaysWebView({ overlay: false });
+    } catch (err) {
+        console.warn('Failed to configure native status bar overlay', err);
+    }
+}
+
 const navShown = computed<boolean>(() => {
     if (!route || !route.name) {
         return false;
@@ -306,6 +319,8 @@ onMounted(async () => {
     if (supportsServiceWorker()) {
         window.addEventListener('sw:update-available', onSwUpdateAvailable);
     }
+
+    await configureStatusBar();
 
     applyTheme();
     displayStyleSub = liveQuery(() => db.profile.get('display_style')).subscribe((entry) => {
