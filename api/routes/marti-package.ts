@@ -35,6 +35,16 @@ async function activeChannelNames(config: Config, email: string, api: TAKAPI): P
     );
 }
 
+function packageMetadataTime(entry: Record<string, string>): number {
+    if (!entry.Time) return Number.NEGATIVE_INFINITY;
+
+    const numeric = Number(entry.Time);
+    if (!Number.isNaN(numeric)) return numeric;
+
+    const parsed = Date.parse(entry.Time);
+    return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed;
+}
+
 async function packageChannelNames(api: TAKAPI, pkg: Static<typeof Package>): Promise<Set<string>> {
     const url = new URL('/Marti/api/files/metadata', api.url);
     url.searchParams.append('missionPackage', 'true');
@@ -46,7 +56,13 @@ async function packageChannelNames(api: TAKAPI, pkg: Static<typeof Package>): Pr
         data?: Array<Record<string, string>>;
     };
 
-    const match = (res.data || []).find((entry) => entry.Hash === pkg.Hash);
+    const match = (res.data || [])
+        .filter((entry) => entry.Hash === pkg.Hash)
+        .reduce<Record<string, string> | undefined>((latest, entry) => {
+            if (!latest) return entry;
+            return packageMetadataTime(entry) >= packageMetadataTime(latest) ? entry : latest;
+        }, undefined);
+
     if (!match || !match.Groups) return new Set();
 
     return new Set(
@@ -91,6 +107,17 @@ async function packageSummaryWithChannels(api: TAKAPI, uid: string, packages: Ar
         ...summary,
         channels: Array.from(await packageChannelNames(api, latest))
     };
+}
+
+function packageExpirationForUpdate(value: string | number | null | undefined): number | undefined {
+    if (value === undefined || value === null) return undefined;
+    if (typeof value === 'number') return value;
+
+    const trimmed = value.trim();
+    if (!trimmed.length) return undefined;
+
+    const parsed = Number(trimmed);
+    return Number.isNaN(parsed) ? undefined : parsed;
 }
 
 export default async function router(schema: Schema, config: Config) {
@@ -397,9 +424,12 @@ export default async function router(schema: Schema, config: Config) {
                     Name: pkg.settings.name
                 }
             } else {
+                // DataPackage.finalize() always materializes a TAK-compatible ZIP archive,
+                // even though the private upload name is the extensionless package hash.
                 content = await api.Files.upload({
                     name: hash,
                     contentLength: size,
+                    contentType: 'application/zip',
                     keywords: req.body.keywords,
                     creatorUid,
                 }, fs.createReadStream(out));
@@ -584,6 +614,9 @@ export default async function router(schema: Schema, config: Config) {
             uid: Type.String()
         }),
         body: Type.Object({
+            channels: Type.Optional(Type.Array(Type.String(), {
+                description: 'Channels to assign to the latest package version'
+            })),
             keywords: Type.Optional(Type.Array(Type.String(), {
                 description: 'Keywords to assign to the latest package version'
             })),
@@ -596,8 +629,8 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            if (req.body.keywords === undefined && req.body.expiration === undefined) {
-                throw new Err(400, null, 'Must provide keywords or expiration');
+            if (req.body.channels === undefined && req.body.keywords === undefined && req.body.expiration === undefined) {
+                throw new Err(400, null, 'Must provide channels, keywords or expiration');
             }
 
             const auth = config.serverCert();
@@ -638,10 +671,45 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            await api.Files.update(latest.Hash, {
-                keywords: req.body.keywords,
-                expiration: req.body.expiration
-            });
+            if (req.body.channels !== undefined) {
+                const content = await api.Files.download(latest.Hash);
+
+                try {
+                    await api.Files.uploadPackage({
+                        name: latest.Name,
+                        creatorUid: latest.CreatorUid || latest.SubmissionUser || user.email,
+                        hash: latest.Hash,
+                        keywords: req.body.keywords ?? latest.Keywords,
+                        mimetype: latest.MIMEType,
+                        groups: req.body.channels
+                    }, content);
+                } catch (err) {
+                    if (!content.destroyed && !content.readableEnded) {
+                        if (content.destroy) {
+                            content.destroy(err instanceof Error ? err : new Error(String(err)));
+                        } else if (content.resume) {
+                            content.resume();
+                        }
+                    }
+
+                    throw err;
+                }
+
+                const expiration = req.body.expiration !== undefined
+                    ? req.body.expiration
+                    : packageExpirationForUpdate(current.expiration);
+
+                if (expiration !== undefined) {
+                    await api.Files.update(latest.Hash, {
+                        expiration
+                    });
+                }
+            } else {
+                await api.Files.update(latest.Hash, {
+                    keywords: req.body.keywords,
+                    expiration: req.body.expiration
+                });
+            }
 
             const updated = await api.Package.list({
                 uid: req.params.uid
