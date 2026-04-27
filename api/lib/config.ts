@@ -19,6 +19,7 @@ interface ConfigArgs {
     postgres: string,
     noevents: boolean,
     nosinks: boolean,
+    nogeofence?: boolean,
     nocache: boolean,
 }
 
@@ -26,6 +27,7 @@ export default class Config {
     silent: boolean;
     noevents: boolean;
     nosinks: boolean;
+    nogeofence: boolean;
     nocache: boolean;
     models: Models;
     StackName: string;
@@ -47,6 +49,7 @@ export default class Config {
         silent: boolean;
         noevents: boolean;
         nosinks: boolean;
+        nogeofence: boolean;
         nocache: boolean;
         models: Models;
         StackName: string;
@@ -61,6 +64,7 @@ export default class Config {
         this.silent = init.silent;
         this.noevents = init.noevents;
         this.nosinks = init.nosinks;
+        this.nogeofence = init.nogeofence;
         this.nocache = init.nocache;
         this.models = init.models;
         this.StackName = init.StackName;
@@ -149,6 +153,7 @@ export default class Config {
             silent: (args.silent || false),
             noevents: (args.noevents || false),
             nosinks: (args.nosinks || false),
+            nogeofence: (args.nogeofence || false),
             nocache: (args.nocache || false),
             StackName: process.env.StackName,
             wsClients: new Map(),
