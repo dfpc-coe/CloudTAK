@@ -170,6 +170,19 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         return channels;
     }
 
+    async loadGeofences(connConfig: ConnectionConfig): Promise<void> {
+        try {
+            if (this.config.nogeofence || !await this.config.geofence.enabled()) {
+                return;
+            }
+
+            const geofences = await connConfig.geofences();
+            await this.config.geofence.load(connConfig, geofences);
+        } catch (err) {
+            console.error(`not ok - ${connConfig.id} - ${connConfig.name} - failed to load geofences: ${err instanceof Error ? err.message : String(err)}`);
+        }
+    }
+
     async refresh() {
         for (const conn of this.keys()) {
             this.delete(conn);
@@ -340,6 +353,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             this.cots(connConfig, [cot]);
         }).on('secureConnect', async () => {
             await connClient.refreshChannels();
+            await this.loadGeofences(connConfig);
+
             for (const sub of await connConfig.subscriptions()) {
                 let retry = true;
                 do {
