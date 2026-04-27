@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, shallowRef } from 'vue';
 import type { paths } from '@cloudtak/api-types';
 import CopyField from '../util/CopyField.vue';
 import timeDiff from '../../../timediff.ts';
@@ -97,7 +97,7 @@ const loading = ref(false);
 
 const uid = ref('');
 const opened = ref<Set<number>>(new Set());
-const history = ref<DebuggerHistory>({
+const history = shallowRef<DebuggerHistory>({
     type: 'FeatureCollection',
     features: []
 });

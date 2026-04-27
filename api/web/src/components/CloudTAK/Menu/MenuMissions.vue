@@ -443,7 +443,9 @@ async function fetchMission(mission: Mission, password?: string): Promise<Missio
                 ':name': mission.guid
             },
             query: {
-                password
+                password,
+                changes: false,
+                logs: false,
             }
         }
     });
