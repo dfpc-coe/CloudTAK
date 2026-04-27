@@ -371,6 +371,85 @@ test('POST api/marti/package - Upload KML', async () => {
     flight.tak.reset();
 });
 
+test('PUT api/marti/package - private package upload uses application/zip for finalized data package content', async () => {
+    const outputPath = path.resolve(os.tmpdir(), randomUUID() + '.zip');
+    let uploadHit = false;
+
+    try {
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (!request.method || !request.url) {
+                return false;
+            }
+
+            const url = new URL(request.url, 'http://takserver');
+
+            if (request.method === 'POST' && url.pathname === '/Marti/sync/upload') {
+                uploadHit = true;
+
+                assert.equal(request.headers['content-type'], 'application/zip');
+
+                await fsp.writeFile(outputPath, await stream2buffer(request));
+
+                const dp = await DataPackage.parse(outputPath);
+
+                assert.equal(dp.contents.length, 1);
+                assert.ok(dp.contents[0]._attributes.zipEntry.endsWith('.cot'));
+
+                await dp.destroy();
+
+                response.setHeader('Content-Type', 'text/plain');
+                response.write(JSON.stringify({
+                    UID: 'private-upload',
+                    SubmissionDateTime: new Date().toISOString(),
+                    Keywords: [],
+                    MIMEType: 'application/zip',
+                    SubmissionUser: 'admin@example.com',
+                    PrimaryKey: 'private-primary',
+                    Hash: 'private-hash',
+                    CreatorUid: 'admin',
+                    Name: 'private-hash',
+                }));
+                response.end();
+
+                return true;
+            }
+
+            return false;
+        });
+
+        const res = await flight.fetch('/api/marti/package', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                public: false,
+                keywords: [],
+                destinations: [],
+                assets: [],
+                basemaps: [],
+                features: [{
+                    id: 'feature-1',
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [-77.0365, 38.8977]
+                    }
+                }]
+            }
+        }, true);
+
+        assert.equal(res.status, 200);
+        assert.equal(uploadHit, true);
+        assert.equal(res.body.Hash, 'private-hash');
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    flight.tak.reset();
+});
+
 flight.user({ username: 'pkgowner', admin: false });
 flight.user({ username: 'pkgviewer', admin: false });
 
