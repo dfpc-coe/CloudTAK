@@ -753,7 +753,10 @@ export const useMapStore = defineStore('cloudtak', {
                     map.setProjection({ type: "globe" });
                 }
 
-                await this.icons.hydrate();
+                void this.icons.hydrate()
+                    .catch((error: unknown) => {
+                        console.error('Failed to hydrate iconsets after map idle', error);
+                    });
 
                 await this.initOverlays();
 

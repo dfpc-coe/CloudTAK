@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
+import { sql } from 'drizzle-orm';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -239,6 +240,51 @@ test('PUT: api/connection/1/feature - Create another', async () => {
                 coordinates: [0, 0, 0]
             }
         });
+
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PUT: api/connection/1/feature - Enabled Geofence', async () => {
+     try {
+        await flight.fetch('/api/connection/1/feature', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                id: 'feature-geofence',
+                type: 'Feature',
+                path: '/Test Features/',
+                properties: {
+                    type: 'a-f-g',
+                    how: 'm-g',
+                    time: time,
+                    start: time,
+                    stale: time,
+                    callsign: 'Test Geofence',
+                    center: [0, 0],
+                    geofence: {
+                        elevationMonitored: false,
+                        monitor: 'All',
+                        trigger: 'Entry',
+                        tracking: true
+                    }
+                },
+                geometry: {
+                    type: 'Point',
+                    coordinates: [0, 0]
+                }
+            }
+        }, true);
+
+        const feature = await flight.config!.models.ConnectionFeature.from(sql`
+            id = ${'feature-geofence'}
+            AND connection = ${1}
+        `);
+
+        assert.equal(feature.enabled_geofence, true);
 
     } catch (err) {
         assert.ifError(err);
