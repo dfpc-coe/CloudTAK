@@ -10,6 +10,7 @@ import Auth from '../lib/auth.js';
 import { ProfileFeature } from '../lib/schema.js';
 import { StandardResponse, FeatureResponse, GeoJSONFeatureCollection, GeoJSONFeature } from '../lib/types.js'
 import { ExportFeatureFormat } from '../lib/enums.js'
+import { enabledGeofence } from '../lib/control/feature.js';
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
 
@@ -227,6 +228,7 @@ export default async function router(schema: Schema, config: Config) {
                     path: req.body.path,
                     deleted: false, // Putting a feature implies not deleted
                     username: user.email,
+                    enabled_geofence: enabledGeofence(req.body.properties),
                     properties: req.body.properties,
                     geometry: req.body.geometry
                 }, {

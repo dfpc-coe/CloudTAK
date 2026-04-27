@@ -73,14 +73,10 @@ export default class Atlas {
 
             this.username = await this.profile.init();
 
-            // Hydrate iconsets before opening the WebSocket so features pushed
-            // by the server can resolve their icons immediately rather than
-            // racing the icon download.
-            try {
-                await this.icons.hydrate();
-            } catch (err) {
-                console.error('Failed to hydrate iconsets before connect', err);
-            }
+            void this.icons.hydrate()
+                .catch((err: unknown) => {
+                    console.error('Failed to hydrate iconsets after startup', err);
+                });
 
             await this.conn.connect(this.username)
 
