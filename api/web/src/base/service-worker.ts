@@ -1,3 +1,5 @@
+import { supportsServiceWorker } from './capacitor.ts';
+
 interface ManifestEntry {
     file?: string;
 }
@@ -157,7 +159,7 @@ function observeRegistration(registration: ServiceWorkerRegistration, lastNotifi
 }
 
 export function initServiceWorker(version: string): void {
-    if (import.meta.env.DEV || !('serviceWorker' in navigator)) {
+    if (import.meta.env.DEV || !supportsServiceWorker()) {
         return;
     }
 

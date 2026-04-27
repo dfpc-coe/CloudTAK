@@ -79,11 +79,30 @@
                             <template v-for='h in header'>
                                 <template v-if='h.display && h.name === "name"'>
                                     <td>
-                                        <div class='d-flex align-items-center'>
-                                            <Status :connection='connection' /><span
+                                        <div class='d-flex flex-wrap align-items-center gap-2'>
+                                            <Status :connection='connection' />
+                                            <span
                                                 class='mx-2'
                                                 v-text='connection[h.name]'
                                             />
+                                            <div class='ms-auto d-flex align-items-center gap-2'>
+                                                <TablerBadge
+                                                    v-if='certificateStatus(connection) === "expired"'
+                                                    background-color='rgba(220, 38, 38, 0.15)'
+                                                    border-color='rgba(220, 38, 38, 0.35)'
+                                                    text-color='#b91c1c'
+                                                >
+                                                    Expired
+                                                </TablerBadge>
+                                                <TablerBadge
+                                                    v-else-if='certificateStatus(connection) === "near-expiry"'
+                                                    background-color='rgba(249, 115, 22, 0.15)'
+                                                    border-color='rgba(249, 115, 22, 0.35)'
+                                                    text-color='#c2410c'
+                                                >
+                                                    Near Expiry
+                                                </TablerBadge>
+                                            </div>
                                         </div>
                                     </td>
                                 </template>
@@ -113,6 +132,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
+import { openSecondaryView } from '../../base/capacitor.ts';
 import { server } from '../../std.ts';
 import type { paths } from '@cloudtak/api-types';
 import TableHeader from '../util/TableHeader.vue'
@@ -121,6 +141,7 @@ import Status from '../ETL/Connection/StatusDot.vue';
 import {
     TablerNone,
     TablerAlert,
+    TablerBadge,
     TablerInput,
     TablerLoading,
     TablerIconButton,
@@ -139,6 +160,11 @@ type ConnectionQuery = paths['/api/connection']['get']['parameters']['query'];
 type ConnectionResponse = paths['/api/connection']['get']['responses']['200']['content']['application/json'];
 type ConnectionItem = ConnectionResponse['items'][number];
 type ConnectionItemKey = keyof ConnectionItem;
+type ConnectionCertificate = {
+    validTo?: string | null;
+};
+
+const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
 
 const paging = ref<{
     filter: string;
@@ -225,10 +251,28 @@ async function reconnectConnections() {
 
 function navTo(path: string, event?: MouseEvent | KeyboardEvent) {
     if (event?.ctrlKey) {
-        window.open(path, '_blank');
+        void openSecondaryView(path);
     } else {
         window.location.href = path;
     }
+}
+
+function certificateExpiryState(validTo?: string | null): 'expired' | 'near-expiry' | null {
+    if (!validTo) return null;
+
+    const expiry = Date.parse(validTo);
+    if (Number.isNaN(expiry)) return null;
+
+    const remaining = expiry - Date.now();
+    if (remaining < 0) return 'expired';
+    if (remaining <= TWO_WEEKS_MS) return 'near-expiry';
+
+    return null;
+}
+
+function certificateStatus(connection: ConnectionItem) {
+    const certificate = (connection as ConnectionItem & { certificate?: ConnectionCertificate }).certificate;
+    return certificateExpiryState(certificate?.validTo);
 }
 
 async function fetchList() {

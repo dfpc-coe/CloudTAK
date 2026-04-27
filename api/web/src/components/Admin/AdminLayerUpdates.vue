@@ -112,6 +112,7 @@
 <script setup lang='ts'>
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { openSecondaryView } from '../../base/capacitor.ts';
 import { std } from '../../std.ts';
 import type { AdminLayerUpdate, AdminLayerUpdateList } from '../../types.ts';
 import {
@@ -209,6 +210,6 @@ function canManageLayer(layer: AdminLayerUpdate): boolean {
 }
 
 function openLayer(layer: AdminLayerUpdate): void {
-    window.open(`/connection/${layer.connection ?? 'template'}/layer/${layer.id}`, '_blank');
+    void openSecondaryView(`/connection/${layer.connection ?? 'template'}/layer/${layer.id}`);
 }
 </script>

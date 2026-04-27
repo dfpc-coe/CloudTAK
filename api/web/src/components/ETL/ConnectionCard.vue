@@ -62,18 +62,18 @@
                     Certificate Valid To
                 </div>
                 <div
-                    class='datagrid-content d-flex'
-                    :class='{
-                        "rounded bg-red text-white px-2 py-1": new Date(connection.certificate.validTo) < new Date()
-                    }'
+                    class='datagrid-content d-flex align-items-center gap-2'
                 >
                     <div v-text='connection.certificate.validTo' />
-                    <div
-                        v-if='new Date(connection.certificate.validTo) < new Date()'
+                    <TablerBadge
+                        v-if='certificateStatus'
                         class='ms-auto'
+                        :background-color='certificateStatus === "expired" ? "rgba(220, 38, 38, 0.15)" : "rgba(249, 115, 22, 0.15)"'
+                        :border-color='certificateStatus === "expired" ? "rgba(220, 38, 38, 0.35)" : "rgba(249, 115, 22, 0.35)"'
+                        :text-color='certificateStatus === "expired" ? "#b91c1c" : "#c2410c"'
                     >
-                        Expired Certificate
-                    </div>
+                        {{ certificateStatus === 'expired' ? 'Expired Certificate' : 'Near Expiry' }}
+                    </TablerBadge>
                 </div>
             </div>
             <div class='datagrid-item'>
@@ -189,8 +189,9 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { openExternalUrl } from '../../base/capacitor.ts';
 import type { ETLConnection } from '../../types';
 import { std, stdurl } from '../../std';
 import timeDiff from '../../timediff.ts';
@@ -201,6 +202,7 @@ import {
     TablerIconButton,
     TablerRefreshButton,
     TablerMarkdown,
+    TablerBadge,
     TablerDropdown,
     TablerInput
 } from '@tak-ps/vue-tabler';
@@ -229,6 +231,23 @@ const certificate = ref({
     truststorePassword: '',
     clientPassword: ''
 });
+
+const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+
+function certificateExpiryState(validTo?: string | null): 'expired' | 'near-expiry' | null {
+    if (!validTo) return null;
+
+    const expiry = Date.parse(validTo);
+    if (Number.isNaN(expiry)) return null;
+
+    const remaining = expiry - Date.now();
+    if (remaining < 0) return 'expired';
+    if (remaining <= TWO_WEEKS_MS) return 'near-expiry';
+
+    return null;
+}
+
+const certificateStatus = computed(() => certificateExpiryState(props.connection.certificate.validTo));
 
 async function cycle() {
     loading.value = true;
@@ -260,6 +279,6 @@ function downloadCertificate(type: 'truststore' | 'client') {
     url.searchParams.set('download', 'true');
     url.searchParams.set('password', type === 'truststore' ? certificate.value.truststorePassword : certificate.value.clientPassword);
     url.searchParams.set('token', localStorage.token);
-    window.open(url, '_blank');
+    void openExternalUrl(url);
 }
 </script>

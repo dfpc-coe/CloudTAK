@@ -186,6 +186,7 @@ import MissionInviteModal from './components/CloudTAK/Menu/Mission/MissionInvite
 import ChannelChangeModal from './components/CloudTAK/Menu/ChannelChangeModal.vue';
 import { WorkerMessageType } from './base/events.ts';
 import type { WorkerMessage } from './base/events.ts';
+import { supportsServiceWorker } from './base/capacitor.ts';
 import { db } from './base/database.ts';
 import { getPageServiceWorkerBuildId, markUpdateRequestedByThisTab } from './base/service-worker.ts';
 import { useMapStore } from './stores/map.ts';
@@ -302,7 +303,7 @@ onMounted(async () => {
         error.value = e.reason instanceof Error ? e.reason : new Error(String(e.reason));
     });
 
-    if ('serviceWorker' in navigator) {
+    if (supportsServiceWorker()) {
         window.addEventListener('sw:update-available', onSwUpdateAvailable);
     }
 
@@ -367,7 +368,7 @@ onMounted(async () => {
         }
     }
 
-    if ('serviceWorker' in navigator) {
+    if (supportsServiceWorker()) {
         navigator.serviceWorker.getRegistrations().then(async (registrations) => {
             const currentBuildId = getPageServiceWorkerBuildId();
 
