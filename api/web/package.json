@@ -29,6 +29,9 @@
         "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
     },
     "dependencies": {
+        "@capacitor/browser": "^8.0.1",
+        "@capacitor/core": "^8.1.0",
+        "@capacitor/geolocation": "^8.1.0",
         "@mapbox/tile-cover": "^3.0.2",
         "@react-hookz/deep-equal": "^3.0.3",
         "@simplewebauthn/browser": "^13.3.0",

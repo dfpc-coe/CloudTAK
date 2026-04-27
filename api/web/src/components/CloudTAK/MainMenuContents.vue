@@ -364,6 +364,7 @@ import {
     TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
+import { openSecondaryView, supportsServiceWorker } from '../../base/capacitor.ts';
 import { useMapStore } from '../../stores/map.ts';
 import type { MenuItemConfig } from '../../stores/modules/menu.ts';
 import Config from '../../base/config.ts';
@@ -492,7 +493,7 @@ async function saveOrder() {
 }
 
 onMounted(async () => {
-    if ('serviceWorker' in navigator) {
+    if (supportsServiceWorker()) {
         const pkg = await navigator.serviceWorker.getRegistration();
         if (pkg && pkg.active) {
             const url = new URL(pkg.active.scriptURL);
@@ -524,7 +525,7 @@ function cycleVisibility(item: MenuItemConfig) {
 }
 
 function external(url: string) {
-    window.open(String(new URL(url, window.location.origin)));
+    void openSecondaryView(String(new URL(url, window.location.origin)));
 }
 
 function handleSelect(item: MenuItemConfig) {

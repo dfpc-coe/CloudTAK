@@ -179,6 +179,7 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
+import { openSecondaryView } from '../../base/capacitor.ts';
 import { server } from '../../std.ts';
 import type { ETLLayerList, ETLLayer } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
@@ -302,7 +303,7 @@ async function listLayerSchema() {
 
 function navTo(path: string, event: MouseEvent | KeyboardEvent) {
     if (event?.ctrlKey) {
-        window.open(path, '_blank');
+        void openSecondaryView(path);
     } else {
         window.location.href = path;
     }

@@ -108,6 +108,7 @@
 <script setup lang='ts'>
 import  { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue';
+import { openExternalUrl } from '../../../base/capacitor.ts';
 import { std, stdurl } from '../../../std.ts';
 import type { ETLConnectionAssetList } from '../../../types.ts';
 import {
@@ -154,7 +155,7 @@ async function downloadAsset(asset: ETLConnectionAssetList["items"][0]) {
     const url = stdurl(`/api/connection/${route.params.connectionid}/asset/${asset.name}`);
     url.searchParams.set('token', localStorage.token);
     url.searchParams.set('download', String(true));
-    window.open(url, "_blank")
+    await openExternalUrl(url)
 }
 
 async function deleteAsset(asset: ETLConnectionAssetList["items"][0]) {

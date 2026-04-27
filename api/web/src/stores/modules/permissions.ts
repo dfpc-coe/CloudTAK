@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { checkNativeLocationPermission, isNativePlatform, requestNativeLocationPermission } from '../../base/capacitor.ts';
 
 export type BrowserPermissionState = PermissionState | 'unsupported' | 'unknown';
 export type BrowserPermissionType = 'location' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
@@ -52,6 +53,11 @@ export const usePermissionStore = defineStore('permissions', {
             this.permissions[type] = state;
         },
         refreshLocationPermissionStatus: async function(): Promise<void> {
+            if (isNativePlatform()) {
+                this.setPermissionStatus('location', await checkNativeLocationPermission());
+                return;
+            }
+
             if (!("geolocation" in navigator)) {
                 this.setPermissionStatus('location', 'unsupported');
                 return;
@@ -239,6 +245,21 @@ export const usePermissionStore = defineStore('permissions', {
             ]);
         },
         requestLocationPermission: async function(onGranted?: () => void): Promise<void> {
+            if (isNativePlatform()) {
+                try {
+                    const status = await requestNativeLocationPermission();
+                    this.setPermissionStatus('location', status);
+
+                    if (status === 'granted') {
+                        onGranted?.();
+                    }
+                } finally {
+                    await this.refreshLocationPermissionStatus();
+                }
+
+                return;
+            }
+
             if (!("geolocation" in navigator)) {
                 this.setPermissionStatus('location', 'unsupported');
                 return;
@@ -380,7 +401,14 @@ export const usePermissionStore = defineStore('permissions', {
         initializePermissionSubscriptions: async function(onLocationGranted?: () => void): Promise<void> {
             await this.refreshPermissionStatuses();
 
-            if ("geolocation" in navigator) {
+            if (isNativePlatform()) {
+                const status = await checkNativeLocationPermission();
+                this.setPermissionStatus('location', status);
+
+                if (status === 'granted') {
+                    onLocationGranted?.();
+                }
+            } else if ("geolocation" in navigator) {
                 if ('permissions' in navigator && navigator.permissions?.query) {
                     try {
                         const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });

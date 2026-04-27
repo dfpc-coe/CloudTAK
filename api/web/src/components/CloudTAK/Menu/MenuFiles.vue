@@ -219,6 +219,7 @@
 import { useRouter } from 'vue-router';
 import { ref, watch, onMounted, computed } from 'vue';
 import type { ProfileFile, ProfileFileList } from '../../../types.ts';
+import { openExternalUrl } from '../../../base/capacitor.ts';
 import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
 import ProfileConfig from '../../../base/profile.ts';
@@ -531,7 +532,7 @@ async function createOverlay(asset: ProfileFile) {
     loading.value = true;
 
     try {
-        const res = await server.GET('/api/profile/asset/{:asset}.pmtiles/tile', {
+        const { data, error } = await server.GET('/api/profile/asset/{:asset}.pmtiles/tile', {
             params: {
                 path: {
                     ':asset': asset.id
@@ -539,8 +540,8 @@ async function createOverlay(asset: ProfileFile) {
             }
         });
 
-        if (res.error) throw new Error(res.error.message);
-        const metadata = await res.response.clone().json() as unknown;
+        if (error) throw new Error(error.message);
+        const metadata = data as unknown;
 
         if (!isProfileAssetTileJSON(metadata) || !metadata.tiles.length) {
             throw new Error('Malformed PMTiles metadata response');
@@ -594,7 +595,7 @@ function uploadComplete(event: unknown) {
 async function downloadAsset(asset: ProfileFile) {
     const url = stdurl(`/api/profile/asset/${asset.id}.${asset.name.split('.').pop()}`);
     url.searchParams.set('token', localStorage.token);
-    window.open(url, "_blank")
+    await openExternalUrl(url)
 }
 
 async function renameAsset() {

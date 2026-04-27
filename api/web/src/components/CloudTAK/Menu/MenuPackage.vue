@@ -378,12 +378,13 @@ async function downloadFile(): Promise<void> {
             query: {
                 name: filename
             }
-        }
+        },
+        parseAs: 'blob'
     });
 
     if (res.error) throw new Error(res.error.message);
 
-    const url = URL.createObjectURL(await res.response.blob());
+    const url = URL.createObjectURL(res.data);
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
