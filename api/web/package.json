@@ -29,9 +29,13 @@
         "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
     },
     "dependencies": {
+        "@capacitor/app": "8.1.0",
         "@capacitor/browser": "^8.0.1",
-        "@capacitor/core": "^8.1.0",
+        "@capacitor/core": "8.3.1",
         "@capacitor/geolocation": "^8.1.0",
+        "@capacitor/haptics": "8.0.2",
+        "@capacitor/keyboard": "8.0.3",
+        "@capacitor/status-bar": "8.0.2",
         "@mapbox/tile-cover": "^3.0.2",
         "@react-hookz/deep-equal": "^3.0.3",
         "@simplewebauthn/browser": "^13.3.0",
@@ -59,6 +63,7 @@
         "autosize": "^6.0.1",
         "comlink": "^4.4.2",
         "cronstrue": "^3.0.0",
+        "date-fns": "4.1.0",
         "dexie": "^4.2.1",
         "dropzone": "^6.0.0-beta.2",
         "floating-vue": "^2.0.0-beta.17",
@@ -70,7 +75,6 @@
         "jsonata": "^2.0.4",
         "maplibre-gl": "5.24.0",
         "milsymbol": "^3.0.2",
-        "moment": "^2.29.3",
         "openapi-fetch": "^0.17.0",
         "phone": "^3.1.59",
         "pinia": "^3.0.0",
@@ -89,6 +93,7 @@
         "yaml": "^2.8.2"
     },
     "devDependencies": {
+        "@capacitor/cli": "8.3.1",
         "@eslint/js": "^10.0.0",
         "@testing-library/vue": "^8.1.0",
         "@types/mapbox__tile-cover": "^3.0.4",
