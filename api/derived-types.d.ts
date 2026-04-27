@@ -25525,6 +25525,8 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        /** @description Channels to assign to the latest package version */
+                        channels?: string[];
                         /** @description Keywords to assign to the latest package version */
                         keywords?: string[];
                         /** @description Expiration as a Unix timestamp in seconds, use -1 to clear expiration */

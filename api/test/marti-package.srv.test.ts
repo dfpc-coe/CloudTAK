@@ -8,6 +8,8 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import Flight from './flight.js';
 import { DataPackage } from '@tak-ps/node-cot';
+import FileCommands from '@tak-ps/node-tak/lib/api/files';
+import Sinon from 'sinon';
 import stream2buffer from '../lib/stream.js';
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
@@ -54,7 +56,7 @@ test('GET: api/marti/package - empty', async () => {
     flight.tak.reset();
 });
 
-test('GET api/marti/package/:uid - includes latest package channels', async () => {
+test('GET api/marti/package/:uid - includes channels from the newest duplicate-hash metadata row', async () => {
     try {
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
@@ -100,6 +102,12 @@ test('GET api/marti/package/:uid - includes latest package channels', async () =
                     data: [{
                         Name: 'Visible Package',
                         Hash: 'latest-hash',
+                        Time: '2024-01-01T00:00:00.000Z',
+                        Groups: 'Blue'
+                    }, {
+                        Name: 'Visible Package',
+                        Hash: 'latest-hash',
+                        Time: '2025-01-01T00:00:00.000Z',
                         Groups: 'Blue, Red'
                     }]
                 }));
@@ -363,12 +371,92 @@ test('POST api/marti/package - Upload KML', async () => {
     flight.tak.reset();
 });
 
+test('PUT api/marti/package - private package upload uses application/zip for finalized data package content', async () => {
+    const outputPath = path.resolve(os.tmpdir(), randomUUID() + '.zip');
+    let uploadHit = false;
+
+    try {
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (!request.method || !request.url) {
+                return false;
+            }
+
+            const url = new URL(request.url, 'http://takserver');
+
+            if (request.method === 'POST' && url.pathname === '/Marti/sync/upload') {
+                uploadHit = true;
+
+                assert.equal(request.headers['content-type'], 'application/zip');
+
+                await fsp.writeFile(outputPath, await stream2buffer(request));
+
+                const dp = await DataPackage.parse(outputPath);
+
+                assert.equal(dp.contents.length, 1);
+                assert.ok(dp.contents[0]._attributes.zipEntry.endsWith('.cot'));
+
+                await dp.destroy();
+
+                response.setHeader('Content-Type', 'text/plain');
+                response.write(JSON.stringify({
+                    UID: 'private-upload',
+                    SubmissionDateTime: new Date().toISOString(),
+                    Keywords: [],
+                    MIMEType: 'application/zip',
+                    SubmissionUser: 'admin@example.com',
+                    PrimaryKey: 'private-primary',
+                    Hash: 'private-hash',
+                    CreatorUid: 'admin',
+                    Name: 'private-hash',
+                }));
+                response.end();
+
+                return true;
+            }
+
+            return false;
+        });
+
+        const res = await flight.fetch('/api/marti/package', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                public: false,
+                keywords: [],
+                destinations: [],
+                assets: [],
+                basemaps: [],
+                features: [{
+                    id: 'feature-1',
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [-77.0365, 38.8977]
+                    }
+                }]
+            }
+        }, true);
+
+        assert.equal(res.status, 200);
+        assert.equal(uploadHit, true);
+        assert.equal(res.body.Hash, 'private-hash');
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    flight.tak.reset();
+});
+
 flight.user({ username: 'pkgowner', admin: false });
 flight.user({ username: 'pkgviewer', admin: false });
 
 test('PATCH api/marti/package/:uid - User with overlapping active channel can update latest package metadata', async () => {
     let searchCount = 0;
     let groupsHandlerHit = false;
+    let uploadHit = false;
 
     try {
         flight.config?.conns.set('pkgowner@example.com', {
@@ -416,6 +504,13 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
                 response.end();
 
                 return true;
+            } else if (request.method === 'GET' && request.url === '/Marti/sync/content?hash=latest-hash') {
+                response.writeHead(200, {
+                    'Content-Type': 'application/zip'
+                });
+                response.end(Buffer.from('zip-payload'));
+
+                return true;
             } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
                 groupsHandlerHit = true;
                 response.setHeader('Content-Type', 'application/json');
@@ -447,10 +542,22 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
                     data: [{
                         Name: 'Patch Package',
                         Hash: 'latest-hash',
+                        Time: '2024-01-01T00:00:00.000Z',
                         Groups: 'Blue'
+                    }, {
+                        Name: 'Patch Package',
+                        Hash: 'latest-hash',
+                        Time: searchCount > 1 ? '2025-01-01T00:00:00.000Z' : '2024-01-01T00:00:00.000Z',
+                        Groups: searchCount > 1 ? 'Blue, Red' : 'Blue'
                     }]
                 }));
                 response.end();
+
+                return true;
+            } else if (request.method === 'POST' && request.url === '/Marti/sync/missionupload?filename=Patch+Package&creatorUid=pkgowner&hash=latest-hash&mimetype=application%2Fzip&keyword=missionpackage&keyword=updated&Groups=Blue&Groups=Red') {
+                uploadHit = true;
+                response.writeHead(200);
+                response.end('http://takserver/Marti/sync/content?hash=latest-hash');
 
                 return true;
             } else if (request.method === 'PUT' && request.url === '/Marti/api/sync/metadata/latest-hash/keywords') {
@@ -478,6 +585,7 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
                 bearer: flight.token.pkgowner
             },
             body: {
+                channels: ['Blue', 'Red'],
                 keywords: ['updated'],
                 expiration: 1234567890
             }
@@ -487,13 +595,84 @@ test('PATCH api/marti/package/:uid - User with overlapping active channel can up
         assert.equal(res.body.hash, 'latest-hash');
         assert.deepEqual(res.body.keywords, ['updated']);
         assert.equal(res.body.expiration, 1234567890);
-        assert.deepEqual(res.body.channels, ['Blue']);
+        assert.deepEqual(res.body.channels, ['Blue', 'Red']);
         assert.equal(res.body.items[1].Hash, 'latest-hash');
         assert.equal(groupsHandlerHit, true);
+        assert.equal(uploadHit, true);
     } catch (err) {
         assert.ifError(err);
     } finally {
         flight.config?.conns.delete('pkgowner@example.com');
+    }
+
+    flight.tak.reset();
+});
+
+test('PATCH api/marti/package/:uid - closes downloaded content when channel upload fails', async () => {
+    const content = {
+        destroyed: false,
+        readableEnded: false,
+        resume() {},
+        destroy() {
+            this.destroyed = true;
+            return this;
+        }
+    };
+
+    const resumeSpy = Sinon.spy(content, 'resume');
+    const destroySpy = Sinon.spy(content, 'destroy');
+    const uploadError = new Error('mission upload exploded');
+
+    try {
+        Sinon.stub(FileCommands.prototype, 'download').resolves(content as any);
+        Sinon.stub(FileCommands.prototype, 'uploadPackage').rejects(uploadError);
+
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (!request.method || !request.url) {
+                return false;
+            } else if (request.method === 'GET' && request.url.includes('/Marti/sync/search?uid=failed-upload-pkg-uid')) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    resultCount: 1,
+                    results: [{
+                        UID: 'failed-upload-pkg-uid',
+                        SubmissionDateTime: '2025-01-01T00:00:00.000Z',
+                        Keywords: ['latest'],
+                        Tool: 'public',
+                        Size: 456,
+                        MIMEType: 'application/zip',
+                        EXPIRATION: '-1',
+                        SubmissionUser: 'pkgowner@example.com',
+                        PrimaryKey: 'failed-primary',
+                        Hash: 'failed-hash',
+                        CreatorUid: 'pkgowner',
+                        Name: 'Failed Upload Package',
+                    }]
+                }));
+                response.end();
+
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        const res = await flight.fetch('/api/marti/package/failed-upload-pkg-uid', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                channels: ['Blue']
+            }
+        }, false);
+
+        assert.equal(res.status, 500);
+        assert.equal(destroySpy.called || resumeSpy.called, true);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        Sinon.restore();
     }
 
     flight.tak.reset();

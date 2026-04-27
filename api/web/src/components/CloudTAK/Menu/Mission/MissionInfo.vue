@@ -66,140 +66,34 @@
                                     v-text='(Array.isArray(props.subscription.meta.contents) ? props.subscription.meta.contents.length : 0) + " Files"'
                                 />
                             </div>
-                            <div class='col-12'>
-                                <TablerBorder
-                                    class='mission-editable-border'
-                                    background='rgba(0, 0, 0, 0.1)'
-                                    :shadow='false'
-                                    :fill-height='false'
-                                    gap='sm'
-                                >
-                                    <template #label>
-                                        <small class='text-uppercase text-white-50 d-block mb-0'>Groups (Channels)</small>
-                                    </template>
-                                    <template
-                                        v-if='canEditGroups && !editingGroups'
-                                        #tools
-                                    >
-                                        <TablerIconButton
-                                            title='Edit channels'
-                                            @click.stop.prevent='startEditingGroups'
-                                        >
-                                            <IconPencil
-                                                :size='24'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
-                                    </template>
-
-                                    <template v-if='editingGroups'>
-                                        <GroupSelect
-                                            :model-value='groupDraft'
-                                            :active='true'
-                                            direction='IN'
-                                            @update:model-value='groupDraft = $event'
-                                        />
-
-                                        <div class='d-flex justify-content-end gap-2 pt-2'>
-                                            <TablerButton
-                                                :disabled='savingGroups'
-                                                @click.stop='cancelEditingGroups'
-                                            >
-                                                Cancel
-                                            </TablerButton>
-                                            <TablerButton
-                                                class='btn-primary'
-                                                :disabled='savingGroups'
-                                                @click.stop='saveGroups'
-                                            >
-                                                {{ savingGroups ? 'Saving...' : 'Save' }}
-                                            </TablerButton>
-                                        </div>
-                                    </template>
-
-                                    <template v-else>
-                                        <div
-                                            v-if='groupList.length'
-                                            class='d-flex flex-wrap gap-2'
-                                        >
-                                            <TablerBadge
-                                                v-for='group of groupList'
-                                                :key='group'
-                                                class='rounded-pill text-uppercase fw-semibold'
-                                                background-color='rgba(107, 114, 128, 0.2)'
-                                                border-color='rgba(107, 114, 128, 0.5)'
-                                                text-color='#6b7280'
-                                            >
-                                                {{ group }}
-                                            </TablerBadge>
-                                        </div>
-                                        <p
-                                            v-else
-                                            class='text-white-50 mb-0'
-                                        >
-                                            None
-                                        </p>
-                                    </template>
-                                </TablerBorder>
-                            </div>
-                            <div class='col-12'>
-                                <TablerBorder
-                                    class='mission-editable-border'
-                                    background='rgba(0, 0, 0, 0.1)'
-                                    :shadow='false'
-                                    :fill-height='false'
-                                    gap='sm'
-                                >
-                                    <template #label>
-                                        <small class='text-uppercase text-white-50 d-block mb-0'>Keywords</small>
-                                    </template>
-                                    <template
-                                        v-if='canEditMission && !editingKeywords'
-                                        #tools
-                                    >
-                                        <TablerIconButton
-                                            title='Edit keywords'
-                                            @click.stop.prevent='startEditingKeywords'
-                                        >
-                                            <IconPencil
-                                                :size='24'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
-                                    </template>
-
-                                    <template v-if='editingKeywords'>
-                                        <TagEntry
-                                            :model-value='keywordDraft'
-                                            placeholder='Add keywords'
-                                            @update:model-value='keywordDraft = $event'
-                                        />
-
-                                        <div class='d-flex justify-content-end gap-2 pt-2'>
-                                            <TablerButton
-                                                :disabled='savingKeywords'
-                                                @click.stop='cancelEditingKeywords'
-                                            >
-                                                Cancel
-                                            </TablerButton>
-                                            <TablerButton
-                                                class='btn-primary'
-                                                :disabled='savingKeywords'
-                                                @click.stop='saveKeywords'
-                                            >
-                                                {{ savingKeywords ? 'Saving...' : 'Save' }}
-                                            </TablerButton>
-                                        </div>
-                                    </template>
-
-                                    <Keywords
-                                        v-else
-                                        :keywords='keywords'
-                                        placeholder='No keywords provided'
-                                        tone='accent'
-                                    />
-                                </TablerBorder>
-                            </div>
+                            <InlineGroupSelect
+                                v-model='groupDraft'
+                                :value='groupList'
+                                :editing='editingGroups'
+                                :editable='canEditGroups'
+                                :saving='savingGroups'
+                                border-class='mission-editable-border'
+                                label='Groups (Channels)'
+                                badge-text-color='#6b7280'
+                                @edit='startEditingGroups'
+                                @cancel='cancelEditingGroups'
+                                @save='saveGroups'
+                            />
+                            <InlineKeywords
+                                v-model='keywordDraft'
+                                :value='keywords'
+                                :editing='editingKeywords'
+                                :editable='canEditMission'
+                                :saving='savingKeywords'
+                                border-class='mission-editable-border'
+                                label='Keywords'
+                                placeholder='No keywords provided'
+                                input-placeholder='Add keywords'
+                                tone='accent'
+                                @edit='startEditingKeywords'
+                                @cancel='cancelEditingKeywords'
+                                @save='saveKeywords'
+                            />
                             <div class='col-12'>
                                 <small class='text-uppercase text-white-50 d-block mb-1'>Description</small>
                                 <CopyField
@@ -353,24 +247,19 @@ import { useRoute, useRouter } from 'vue-router';
 import { stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
 import MissionTemplate from '../../../../base/mission-template.ts';
-import Keywords from '../../util/Keywords.vue';
 import CopyField from '../../util/CopyField.vue';
-import TagEntry from '../../util/TagEntry.vue';
-import GroupSelect from '../../util/GroupSelect.vue';
+import InlineGroupSelect from '../../util/InlineGroupSelect.vue';
+import InlineKeywords from '../../util/InlineKeywords.vue';
 import {
     IconQrcode,
     IconBroadcast,
-    IconPencil,
     IconPlus,
     IconMinus,
     IconCheck,
     IconX,
 } from '@tabler/icons-vue';
 import {
-    TablerBadge,
     TablerBorder,
-    TablerButton,
-    TablerIconButton,
     TablerLoading,
     TablerModal,
     TablerNone,
@@ -422,20 +311,19 @@ const groupDraft = ref<string[]>([...groupList.value]);
 
 function startEditingGroups(): void {
     if (!canEditGroups.value) return;
-    groupDraft.value = [...groupList.value];
     editingGroups.value = true;
 }
 
 function cancelEditingGroups(): void {
     editingGroups.value = false;
-    groupDraft.value = [...groupList.value];
 }
 
-async function saveGroups(): Promise<void> {
+async function saveGroups(nextGroups: string[]): Promise<void> {
     try {
         savingGroups.value = true;
+        groupDraft.value = [...nextGroups];
         await props.subscription.update({
-            groups: groupDraft.value
+            groups: nextGroups
         });
         editingGroups.value = false;
     } catch (err) {
@@ -447,24 +335,23 @@ async function saveGroups(): Promise<void> {
 
 function startEditingKeywords(): void {
     if (!canEditMission.value) return;
-    keywordDraft.value = [...keywords.value];
     editingKeywords.value = true;
 }
 
 function cancelEditingKeywords(): void {
     editingKeywords.value = false;
-    keywordDraft.value = [...keywords.value];
 }
 
-async function saveKeywords(): Promise<void> {
+async function saveKeywords(nextKeywords: string[]): Promise<void> {
     try {
         savingKeywords.value = true;
+        keywordDraft.value = [...nextKeywords];
         // Preserve any non-user keywords (eg template:*) that the Keywords component filters out
         const preserved = (props.subscription.meta.keywords || []).filter((keyword) => {
             return typeof keyword === 'string' && keyword.startsWith('template:');
         });
         await props.subscription.update({
-            keywords: [...preserved, ...keywordDraft.value]
+            keywords: [...preserved, ...nextKeywords]
         });
         editingKeywords.value = false;
     } catch (err) {
