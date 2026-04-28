@@ -229,6 +229,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
+import { openExternalUrl } from '../../../base/capacitor.ts';
 import { useRoute } from 'vue-router'
 import { std } from '../../../std.ts';
 import type { ETLLayer, ETLLayerTaskCapabilities } from '../../../types.ts';
@@ -303,7 +304,7 @@ function reload() {
 
 function help(topic: string) {
     if (topic === "query") {
-        window.open('http://docs.jsonata.org/simple', '_blank');
+        void openExternalUrl('http://docs.jsonata.org/simple');
     }
 }
 

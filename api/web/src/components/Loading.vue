@@ -48,6 +48,7 @@
 
 <script setup lang='ts'>
 import Config from '../base/config.ts';
+import { supportsServiceWorker } from '../base/capacitor.ts';
 import { ref, onMounted, onUnmounted } from 'vue'
 import {
     TablerLoading
@@ -58,7 +59,7 @@ const showReset = ref(false);
 let resetTimer: ReturnType<typeof setTimeout> | undefined;
 
 async function hardReset(): Promise<void> {
-    if ('serviceWorker' in navigator) {
+    if (supportsServiceWorker()) {
         const registrations = await navigator.serviceWorker.getRegistrations();
         for (const registration of registrations) {
             await registration.unregister();

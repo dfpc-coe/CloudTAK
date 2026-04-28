@@ -95,7 +95,7 @@
                 <div class='col-12 pt-3'>
                     <TablerButton
                         class='w-100 btn-primary'
-                        :disabled='!body.groups.length && (!props.upload || uploaded)'
+                        :disabled='createDisabled'
                         @click='share'
                     >
                         Create
@@ -181,6 +181,12 @@ const uploadUrl = computed(() => {
     }
 
     return url;
+});
+
+const createDisabled = computed(() => {
+    if (props.upload && !uploaded.value) return true;
+
+    return !body.value.groups.length && (!props.upload || uploaded.value);
 });
 
 function stageUpload(file: { name: string }) {

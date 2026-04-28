@@ -29,8 +29,9 @@ export default class IconManager {
     private worker: Comlink.Remote<Atlas>;
     private loggedMissingImageIds = new Set<string>();
     private loggedErrors = new Set<string>();
-    private inflightImage = new Map<string, Promise<void>>();
+    private inflightImage = new Map<string, Promise<boolean>>();
     private fallbackBitmap: ImageBitmap | null = null;
+    private requestedIconsetImageIds = new Set<string>();
 
     constructor(map: MapLibreMap, worker: Comlink.Remote<Atlas>) {
         this.map = map;
@@ -123,7 +124,7 @@ export default class IconManager {
      */
     async hydrate(opts: { force?: boolean } = {}): Promise<void> {
         const result = await this.worker.icons.hydrate({ force: !!opts.force }) as IconHydrateResult;
-        this.applyHydrateResult(result);
+        await this.applyHydrateResult(result);
     }
 
     /**
@@ -133,19 +134,26 @@ export default class IconManager {
      */
     async addIconset(uid: string): Promise<void> {
         const updated = await this.worker.icons.addIconset(uid);
-        if (updated) this.purgeMapImagesForIconset(uid);
+        if (updated) await this.reloadIconsetImages(uid);
     }
 
     async removeIconset(uid: string): Promise<void> {
         const removed = await this.worker.icons.removeIconset(uid);
-        if (removed) this.purgeMapImagesForIconset(uid);
+        if (removed) {
+            this.purgeMapImagesForIconset(uid);
+            this.removeRequestedImagesForIconset(uid);
+        }
     }
 
-    private applyHydrateResult(result: IconHydrateResult): void {
+    private async applyHydrateResult(result: IconHydrateResult): Promise<void> {
         if (result.skipped) return;
 
-        for (const uid of result.removed) this.purgeMapImagesForIconset(uid);
-        for (const uid of result.changed) this.purgeMapImagesForIconset(uid);
+        for (const uid of result.removed) {
+            this.purgeMapImagesForIconset(uid);
+            this.removeRequestedImagesForIconset(uid);
+        }
+
+        await Promise.all(result.changed.map((uid) => this.reloadIconsetImages(uid)));
     }
 
     private purgeMapImagesForIconset(uid: string): void {
@@ -171,6 +179,11 @@ export default class IconManager {
                 const originalIconId = parts[0];
                 const color = '#' + parts[1];
 
+                if (originalIconId.includes(':')) {
+                    this.requestedIconsetImageIds.add(originalIconId);
+                    this.requestedIconsetImageIds.add(e.id);
+                }
+
                 // Iconset icons are only loaded on demand via this same handler.
                 // When MapLibre asks for the colored variant first, the
                 // underlying base image hasn't been registered yet, so we need
@@ -183,6 +196,7 @@ export default class IconManager {
 
                 this.getColoredIcon(originalIconId, color);
             } else if (e.id.includes(':')) {
+                this.requestedIconsetImageIds.add(e.id);
                 await this.loadIconsetImage(e.id);
             } else if (!this.loggedMissingImageIds.has(e.id)) {
                 this.loggedMissingImageIds.add(e.id);
@@ -206,8 +220,8 @@ export default class IconManager {
      * Resolve an `<iconsetUid>:<path>` image id from Dexie and register it with
      * MapLibre. Falls back to a generic point icon when the icon isn't cached.
      */
-    private async loadIconsetImage(id: string): Promise<void> {
-        if (this.map.hasImage(id)) return;
+    private async loadIconsetImage(id: string): Promise<boolean> {
+        if (this.map.hasImage(id)) return true;
 
         const inflight = this.inflightImage.get(id);
         if (inflight) return inflight;
@@ -221,7 +235,7 @@ export default class IconManager {
                     if (!this.map.hasImage(id)) {
                         this.map.addImage(id, bitmap);
                     }
-                    return;
+                    return true;
                 }
 
                 const fallback = await this.getFallbackBitmap();
@@ -234,6 +248,8 @@ export default class IconManager {
                     'Iconset icon not found in local cache, using fallback',
                     { imageId: id }
                 );
+
+                return false;
             } finally {
                 this.inflightImage.delete(id);
             }
@@ -241,6 +257,44 @@ export default class IconManager {
 
         this.inflightImage.set(id, work);
         return work;
+    }
+
+    private async reloadIconsetImages(uid: string): Promise<void> {
+        const prefix = `${uid}:`;
+        const ids = new Set([
+            ...Array.from(this.requestedIconsetImageIds).filter((id) => id.startsWith(prefix)),
+            ...this.map.listImages().filter((id) => id.startsWith(prefix))
+        ]);
+
+        this.purgeMapImagesForIconset(uid);
+
+        await Promise.all(Array.from(ids).map((id) => this.reloadRequestedIconsetImage(id)));
+    }
+
+    private async reloadRequestedIconsetImage(id: string): Promise<void> {
+        if (id.includes('-colored-')) {
+            const parts = id.split('-colored-');
+            const originalIconId = parts[0];
+            const color = '#' + parts[1];
+
+            this.cache.delete(id);
+            const loaded = await this.loadIconsetImage(originalIconId);
+            if (!loaded) return;
+
+            this.getColoredIcon(originalIconId, color);
+            this.requestedIconsetImageIds.delete(id);
+            return;
+        }
+
+        const loaded = await this.loadIconsetImage(id);
+        if (loaded) this.requestedIconsetImageIds.delete(id);
+    }
+
+    private removeRequestedImagesForIconset(uid: string): void {
+        const prefix = `${uid}:`;
+        for (const id of Array.from(this.requestedIconsetImageIds)) {
+            if (id.startsWith(prefix)) this.requestedIconsetImageIds.delete(id);
+        }
     }
 
     private async getFallbackBitmap(): Promise<ImageBitmap> {

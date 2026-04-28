@@ -149,7 +149,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed, onMounted } from 'vue';
-import { std, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import {
     IconInfoSquare,
     IconTrash,
@@ -246,15 +246,39 @@ async function fetchSelected(): Promise<void> {
         const iconset = path.split('/')[0];
         const icon = path.split('/').splice(1).join('/');
 
-        selected.value = await std(`/api/iconset/${iconset}/icon/${encodeURIComponent(icon)}`) as Icon;
+        const { data, error } = await server.GET('/api/iconset/{:iconset}/icon/{:icon}', {
+            params: {
+                path: {
+                    ':iconset': iconset,
+                    ':icon': icon
+                }
+            }
+        });
+
+        if (error) throw new Error(error.message);
+        if (!data) return;
+
+        selected.value = data;
     }
 }
 
 async function fetchIconsets(): Promise<void> {
     loading.value.iconset = true;
-    const url = stdurl('/api/iconset');
-    url.searchParams.set('limit', '50');
-    sets.value = (await std(url) as { total: number; items: Iconset[] }).items;
+    const { data, error } = await server.GET('/api/iconset', {
+        params: {
+            query: {
+                limit: 50,
+                page: 0,
+                order: 'asc',
+                sort: 'name',
+                filter: ''
+            }
+        }
+    });
+
+    if (error) throw new Error(error.message);
+
+    sets.value = data?.items || [];
     if (sets.value.length) {
         params.value.iconset = sets.value[0].name;
     }
@@ -263,14 +287,25 @@ async function fetchIconsets(): Promise<void> {
 
 async function fetchIcons(): Promise<void> {
     loading.value.icons = true;
-    const url = stdurl('/api/icon');
-    url.searchParams.set('limit', '1000');
-    if (params.value.iconset) {
-        const match = sets.value.find((set) => set.name === params.value.iconset);
-        if (match) url.searchParams.set('iconset', match.uid);
-    }
-    url.searchParams.set('filter', params.value.filter);
-    list.value = await std(url) as IconList;
+    const iconset = params.value.iconset
+        ? sets.value.find((set) => set.name === params.value.iconset)?.uid
+        : undefined;
+
+    const { data, error } = await server.GET('/api/icon', {
+        params: {
+            query: {
+                limit: 1000,
+                page: 0,
+                order: 'asc',
+                iconset,
+                filter: params.value.filter
+            }
+        }
+    });
+
+    if (error) throw new Error(error.message);
+
+    list.value = data || { total: 0, items: [] };
     loading.value.icons = false;
 }
 

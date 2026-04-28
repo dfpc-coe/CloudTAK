@@ -1,4 +1,11 @@
 import { defineStore } from 'pinia';
+import {
+    checkNativeLocationPermission,
+    getCurrentLocation,
+    isNativePlatform,
+    requestNativeLocationPermission,
+    supportsLocationRequests
+} from '../../base/capacitor.ts';
 
 export type BrowserPermissionState = PermissionState | 'unsupported' | 'unknown';
 export type BrowserPermissionType = 'location' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
@@ -52,7 +59,12 @@ export const usePermissionStore = defineStore('permissions', {
             this.permissions[type] = state;
         },
         refreshLocationPermissionStatus: async function(): Promise<void> {
-            if (!("geolocation" in navigator)) {
+            if (isNativePlatform()) {
+                this.setPermissionStatus('location', await checkNativeLocationPermission());
+                return;
+            }
+
+            if (!supportsLocationRequests()) {
                 this.setPermissionStatus('location', 'unsupported');
                 return;
             }
@@ -239,18 +251,31 @@ export const usePermissionStore = defineStore('permissions', {
             ]);
         },
         requestLocationPermission: async function(onGranted?: () => void): Promise<void> {
-            if (!("geolocation" in navigator)) {
+            if (isNativePlatform()) {
+                try {
+                    const status = await requestNativeLocationPermission();
+                    this.setPermissionStatus('location', status);
+
+                    if (status === 'granted') {
+                        onGranted?.();
+                    }
+                } finally {
+                    await this.refreshLocationPermissionStatus();
+                }
+
+                return;
+            }
+
+            if (!supportsLocationRequests()) {
                 this.setPermissionStatus('location', 'unsupported');
                 return;
             }
 
             try {
-                await new Promise<GeolocationPosition>((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
-                    });
+                await getCurrentLocation({
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
                 });
 
                 onGranted?.();
@@ -380,7 +405,14 @@ export const usePermissionStore = defineStore('permissions', {
         initializePermissionSubscriptions: async function(onLocationGranted?: () => void): Promise<void> {
             await this.refreshPermissionStatuses();
 
-            if ("geolocation" in navigator) {
+            if (isNativePlatform()) {
+                const status = await checkNativeLocationPermission();
+                this.setPermissionStatus('location', status);
+
+                if (status === 'granted') {
+                    onLocationGranted?.();
+                }
+            } else if ("geolocation" in navigator) {
                 if ('permissions' in navigator && navigator.permissions?.query) {
                     try {
                         const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });

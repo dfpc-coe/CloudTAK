@@ -150,6 +150,7 @@ import {
     TablerBytes,
     TablerEpoch
 } from '@tak-ps/vue-tabler';
+import { openExternalUrl } from '../../../base/capacitor.ts';
 
 type Asset = {
     name: string;
@@ -200,7 +201,7 @@ function uploadURL() {
 async function downloadAsset(asset: Asset) {
     const url = stdurl(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}/asset/${asset.name}`);
     url.searchParams.set('token', localStorage.token);
-    window.open(url, '_blank');
+    await openExternalUrl(url);
 }
 
 async function deleteAsset(asset: Asset) {

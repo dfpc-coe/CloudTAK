@@ -185,7 +185,7 @@
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import { validateURL } from '../../../base/validators.ts';
 import {
     TablerLoading,
@@ -265,30 +265,35 @@ async function fetch(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
-        const url = stdurl('/api/config');
-        url.searchParams.set('keys', Object.keys(config.value).join(','));
-        const res = await std(url) as Partial<LoginConfig>;
+        const { data, error } = await server.GET('/api/config', {
+            params: {
+                query: {
+                    keys: Object.keys(config.value).join(',')
+                }
+            }
+        });
+        if (error) throw new Error(error.message);
 
         config.value = {
-            'login::name': res['login::name'] ?? '',
-            'login::logo': res['login::logo'] ?? '',
-            'login::forgot': res['login::forgot'] ?? '',
-            'login::signup': res['login::signup'] ?? '',
-            'login::username': res['login::username'] ?? 'Username or Email',
-            'login::brand::enabled': res['login::brand::enabled'] ?? 'default',
-            'login::brand::logo': res['login::brand::logo'] ?? '',
-            'login::background::enabled': res['login::background::enabled'] ?? false,
-            'login::background::color': res['login::background::color'] ?? '#000000',
-            'oidc::enabled': res['oidc::enabled'] ?? false,
-            'oidc::enforced': res['oidc::enforced'] ?? false,
-            'oidc::name': res['oidc::name'] ?? '',
-            'oidc::client': res['oidc::client'] ?? '',
-            'oidc::secret': res['oidc::secret'] ?? '',
-            'oidc::discovery': res['oidc::discovery'] ?? '',
-            'oidc::redirect': res['oidc::redirect'] ?? '',
-            'oidc::scopes': res['oidc::scopes'] ?? '',
-            'oidc::logo': res['oidc::logo'] ?? '',
-            'passkey::enabled': res['passkey::enabled'] ?? true,
+            'login::name': data['login::name'] ?? '',
+            'login::logo': data['login::logo'] ?? '',
+            'login::forgot': data['login::forgot'] ?? '',
+            'login::signup': data['login::signup'] ?? '',
+            'login::username': data['login::username'] ?? 'Username or Email',
+            'login::brand::enabled': data['login::brand::enabled'] ?? 'default',
+            'login::brand::logo': data['login::brand::logo'] ?? '',
+            'login::background::enabled': data['login::background::enabled'] ?? false,
+            'login::background::color': data['login::background::color'] ?? '#000000',
+            'oidc::enabled': data['oidc::enabled'] ?? false,
+            'oidc::enforced': data['oidc::enforced'] ?? false,
+            'oidc::name': data['oidc::name'] ?? '',
+            'oidc::client': data['oidc::client'] ?? '',
+            'oidc::secret': data['oidc::secret'] ?? '',
+            'oidc::discovery': data['oidc::discovery'] ?? '',
+            'oidc::redirect': data['oidc::redirect'] ?? '',
+            'oidc::scopes': data['oidc::scopes'] ?? '',
+            'oidc::logo': data['oidc::logo'] ?? '',
+            'passkey::enabled': data['passkey::enabled'] ?? true,
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
@@ -300,10 +305,10 @@ async function save(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
-        await std('/api/config', {
-            method: 'PUT',
+        const { error } = await server.PUT('/api/config', {
             body: config.value
         });
+        if (error) throw new Error(error.message);
 
         edit.value = false;
     } catch (error) {

@@ -222,7 +222,7 @@ import type { ProfileFile, ProfileFileList } from '../../../types.ts';
 import PathManager from '../../../base/path-manager.ts';
 import type { PathNode } from '../../../base/path-manager.ts';
 import ProfileConfig from '../../../base/profile.ts';
-import { std, stdurl, server } from '../../../std.ts';
+import { stdurl, server } from '../../../std.ts';
 import {
     TablerIconButton,
     TablerRefreshButton,
@@ -330,6 +330,10 @@ const paging = ref({
     filter: '',
     limit: 100
 })
+
+type ProfileAssetTileJSON = {
+    tiles: string[];
+};
 
 onMounted(async () => {
     currentUsername.value = (await ProfileConfig.get('username'))?.value || '';
@@ -485,6 +489,14 @@ function createFolder() {
     folderModal.value.name = '';
 }
 
+function isProfileAssetTileJSON(value: unknown): value is ProfileAssetTileJSON {
+    return !!value
+        && typeof value === 'object'
+        && 'tiles' in value
+        && Array.isArray(value.tiles)
+        && value.tiles.every((tile) => typeof tile === 'string');
+}
+
 async function deletePath(node: PathNode<ProfileFile>) {
     loading.value = true;
 
@@ -516,19 +528,27 @@ async function deletePath(node: PathNode<ProfileFile>) {
 async function createOverlay(asset: ProfileFile) {
     if (!asset.artifacts.map(a => a.ext).includes(".pmtiles")) throw new Error('Cannot add an Overlay for an asset that is not Cloud Optimized');
 
-    const url = stdurl(`/api/profile/asset/${encodeURIComponent(asset.id)}.pmtiles/tile`);
-
     loading.value = true;
 
     try {
-        // TODO type PMTiles endpoints
-        const res = await std(url) as {
-            tiles: [ string ];
-        };
+        const { data, error } = await server.GET('/api/profile/asset/{:asset}.pmtiles/tile', {
+            params: {
+                path: {
+                    ':asset': asset.id
+                }
+            }
+        });
 
-        if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
+        if (error) throw new Error(error.message);
+        const metadata = data as unknown;
+
+        if (!isProfileAssetTileJSON(metadata) || !metadata.tiles.length) {
+            throw new Error('Malformed PMTiles metadata response');
+        }
+
+        if (new URL(metadata.tiles[0]).pathname.endsWith('.mvt')) {
             mapStore.addOverlay(await Overlay.create({
-                url: String(url),
+                url: stdurl(`/api/profile/asset/${encodeURIComponent(asset.id)}.pmtiles/tile`).toString(),
                 name: asset.name,
                 mode: 'profile',
                 mode_id: asset.name,
@@ -539,7 +559,7 @@ async function createOverlay(asset: ProfileFile) {
             }));
         } else {
             mapStore.addOverlay(await Overlay.create({
-                url: String(url),
+                url: stdurl(`/api/profile/asset/${encodeURIComponent(asset.id)}.pmtiles/tile`).toString(),
                 name: asset.name,
                 mode: 'profile',
                 mode_id: asset.name,

@@ -96,7 +96,7 @@
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import {
     TablerLoading,
     TablerInput,
@@ -144,16 +144,21 @@ async function fetch(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
-        const url = stdurl('/api/config');
-        url.searchParams.set('keys', Object.keys(config.value).join(','));
-        const res = await std(url) as Partial<AgolConfig>;
+        const { data, error } = await server.GET('/api/config', {
+            params: {
+                query: {
+                    keys: Object.keys(config.value).join(',')
+                }
+            }
+        });
+        if (error) throw new Error(error.message);
 
         config.value = {
-            'agol::enabled': res['agol::enabled'] ?? false,
-            'agol::auth_method': res['agol::auth_method'] ?? 'oauth2',
-            'agol::token': res['agol::token'] ?? '',
-            'agol::client_id': res['agol::client_id'] ?? '',
-            'agol::client_secret': res['agol::client_secret'] ?? '',
+            'agol::enabled': data['agol::enabled'] ?? false,
+            'agol::auth_method': data['agol::auth_method'] ?? 'oauth2',
+            'agol::token': data['agol::token'] ?? '',
+            'agol::client_id': data['agol::client_id'] ?? '',
+            'agol::client_secret': data['agol::client_secret'] ?? '',
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
@@ -165,10 +170,10 @@ async function save(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
-        await std(`/api/config`, {
-            method: 'PUT',
+        const { error } = await server.PUT('/api/config', {
             body: config.value
         });
+        if (error) throw new Error(error.message);
         edit.value = false;
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));

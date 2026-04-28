@@ -271,7 +271,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import type { Mission, MissionInvite } from '../../../types.ts';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import {
     IconPlus,
     IconLock,
@@ -437,11 +437,23 @@ async function openMission(mission: Mission, usePassword: boolean) {
 }
 
 async function fetchMission(mission: Mission, password?: string): Promise<Mission> {
-    const url = stdurl(`/api/marti/missions/${mission.guid}`);
-    if (password) url.searchParams.set('password', password);
+    const { data, error } = await server.GET('/api/marti/missions/{:name}', {
+        params: {
+            path: {
+                ':name': mission.guid
+            },
+            query: {
+                password,
+                changes: false,
+                logs: false,
+            }
+        }
+    });
 
-    const m = await std(url) as Mission;
-    return m;
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error('Mission fetch failed');
+
+    return data;
 }
 
 function missionKeywords(mission: Mission): string[] {

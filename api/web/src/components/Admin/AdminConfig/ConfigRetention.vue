@@ -117,7 +117,7 @@
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { onMounted, ref, watch } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import {
     TablerLoading,
     TablerToggle,
@@ -167,17 +167,22 @@ async function fetch(): Promise<void> {
     err.value = null;
 
     try {
-        const url = stdurl('/api/config');
-        url.searchParams.set('keys', Object.keys(config.value).join(','));
-        const res = await std(url) as Partial<RetentionConfig>;
+        const { data, error } = await server.GET('/api/config', {
+            params: {
+                query: {
+                    keys: Object.keys(config.value).join(',')
+                }
+            }
+        });
+        if (error) throw new Error(error.message);
 
         config.value = {
-            'retention::enabled': res['retention::enabled'] ?? true,
-            'retention::connection-feature::enabled': res['retention::connection-feature::enabled'] ?? true,
-            'retention::chat::enabled': res['retention::chat::enabled'] ?? false,
-            'retention::chat::days': res['retention::chat::days'] ?? 30,
-            'retention::import::enabled': res['retention::import::enabled'] ?? false,
-            'retention::import::days': res['retention::import::days'] ?? 30,
+            'retention::enabled': data['retention::enabled'] ?? true,
+            'retention::connection-feature::enabled': data['retention::connection-feature::enabled'] ?? true,
+            'retention::chat::enabled': data['retention::chat::enabled'] ?? false,
+            'retention::chat::days': data['retention::chat::days'] ?? 30,
+            'retention::import::enabled': data['retention::import::enabled'] ?? false,
+            'retention::import::days': data['retention::import::days'] ?? 30,
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
@@ -191,10 +196,10 @@ async function save(): Promise<void> {
     err.value = null;
 
     try {
-        await std('/api/config', {
-            method: 'PUT',
+        const { error } = await server.PUT('/api/config', {
             body: config.value,
         });
+        if (error) throw new Error(error.message);
 
         edit.value = false;
     } catch (error) {
