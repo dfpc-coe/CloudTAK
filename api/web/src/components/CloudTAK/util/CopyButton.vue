@@ -31,7 +31,7 @@ import {
 import {
     TablerIconButton
 } from '@tak-ps/vue-tabler'
-import { writeClipboardText } from '../../../base/capacitor';
+import { writeClipboardText } from '../../../base/capacitor.ts';
 
 const props = defineProps({
     text: {

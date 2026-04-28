@@ -272,15 +272,6 @@ export const usePermissionStore = defineStore('permissions', {
             }
 
             try {
-                if (isNativePlatform()) {
-                    const status = await requestNativeLocationPermission();
-                    this.setPermissionStatus('location', status);
-
-                    if (status !== 'granted') {
-                        return;
-                    }
-                }
-
                 await getCurrentLocation({
                     enableHighAccuracy: true,
                     timeout: 10000,
