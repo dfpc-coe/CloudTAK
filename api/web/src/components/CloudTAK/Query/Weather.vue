@@ -96,7 +96,7 @@
                                 class='px-2 py-1 font-weight-bold small text-muted border-bottom'
                                 :class='{ "mt-2": i > 0 }'
                             >
-                                {{ moment(period.startTime).format('dddd, MMM Do') }}
+                                {{ formatForecastDay(period.startTime) }}
                             </div>
                             <div
                                 class='d-flex align-items-center px-2 py-1'
@@ -110,7 +110,7 @@
                                     <div
                                         class='text-muted'
                                         style='font-size: 0.7rem'
-                                        v-text='moment(period.startTime).format("h A")'
+                                        v-text='formatForecastHour(period.startTime)'
                                     />
                                 </div>
                                 <component
@@ -149,7 +149,6 @@
 <script setup lang='ts'>
 import { computed } from 'vue';
 import type { SearchReverse } from '../../../types.ts';
-import moment from 'moment';
 import {
     TablerSlidedown
 } from '@tak-ps/vue-tabler';
@@ -176,8 +175,49 @@ const forecastPeriods = computed(() => {
     return props.weather.properties.periods.slice(1);
 });
 
+const weekdayFormatter = new Intl.DateTimeFormat(undefined, {
+    weekday: 'long'
+});
+
+const monthFormatter = new Intl.DateTimeFormat(undefined, {
+    month: 'short'
+});
+
+const hourFormatter = new Intl.DateTimeFormat(undefined, {
+    hour: 'numeric',
+    hour12: true
+});
+
+function ordinal(day: number): string {
+    const remainder = day % 100;
+
+    if (remainder >= 11 && remainder <= 13) return `${day}th`;
+
+    switch (day % 10) {
+        case 1: return `${day}st`;
+        case 2: return `${day}nd`;
+        case 3: return `${day}rd`;
+        default: return `${day}th`;
+    }
+}
+
+function formatForecastDay(time: string): string {
+    const date = new Date(time);
+
+    return `${weekdayFormatter.format(date)}, ${monthFormatter.format(date)} ${ordinal(date.getDate())}`;
+}
+
+function formatForecastHour(time: string): string {
+    return hourFormatter.format(new Date(time)).replace(/\s/g, ' ');
+}
+
 function isSameDay(d1: string, d2: string) {
-    return moment(d1).isSame(d2, 'day');
+    const first = new Date(d1);
+    const second = new Date(d2);
+
+    return first.getFullYear() === second.getFullYear()
+        && first.getMonth() === second.getMonth()
+        && first.getDate() === second.getDate();
 }
 
 function getIcon(forecast: string) {
