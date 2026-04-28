@@ -16,6 +16,7 @@
                 :edit='props.edit'
                 :hover='props.hover'
                 :size='24'
+                @submit='submitDistance($event)'
             />
             <div
                 class='mx-2'
@@ -94,6 +95,7 @@ import {
 } from '@tabler/icons-vue';
 
 const emit = defineEmits([
+    'submit',
     'update:modelValue'
 ]);
 
@@ -132,6 +134,15 @@ watch(config.value, () => {
         'update:modelValue',
         toKilometers(mode.value, config.value.distance)
     );
+});
+
+watch(() => props.modelValue, (nextDistance) => {
+    config.value.distance = toCustom(mode.value, nextDistance);
+});
+
+watch(() => props.unit, (nextUnit) => {
+    mode.value = nextUnit;
+    config.value.distance = toCustom(nextUnit, props.modelValue);
 });
 
 /**
@@ -177,6 +188,13 @@ function changeMode(newMode: string): void {
     config.value.distance = toCustom(newMode, degrees);
 
     mode.value = newMode;
+}
+
+function submitDistance(distance: string | number): void {
+    const distanceValue = Number(distance);
+    if (!Number.isFinite(distanceValue)) return;
+
+    emit('submit', toKilometers(mode.value, distanceValue));
 }
 
 </script>
