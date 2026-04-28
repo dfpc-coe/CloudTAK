@@ -1,5 +1,11 @@
 import { defineStore } from 'pinia';
-import { checkNativeLocationPermission, isNativePlatform, requestNativeLocationPermission } from '../../base/capacitor.ts';
+import {
+    checkNativeLocationPermission,
+    getCurrentLocation,
+    isNativePlatform,
+    requestNativeLocationPermission,
+    supportsLocationRequests
+} from '../../base/capacitor.ts';
 
 export type BrowserPermissionState = PermissionState | 'unsupported' | 'unknown';
 export type BrowserPermissionType = 'location' | 'notification' | 'orientation' | 'storage' | 'camera' | 'wakeLock' | 'fileSystem';
@@ -58,7 +64,7 @@ export const usePermissionStore = defineStore('permissions', {
                 return;
             }
 
-            if (!("geolocation" in navigator)) {
+            if (!supportsLocationRequests()) {
                 this.setPermissionStatus('location', 'unsupported');
                 return;
             }
@@ -260,18 +266,25 @@ export const usePermissionStore = defineStore('permissions', {
                 return;
             }
 
-            if (!("geolocation" in navigator)) {
+            if (!supportsLocationRequests()) {
                 this.setPermissionStatus('location', 'unsupported');
                 return;
             }
 
             try {
-                await new Promise<GeolocationPosition>((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
-                    });
+                if (isNativePlatform()) {
+                    const status = await requestNativeLocationPermission();
+                    this.setPermissionStatus('location', status);
+
+                    if (status !== 'granted') {
+                        return;
+                    }
+                }
+
+                await getCurrentLocation({
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
                 });
 
                 onGranted?.();

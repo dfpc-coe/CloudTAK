@@ -1,6 +1,7 @@
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
+import type { CallbackID, Position, PositionOptions } from '@capacitor/geolocation';
 
 function getRuntimeOrigin(): string {
     if (typeof window !== 'undefined') {
@@ -20,6 +21,10 @@ export function isNativePlatform(): boolean {
 
 export function supportsServiceWorker(): boolean {
     return typeof navigator !== 'undefined' && !isNativePlatform() && 'serviceWorker' in navigator;
+}
+
+export function supportsLocationRequests(): boolean {
+    return isNativePlatform() || (typeof navigator !== 'undefined' && 'geolocation' in navigator);
 }
 
 export function resolveRuntimeUrl(url: string | URL): URL {
@@ -84,4 +89,19 @@ export async function requestNativeLocationPermission(): Promise<PermissionState
         console.warn('Failed to request native geolocation permission', err);
         return 'unknown';
     }
+}
+
+export async function getCurrentLocation(options?: PositionOptions): Promise<Position> {
+    return Geolocation.getCurrentPosition(options);
+}
+
+export async function watchLocation(
+    options: PositionOptions,
+    callback: (position: Position | null, err?: unknown) => void
+): Promise<CallbackID> {
+    return Geolocation.watchPosition(options, callback);
+}
+
+export async function clearLocationWatch(id: CallbackID): Promise<void> {
+    await Geolocation.clearWatch({ id });
 }
