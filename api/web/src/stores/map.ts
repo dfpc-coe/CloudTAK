@@ -657,11 +657,16 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             const permissionStore = usePermissionStore();
+            let startedGPSWatchFromPermissionSubscription = false;
             await permissionStore.initializePermissionSubscriptions(() => {
+                startedGPSWatchFromPermissionSubscription = true;
                 void this.startGPSWatch();
             });
 
-            if (permissionStore.permissions.location !== 'unsupported') {
+            if (
+                permissionStore.permissions.location !== 'unsupported'
+                && !startedGPSWatchFromPermissionSubscription
+            ) {
                 await this.startGPSWatch();
             }
 
