@@ -19,6 +19,10 @@
 
 ### Pending Release
 
+### v12.135.1 - 2026-04-28
+
+- :bug: AWS released an incompatible xm-builder version: Ref: https://github.com/aws/aws-sdk-js-v3/issues/7967
+
 ### v12.135.0 - 2026-04-28
 
 - :tada: Introduce CapacitorJS to allow for native mobile builds of CloudTAK
