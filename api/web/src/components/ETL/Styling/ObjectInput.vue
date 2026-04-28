@@ -13,7 +13,7 @@ import { ref, watch } from 'vue';
 import {
     TablerInput
 } from '@tak-ps/vue-tabler'
-import { isEqual as deepEqual } from '@react-hookz/deep-equal';
+import { isEqual as deepEqual } from '@ver0/deep-equal';
 
 const props = defineProps<{
     modelValue: Record<string, unknown> | unknown[];

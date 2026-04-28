@@ -67,7 +67,8 @@
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
-import { server, std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
+import type { paths } from '@cloudtak/api-types';
 import {
     TablerLoading,
     TablerEnum,
@@ -83,16 +84,13 @@ import {
 
 type DisplayKey = 'stale' | 'distance' | 'elevation' | 'speed' | 'projection' | 'zoom' | 'style' | 'coordinate' | 'text' | 'icon_rotation';
 type DisplayConfigKey = `display::${DisplayKey}`;
-type DisplayOptionValue = string | boolean;
-
-interface DisplayOptionEntry {
-    value: DisplayOptionValue;
-    options: DisplayOptionValue[];
-}
-
-type DisplayResponse = Record<DisplayKey, DisplayOptionEntry>;
-type DisplayConfig = Record<DisplayConfigKey, DisplayOptionValue>;
-type DisplayOptions = Record<DisplayConfigKey, DisplayOptionValue[]>;
+type DisplayResponse = paths['/api/config/display']['get']['responses']['200']['content']['application/json'];
+type DisplayConfig = {
+    [K in DisplayConfigKey]: DisplayResponse[K extends `display::${infer S extends DisplayKey}` ? S : never]['value'];
+};
+type DisplayOptions = {
+    [K in DisplayConfigKey]: DisplayResponse[K extends `display::${infer S extends DisplayKey}` ? S : never]['options'];
+};
 
 const displayKeys: DisplayConfigKey[] = [
     'display::stale',
@@ -109,15 +107,15 @@ const displayKeys: DisplayConfigKey[] = [
 
 function createDisplayConfig(): DisplayConfig {
     return {
-        'display::stale': '',
-        'display::distance': '',
-        'display::elevation': '',
-        'display::speed': '',
-        'display::projection': '',
-        'display::zoom': '',
-        'display::style': '',
-        'display::coordinate': '',
-        'display::text': '',
+        'display::stale': '10 Minutes',
+        'display::distance': 'mile',
+        'display::elevation': 'feet',
+        'display::speed': 'mi/h',
+        'display::projection': 'globe',
+        'display::zoom': 'conditional',
+        'display::style': 'System Default',
+        'display::coordinate': 'dd',
+        'display::text': 'Medium',
         'display::icon_rotation': true,
     };
 }
@@ -174,13 +172,31 @@ async function fetch(): Promise<void> {
         const { data, error } = await server.GET('/api/config/display');
         if (error) throw new Error(error.message);
 
-        const display = data as DisplayResponse;
+        displayOptions.value = {
+            'display::stale': data.stale.options,
+            'display::distance': data.distance.options,
+            'display::elevation': data.elevation.options,
+            'display::speed': data.speed.options,
+            'display::projection': data.projection.options,
+            'display::zoom': data.zoom.options,
+            'display::style': data.style.options,
+            'display::coordinate': data.coordinate.options,
+            'display::text': data.text.options,
+            'display::icon_rotation': data.icon_rotation.options,
+        };
 
-        for (const key of displayKeys) {
-            const shortKey = key.replace('display::', '') as DisplayKey;
-            displayOptions.value[key] = display[shortKey].options;
-            config.value[key] = display[shortKey].value;
-        }
+        config.value = {
+            'display::stale': data.stale.value,
+            'display::distance': data.distance.value,
+            'display::elevation': data.elevation.value,
+            'display::speed': data.speed.value,
+            'display::projection': data.projection.value,
+            'display::zoom': data.zoom.value,
+            'display::style': data.style.value,
+            'display::coordinate': data.coordinate.value,
+            'display::text': data.text.value,
+            'display::icon_rotation': data.icon_rotation.value,
+        };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
     }
@@ -191,10 +207,10 @@ async function save(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
-        await std(stdurl('/api/config'), {
-            method: 'PUT',
+        const { error } = await server.PUT('/api/config', {
             body: config.value
         });
+        if (error) throw new Error(error.message);
         
         await fetch();
         edit.value = false;

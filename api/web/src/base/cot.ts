@@ -4,7 +4,7 @@ import { db } from './database.ts';
 import { liveQuery } from 'dexie';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'
-import { isEqual } from '@react-hookz/deep-equal';
+import { isEqual } from '@ver0/deep-equal';
 import { WorkerMessageType } from'./events.ts'
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature, Subscription } from '../types.ts'

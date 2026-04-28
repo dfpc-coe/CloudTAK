@@ -21,7 +21,6 @@
                 <TablerInput
                     v-model='config.name'
                     label='Name'
-                    @submit='submitRings'
                 />
             </div>
 
@@ -31,7 +30,6 @@
                 :edit='true'
                 :hover='true'
                 :modes='["dd"]'
-                @submit='submitRings'
             />
 
             <div class='mx-2 border my-2'>

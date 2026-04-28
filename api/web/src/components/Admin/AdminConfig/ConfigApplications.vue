@@ -139,7 +139,7 @@
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import { validateTextNotEmpty, validateURL } from '../../../base/validators.ts';
 import {
     TablerLoading,
@@ -233,12 +233,16 @@ async function fetch(): Promise<void> {
     err.value = null;
 
     try {
-        const url = stdurl('/api/config');
-        url.searchParams.set('keys', 'external::applications');
+        const { data, error } = await server.GET('/api/config', {
+            params: {
+                query: {
+                    keys: 'external::applications'
+                }
+            }
+        });
+        if (error) throw new Error(error.message);
 
-        const res = await std(url) as Partial<ExternalApplicationsConfig>;
-
-        config.value['external::applications'] = cloneApplications(res['external::applications']);
+        config.value['external::applications'] = cloneApplications(data['external::applications']);
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
     }
@@ -267,12 +271,12 @@ async function save(): Promise<void> {
             throw new Error(`Invalid application entry: ${applicationNameError(invalid) || applicationUrlError(invalid)}`);
         }
 
-        await std('/api/config', {
-            method: 'PUT',
+        const { error } = await server.PUT('/api/config', {
             body: {
                 'external::applications': applications,
             }
         });
+        if (error) throw new Error(error.message);
 
         edit.value = false;
         await fetch();

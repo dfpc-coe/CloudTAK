@@ -3,6 +3,7 @@ import type { Middleware } from "openapi-fetch";
 import type { paths } from '@cloudtak/api-types'
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
+import { openSecondaryView } from './base/capacitor.ts';
 
 export const server = createClient<paths>({
     baseUrl: self.location.origin
@@ -145,7 +146,7 @@ function isWebWorker() {
 export function stdclick($router: Router, event: MouseEvent | KeyboardEvent, path: string) {
     if (event.ctrlKey === true) {
         const routeData = $router.resolve(path);
-        window.open(routeData.href, '_blank');
+        void openSecondaryView(routeData.href);
     } else {
         $router.push(path);
     }

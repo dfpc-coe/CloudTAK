@@ -391,7 +391,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import type { ETLLayer, ETLLayerTask, ETLLayerTaskCapabilities } from '../../types.ts';
-import { std, stdurl } from '../../std.ts';
+import { server, std } from '../../std.ts';
 import { useRoute, useRouter } from 'vue-router';
 import PageFooter from '../PageFooter.vue';
 import LayerStatus from './Layer/utils/StatusDot.vue';
@@ -466,6 +466,26 @@ onUnmounted(() => {
     }
 });
 
+function layerPathParams(): { ':connectionid': 'template' | number; ':layerid': number } {
+    return {
+        ':connectionid': route.params.connectionid === 'template'
+            ? 'template'
+            : Number(String(route.params.connectionid)),
+        ':layerid': Number(String(route.params.layerid))
+    };
+}
+
+function numericLayerPathParams(): { ':connectionid': number; ':layerid': number } {
+    return {
+        ':connectionid': Number(String(route.params.connectionid)),
+        ':layerid': Number(String(route.params.layerid))
+    };
+}
+
+function throwIfError(error: { message: string } | undefined) {
+    if (error) throw new Error(error.message);
+}
+
 async function refresh(full = false) {
     if (full) await fetch();
     await fetchStatus();
@@ -475,10 +495,21 @@ async function refresh(full = false) {
 async function createOutgoing() {
     loading.value.outgoing = true;
 
-    await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/outgoing`, {
-        method: 'POST',
-        body: {}
-    });
+    if (route.params.connectionid === 'template') {
+        await std(`/api/connection/template/layer/${route.params.layerid}/outgoing`, {
+            method: 'POST',
+            body: {}
+        });
+    } else {
+        const { error } = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/outgoing', {
+            params: {
+                path: numericLayerPathParams()
+            },
+            body: {}
+        });
+
+        throwIfError(error);
+    }
 
     await fetch();
     await fetchStatus();
@@ -489,10 +520,21 @@ async function createOutgoing() {
 async function createIncoming() {
     loading.value.incoming = true;
 
-    await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/incoming`, {
-        method: 'POST',
-        body: {}
-    });
+    if (route.params.connectionid === 'template') {
+        await std(`/api/connection/template/layer/${route.params.layerid}/incoming`, {
+            method: 'POST',
+            body: {}
+        });
+    } else {
+        const { error } = await server.POST('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
+            params: {
+                path: numericLayerPathParams()
+            },
+            body: {}
+        });
+
+        throwIfError(error);
+    }
 
     await fetch();
     await fetchStatus();
@@ -501,29 +543,61 @@ async function createIncoming() {
 }
 
 async function fetch() {
-    const url = stdurl(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}`);
-    url.searchParams.set('alarms', 'true');
-    layer.value = await std(url) as ETLLayer;
+    const { data, error } = await server.GET('/api/connection/{:connectionid}/layer/{:layerid}', {
+        params: {
+            path: layerPathParams(),
+            query: {
+                alarms: true,
+                download: false
+            }
+        }
+    });
+
+    throwIfError(error);
+    if (!data) throw new Error('Failed to load layer');
+    layer.value = data;
 
     if (!String(route.name).includes('outgoing') && !String(route.name).includes('incoming')) {
-        if (layer.value.outgoing && !layer.value.incoming) {
+        if (data.outgoing && !data.incoming) {
             mode.value = 'outgoing';
         }
     }
 }
 
 async function cancelUpdate() {
-    await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/task`, {
-        method: 'DELETE'
+    const { error } = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}/task', {
+        params: {
+            path: layerPathParams()
+        }
     });
+
+    throwIfError(error);
 }
 
 async function deleteConfig(direction: string) {
     loading.value.layer = true;
 
-    await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/${direction}`, {
-        method: 'DELETE'
-    });
+    if (route.params.connectionid === 'template') {
+        await std(`/api/connection/template/layer/${route.params.layerid}/${direction}`, {
+            method: 'DELETE'
+        });
+    } else if (direction === 'incoming') {
+        const { error } = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}/incoming', {
+            params: {
+                path: numericLayerPathParams()
+            }
+        });
+
+        throwIfError(error);
+    } else {
+        const { error } = await server.DELETE('/api/connection/{:connectionid}/layer/{:layerid}/outgoing', {
+            params: {
+                path: numericLayerPathParams()
+            }
+        });
+
+        throwIfError(error);
+    }
 
     await fetch();
     await fetchStatus();
@@ -535,7 +609,15 @@ async function deleteConfig(direction: string) {
 
 async function fetchStatus(load = false) {
     loading.value.stack = load;
-    stack.value = await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/task`) as ETLLayerTask;
+    const { data, error } = await server.GET('/api/connection/{:connectionid}/layer/{:layerid}/task', {
+        params: {
+            path: layerPathParams()
+        }
+    });
+
+    throwIfError(error);
+    if (!data) throw new Error('Failed to load task status');
+    stack.value = data;
     loading.value.stack = false;
 }
 
@@ -547,7 +629,15 @@ async function downloadConfig() {
 
 async function fetchCapabilities() {
     try {
-        capabilities.value = await std(`/api/connection/${route.params.connectionid || 'template'}/layer/${route.params.layerid}/task/capabilities`) as ETLLayerTaskCapabilities;
+        const { data, error } = await server.GET('/api/connection/{:connectionid}/layer/{:layerid}/task/capabilities', {
+            params: {
+                path: layerPathParams()
+            }
+        });
+
+        throwIfError(error);
+        if (!data) throw new Error('Failed to load layer capabilities');
+        capabilities.value = data;
         softAlert.value = false
     } catch (err) {
         softAlert.value = true;

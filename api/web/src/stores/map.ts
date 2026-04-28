@@ -30,9 +30,11 @@ import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
+import { clearLocationWatch, supportsLocationRequests, watchLocation } from '../base/capacitor.ts';
 
 import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, ConfigMap } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
+import type { CallbackID } from '@capacitor/geolocation';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
 
@@ -68,7 +70,7 @@ export const useMapStore = defineStore('cloudtak', {
         defaultPointType: string;
         manualLocationMode: boolean;
         isMobileDetected: boolean;
-        gpsWatchId: number | null;
+        gpsWatchId: CallbackID | null;
         tokenExpiry: number | null;
         lastUpdateCOTErrorSignature: string | null;
 
@@ -239,11 +241,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
             if (this._boundOnVisibilityChange) document.removeEventListener('visibilitychange', this._boundOnVisibilityChange);
 
-            // Clean up GPS watch
-            if (this.gpsWatchId !== null) {
-                navigator.geolocation.clearWatch(this.gpsWatchId);
-                this.gpsWatchId = null;
-            }
+            await this.stopGPSWatch();
 
             if (this._map) {
                 try {
@@ -659,12 +657,17 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             const permissionStore = usePermissionStore();
+            let startedGPSWatchFromPermissionSubscription = false;
             await permissionStore.initializePermissionSubscriptions(() => {
-                this.startGPSWatch();
+                startedGPSWatchFromPermissionSubscription = true;
+                void this.startGPSWatch();
             });
 
-            if (permissionStore.permissions.location !== 'unsupported') {
-                this.startGPSWatch();
+            if (
+                permissionStore.permissions.location !== 'unsupported'
+                && !startedGPSWatchFromPermissionSubscription
+            ) {
+                await this.startGPSWatch();
             }
 
             const sprites = IconManager.defaultSprite();
@@ -753,7 +756,10 @@ export const useMapStore = defineStore('cloudtak', {
                     map.setProjection({ type: "globe" });
                 }
 
-                await this.icons.hydrate();
+                void this.icons.hydrate()
+                    .catch((error: unknown) => {
+                        console.error('Failed to hydrate iconsets after map idle', error);
+                    });
 
                 await this.initOverlays();
 
@@ -805,16 +811,45 @@ export const useMapStore = defineStore('cloudtak', {
             this.isOpen = await this.worker.conn.isOpen;
 
         },
-        startGPSWatch: function(): void {
-            if (!("geolocation" in navigator)) return;
-
-            // Clear existing watch if any
-            if (this.gpsWatchId !== null) {
-                navigator.geolocation.clearWatch(this.gpsWatchId);
+        stopGPSWatch: async function(): Promise<void> {
+            if (this.gpsWatchId === null) {
+                return;
             }
 
-            this.gpsWatchId = navigator.geolocation.watchPosition((position) => {
-                if (!this.manualLocationMode) {
+            const watchId = this.gpsWatchId;
+            this.gpsWatchId = null;
+
+            try {
+                await clearLocationWatch(watchId);
+            } catch (err) {
+                console.warn('Failed to clear location watch', err);
+            }
+        },
+        startGPSWatch: async function(): Promise<void> {
+            if (!supportsLocationRequests()) return;
+
+            await this.stopGPSWatch();
+
+            try {
+                this.gpsWatchId = await watchLocation({
+                    maximumAge: 0,
+                    timeout: 1500,
+                    enableHighAccuracy: true
+                }, (position, err) => {
+                    if (err) {
+                        const geolocationError = err as { code?: number };
+
+                        if (geolocationError.code !== 0) {
+                            console.error('Location Error', err);
+                        }
+
+                        return;
+                    }
+
+                    if (!position || this.manualLocationMode) {
+                        return;
+                    }
+
                     this.locationAccuracy = position.coords.accuracy;
 
                     this.channel.postMessage({
@@ -824,17 +859,11 @@ export const useMapStore = defineStore('cloudtak', {
                             altitude: position.coords.altitude,
                             coordinates: [ position.coords.longitude, position.coords.latitude ]
                         }
-                    })
-                }
-            }, (err) => {
-                if (err.code !== 0) {
-                    console.error('Location Error', err);
-                }
-            }, {
-                maximumAge: 0,
-                timeout: 1500,
-                enableHighAccuracy: true
-            });
+                    });
+                });
+            } catch (err) {
+                console.error('Failed to start location watch', err);
+            }
         },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');

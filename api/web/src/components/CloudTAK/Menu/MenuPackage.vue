@@ -191,7 +191,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import type { Server, Package, Feature } from '../../../../src/types.ts';
-import { server, stdurl, std } from '../../../std.ts';
+import { server } from '../../../std.ts';
 import Share from '../util/Share.vue';
 import InlineExpiration from '../util/InlineExpiration.vue';
 import InlineGroupSelect from '../util/InlineGroupSelect.vue';
@@ -368,13 +368,30 @@ onMounted(async () => {
 async function downloadFile(): Promise<void> {
     if (!pkg.value) return;
 
-    const url = stdurl(`/api/marti/api/files/${pkg.value.hash}`)
-    url.searchParams.set('token', localStorage.token);
-    url.searchParams.set('name', pkg.value.name + '.zip');
+    const filename = `${pkg.value.name}.zip`;
 
-    await std(url, {
-        download: true
+    const res = await server.GET('/api/marti/api/files/{:hash}', {
+        params: {
+            path: {
+                ':hash': pkg.value.hash
+            },
+            query: {
+                name: filename
+            }
+        },
+        parseAs: 'blob'
     });
+
+    if (res.error) throw new Error(res.error.message);
+
+    const url = URL.createObjectURL(res.data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
 async function fetch() {

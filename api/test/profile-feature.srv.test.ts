@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
+import { sql } from 'drizzle-orm';
 import Flight from './flight.js';
 
 const flight = new Flight();
@@ -258,6 +259,49 @@ test('DELETE: api/profile/feature/123', async () => {
             status: 200,
             message: 'Feature Deleted'
         });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PUT: api/profile/feature - Enabled Geofence', async () => {
+    try {
+        await flight.fetch('/api/profile/feature', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                id: 'geofence-profile',
+                type: 'Feature',
+                path: '/',
+                properties: {
+                    type: 'a-f-g',
+                    how: 'm-g',
+                    time: time,
+                    start: time,
+                    stale: time,
+                    callsign: 'Profile Geofence',
+                    center: [0, 0],
+                    geofence: {
+                        elevationMonitored: false,
+                        monitor: 'All',
+                        trigger: 'Entry',
+                        tracking: true
+                    }
+                },
+                geometry: {
+                    type: 'Point',
+                    coordinates: [0, 0]
+                }
+            }
+        }, true);
+
+        const feature = await flight.config!.models.ProfileFeature.from(sql`
+            id = ${'geofence-profile'} AND username = ${'admin@example.com'}
+        `);
+
+        assert.equal(feature.enabled_geofence, true);
     } catch (err) {
         assert.ifError(err);
     }

@@ -93,7 +93,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { isEqual as deepEqual } from '@react-hookz/deep-equal';
+import { isEqual as deepEqual } from '@ver0/deep-equal';
 import SlideDownHeader from './SlideDownHeader.vue';
 import { IconCone } from '@tabler/icons-vue';
 import { TablerRange, TablerInput } from '@tak-ps/vue-tabler';

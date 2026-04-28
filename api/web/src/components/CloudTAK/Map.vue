@@ -471,6 +471,7 @@ import { useFloatStore } from '../../stores/float.ts';
 import { liveQuery } from 'dexie';
 import Upload from '../util/Upload.vue';
 import { stdurl } from '../../std.ts';
+import { clearLocationWatch } from '../../base/capacitor.ts';
 import ProfileConfig from '../../base/profile.ts';
 import { cutOverlayFeature } from './util/featureCut.ts';
 
@@ -652,7 +653,8 @@ onMounted(async () => {
 onBeforeUnmount(() => {
     // Clean up GPS watch
     if (mapStore.gpsWatchId !== null) {
-        navigator.geolocation.clearWatch(mapStore.gpsWatchId);
+        void clearLocationWatch(mapStore.gpsWatchId);
+        mapStore.gpsWatchId = null;
     }
 
     mapStore.destroy();

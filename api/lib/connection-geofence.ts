@@ -1,10 +1,18 @@
-import { Tile38, type Tile38Options } from '@iwpnd/tile38-ts';
+import { Tile38 } from '@iwpnd/tile38-ts';
 import Config from './config.js';
+import type ConnectionConfig from './connection-config.js';
+import type { Feature } from 'geojson';
+import { toError } from './error.js';
 
 type GeofenceSettings = {
     'geofence::enabled': boolean;
     'geofence::url': string;
     'geofence::password': string;
+};
+
+type GeofenceConfig = GeofenceSettings & {
+    url: string;
+    configured: boolean;
 };
 
 type GeofenceConnectionState = 'disabled' | 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error' | 'closing';
@@ -24,25 +32,6 @@ const DEFAULT_GEOFENCE_SETTINGS: GeofenceSettings = {
     'geofence::url': '',
     'geofence::password': ''
 };
-
-function toError(err: unknown): Error {
-    return err instanceof Error ? err : new Error(String(err));
-}
-
-function buildTile38Options(rawUrl: string, rawPassword: string): Tile38Options {
-    const normalizedUrl = rawUrl.includes('://') ? rawUrl : `redis://${rawUrl}`;
-    const url = new URL(normalizedUrl);
-    const secureProtocol = ['ssl:', 'tls:', 'rediss:'].includes(url.protocol);
-    const password = rawPassword || decodeURIComponent(url.password || '');
-
-    return {
-        host: url.hostname,
-        port: url.port ? Number(url.port) : 9851,
-        username: url.username ? decodeURIComponent(url.username) : undefined,
-        password: password || undefined,
-        tls: secureProtocol ? {} : undefined
-    };
-}
 
 /**
  * Maintain a persistent connection to the configured Tile38 geofence server.
@@ -70,8 +59,7 @@ export default class ConnectionGeofence  {
     }
 
     async init(): Promise<void> {
-        this.closing = false;
-        await this.connect();
+        await this.refresh();
     }
 
     async refresh(): Promise<void> {
@@ -79,16 +67,66 @@ export default class ConnectionGeofence  {
         await this.connect();
     }
 
+    async enabled(): Promise<boolean> {
+        return (await this.loadSettings())['geofence::enabled'];
+    }
+
+    async load(connConfig: ConnectionConfig, features: Array<Feature>): Promise<void> {
+        const settings = await this.configured();
+
+        if (!settings.configured) {
+            if (settings['geofence::enabled']) {
+                console.error(`not ok - ${connConfig.id} - ${connConfig.name} - geofence server enabled but no URL configured`);
+            }
+            return;
+        }
+
+        if (!this.tile38 || this.state !== 'connected') {
+            await this.connect();
+        }
+
+        if (!this.tile38 || this.state !== 'connected') {
+            throw new Error('Geofence server is not connected');
+        }
+
+        const key = `cloudtak:geofence:${connConfig.id}`;
+        const activeFeatures = features.filter((feature) => {
+            if (feature.id !== undefined && feature.id !== null) return true;
+
+            console.error(`not ok - ${connConfig.id} - ${connConfig.name} - skipping geofence without feature id`);
+            return false;
+        });
+        const activeIds = new Set(activeFeatures.map((feature) => String(feature.id)));
+        const existing = await this.tile38.scan(key).noFields().asIds();
+        let removed = 0;
+
+        for (const existingId of existing.ids) {
+            const id = typeof existingId === 'string' ? existingId : existingId.id;
+            if (activeIds.has(id)) continue;
+
+            await this.tile38.del(key, id);
+            removed += 1;
+        }
+
+        for (const feature of activeFeatures) {
+            await this.tile38
+                .set(key, String(feature.id))
+                .object(feature)
+                .exec();
+        }
+
+        console.log(`ok - ${connConfig.id} - ${connConfig.name} - synced ${activeFeatures.length} geofences, removed ${removed}`);
+    }
+
     async status(): Promise<GeofenceStatus> {
-        const settings = await this.loadSettings();
-        const url = settings['geofence::url'].trim();
+        const settings = await this.configured();
 
         return {
             state: this.state,
             enabled: settings['geofence::enabled'],
-            configured: settings['geofence::enabled'] && !!url,
+            configured: settings.configured,
             connected: this.state === 'connected',
-            url,
+            url: settings.url,
             reconnectAttempts: this.reconnectAttempts,
             lastError: this.lastError?.message
         };
@@ -98,8 +136,7 @@ export default class ConnectionGeofence  {
         this.closing = true;
         this.clearReconnectTimer();
         this.state = 'closing';
-        this.reconnectAttempts = 0;
-        this.lastError = undefined;
+        this.resetStatus();
 
         await this.disconnectCurrentClient();
 
@@ -112,6 +149,17 @@ export default class ConnectionGeofence  {
         });
 
         return this.settings;
+    }
+
+    private async configured(): Promise<GeofenceConfig> {
+        const settings = await this.loadSettings();
+        const url = settings['geofence::url'].trim();
+
+        return {
+            ...settings,
+            url,
+            configured: settings['geofence::enabled'] && !!url
+        };
     }
 
     private async connect(): Promise<void> {
@@ -131,20 +179,29 @@ export default class ConnectionGeofence  {
     }
 
     private async connectInternal(): Promise<void> {
-        const settings = await this.loadSettings();
-        const url = settings['geofence::url'].trim();
+        const settings = await this.configured();
 
-        if (!settings['geofence::enabled'] || !url) {
+        if (!settings.configured) {
             await this.disable();
             return;
         }
 
         this.clearReconnectTimer();
 
-        const client = new Tile38(buildTile38Options(url, settings['geofence::password'].trim()));
+        const normalizedUrl = settings.url.includes('://') ? settings.url : `redis://${settings.url}`;
+        const parsedUrl = new URL(normalizedUrl);
+        const secureProtocol = ['ssl:', 'tls:', 'rediss:'].includes(parsedUrl.protocol);
+        const password = settings['geofence::password'].trim() || decodeURIComponent(parsedUrl.password || '');
+        const client = new Tile38({
+            host: parsedUrl.hostname,
+            port: parsedUrl.port ? Number(parsedUrl.port) : 9851,
+            username: parsedUrl.username ? decodeURIComponent(parsedUrl.username) : undefined,
+            password: password || undefined,
+            tls: secureProtocol ? {} : undefined
+        });
         const version = ++this.connectionVersion;
 
-        this.attachListeners(client, version, url);
+        this.attachListeners(client, version, settings.url);
 
         const previous = this.tile38;
         this.tile38 = client;
@@ -163,11 +220,9 @@ export default class ConnectionGeofence  {
                 return;
             }
 
-            this.state = 'connected';
-            this.reconnectAttempts = 0;
-            this.lastError = undefined;
+            this.markConnected();
 
-            console.log(`ok - geofence connected: ${url}`);
+            console.log(`ok - geofence connected: ${settings.url}`);
         } catch (err) {
             if (!this.isCurrentClient(client, version)) {
                 return;
@@ -188,9 +243,7 @@ export default class ConnectionGeofence  {
         }).on('ready', () => {
             if (!this.isCurrentClient(client, version)) return;
 
-            this.state = 'connected';
-            this.reconnectAttempts = 0;
-            this.lastError = undefined;
+            this.markConnected();
         }).on('close', () => {
             this.handleDisconnect(client, version, 'close');
         }).on('end', () => {
@@ -257,8 +310,7 @@ export default class ConnectionGeofence  {
 
     private async disable(): Promise<void> {
         this.clearReconnectTimer();
-        this.reconnectAttempts = 0;
-        this.lastError = undefined;
+        this.resetStatus();
 
         await this.disconnectCurrentClient();
 
@@ -277,6 +329,16 @@ export default class ConnectionGeofence  {
 
         current.removeAllListeners();
         await this.safeQuit(current);
+    }
+
+    private markConnected(): void {
+        this.state = 'connected';
+        this.resetStatus();
+    }
+
+    private resetStatus(): void {
+        this.reconnectAttempts = 0;
+        this.lastError = undefined;
     }
 
     private async safeQuit(client: Tile38): Promise<void> {

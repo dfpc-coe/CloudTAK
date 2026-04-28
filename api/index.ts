@@ -23,6 +23,7 @@ type CliArgs = {
     nocache?: boolean;
     noevents?: boolean;
     nosinks?: boolean;
+    nogeofence?: boolean;
     postgres?: string;
     env?: string;
 };
@@ -34,6 +35,7 @@ const { values: args } = parseArgs({
         nocache: { type: 'boolean' },  // Ignore MemCached
         noevents: { type: 'boolean' }, // Disable Initialization of Second Level Events
         nosinks: { type: 'boolean' },  // Disable Push to Sinks
+        nogeofence: { type: 'boolean' }, // Disable Geofence Server Integration
         postgres: { type: 'string' },  // Postgres Connection String
         env: { type: 'string' }        // Load a non-default .env file --env local would read .env-local
     },
@@ -67,6 +69,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         noevents: args.noevents || false,
         postgres: process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl',
         nosinks: args.nosinks || false,
+        nogeofence: args.nogeofence || false,
         nocache: args.nocache || false,
     });
 
@@ -79,7 +82,7 @@ export default async function server(config: Config): Promise<ServerManager> {
         await Bulldozer.fireItUp(config);
     }
 
-    await config.geofence.init();
+    if (!config.nogeofence) await config.geofence.init();
     await config.conns.init();
 
     if (!config.noevents) await config.events.init(config.pg);

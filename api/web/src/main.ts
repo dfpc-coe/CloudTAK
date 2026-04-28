@@ -5,6 +5,7 @@ import type { PluginStatic, PluginInstance } from '../plugin.ts'
 import router from './router.ts'
 import { createPinia } from 'pinia'
 import { useMapStore } from './stores/map.ts';
+import { supportsServiceWorker } from './base/capacitor.ts';
 import { initServiceWorker } from './base/service-worker.ts';
 
 initServiceWorker(version);
@@ -30,7 +31,7 @@ window.addEventListener('error', async (e) => {
     const url = (el as HTMLScriptElement).src || (el as HTMLLinkElement).href || '';
     console.error('Failed to load resource:', (e.target as HTMLElement).tagName, url);
 
-    if (import.meta.env.DEV || !('serviceWorker' in navigator)) return;
+    if (import.meta.env.DEV || !supportsServiceWorker()) return;
     if (sessionStorage.getItem(SW_RECOVERY_ATTEMPTED_KEY)) return;
     if (!url) return;
 

@@ -99,7 +99,6 @@
 <script setup lang='ts'>
 import { computed } from 'vue';
 import type { SearchReverse } from '../../../types.ts';
-import moment from 'moment';
 import {
     IconSunrise,
     IconSunset,
@@ -168,11 +167,35 @@ function getMoonPhase(date: Date) {
 const moon = computed(() => getMoonPhase(new Date()));
 const prevMoon = computed(() => getMoonPhase(new Date(Date.now() - 86400000)));
 
+const timeFormatter = new Intl.DateTimeFormat(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+});
+
+const relativeTimeFormatter = new Intl.RelativeTimeFormat(undefined, {
+    numeric: 'auto'
+});
+
+const relativeTimeUnits = [
+    { unit: 'year', seconds: 31536000 },
+    { unit: 'month', seconds: 2592000 },
+    { unit: 'week', seconds: 604800 },
+    { unit: 'day', seconds: 86400 },
+    { unit: 'hour', seconds: 3600 },
+    { unit: 'minute', seconds: 60 },
+    { unit: 'second', seconds: 1 }
+] as const;
+
 function formatTime(time: string) {
-    return moment(time).format('HH:mm');
+    return timeFormatter.format(new Date(time));
 }
 
 function fromNow(time: string) {
-    return moment(time).fromNow();
+    const seconds = Math.round((new Date(time).getTime() - Date.now()) / 1000);
+    const absSeconds = Math.abs(seconds);
+    const match = relativeTimeUnits.find(unit => absSeconds >= unit.seconds) || relativeTimeUnits[relativeTimeUnits.length - 1];
+
+    return relativeTimeFormatter.format(Math.round(seconds / match.seconds), match.unit);
 }
 </script>
