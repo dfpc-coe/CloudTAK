@@ -19,7 +19,7 @@
 
 ### Pending Release
 
-### v12.135.1 - 2026-04-28
+### v12.136.0 - 2026-04-28
 
 - :bug: AWS released an incompatible xm-builder version: Ref: https://github.com/aws/aws-sdk-js-v3/issues/7967
 
