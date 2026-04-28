@@ -1,4 +1,5 @@
 import { Browser } from '@capacitor/browser';
+import { Clipboard } from '@capacitor/clipboard';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
 import type { CallbackID, Position, PositionOptions } from '@capacitor/geolocation';
@@ -56,6 +57,10 @@ export async function openSecondaryView(url: string | URL): Promise<void> {
     }
 
     window.open(href.toString(), '_blank', 'noopener');
+}
+
+export async function writeClipboardText(value: string): Promise<void> {
+    await Clipboard.write({ string: value });
 }
 
 function normalizeNativePermissionState(state: string | null | undefined): PermissionState | 'prompt' | 'unknown' {
