@@ -454,7 +454,10 @@
                         :key='cot.properties.id'
                         label='Radius'
                         :unit='units.display_distance'
+                        :edit='is_editable'
+                        :hover='is_editable'
                         :model-value='cot.properties.shape.ellipse.major * 0.001'
+                        @submit='updateRadius($event)'
                     />
                 </div>
 
@@ -704,6 +707,7 @@ import { server } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useFloatStore } from '../../stores/float.ts';
 import ProfileConfig from '../../base/profile.ts';
+import { setCircleRadius } from '../../base/cot/ellipse.ts';
 
 const mapStore = useMapStore();
 
@@ -906,13 +910,31 @@ function updatePropertyType(type: string): void {
 function updateCoordinates(center: number[]): void {
     if (!cot.value) return;
 
-    cot.value.properties.center = center;
+    const properties = JSON.parse(JSON.stringify(cot.value.properties)) as COT['properties'];
+    properties.center = center;
 
     if (cot.value.geometry.type === 'Point') {
-        cot.value.geometry.coordinates = center;
+        const geometry = {
+            ...cot.value.geometry,
+            coordinates: center
+        } as COT['geometry'];
+
+        void cot.value.update({
+            properties,
+            geometry
+        });
+
+        return;
     }
 
-    cot.value.update({});
+    void cot.value.update({ properties });
+}
+
+function updateRadius(radius: number): void {
+    if (!cot.value) return;
+    void cot.value.update({
+        properties: setCircleRadius(cot.value.properties, radius * 1000)
+    });
 }
 
 async function editGeometry() {

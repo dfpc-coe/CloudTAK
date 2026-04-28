@@ -17,4 +17,9 @@ describe('coordinateFormat', () => {
         expect(parsed[1]).toBeCloseTo(lng, mode === 'mgrs' ? 3 : 4);
         expect(validateCoordPair(formatted, mode)).toBe('');
     });
+
+    it('parses signed decimal coordinate pairs', () => {
+        expect(parseCoordPair('39.135606, -110.0', 'dd')).toEqual([39.135606, -110]);
+        expect(validateCoordPair('39.135606, -110.0', 'dd')).toBe('');
+    });
 });

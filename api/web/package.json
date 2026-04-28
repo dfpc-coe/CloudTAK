@@ -22,7 +22,7 @@
         "doc": "typedoc --options typedoc.json",
         "build": "vite build",
         "lint": "eslint --config eslint.config.js ./src/ ./public/ ./plugins/",
-        "test": "exit 0"
+        "test": "vitest run"
     },
     "repository": {
         "type": "git",

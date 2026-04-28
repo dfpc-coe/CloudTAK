@@ -102,6 +102,9 @@ export function validateCoordPair(text: string, mode?: CoordMode): string {
 }
 
 function parseDegrees(text: string): [number, number] {
+    const decimalPair = parseDecimalPair(text);
+    if (decimalPair) return decimalPair;
+
     try {
         const parsed = convert(text);
 
@@ -109,6 +112,14 @@ function parseDegrees(text: string): [number, number] {
     } catch {
         throw new Error('Expected a valid decimal, DM, or DMS coordinate pair');
     }
+}
+
+function parseDecimalPair(text: string): [number, number] | undefined {
+    const decimal = '[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)';
+    const match = text.match(new RegExp(`^\\s*(${decimal})\\s*(?:,\\s*|\\s+)(${decimal})\\s*$`));
+    if (!match) return;
+
+    return [Number(match[1]), Number(match[2])];
 }
 
 function asDM(dd: number): string {
