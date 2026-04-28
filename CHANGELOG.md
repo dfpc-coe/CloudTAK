@@ -19,6 +19,16 @@
 
 ### Pending Release
 
+### v12.135.0 - 2026-04-28
+
+- :tada: Introduce CapacitorJS to allow for native mobile builds of CloudTAK
+- :arrow_up: Remove `showdown` in VueTabler in favor of marked for better performance and security
+- :arrow_up: Remove `moment` in favour of native `Date` and `Intl` APIs for better performance and smaller bundle size
+- :rocket: Show an expiry and near expiry badge on the Admin Connections page
+- :rocket: Migrate numerous `std()` calls to `server()` for stronger typed network IO
+- :rocket: Compute `enable_geofence` option in database for more efficient geofence lookup
+- :rocket: Sync Geofences with Tile38 Server if it is connected
+
 ### v12.134.0 - 2026-04-24
 
 - :tada: Allow editing group membership for Data Packages
