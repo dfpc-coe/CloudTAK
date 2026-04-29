@@ -1177,6 +1177,13 @@
       "when": 1776622116684,
       "tag": "0167_lively_white_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 168,
+      "version": "7",
+      "when": 1777480620662,
+      "tag": "0168_mighty_puck",
+      "breakpoints": true
     }
   ]
 }
