@@ -19,6 +19,11 @@
 
 ### Pending Release
 
+### v12.138.0 - 2026-04-29
+
+- :rocket: Add automatic events scaling in AWS environments
+- :rocket: More tightly scope S3 Access permissions
+
 ### v12.137.0 - 2026-04-28
 
 - :rocket: Allow modifying circles by parametric editing of the radius and center point for better mobile support
