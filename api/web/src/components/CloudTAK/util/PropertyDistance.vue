@@ -123,6 +123,7 @@ const props = defineProps({
 })
 
 const mode = ref(props.unit);
+const suppressDistanceEmit = ref(false);
 
 const config = ref({
     // Units coming into props should always be kilometers
@@ -130,19 +131,24 @@ const config = ref({
 });
 
 watch(config.value, () => {
+    if (suppressDistanceEmit.value) {
+        suppressDistanceEmit.value = false;
+        return;
+    }
+
     emit(
         'update:modelValue',
         toKilometers(mode.value, config.value.distance)
     );
-});
+}, { flush: 'sync' });
 
 watch(() => props.modelValue, (nextDistance) => {
-    config.value.distance = toCustom(mode.value, nextDistance);
+    syncDistance(toCustom(mode.value, nextDistance));
 });
 
 watch(() => props.unit, (nextUnit) => {
     mode.value = nextUnit;
-    config.value.distance = toCustom(nextUnit, props.modelValue);
+    syncDistance(toCustom(nextUnit, props.modelValue));
 });
 
 /**
@@ -183,11 +189,10 @@ function toCustom(mode: string, kilometers: number): number {
 function changeMode(newMode: string): void {
     if (mode.value === newMode) return;
 
-    const degrees = toKilometers(mode.value, config.value.distance);
-
-    config.value.distance = toCustom(newMode, degrees);
+    const kilometers = toKilometers(mode.value, config.value.distance);
 
     mode.value = newMode;
+    syncDistance(toCustom(newMode, kilometers));
 }
 
 function submitDistance(distance: string | number): void {
@@ -195,6 +200,13 @@ function submitDistance(distance: string | number): void {
     if (!Number.isFinite(distanceValue)) return;
 
     emit('submit', toKilometers(mode.value, distanceValue));
+}
+
+function syncDistance(distance: number): void {
+    if (config.value.distance === distance) return;
+
+    suppressDistanceEmit.value = true;
+    config.value.distance = distance;
 }
 
 </script>
