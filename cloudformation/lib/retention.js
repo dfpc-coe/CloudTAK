@@ -48,10 +48,11 @@ export default {
                         }, {
                             Effect: 'Allow',
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
                             ],
-                            Action: '*'
+                            Action: [
+                                's3:DeleteObject'
+                            ]
                         }, {
                             Effect: 'Allow',
                             Action: [
