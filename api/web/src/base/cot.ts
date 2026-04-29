@@ -7,6 +7,8 @@ import { length } from '@turf/length'
 import { isEqual } from '@ver0/deep-equal';
 import { WorkerMessageType } from'./events.ts'
 import pointOnFeature from '@turf/point-on-feature';
+import { applyEllipseMutation } from './cot/ellipse.ts';
+import type { COTMutation, COTUpdate } from './cot/types.ts';
 import type { Feature, Subscription } from '../types.ts'
 import type {
     BBox as GeoJSONBBox,
@@ -45,6 +47,23 @@ export const RENDERED_PROPERTIES = [
     'circle-radius',
     'circle-opacity'
 ]
+
+const COT_MUTATIONS: COTMutation[] = [
+    applyEllipseMutation
+];
+
+function applyCOTMutations(
+    current: Feature,
+    update: COTUpdate
+): COTUpdate {
+    let next = update;
+
+    for (const mutation of COT_MUTATIONS) {
+        next = mutation({ current, update: next }) || next;
+    }
+
+    return next;
+}
 
 export default class COT {
     id: string;
@@ -153,15 +172,13 @@ export default class COT {
      * Update the COT and return a boolean as to whether the COT needs to be re-rendered
      */
     async update(
-        update: {
-            path?: string,
-            properties?: Feature["properties"],
-            geometry?: Feature["geometry"]
-        },
+        update: COTUpdate,
         opts?: {
             skipSave?: boolean;
         }
     ): Promise<boolean> {
+        update = applyCOTMutations(this.as_feature(), update);
+
         if (this._remote) {
             if (update.path) this._path = update.path;
             if (update.properties) this._properties = update.properties;
@@ -213,8 +230,19 @@ export default class COT {
                 }
             }
 
+            const updatedCenter = update.properties && Array.isArray(update.properties.center)
+                ? update.properties.center
+                : undefined;
             if (update.geometry || !this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
-                this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
+                if (updatedCenter && updatedCenter.length >= 2) {
+                    this._properties.center = updatedCenter;
+                } else {
+                    this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
+
+                    if (this._geometry.type === 'Point' && this._geometry.coordinates.length > 2) {
+                        this._properties.center[2] = this._geometry.coordinates[2];
+                    }
+                }
             }
 
             if (this.origin.mode === OriginMode.CONNECTION) {
