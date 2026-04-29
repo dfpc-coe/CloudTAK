@@ -1,6 +1,18 @@
 import cf from '@openaddresses/cloudfriend';
 
 export default {
+    Parameters: {
+        EventsTargetCPUUtilization: {
+            Description: 'Target average CPU utilization percentage for the events service',
+            Type: 'Number',
+            Default: 70
+        },
+        EventsTargetMemoryUtilization: {
+            Description: 'Target average memory utilization percentage for the events service',
+            Type: 'Number',
+            Default: 80
+        }
+    },
     Resources: {
         EventsLogs: {
             Type: 'AWS::Logs::LogGroup',
@@ -44,10 +56,14 @@ export default {
                         },{
                             Effect: 'Allow',
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
                             ],
-                            Action: '*'
+                            Action: [
+                                's3:GetObject',
+                                's3:PutObject',
+                                's3:AbortMultipartUpload',
+                                's3:ListMultipartUploadParts'
+                            ]
                         },{
                             Effect: 'Allow',
                             Action: [
@@ -68,8 +84,8 @@ export default {
             DependsOn: ['SigningSecret'],
             Properties: {
                 Family: cf.join([cf.stackName, '-events']),
-                Cpu: cf.ref('ComputeCpu'),
-                Memory: cf.ref('ComputeMemory'),
+                Cpu: 512,
+                Memory: 2048,
                 NetworkMode: 'awsvpc',
                 RequiresCompatibilities: ['FARGATE'],
                 Tags: [{
@@ -128,6 +144,54 @@ export default {
                             cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b']))
                         ]
                     }
+                }
+            }
+        },
+        EventsScalableTarget: {
+            Type: 'AWS::ApplicationAutoScaling::ScalableTarget',
+            DependsOn: ['EventsService'],
+            Properties: {
+                MinCapacity: 1,
+                MaxCapacity: 10,
+                ResourceId: cf.join([
+                    'service/',
+                    cf.join(['tak-vpc-', cf.ref('Environment')]),
+                    '/',
+                    cf.join('-', [cf.stackName, 'events'])
+                ]),
+                ScalableDimension: 'ecs:service:DesiredCount',
+                ServiceNamespace: 'ecs'
+            }
+        },
+        EventsCPUScalingPolicy: {
+            Type: 'AWS::ApplicationAutoScaling::ScalingPolicy',
+            Properties: {
+                PolicyName: cf.join(['EventsCPUScalingPolicy-', cf.stackName]),
+                PolicyType: 'TargetTrackingScaling',
+                ScalingTargetId: cf.ref('EventsScalableTarget'),
+                TargetTrackingScalingPolicyConfiguration: {
+                    PredefinedMetricSpecification: {
+                        PredefinedMetricType: 'ECSServiceAverageCPUUtilization'
+                    },
+                    ScaleInCooldown: 300,
+                    ScaleOutCooldown: 60,
+                    TargetValue: cf.ref('EventsTargetCPUUtilization')
+                }
+            }
+        },
+        EventsMemoryScalingPolicy: {
+            Type: 'AWS::ApplicationAutoScaling::ScalingPolicy',
+            Properties: {
+                PolicyName: cf.join(['EventsMemoryScalingPolicy-', cf.stackName]),
+                PolicyType: 'TargetTrackingScaling',
+                ScalingTargetId: cf.ref('EventsScalableTarget'),
+                TargetTrackingScalingPolicyConfiguration: {
+                    PredefinedMetricSpecification: {
+                        PredefinedMetricType: 'ECSServiceAverageMemoryUtilization'
+                    },
+                    ScaleInCooldown: 300,
+                    ScaleOutCooldown: 60,
+                    TargetValue: cf.ref('EventsTargetMemoryUtilization')
                 }
             }
         },

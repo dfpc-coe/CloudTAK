@@ -167,10 +167,23 @@ export default {
                         },{
                             Effect: 'Allow',
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')])
+                            ],
+                            Action: [
+                                's3:ListBucket'
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Resource: [
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
                             ],
-                            Action: '*'
+                            Action: [
+                                's3:GetObject',
+                                's3:PutObject',
+                                's3:DeleteObject',
+                                's3:AbortMultipartUpload',
+                                's3:ListMultipartUploadParts'
+                            ]
                         },{
                             Effect: 'Allow',
                             Action: [
