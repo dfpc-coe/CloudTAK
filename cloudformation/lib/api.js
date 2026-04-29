@@ -226,6 +226,12 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'cloudformation:ListStacks'
+                            ],
+                            Resource: '*'
+                        },{
+                            Effect: 'Allow',
+                            Action: [
                                 'cloudformation:DescribeStacks'
                             ],
                             Resource: [

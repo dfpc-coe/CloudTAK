@@ -19,6 +19,11 @@
 
 ### Pending Release
 
+### v12.137.0 - 2026-04-28
+
+- :rocket: Allow modifying circles by parametric editing of the radius and center point for better mobile support
+- :bug: Add `cloudformation:ListStacks` for ETL Dashboard
+
 ### v12.136.0 - 2026-04-28
 
 - :bug: AWS released an incompatible xm-builder version: Ref: https://github.com/aws/aws-sdk-js-v3/issues/7967
