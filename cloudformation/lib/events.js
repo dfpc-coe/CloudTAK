@@ -84,7 +84,7 @@ export default {
             DependsOn: ['SigningSecret'],
             Properties: {
                 Family: cf.join([cf.stackName, '-events']),
-                Cpu: 512,
+                Cpu: 1024,
                 Memory: 2048,
                 NetworkMode: 'awsvpc',
                 RequiresCompatibilities: ['FARGATE'],
