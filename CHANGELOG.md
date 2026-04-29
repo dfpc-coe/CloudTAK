@@ -19,6 +19,10 @@
 
 ### Pending Release
 
+### v12.138.1 - 2026-04-29
+
+- :bug: Fix `name` field of iconsets imported via old importer
+
 ### v12.138.0 - 2026-04-29
 
 - :rocket: Add automatic events scaling in AWS environments
