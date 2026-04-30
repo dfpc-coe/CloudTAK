@@ -1,7 +1,7 @@
 # https://hub.docker.com/_/nginx
 FROM nginx:alpine3.23
 
-EXPOSE 5000
+EXPOSE 5000 4999
 
 ENV HOME=/home/etl
 WORKDIR $HOME

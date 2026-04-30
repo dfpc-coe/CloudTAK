@@ -45,6 +45,15 @@ export default cf.merge(
         loadbalancer: cf.getAtt('ELB', 'LoadBalancerFullName'),
         targetgroup: cf.getAtt('TargetGroup', 'TargetGroupFullName')
     }),
+    ELBAlarms({
+        prefix: 'BatchWebSocketELB',
+        topic: cf.ref('HighUrgencyAlarmTopic'),
+        apache: cf.stackName,
+        cluster: cf.join(['tak-vpc-', cf.ref('Environment')]),
+        service: cf.getAtt('Service', 'Name'),
+        loadbalancer: cf.getAtt('ELB', 'LoadBalancerFullName'),
+        targetgroup: cf.getAtt('WebSocketTargetGroup', 'TargetGroupFullName')
+    }),
     RDSAlarms({
         prefix: 'Batch',
         topic: cf.ref('HighUrgencyAlarmTopic'),

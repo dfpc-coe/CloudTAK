@@ -4,17 +4,20 @@ import type { WebSocketServer } from 'ws';
 
 export default class ServerManager {
     server: Server;
+    websocketServer?: Server;
     wss: WebSocketServer;
     config: Config;
 
     constructor(
         server: Server,
         wss: WebSocketServer,
-        config: Config
+        config: Config,
+        websocketServer?: Server
     ) {
         this.wss = wss;
         this.server = server;
         this.config = config;
+        this.websocketServer = websocketServer;
     }
 
     async close() {
@@ -22,6 +25,12 @@ export default class ServerManager {
             new Promise((resolve) => {
                 this.server.closeAllConnections();
                 this.server.close(resolve);
+            }),
+            new Promise((resolve) => {
+                if (!this.websocketServer) return resolve(undefined);
+
+                this.websocketServer.closeAllConnections();
+                this.websocketServer.close(resolve);
             }),
             new Promise((resolve) => {
                 this.wss.close(resolve);

@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import http from 'node:http';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import cors from 'cors';
@@ -86,6 +87,8 @@ export default async function server(config: Config): Promise<ServerManager> {
     await config.conns.init();
 
     if (!config.noevents) await config.events.init(config.pg);
+
+    const websocketPort = Number(process.env.CLOUDTAK_WEBSOCKET_PORT || 4999);
 
     const app = express();
 
@@ -288,8 +291,53 @@ export default async function server(config: Config): Promise<ServerManager> {
         }
     });
 
-    return new Promise((resolve) => {
-        const srv = app.listen(5001, () => {
+    const websocketServer = http.createServer((req, res) => {
+        if (req.url === '/api') {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ version: pkg.version }));
+        } else {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ status: 404, message: 'Not Found' }));
+        }
+    });
+
+    const handleWebSocketUpgrade = (request: http.IncomingMessage, socket: Parameters<typeof wss.handleUpgrade>[1], head: Buffer): void => {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+            wss.emit('connection', ws, request);
+        });
+    };
+
+    websocketServer.on('upgrade', handleWebSocketUpgrade);
+
+    return new Promise((resolve, reject) => {
+        let srvListening = false;
+        let settled = false;
+
+        const srv = app.listen(5001);
+
+        const rejectStartup = (err: Error): void => {
+            if (settled) return;
+
+            settled = true;
+            srv.off('error', rejectStartup);
+            websocketServer.off('error', rejectStartup);
+
+            if (srvListening) {
+                srv.close(() => {
+                    reject(err);
+                });
+                return;
+            }
+
+            reject(err);
+        };
+
+        srv.once('error', rejectStartup);
+        websocketServer.once('error', rejectStartup);
+
+        srv.once('listening', () => {
+            srvListening = true;
+
             if (!config.silent) {
                 if (process.env.CLOUDTAK_Mode === 'docker-compose') {
                     console.log('ok - http://localhost:5000');
@@ -298,15 +346,23 @@ export default async function server(config: Config): Promise<ServerManager> {
                 }
             }
 
-            const sm = new ServerManager(srv, wss, config);
+            websocketServer.listen(websocketPort);
+        });
+
+        websocketServer.once('listening', () => {
+            if (settled) return;
+
+            settled = true;
+            srv.off('error', rejectStartup);
+            websocketServer.off('error', rejectStartup);
+
+            if (!config.silent) console.log(`ok - websocket server listening on ${websocketPort}`);
+
+            const sm = new ServerManager(srv, wss, config, websocketServer);
             return resolve(sm);
         });
 
-        srv.on('upgrade', (request, socket, head) => {
-            wss.handleUpgrade(request, socket, head, (ws) => {
-                wss.emit('connection', ws, request);
-            });
-        });
+        srv.on('upgrade', handleWebSocketUpgrade);
 
         srv.on('close', async () => {
             await config.geofence.close();

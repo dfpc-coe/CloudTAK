@@ -28,6 +28,20 @@ export default {
                 }
             }
         },
+        WebSocketDNS: {
+            Type: 'AWS::Route53::RecordSet',
+            Properties: {
+                HostedZoneId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-id'])),
+                Type : 'A',
+                Name: cf.join(['ws.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                Comment: cf.join(' ', [cf.stackName, 'WebSocket DNS Entry']),
+                AliasTarget: {
+                    DNSName: cf.getAtt('ELB', 'DNSName'),
+                    EvaluateTargetHealth: true,
+                    HostedZoneId: cf.getAtt('ELB', 'CanonicalHostedZoneID')
+                }
+            }
+        },
         Logs: {
             Type: 'AWS::Logs::LogGroup',
             Properties: {
@@ -137,6 +151,37 @@ export default {
                 Matcher: {
                     HttpCode: '200,202,302,304'
                 }
+            }
+        },
+        WebSocketTargetGroup: {
+            Type: 'AWS::ElasticLoadBalancingV2::TargetGroup',
+            DependsOn: 'ELB',
+            Properties: {
+                HealthCheckEnabled: true,
+                HealthCheckIntervalSeconds: 30,
+                HealthCheckPath: '/api',
+                Port: 4999,
+                Protocol: 'HTTP',
+                TargetType: 'ip',
+                VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
+                Matcher: {
+                    HttpCode: '200,202,302,304'
+                }
+            }
+        },
+        WebSocketListenerRule: {
+            Type: 'AWS::ElasticLoadBalancingV2::ListenerRule',
+            Properties: {
+                ListenerArn: cf.ref('HttpsListener'),
+                Priority: 10,
+                Conditions: [{
+                    Field: 'host-header',
+                    Values: [cf.join(['ws.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))])]
+                }],
+                Actions: [{
+                    Type: 'forward',
+                    TargetGroupArn: cf.ref('WebSocketTargetGroup')
+                }]
             }
         },
         TaskRole: {
@@ -438,6 +483,8 @@ export default {
                     Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-vpc-', cf.ref('Environment'), '-cloudtak-api:', cf.ref('GitSha')]),
                     PortMappings: [{
                         ContainerPort: 5000
+                    },{
+                        ContainerPort: 4999
                     }],
                     Environment: [
                         {
@@ -506,6 +553,10 @@ export default {
                     ContainerName: 'api',
                     ContainerPort: 5000,
                     TargetGroupArn: cf.ref('TargetGroup')
+                },{
+                    ContainerName: 'api',
+                    ContainerPort: 4999,
+                    TargetGroupArn: cf.ref('WebSocketTargetGroup')
                 }]
             }
         },
@@ -517,7 +568,7 @@ export default {
                     Value: cf.join('-', [cf.stackName, 'ec2-sg'])
                 }],
                 GroupName: cf.join('-', [cf.stackName, 'ec2-sg']),
-                GroupDescription: 'Allow access to docker port 5000',
+                GroupDescription: 'Allow access to docker ports 5000 and 4999',
                 VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
                 SecurityGroupIngress: [{
                     Description: 'ELB Traffic',
@@ -525,6 +576,12 @@ export default {
                     SourceSecurityGroupId: cf.ref('ELBSecurityGroup'),
                     FromPort: 5000,
                     ToPort: 5000
+                },{
+                    Description: 'ELB WebSocket Traffic',
+                    IpProtocol: 'tcp',
+                    SourceSecurityGroupId: cf.ref('ELBSecurityGroup'),
+                    FromPort: 4999,
+                    ToPort: 4999
                 }]
             }
         },
