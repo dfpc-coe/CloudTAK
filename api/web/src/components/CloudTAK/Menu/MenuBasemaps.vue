@@ -258,6 +258,8 @@ async function setBasemap(basemap: Basemap) {
                     await overlay.replace({
                         name: basemap.name,
                         type: basemap.type,
+                        opacity: 1,
+                        visible: true,
                         url: `/api/basemap/${basemap.id}/tiles`,
                         mode: 'basemap',
                         mode_id: String(basemap.id),
@@ -269,6 +271,8 @@ async function setBasemap(basemap: Basemap) {
                     await overlay.replace({
                         name: basemap.name,
                         type: basemap.type,
+                        opacity: 1,
+                        visible: true,
                         url: `/api/basemap/${basemap.id}/tiles`,
                         mode: 'basemap',
                         mode_id: String(basemap.id),
@@ -285,6 +289,8 @@ async function setBasemap(basemap: Basemap) {
             name: basemap.name,
             pos: -1,
             type: basemap.type,
+            opacity: 1,
+            visible: true,
             frequency: basemap.frequency,
             url: `/api/basemap/${basemap.id}/tiles`,
             mode: 'basemap',
