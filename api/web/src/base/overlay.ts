@@ -488,8 +488,8 @@ export default class Overlay {
             this.styles = [];
         }
 
-        if (overlay.opacity) this.opacity = overlay.opacity;
-        if (overlay.visible) this.visible = overlay.visible;
+        if (overlay.opacity !== undefined) this.opacity = overlay.opacity;
+        if (overlay.visible !== undefined) this.visible = overlay.visible;
         if (overlay.mode) this.mode = overlay.mode;
         if (overlay.mode_id) this.mode_id = overlay.mode_id || null;
         if (overlay.url) this.url = overlay.url;
