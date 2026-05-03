@@ -215,14 +215,12 @@
                                         class='mb-3'
                                     >
                                         <TablerRange
-                                            v-model='card.overlay.opacity'
+                                            :model-value='card.overlay.opacity'
                                             label='Opacity'
                                             :min='0'
                                             :max='1'
                                             :step='0.1'
-                                            @change='card.overlay.update({
-                                                opacity: card.overlay.opacity
-                                            })'
+                                            @update:model-value='void card.overlay.update({ opacity: $event })'
                                         />
                                     </div>
                                     <div
