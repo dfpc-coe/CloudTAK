@@ -19,6 +19,11 @@
 
 ### Pending Release
 
+### v12.138.2 - 2026-05-03
+
+- :arrow_up: Update TerraDraw and Core Deps
+- :rocket: Reset Basemap Visibility on change - Closes: #1433
+
 ### v12.138.1 - 2026-04-29
 
 - :bug: Fix `name` field of iconsets imported via old importer
