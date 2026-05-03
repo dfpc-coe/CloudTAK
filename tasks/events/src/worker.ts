@@ -151,7 +151,7 @@ export default class Worker extends EventEmitter {
             } else {
                  const feature = await res.json() as ProfileFeature;
                  await createImportResult(this.msg, {
-                    name: feat.id as string,
+                    name: feature.properties.callsign || feature.id,
                     type: 'Feature',
                     type_id: String(feature.id)
                 });
