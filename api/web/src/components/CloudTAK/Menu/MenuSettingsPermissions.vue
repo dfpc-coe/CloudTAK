@@ -125,7 +125,7 @@ const permissionDescriptors: PermissionDescriptor[] = [{
     icon: IconMapPin,
 }, {
     key: 'orientation',
-    title: 'Device Orientation',
+    title: 'Motion & Orientation',
     icon: IconCompass,
 }, {
     key: 'storage',
@@ -145,7 +145,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
     granted: {
         location: 'CloudTAK can access your live position.',
         notification: 'CloudTAK can deliver browser notifications.',
-        orientation: 'CloudTAK can access your device orientation for compass-based map rotation.',
+        orientation: 'CloudTAK can access motion and orientation sensor data for compass-based map rotation.',
         storage: 'CloudTAK can persist local data storage for more reliable offline access.',
         camera: 'CloudTAK can access your camera when needed.',
         wakeLock: 'CloudTAK can keep the screen awake during active operations.',
@@ -154,7 +154,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
     denied: {
         location: 'Location access is currently blocked. Use the button below to try again.',
         notification: 'Notification access is currently blocked. Use the button below to try again.',
-        orientation: 'Device orientation access is currently blocked. Use the button below to try again.',
+        orientation: 'Motion and orientation sensor access is currently blocked. Use the button below to try again.',
         storage: 'Persistent storage was not granted. Use the button below to try again.',
         camera: 'Camera access is currently blocked. Use the button below to try again.',
         wakeLock: 'Wake lock access is currently blocked. Use the button below to try again.',
@@ -163,7 +163,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
     prompt: {
         location: 'Location access has not been granted yet.',
         notification: 'Notification access has not been granted yet.',
-        orientation: 'Device orientation access has not been granted yet.',
+        orientation: 'Motion and orientation sensor access has not been granted yet.',
         storage: 'Persistent storage has not been requested yet.',
         camera: 'Camera access has not been granted yet.',
         wakeLock: 'Wake lock access has not been granted yet.',
@@ -172,7 +172,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
     unsupported: {
         location: 'This browser does not support geolocation permissions.',
         notification: 'This browser does not support notification permissions.',
-        orientation: 'This browser does not support device orientation events.',
+        orientation: 'This device does not support motion and orientation sensor access.',
         storage: 'This browser does not support persistent storage requests.',
         camera: 'This browser does not support camera access requests.',
         wakeLock: 'This browser does not support wake lock requests.',
@@ -181,7 +181,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
     unknown: {
         location: 'CloudTAK could not determine the current location permission state.',
         notification: 'CloudTAK could not determine the current notification permission state.',
-        orientation: 'CloudTAK could not determine the current device orientation permission state.',
+        orientation: 'CloudTAK could not determine the current motion and orientation permission state.',
         storage: 'CloudTAK could not determine the current persistent storage state.',
         camera: 'CloudTAK could not determine the current camera permission state.',
         wakeLock: 'CloudTAK could not determine the current wake lock state.',

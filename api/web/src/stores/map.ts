@@ -30,10 +30,17 @@ import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
-import { clearLocationWatch, supportsLocationRequests, watchLocation } from '../base/capacitor.ts';
+import {
+    clearLocationWatch,
+    clearOrientationWatch,
+    supportsLocationRequests,
+    watchLocation,
+    watchOrientation
+} from '../base/capacitor.ts';
 
 import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, ConfigMap } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
+import type { PluginListenerHandle } from '@capacitor/core';
 import type { CallbackID } from '@capacitor/geolocation';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
@@ -48,7 +55,7 @@ export const useMapStore = defineStore('cloudtak', {
 
         _boundOnOnline?: () => void;
         _boundOnOffline?: () => void;
-        _boundOnDeviceOrientation?: (event: DeviceOrientationEvent) => void;
+        _orientationListener?: PluginListenerHandle | null;
         _boundOnVisibilityChange?: () => Promise<void>;
 
         db: DatabaseType;
@@ -232,12 +239,9 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (this._boundOnOnline) window.removeEventListener('online', this._boundOnOnline);
             if (this._boundOnOffline) window.removeEventListener('offline', this._boundOnOffline);
-            if (this._boundOnDeviceOrientation) {
-                if ('ondeviceorientationabsolute' in (window as unknown as Record<string, unknown>)) {
-                    window.removeEventListener('deviceorientationabsolute', this._boundOnDeviceOrientation as EventListener);
-                } else {
-                    window.removeEventListener('deviceorientation', this._boundOnDeviceOrientation as EventListener);
-                }
+            if (this._orientationListener) {
+                await clearOrientationWatch(this._orientationListener);
+                this._orientationListener = null;
             }
             if (this._boundOnVisibilityChange) document.removeEventListener('visibilitychange', this._boundOnVisibilityChange);
 
@@ -559,21 +563,20 @@ export const useMapStore = defineStore('cloudtak', {
             this.isOnline = navigator.onLine;
             this._boundOnOnline = (): void => { this.isOnline = true; };
             this._boundOnOffline = (): void => { this.isOnline = false; };
-            this._boundOnDeviceOrientation = (event: DeviceOrientationEvent): void => {
+            this._orientationListener = await watchOrientation((event): void => {
                 if (!this.userOrientationMode) return;
 
                 let heading: number | null = null;
-                const iOSEvent = event as DeviceOrientationEvent & { webkitCompassHeading?: number };
-                if (iOSEvent.webkitCompassHeading !== undefined) {
-                    heading = iOSEvent.webkitCompassHeading;
+                if (event.webkitCompassHeading !== undefined) {
+                    heading = event.webkitCompassHeading;
                 } else if (event.alpha !== null) {
                     heading = 360 - event.alpha;
                 }
 
-                if (heading !== null && this.map) {
-                    this.map.setBearing(heading);
+                if (heading !== null && this._map) {
+                    this._map.setBearing(heading);
                 }
-            };
+            });
             this._boundOnVisibilityChange = async (): Promise<void> => {
                 if (document.hidden) return;
                 if (!(await this.worker.initialized)) return;
@@ -589,11 +592,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             window.addEventListener('online', this._boundOnOnline);
             window.addEventListener('offline', this._boundOnOffline);
-            if ('ondeviceorientationabsolute' in (window as unknown as Record<string, unknown>)) {
-                window.addEventListener('deviceorientationabsolute', this._boundOnDeviceOrientation as EventListener);
-            } else {
-                window.addEventListener('deviceorientation', this._boundOnDeviceOrientation as EventListener);
-            }
             document.addEventListener('visibilitychange', this._boundOnVisibilityChange);
 
             await this.worker.init(localStorage.token);

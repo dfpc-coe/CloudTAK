@@ -3,7 +3,10 @@ import {
     checkNativeLocationPermission,
     getCurrentLocation,
     isNativePlatform,
+    requestOrientationPermission,
     requestNativeLocationPermission,
+    supportsOrientationPermissionRequests,
+    supportsOrientationRequests,
     supportsLocationRequests
 } from '../../base/capacitor.ts';
 
@@ -41,19 +44,10 @@ export const usePermissionStore = defineStore('permissions', {
     },
     actions: {
         hasOrientationSupport: function(): boolean {
-            return 'DeviceOrientationEvent' in window && (
-                'ondeviceorientation' in window
-                || 'ondeviceorientationabsolute' in (window as unknown as Record<string, unknown>)
-            );
+            return supportsOrientationRequests();
         },
         hasOrientationPermissionRequest: function(): boolean {
-            if (!('DeviceOrientationEvent' in window)) return false;
-
-            const orientationEvent = window.DeviceOrientationEvent as (typeof DeviceOrientationEvent & {
-                requestPermission?: () => Promise<PermissionState>;
-            });
-
-            return typeof orientationEvent.requestPermission === 'function';
+            return supportsOrientationPermissionRequests();
         },
         setPermissionStatus: function(type: BrowserPermissionType, state: BrowserPermissionState): void {
             this.permissions[type] = state;
@@ -303,18 +297,7 @@ export const usePermissionStore = defineStore('permissions', {
             }
 
             try {
-                if (this.hasOrientationPermissionRequest()) {
-                    const orientationEvent = window.DeviceOrientationEvent as (typeof DeviceOrientationEvent & {
-                        requestPermission?: () => Promise<PermissionState>;
-                    });
-
-                    const status = await orientationEvent.requestPermission?.();
-                    if (status) {
-                        this.setPermissionStatus('orientation', status);
-                    }
-                } else {
-                    this.setPermissionStatus('orientation', 'granted');
-                }
+                this.setPermissionStatus('orientation', await requestOrientationPermission());
             } finally {
                 await this.refreshOrientationPermissionStatus();
             }

@@ -1,8 +1,24 @@
 import { Browser } from '@capacitor/browser';
 import { Clipboard } from '@capacitor/clipboard';
 import { Capacitor } from '@capacitor/core';
+import type { PluginListenerHandle } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
 import type { CallbackID, Position, PositionOptions } from '@capacitor/geolocation';
+import { Motion } from '@capacitor/motion';
+
+type WindowWithOrientationPermission = Window & {
+    DeviceMotionEvent?: typeof DeviceMotionEvent & {
+        requestPermission?: () => Promise<PermissionState>;
+    };
+    DeviceOrientationEvent?: typeof DeviceOrientationEvent & {
+        requestPermission?: () => Promise<PermissionState>;
+    };
+};
+
+export type OrientationEventData = {
+    alpha: number | null;
+    webkitCompassHeading?: number;
+};
 
 function getRuntimeOrigin(): string {
     if (typeof window !== 'undefined') {
@@ -26,6 +42,30 @@ export function supportsServiceWorker(): boolean {
 
 export function supportsLocationRequests(): boolean {
     return isNativePlatform() || (typeof navigator !== 'undefined' && 'geolocation' in navigator);
+}
+
+export function supportsOrientationRequests(): boolean {
+    return typeof window !== 'undefined' && 'DeviceOrientationEvent' in window;
+}
+
+function getOrientationPermissionRequest(): (() => Promise<PermissionState>) | undefined {
+    if (typeof window === 'undefined') return undefined;
+
+    const permissionWindow = window as WindowWithOrientationPermission;
+
+    if (typeof permissionWindow.DeviceMotionEvent?.requestPermission === 'function') {
+        return permissionWindow.DeviceMotionEvent.requestPermission.bind(permissionWindow.DeviceMotionEvent);
+    }
+
+    if (typeof permissionWindow.DeviceOrientationEvent?.requestPermission === 'function') {
+        return permissionWindow.DeviceOrientationEvent.requestPermission.bind(permissionWindow.DeviceOrientationEvent);
+    }
+
+    return undefined;
+}
+
+export function supportsOrientationPermissionRequests(): boolean {
+    return typeof getOrientationPermissionRequest() === 'function';
 }
 
 export function resolveRuntimeUrl(url: string | URL): URL {
@@ -98,6 +138,33 @@ export async function requestNativeLocationPermission(): Promise<PermissionState
 
 export async function getCurrentLocation(options?: PositionOptions): Promise<Position> {
     return Geolocation.getCurrentPosition(options);
+}
+
+export async function requestOrientationPermission(): Promise<PermissionState | 'unknown'> {
+    const requestPermission = getOrientationPermissionRequest();
+
+    if (!requestPermission) {
+        return 'granted';
+    }
+
+    try {
+        return await requestPermission();
+    } catch (err) {
+        console.warn('Failed to request orientation permission', err);
+        return 'unknown';
+    }
+}
+
+export async function watchOrientation(
+    callback: (event: OrientationEventData) => void
+): Promise<PluginListenerHandle> {
+    return Motion.addListener('orientation', (event) => {
+        callback(event as unknown as OrientationEventData);
+    });
+}
+
+export async function clearOrientationWatch(listener: PluginListenerHandle): Promise<void> {
+    await listener.remove();
 }
 
 export async function watchLocation(

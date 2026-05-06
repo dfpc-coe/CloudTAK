@@ -37,6 +37,7 @@
         "@capacitor/haptics": "8.0.2",
         "@capacitor/ios": "8.3.1",
         "@capacitor/keyboard": "8.0.3",
+        "@capacitor/motion": "^8.0.0",
         "@capacitor/status-bar": "8.0.2",
         "@mapbox/tile-cover": "^3.0.2",
         "@simplewebauthn/browser": "^13.3.0",
