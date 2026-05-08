@@ -8,8 +8,48 @@ import { ESRILayerList } from './esri/types.js';
 import {
     DefaultLayerPoints,
     DefaultLayerLines,
-    DefaultLayerPolys
+    DefaultLayerPolys,
+    ESRIFieldMapping,
+    requiredFields
 } from './esri/layer.js'
+
+type EsriFieldMapping = Static<typeof ESRIFieldMapping>;
+
+interface EsriLayerMetadata {
+    fields?: Array<{
+        name?: string;
+        type?: string;
+    }>;
+    error?: {
+        message?: string;
+        details?: unknown;
+    };
+    status?: string;
+    messages?: string[];
+}
+
+interface EsriMutationResponse {
+    success?: boolean;
+    error?: {
+        message?: string;
+        details?: unknown;
+    };
+    status?: string;
+    messages?: string[];
+}
+
+function esriError(body: EsriLayerMetadata | EsriMutationResponse): string | undefined {
+    if (body.error) {
+        const details = body.error.details ? ` - ${JSON.stringify(body.error.details)}` : '';
+        return `${body.error.message || 'Unknown ESRI error'}${details}`;
+    } else if (body.status === 'error') {
+        return body.messages?.join(', ') || 'Unknown ESRI error';
+    } else if ('success' in body && body.success === false) {
+        return 'ESRI request failed';
+    }
+
+    return undefined;
+}
 
 export enum EsriType {
     AGOL = 'AGOL',      // ArcGIS Online Portal
@@ -446,6 +486,73 @@ class EsriProxyServer {
         if (json.error) throw new Err(400, new Error(JSON.stringify(json.error)), 'ESRI Server Error: ' + json.error.message);
 
         return json as object;
+    }
+
+    async updateLayerFields(fields: EsriFieldMapping[]): Promise<object> {
+        const headers = this.esri.standardHeaderObject();
+
+        const metadataURL = new URL(this.esri.base + this.esri.postfix);
+        metadataURL.searchParams.append('f', 'json');
+
+        const metadataResponse = await fetch(metadataURL, {
+            method: 'GET',
+            headers
+        });
+
+        const metadata = await metadataResponse.json() as EsriLayerMetadata;
+        const metadataError = esriError(metadata);
+        if (metadataError) throw new Err(400, null, 'ESRI Server Error: ' + metadataError);
+        if (!Array.isArray(metadata.fields)) throw new Err(400, null, 'Could not read ESRI layer fields');
+
+        const existingFields = new Map<string, { name?: string; type?: string }>();
+        for (const field of metadata.fields) {
+            if (field.name) existingFields.set(field.name.toLowerCase(), field);
+        }
+
+        const missingFields = [];
+        for (const field of requiredFields(fields)) {
+            const existing = existingFields.get(field.name.toLowerCase());
+
+            if (!existing) {
+                missingFields.push(field);
+            } else if (existing.type && existing.type !== field.type) {
+                throw new Err(400, null, `ESRI field ${field.name} is ${existing.type}; expected ${field.type}`);
+            }
+        }
+
+        if (!missingFields.length) {
+            return {
+                success: true,
+                added: 0,
+                fields: []
+            };
+        }
+
+        const url = new URL(this.esri.base)
+        url.pathname = url.pathname.replace(/\/rest/i, '/rest/admin' + this.esri.postfix + '/addToDefinition');
+
+        const headerObj = this.esri.standardHeaderObject();
+        headerObj['Content-Type'] = 'application/x-www-form-urlencoded';
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: headerObj,
+            body: new URLSearchParams({
+                'f': 'json',
+                'addToDefinition': JSON.stringify({
+                    fields: missingFields
+                })
+            })
+        });
+
+        const json = await res.json() as EsriMutationResponse;
+        const mutationError = esriError(json);
+        if (mutationError) throw new Err(400, new Error(JSON.stringify(json)), 'ESRI Server Error: ' + mutationError);
+
+        return {
+            ...json,
+            added: missingFields.length,
+            fields: missingFields.map((field) => field.name)
+        };
     }
 
     async getList(postfix: string): Promise<object> {

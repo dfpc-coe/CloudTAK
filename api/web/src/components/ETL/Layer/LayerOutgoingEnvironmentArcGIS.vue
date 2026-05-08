@@ -135,7 +135,13 @@
 
             <TablerInput
                 v-model='environment[`ARCGIS_${mode.toUpperCase()}_URL`]'
-                :label='`ArcGIS ${mode} Layer URL`'
+                :label='`ArcGIS ${modeLabel} Layer URL`'
+                :disabled='disabled'
+            />
+
+            <Fields
+                v-model='fieldMappings'
+                :label='`ArcGIS ${modeLabel} Fields`'
                 :disabled='disabled'
             />
         </div>
@@ -173,18 +179,28 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
     TablerInput,
     TablerToggle,
     TablerPillGroup,
 } from '@tak-ps/vue-tabler';
 import EsriPortal from '../../util/EsriPortal.vue';
+import Fields from './utils/Fields.vue';
 import {
     IconPoint,
     IconLine,
     IconPolygon,
 } from '@tabler/icons-vue'
+
+type GeometryMode = 'points' | 'lines' | 'polys';
+type FieldKey = 'ARCGIS_POINTS_FIELDS' | 'ARCGIS_LINES_FIELDS' | 'ARCGIS_POLYS_FIELDS';
+
+interface ArcGISFieldMapping {
+    name: string;
+    type: string;
+    field: string;
+}
 
 interface ArcGISOutgoingEnvironment {
     ARCGIS_URL?: string;
@@ -198,6 +214,9 @@ interface ArcGISOutgoingEnvironment {
     ARCGIS_POINTS_URL?: string;
     ARCGIS_LINES_URL?: string;
     ARCGIS_POLYS_URL?: string;
+    ARCGIS_POINTS_FIELDS?: ArcGISFieldMapping[];
+    ARCGIS_LINES_FIELDS?: ArcGISFieldMapping[];
+    ARCGIS_POLYS_FIELDS?: ArcGISFieldMapping[];
     PRESERVE_HISTORY?: boolean;
     [key: string]: unknown;
 }
@@ -213,7 +232,24 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: ArcGISOutgoingEnvironment): void;
 }>();
 
-const mode = ref('points');
+const mode = ref<GeometryMode>('points');
+
+const fieldMappings = computed<ArcGISFieldMapping[]>({
+    get() {
+        const value = environment.value[fieldKey(mode.value)];
+        return Array.isArray(value) ? value as ArcGISFieldMapping[] : [];
+    },
+    set(value) {
+        environment.value[fieldKey(mode.value)] = value;
+    }
+});
+
+const modeLabel = computed(() => {
+    if (mode.value === 'lines') return 'Line';
+    if (mode.value === 'polys') return 'Polygon';
+
+    return 'Point';
+});
 
 const type = ref('agol');
 if (props.modelValue.ARCGIS_PORTAL && props.modelValue.ARCGIS_PORTAL.includes('arcgis.com') && props.modelValue.ARCGIS_USERNAME) {
@@ -230,6 +266,9 @@ if (!environment.value.PRESERVE_HISTORY) environment.value.PRESERVE_HISTORY = fa
 if (!environment.value.ARCGIS_POINTS_URL) environment.value.ARCGIS_POINTS_URL = '';
 if (!environment.value.ARCGIS_LINES_URL) environment.value.ARCGIS_LINES_URL = '';
 if (!environment.value.ARCGIS_POLYS_URL) environment.value.ARCGIS_POLYS_URL = '';
+if (!Array.isArray(environment.value.ARCGIS_POINTS_FIELDS)) environment.value.ARCGIS_POINTS_FIELDS = [];
+if (!Array.isArray(environment.value.ARCGIS_LINES_FIELDS)) environment.value.ARCGIS_LINES_FIELDS = [];
+if (!Array.isArray(environment.value.ARCGIS_POLYS_FIELDS)) environment.value.ARCGIS_POLYS_FIELDS = [];
 
 watch(type, () => {
     delete environment.value.ARCGIS_PORTAL;
@@ -241,11 +280,18 @@ watch(type, () => {
     delete environment.value.ARCGIS_EXPIRES;
 });
 
-watch(props.modelValue, () => {
+watch(() => props.modelValue, () => {
     environment.value = props.modelValue;
-});
+}, { deep: true });
 
 watch(environment, () => {
     emit('update:modelValue', environment.value);
-});
+}, { deep: true });
+
+function fieldKey(activeMode: GeometryMode): FieldKey {
+    if (activeMode === 'lines') return 'ARCGIS_LINES_FIELDS';
+    if (activeMode === 'polys') return 'ARCGIS_POLYS_FIELDS';
+
+    return 'ARCGIS_POINTS_FIELDS';
+}
 </script>

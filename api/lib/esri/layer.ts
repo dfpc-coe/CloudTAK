@@ -1,5 +1,19 @@
 import { Static } from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
 import type { ESRILayer, ESRIField } from './types.js';
+
+export const ESRIFieldType = Type.Union([
+    Type.Literal('esriFieldTypeString'),
+    Type.Literal('esriFieldTypeInteger'),
+    Type.Literal('esriFieldTypeDouble'),
+    Type.Literal('esriFieldTypeDate')
+]);
+
+export const ESRIFieldMapping = Type.Object({
+    name: Type.String(),
+    type: ESRIFieldType,
+    field: Type.String()
+});
 
 export default class Layer {
     layers: Array<Static<typeof ESRILayer>>;
@@ -123,6 +137,65 @@ export const DefaultFields = [{
     "domain": null,
     "defaultValue": null
 }]
+
+export function customFieldDefinition(field: Static<typeof ESRIFieldMapping>): Static<typeof ESRIField> {
+    const base = {
+        name: field.name,
+        alias: field.name,
+        nullable: true,
+        editable: true,
+        domain: null,
+        defaultValue: null,
+    };
+
+    if (field.type === 'esriFieldTypeInteger') {
+        return {
+            ...base,
+            type: field.type,
+            actualType: 'int',
+            sqlType: 'sqlTypeInteger',
+            length: 4,
+        };
+    } else if (field.type === 'esriFieldTypeDouble') {
+        return {
+            ...base,
+            type: field.type,
+            actualType: 'float',
+            sqlType: 'sqlTypeFloat',
+        };
+    } else if (field.type === 'esriFieldTypeDate') {
+        return {
+            ...base,
+            type: field.type,
+            actualType: 'datetime2',
+            sqlType: 'sqlTypeTimestamp2',
+            length: 100,
+        };
+    }
+
+    return {
+        ...base,
+        type: field.type,
+        actualType: 'nvarchar',
+        sqlType: 'sqlTypeNVarchar',
+        length: 2000,
+    };
+}
+
+export function requiredFields(fields: Static<typeof ESRIFieldMapping>[]): Static<typeof ESRIField>[] {
+    const required = new Map<string, Static<typeof ESRIField>>();
+
+    for (const field of DefaultFields) {
+        required.set(field.name.toLowerCase(), { ...field });
+    }
+
+    for (const field of fields) {
+        if (!field.name) continue;
+        required.set(field.name.toLowerCase(), customFieldDefinition(field));
+    }
+
+    return Array.from(required.values());
+}
 
 export const DefaultLayerPolys: Static<typeof ESRILayer> = {
     id: 2,

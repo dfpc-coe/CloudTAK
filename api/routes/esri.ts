@@ -4,6 +4,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { EsriType, EsriBase, EsriProxyPortal, EsriProxyServer, EsriProxyLayer } from '../lib/esri.js';
+import { ESRIFieldMapping } from '../lib/esri/layer.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.post('/esri', {
@@ -276,6 +277,43 @@ export default async function router(schema: Schema, config: Config) {
             const server = new EsriProxyServer(base);
 
             res.json(await server.createLayer());
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/esri/server/layer', {
+        name: 'Update Layer Schema',
+        group: 'ESRI',
+        description: 'Ensure an ESRI Layer contains default TAK fields and requested custom fields',
+        query: Type.Object({
+            server: Type.String(),
+            portal: Type.String(),
+            token: Type.String(),
+            expires: Type.Integer()
+        }),
+        body: Type.Object({
+            fields: Type.Array(ESRIFieldMapping, {
+                default: []
+            })
+        }),
+        res: Type.Any()
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req, {
+                anyResources: true
+            });
+
+            const base = new EsriBase(req.query.server);
+            base.token = {
+                token: req.query.token,
+                expires: req.query.expires,
+                referer: config.API_URL
+            }
+
+            const server = new EsriProxyServer(base);
+
+            res.json(await server.updateLayerFields(req.body.fields));
         } catch (err) {
             Err.respond(err, res);
         }
