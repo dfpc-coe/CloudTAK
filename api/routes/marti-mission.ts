@@ -111,7 +111,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             features: Type.Array(Feature.InputFeature)
         }),
-        res: GenericMartiResponse
+        res: StandardResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -140,7 +140,7 @@ export default async function router(schema: Schema, config: Config) {
 
             client.tak.write(cots, { stripFlow: true });
 
-            res.json({ status: 200, message: 'Posted', messages: [] });
+            res.json({ status: 200, message: 'Posted' });
         } catch (err) {
              Err.respond(err, res);
         }
