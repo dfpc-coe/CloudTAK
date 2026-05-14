@@ -94,7 +94,7 @@ services:
         image: postgis/postgis:17-3.4-alpine
         restart: 'always'
         ports:
-            - 5433:5432
+            - 127.0.0.1:5433:5432
         environment:
             - POSTGRES_DB=gis
             - POSTGRES_USER=docker
@@ -108,8 +108,8 @@ services:
         volumes:
             - .docker-store:/data
         ports:
-            - 9000:9000
-            - 9002:9002
+            - 127.0.0.1:9000:9000
+            - 127.0.0.1:9002:9002
         environment:
             - MINIO_ROOT_USER=${MINIO_ROOT_USER}
             - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
