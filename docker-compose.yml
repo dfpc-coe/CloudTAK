@@ -45,8 +45,6 @@ services:
         depends_on:
             - api
             - store
-        ports:
-            - "5003:5003"
         environment:
             - CLOUDTAK_Mode=${CLOUDTAK_Mode}
             - API_URL=${API_URL}
