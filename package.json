@@ -35,6 +35,6 @@
         "@types/mapbox__tilebelt": "^1.0.4",
         "@types/xml2js": "^0.4.11",
         "eslint": "^10.0.0",
-        "eslint-plugin-n": "^17.2.1"
+        "eslint-plugin-n": "^18.0.0"
     }
 }
