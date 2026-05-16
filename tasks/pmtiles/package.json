@@ -10,7 +10,7 @@
         "check": "tsc --noEmit",
         "lint": "eslint src/",
         "test": "tsx --test test/*.test.ts",
-        "typegen": "openapi-typescript http://localhost:5002/api/swagger --output derived-types.d.ts",
+        "typegen": "openapi-typescript http://localhost:5002/openapi --output derived-types.d.ts",
         "build": "tsup --target es2022 --format esm index.ts",
         "dev": "tsx watch index.ts --noevents --nometrics --nosinks --unsafe",
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js"
