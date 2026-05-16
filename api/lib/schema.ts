@@ -277,7 +277,7 @@ export const BasemapVector = pgTable('basemaps_vector', {
 export const BasemapTerrain = pgTable('basemaps_terrain', {
     id: serial().primaryKey(),
     basemap: integer().notNull().references(() => Basemap.id, { onDelete: 'cascade' }),
-    encoding: text().notNull().$type<BasemapTerrain_Encoding>().default(BasemapTerrain_Encoding)
+    encoding: text().notNull().$type<BasemapTerrain_Encoding>().default(BasemapTerrain_Encoding.MAPBOX)
 }, (table) => ({
     basemap_idx: unique().on(table.basemap)
 }));
