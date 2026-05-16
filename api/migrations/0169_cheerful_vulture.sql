@@ -1,0 +1,1 @@
+ALTER TABLE "basemaps_terrain" ADD COLUMN "encoding" text DEFAULT 'mapbox' NOT NULL;
