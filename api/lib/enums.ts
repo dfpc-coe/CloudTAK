@@ -59,6 +59,12 @@ export enum Basemap_FeatureAction {
     DELETE = 'delete'
 }
 
+export enum BasemapTerrain_Encoding {
+    MAPBOX = 'mapbox',
+    TERRARIUM = 'terrarium',
+}
+
+
 export enum BasicGeometryType {
     POINT = 'Point',
     LINESTRING = 'LineString',
