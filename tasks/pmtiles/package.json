@@ -10,6 +10,7 @@
         "check": "tsc --noEmit",
         "lint": "eslint src/",
         "test": "tsx --test test/*.test.ts",
+        "typegen": "openapi-typescript http://localhost:5001/api/swagger --output derived-types.d.ts",
         "build": "tsup --target es2022 --format esm src/",
         "dev": "tsx watch src/index.ts --noevents --nometrics --nosinks --unsafe",
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js"
@@ -52,6 +53,7 @@
         "tsup": "^8.0.0",
         "tsx": "^4.21.0",
         "typescript": "^6.0.0",
-        "typescript-eslint": "^8.0.0"
+        "typescript-eslint": "^8.0.0",
+        "openapi-typescript": "openapi-ts/openapi-typescript#pull/2774/head"
     }
 }
