@@ -13,6 +13,14 @@ import { PromisePool } from '@supercharge/promise-pool';
 import vtquery from '@mapbox/vtquery';
 import { pointToTile } from '@mapbox/tilebelt';
 
+const TILE_FORMATS = [
+    [pmtiles.TileType.Mvt, 'mvt'],
+    [pmtiles.TileType.Png, 'png'],
+    [pmtiles.TileType.Jpeg, 'jpg'],
+    [pmtiles.TileType.Webp, 'webp'],
+    [pmtiles.TileType.Avif, 'avif'],
+] as const;
+
 export const TileJSON = Type.Object({
     tilejson: Type.Literal('3.0.0'),
     name: Type.String(),
@@ -74,11 +82,37 @@ export const FeaturesResponse = Type.Object({
     }))
 });
 
+export const RasterTileSource = Type.Object({
+    format: Type.String(),
+    tileurl: Type.String(),
+    minzoom: Type.Integer(),
+    maxzoom: Type.Integer(),
+});
+
 export class FileTiles {
     path: string;
 
     constructor(path: string) {
         this.path = path;
+    }
+
+    async rasterTileSource(token: string): Promise<Static<typeof RasterTileSource>> {
+        const p = new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
+        const header = await p.getHeader();
+
+        let format = 'mvt';
+        for (const pair of TILE_FORMATS) {
+            if (header.tileType === pair[0]) {
+                format = String(pair[1]);
+            }
+        }
+
+        return {
+            format,
+            tileurl: process.env.PMTILES_URL + `/tiles/${this.path}/tiles/{z}/{x}/{y}.${format}?token=${token}`,
+            minzoom: header.minZoom,
+            maxzoom: header.maxZoom,
+        };
     }
 
     /**
@@ -92,19 +126,7 @@ export class FileTiles {
         const p = new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
         const header = await p.getHeader();
         const metadata = await p.getMetadata() as any;
-
-        let format = 'mvt';
-        for (const pair of [
-            [pmtiles.TileType.Mvt, "mvt"],
-            [pmtiles.TileType.Png, "png"],
-            [pmtiles.TileType.Jpeg, "jpg"],
-            [pmtiles.TileType.Webp, "webp"],
-            [pmtiles.TileType.Avif, "avif"],
-        ]) {
-            if (header.tileType === pair[0]) {
-                format = String(pair[1]);
-            }
-        }
+        const source = await this.rasterTileSource(token);
 
         return {
             tilejson: "3.0.0",
@@ -112,7 +134,7 @@ export class FileTiles {
             description: "Hosted by CloudTAK",
             version: "1.0.0",
             scheme: "xyz",
-            tiles: [ process.env.PMTILES_URL + `/tiles/${this.path}/tiles/{z}/{x}/{y}.${format}?token=${token}`],
+            tiles: [source.tileurl],
             minzoom: header.minZoom,
             maxzoom: header.maxZoom,
             bounds: [ header.minLon, header.minLat, header.maxLon, header.maxLat ],

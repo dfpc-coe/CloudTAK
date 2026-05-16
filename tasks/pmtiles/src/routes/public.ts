@@ -3,6 +3,11 @@ import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
 import { FileTiles, TileJSON, QueryResponse, FeaturesResponse } from '../lib/tiles.js'
+import getElevationProfile, {
+    ElevationEncodingType,
+    ElevationProfileType,
+    LineStringGeometryType,
+} from '../lib/elevation.js';
 import auth from '../lib/auth.js';
 import s3client from '../lib/s3.js';
 
@@ -182,6 +187,56 @@ export default async function router(schema: Schema) {
                 zoom: req.query.zoom,
                 type: req.query.type,
                 multi: req.query.multi
+            }));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    })
+
+    schema.post('/tiles/public/:name/elevation', {
+        name: 'Get Elevation Profile',
+        group: 'PublicTiles',
+        description: 'Return sampled elevation values for a LineString against a public raster-dem PMTiles source',
+        query: Type.Object({
+            token: Type.String()
+        }),
+        params: Type.Object({
+            name: Type.String()
+        }),
+        body: Type.Object({
+            geometry: LineStringGeometryType,
+            sampleRate: Type.Number({
+                exclusiveMinimum: 0,
+                description: 'Sampling interval along the line in kilometers'
+            }),
+            zoom: Type.Optional(Type.Integer({ minimum: 0 })),
+            encoding: Type.Optional(ElevationEncodingType),
+        }),
+        res: ElevationProfileType
+    }, async (req, res) => {
+        try {
+            auth(req.query.token);
+
+            const file = new FileTiles(`public/${req.params.name}`);
+            const source = await file.rasterTileSource(req.query.token);
+
+            if (source.format === 'mvt') {
+                throw new Err(400, null, 'Elevation profiles require raster-dem tiles');
+            }
+
+            if (req.body.zoom !== undefined && req.body.zoom > source.maxzoom) {
+                throw new Err(400, null, 'Above Layer MaxZoom');
+            }
+
+            if (req.body.zoom !== undefined && req.body.zoom < source.minzoom) {
+                throw new Err(400, null, 'Below Layer MinZoom');
+            }
+
+            res.json(await getElevationProfile(source.tileurl, req.body.geometry, {
+                zoom: req.body.zoom ?? source.maxzoom,
+                encoding: req.body.encoding,
+                minSampleDistance: req.body.sampleRate,
+                maxSampleDistance: req.body.sampleRate,
             }));
         } catch (err) {
             Err.respond(err, res);
