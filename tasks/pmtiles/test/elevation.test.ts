@@ -17,10 +17,7 @@ function encodeMapboxElevation(elevation: number): [number, number, number] {
 
 function createTile(elevation: number): Buffer {
     const png = new PNG({ width: 4, height: 4 });
-    const value = Math.round((elevation + 10000) * 10);
-    const r = (value >> 16) & 0xff;
-    const g = (value >> 8) & 0xff;
-    const b = value & 0xff;
+    const [r, g, b] = encodeMapboxElevation(elevation);
 
     for (let index = 0; index < png.data.length; index += 4) {
         png.data[index] = r;
