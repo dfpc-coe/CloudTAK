@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { PNG } from 'pngjs';
 import sharp from 'sharp';
 import type { LineString } from 'geojson';
-import getElevationProfile from '../src/lib/elevation.js';
+import getElevationProfile from '../lib/elevation.js';
 
 function encodeMapboxElevation(elevation: number): [number, number, number] {
     const value = Math.round((elevation + 10000) * 10);

@@ -81,8 +81,6 @@ await schema.load(
     }
 );
 
-console.error(schema);
-
 export const handler = serverless(app, {
     binary: ['application/x-protobuf', 'application/vnd.mapbox-vector-tile', 'image/png', 'image/jpeg', 'image/webp']
 });
