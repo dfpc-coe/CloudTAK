@@ -34,8 +34,8 @@ function asArrayBuffer(bytes: Uint8Array): ArrayBuffer {
 }
 
 test('Setup', async () => {
-    const mod = await import('../src/index.js');
-    const tiles = await import('../src/lib/tiles.js');
+    const mod = await import('../index.js');
+    const tiles = await import('../lib/tiles.js');
 
     app = mod.app;
     FileTiles = tiles.FileTiles;
