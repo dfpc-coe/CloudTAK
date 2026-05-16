@@ -8,7 +8,7 @@
     },
     "scripts": {
         "check": "tsc --noEmit",
-        "lint": "eslint src/",
+        "lint": "eslint index.ts routes/ test/ lib/",
         "test": "tsx --test test/*.test.ts",
         "typegen": "openapi-typescript http://localhost:5002/openapi --output derived-types.d.ts",
         "build": "tsup --target es2022 --format esm index.ts",
