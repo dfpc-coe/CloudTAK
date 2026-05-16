@@ -1,7 +1,4 @@
 {
-    "ts-node": {
-        "esm": true
-    },
     "compilerOptions": {
         "target": "es2022",
         "strict": true,
