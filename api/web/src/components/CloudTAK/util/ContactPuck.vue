@@ -2,23 +2,8 @@
     <IconCircleFilled
         v-if='props.team'
         :size='props.size ? props.size : 32'
+        :color='teamColor'
         stroke='1'
-        :class='{
-            "text-yellow": props.team === "Yellow",
-            "text-cyan": props.team === "Cyan",
-            "text-lime": props.team === "Green",
-            "text-red": props.team === "Red",
-            "text-purple": props.team === "Purple",
-            "text-orange": props.team === "Orange",
-            "text-azure": props.team === "Blue",
-            "text-dribble": props.team === "Magenta",
-            "text-white": props.team === "White",
-            "text-pinterest": props.team === "Maroon",
-            "text-blue": props.team === "Dark Blue",
-            "text-teal": props.team === "Teal",
-            "text-green": props.team === "Dark Green",
-            "text-google": props.team === "Brown",
-        }'
     />
     <IconUserQuestion
         v-else
@@ -28,6 +13,7 @@
 </template>
 
 <script setup lang='ts'>
+import { computed } from 'vue';
 import {
     IconUserQuestion,
     IconCircleFilled,
@@ -37,4 +23,27 @@ const props = defineProps<{
     team?: string,
     size?: number
 }>();
+
+const teamColors: Record<string, string> = {
+    Yellow: 'var(--tblr-yellow)',
+    Cyan: 'var(--tblr-cyan)',
+    Green: 'var(--tblr-lime)',
+    Red: 'var(--tblr-red)',
+    Purple: 'var(--tblr-purple)',
+    Orange: 'var(--tblr-orange)',
+    Blue: 'var(--tblr-azure)',
+    Magenta: 'var(--tblr-dribbble)',
+    White: 'var(--tblr-white)',
+    Maroon: 'var(--tblr-pinterest)',
+    'Dark Blue': 'var(--tblr-blue)',
+    Teal: 'var(--tblr-teal)',
+    'Dark Green': 'var(--tblr-green)',
+    Brown: 'var(--tblr-google)',
+};
+
+const teamColor = computed(() => {
+    if (!props.team) return undefined;
+
+    return teamColors[props.team];
+});
 </script>
