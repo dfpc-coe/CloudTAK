@@ -34,6 +34,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 if (!process.env.SigningSecret) throw new Error('SigningSecret env var must be provided');
 if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env var must be provided');
 if (!process.env.PMTILES_URL) process.env.PMTILES_URL = 'http://localhost:5002';
+if (!process.env.API_URL) process.env.API_URL = 'http://localhost:5001';
 
 if (!process.env.AWS_REGION) {
     process.env.AWS_REGION = 'us-east-1';
