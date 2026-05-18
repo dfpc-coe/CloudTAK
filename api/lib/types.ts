@@ -464,7 +464,10 @@ export const BasemapResponse = Type.Object({
     frequency: Type.Union([Type.Null(), Type.Integer()]),
     scheme: Type.Enum(Basemap_Scheme),
     overlay: Type.Boolean(),
-    
+
+    // Terrain
+    encoding: Type.Enum(BasemapTerrain_Encoding),
+
     // Vector
     styles: Type.Optional(Type.Array(Type.Unknown())),
     iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
