@@ -2227,6 +2227,20 @@ export interface paths {
                             "login::background::color"?: string;
                             /** @description Base64 encoded PNG for Logo */
                             "login::logo"?: string;
+                            /** @description Firebase API Key */
+                            "firebase::apikey"?: string;
+                            /** @description Firebase Auth Domain */
+                            "firebase::authdomain"?: string;
+                            /** @description Firebase Project ID */
+                            "firebase::projectid"?: string;
+                            /** @description Firebase Storage Bucket */
+                            "firebase::storagebucket"?: string;
+                            /** @description Firebase Messaging Sender ID */
+                            "firebase::messagingsenderid"?: string;
+                            /** @description Firebase App ID */
+                            "firebase::appid"?: string;
+                            /** @description Firebase Measurement ID */
+                            "firebase::measurementid"?: string;
                             /** @description External application links */
                             "external::applications"?: {
                                 /** @description Application Name */
@@ -2426,6 +2440,20 @@ export interface paths {
                         "login::background::color"?: string;
                         /** @description Base64 encoded PNG for Logo */
                         "login::logo"?: string;
+                        /** @description Firebase API Key */
+                        "firebase::apikey"?: string;
+                        /** @description Firebase Auth Domain */
+                        "firebase::authdomain"?: string;
+                        /** @description Firebase Project ID */
+                        "firebase::projectid"?: string;
+                        /** @description Firebase Storage Bucket */
+                        "firebase::storagebucket"?: string;
+                        /** @description Firebase Messaging Sender ID */
+                        "firebase::messagingsenderid"?: string;
+                        /** @description Firebase App ID */
+                        "firebase::appid"?: string;
+                        /** @description Firebase Measurement ID */
+                        "firebase::measurementid"?: string;
                         /** @description External application links */
                         "external::applications"?: {
                             /** @description Application Name */

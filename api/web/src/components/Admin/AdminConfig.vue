@@ -7,6 +7,7 @@
         </div>
         <div class='card-body row'>
             <ConfigLogin />
+            <ConfigFirebase />
             <ConfigAgol />
             <ConfigMedia />
             <ConfigProxy />
@@ -22,6 +23,7 @@
 
 <script setup lang="ts">
 import ConfigLogin from './AdminConfig/ConfigLogin.vue';
+import ConfigFirebase from './AdminConfig/ConfigFirebase.vue';
 import ConfigAgol from './AdminConfig/ConfigAgol.vue';
 import ConfigMedia from './AdminConfig/ConfigMedia.vue';
 import ConfigProxy from './AdminConfig/ConfigProxy.vue';

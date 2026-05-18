@@ -88,6 +88,7 @@ export const useMapStore = defineStore('cloudtak', {
         mapConfig: ConfigMap;
         container?: HTMLElement;
         hasTerrain: boolean;
+        terrainBasemapId: number | null;
         hasSnapping: boolean;
         hasNoChannels: boolean;
         isTerrainEnabled: boolean;
@@ -148,6 +149,7 @@ export const useMapStore = defineStore('cloudtak', {
             isMobileDetected: false,
             locked: [],
             hasTerrain: false,
+            terrainBasemapId: null,
             hasNoChannels: false,
             isTerrainEnabled: false,
             isOpen: false,
@@ -360,6 +362,7 @@ export const useMapStore = defineStore('cloudtak', {
         addTerrain: async function(): Promise<void> {
             const basemaps = await this.listTerrain();
             if (basemaps.items.length && !this.map.getSource('-2')) {
+                this.terrainBasemapId = basemaps.items[0].id;
                 this.map.addSource('-2', {
                     type: 'raster-dem',
                     url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`))
@@ -372,6 +375,7 @@ export const useMapStore = defineStore('cloudtak', {
 
                 this.isTerrainEnabled = true;
             } else {
+                this.terrainBasemapId = null;
                 this.hasTerrain = false;
             }
         },
@@ -380,6 +384,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.setTerrain(null);
             this.map.removeSource('-2');
 
+            this.terrainBasemapId = null;
             this.isTerrainEnabled = false;
         },
 
