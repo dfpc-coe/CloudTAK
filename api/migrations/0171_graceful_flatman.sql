@@ -1,2 +1,3 @@
-ALTER TABLE "palette" ADD COLUMN "template" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "palette" ADD COLUMN IF NOT EXISTS "template" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "palette" DROP CONSTRAINT IF EXISTS "palette_template_mission_template_id_fk";--> statement-breakpoint
 ALTER TABLE "palette" ADD CONSTRAINT "palette_template_mission_template_id_fk" FOREIGN KEY ("template") REFERENCES "public"."mission_template"("id") ON DELETE no action ON UPDATE no action;
