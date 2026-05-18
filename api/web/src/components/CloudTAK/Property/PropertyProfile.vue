@@ -49,26 +49,42 @@
                         <div class='row g-2'>
                             <div class='col-sm-6 col-xl-3'>
                                 <div class='profile-stat rounded px-2 py-2'>
-                                    <div class='subheader'>Distance</div>
-                                    <div class='fw-semibold'>{{ formatDistance(stats.distanceKm) }}</div>
+                                    <div class='subheader'>
+                                        Distance
+                                    </div>
+                                    <div class='fw-semibold'>
+                                        {{ formatDistance(stats.distanceKm) }}
+                                    </div>
                                 </div>
                             </div>
                             <div class='col-sm-6 col-xl-3'>
                                 <div class='profile-stat rounded px-2 py-2'>
-                                    <div class='subheader'>Min / Max</div>
-                                    <div class='fw-semibold'>{{ formatElevation(stats.minElevation) }} / {{ formatElevation(stats.maxElevation) }}</div>
+                                    <div class='subheader'>
+                                        Min / Max
+                                    </div>
+                                    <div class='fw-semibold'>
+                                        {{ formatElevation(stats.minElevation) }} / {{ formatElevation(stats.maxElevation) }}
+                                    </div>
                                 </div>
                             </div>
                             <div class='col-sm-6 col-xl-3'>
                                 <div class='profile-stat rounded px-2 py-2'>
-                                    <div class='subheader'>Gain</div>
-                                    <div class='fw-semibold text-success'>{{ formatElevation(stats.gain) }}</div>
+                                    <div class='subheader'>
+                                        Gain
+                                    </div>
+                                    <div class='fw-semibold text-success'>
+                                        {{ formatElevation(stats.gain) }}
+                                    </div>
                                 </div>
                             </div>
                             <div class='col-sm-6 col-xl-3'>
                                 <div class='profile-stat rounded px-2 py-2'>
-                                    <div class='subheader'>Loss</div>
-                                    <div class='fw-semibold text-danger'>{{ formatElevation(stats.loss) }}</div>
+                                    <div class='subheader'>
+                                        Loss
+                                    </div>
+                                    <div class='fw-semibold text-danger'>
+                                        {{ formatElevation(stats.loss) }}
+                                    </div>
                                 </div>
                             </div>
                         </div>

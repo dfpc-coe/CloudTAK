@@ -556,6 +556,7 @@ export default class Overlay {
         pos?: number;
         visible?: boolean;
         opacity?: number;
+        encoding?: 'mapbox' | 'terrarium' | null;
     }): Promise<void> {
         const mapStore = useMapStore();
 
@@ -589,6 +590,11 @@ export default class Overlay {
             changed = true;
         }
 
+        if (body.encoding !== undefined && body.encoding !== this.encoding) {
+            this.encoding = body.encoding;
+            changed = true;
+        }
+
         if (changed) {
             await this.save();
         }
@@ -613,6 +619,7 @@ export default class Overlay {
                 mode_id: this.mode_id,
                 url: this.url,
                 visible: this.visible,
+                encoding: this.encoding,
                 styles: dropStyles ? [] : this.styles
             }
         })
