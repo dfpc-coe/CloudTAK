@@ -22,17 +22,21 @@ const AugmentedProfileOverlayResponse = Type.Composite([
     })
 ])
 
+type SerializableProfileOverlay = Omit<Static<typeof ProfileOverlayResponse>, 'opacity'> & {
+    opacity: number | string;
+};
+
 function serializeOverlay(
-    overlay: Static<typeof ProfileOverlayResponse>,
+    overlay: SerializableProfileOverlay,
     actions: Static<typeof TileJSONActions>,
-    encoding?: Static<typeof Type.Enum<typeof BasemapTerrain_Encoding>>
+    encoding?: BasemapTerrain_Encoding
 ): Static<typeof AugmentedProfileOverlayResponse> {
     return {
         ...overlay,
         opacity: Number(overlay.opacity),
         actions,
         ...(encoding ? { encoding } : {})
-    };
+    } as Static<typeof AugmentedProfileOverlayResponse>;
 }
 
 export default async function router(schema: Schema, config: Config) {

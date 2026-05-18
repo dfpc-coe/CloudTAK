@@ -117,9 +117,30 @@
 
                 <div class='mt-3'>
                     <div class='d-flex align-items-center mb-2'>
-                        <label class='form-label m-0'>Mission Template Logs</label>
+                        <div
+                            class='btn-group btn-group-sm'
+                            role='group'
+                        >
+                            <button
+                                type='button'
+                                class='btn'
+                                :class='tab === "logs" ? "btn-secondary" : "btn-outline-secondary"'
+                                @click='tab = "logs"'
+                            >
+                                Logs
+                            </button>
+                            <button
+                                type='button'
+                                class='btn'
+                                :class='tab === "palettes" ? "btn-secondary" : "btn-outline-secondary"'
+                                @click='tab = "palettes"'
+                            >
+                                Palettes
+                            </button>
+                        </div>
                         <div class='ms-auto'>
                             <TablerIconButton
+                                v-if='tab === "logs"'
                                 title='Create Log'
                                 @click='router.push(`/admin/template/${route.params.template}/log/new`)'
                             >
@@ -128,61 +149,122 @@
                                     stroke='1'
                                 />
                             </TablerIconButton>
+                            <TablerIconButton
+                                v-else
+                                title='Create Palette'
+                                @click='createPalette'
+                            >
+                                <IconPlus
+                                    :size='20'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
                         </div>
                     </div>
-                    <TablerNone
-                        v-if='!template.logs || !template.logs.length'
-                        label='No Mission Template Logs'
-                        :create='false'
-                    />
-                    <div
-                        v-else
-                        class='card'
-                    >
-                        <div class='table-responsive'>
-                            <table class='table table-vcenter card-table table-hover'>
-                                <thead>
-                                    <tr>
-                                        <th />
-                                        <th>Name</th>
-                                        <th>Keywords</th>
-                                        <th>Created</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr
-                                        v-for='log in template.logs'
-                                        :key='log.id'
-                                        class='cursor-pointer'
-                                        tabindex='0'
-                                        @keyup.enter='stdclick(router, $event, `/admin/template/${route.params.template}/log/${log.id}`)'
-                                        @click='stdclick(router, $event, `/admin/template/${route.params.template}/log/${log.id}`)'
-                                    >
-                                        <td class='w-1'>
-                                            <div
-                                                class='d-flex justify-content-center align-items-center'
-                                                style='width: 32px; height: 32px;'
-                                            >
-                                                <img
-                                                    v-if='log.icon'
-                                                    :src='log.icon'
-                                                    style='max-width: 100%; max-height: 100%; object-fit: contain;'
-                                                    alt='Log Icon'
+
+                    <template v-if='tab === "logs"'>
+                        <TablerNone
+                            v-if='!template.logs || !template.logs.length'
+                            label='No Mission Template Logs'
+                            :create='false'
+                        />
+                        <div
+                            v-else
+                            class='card'
+                        >
+                            <div class='table-responsive'>
+                                <table class='table table-vcenter card-table table-hover'>
+                                    <thead>
+                                        <tr>
+                                            <th />
+                                            <th>Name</th>
+                                            <th>Keywords</th>
+                                            <th>Created</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr
+                                            v-for='log in template.logs'
+                                            :key='log.id'
+                                            class='cursor-pointer'
+                                            tabindex='0'
+                                            @keyup.enter='stdclick(router, $event, `/admin/template/${route.params.template}/log/${log.id}`)'
+                                            @click='stdclick(router, $event, `/admin/template/${route.params.template}/log/${log.id}`)'
+                                        >
+                                            <td class='w-1'>
+                                                <div
+                                                    class='d-flex justify-content-center align-items-center'
+                                                    style='width: 32px; height: 32px;'
                                                 >
-                                            </div>
-                                        </td>
-                                        <td v-text='log.name' />
-                                        <td>
-                                            <Keywords :keywords='log.keywords' />
-                                        </td>
-                                        <td>
-                                            <TablerEpoch :date='log.created' />
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                                    <img
+                                                        v-if='log.icon'
+                                                        :src='log.icon'
+                                                        style='max-width: 100%; max-height: 100%; object-fit: contain;'
+                                                        alt='Log Icon'
+                                                    >
+                                                </div>
+                                            </td>
+                                            <td v-text='log.name' />
+                                            <td>
+                                                <Keywords :keywords='log.keywords' />
+                                            </td>
+                                            <td>
+                                                <TablerEpoch :date='log.created' />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
+                    </template>
+
+                    <template v-else>
+                        <TablerLoading
+                            v-if='paletteLoading'
+                            desc='Loading Palettes'
+                        />
+                        <TablerAlert
+                            v-else-if='paletteError'
+                            :err='paletteError'
+                        />
+                        <TablerNone
+                            v-else-if='!palettes.items.length'
+                            label='No Palettes'
+                            :create='false'
+                        />
+                        <div
+                            v-else
+                            class='card'
+                        >
+                            <div class='table-responsive'>
+                                <table class='table table-vcenter card-table table-hover'>
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Features</th>
+                                            <th>Created</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr
+                                            v-for='p in palettes.items'
+                                            :key='p.uuid'
+                                            class='cursor-pointer'
+                                            tabindex='0'
+                                            @keyup.enter='stdclick(router, $event, `/admin/template/${route.params.template}/palette/${p.uuid}`)'
+                                            @click='stdclick(router, $event, `/admin/template/${route.params.template}/palette/${p.uuid}`)'
+                                        >
+                                            <td v-text='p.name' />
+                                            <td v-text='p.features.length' />
+                                            <td>
+                                                <TablerEpoch :date='p.created' />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </template>
         </div>
@@ -194,7 +276,7 @@ import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { server, stdclick } from '../../../src/std.ts';
-import type { MissionTemplate } from '../../../src/types.ts';
+import type { MissionTemplate, PaletteList } from '../../../src/types.ts';
 import Keywords from '../CloudTAK/util/Keywords.vue';
 import TagEntry from '../CloudTAK/util/TagEntry.vue';
 import {
@@ -220,6 +302,12 @@ const error = ref<Error | undefined>();
 const disabled = ref(true);
 const loading = ref(true);
 
+const tab = ref<'logs' | 'palettes'>('logs');
+
+const paletteLoading = ref(false);
+const paletteError = ref<Error | undefined>();
+const palettes = ref<PaletteList>({ total: 0, items: [] });
+
 const template = ref<MissionTemplate>({
     id: randomUUID(),
     created: new Date().toISOString(),
@@ -234,6 +322,7 @@ const template = ref<MissionTemplate>({
 onMounted(async () => {
     if (route.params.template !== "new") {
         await fetchTemplate();
+        await fetchPalettes();
     } else {
         disabled.value = false
         loading.value = false;
@@ -327,6 +416,50 @@ async function fetchTemplate() {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
         loading.value = false;
+    }
+}
+
+async function fetchPalettes() {
+    paletteLoading.value = true;
+    paletteError.value = undefined;
+    try {
+        const res = await server.GET(`/api/template/mission/{:mission}/palette`, {
+            params: {
+                path: {
+                    ":mission": String(route.params.template)
+                },
+                query: {
+                    limit: 100,
+                    page: 0,
+                    sort: 'name',
+                    order: 'asc',
+                    filter: ''
+                }
+            }
+        });
+        if (res.error) throw new Error(res.error.message);
+        if (res.data) palettes.value = res.data;
+    } catch (err) {
+        paletteError.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        paletteLoading.value = false;
+    }
+}
+
+async function createPalette() {
+    try {
+        const res = await server.POST(`/api/template/mission/{:mission}/palette`, {
+            params: {
+                path: {
+                    ":mission": String(route.params.template)
+                }
+            },
+            body: { name: 'New Palette' }
+        });
+        if (res.error) throw new Error(res.error.message);
+        if (res.data) router.push(`/admin/template/${route.params.template}/palette/${res.data.uuid}`);
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 </script>
