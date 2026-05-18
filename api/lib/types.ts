@@ -6,7 +6,7 @@ import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profil
 import { VideoLease_SourceType} from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
-import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type } from '../lib/enums.js';
+import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from '../lib/enums.js';
 import { Feature } from '@tak-ps/node-cot';
 
 export const LayerResponse = AugmentedLayer;
@@ -111,6 +111,7 @@ export const OptionalTileJSON = Type.Object({
     center: Type.Optional(Type.Any()),
     minzoom: Type.Optional(Type.Integer()),
     maxzoom: Type.Optional(Type.Integer()),
+    encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
     style: Type.Optional(Type.Enum(Basemap_Scheme)),
     format: Type.Optional(Type.Enum(Basemap_Format)),
     vector_layers: Type.Optional(Type.Array(OptionalVectorLayer))
