@@ -40,7 +40,7 @@
 <script setup lang='ts'>
 import { ref } from 'vue';
 import { IconDatabase } from '@tabler/icons-vue';
-import SlideDownHeader from './SlideDownHeader.vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
 import type COT from '../../../base/cot';
 
 defineProps<{

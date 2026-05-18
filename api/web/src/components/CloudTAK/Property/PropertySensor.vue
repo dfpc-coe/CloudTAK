@@ -94,7 +94,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { isEqual as deepEqual } from '@ver0/deep-equal';
-import SlideDownHeader from './SlideDownHeader.vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
 import { IconCone } from '@tabler/icons-vue';
 import { TablerRange, TablerInput } from '@tak-ps/vue-tabler';
 import type COT from '../../../base/cot';

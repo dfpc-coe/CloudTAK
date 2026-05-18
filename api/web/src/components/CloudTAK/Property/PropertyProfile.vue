@@ -96,7 +96,7 @@ import type { ChartData, ChartOptions, TooltipItem } from 'chart.js';
 import Chart from 'chart.js/auto';
 import { IconChartLine } from '@tabler/icons-vue';
 import { TablerBadge, TablerLoading } from '@tak-ps/vue-tabler';
-import SlideDownHeader from './SlideDownHeader.vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
 import { server, std, stdurl } from '../../../std.ts';
 
 type ElevationSample = {
