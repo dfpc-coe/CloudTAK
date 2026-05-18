@@ -7,7 +7,7 @@
             <h1 class='card-title d-flex align-items-center'>
                 <TablerIconButton
                     title='Back to Palette'
-                    @click='router.push(`/admin/palette/${route.params.palette}`)'
+                    @click='router.push(`/admin/template/${route.params.template}/palette/${route.params.palette}`)'
                 >
                     <IconCircleArrowLeft
                         :size='32'
@@ -153,9 +153,10 @@ async function savePaletteFeature() {
 
     try {
         if (route.params.feature === "new") {
-            const res = await server.POST(`/api/palette/{:palette}/feature`, {
+            const res = await server.POST(`/api/template/mission/{:mission}/palette/{:palette}/feature`, {
                 params: {
                     path: {
+                        ":mission": String(route.params.template),
                         ":palette": String(route.params.palette)
                     }
                 },
@@ -176,11 +177,12 @@ async function savePaletteFeature() {
 
             disabled.value = true;
 
-            router.push(`/admin/palette/${route.params.palette}`);
+            router.push(`/admin/template/${route.params.template}/palette/${route.params.palette}`);
         } else {
-            const res = await server.PATCH(`/api/palette/{:palette}/feature/{:feature}`, {
+            const res = await server.PATCH(`/api/template/mission/{:mission}/palette/{:palette}/feature/{:feature}`, {
                 params: {
                     path: {
+                        ":mission": String(route.params.template),
                         ":palette": String(route.params.palette),
                         ":feature": String(route.params.feature)
                     }
@@ -200,7 +202,7 @@ async function savePaletteFeature() {
 
             if (res.data) paletteFeature.value = res.data;
 
-            router.push(`/admin/palette/${route.params.palette}`);
+            router.push(`/admin/template/${route.params.template}/palette/${route.params.palette}`);
         }
     } catch (err) {
         loading.value = false;
@@ -212,9 +214,10 @@ async function deletePaletteFeature() {
     loading.value = true;
 
     try {
-        const res = await server.DELETE(`/api/palette/{:palette}/feature/{:feature}`, {
+        const res = await server.DELETE(`/api/template/mission/{:mission}/palette/{:palette}/feature/{:feature}`, {
             params: {
                 path: {
+                    ":mission": String(route.params.template),
                     ":palette": String(route.params.palette),
                     ":feature": String(route.params.feature)
                 }
@@ -227,7 +230,7 @@ async function deletePaletteFeature() {
             return;
         }
 
-        router.push(`/admin/palette/${route.params.palette}`);
+        router.push(`/admin/template/${route.params.template}/palette/${route.params.palette}`);
     } catch (err) {
         loading.value = false;
         throw err;
@@ -236,9 +239,10 @@ async function deletePaletteFeature() {
 
 async function fetchPalette() {
     try {
-        const res = await server.GET(`/api/palette/{:palette}`, {
+        const res = await server.GET(`/api/template/mission/{:mission}/palette/{:palette}`, {
             params: {
                 path: {
+                    ":mission": String(route.params.template),
                     ":palette": String(route.params.palette)
                 }
             }
@@ -257,9 +261,10 @@ async function fetchPalette() {
 
 async function fetchPaletteFeature() {
     try {
-        const res = await server.GET(`/api/palette/{:palette}/feature/{:feature}`, {
+        const res = await server.GET(`/api/template/mission/{:mission}/palette/{:palette}/feature/{:feature}`, {
             params: {
                 path: {
+                    ":mission": String(route.params.template),
                     ":palette": String(route.params.palette),
                     ":feature": String(route.params.feature)
                 }

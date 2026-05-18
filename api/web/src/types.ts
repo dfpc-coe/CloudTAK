@@ -101,7 +101,29 @@ export type TileJSON = paths["/api/basemap/{:basemapid}/tiles"]["get"]["response
 export type Basemap = paths["/api/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
 export type BasemapList = paths["/api/basemap"]["get"]["responses"]["200"]["content"]["application/json"]
 
-export type Palette = paths["/api/palette/{:palette}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type PaletteFeature = {
+    uuid: string;
+    created: string;
+    updated: string;
+    name: string;
+    palette: string;
+    type: string;
+    style: Record<string, unknown>;
+}
+
+export type Palette = {
+    uuid: string;
+    created: string;
+    updated: string;
+    name: string;
+    template: string;
+    features: Array<PaletteFeature>;
+}
+
+export type PaletteList = {
+    total: number;
+    items: Array<Palette>;
+}
 
 export type Chat = {
     chatroom: string;
@@ -126,9 +148,6 @@ export type APIProfileChat = {
     message_id: string;
     message: string;
 }
-
-export type PaletteList = paths["/api/palette"]["get"]["responses"]["200"]["content"]["application/json"]
-export type PaletteFeature = paths["/api/palette/{:palette}/feature/{:feature}"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type MissionTemplate = paths["/api/template/mission/{:mission}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type MissionTemplateList = paths["/api/template/mission"]["get"]["responses"]["200"]["content"]["application/json"]
