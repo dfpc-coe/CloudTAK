@@ -42,6 +42,7 @@ export default class Overlay {
     visible: boolean;
     mode: string;
     mode_id: string | null;
+    encoding: 'mapbox' | 'terrarium' | null;
 
     actions: ProfileOverlay["actions"];
 
@@ -141,7 +142,7 @@ export default class Overlay {
     }
 
     constructor(
-        overlay: ProfileOverlay,
+        overlay: ProfileOverlay & { encoding?: 'mapbox' | 'terrarium' | null },
         opts: {
             internal?: boolean;
         } = {}
@@ -170,6 +171,7 @@ export default class Overlay {
         this.visible = overlay.visible;
         this.mode = overlay.mode;
         this.mode_id = overlay.mode_id || null;
+        this.encoding = overlay.encoding || null;
         this.url = overlay.url;
         this.styles = overlay.styles as Array<LayerSpecification>;
         this.token = overlay.token;
@@ -466,6 +468,7 @@ export default class Overlay {
             visible?: boolean;
             mode?: string;
             mode_id?: string;
+            encoding?: 'mapbox' | 'terrarium' | null;
             url?: string;
             token?: string;
             styles?: Array<LayerSpecification>;
@@ -492,6 +495,7 @@ export default class Overlay {
         if (overlay.visible !== undefined) this.visible = overlay.visible;
         if (overlay.mode) this.mode = overlay.mode;
         if (overlay.mode_id) this.mode_id = overlay.mode_id || null;
+        if (overlay.encoding !== undefined) this.encoding = overlay.encoding;
         if (overlay.url) this.url = overlay.url;
         if (overlay.token) this.token = overlay.token;
         if (overlay.styles) {
