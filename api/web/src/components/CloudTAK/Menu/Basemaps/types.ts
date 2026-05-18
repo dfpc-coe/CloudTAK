@@ -55,6 +55,7 @@ export interface VectorLayerDescriptor {
 
 export type BasemapImport = paths['/api/basemap']['put']['responses']['200']['content']['application/json'] & {
     vector_layers?: VectorLayerDescriptor[];
+    tilesize?: number;
 };
 
 export type BasemapSourceType = 'zxy' | 'imageserver' | 'mapserver' | 'featureserver' | 'tilejson' | 'upload' | 'hosted';
