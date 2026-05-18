@@ -53,13 +53,6 @@ const BasemapImportRequest = Type.Object({
     auth: Type.Optional(BasemapImportAuth)
 });
 
-function isBasemapImportRequest(body: unknown): body is Static<typeof BasemapImportRequest> {
-    return !!body
-        && typeof body === 'object'
-        && 'url' in body
-        && typeof body.url === 'string';
-}
-
 function isEsriLayerURL(url: string): boolean {
     return !!(
         String(url).match(/\/FeatureServer\/\d+$/)
@@ -233,11 +226,11 @@ export default async function router(schema: Schema, config: Config) {
                 const imported = await importBasemapURL(config, String(req.body));
                 res.json(imported);
             } else if (contentType && contentType.startsWith('application/json')) {
-                if (!isBasemapImportRequest(req.body)) {
+                if (!req.body || typeof req.body !== 'object' || !('url' in req.body) || typeof (req.body as Record<string, unknown>).url !== 'string') {
                     throw new Err(400, null, 'Invalid import request');
                 }
 
-                const imported = await importBasemapURL(config, req.body.url, req.body.auth);
+                const imported = await importBasemapURL(config, (req.body as Static<typeof BasemapImportRequest>).url, (req.body as Static<typeof BasemapImportRequest>).auth);
                 res.json(imported);
             } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
