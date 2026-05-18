@@ -40,13 +40,21 @@
                             </TablerIconButton>
                         </template>
                         <template #dropdown>
-                            <div class='card'>
-                                <div class='card-body'>
+                            <div
+                                class='py-1'
+                                style='min-width: 320px;'
+                            >
+                                <div class='px-2 pt-2'>
                                     <TablerInput
                                         v-model='paging.filter'
                                         icon='search'
                                         placeholder='Filter...'
                                     />
+                                </div>
+                                <div
+                                    class='px-2 pb-2'
+                                    style='max-height: 280px; overflow-y: auto;'
+                                >
                                     <div
                                         v-for='user of list.items'
                                         :key='user.username'
