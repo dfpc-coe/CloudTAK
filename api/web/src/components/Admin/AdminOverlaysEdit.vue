@@ -162,6 +162,7 @@ const editing = ref<EditingBasemap>({
     snapping_layer: '',
     styles: [],
     tilejson: '',
+    encoding: null,
 });
 
 const showTypeSelector = computed(() => {

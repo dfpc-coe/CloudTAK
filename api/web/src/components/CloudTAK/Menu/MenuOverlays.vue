@@ -231,6 +231,17 @@
                                         />
                                     </div>
                                     <div
+                                        v-if='card.overlay.type === "raster-dem"'
+                                        class='mb-3'
+                                    >
+                                        <TablerEnum
+                                            :model-value='card.overlay.encoding || "mapbox"'
+                                            label='Terrain Encoding'
+                                            :options='["mapbox", "terrarium"]'
+                                            @update:model-value='void card.overlay.update({ encoding: $event })'
+                                        />
+                                    </div>
+                                    <div
                                         v-if='card.overlay.type === "geojson" && card.overlay.id === -1'
                                         class='mb-3'
                                     >
@@ -273,6 +284,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerBadge,
     TablerDelete,
+    TablerEnum,
     TablerIconButton,
     TablerInput,
     TablerLoading,
@@ -305,7 +317,6 @@ type OverlayBadge = { label: string; tone: OverlayBadgeTone };
 type OverlayStatusTone = 'success' | 'warning' | 'danger';
 type OverlayStatus = { label: string; tone: OverlayStatusTone; tooltip?: string };
 type OverlayCard = { overlay: Overlay; status: OverlayStatus; badges: OverlayBadge[] };
-type TerrainEncoding = 'mapbox' | 'terrarium';
 
 const mapStore = useMapStore();
 const router = useRouter();
@@ -346,13 +357,11 @@ const filteredOverlays = computed<Overlay[]>(() => {
         const name = (overlay.name ?? '').toLowerCase();
         const type = (overlay.type ?? '').toLowerCase();
         const mode = (overlay.mode ?? '').toLowerCase();
-        const encoding = getOverlayEncoding(overlay)?.toLowerCase() || '';
 
         return (
             name.includes(term)
             || type.includes(term)
             || mode.includes(term)
-            || encoding.includes(term)
         );
     });
 });
@@ -478,7 +487,6 @@ function resolveOverlayStatus(overlay: Overlay): OverlayStatus {
 function getOverlayBadges(overlay: Overlay): OverlayBadge[] {
     const badges: OverlayBadge[] = [];
     const seen = new Set<string>();
-    const encoding = getOverlayEncoding(overlay);
 
     const addBadge = (badge: OverlayBadge) => {
         if (seen.has(badge.label)) return;
@@ -498,7 +506,6 @@ function getOverlayBadges(overlay: Overlay): OverlayBadge[] {
         addBadge({ label: 'Raster', tone: 'neutral' });
     } else if (overlay.type === 'raster-dem') {
         addBadge({ label: 'Terrain', tone: 'neutral' });
-        if (encoding) addBadge({ label: `Encoding: ${formatTerrainEncoding(encoding)}`, tone: 'primary' });
     } else if (overlay.type === 'vector') {
         addBadge({ label: 'Vector', tone: 'neutral' });
     } else if (overlay.type === 'geojson') {
@@ -510,15 +517,6 @@ function getOverlayBadges(overlay: Overlay): OverlayBadge[] {
     }
 
     return badges;
-}
-
-function getOverlayEncoding(overlay: Overlay): TerrainEncoding | undefined {
-    if (overlay.type !== 'raster-dem') return undefined;
-    return overlay.encoding || undefined;
-}
-
-function formatTerrainEncoding(encoding: TerrainEncoding): string {
-    return encoding === 'terrarium' ? 'Terrarium' : 'Mapbox';
 }
 
 async function saveOrder(sortableEv: SortableEvent) {

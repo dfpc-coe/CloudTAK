@@ -42,6 +42,7 @@ export interface EditingBasemap {
     snapping_layer: string;
     styles: unknown[];
     tilejson: string;
+    encoding: 'mapbox' | 'terrarium' | null;
 }
 
 export interface VectorLayerFieldMap {
@@ -221,6 +222,7 @@ export function normalizeEditing(data: Basemap | BasemapImport | BasemapListItem
         snapping_layer: ('snapping_layer' in data ? data.snapping_layer : undefined) ?? '',
         styles: ('styles' in data && Array.isArray(data.styles) ? data.styles : null) ?? [],
         tilejson: String(('tilejson' in data ? data.tilejson : undefined) ?? ''),
+        encoding: ('encoding' in data ? (data.encoding as 'mapbox' | 'terrarium' | null) : null) ?? null,
     };
 }
 
