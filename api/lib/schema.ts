@@ -30,6 +30,8 @@ export const Palette = pgTable('palette', {
     name: text().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
+    template: uuid().notNull().references(() => MissionTemplate.id),
 });
 
 export const PaletteFeature = pgTable('palette_feature', {

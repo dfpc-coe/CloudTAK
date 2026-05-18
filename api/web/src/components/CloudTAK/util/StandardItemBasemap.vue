@@ -103,12 +103,27 @@ const badges = computed<BasemapBadge[]>(() => {
         });
     }
 
+    if (props.basemap.type === 'raster-dem') {
+        output.push({
+            label: 'Terrain',
+            tone: 'neutral'
+        });
+
+        if (props.basemap.encoding) {
+            output.push({
+                label: `Encoding: ${formatTerrainEncoding(props.basemap.encoding)}`,
+                tone: 'primary'
+            });
+        }
+    }
+
     return output;
 });
 
 const resolvedIcon = computed(() => {
     const normalizedType = String(props.basemap.type || '').toLowerCase();
     if (normalizedType === 'raster') return IconMap;
+    if (normalizedType === 'raster-dem') return IconMap;
     if (normalizedType === 'vector') return IconVector;
     if (normalizedType) return IconServer;
 
@@ -123,6 +138,10 @@ function formatFrequencySeconds(value?: string | number | null) {
 
     const seconds = Number.isInteger(numeric) ? String(numeric) : numeric.toFixed(2).replace(/\.00$/, '').replace(/(\.[1-9])0$/, '$1');
     return `${seconds}s`;
+}
+
+function formatTerrainEncoding(value: 'mapbox' | 'terrarium') {
+    return value === 'terrarium' ? 'Terrarium' : 'Mapbox';
 }
 
 function protocolIcon(protocol?: string) {
