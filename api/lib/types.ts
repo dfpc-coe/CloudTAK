@@ -111,6 +111,7 @@ export const OptionalTileJSON = Type.Object({
     center: Type.Optional(Type.Any()),
     minzoom: Type.Optional(Type.Integer()),
     maxzoom: Type.Optional(Type.Integer()),
+    tilesize: Type.Optional(Type.Integer()),
     encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
     style: Type.Optional(Type.Enum(Basemap_Scheme)),
     format: Type.Optional(Type.Enum(Basemap_Format)),
@@ -466,7 +467,7 @@ export const BasemapResponse = Type.Object({
     overlay: Type.Boolean(),
 
     // Terrain
-    encoding: Type.Enum(BasemapTerrain_Encoding),
+    encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
 
     // Vector
     styles: Type.Optional(Type.Array(Type.Unknown())),
