@@ -275,7 +275,7 @@
 import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { server, stdclick } from '../../../src/std.ts';
+import { server, std, stdclick } from '../../../src/std.ts';
 import type { MissionTemplate, PaletteList } from '../../../src/types.ts';
 import Keywords from '../CloudTAK/util/Keywords.vue';
 import TagEntry from '../CloudTAK/util/TagEntry.vue';
@@ -423,22 +423,8 @@ async function fetchPalettes() {
     paletteLoading.value = true;
     paletteError.value = undefined;
     try {
-        const res = await server.GET(`/api/template/mission/{:mission}/palette`, {
-            params: {
-                path: {
-                    ":mission": String(route.params.template)
-                },
-                query: {
-                    limit: 100,
-                    page: 0,
-                    sort: 'name',
-                    order: 'asc',
-                    filter: ''
-                }
-            }
-        });
-        if (res.error) throw new Error(res.error.message);
-        if (res.data) palettes.value = res.data;
+        const data = await std(`/api/template/mission/${route.params.template}/palette?limit=100&page=0&sort=name&order=asc&filter=`) as PaletteList;
+        palettes.value = data;
     } catch (err) {
         paletteError.value = err instanceof Error ? err : new Error(String(err));
     } finally {
@@ -448,16 +434,11 @@ async function fetchPalettes() {
 
 async function createPalette() {
     try {
-        const res = await server.POST(`/api/template/mission/{:mission}/palette`, {
-            params: {
-                path: {
-                    ":mission": String(route.params.template)
-                }
-            },
+        const data = await std(`/api/template/mission/${route.params.template}/palette`, {
+            method: 'POST',
             body: { name: 'New Palette' }
-        });
-        if (res.error) throw new Error(res.error.message);
-        if (res.data) router.push(`/admin/template/${route.params.template}/palette/${res.data.uuid}`);
+        }) as { uuid: string };
+        router.push(`/admin/template/${route.params.template}/palette/${data.uuid}`);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
