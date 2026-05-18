@@ -32,8 +32,8 @@
 
 <script setup lang='ts'>
 import { computed, ref } from 'vue';
-import CopyField from './CopyField.vue';
-import SlideDownHeader from './SlideDownHeader.vue';
+import CopyField from '../util/CopyField.vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
 import { phone as phoneFormat } from 'phone';
 import {
     IconPhone

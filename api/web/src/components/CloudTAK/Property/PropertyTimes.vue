@@ -52,7 +52,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import SlideDownHeader from './SlideDownHeader.vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
 import { IconClock } from '@tabler/icons-vue';
 import timediff from '../../../timediff';
 import type COT from '../../../base/cot';

@@ -50,7 +50,7 @@
 
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
-import CopyField from './CopyField.vue';
+import CopyField from '../util/CopyField.vue';
 import {
     IconMountain
 } from '@tabler/icons-vue';
