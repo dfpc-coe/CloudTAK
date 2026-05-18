@@ -116,7 +116,7 @@
 import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { std } from '../../../src/std.ts';
+import { server } from '../../../src/std.ts';
 import type { Palette } from '../../../src/types.ts';
 import {
     TablerNone,
@@ -165,20 +165,24 @@ async function savePalette() {
 
     try {
         if (route.params.palette === "new") {
-            const data = await std(`/api/template/mission/${route.params.template}/palette`, {
-                method: 'POST',
+            const res = await server.POST(`/api/template/mission/{:mission}/palette`, {
+                params: { path: { ':mission': String(route.params.template) } },
                 body: { name: palette.value.name }
-            }) as Palette;
-            palette.value = data;
+            });
+
+            if (res.error) throw new Error(res.error.message);
+            palette.value = res.data as Palette;
 
             disabled.value = true;
             router.push(`/admin/template/${route.params.template}/palette/${palette.value.uuid}`);
         } else {
-            const data = await std(`/api/template/mission/${route.params.template}/palette/${route.params.palette}`, {
-                method: 'PATCH',
+            const res = await server.PATCH(`/api/template/mission/{:mission}/palette/{:palette}`, {
+                params: { path: { ':mission': String(route.params.template), ':palette': String(route.params.palette) } },
                 body: { name: palette.value.name }
-            }) as Palette;
-            palette.value = data;
+            });
+
+            if (res.error) throw new Error(res.error.message);
+            palette.value = res.data as Palette;
 
             disabled.value = true;
         }
@@ -193,10 +197,11 @@ async function deletePalette() {
     loading.value = true;
 
     try {
-        await std(`/api/template/mission/${route.params.template}/palette/${route.params.palette}`, {
-            method: 'DELETE'
+        const res = await server.DELETE(`/api/template/mission/{:mission}/palette/{:palette}`, {
+            params: { path: { ':mission': String(route.params.template), ':palette': String(route.params.palette) } }
         });
 
+        if (res.error) throw new Error(res.error.message);
         router.push(`/admin/template/${route.params.template}`);
     } catch (err) {
         loading.value = false;
@@ -207,8 +212,12 @@ async function deletePalette() {
 async function fetchPalette() {
     loading.value = true;
     try {
-        const data = await std(`/api/template/mission/${route.params.template}/palette/${route.params.palette}`) as Palette;
-        palette.value = data;
+        const res = await server.GET(`/api/template/mission/{:mission}/palette/{:palette}`, {
+            params: { path: { ':mission': String(route.params.template), ':palette': String(route.params.palette) } }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+        palette.value = res.data as Palette;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {

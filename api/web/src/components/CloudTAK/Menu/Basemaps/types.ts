@@ -30,7 +30,7 @@ export interface EditingBasemap {
     tilesize: number;
     attribution: string;
     sharing_enabled: boolean;
-    format: 'png' | 'jpeg' | 'mvt';
+    format: 'png' | 'jpeg' | 'mvt' | 'webp';
     bounds: number[];
     center: number[];
     collection: string;
