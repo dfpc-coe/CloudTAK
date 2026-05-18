@@ -114,7 +114,7 @@ async function importBasemapURL(
     if (tjbody.attribution) imported.attribution = tjbody.attribution;
     if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
     if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
-    if (tjbody.tile_size !== undefined) imported.tilesize = tjbody.tile_size;
+    else if (tjbody.tileSize !== undefined) imported.tilesize = tjbody.tileSize;
     if (Array.isArray(tjbody.vector_layers)) imported.vector_layers = tjbody.vector_layers;
     if (Array.isArray(tjbody.tiles) && tjbody.tiles.length) {
         imported.url = tjbody.tiles[0]
