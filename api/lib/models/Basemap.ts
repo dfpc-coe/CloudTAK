@@ -51,7 +51,8 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             });
         } else if (input.type === Basemap_Type.TERRAIN) {
             await this.pool.insert(BasemapTerrain).values({
-                basemap: base.id
+                basemap: base.id,
+                encoding: input.encoding,
             });
         } else {
             await this.pool.insert(BasemapRaster).values({
