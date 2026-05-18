@@ -20,7 +20,7 @@ import { StandardResponse, BasemapResponse, OptionalTileJSON, MultiGeoJSONFeatur
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
-import { toEnum, Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, Basemap_FeatureAction, AllBoolean, AllBooleanCast } from '../lib/enums.js';
+import { toEnum, Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, Basemap_FeatureAction, AllBoolean, AllBooleanCast, BasemapTerrain_Encoding } from '../lib/enums.js';
 import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
 import * as Default from '../lib/limits.js';
 
@@ -129,6 +129,14 @@ async function importBasemapURL(
             Type.Enum(Basemap_Format),
             normalizeBasemapFormat(path.parse(tileURL.pathname).ext.replace('.', ''))
         );
+    }
+
+    if (tjbody.encoding) {
+        const encoding = toEnum.fromString(Type.Enum(BasemapTerrain_Encoding), String(tjbody.encoding));
+        if (encoding) {
+            imported.encoding = encoding;
+            imported.type = Basemap_Type.TERRAIN;
+        }
     }
 
     return imported;
@@ -542,6 +550,7 @@ export default async function router(schema: Schema, config: Config) {
             frequency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
+            encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
             format: Type.Optional(Type.Enum(Basemap_Format)),
             protocol: Type.Optional(Type.Enum(Basemap_Protocol)),
             style: Type.Optional(Type.Enum(Basemap_Scheme)),

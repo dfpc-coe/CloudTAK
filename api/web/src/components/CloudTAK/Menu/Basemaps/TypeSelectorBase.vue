@@ -117,6 +117,16 @@
                 />
             </div>
             <div
+                v-if='editing.type === "raster-dem"'
+                class='col-12 mt-3'
+            >
+                <TablerEnum
+                    v-model='editing.encoding'
+                    label='Terrain Encoding'
+                    :options='["mapbox", "terrarium"]'
+                />
+            </div>
+            <div
                 v-if='isSystemAdmin'
                 class='col-12 mt-3'
             >

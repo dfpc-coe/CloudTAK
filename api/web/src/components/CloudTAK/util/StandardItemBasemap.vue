@@ -85,14 +85,12 @@ import { IconGridDots, IconMap, IconVector, IconServer, IconClock } from '@table
 type BasemapBadgeTone = 'primary' | 'neutral' | 'muted';
 type BasemapBadgeKind = 'default' | 'frequency';
 type BasemapBadge = { label: string; tone: BasemapBadgeTone; kind?: BasemapBadgeKind };
-type TerrainEncoding = 'mapbox' | 'terrarium';
 
 const props = defineProps<{
     basemap: Basemap;
 }>();
 
 const isPrivate = computed(() => Boolean(props.basemap.username));
-const terrainEncoding = computed(() => getTerrainEncoding(props.basemap));
 
 const badges = computed<BasemapBadge[]>(() => {
     const output: BasemapBadge[] = [];
@@ -110,13 +108,6 @@ const badges = computed<BasemapBadge[]>(() => {
             label: 'Terrain',
             tone: 'neutral'
         });
-
-        if (terrainEncoding.value) {
-            output.push({
-                label: `Encoding: ${formatTerrainEncoding(terrainEncoding.value)}`,
-                tone: 'primary'
-            });
-        }
     }
 
     return output;
@@ -140,15 +131,6 @@ function formatFrequencySeconds(value?: string | number | null) {
 
     const seconds = Number.isInteger(numeric) ? String(numeric) : numeric.toFixed(2).replace(/\.00$/, '').replace(/(\.[1-9])0$/, '$1');
     return `${seconds}s`;
-}
-
-function formatTerrainEncoding(value: 'mapbox' | 'terrarium') {
-    return value === 'terrarium' ? 'Terrarium' : 'Mapbox';
-}
-
-function getTerrainEncoding(basemap: Basemap): TerrainEncoding | undefined {
-    if (basemap.type !== 'raster-dem') return undefined;
-    return (basemap as Basemap & { encoding?: TerrainEncoding | null }).encoding || undefined;
 }
 
 function protocolIcon(protocol?: string) {
