@@ -116,6 +116,7 @@ export enum Profile_Coordinate {
 
 export enum Basemap_Format {
     PNG = 'png',
+    WEBP = 'webp',
     JPEG = 'jpeg',
     MVT = 'mvt'
 }
