@@ -541,6 +541,13 @@ export const FullConfig = Type.Object({
     'login::background::enabled': Type.Boolean({ description: 'Enable or Disable Custom Background on Login Page' }),
     'login::background::color': Type.String({ description: 'Hex Color Code for Login Background' }),
     'login::logo': Type.String({ description: 'Base64 encoded PNG for Logo' }),
+    'firebase::apikey': Type.String({ description: 'Firebase API Key' }),
+    'firebase::authdomain': Type.String({ description: 'Firebase Auth Domain' }),
+    'firebase::projectid': Type.String({ description: 'Firebase Project ID' }),
+    'firebase::storagebucket': Type.String({ description: 'Firebase Storage Bucket' }),
+    'firebase::messagingsenderid': Type.String({ description: 'Firebase Messaging Sender ID' }),
+    'firebase::appid': Type.String({ description: 'Firebase App ID' }),
+    'firebase::measurementid': Type.String({ description: 'Firebase Measurement ID' }),
     'external::applications': Type.Array(Type.Object({
         name: Type.String({ description: 'Application Name' }),
         icon: Type.String({ description: 'Base64 encoded icon' }),

@@ -437,6 +437,19 @@
                 </div>
 
                 <div
+                    v-if='lineGeometry && mapStore.isTerrainEnabled && mapStore.terrainBasemapId'
+                    class='col-12 pt-2'
+                >
+                    <PropertyProfile
+                        :key='`${route.params.uid}-${mapStore.terrainBasemapId}`'
+                        :geometry='lineGeometry'
+                        :terrain-basemap-id='mapStore.terrainBasemapId'
+                        :distance-unit='units.display_distance'
+                        :elevation-unit='units.display_elevation'
+                    />
+                </div>
+
+                <div
                     v-if='cot && cot.geometry.type === "Polygon"'
                     class='col-12 pt-2'
                 >
@@ -659,6 +672,7 @@ import Share from './util/Share.vue';
 import LineLength from './util/LineLength.vue';
 import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
+import PropertyProfile from './util/PropertyProfile.vue';
 import PropertyType from './util/PropertyType.vue';
 import PropertyBattery from './util/PropertyBattery.vue';
 import PropertyDistance from './util/PropertyDistance.vue';
@@ -824,6 +838,11 @@ const center = computed(() => {
 
     return arr;
 })
+
+const lineGeometry = computed(() => {
+    if (!cot.value || cot.value.geometry.type !== 'LineString') return null;
+    return cot.value.geometry;
+});
 
 const isLocked = computed(() => {
     if (!cot.value) return false;
