@@ -346,6 +346,10 @@ export const useMapStore = defineStore('cloudtak', {
             const burl = stdurl(`/api/basemap/${terrainId}`);
             const terrain = await std(burl) as Basemap;
 
+            if (terrain.type !== 'raster-dem') {
+                throw new Error(`Terrain basemap ${terrainId} is not a raster-dem type`);
+            }
+
             const source: { type: 'raster-dem'; url: string; tileSize?: number; encoding?: 'mapbox' | 'terrarium' } = {
                 type: 'raster-dem',
                 url: String(stdurl(`/api/basemap/${terrain.id}/tiles?token=${localStorage.token}`))

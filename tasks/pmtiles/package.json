@@ -43,6 +43,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@cloudtak/api-types": ["../../api/derived-types.d.ts"],
         "@types/cors": "^2.8.17",
         "@types/jsonwebtoken": "^9.0.2",
         "@types/node": "^25.0.0",

@@ -70,6 +70,7 @@ test('getElevationProfile samples elevations across covered tiles', async () => 
     try {
         const profile = await getElevationProfile('https://example.test/terrain/{z}/{x}/{y}.png', geometry, {
             zoom: 2,
+            encoding: 'mapbox',
             minSampleDistance: 500,
             maxSampleDistance: 500,
             concurrency: 4,
@@ -125,6 +126,7 @@ test('getElevationProfile decodes WebP raster-dem tiles', async () => {
     try {
         const profile = await getElevationProfile('https://example.test/terrain/{z}/{x}/{y}.webp', geometry, {
             zoom: 2,
+            encoding: 'mapbox',
             minSampleDistance: 500,
             maxSampleDistance: 500,
         });
