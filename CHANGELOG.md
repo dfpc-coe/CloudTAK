@@ -19,6 +19,18 @@
 
 ### Pending Release
 
+### v13.0.0
+
+> [!WARNING]
+> If running CloudTAK in an AWS environment with supplied CloudFormation Templates,
+> the deploy must be conducted in two steps due to the migration of API Gateway from
+> V1 to V2
+> 
+> Comment out the PMTiles object in `cloudformation/CloudTAK.template.js`
+> Deploy with deploy update <stackname>
+> Uncomment the PMTiles object in `cloudformation/CloudTAK.template.js`
+> Deploy with deploy update <stackname>
+
 ### v12.138.2 - 2026-05-03
 
 - :arrow_up: Update TerraDraw and Core Deps

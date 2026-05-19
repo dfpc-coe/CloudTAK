@@ -150,9 +150,9 @@ export default {
                 Name: cf.join(['tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                 Comment: cf.join(' ', [cf.stackName, 'PMTiles API DNS Entry']),
                 AliasTarget: {
-                    DNSName: cf.getAtt('PMTilesApiDomain', 'RegionalDomainName'),
+                    DNSName: cf.getAtt('PMTilesApiDomainV2', 'RegionalDomainName'),
                     EvaluateTargetHealth: true,
-                    HostedZoneId: cf.getAtt('PMTilesApiDomain', 'RegionalHostedZoneId')
+                    HostedZoneId: cf.getAtt('PMTilesApiDomainV2', 'RegionalHostedZoneId')
                 }
             }
         },
@@ -230,134 +230,71 @@ export default {
                 ]
             }
         },
-        PMTilesApiGatewayRole: {
-            Type: 'AWS::IAM::Role',
-            Properties: {
-                AssumeRolePolicyDocument: {
-                    Version: '2012-10-17',
-                    Statement: [{
-                        Effect: 'Allow',
-                        Action: 'sts:AssumeRole',
-                        Principal: {
-                            Service: ['apigateway.amazonaws.com']
-                        }
-                    }]
-                },
-                Policies: [{
-                    PolicyName: cf.join([cf.stackName, '-pmtiles-api-gateway']),
-                    PolicyDocument: {
-                        Version: '2012-10-17',
-                        Statement: [{
-                            Effect: 'Allow',
-                            Action: [
-                                'lambda:InvokeFunction'
-                            ],
-                            Resource: [
-                                cf.getAtt('PMTilesLambda', 'Arn')
-                            ]
-                        }]
-                    }
-                }]
-            }
-        },
-        PMTilesApiDomain: {
-            Type: 'AWS::ApiGateway::DomainName',
+        PMTilesApiDomainV2: {
+            Type: 'AWS::ApiGatewayV2::DomainName',
             Properties: {
                 DomainName: cf.join(['tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
-                RegionalCertificateArn: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-acm'])),
-                EndpointConfiguration: {
-                    Types: ['REGIONAL']
-                }
+                DomainNameConfigurations: [{
+                    CertificateArn: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-acm'])),
+                    EndpointType: 'REGIONAL'
+                }]
             }
         },
-        PMTilesApiMap: {
-            Type: 'AWS::ApiGateway::BasePathMapping',
+        PMTilesApiMapV2: {
+            Type: 'AWS::ApiGatewayV2::ApiMapping',
+            DependsOn: ['PMTilesApiDomainV2', 'PMTilesAPIStage'],
             Properties: {
-                DomainName: cf.ref('PMTilesApiDomain'),
-                RestApiId: cf.ref('PMTilesLambdaAPI')
+                DomainName: cf.ref('PMTilesApiDomainV2'),
+                ApiId: cf.ref('PMTilesLambdaAPIV2'),
+                Stage: '$default'
             }
         },
-        PMTilesLambdaAPI: {
-            Type: 'AWS::ApiGateway::RestApi',
+        PMTilesLambdaAPIV2: {
+            Type: 'AWS::ApiGatewayV2::Api',
             Properties: {
                 Name: cf.stackName,
+                ProtocolType: 'HTTP',
                 DisableExecuteApiEndpoint: true,
-                EndpointConfiguration: {
-                    Types: ['REGIONAL']
+                CorsConfiguration: {
+                    AllowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token', 'X-Amz-User-Agent'],
+                    AllowMethods: ['OPTIONS', 'GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD'],
+                    AllowOrigins: ['*']
                 }
             }
         },
-        PMTilesLambdaAPIResource: {
-            Type: 'AWS::ApiGateway::Resource',
+        PMTilesLambdaAPIIntegration: {
+            Type: 'AWS::ApiGatewayV2::Integration',
             Properties: {
-                ParentId: cf.getAtt('PMTilesLambdaAPI', 'RootResourceId'),
-                PathPart: '{proxy+}',
-                RestApiId: cf.ref('PMTilesLambdaAPI')
+                ApiId: cf.ref('PMTilesLambdaAPIV2'),
+                IntegrationType: 'AWS_PROXY',
+                IntegrationUri: cf.join(['arn:', cf.partition, ':apigateway:', cf.region, ':lambda:path/2015-03-31/functions/', cf.getAtt('PMTilesLambda', 'Arn'), '/invocations']),
+                PayloadFormatVersion: '1.0'
             }
         },
-        PMTilesAPIDeployment: {
-            Type: 'AWS::ApiGateway::Deployment',
-            DependsOn: ['PMTilesLambdaAPIResourceGET'],
+        PMTilesLambdaAPIRoute: {
+            Type: 'AWS::ApiGatewayV2::Route',
             Properties: {
-                Description: cf.stackName,
-                RestApiId: cf.ref('PMTilesLambdaAPI')
-            }
-        },
-        PMtilesLambdaAPIStage: {
-            Type: 'AWS::ApiGateway::Stage',
-            Properties: {
-                DeploymentId: cf.ref('PMTilesAPIDeployment'),
-                RestApiId: cf.ref('PMTilesLambdaAPI'),
-                StageName: 'tiles'
-            }
-        },
-        PMTilesLambdaAPIResourceGET: {
-            Type: 'AWS::ApiGateway::Method',
-            Properties: {
+                ApiId: cf.ref('PMTilesLambdaAPIV2'),
+                RouteKey: 'GET /{proxy+}',
                 AuthorizationType: 'NONE',
-                HttpMethod: 'GET',
-                RequestParameters: {
-                    'method.request.header.Authorization': false
-                },
-                Integration: {
-                    Credentials:  cf.getAtt('PMTilesApiGatewayRole', 'Arn'),
-                    IntegrationHttpMethod: 'POST',
-                    Type: 'AWS_PROXY',
-                    Uri: cf.join(['arn:', cf.partition, ':apigateway:', cf.region, ':lambda:path/2015-03-31/functions/', cf.getAtt('PMTilesLambda', 'Arn'), '/invocations'])
-                },
-                ResourceId: cf.ref('PMTilesLambdaAPIResource'),
-                RestApiId: cf.ref('PMTilesLambdaAPI')
+                Target: cf.join(['integrations/', cf.ref('PMTilesLambdaAPIIntegration')])
             }
         },
-        PMTilesLambdaAPIResourceOPIONS: {
-            Type: 'AWS::ApiGateway::Method',
+        PMTilesAPIStage: {
+            Type: 'AWS::ApiGatewayV2::Stage',
             Properties: {
-                HttpMethod: 'OPTIONS',
-                ResourceId: cf.ref('PMTilesLambdaAPIResource'),
-                RestApiId: cf.ref('PMTilesLambdaAPI'),
-                AuthorizationType: 'NONE',
-                Integration: {
-                    IntegrationResponses: [{
-                        ResponseParameters: {
-                            'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
-                            'method.response.header.Access-Control-Allow-Origin': "'*'",
-                            'method.response.header.Access-Control-Allow-Methods': "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
-                        },
-                        StatusCode: '204'
-                    }],
-                    RequestTemplates: {
-                        'application/json': '{ statusCode: 200 }'
-                    },
-                    Type: 'MOCK'
-                },
-                MethodResponses: [{
-                    ResponseParameters: {
-                        'method.response.header.Access-Control-Allow-Headers': true,
-                        'method.response.header.Access-Control-Allow-Origin': true,
-                        'method.response.header.Access-Control-Allow-Methods': true
-                    },
-                    StatusCode: '204'
-                }]
+                ApiId: cf.ref('PMTilesLambdaAPIV2'),
+                StageName: '$default',
+                AutoDeploy: true
+            }
+        },
+        PMTilesLambdaAPIPermission: {
+            Type: 'AWS::Lambda::Permission',
+            Properties: {
+                FunctionName: cf.ref('PMTilesLambda'),
+                Action: 'lambda:InvokeFunction',
+                Principal: 'apigateway.amazonaws.com',
+                SourceArn: cf.join(['arn:', cf.partition, ':execute-api:', cf.region, ':', cf.accountId, ':', cf.ref('PMTilesLambdaAPIV2'), '/*/*/{proxy+}'])
             }
         }
     },
@@ -371,7 +308,7 @@ export default {
         },
         PMTilesAPICNAME: {
             Description: 'PMTiles API CNAME target',
-            Value: cf.join([cf.getAtt('PMTilesApiDomain', 'RegionalDomainName'), '.']),
+            Value: cf.join([cf.getAtt('PMTilesApiDomainV2', 'RegionalDomainName'), '.']),
             Export: {
                 Name: cf.join([cf.stackName, '-pmtiles-api-cname-target'])
             }
