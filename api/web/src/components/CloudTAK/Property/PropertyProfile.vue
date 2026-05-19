@@ -369,8 +369,11 @@ function renderChart(): void {
     if (shellRef.value) {
         resizeObserver = new ResizeObserver((entries) => {
             if (!chart) return;
-            const width = entries[0].contentRect.width;
-            chart.resize(width, 260);
+            requestAnimationFrame(() => {
+                if (!chart) return;
+                const width = entries[0].contentRect.width;
+                chart.resize(width, 260);
+            });
         });
         resizeObserver.observe(shellRef.value);
     }

@@ -38,7 +38,7 @@ export interface ElevationProfile {
 
 export interface ElevationProfileOptions {
     zoom: number;
-    encoding?: ElevationEncoding;
+    encoding: ElevationEncoding;
     concurrency?: number;
     targetSamples?: number;
     minSampleDistance?: number;
@@ -127,7 +127,11 @@ export async function getElevationProfile(
         throw new Err(400, null, 'Zoom must be a non-negative integer');
     }
 
-    const encoding = opts.encoding ?? 'mapbox';
+    if (!opts.encoding) {
+        throw new Err(400, null, 'Encoding must be specified by the caller');
+    }
+
+    const encoding = opts.encoding;
     let totalDistance = 0;
     for (let i = 1; i < geometry.coordinates.length; i++) {
         const start = geometry.coordinates[i - 1];

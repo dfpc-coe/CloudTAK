@@ -211,7 +211,7 @@ export default async function router(schema: Schema) {
                 description: 'Number of elevation samples to take along the line'
             }),
             zoom: Type.Optional(Type.Integer({ minimum: 0 })),
-            encoding: Type.Optional(ElevationEncodingType),
+            encoding: ElevationEncodingType,
         }),
         res: ElevationProfileType
     }, async (req, res) => {

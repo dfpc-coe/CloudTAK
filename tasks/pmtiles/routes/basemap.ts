@@ -1,28 +1,15 @@
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox';
+import type { paths } from '@cloudtak/api-types';
 import auth from '../lib/auth.js';
 import getElevationProfile, {
-    ElevationEncoding,
-    ElevationEncodingType,
     ElevationProfileType,
     LineStringGeometryType,
 } from '../lib/elevation.js';
 
-type CloudTAKBasemap = {
-    type?: string;
-    minzoom?: number;
-    maxzoom?: number;
-    encoding?: ElevationEncoding;
-};
-
-type CloudTAKTileJSON = {
-    type?: string;
-    format?: string;
-    minzoom?: number;
-    maxzoom?: number;
-    tiles?: string[];
-};
+type CloudTAKBasemap = paths['/api/basemap/{:basemapid}']['get']['responses'][200]['content']['application/json'];
+type CloudTAKTileJSON = paths['/api/basemap/{:basemapid}/tiles']['get']['responses'][200]['content']['application/json'];
 
 async function fetchCloudTAKJSON<T>(url: URL): Promise<T> {
     const res = await fetch(url);
@@ -69,7 +56,6 @@ export default async function router(schema: Schema) {
                 description: 'Number of elevation samples to take along the line'
             }),
             zoom: Type.Optional(Type.Integer({ minimum: 0 })),
-            encoding: Type.Optional(ElevationEncodingType),
         }),
         res: ElevationProfileType
     }, async (req, res) => {
@@ -85,7 +71,7 @@ export default async function router(schema: Schema) {
                 )
             ]);
 
-            if (basemap.type !== 'raster-dem' || tilejson.type !== 'raster-dem' || tilejson.format === 'mvt') {
+            if (typeof basemap === 'string' || basemap.type !== 'raster-dem' || tilejson.type !== 'raster-dem' || tilejson.format === 'mvt') {
                 throw new Err(400, null, 'Elevation profiles require raster-dem tiles');
             }
 
@@ -105,9 +91,14 @@ export default async function router(schema: Schema) {
                 throw new Err(400, null, 'Below Layer MinZoom');
             }
 
+            const encoding = basemap.encoding;
+            if (!encoding) {
+                throw new Err(400, null, 'Encoding could not be determined from the basemap metadata');
+            }
+
             res.json(await getElevationProfile(tileurl, req.body.geometry, {
                 zoom: req.body.zoom ?? maxzoom,
-                encoding: req.body.encoding ?? basemap.encoding,
+                encoding,
                 targetSamples: req.body.samples ?? 100,
             }));
         } catch (err) {

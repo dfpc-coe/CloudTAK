@@ -437,13 +437,13 @@
                 </div>
 
                 <div
-                    v-if='lineGeometry && mapStore.isTerrainEnabled && mapStore.terrainBasemapId'
+                    v-if='lineGeometry && terrainBasemapId'
                     class='col-12 pt-2'
                 >
                     <PropertyProfile
-                        :key='`${route.params.uid}-${mapStore.terrainBasemapId}`'
+                        :key='`${route.params.uid}-${terrainBasemapId}`'
                         :geometry='lineGeometry'
-                        :terrain-basemap-id='mapStore.terrainBasemapId'
+                        :terrain-basemap-id='terrainBasemapId'
                         :distance-unit='units.display_distance'
                         :elevation-unit='units.display_elevation'
                     />
@@ -721,11 +721,17 @@ import { server } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useFloatStore } from '../../stores/float.ts';
 import ProfileConfig from '../../base/profile.ts';
+import Config from '../../base/config.ts';
 import { setCircleRadius } from '../../base/cot/ellipse.ts';
 
 const mapStore = useMapStore();
 
 const floatStore = useFloatStore();
+
+const terrainBasemapId = ref<number | null>(null);
+Config.list(['map::terrain'], { defaults: { 'map::terrain': null } }).then((cfg) => {
+    terrainBasemapId.value = cfg['map::terrain'] ? Number(cfg['map::terrain']) : null;
+}).catch(() => { /* non-fatal */ });
 const route = useRoute();
 const router = useRouter();
 
