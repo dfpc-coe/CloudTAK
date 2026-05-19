@@ -179,8 +179,6 @@ const samples = computed(() => {
     });
 });
 
-const sampleCount = computed(() => samples.value.length);
-
 const stats = computed(() => {
     if (!samples.value.length) return null;
 
