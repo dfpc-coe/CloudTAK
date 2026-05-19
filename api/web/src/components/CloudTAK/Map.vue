@@ -206,17 +206,17 @@
                     </div>
 
                     <IconMountain
-                        v-if='mapStore.hasTerrain'
-                        v-tooltip='mapStore.isTerrainEnabled ? "Disable 3D Terrain" : "Enable 3D Terrain"'
+                        v-if='hasTerrain'
+                        v-tooltip='mapStore.terrainEnabled ? "Disable 3D Terrain" : "Enable 3D Terrain"'
                         role='button'
                         tabindex='0'
                         title='3D Terrain'
                         :size='32'
                         stroke='2'
                         class='cursor-pointer cloudtak-hover'
-                        :color='mapStore.isTerrainEnabled ? "#1E90FF" : "#FFFFFF"'
+                        :color='mapStore.terrainEnabled ? "#1E90FF" : "#FFFFFF"'
                         style='margin: 3px 3px'
-                        @click='mapStore.isTerrainEnabled ? mapStore.removeTerrain() : mapStore.addTerrain()'
+                        @click='mapStore.terrainEnabled ? mapStore.removeTerrain() : mapStore.addTerrain()'
                     />
 
                     <IconLockAccess
@@ -473,11 +473,17 @@ import Upload from '../util/Upload.vue';
 import { stdurl } from '../../std.ts';
 import { clearLocationWatch } from '../../base/capacitor.ts';
 import ProfileConfig from '../../base/profile.ts';
+import Config from '../../base/config.ts';
 import { cutOverlayFeature } from './util/featureCut.ts';
 
 const mapStore = useMapStore();
 const floatStore = useFloatStore();
 const token = computed(() => String(localStorage.token ?? ''));
+
+const hasTerrain = ref<boolean>(false);
+Config.list(['map::terrain'], { defaults: { 'map::terrain': null } }).then((cfg) => {
+    hasTerrain.value = cfg['map::terrain'] !== null && cfg['map::terrain'] !== undefined;
+}).catch(() => { /* non-fatal */ });
 const router = useRouter();
 const route = useRoute();
 

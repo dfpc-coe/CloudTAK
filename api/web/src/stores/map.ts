@@ -85,13 +85,10 @@ export const useMapStore = defineStore('cloudtak', {
         _rawWorker: Worker;
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
-        mapConfig: { center: string; zoom: number; pitch: number; bearing: number; basemap: number | null; terrain: number | null };
+        terrainEnabled: boolean;
         container?: HTMLElement;
-        hasTerrain: boolean;
-        terrainBasemapId: number | null;
         hasSnapping: boolean;
         hasNoChannels: boolean;
-        isTerrainEnabled: boolean;
         isLoaded: boolean;
         isOpen: boolean;
         isOnline: boolean;
@@ -148,10 +145,8 @@ export const useMapStore = defineStore('cloudtak', {
             lastUpdateCOTErrorSignature: null,
             isMobileDetected: false,
             locked: [],
-            hasTerrain: false,
-            terrainBasemapId: null,
+            terrainEnabled: false,
             hasNoChannels: false,
-            isTerrainEnabled: false,
             isOpen: false,
             isLoaded: false,
             isOnline: navigator.onLine,
@@ -163,14 +158,6 @@ export const useMapStore = defineStore('cloudtak', {
                 mode: undefined,
                 feats: [],
                 x: 0, y: 0,
-            },
-            mapConfig: {
-                center: '-100,40',
-                zoom: 4,
-                pitch: 0,
-                bearing: 0,
-                basemap: null,
-                terrain: null
             },
             radial: {
                 mode: undefined,
@@ -349,48 +336,35 @@ export const useMapStore = defineStore('cloudtak', {
 
             return null;
         },
-        listTerrain: async function(): Promise<APIList<Basemap>> {
-            // Courtesy add terrain data
-            const burl = stdurl('/api/basemap');
-            burl.searchParams.set('type', 'raster-dem');
-            burl.searchParams.set('limit', '1');
-            const basemaps = await std(burl) as APIList<Basemap>;
-
-            return basemaps;
-        },
-
         // TODO: Convert to overlay
         addTerrain: async function(): Promise<void> {
-            const basemaps = await this.listTerrain();
-            if (basemaps.items.length && !this.map.getSource('-2')) {
-                const terrain = basemaps.items[0];
-                this.terrainBasemapId = terrain.id;
+            const cfg = await Config.list(['map::terrain'], { defaults: { 'map::terrain': null } });
+            const terrainId = cfg['map::terrain'] ? Number(cfg['map::terrain']) : null;
+            if (!terrainId) return;
+            if (this.map.getSource('-2')) return;
 
-                const source: { type: 'raster-dem'; url: string; tileSize?: number; encoding?: 'mapbox' | 'terrarium' } = {
-                    type: 'raster-dem',
-                    url: String(stdurl(`/api/basemap/${terrain.id}/tiles?token=${localStorage.token}`))
-                };
+            const burl = stdurl(`/api/basemap/${terrainId}`);
+            const terrain = await std(burl) as Basemap;
 
-                if (terrain.tilesize) source.tileSize = terrain.tilesize;
-                if (terrain.encoding) source.encoding = terrain.encoding;
+            const source: { type: 'raster-dem'; url: string; tileSize?: number; encoding?: 'mapbox' | 'terrarium' } = {
+                type: 'raster-dem',
+                url: String(stdurl(`/api/basemap/${terrain.id}/tiles?token=${localStorage.token}`))
+            };
 
-                this.map.addSource('-2', source);
+            if (terrain.tilesize) source.tileSize = terrain.tilesize;
+            if (terrain.encoding) source.encoding = terrain.encoding;
 
-                console.error(terrain);
+            this.map.addSource('-2', source);
 
-                this.map.setTerrain({
-                    source: '-2',
-                    exaggeration: 1.5
-                });
+            this.map.setTerrain({
+                source: '-2',
+                exaggeration: 1.5
+            });
 
-                this.isTerrainEnabled = true;
+            this.terrainEnabled = true;
 
-                if (this.map.getPitch() === 0) {
-                    this.map.easeTo({ pitch: 45 });
-                }
-            } else {
-                this.terrainBasemapId = null;
-                this.hasTerrain = false;
+            if (this.map.getPitch() === 0) {
+                this.map.easeTo({ pitch: 45 });
             }
         },
 
@@ -398,22 +372,23 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.setTerrain(null);
             this.map.removeSource('-2');
 
-            this.terrainBasemapId = null;
-            this.isTerrainEnabled = false;
+            this.terrainEnabled = false;
 
             this.map.easeTo({ pitch: 0 });
         },
 
-        returnHome: function(): void {
-            const flyTo = {
-                zoom: this.mapConfig.zoom,
-                pitch: this.mapConfig.pitch,
-                bearing: this.mapConfig.bearing,
-                center: this.mapConfig.center.split(',').map(Number) as LngLatLike,
+        returnHome: async function(): Promise<void> {
+            const cfg = await Config.list(
+                ['map::center', 'map::zoom', 'map::pitch', 'map::bearing'],
+                { defaults: { 'map::center': '-100,40', 'map::zoom': 4, 'map::pitch': 0, 'map::bearing': 0 } }
+            );
+            this.map.flyTo({
+                zoom: Number(cfg['map::zoom']),
+                pitch: Number(cfg['map::pitch']),
+                bearing: Number(cfg['map::bearing']),
+                center: String(cfg['map::center']).split(',').map(Number) as LngLatLike,
                 speed: Infinity
-            };
-
-            this.map.flyTo(flyTo);
+            });
         },
 
         /**
@@ -694,8 +669,13 @@ export const useMapStore = defineStore('cloudtak', {
 
             const sprites = IconManager.defaultSprite();
 
+            let initCenter = '-100,40';
+            let initZoom = 4;
+            let initPitch = 0;
+            let initBearing = 0;
+
             try {
-                const mapConfig = await Config.list([
+                const cfg = await Config.list([
                     'map::center',
                     'map::zoom',
                     'map::pitch',
@@ -713,25 +693,12 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 });
 
-                this.mapConfig = {
-                    center: String(mapConfig['map::center']),
-                    zoom: Number(mapConfig['map::zoom']),
-                    pitch: Number(mapConfig['map::pitch']),
-                    bearing: Number(mapConfig['map::bearing']),
-                    basemap: mapConfig['map::basemap'] ? Number(mapConfig['map::basemap']) : null,
-                    terrain: mapConfig['map::terrain'] ? Number(mapConfig['map::terrain']) : null
-                };
+                initCenter = String(cfg['map::center']);
+                initZoom = Number(cfg['map::zoom']);
+                initPitch = Number(cfg['map::pitch']);
+                initBearing = Number(cfg['map::bearing']);
             } catch (err) {
                 console.error('Failed to load map configuration, using defaults', err);
-
-                this.mapConfig = {
-                    center: '-100,40',
-                    zoom: 4,
-                    pitch: 0,
-                    bearing: 0,
-                    basemap: null,
-                    terrain: null
-                };
             }
 
             const init: mapgl.MapOptions = {
@@ -739,10 +706,10 @@ export const useMapStore = defineStore('cloudtak', {
                 hash: true,
                 attributionControl: {},
                 fadeDuration: 0,
-                zoom: this.mapConfig.zoom,
-                pitch: this.mapConfig.pitch,
-                bearing: this.mapConfig.bearing,
-                center: this.mapConfig.center.split(',').map(Number) as LngLatLike,
+                zoom: initZoom,
+                pitch: initPitch,
+                bearing: initBearing,
+                center: initCenter.split(',').map(Number) as LngLatLike,
                 maxPitch: 85,
                 style: {
                     version: 8,
@@ -1133,7 +1100,6 @@ export const useMapStore = defineStore('cloudtak', {
             url.searchParams.set('order', 'asc');
             url.searchParams.set('limit', '100');
             const profileOverlays = await std(url) as ProfileOverlayList;
-            this.hasTerrain = profileOverlays.available.terrain;
             this.hasSnapping = profileOverlays.available.snapping;
 
             const hasBasemap = profileOverlays.items.some((o: ProfileOverlay) => {
@@ -1144,9 +1110,12 @@ export const useMapStore = defineStore('cloudtak', {
             if (!hasBasemap) {
                 let defaultBasemap: Basemap | null = null;
 
-                if (this.mapConfig.basemap) {
+                const basemapCfg = await Config.list(['map::basemap'], { defaults: { 'map::basemap': null } });
+                const basemapId = basemapCfg['map::basemap'] ? Number(basemapCfg['map::basemap']) : null;
+
+                if (basemapId) {
                     try {
-                        const burl = stdurl(`/api/basemap/${this.mapConfig.basemap}`);
+                        const burl = stdurl(`/api/basemap/${basemapId}`);
                         defaultBasemap = await std(burl) as Basemap;
                     } catch (err) {
                         console.warn('Failed to load configured basemap:', err);
