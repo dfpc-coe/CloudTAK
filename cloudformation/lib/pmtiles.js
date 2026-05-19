@@ -271,6 +271,15 @@ export default {
                 PayloadFormatVersion: '1.0'
             }
         },
+        PMTilesLambdaAPIRoutePost: {
+            Type: 'AWS::ApiGatewayV2::Route',
+            Properties: {
+                ApiId: cf.ref('PMTilesLambdaAPIV2'),
+                RouteKey: 'POST /{proxy+}',
+                AuthorizationType: 'NONE',
+                Target: cf.join(['integrations/', cf.ref('PMTilesLambdaAPIIntegration')])
+            }
+        },
         PMTilesLambdaAPIRoute: {
             Type: 'AWS::ApiGatewayV2::Route',
             Properties: {
