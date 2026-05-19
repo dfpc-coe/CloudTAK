@@ -342,6 +342,7 @@ async function create(): Promise<void> {
         if (!body.collection || body.collection.trim().length === 0) body.collection = null;
 
         if (!body.attribution || body.attribution.trim().length === 0) body.attribution = null;
+        if (body.encoding === null) delete body.encoding;
 
         if (editing.value.type !== 'vector' || !editing.value.title || editing.value.title.trim().length === 0) {
             delete body.title;
