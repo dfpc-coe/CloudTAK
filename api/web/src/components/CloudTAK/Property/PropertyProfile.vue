@@ -118,18 +118,11 @@ import { server, std, stdurl } from '../../../std.ts';
 
 type ElevationSample = {
     distance: number;
-    coordinate: [number, number];
     elevation: number | null;
 };
 
 type ElevationProfile = {
-    tileurl: string;
-    zoom: number;
-    encoding: 'mapbox' | 'terrarium';
     distance: number;
-    stepDistance: number;
-    sampledDistances: number[];
-    tileCount: number;
     samples: ElevationSample[];
 };
 
@@ -439,11 +432,19 @@ function formatNumber(value: number): string {
 <style scoped>
 .profile-chart-shell {
     position: relative;
-    min-height: 260px;
+    height: 260px;
     overflow: hidden;
 }
 
+.profile-chart-shell canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
 .profile-stat {
+    height: 100%;
+    min-height: 3.5rem;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
