@@ -362,11 +362,20 @@ export const useMapStore = defineStore('cloudtak', {
         addTerrain: async function(): Promise<void> {
             const basemaps = await this.listTerrain();
             if (basemaps.items.length && !this.map.getSource('-2')) {
-                this.terrainBasemapId = basemaps.items[0].id;
-                this.map.addSource('-2', {
+                const terrain = basemaps.items[0];
+                this.terrainBasemapId = terrain.id;
+
+                const source: { type: 'raster-dem'; url: string; tileSize?: number; encoding?: 'mapbox' | 'terrarium' } = {
                     type: 'raster-dem',
-                    url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`))
-                })
+                    url: String(stdurl(`/api/basemap/${terrain.id}/tiles?token=${localStorage.token}`))
+                };
+
+                if (terrain.tilesize) source.tileSize = terrain.tilesize;
+                if (terrain.encoding) source.encoding = terrain.encoding;
+
+                this.map.addSource('-2', source);
+
+                console.error(terrain);
 
                 this.map.setTerrain({
                     source: '-2',
