@@ -7,11 +7,11 @@
         "node": ">= 24"
     },
     "scripts": {
-        "check": "tsc --noEmit",
+        "check": "tsc --noEmit --project tsconfig.json",
         "lint": "eslint index.ts routes/ test/ lib/",
         "test": "tsx --test test/*.test.ts",
         "typegen": "openapi-typescript http://localhost:5002/openapi --output derived-types.d.ts",
-        "build": "tsup --target es2022 --format esm index.ts",
+        "build": "tsc --project tsconfig.json",
         "dev": "tsx watch index.ts --noevents --nometrics --nosinks --unsafe",
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js"
     },
@@ -43,14 +43,12 @@
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
-        "@types/aws-lambda": "^8.10.108",
         "@types/cors": "^2.8.17",
         "@types/jsonwebtoken": "^9.0.2",
         "@types/node": "^25.0.0",
         "@types/pngjs": "^6.0.5",
         "eslint": "^10.0.0",
         "openapi-typescript": "^7.13.0",
-        "tsup": "^8.0.0",
         "tsx": "^4.21.0",
         "typescript": "^5.0.0",
         "typescript-eslint": "^8.0.0"
