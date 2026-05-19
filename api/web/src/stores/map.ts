@@ -85,7 +85,7 @@ export const useMapStore = defineStore('cloudtak', {
         _rawWorker: Worker;
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
-        mapConfig: { center: string; zoom: number; pitch: number; bearing: number; basemap: number | null };
+        mapConfig: { center: string; zoom: number; pitch: number; bearing: number; basemap: number | null; terrain: number | null };
         container?: HTMLElement;
         hasTerrain: boolean;
         terrainBasemapId: number | null;
@@ -169,7 +169,8 @@ export const useMapStore = defineStore('cloudtak', {
                 zoom: 4,
                 pitch: 0,
                 bearing: 0,
-                basemap: null
+                basemap: null,
+                terrain: null
             },
             radial: {
                 mode: undefined,
@@ -699,14 +700,16 @@ export const useMapStore = defineStore('cloudtak', {
                     'map::zoom',
                     'map::pitch',
                     'map::bearing',
-                    'map::basemap'
+                    'map::basemap',
+                    'map::terrain'
                 ], {
                     defaults: {
                         'map::center': '-100,40',
                         'map::zoom': 4,
                         'map::pitch': 0,
                         'map::bearing': 0,
-                        'map::basemap': null
+                        'map::basemap': null,
+                        'map::terrain': null
                     }
                 });
 
@@ -715,7 +718,8 @@ export const useMapStore = defineStore('cloudtak', {
                     zoom: Number(mapConfig['map::zoom']),
                     pitch: Number(mapConfig['map::pitch']),
                     bearing: Number(mapConfig['map::bearing']),
-                    basemap: mapConfig['map::basemap'] ? Number(mapConfig['map::basemap']) : null
+                    basemap: mapConfig['map::basemap'] ? Number(mapConfig['map::basemap']) : null,
+                    terrain: mapConfig['map::terrain'] ? Number(mapConfig['map::terrain']) : null
                 };
             } catch (err) {
                 console.error('Failed to load map configuration, using defaults', err);
@@ -725,7 +729,8 @@ export const useMapStore = defineStore('cloudtak', {
                     zoom: 4,
                     pitch: 0,
                     bearing: 0,
-                    basemap: null
+                    basemap: null,
+                    terrain: null
                 };
             }
 

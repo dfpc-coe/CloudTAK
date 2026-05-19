@@ -8,14 +8,33 @@
         </div>
         <div v-else-if='modelValue && !err'>
             <div class='card'>
-                <div class='card-body d-flex align-items-center'>
-                    <div>{{ selected?.name || 'Unknown Basemap' }}</div>
+                <StandardItemBasemap
+                    v-if='selected'
+                    :basemap='selected'
+                >
+                    <template
+                        v-if='!disabled'
+                        #actions
+                    >
+                        <IconTrash
+                            v-tooltip='"Remove Basemap"'
+                            :size='20'
+                            stroke='1'
+                            class='cursor-pointer'
+                            @click='emit("update:modelValue", null)'
+                        />
+                    </template>
+                </StandardItemBasemap>
+                <div
+                    v-else
+                    class='card-body d-flex align-items-center'
+                >
+                    <div>Unknown Basemap</div>
                     <div
                         v-if='!disabled'
                         class='ms-auto'
                     >
                         <IconTrash
-                            v-if='!disabled'
                             v-tooltip='"Remove Basemap"'
                             :size='20'
                             stroke='1'
@@ -28,8 +47,9 @@
         </div>
         <div v-else-if='disabled'>
             <TablerNone
+                :compact='true'
                 :create='false'
-                label='No Default Basemap'
+                :label='noValueLabel'
             />
         </div>
         <div
@@ -68,17 +88,19 @@
                 />
                 <TablerNone
                     v-else-if='list.total === 0'
+                    :compact='true'
                     :create='false'
                     label='No Basemaps Found'
                 />
                 <template v-else>
-                    <div
-                        v-for='basemap in list.items'
-                        :key='basemap.id'
-                        class='d-flex align-items-center p-2 cloudtak-hover cursor-pointer rounded'
-                        @click='emit("update:modelValue", basemap.id)'
-                    >
-                        {{ basemap.name }}
+                    <div class='d-flex flex-column gap-2'>
+                        <StandardItemBasemap
+                            v-for='basemap in list.items'
+                            :key='basemap.id'
+                            :basemap='basemap'
+                            class='cloudtak-hover cursor-pointer'
+                            @click='emit("update:modelValue", basemap.id)'
+                        />
                     </div>
                 </template>
             </div>
@@ -113,13 +135,20 @@ import {
     TablerInlineAlert
 } from '@tak-ps/vue-tabler';
 import type { Basemap, BasemapList } from '../../types.ts';
+import StandardItemBasemap from '../CloudTAK/util/StandardItemBasemap.vue';
 
 const props = withDefaults(defineProps<{
     modelValue?: number | string | null;
     disabled?: boolean;
+    type?: 'raster' | 'raster-dem' | 'vector';
+    scope?: 'server' | 'user';
+    noValueLabel?: string;
 }>(), {
     modelValue: null,
-    disabled: false
+    disabled: false,
+    type: undefined,
+    scope: 'server',
+    noValueLabel: 'No Default Basemap'
 });
 
 const emit = defineEmits<{
@@ -210,7 +239,9 @@ async function fetchList(): Promise<void> {
                 overlay: false,
                 order: 'asc',
                 sort: 'name',
-                hidden: 'false'
+                hidden: 'false',
+                ...(props.type ? { type: props.type } : {}),
+                ...(props.scope ? { scope: props.scope } : {})
             }
         }
     });

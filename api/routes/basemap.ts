@@ -966,6 +966,12 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Cannot delete default basemap');
             }
 
+            const defaultTerrain = await config.models.Setting.typed('map::terrain', -1)
+
+            if (Number(defaultTerrain.value) === basemap.id) {
+                throw new Err(400, null, 'Cannot delete default terrain basemap');
+            }
+
             await config.models.Basemap.delete(req.params.basemapid);
 
             res.json({
