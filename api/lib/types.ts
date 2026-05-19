@@ -498,6 +498,7 @@ export const FullConfig = Type.Object({
     'map::bearing': Type.Integer({ description: 'Default Map Bearing', minimum: 0, maximum: 360 }),
     'map::zoom': Type.Number({ description: 'Default Map Zoom Level', minimum: 0, maximum: 20 }),
     'map::basemap': Type.Union([Type.Null(), Type.Integer()], { description: 'Default Basemap for New Users' }),
+    'map::terrain': Type.Union([Type.Null(), Type.Integer()], { description: 'Default Terrain (raster-dem) Basemap for New Users' }),
     'display::stale': Type.Enum(Profile_Stale),
     'display::distance': Type.Enum(Profile_Distance),
     'display::elevation': Type.Enum(Profile_Elevation),

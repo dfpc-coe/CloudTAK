@@ -78,6 +78,15 @@
                             :disabled='!edit'
                         />
                     </div>
+                    <div class='col-lg-12 mt-3'>
+                        <label class='form-label'>Default Terrain</label>
+                        <BasemapSelect
+                            v-model='config[`map::terrain`]'
+                            type='raster-dem'
+                            no-value-label='No Default Terrain'
+                            :disabled='!edit'
+                        />
+                    </div>
                 </div>
             </template>
         </div>
@@ -113,12 +122,14 @@ const config = ref<{
     'map::bearing': number;
     'map::pitch': number;
     'map::basemap': number | null;
+    'map::terrain': number | null;
 }>({
     'map::center': '40,-100', // Default Lat,Lng
     'map::zoom': 4,
     'map::bearing': 0,
     'map::pitch': 0,
-    'map::basemap': null
+    'map::basemap': null,
+    'map::terrain': null
 });
 
 onMounted(() => {
@@ -151,6 +162,7 @@ async function fetch() {
             'map::bearing': res.data['map::bearing'] ?? config.value['map::bearing'],
             'map::pitch': res.data['map::pitch'] ?? config.value['map::pitch'],
             'map::basemap': res.data['map::basemap'] ?? config.value['map::basemap'],
+            'map::terrain': res.data['map::terrain'] ?? config.value['map::terrain'],
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));

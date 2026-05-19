@@ -37,6 +37,7 @@ export const UserConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'map::bearing',
     'map::zoom',
     'map::basemap',
+    'map::terrain',
     'group::Yellow',
     'group::Cyan',
     'group::Green',
