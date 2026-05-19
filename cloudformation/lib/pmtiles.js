@@ -316,6 +316,9 @@ export default {
             Properties: {
                 AuthorizationType: 'NONE',
                 HttpMethod: 'GET',
+                RequestParameters: {
+                    'method.request.header.Authorization': false
+                },
                 Integration: {
                     Credentials:  cf.getAtt('PMTilesApiGatewayRole', 'Arn'),
                     IntegrationHttpMethod: 'POST',
