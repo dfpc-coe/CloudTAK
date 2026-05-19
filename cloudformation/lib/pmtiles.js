@@ -169,6 +169,7 @@ export default {
                     Variables: {
                         StackName: cf.stackName,
                         ASSET_BUCKET: cf.ref('AssetBucket'),
+                        API_URL: cf.join(['https://map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                         PMTILES_URL: cf.join(['https://tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                         SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
                     }

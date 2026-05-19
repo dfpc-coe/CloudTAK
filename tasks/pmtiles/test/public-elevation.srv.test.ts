@@ -99,7 +99,7 @@ test('POST /tiles/public/:name/elevation returns sampled elevations', async () =
                         [10, 1]
                     ]
                 },
-                sampleRate: 500,
+                samples: 10,
                 zoom: 2,
             })
         });

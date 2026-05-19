@@ -14,13 +14,13 @@
             </template>
             <template #right>
                 <TablerBadge
-                    v-if='sampleCount'
+                    v-if='profile'
                     class='me-2'
                     background-color='rgba(59, 130, 246, 0.15)'
                     border-color='rgba(59, 130, 246, 0.4)'
                     text-color='#3b82f6'
                 >
-                    {{ sampleCount }} samples
+                    Generated
                 </TablerBadge>
             </template>
 
@@ -72,7 +72,8 @@
                                     <div class='subheader'>
                                         Gain
                                     </div>
-                                    <div class='fw-semibold text-success'>
+                                    <div class='fw-semibold text-success d-flex align-items-center gap-1'>
+                                        <IconArrowUp :size='16' />
                                         {{ formatElevation(stats.gain) }}
                                     </div>
                                 </div>
@@ -82,18 +83,18 @@
                                     <div class='subheader'>
                                         Loss
                                     </div>
-                                    <div class='fw-semibold text-danger'>
+                                    <div class='fw-semibold text-danger d-flex align-items-center gap-1'>
+                                        <IconArrowDown :size='16' />
                                         {{ formatElevation(stats.loss) }}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class='small text-muted px-1 pt-2'>
-                            Sampling every {{ formatDistance(sampleRateKm) }} from the enabled 3D terrain basemap.
-                        </div>
-
-                        <div class='profile-chart-shell mt-2'>
+                        <div
+                            ref='shellRef'
+                            class='profile-chart-shell mt-2'
+                        >
                             <canvas ref='canvasRef' />
                         </div>
                     </template>
@@ -110,7 +111,7 @@ import type { LineString } from 'geojson';
 import { length } from '@turf/length';
 import type { ChartData, ChartOptions, TooltipItem } from 'chart.js';
 import Chart from 'chart.js/auto';
-import { IconChartLine } from '@tabler/icons-vue';
+import { IconChartLine, IconArrowUp, IconArrowDown } from '@tabler/icons-vue';
 import { TablerBadge, TablerLoading } from '@tak-ps/vue-tabler';
 import SlideDownHeader from '../util/SlideDownHeader.vue';
 import { server, std, stdurl } from '../../../std.ts';
@@ -156,10 +157,12 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const profile = ref<ElevationProfile | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
+const shellRef = ref<HTMLDivElement | null>(null);
 const tilesURL = ref<string | null>(null);
 const loadedSignature = ref<string | null>(null);
 
 let chart: Chart<'line'> | null = null;
+let resizeObserver: ResizeObserver | null = null;
 
 const geometryKey = computed(() => JSON.stringify(props.geometry.coordinates));
 const lineDistanceKm = computed(() => {
@@ -168,11 +171,6 @@ const lineDistanceKm = computed(() => {
         properties: {},
         geometry: props.geometry
     });
-});
-
-const sampleRateKm = computed(() => {
-    const target = lineDistanceKm.value / 64;
-    return Math.min(0.25, Math.max(0.025, Number.isFinite(target) && target > 0 ? target : 0.025));
 });
 
 const samples = computed(() => {
@@ -258,11 +256,12 @@ async function loadProfile(): Promise<void> {
             method: 'POST',
             body: {
                 geometry: props.geometry,
-                sampleRate: sampleRateKm.value,
+                samples: 100,
             }
         }) as ElevationProfile;
 
         loadedSignature.value = signature;
+        loading.value = false;
         await nextTick();
         renderChart();
     } catch (err) {
@@ -275,6 +274,10 @@ async function loadProfile(): Promise<void> {
 }
 
 function destroyChart(): void {
+    if (resizeObserver) {
+        resizeObserver.disconnect();
+        resizeObserver = null;
+    }
     if (chart) {
         chart.destroy();
         chart = null;
@@ -307,7 +310,7 @@ function renderChart(): void {
     };
 
     const options: ChartOptions<'line'> = {
-        responsive: true,
+        responsive: false,
         maintainAspectRatio: false,
         animation: false,
         normalized: true,
@@ -364,6 +367,15 @@ function renderChart(): void {
         data,
         options
     });
+
+    if (shellRef.value) {
+        resizeObserver = new ResizeObserver((entries) => {
+            if (!chart) return;
+            const width = entries[0].contentRect.width;
+            chart.resize(width, 260);
+        });
+        resizeObserver.observe(shellRef.value);
+    }
 }
 
 function convertDistance(kilometers: number): number {
@@ -427,6 +439,7 @@ function formatNumber(value: number): string {
 .profile-chart-shell {
     position: relative;
     min-height: 260px;
+    overflow: hidden;
 }
 
 .profile-stat {
