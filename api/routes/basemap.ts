@@ -432,6 +432,7 @@ export default async function router(schema: Schema, config: Config) {
             hidden: Type.Boolean({ default: false }),
             tilesize: Type.Integer({ default: 256, minimum: 256, maximum: 512 }),
             attribution: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
             frequency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
