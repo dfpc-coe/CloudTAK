@@ -35,8 +35,7 @@ export const AugmentedLayerIncoming = Type.Object({
     styles: StyleContainer,
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.Any()),
-    data: Type.Union([Type.Null(), Type.Integer()]),
-    groups: Type.Array(Type.String(), { description: 'Deprecated: derived from styles.marti.dest for backwards compatibility' })
+    data: Type.Union([Type.Null(), Type.Integer()])
 })
 
 export const AugmentedLayer = Type.Object({
@@ -105,10 +104,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
             if (typeof l.incoming.ephemeral === 'string') l.incoming.ephemeral = JSON.parse(l.incoming.ephemeral)
             if (typeof l.incoming.environment === 'string') l.incoming.environment = JSON.parse(l.incoming.environment)
 
-            // Derive groups from styles.marti.dest for backwards compatibility with ETLs
-            l.incoming.groups = (l.incoming.styles.marti?.dest || [])
-                .filter((d) => d.group)
-                .map((d) => d.group as string);
         } else {
             delete l.incoming;
         }

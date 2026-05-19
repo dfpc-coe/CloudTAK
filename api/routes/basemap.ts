@@ -437,7 +437,7 @@ export default async function router(schema: Schema, config: Config) {
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.Enum(Basemap_Format)),
-            protocol: Type.Optional(Type.Enum(Basemap_Protocol)),
+            protocol: Type.Enum(Basemap_Protocol),
             style: Type.Optional(Type.Enum(Basemap_Scheme)),
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
