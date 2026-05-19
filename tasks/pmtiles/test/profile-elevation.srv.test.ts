@@ -96,7 +96,7 @@ test('POST /tiles/profile/:username/:file/elevation returns sampled elevations',
                         [10, 1]
                     ]
                 },
-                sampleRate: 500,
+                samples: 10,
                 zoom: 2,
             })
         });

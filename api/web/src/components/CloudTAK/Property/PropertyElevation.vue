@@ -49,8 +49,9 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import CopyField from '../util/CopyField.vue';
+import ProfileConfig from '../../../base/profile.ts';
 import {
     IconMountain
 } from '@tabler/icons-vue';
@@ -71,6 +72,16 @@ const props = defineProps({
 })
 
 const mode = ref(props.unit);
+
+onMounted(async () => {
+    const displayElevation = await ProfileConfig.get('display_elevation');
+    if (displayElevation?.value) mode.value = displayElevation.value;
+});
+
+watch(mode, async (val) => {
+    const config = new ProfileConfig('display_elevation', val as 'feet' | 'meter');
+    await config.commit(val as 'feet' | 'meter');
+});
 
 const inMode = computed(() => {
     if (mode.value === 'feet') {

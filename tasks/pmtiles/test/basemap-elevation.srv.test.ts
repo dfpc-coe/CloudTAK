@@ -104,7 +104,7 @@ test('POST /tiles/basemap/:basemapid/elevation returns sampled elevations', asyn
                         [10, 1]
                     ]
                 },
-                sampleRate: 500,
+                samples: 10,
                 zoom: 2,
             })
         });

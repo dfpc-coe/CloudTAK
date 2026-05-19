@@ -63,9 +63,10 @@ export default async function router(schema: Schema) {
         }),
         body: Type.Object({
             geometry: LineStringGeometryType,
-            sampleRate: Type.Number({
-                exclusiveMinimum: 0,
-                description: 'Sampling interval along the line in kilometers'
+            samples: Type.Integer({
+                minimum: 2,
+                default: 100,
+                description: 'Number of elevation samples to take along the line'
             }),
             zoom: Type.Optional(Type.Integer({ minimum: 0 })),
             encoding: Type.Optional(ElevationEncodingType),
@@ -107,8 +108,7 @@ export default async function router(schema: Schema) {
             res.json(await getElevationProfile(tileurl, req.body.geometry, {
                 zoom: req.body.zoom ?? maxzoom,
                 encoding: req.body.encoding ?? basemap.encoding,
-                minSampleDistance: req.body.sampleRate,
-                maxSampleDistance: req.body.sampleRate,
+                targetSamples: req.body.samples ?? 100,
             }));
         } catch (err) {
             Err.respond(err, res);
