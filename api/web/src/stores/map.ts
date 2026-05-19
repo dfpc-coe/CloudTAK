@@ -383,6 +383,10 @@ export const useMapStore = defineStore('cloudtak', {
                 });
 
                 this.isTerrainEnabled = true;
+
+                if (this.map.getPitch() === 0) {
+                    this.map.easeTo({ pitch: 45 });
+                }
             } else {
                 this.terrainBasemapId = null;
                 this.hasTerrain = false;
@@ -395,6 +399,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.terrainBasemapId = null;
             this.isTerrainEnabled = false;
+
+            this.map.easeTo({ pitch: 0 });
         },
 
         returnHome: function(): void {
