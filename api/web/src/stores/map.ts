@@ -33,7 +33,7 @@ import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
 import { clearLocationWatch, supportsLocationRequests, watchLocation } from '../base/capacitor.ts';
 
-import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, ConfigMap } from '../types.ts';
+import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapTouchEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 import type { CallbackID } from '@capacitor/geolocation';
 
@@ -85,7 +85,7 @@ export const useMapStore = defineStore('cloudtak', {
         _rawWorker: Worker;
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
-        mapConfig: ConfigMap;
+        mapConfig: { center: string; zoom: number; pitch: number; bearing: number; basemap: number | null };
         container?: HTMLElement;
         hasTerrain: boolean;
         terrainBasemapId: number | null;

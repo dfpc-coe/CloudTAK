@@ -270,7 +270,6 @@ export type AdminLayerUpdateList = {
 
 export type Config = paths["/api/config"]["get"]["responses"]["200"]["content"]["application/json"];
 export type ConfigLogin = paths["/api/config/login"]["get"]["responses"]["200"]["content"]["application/json"]
-export type ConfigMap = paths["/api/config/map"]["get"]["responses"]["200"]["content"]["application/json"]
 export type PasskeyList = paths['/api/login/passkey']['get']['responses']['200']['content']['application/json'];
 export type Passkey = PasskeyList['items'][0];
 
