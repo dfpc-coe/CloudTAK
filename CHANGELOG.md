@@ -28,6 +28,8 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 > Uncomment the PMTiles object in `cloudformation/CloudTAK.template.js`
 > Deploy with deploy update <stackname>
 >
+> Note all ETLs that use `etl-base` must be updated to `>= 10.6.0`
+>
 > Breaking Changes:
 > - `v12.85.0` Moved the Layer Incoming `groups` property to the Style Object for increased flexibility in desination management
 >   This array has been retained but in the next major release it will be removed
