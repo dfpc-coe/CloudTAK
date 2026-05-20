@@ -199,7 +199,8 @@ export default async function server(config: Config): Promise<ServerManager> {
 
     app.use(express.static('web/dist'));
 
-    const WebSocketServer = ws.WebSocketServer;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const WebSocketServer = ws.WebSocketServer ?? (ws as any).default.WebSocketServer;
 
     const wss = new WebSocketServer({
         noServer: true
