@@ -553,6 +553,7 @@ test('POST: api/basemap - User creates own basemap', async () => {
         body: {
             name: 'User Basemap',
             url: 'https://test.com/user/{z}/{x}/{y}',
+            protocol: 'zxy',
             sharing_enabled: false,
         }
     }, true);
