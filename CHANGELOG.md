@@ -16,7 +16,11 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
-### v13.0.0
+### v13.0.1 - 2026-05-20
+
+- :bug: Add `application-autoscaling.amazonaws.com` Service Role as it is not included in the AWS GovCloud Partition
+
+### v13.0.0 - 2026-05-20
 
 > [!WARNING]
 > If running CloudTAK in an AWS environment with supplied CloudFormation Templates,
