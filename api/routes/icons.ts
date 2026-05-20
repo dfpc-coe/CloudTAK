@@ -7,7 +7,7 @@ import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 import Config from '../lib/config.js';
 import Sprites from '../lib/sprites.js';
-import archiver from 'archiver';
+import { ZipArchive } from '@archiver/archiver/dist/index.mjs';
 import xmljs from 'xml-js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
@@ -204,7 +204,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (req.query.format === 'zip') {
-                const archive = archiver('zip', {
+                const archive = new ZipArchive({
                     zlib: { level: 9 } // Sets the compression level.
                 })
 
