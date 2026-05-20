@@ -535,6 +535,10 @@ export default class COT {
         }
 
         if (type.includes('Point')) {
+            if (properties.icon && properties.icon.startsWith('COT_MAPPING_2525C')) {
+                delete properties.icon;
+            }
+
             if (properties.group) {
                 properties['icon-opacity'] = 0;
 

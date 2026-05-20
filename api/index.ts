@@ -13,6 +13,7 @@ import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
 import type WebSocket from 'ws';
 import * as ws from 'ws';
+import type { IncomingMessage } from 'node:http';
 import Config from './lib/config.js';
 import ServerManager from './lib/server.js';
 import { tokenParser, AuthUser } from './lib/auth.js'
@@ -198,11 +199,12 @@ export default async function server(config: Config): Promise<ServerManager> {
 
     app.use(express.static('web/dist'));
 
-    const WebSocketServer = ws.WebSocketServer ? ws.WebSocketServer : ws.default.WebSocketServer;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const WebSocketServer = ws.WebSocketServer ?? (ws as any).default.WebSocketServer;
 
     const wss = new WebSocketServer({
         noServer: true
-    }).on('connection', async (ws: WebSocket, request) => {
+    }).on('connection', async (ws: WebSocket, request: IncomingMessage) => {
         try {
             if (!request.url) throw new Error('Could not parse connection URL');
             const params = new URLSearchParams(request.url.replace(/.*\?/, ''));
@@ -303,7 +305,7 @@ export default async function server(config: Config): Promise<ServerManager> {
         });
 
         srv.on('upgrade', (request, socket, head) => {
-            wss.handleUpgrade(request, socket, head, (ws) => {
+            wss.handleUpgrade(request, socket, head, (ws: WebSocket) => {
                 wss.emit('connection', ws, request);
             });
         });

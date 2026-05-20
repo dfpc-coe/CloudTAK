@@ -404,8 +404,6 @@ export default class DrawTool {
 
                         if (this.point.type === 'u-d-p') {
                             feat.properties["marker-color"] = '#00FF00';
-                        } else {
-                            feat.properties["marker-color"] = '#FFFFFF';
                         }
                     }
 

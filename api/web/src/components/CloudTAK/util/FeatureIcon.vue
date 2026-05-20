@@ -96,15 +96,11 @@ const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
 const supportedIcon = computed<string | null>(() => {
     if (!props.feature.properties.icon) return null;
 
-    if (props.feature.properties.icon.startsWith('COT_MAPPING_2525C')) {
-        return props.feature.properties.type;
+    const icon = mapStore.map.getImage(props.feature.properties.icon)
+    if (icon) {
+        return props.feature.properties.icon;
     } else {
-        const icon = mapStore.map.getImage(props.feature.properties.icon)
-        if (icon) {
-            return props.feature.properties.icon;
-        } else {
-            return null;
-        }
+        return null;
     }
 });
 

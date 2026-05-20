@@ -48,18 +48,18 @@
                 :description='err.message'
             />
             <div class='d-flex align-items-center'>
-                <template v-if='selected.name'>
+                <template v-if='selected'>
                     <div class='d-flex align-items-center'>
                         <div>
                             <img
-                                :src='selected.data'
+                                :src='selectedUrl'
                                 class='img-thumbnail'
                                 style='width: 25px; height: auto; margin-right: 5px;'
                             >
                         </div>
                         <div
                             class='mx-2'
-                            v-text='selected.name'
+                            v-text='selectedDisplayName'
                         />
                     </div>
                 </template>
@@ -72,7 +72,7 @@
                     class='btn-list ms-auto'
                 >
                     <IconTrash
-                        v-if='selected.name'
+                        v-if='selected'
                         v-tooltip='"Remove Icon"'
                         :size='32'
                         stroke='1'
@@ -127,14 +127,14 @@
                                         class='row my-2'
                                     >
                                         <div
-                                            v-for='icon of list.items'
-                                            :key='icon.id'
+                                            v-for='icon of filteredIcons'
+                                            :key='icon.name'
                                             class='col-auto cursor-pointer'
-                                            @click='selected = icon; err = null'
+                                            @click='selectIcon(icon)'
                                         >
                                             <img
-                                                v-tooltip='icon.name'
-                                                :src='icon.data'
+                                                v-tooltip='icon.path'
+                                                :src='iconUrls.get(icon.name)'
                                                 class='img-thumbnail'
                                                 style='width: 40px; height: 40px; margin-right: 5px;'
                                             >
@@ -151,8 +151,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted } from 'vue';
-import { server } from '../../std.ts';
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
+import Icon from '../../../base/icon.ts';
+import Iconset from '../../../base/iconset.ts';
+import type { DBIcon, DBIconset } from '../../../base/database.ts';
 import {
     IconInfoSquare,
     IconTrash,
@@ -168,7 +170,6 @@ import {
     TablerDropdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import type { Iconset, Icon, IconList } from '../../types.ts';
 
 interface Props {
     modelValue: string;
@@ -203,22 +204,34 @@ const params = ref({
     filter: '',
 });
 
-const selected = ref<Partial<Icon>>({});
-const sets = ref<Iconset[]>([]);
-const list = ref<IconList>({ total: 0, items: [] });
+const sets = ref<DBIconset[]>([]);
+const icons = ref<DBIcon[]>([]);
+const iconUrls = ref<Map<string, string>>(new Map());
 
-const ICON_FILE_SUFFIX = /\.(png|svg)$/i;
+const selected = ref<DBIcon | null>(null);
+const selectedUrl = ref<string>('');
 
 const setsName = computed<string[]>(() => {
     return sets.value.map((set) => set.name);
 });
 
-watch(selected, () => {
-    if (!selected.value.path) return;
-    emit('update:modelValue', selected.value.path);
-}, { deep: true });
+const filteredIcons = computed<DBIcon[]>(() => {
+    if (!params.value.filter) return icons.value;
+    const f = params.value.filter.toLowerCase();
+    return icons.value.filter((icon) => icon.path.toLowerCase().includes(f));
+});
 
-watch(params.value, async () => {
+const selectedDisplayName = computed<string>(() => {
+    if (!selected.value) return '';
+    const parts = selected.value.path.split('/');
+    return parts[parts.length - 1];
+});
+
+watch(() => params.value.iconset, async () => {
+    await fetchIcons();
+});
+
+watch(() => params.value.filter, async () => {
     await fetchIcons();
 });
 
@@ -227,82 +240,82 @@ watch(() => props.modelValue, async () => {
 });
 
 onMounted(async () => {
-    await fetchSelected();
     await fetchIconsets();
+    await fetchSelected();
     await fetchIcons();
 });
 
-function removeIcon(): void {
-    selected.value = {};
-    emit('update:modelValue', '');
+onUnmounted(() => {
+    revokeGridUrls();
+    revokeSelectedUrl();
+});
+
+function revokeGridUrls(): void {
+    for (const url of iconUrls.value.values()) {
+        URL.revokeObjectURL(url);
+    }
+    iconUrls.value = new Map();
 }
 
-function normalizeIconPath(path: string): string {
-    let normalized = path;
-
-    if (normalized.includes(':')) {
-        const splitAt = normalized.indexOf(':');
-        normalized = `${normalized.slice(0, splitAt)}/${normalized.slice(splitAt + 1)}`;
+function revokeSelectedUrl(): void {
+    if (selectedUrl.value) {
+        URL.revokeObjectURL(selectedUrl.value);
+        selectedUrl.value = '';
     }
+}
 
-    return normalized.replace(ICON_FILE_SUFFIX, '');
+function selectIcon(icon: DBIcon): void {
+    revokeSelectedUrl();
+    selected.value = icon;
+    selectedUrl.value = URL.createObjectURL(icon.data);
+    err.value = null;
+    emit('update:modelValue', icon.name);
+}
+
+function removeIcon(): void {
+    revokeSelectedUrl();
+    selected.value = null;
+    emit('update:modelValue', '');
 }
 
 async function fetchSelected(): Promise<void> {
     if (
-        props.modelValue
-        && !props.modelValue.startsWith('2525')
-        && (
-            props.modelValue.includes(':')
-            || props.modelValue.split('/').length === 3
+        !props.modelValue
+        || props.modelValue.startsWith('2525')
+        || (
+            !props.modelValue.includes(':')
+            && props.modelValue.split('/').length < 3
         )
     ) {
-        const path = normalizeIconPath(props.modelValue);
-
-        const iconset = path.split('/')[0];
-        const icon = path.split('/').splice(1).join('/');
-
-        const { data, error } = await server.GET('/api/iconset/{:iconset}/icon/{:icon}', {
-            params: {
-                path: {
-                    ':iconset': iconset,
-                    ':icon': icon
-                }
-            }
-        });
-
-        if (error) {
-            if (error.status === 404) {
-                err.value = new Error(error.message);
-                return;
-            }
-            throw new Error(error.message);
-        }
-        if (!data) return;
-
-        err.value = null;
-        selected.value = data;
+        return;
     }
+
+    // Normalise to the Dexie key format: "<iconsetUid>:<path-without-ext>"
+    let key = props.modelValue;
+    if (!key.includes(':')) {
+        // slash-separated 3-part path: "<uuid>/<folder>/<name>.png"
+        key = key.replace('/', ':').replace(/\.png$/i, '');
+    } else {
+        // colon-separated – strip any trailing .png just in case
+        key = key.replace(/\.png$/i, '');
+    }
+
+    const icon = await Icon.get(key);
+    if (!icon) {
+        err.value = new Error(`Icon not found: ${props.modelValue}`);
+        return;
+    }
+
+    err.value = null;
+    revokeSelectedUrl();
+    selected.value = icon;
+    selectedUrl.value = URL.createObjectURL(icon.data);
 }
 
 async function fetchIconsets(): Promise<void> {
     loading.value.iconset = true;
-    const { data, error } = await server.GET('/api/iconset', {
-        params: {
-            query: {
-                limit: 50,
-                page: 0,
-                order: 'asc',
-                sort: 'name',
-                filter: ''
-            }
-        }
-    });
-
-    if (error) throw new Error(error.message);
-
-    sets.value = data?.items || [];
-    if (sets.value.length) {
+    sets.value = await Iconset.list();
+    if (sets.value.length && !params.value.iconset) {
         params.value.iconset = sets.value[0].name;
     }
     loading.value.iconset = false;
@@ -310,26 +323,25 @@ async function fetchIconsets(): Promise<void> {
 
 async function fetchIcons(): Promise<void> {
     loading.value.icons = true;
-    const iconset = params.value.iconset
-        ? sets.value.find((set) => set.name === params.value.iconset)?.uid
-        : undefined;
 
-    const { data, error } = await server.GET('/api/icon', {
-        params: {
-            query: {
-                limit: 1000,
-                page: 0,
-                order: 'asc',
-                iconset,
-                filter: params.value.filter
-            }
-        }
-    });
+    revokeGridUrls();
 
-    if (error) throw new Error(error.message);
+    const set = sets.value.find((s) => s.name === params.value.iconset);
+    if (!set) {
+        icons.value = [];
+        loading.value.icons = false;
+        return;
+    }
 
-    list.value = data || { total: 0, items: [] };
+    const all = await Icon.list(set.uid);
+    icons.value = all;
+
+    const urls = new Map<string, string>();
+    for (const icon of all) {
+        urls.set(icon.name, URL.createObjectURL(icon.data));
+    }
+    iconUrls.value = urls;
+
     loading.value.icons = false;
 }
-
 </script>
