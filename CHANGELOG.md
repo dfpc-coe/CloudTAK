@@ -16,6 +16,10 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.0.2 - 2026-05-20
+
+- :bug: Ensure Derived-Types is present in PMTiles Dockerfile Context
+
 ### v13.0.1 - 2026-05-20
 
 - :bug: Add `application-autoscaling.amazonaws.com` Service Role as it is not included in the AWS GovCloud Partition
