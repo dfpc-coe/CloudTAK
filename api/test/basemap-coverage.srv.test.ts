@@ -29,6 +29,7 @@ test('POST: api/basemap - Create basemap with bounds and center', async () => {
         body: {
             name: 'Bounded Basemap',
             url: 'https://test.com/tiles/{z}/{x}/{y}',
+            protocol: 'zxy',
             sharing_enabled: false,
             bounds: [-105, 39, -104, 40],
             center: [-104.5, 39.5],
@@ -51,6 +52,7 @@ test('POST: api/basemap - Create overlay basemap', async () => {
         body: {
             name: 'Overlay Basemap',
             url: 'https://test.com/overlay/{z}/{x}/{y}',
+            protocol: 'zxy',
             sharing_enabled: false,
             overlay: true,
         }
@@ -66,6 +68,7 @@ test('POST: api/basemap - Create hidden basemap', async () => {
         body: {
             name: 'Hidden Basemap',
             url: 'https://test.com/hidden/{z}/{x}/{y}',
+            protocol: 'zxy',
             sharing_enabled: false,
             hidden: true,
         }
@@ -81,6 +84,7 @@ test('POST: api/basemap - Create basemap in collection', async () => {
         body: {
             name: 'Collection Basemap',
             url: 'https://test.com/col/{z}/{x}/{y}',
+            protocol: 'zxy',
             sharing_enabled: false,
             collection: 'test-collection',
         }
@@ -96,6 +100,7 @@ test('POST: api/basemap - Create server-scoped basemap (admin)', async () => {
         body: {
             name: 'Server Basemap',
             url: 'https://test.com/server/{z}/{x}/{y}',
+            protocol: 'zxy',
             sharing_enabled: false,
             scope: 'server',
         }
@@ -112,6 +117,7 @@ test('POST: api/basemap - Non-admin cannot create server-scoped basemap', async 
             body: {
                 name: 'Should Fail',
                 url: 'https://test.com/fail/{z}/{x}/{y}',
+                protocol: 'zxy',
                 scope: 'server',
             }
         }, true);
@@ -130,6 +136,7 @@ test('POST: api/basemap - Snapping on non-vector type fails', async () => {
             body: {
                 name: 'Snap Fail',
                 url: 'https://test.com/snap/{z}/{x}/{y}',
+                protocol: 'zxy',
                 type: 'raster',
                 snapping_enabled: true,
                 snapping_layer: 'test',
@@ -150,6 +157,7 @@ test('POST: api/basemap - Snapping without snapping_layer fails', async () => {
             body: {
                 name: 'Snap No Layer',
                 url: 'https://test.com/snap2/{z}/{x}/{y}',
+                protocol: 'zxy',
                 type: 'vector',
                 format: 'mvt',
                 snapping_enabled: true,
@@ -170,6 +178,7 @@ test('POST: api/basemap - Snapping on non-S3 hosted fails', async () => {
             body: {
                 name: 'Snap Non-S3',
                 url: 'https://external.com/tiles/{z}/{x}/{y}',
+                protocol: 'zxy',
                 type: 'vector',
                 format: 'mvt',
                 snapping_enabled: true,
@@ -190,6 +199,7 @@ test('POST: api/basemap - Create basemap with sharing enabled', async () => {
         body: {
             name: 'Shared Basemap',
             url: 'https://test.com/shared/{z}/{x}/{y}',
+            protocol: 'zxy',
             sharing_enabled: true,
         }
     }, true);
