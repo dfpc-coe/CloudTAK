@@ -33,6 +33,13 @@ export default class Icon {
     }
 
     /**
+     * Return all icons belonging to a given iconset uid, ordered by path.
+     */
+    static async list(iconsetUid: string): Promise<DBIcon[]> {
+        return await db.icon.where('iconset').equals(iconsetUid).sortBy('path');
+    }
+
+    /**
      * Diff the server iconset list against Dexie and refetch icons for any
      * iconsets that are new or whose `version`/`updated` differs.
      *
