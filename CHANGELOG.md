@@ -29,11 +29,21 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 > Deploy with deploy update <stackname>
 >
 > Breaking Changes:
+> - `v12.85.0` Moved the Layer Incoming `groups` property to the Style Object for increased flexibility in desination management
+>   This array has been retained but in the next major release it will be removed
+> - `v12.115.0` Added the ability to set Basemap Protocol with the default being zxy. This will be a required field in v13
+> - `v12.126.0` Migrate to the base `/api/config` -> `/api/config/group` will be retired in the next major version
 
-- `v12.85.0` Moved the Layer Incoming `groups` property to the Style Object for increased flexibility in desination management
-  This array has been retained but in the next major release it will be removed
-- `v12.115.0` Added the ability to set Basemap Protocol with the default being zxy. This will be a required field in v13
-- `v12.126.0` Migrate to the base `/api/config` -> `/api/config/group` will be retired in the next major version
+
+- :rocket: Bind internal dockerfile services to localhost
+- :tada: Add initial elevation API Endpoints in the PMTiles Service
+- :tada: Move Palette options to exist under the Mission Template section
+- :tada: Add support for storing `encoding` in a Basemap Terrain entry
+- :rocket: Surface custom tileSize when parsing from a remote TileJSON
+- :bug: Fix generation of Maroon Contact Colour - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1442
+- :rocket: Allow Admins to delete any Video Lease - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1438
+- :tada: Allow Admins to choose a default terrain source
+- :rocket: Improve consistency of BasemapSelect component
 
 ### v12.138.2 - 2026-05-03
 
