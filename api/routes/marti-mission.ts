@@ -3,7 +3,7 @@ import path from 'node:path';
 import qr from 'qr-image';
 import tokml from 'tokml';
 import Schema from '@openaddresses/batch-schema';
-import { Feature } from '@tak-ps/node-cot'
+import { Feature, CoTParser } from '@tak-ps/node-cot'
 import S3 from '../lib/aws/s3.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -96,6 +96,51 @@ export default async function router(schema: Schema, config: Config) {
             const features = await api.Mission.latestFeats(req.params.guid, opts);
 
             res.json({ type: 'FeatureCollection', features });
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/marti/missions/:guid/cot', {
+        name: 'Mission Features Post',
+        group: 'MartiMissions',
+        params: Type.Object({
+            guid: Type.String(),
+        }),
+        description: 'Broadcast GeoJSON features as CoT into a DataSync mission feature stream',
+        body: Type.Object({
+            features: Type.Array(Feature.InputFeature)
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const client = config.conns.get(user.email);
+            if (!client) throw new Err(400, null, 'No active TAK connection for user');
+
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.guid)
+
+            const mission = await api.Mission.get(req.params.guid, {}, opts);
+            const missionName = mission.name;
+
+            const cots = [];
+            for (const feat of req.body.features) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const cot = await CoTParser.from_geojson(feat as any);
+                cot.addDest({ mission: missionName, 'mission-guid': req.params.guid });
+                cot.archived(true);
+                cots.push(cot);
+            }
+
+            client.tak.write(cots, { stripFlow: true });
+
+            res.json({ status: 200, message: 'Posted' });
         } catch (err) {
              Err.respond(err, res);
         }

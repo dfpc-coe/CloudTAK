@@ -100,7 +100,11 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             dtg: Type.Optional(Type.String({ format: 'date-time' })),
             content: Type.String(),
-            keywords: Type.Optional(Type.Array(Type.String()))
+            keywords: Type.Optional(Type.Array(Type.String())),
+            entryUid: Type.Optional(Type.String({
+                description: 'CoT UID this log entry references; appears as a clickable link in TAK clients'
+            })),
+            contentHashes: Type.Optional(Type.Array(Type.String()))
         }),
         res: GenericMartiResponse
     }, async (req, res) => {
@@ -115,16 +119,33 @@ export default async function router(schema: Schema, config: Config) {
                 ? { token: String(req.headers['missionauthorization']) }
                 : await config.conns.subscription(user.email, req.params.name)
 
-            const log = await api.MissionLog.create(
-                req.params.name,
-                {
-                    creatorUid: creatorUid,
-                    dtg: req.body.dtg ?? new Date().toISOString(),
-                    content: req.body.content,
-                    keywords: req.body.keywords
-                },
-                opts
-            );
+            // node-tak's MissionLog.create() drops entryUid and contentHashes,
+            // so post directly to the TAK Server endpoint when those are set.
+            let missionName = req.params.name;
+            if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(missionName)) {
+                missionName = (await api.Mission.get(missionName, {}, opts)).name;
+            }
+
+            const now = new Date().toISOString();
+            const body = {
+                id: '',
+                content: req.body.content,
+                creatorUid,
+                entryUid: req.body.entryUid ?? '',
+                missionNames: [missionName],
+                servertime: now,
+                dtg: req.body.dtg ?? now,
+                created: now,
+                contentHashes: req.body.contentHashes ?? [],
+                keywords: req.body.keywords ?? []
+            };
+
+            const url = new URL('/Marti/api/missions/logs/entries', api.url);
+            const log = await api.fetch(url, {
+                method: 'POST',
+                headers: opts && opts.token ? { Authorization: `Bearer ${opts.token}` } : {},
+                body
+            });
 
             res.json(log);
         } catch (err) {
