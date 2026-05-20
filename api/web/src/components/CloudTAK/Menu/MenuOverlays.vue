@@ -93,6 +93,13 @@
                                         stroke='1'
                                         class='flex-shrink-0 text-white-50'
                                     />
+                                    <IconMap
+                                        v-else-if='card.overlay.type === "raster-dem"'
+                                        v-tooltip='"Terrain"'
+                                        :size='20'
+                                        stroke='1'
+                                        class='flex-shrink-0 text-white-50'
+                                    />
                                     <IconAmbulance
                                         v-else-if='card.overlay.type === "geojson" && card.overlay.mode === "mission"'
                                         v-tooltip='"Data Sync"'
@@ -224,6 +231,17 @@
                                         />
                                     </div>
                                     <div
+                                        v-if='card.overlay.type === "raster-dem"'
+                                        class='mb-3'
+                                    >
+                                        <TablerEnum
+                                            :model-value='card.overlay.encoding || "mapbox"'
+                                            label='Terrain Encoding'
+                                            :options='["mapbox", "terrarium"]'
+                                            @update:model-value='void card.overlay.update({ encoding: $event })'
+                                        />
+                                    </div>
+                                    <div
                                         v-if='card.overlay.type === "geojson" && card.overlay.id === -1'
                                         class='mb-3'
                                     >
@@ -266,6 +284,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerBadge,
     TablerDelete,
+    TablerEnum,
     TablerIconButton,
     TablerInput,
     TablerLoading,
@@ -485,6 +504,8 @@ function getOverlayBadges(overlay: Overlay): OverlayBadge[] {
 
     if (overlay.type === 'raster') {
         addBadge({ label: 'Raster', tone: 'neutral' });
+    } else if (overlay.type === 'raster-dem') {
+        addBadge({ label: 'Terrain', tone: 'neutral' });
     } else if (overlay.type === 'vector') {
         addBadge({ label: 'Vector', tone: 'neutral' });
     } else if (overlay.type === 'geojson') {

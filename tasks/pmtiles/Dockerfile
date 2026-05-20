@@ -5,6 +5,7 @@ COPY tasks/pmtiles/package*.json ${LAMBDA_TASK_ROOT}/
 RUN npm install
 
 COPY tasks/pmtiles/ ${LAMBDA_TASK_ROOT}/
+COPY api/derived-types.d.ts /api/derived-types.d.ts
 
 RUN npm run build
 

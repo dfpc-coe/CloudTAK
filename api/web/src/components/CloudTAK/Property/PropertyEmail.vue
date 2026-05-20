@@ -2,10 +2,10 @@
     <div class='col-12 pb-2'>
         <SlideDownHeader
             v-model='expanded'
-            label='Phone'
+            label='Email'
         >
             <template #icon>
-                <IconPhone
+                <IconMail
                     :size='18'
                     stroke='1'
                     color='#6b7990'
@@ -14,12 +14,12 @@
             </template>
 
             <div class='mx-2 pt-2'>
-                <CopyField :model-value='phone'>
+                <CopyField :model-value='props.email'>
                     <a
-                        :href='`tel:${props.phone}`'
+                        :href='`mailto:${props.email}`'
                         class='cursor-pointer pe-2'
                     >
-                        <IconPhone
+                        <IconMail
                             :size='24'
                             stroke='1'
                         />
@@ -31,30 +31,16 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, ref } from 'vue';
-import CopyField from './CopyField.vue';
-import SlideDownHeader from './SlideDownHeader.vue';
-import { phone as phoneFormat } from 'phone';
+import { ref } from 'vue';
+import CopyField from '../util/CopyField.vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
 import {
-    IconPhone
+    IconMail
 } from '@tabler/icons-vue';
 
 const props = defineProps<{
-    phone: string;
+    email: string;
 }>();
 
 const expanded = ref(false);
-const phone = computed(() => format(props.phone));
-
-function format(number: string): string {
-    const p = phoneFormat(number);
-
-    if (!p.isValid) return number;
-
-    if (p.countryCode === '+1') {
-        return `${p.phoneNumber.slice(0, 2)} (${p.phoneNumber.slice(2, 5)}) ${p.phoneNumber.slice(5, 8)}-${p.phoneNumber.slice(8, 12)}`;
-    } else {
-        return p.phoneNumber;
-    }
-}
 </script>

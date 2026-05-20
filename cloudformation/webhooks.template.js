@@ -35,13 +35,13 @@ export default cf.merge(
                 }
             },
             CloudTAKWebhooksApiDomain: {
-                Type: 'AWS::ApiGateway::DomainName',
+                Type: 'AWS::ApiGatewayV2::DomainName',
                 Properties: {
                     DomainName: cf.join([cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
-                    RegionalCertificateArn: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-acm'])),
-                    EndpointConfiguration: {
-                        Types: ['REGIONAL']
-                    }
+                    DomainNameConfigurations: [{
+                        CertificateArn: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-acm'])),
+                        EndpointType: 'REGIONAL'
+                    }]
                 }
             },
             CloudTAKWebhooksApiGatewayRole: {

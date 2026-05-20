@@ -37,6 +37,7 @@ test('POST: api/basemap - Invalid URL', async () => {
             body: {
                 name: 'Test Basemap',
                 url: 'test',
+                protocol: 'zxy',
             }
         }, true);
 
@@ -56,6 +57,7 @@ test('POST: api/basemap - Invalid URL Protocol', async () => {
             body: {
                 name: 'Test Basemap',
                 url: 'ftp://test.com/test',
+                protocol: 'zxy',
             }
         }, true);
 
@@ -75,6 +77,7 @@ test('POST: api/basemap - Invalid URL - No Variables', async () => {
             body: {
                 name: 'Test Basemap',
                 url: 'https://test.com/test',
+                protocol: 'zxy',
             }
         }, true);
 
@@ -94,6 +97,7 @@ test('POST: api/basemap', async () => {
             body: {
                 name: 'Test Basemap',
                 url: 'https://test.com/test/{z}/{x}/{y}',
+                protocol: 'zxy',
                 sharing_enabled: false
             }
         }, true);

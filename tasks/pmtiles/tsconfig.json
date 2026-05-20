@@ -1,19 +1,19 @@
 {
-    "ts-node": {
-        "esm": true
-    },
     "compilerOptions": {
         "target": "es2022",
         "strict": true,
         "preserveConstEnums": true,
-        "noEmit": true,
+        "outDir": "dist",
         "sourceMap": false,
         "module":"node16",
         "moduleResolution":"node16",
-        "esModuleInterop": true, 
+        "esModuleInterop": true,
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true, 
-        "isolatedModules": true
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+        "paths": {
+            "@cloudtak/api-types": ["../../api/derived-types.d.ts"]
+        }
     },
-    "exclude": ["node_modules"]
+    "exclude": ["node_modules", "dist"]
 }

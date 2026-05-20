@@ -36,7 +36,7 @@
         "@types/vinyl": "^2.0.12",
         "eslint": "^10.0.0",
         "globals": "^17.0.0",
-        "sinon": "^21.0.0",
+        "sinon": "^22.0.0",
         "tsx": "^4.21.0",
         "typescript": "^6.0.0",
         "typescript-eslint": "^8.0.0"

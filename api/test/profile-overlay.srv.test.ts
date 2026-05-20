@@ -172,6 +172,9 @@ test('POST: api/basemap - for overlay tests', async () => {
             body: {
                 name: 'Overlay Test Basemap',
                 url: 'https://tiles.example.com/basemap/{z}/{x}/{y}',
+                protocol: 'zxy',
+                type: 'raster-dem',
+                encoding: 'terrarium',
                 sharing_enabled: false
             }
         }, true);
@@ -208,6 +211,7 @@ test('GET: api/profile/overlay - basemap mode, basemap present -> kept in items'
         assert.equal(res.body.items[0].name, 'Kept Basemap Overlay');
         // basemap overlays carry TileJSON actions
         assert.ok(res.body.items[0].actions);
+        assert.equal(res.body.items[0].encoding, 'terrarium');
     } catch (err) {
         assert.ifError(err);
     }

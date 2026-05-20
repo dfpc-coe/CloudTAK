@@ -59,7 +59,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, watchEffect } from 'vue';
-import CopyField from './CopyField.vue';
+import CopyField from '../util/CopyField.vue';
 import {
     IconBrandSpeedtest
 } from '@tabler/icons-vue';

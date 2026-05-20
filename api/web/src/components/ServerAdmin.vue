@@ -175,27 +175,6 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String(route.name).startsWith("admin-palette"),
-                                                    "cursor-pointer": !String(route.name).startsWith("admin-palette")
-                                                }'
-                                                @keyup.enter='router.push(`/admin/palette`)'
-                                                @click='router.push(`/admin/palette`)'
-                                            >
-                                                <IconBrush
-                                                    v-tooltip='nest ? "Draw Palette" : false'
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Draw Palette</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
                                                     "active": String(route.name).startsWith("admin-mission-mission-template"),
                                                     "cursor-pointer": !String(route.name).startsWith("admin-mission-template")
                                                 }'
@@ -416,7 +395,6 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler'
 import {
-    IconBrush,
     IconCloud,
     IconNetwork,
     IconVideo,

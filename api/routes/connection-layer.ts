@@ -330,10 +330,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            res.json({
-                ...incoming,
-                groups: (incoming.styles.marti?.dest || []).filter((d) => d.group).map((d) => d.group as string)
-            });
+            res.json(incoming);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -464,10 +461,7 @@ export default async function router(schema: Schema, config: Config) {
                 await Lambda.invoke(config, layer.id, 'environment:incoming')
             }
 
-            res.json({
-                ...incoming,
-                groups: (incoming.styles.marti?.dest || []).filter((d) => d.group).map((d) => d.group as string)
-            });
+            res.json(incoming);
         } catch (err) {
             Err.respond(err, res);
         }

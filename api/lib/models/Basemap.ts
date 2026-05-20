@@ -51,7 +51,8 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             });
         } else if (input.type === Basemap_Type.TERRAIN) {
             await this.pool.insert(BasemapTerrain).values({
-                basemap: base.id
+                basemap: base.id,
+                encoding: input.encoding,
             });
         } else {
             await this.pool.insert(BasemapRaster).values({
@@ -121,7 +122,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             if (input.title !== undefined) vector.title = input.title;
             if (input.snapping_layer !== undefined) vector.snapping_layer = input.snapping_layer;
 
-            if (Object.keys(vector).length) {
+            if (Object.keys(vector).length > 0) {
                 await this.pool.insert(BasemapVector).values({
                     basemap: base.id,
                     ...vector
@@ -138,15 +139,42 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             await this.pool.delete(BasemapRaster).where(eq(BasemapRaster.basemap, base.id));
             await this.pool.delete(BasemapTerrain).where(eq(BasemapTerrain.basemap, base.id));
         } else if (base.type === Basemap_Type.TERRAIN) {
-            await this.pool.insert(BasemapTerrain).values({
-                basemap: base.id
-            }).onConflictDoNothing();
+            const terrain: any = {};
+            if (input.encoding !== undefined) terrain.encoding = input.encoding;
+
+            if (Object.keys(terrain).length > 0) {
+                await this.pool.insert(BasemapTerrain).values({
+                    basemap: base.id,
+                    ...terrain
+                }).onConflictDoUpdate({
+                    target: BasemapTerrain.basemap,
+                    set: terrain
+                });
+            } else {
+                await this.pool.insert(BasemapTerrain).values({
+                    basemap: base.id,
+                }).onConflictDoNothing();
+            }
+            
             await this.pool.delete(BasemapRaster).where(eq(BasemapRaster.basemap, base.id));
             await this.pool.delete(BasemapVector).where(eq(BasemapVector.basemap, base.id));
         } else {
-            await this.pool.insert(BasemapRaster).values({
-                basemap: base.id
-            }).onConflictDoNothing();
+            const raster: any = {};
+
+            if (Object.keys(raster).length > 0) {
+                await this.pool.insert(BasemapRaster).values({
+                    basemap: base.id,
+                    ...raster
+                }).onConflictDoUpdate({
+                    target: BasemapRaster.basemap,
+                    set: raster
+                });
+            } else {
+                await this.pool.insert(BasemapRaster).values({
+                    basemap: base.id,
+                }).onConflictDoNothing();
+            }
+
             await this.pool.delete(BasemapTerrain).where(eq(BasemapTerrain.basemap, base.id));
             await this.pool.delete(BasemapVector).where(eq(BasemapVector.basemap, base.id));
         }

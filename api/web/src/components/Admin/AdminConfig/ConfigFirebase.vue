@@ -1,7 +1,7 @@
 <template>
     <SlideDownHeader
         v-model='isOpen'
-        label='Map Settings'
+        label='Firebase Notifications'
     >
         <template #right>
             <TablerIconButton
@@ -40,50 +40,56 @@
                     v-if='err'
                     :err='err'
                 />
+                <div class='small text-muted mb-3'>
+                    Store the Firebase web app settings used to initialize push notifications for CloudTAK clients.
+                </div>
                 <div class='row'>
+                    <div class='col-lg-6'>
+                        <TablerInput
+                            v-model='config[`firebase::apikey`]'
+                            label='Firebase API Key'
+                            :disabled='!edit'
+                        />
+                    </div>
+                    <div class='col-lg-6'>
+                        <TablerInput
+                            v-model='config[`firebase::authdomain`]'
+                            label='Firebase Auth Domain'
+                            :disabled='!edit'
+                        />
+                    </div>
+                    <div class='col-lg-6'>
+                        <TablerInput
+                            v-model='config[`firebase::projectid`]'
+                            label='Firebase Project ID'
+                            :disabled='!edit'
+                        />
+                    </div>
+                    <div class='col-lg-6'>
+                        <TablerInput
+                            v-model='config[`firebase::storagebucket`]'
+                            label='Firebase Storage Bucket'
+                            :disabled='!edit'
+                        />
+                    </div>
+                    <div class='col-lg-6'>
+                        <TablerInput
+                            v-model='config[`firebase::messagingsenderid`]'
+                            label='Firebase Messaging Sender ID'
+                            :disabled='!edit'
+                        />
+                    </div>
+                    <div class='col-lg-6'>
+                        <TablerInput
+                            v-model='config[`firebase::appid`]'
+                            label='Firebase App ID'
+                            :disabled='!edit'
+                        />
+                    </div>
                     <div class='col-lg-12'>
                         <TablerInput
-                            v-model='config[`map::center`]'
-                            label='Initial Map Center (<lat>,<lng>)'
-                            placeholder='Latitude, Longitude'
-                            :error='validateLatLng(config[`map::center`])'
-                            :disabled='!edit'
-                        />
-                    </div>
-                    <div class='col-lg-12'>
-                        <TablerInput
-                            v-model='config[`map::zoom`]'
-                            label='Initial Map Zoom'
-                            :disabled='!edit'
-                        />
-                    </div>
-                    <div class='col-lg-12'>
-                        <TablerInput
-                            v-model='config[`map::pitch`]'
-                            label='Initial Map Pitch'
-                            :disabled='!edit'
-                        />
-                    </div>
-                    <div class='col-lg-12'>
-                        <TablerInput
-                            v-model='config[`map::bearing`]'
-                            label='Initial Map Bearing'
-                            :disabled='!edit'
-                        />
-                    </div>
-                    <div class='col-lg-12 mt-3'>
-                        <label class='form-label'>Default Basemap</label>
-                        <BasemapSelect
-                            v-model='config[`map::basemap`]'
-                            :disabled='!edit'
-                        />
-                    </div>
-                    <div class='col-lg-12 mt-3'>
-                        <label class='form-label'>Default Terrain</label>
-                        <BasemapSelect
-                            v-model='config[`map::terrain`]'
-                            type='raster-dem'
-                            no-value-label='No Default Terrain'
+                            v-model='config[`firebase::measurementid`]'
+                            label='Firebase Measurement ID'
                             :disabled='!edit'
                         />
                     </div>
@@ -97,8 +103,6 @@
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
-import { validateLatLng } from '../../../base/validators.ts';
-import BasemapSelect from '../../util/BasemapSelect.vue';
 import {
     TablerLoading,
     TablerInput,
@@ -111,58 +115,59 @@ import {
     IconX
 } from '@tabler/icons-vue';
 
+interface FirebaseConfig {
+    'firebase::apikey': string;
+    'firebase::authdomain': string;
+    'firebase::projectid': string;
+    'firebase::storagebucket': string;
+    'firebase::messagingsenderid': string;
+    'firebase::appid': string;
+    'firebase::measurementid': string;
+}
+
 const isOpen = ref<boolean>(false);
 const loading = ref<boolean>(false);
 const edit = ref<boolean>(false);
 const err = ref<Error | null>(null);
 
-const config = ref<{
-    'map::center': string;
-    'map::zoom': number;
-    'map::bearing': number;
-    'map::pitch': number;
-    'map::basemap': number | null;
-    'map::terrain': number | null;
-}>({
-    'map::center': '40,-100', // Default Lat,Lng
-    'map::zoom': 4,
-    'map::bearing': 0,
-    'map::pitch': 0,
-    'map::basemap': null,
-    'map::terrain': null
+const config = ref<FirebaseConfig>({
+    'firebase::apikey': '',
+    'firebase::authdomain': '',
+    'firebase::projectid': '',
+    'firebase::storagebucket': '',
+    'firebase::messagingsenderid': '',
+    'firebase::appid': '',
+    'firebase::measurementid': '',
 });
 
 onMounted(() => {
-     if (isOpen.value) fetch();
+     if (isOpen.value) void fetch();
 });
 
 watch(isOpen, (newState) => {
-    if (newState && !edit.value) fetch();
+    if (newState && !edit.value) void fetch();
 });
 
-async function fetch() {
+async function fetch(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
-        const res = await server.GET('/api/config', {
+        const { data, error } = await server.GET('/api/config', {
             params: {
                 query: {
                     keys: Object.keys(config.value).join(',')
                 }
             }
         });
-        if (res.error) throw new Error(res.error.message);
-
+        if (error) throw new Error(error.message);
         config.value = {
-            // DB is Lng,Lat. UI is Lat,Lng
-            'map::center': typeof res.data['map::center'] === 'string'
-                ? String(res.data['map::center']).split(',').reverse().join(',')
-                : config.value['map::center'],
-            'map::zoom': res.data['map::zoom'] ?? config.value['map::zoom'],
-            'map::bearing': res.data['map::bearing'] ?? config.value['map::bearing'],
-            'map::pitch': res.data['map::pitch'] ?? config.value['map::pitch'],
-            'map::basemap': res.data['map::basemap'] ?? config.value['map::basemap'],
-            'map::terrain': res.data['map::terrain'] ?? config.value['map::terrain'],
+            'firebase::apikey': data['firebase::apikey'] ?? '',
+            'firebase::authdomain': data['firebase::authdomain'] ?? '',
+            'firebase::projectid': data['firebase::projectid'] ?? '',
+            'firebase::storagebucket': data['firebase::storagebucket'] ?? '',
+            'firebase::messagingsenderid': data['firebase::messagingsenderid'] ?? '',
+            'firebase::appid': data['firebase::appid'] ?? '',
+            'firebase::measurementid': data['firebase::measurementid'] ?? '',
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
@@ -170,22 +175,18 @@ async function fetch() {
     loading.value = false;
 }
 
-async function save() {
+async function save(): Promise<void> {
     loading.value = true;
     err.value = null;
     try {
-        const payload = { ...config.value };
-        // Save as Lng,Lat
-        payload['map::center'] = payload['map::center'].split(',').reverse().join(',');
-
-        const res = await server.PUT('/api/config', {
-            body: payload
+        const { error } = await server.PUT('/api/config', {
+            body: config.value
         });
-        if (res.error) throw new Error(res.error.message);
+        if (error) throw new Error(error.message);
         edit.value = false;
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
-        console.error('Failed to save Map config:', error);
+        console.error('Failed to save Firebase config:', error);
     }
     loading.value = false;
 }

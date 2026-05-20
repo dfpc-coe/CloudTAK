@@ -33,11 +33,11 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import timediff from '../../../timediff.ts';
-import ContactRow from './Contact.vue';
+import ContactRow from '../util/Contact.vue';
 import ContactManager from '../../../base/contact.ts';
 import type { Contact, FeaturePropertyCreator } from '../../../types.ts';
 import { useRouter } from 'vue-router';
-import SlideDownHeader from './SlideDownHeader.vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
 import {
     IconUser
 } from '@tabler/icons-vue';

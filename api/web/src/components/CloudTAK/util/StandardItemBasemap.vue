@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <div class='d-flex align-items-center gap-2 me-2 flex-nowrap action-container'>
+        <div class='d-flex align-items-center gap-2 me-3 flex-nowrap action-container'>
             <TablerBadge
                 :background-color='isPrivate ? "rgba(247, 161, 0, 0.2)" : "rgba(47, 179, 68, 0.2)"'
                 :border-color='isPrivate ? "rgba(247, 161, 0, 0.5)" : "rgba(47, 179, 68, 0.5)"'
@@ -80,7 +80,7 @@ import { BasemapTypeConfig } from '../Menu/Basemaps/types.ts';
 import type { BasemapSourceType } from '../Menu/Basemaps/types.ts';
 import type { Basemap } from '../../../types.ts';
 import { computed } from 'vue';
-import { IconGridDots, IconMap, IconVector, IconServer, IconClock } from '@tabler/icons-vue';
+import { IconGridDots, IconMap, IconMountain, IconVector, IconServer, IconClock } from '@tabler/icons-vue';
 
 type BasemapBadgeTone = 'primary' | 'neutral' | 'muted';
 type BasemapBadgeKind = 'default' | 'frequency';
@@ -109,6 +109,7 @@ const badges = computed<BasemapBadge[]>(() => {
 const resolvedIcon = computed(() => {
     const normalizedType = String(props.basemap.type || '').toLowerCase();
     if (normalizedType === 'raster') return IconMap;
+    if (normalizedType === 'raster-dem') return IconMountain;
     if (normalizedType === 'vector') return IconVector;
     if (normalizedType) return IconServer;
 

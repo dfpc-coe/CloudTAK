@@ -34,7 +34,7 @@
                         v-model='editing.format'
                         required
                         label='Format'
-                        :options='["png", "jpeg", "mvt"]'
+                        :options='["png", "jpeg", "mvt", "webp"]'
                     />
                 </div>
             </template>

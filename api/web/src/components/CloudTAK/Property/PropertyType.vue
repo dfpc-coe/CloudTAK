@@ -119,7 +119,7 @@
 import { ref, watch, computed, onMounted } from 'vue';
 import { server } from '../../../std.ts';
 import type { COTType, COTTypeList } from '../../../types.ts';
-import FeatureIcon from './FeatureIcon.vue';
+import FeatureIcon from '../util/FeatureIcon.vue';
 import {
     IconChartGridDots
 } from '@tabler/icons-vue';

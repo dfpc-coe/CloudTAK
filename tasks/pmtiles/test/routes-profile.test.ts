@@ -18,7 +18,7 @@ function getAddress(): string {
 
 test('Setup', async () => {
     try {
-        const mod = await import('../src/index.js');
+        const mod = await import('../index.js');
         app = mod.app;
         
         server = http.createServer(app);

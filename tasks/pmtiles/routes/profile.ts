@@ -3,6 +3,11 @@ import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
 import auth, { tokenGrantsFile } from '../lib/auth.js';
 import { FileTiles, TileJSON, QueryResponse, FeaturesResponse } from '../lib/tiles.js';
+import getElevationProfile, {
+    ElevationEncodingType,
+    ElevationProfileType,
+    LineStringGeometryType,
+} from '../lib/elevation.js';
 
 export default async function router(schema: Schema) {
     schema.get('/tiles/profile/:username/:file', {
@@ -134,6 +139,60 @@ export default async function router(schema: Schema) {
                 zoom: req.query.zoom,
                 type: req.query.type,
                 multi: req.query.multi
+            }));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    })
+
+    schema.post('/tiles/profile/:username/:file/elevation', {
+        name: 'Get Elevation Profile',
+        group: 'ProfileTiles',
+        description: 'Return sampled elevation values for a LineString against a profile raster-dem PMTiles source',
+        query: Type.Object({
+            token: Type.String()
+        }),
+        params: Type.Object({
+            username: Type.String(),
+            file: Type.String()
+        }),
+        body: Type.Object({
+            geometry: LineStringGeometryType,
+            samples: Type.Integer({
+                minimum: 2,
+                default: 100,
+                description: 'Number of elevation samples to take along the line'
+            }),
+            zoom: Type.Optional(Type.Integer({ minimum: 0 })),
+            encoding: ElevationEncodingType,
+        }),
+        res: ElevationProfileType
+    }, async (req, res) => {
+        try {
+            const token = auth(req.query.token);
+            if (!tokenGrantsFile(token, req.params.username, req.params.file)) {
+                throw new Err(401, null, 'Unauthorized Access');
+            }
+
+            const file = new FileTiles(`profile/${req.params.username}/${req.params.file}`);
+            const source = await file.rasterTileSource(req.query.token);
+
+            if (source.format === 'mvt') {
+                throw new Err(400, null, 'Elevation profiles require raster-dem tiles');
+            }
+
+            if (req.body.zoom !== undefined && req.body.zoom > source.maxzoom) {
+                throw new Err(400, null, 'Above Layer MaxZoom');
+            }
+
+            if (req.body.zoom !== undefined && req.body.zoom < source.minzoom) {
+                throw new Err(400, null, 'Below Layer MinZoom');
+            }
+
+            res.json(await getElevationProfile(source.tileurl, req.body.geometry, {
+                zoom: req.body.zoom ?? source.maxzoom,
+                encoding: req.body.encoding,
+                targetSamples: req.body.samples ?? 100,
             }));
         } catch (err) {
             Err.respond(err, res);

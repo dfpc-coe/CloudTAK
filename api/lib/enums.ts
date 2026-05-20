@@ -59,6 +59,12 @@ export enum Basemap_FeatureAction {
     DELETE = 'delete'
 }
 
+export enum BasemapTerrain_Encoding {
+    MAPBOX = 'mapbox',
+    TERRARIUM = 'terrarium',
+}
+
+
 export enum BasicGeometryType {
     POINT = 'Point',
     LINESTRING = 'LineString',
@@ -110,6 +116,7 @@ export enum Profile_Coordinate {
 
 export enum Basemap_Format {
     PNG = 'png',
+    WEBP = 'webp',
     JPEG = 'jpeg',
     MVT = 'mvt'
 }

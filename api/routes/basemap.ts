@@ -20,7 +20,7 @@ import { StandardResponse, BasemapResponse, OptionalTileJSON, MultiGeoJSONFeatur
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
-import { toEnum, Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, Basemap_FeatureAction, AllBoolean, AllBooleanCast } from '../lib/enums.js';
+import { toEnum, Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, Basemap_FeatureAction, AllBoolean, AllBooleanCast, BasemapTerrain_Encoding } from '../lib/enums.js';
 import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
 import * as Default from '../lib/limits.js';
 
@@ -52,13 +52,6 @@ const BasemapImportRequest = Type.Object({
     url: Type.String(),
     auth: Type.Optional(BasemapImportAuth)
 });
-
-function isBasemapImportRequest(body: unknown): body is Static<typeof BasemapImportRequest> {
-    return !!body
-        && typeof body === 'object'
-        && 'url' in body
-        && typeof body.url === 'string';
-}
 
 function isEsriLayerURL(url: string): boolean {
     return !!(
@@ -114,6 +107,7 @@ async function importBasemapURL(
     if (tjbody.attribution) imported.attribution = tjbody.attribution;
     if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
     if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
+    else if (tjbody.tileSize !== undefined) imported.tilesize = tjbody.tileSize;
     if (Array.isArray(tjbody.vector_layers)) imported.vector_layers = tjbody.vector_layers;
     if (Array.isArray(tjbody.tiles) && tjbody.tiles.length) {
         imported.url = tjbody.tiles[0]
@@ -128,6 +122,14 @@ async function importBasemapURL(
             Type.Enum(Basemap_Format),
             normalizeBasemapFormat(path.parse(tileURL.pathname).ext.replace('.', ''))
         );
+    }
+
+    if (tjbody.encoding) {
+        const encoding = toEnum.fromString(Type.Enum(BasemapTerrain_Encoding), String(tjbody.encoding));
+        if (encoding) {
+            imported.encoding = encoding;
+            imported.type = Basemap_Type.TERRAIN;
+        }
     }
 
     return imported;
@@ -224,11 +226,11 @@ export default async function router(schema: Schema, config: Config) {
                 const imported = await importBasemapURL(config, String(req.body));
                 res.json(imported);
             } else if (contentType && contentType.startsWith('application/json')) {
-                if (!isBasemapImportRequest(req.body)) {
+                if (!req.body || typeof req.body !== 'object' || !('url' in req.body) || typeof (req.body as Record<string, unknown>).url !== 'string') {
                     throw new Err(400, null, 'Invalid import request');
                 }
 
-                const imported = await importBasemapURL(config, req.body.url, req.body.auth);
+                const imported = await importBasemapURL(config, (req.body as Static<typeof BasemapImportRequest>).url, (req.body as Static<typeof BasemapImportRequest>).auth);
                 res.json(imported);
             } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
@@ -430,11 +432,12 @@ export default async function router(schema: Schema, config: Config) {
             hidden: Type.Boolean({ default: false }),
             tilesize: Type.Integer({ default: 256, minimum: 256, maximum: 512 }),
             attribution: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
             frequency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.Enum(Basemap_Format)),
-            protocol: Type.Optional(Type.Enum(Basemap_Protocol)),
+            protocol: Type.Enum(Basemap_Protocol),
             style: Type.Optional(Type.Enum(Basemap_Scheme)),
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
@@ -541,6 +544,7 @@ export default async function router(schema: Schema, config: Config) {
             frequency: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
+            encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
             format: Type.Optional(Type.Enum(Basemap_Format)),
             protocol: Type.Optional(Type.Enum(Basemap_Protocol)),
             style: Type.Optional(Type.Enum(Basemap_Scheme)),
@@ -960,6 +964,12 @@ export default async function router(schema: Schema, config: Config) {
 
             if (Number(defaultBasemap.value) === basemap.id) {
                 throw new Err(400, null, 'Cannot delete default basemap');
+            }
+
+            const defaultTerrain = await config.models.Setting.typed('map::terrain', -1)
+
+            if (Number(defaultTerrain.value) === basemap.id) {
+                throw new Err(400, null, 'Cannot delete default terrain basemap');
             }
 
             await config.models.Basemap.delete(req.params.basemapid);

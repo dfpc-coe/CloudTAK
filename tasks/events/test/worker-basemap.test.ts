@@ -35,6 +35,7 @@ test(`Worker Basemap Import: USGS.xml`, async (t) => {
             url: 'https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/{$z}/{$y}/{$x}',
             minzoom: 0,
             maxzoom: 15,
+            protocol: 'zxy',
             format: 'png'
         });
         
@@ -129,6 +130,7 @@ test(`Worker Basemap Import: Basemap.xml.zip`, async (t) => {
             url: 'https://example.com/exampledata/rest/services/Cached/TAK/MapServer/WMTS/tile/1.0.0/ExampleLayer/default/default028mm/{$z}/{$y}/{$x}.png',
             minzoom: 0,
             maxzoom: 24,
+            protocol: 'zxy',
             format: 'png'
         });
 

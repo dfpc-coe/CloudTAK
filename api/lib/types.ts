@@ -6,7 +6,7 @@ import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profil
 import { VideoLease_SourceType} from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
-import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type } from '../lib/enums.js';
+import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from '../lib/enums.js';
 import { Feature } from '@tak-ps/node-cot';
 
 export const LayerResponse = AugmentedLayer;
@@ -111,6 +111,8 @@ export const OptionalTileJSON = Type.Object({
     center: Type.Optional(Type.Any()),
     minzoom: Type.Optional(Type.Integer()),
     maxzoom: Type.Optional(Type.Integer()),
+    tilesize: Type.Optional(Type.Integer()),
+    encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
     style: Type.Optional(Type.Enum(Basemap_Scheme)),
     format: Type.Optional(Type.Enum(Basemap_Format)),
     vector_layers: Type.Optional(Type.Array(OptionalVectorLayer))
@@ -463,7 +465,10 @@ export const BasemapResponse = Type.Object({
     frequency: Type.Union([Type.Null(), Type.Integer()]),
     scheme: Type.Enum(Basemap_Scheme),
     overlay: Type.Boolean(),
-    
+
+    // Terrain
+    encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
+
     // Vector
     styles: Type.Optional(Type.Array(Type.Unknown())),
     iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
@@ -493,6 +498,7 @@ export const FullConfig = Type.Object({
     'map::bearing': Type.Integer({ description: 'Default Map Bearing', minimum: 0, maximum: 360 }),
     'map::zoom': Type.Number({ description: 'Default Map Zoom Level', minimum: 0, maximum: 20 }),
     'map::basemap': Type.Union([Type.Null(), Type.Integer()], { description: 'Default Basemap for New Users' }),
+    'map::terrain': Type.Union([Type.Null(), Type.Integer()], { description: 'Default Terrain (raster-dem) Basemap for New Users' }),
     'display::stale': Type.Enum(Profile_Stale),
     'display::distance': Type.Enum(Profile_Distance),
     'display::elevation': Type.Enum(Profile_Elevation),
@@ -541,6 +547,13 @@ export const FullConfig = Type.Object({
     'login::background::enabled': Type.Boolean({ description: 'Enable or Disable Custom Background on Login Page' }),
     'login::background::color': Type.String({ description: 'Hex Color Code for Login Background' }),
     'login::logo': Type.String({ description: 'Base64 encoded PNG for Logo' }),
+    'firebase::apikey': Type.String({ description: 'Firebase API Key' }),
+    'firebase::authdomain': Type.String({ description: 'Firebase Auth Domain' }),
+    'firebase::projectid': Type.String({ description: 'Firebase Project ID' }),
+    'firebase::storagebucket': Type.String({ description: 'Firebase Storage Bucket' }),
+    'firebase::messagingsenderid': Type.String({ description: 'Firebase Messaging Sender ID' }),
+    'firebase::appid': Type.String({ description: 'Firebase App ID' }),
+    'firebase::measurementid': Type.String({ description: 'Firebase Measurement ID' }),
     'external::applications': Type.Array(Type.Object({
         name: Type.String({ description: 'Application Name' }),
         icon: Type.String({ description: 'Base64 encoded icon' }),

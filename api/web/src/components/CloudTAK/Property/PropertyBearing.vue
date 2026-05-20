@@ -64,7 +64,7 @@
 
 <script setup lang='ts'>
 import { ref, watch } from 'vue';
-import CopyField from './CopyField.vue';
+import CopyField from '../util/CopyField.vue';
 import {
     IconCompass
 } from '@tabler/icons-vue';
