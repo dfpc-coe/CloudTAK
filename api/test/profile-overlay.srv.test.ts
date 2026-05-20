@@ -172,6 +172,7 @@ test('POST: api/basemap - for overlay tests', async () => {
             body: {
                 name: 'Overlay Test Basemap',
                 url: 'https://tiles.example.com/basemap/{z}/{x}/{y}',
+                protocol: 'zxy',
                 type: 'raster-dem',
                 encoding: 'terrarium',
                 sharing_enabled: false
