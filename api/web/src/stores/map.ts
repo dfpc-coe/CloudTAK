@@ -999,7 +999,7 @@ export const useMapStore = defineStore('cloudtak', {
                         start: new Date().toISOString(),
                         stale: new Date(Date.now() + 2 * (60 * 60 * 1000)).toISOString(),
                         center: [ e.lngLat.lng, e.lngLat.lat ],
-                        'marker-color': '#00ff00',
+                        'marker-color': this.defaultPointType === 'u-d-p' ? '#00ff00' : undefined,
                         'marker-opacity': 1
                     },
                     geometry: {
