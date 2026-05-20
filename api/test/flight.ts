@@ -11,11 +11,12 @@ import { pathToRegexp } from 'path-to-regexp';
 import test from 'node:test';
 import assert from 'node:assert';
 import ProfileControl from '../lib/control/profile.js';
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
+import { Ajv } from 'ajv';
+import type { FormatsPlugin } from 'ajv-formats';
+import * as ajvFormats from 'ajv-formats';
 import * as pgtypes from '../lib/schema.js';
 import { Pool } from '@openaddresses/batch-generic';
-const ajv = addFormats(new Ajv({ allErrors: true }));
+const ajv = (ajvFormats.default as unknown as FormatsPlugin)(new Ajv({ allErrors: true }));
 
 /**
  * @class

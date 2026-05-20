@@ -831,7 +831,7 @@ export default class VideoServiceControl {
 
         if (opts.connection && lease.connection !== opts.connection) {
             throw new Err(400, null, `Lease does not belong to connection ${opts.connection}`);
-        } else if (!admin && opts.username && lease.username !== opts.username) {
+        } else if (!opts.admin && opts.username && lease.username !== opts.username) {
             throw new Err(400, null, `Lease does not belong to user ${opts.username}`);
         }
 

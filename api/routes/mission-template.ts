@@ -11,7 +11,7 @@ import { MissionTemplateSingleResponse } from '../lib/models/MissionTemplate.js'
 import { PaletteFeatureStyle } from '../lib/palette.js';
 import { BasicGeometryType } from '../lib/enums.js';
 import * as Default from '../lib/limits.js';
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
 
 const ajv = new Ajv();
 
