@@ -7,7 +7,7 @@ import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 import Config from '../lib/config.js';
 import Sprites from '../lib/sprites.js';
-import { ZipArchive } from '@archiver/archiver/dist/index.mjs';
+import { ZipArchive } from '@archiver/archiver';
 import xmljs from 'xml-js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
