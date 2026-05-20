@@ -41,6 +41,12 @@
             :create='false'
         />
         <template v-else>
+            <TablerInlineAlert
+                v-if='err'
+                severity='danger'
+                title='Icon Not Found'
+                :description='err.message'
+            />
             <div class='d-flex align-items-center'>
                 <template v-if='selected.name'>
                     <div class='d-flex align-items-center'>
@@ -85,23 +91,20 @@
                         </template>
                         <template #dropdown>
                             <div
-                                class='card'
+                                class='py-1'
                                 style='min-width: 300px;'
                             >
-                                <div class='card-header d-flex align-items-center'>
-                                    <h3 class='card-title'>
-                                        Icons
-                                    </h3>
+                                <div class='px-3 pt-2 pb-1 d-flex align-items-center fw-bold'>
+                                    Icons
                                     <IconSearch
-                                        :size='32'
+                                        :size='20'
                                         stroke='1'
-                                        class='ms-auto cursor-pointer mx-2'
+                                        class='ms-auto cursor-pointer'
                                         :color='params.showFilter ? "#83b7e8" : "currentColor"'
                                         @click.stop.prevent='params.showFilter = !params.showFilter'
                                     />
                                 </div>
-
-                                <div class='card-body row g-2'>
+                                <div class='px-2 pb-2 row g-2'>
                                     <div class='col-12'>
                                         <TablerEnum
                                             v-model='params.iconset'
@@ -127,13 +130,13 @@
                                             v-for='icon of list.items'
                                             :key='icon.id'
                                             class='col-auto cursor-pointer'
-                                            @click='selected = icon'
+                                            @click='selected = icon; err = null'
                                         >
                                             <img
                                                 v-tooltip='icon.name'
                                                 :src='icon.data'
                                                 class='img-thumbnail'
-                                                style='width: 25px; height: 25px; margin-right: 5px;'
+                                                style='width: 40px; height: 40px; margin-right: 5px;'
                                             >
                                         </div>
                                     </div>
@@ -157,6 +160,7 @@ import {
     IconPhotoSearch
 } from '@tabler/icons-vue';
 import {
+    TablerInlineAlert,
     TablerHelp,
     TablerEnum,
     TablerNone,
@@ -186,6 +190,7 @@ const emit = defineEmits<{
 }>();
 
 const help = ref(false);
+const err = ref<Error | null>(null);
 
 const loading = ref({
     iconset: true,
@@ -255,9 +260,16 @@ async function fetchSelected(): Promise<void> {
             }
         });
 
-        if (error) throw new Error(error.message);
+        if (error) {
+            if (error.status === 404) {
+                err.value = new Error(error.message);
+                return;
+            }
+            throw new Error(error.message);
+        }
         if (!data) return;
 
+        err.value = null;
         selected.value = data;
     }
 }
