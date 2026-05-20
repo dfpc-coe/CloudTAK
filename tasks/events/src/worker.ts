@@ -381,6 +381,7 @@ export default class Worker extends EventEmitter {
                     url: json.url,
                     minzoom: json.minZoom,
                     maxzoom: json.maxZoom,
+                    protocol: 'zxy',
                     format,
                 })
             });

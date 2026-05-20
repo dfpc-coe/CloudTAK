@@ -132,7 +132,7 @@ import { ref, onMounted, watch } from 'vue';
 import { server, std, stdurl } from '../../../std.ts';
 import { useFloatStore } from '../../../stores/float.ts';
 import Upload from '../../util/Upload.vue';
-import SlideDownHeader from './SlideDownHeader.vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
 import Subscription from '../../../base/subscription.ts';
 import type { Attachment } from '../../../types.ts';
 import {

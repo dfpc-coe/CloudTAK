@@ -78,8 +78,8 @@ import { v4 as randomUUID } from 'uuid';
 import { ref, toRaw } from 'vue'
 import { destination } from '@turf/destination'
 import Coordinate from '../util/Coordinate.vue';
-import PropertyBearing from '../util/PropertyBearing.vue';
-import PropertyDistance from '../util/PropertyDistance.vue';
+import PropertyBearing from '../Property/PropertyBearing.vue';
+import PropertyDistance from '../Property/PropertyDistance.vue';
 import {
     TablerInput,
     TablerIconButton

@@ -262,7 +262,7 @@
 
 <script setup lang='ts'>
 import { computed, ref } from 'vue';
-import SlideDownHeader from './SlideDownHeader.vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
 import { TablerBadge, TablerInput, TablerIconButton } from '@tak-ps/vue-tabler';
 import { IconUsers, IconLink, IconExternalLink, IconPlus, IconTrash, IconPencil, IconCheck } from '@tabler/icons-vue';
 import type COT from '../../../base/cot';

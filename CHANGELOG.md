@@ -10,14 +10,30 @@
 
 ## Version History
 
-### Deprecation Notice
+### Deprecation Notices
+
+None at this time, but any breaking changes will be prefaced with a deprecation notice in the previous major version to allow users to prepare for the change
+
+### Pending Release
+
+### v13.0.0
+
+> [!WARNING]
+> If running CloudTAK in an AWS environment with supplied CloudFormation Templates,
+> the deploy must be conducted in two steps due to the migration of API Gateway from
+> V1 to V2
+>
+> Comment out the PMTiles object in `cloudformation/CloudTAK.template.js`
+> Deploy with deploy update <stackname>
+> Uncomment the PMTiles object in `cloudformation/CloudTAK.template.js`
+> Deploy with deploy update <stackname>
+>
+> Breaking Changes:
 
 - `v12.85.0` Moved the Layer Incoming `groups` property to the Style Object for increased flexibility in desination management
   This array has been retained but in the next major release it will be removed
 - `v12.115.0` Added the ability to set Basemap Protocol with the default being zxy. This will be a required field in v13
 - `v12.126.0` Migrate to the base `/api/config` -> `/api/config/group` will be retired in the next major version
-
-### Pending Release
 
 ### v12.138.2 - 2026-05-03
 

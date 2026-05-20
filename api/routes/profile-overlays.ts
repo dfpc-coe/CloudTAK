@@ -6,6 +6,7 @@ import Schema from '@openaddresses/batch-schema';
 import S3 from '../lib/aws/s3.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
+import { BasemapTerrain_Encoding } from '../lib/enums.js';
 import { ProfileOverlay } from '../lib/schema.js';
 import path from 'node:path';
 import { StandardResponse, ProfileOverlayResponse } from '../lib/types.js'
@@ -16,9 +17,27 @@ import * as Default from '../lib/limits.js';
 const AugmentedProfileOverlayResponse = Type.Composite([
     ProfileOverlayResponse,
     Type.Object({
-        actions: TileJSONActions
+        actions: TileJSONActions,
+        encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding))
     })
 ])
+
+type SerializableProfileOverlay = Omit<Static<typeof ProfileOverlayResponse>, 'opacity'> & {
+    opacity: number | string;
+};
+
+function serializeOverlay(
+    overlay: SerializableProfileOverlay,
+    actions: Static<typeof TileJSONActions>,
+    encoding?: BasemapTerrain_Encoding
+): Static<typeof AugmentedProfileOverlayResponse> {
+    return {
+        ...overlay,
+        opacity: Number(overlay.opacity),
+        actions,
+        ...(encoding ? { encoding } : {})
+    } as Static<typeof AugmentedProfileOverlayResponse>;
+}
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/overlay', {
@@ -109,7 +128,12 @@ export default async function router(schema: Schema, config: Config) {
                     try {
                         if (!item.mode_id) throw new Error('mode_id is required');
                         const basemap = await config.models.Basemap.from(parseInt(item.mode_id));
-                        return { keep: true as const, item, actions: fromProtocol(basemap.protocol).actions() };
+                        return {
+                            keep: true as const,
+                            item,
+                            actions: fromProtocol(basemap.protocol).actions(),
+                            encoding: basemap.type === 'raster-dem' ? basemap.encoding : undefined
+                        };
                     } catch (err) {
                         console.error('Could not find basemap', err);
                         return { keep: false as const, item };
@@ -138,7 +162,7 @@ export default async function router(schema: Schema, config: Config) {
                     removed.push({ ...result.item, opacity: Number(result.item.opacity) });
                     total--;
                 } else {
-                    items.push({ ...result.item, opacity: Number(result.item.opacity), actions: result.actions });
+                    items.push(serializeOverlay(result.item, result.actions, result.encoding));
                 }
             }
 
@@ -167,17 +191,13 @@ export default async function router(schema: Schema, config: Config) {
                 if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
                 const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
 
-                res.json({
-                    ...overlay,
-                    actions: fromProtocol(basemap.protocol).actions(),
-                    opacity: Number(overlay.opacity)
-                });
+                res.json(serializeOverlay(
+                    overlay,
+                    fromProtocol(basemap.protocol).actions(),
+                    basemap.type === 'raster-dem' ? basemap.encoding : undefined
+                ));
             } else {
-                res.json({
-                    ...overlay,
-                    actions: fromProtocol().actions(),
-                    opacity: Number(overlay.opacity)
-                });
+                res.json(serializeOverlay(overlay, fromProtocol().actions()));
             }
         } catch (err) {
              Err.respond(err, res);
@@ -237,17 +257,13 @@ export default async function router(schema: Schema, config: Config) {
                 if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
                 const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
 
-                res.json({
-                    ...overlay,
-                    actions: fromProtocol(basemap.protocol).actions(),
-                    opacity: Number(overlay.opacity)
-                });
+                res.json(serializeOverlay(
+                    overlay,
+                    fromProtocol(basemap.protocol).actions(),
+                    basemap.type === 'raster-dem' ? basemap.encoding : undefined
+                ));
             } else {
-                res.json({
-                    ...overlay,
-                    actions: fromProtocol().actions(),
-                    opacity: Number(overlay.opacity)
-                });
+                res.json(serializeOverlay(overlay, fromProtocol().actions()));
             }
         } catch (err) {
              Err.respond(err, res);
@@ -328,17 +344,13 @@ export default async function router(schema: Schema, config: Config) {
                 if (!overlay.mode_id) throw new Err(500, null, 'Overlay missing mode_id');
                 const basemap = await config.models.Basemap.from(parseInt(overlay.mode_id));
 
-                res.json({
-                    ...overlay,
-                    actions: fromProtocol(basemap.protocol).actions(),
-                    opacity: Number(overlay.opacity)
-                });
+                res.json(serializeOverlay(
+                    overlay,
+                    fromProtocol(basemap.protocol).actions(),
+                    basemap.type === 'raster-dem' ? basemap.encoding : undefined
+                ));
             } else {
-                res.json({
-                    ...overlay,
-                    actions: fromProtocol().actions(),
-                    opacity: Number(overlay.opacity)
-                });
+                res.json(serializeOverlay(overlay, fromProtocol().actions()));
             }
         } catch (err) {
             if (String(err).includes('duplicate key value violates unique constraint')) {

@@ -131,7 +131,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import SlideDownHeader from './SlideDownHeader.vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
 import { IconPaint } from '@tabler/icons-vue';
 import {
     TablerInput,

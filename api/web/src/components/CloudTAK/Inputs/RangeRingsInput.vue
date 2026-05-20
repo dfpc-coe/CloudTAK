@@ -126,7 +126,7 @@
 import { v4 as randomUUID } from 'uuid';
 import { ref, toRaw, computed, onMounted } from 'vue'
 import Coordinate from '../util/Coordinate.vue';
-import PropertyDistance from '../util/PropertyDistance.vue';
+import PropertyDistance from '../Property/PropertyDistance.vue';
 import ProfileConfig from '../../../base/profile.ts';
 import Ellipse from '@turf/ellipse'
 import {

@@ -54,7 +54,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import SlideDownHeader from './SlideDownHeader.vue';
+import SlideDownHeader from '../util/SlideDownHeader.vue';
 import { IconFence, IconDoorEnter, IconDoorExit } from '@tabler/icons-vue';
 import { TablerToggle } from '@tak-ps/vue-tabler';
 

@@ -11,6 +11,7 @@ import { Layer_Config } from './models/Layer.js';
 import {
     Layer_Priority,
     Import_Status,
+    BasemapTerrain_Encoding,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
 } from  './enums.js';
 import { bigint, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
@@ -29,6 +30,8 @@ export const Palette = pgTable('palette', {
     name: text().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
+    template: uuid().notNull().references(() => MissionTemplate.id),
 });
 
 export const PaletteFeature = pgTable('palette_feature', {
@@ -276,6 +279,7 @@ export const BasemapVector = pgTable('basemaps_vector', {
 export const BasemapTerrain = pgTable('basemaps_terrain', {
     id: serial().primaryKey(),
     basemap: integer().notNull().references(() => Basemap.id, { onDelete: 'cascade' }),
+    encoding: text().notNull().$type<BasemapTerrain_Encoding>().default(BasemapTerrain_Encoding.MAPBOX)
 }, (table) => ({
     basemap_idx: unique().on(table.basemap)
 }));

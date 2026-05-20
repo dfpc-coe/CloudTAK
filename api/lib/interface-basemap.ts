@@ -39,6 +39,9 @@ export const TileJSONType = Type.Object({
     maxzoom: Type.Integer(),
     tiles: Type.Array(Type.String()),
     bounds: Type.Tuple([Type.Number(), Type.Number(), Type.Number(), Type.Number()]),
+    encoding: Type.Optional(Type.String({
+        enum: ['mapbox', 'terrarium']
+    })),
     center: Type.Array(Type.Number()),
     type: Type.String(),
     format: Type.Optional(Type.String()),

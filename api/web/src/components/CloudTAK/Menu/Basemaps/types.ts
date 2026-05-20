@@ -30,7 +30,7 @@ export interface EditingBasemap {
     tilesize: number;
     attribution: string;
     sharing_enabled: boolean;
-    format: 'png' | 'jpeg' | 'mvt';
+    format: 'png' | 'jpeg' | 'mvt' | 'webp';
     bounds: number[];
     center: number[];
     collection: string;
@@ -42,6 +42,7 @@ export interface EditingBasemap {
     snapping_layer: string;
     styles: unknown[];
     tilejson: string;
+    encoding: 'mapbox' | 'terrarium' | null;
 }
 
 export interface VectorLayerFieldMap {
@@ -55,6 +56,7 @@ export interface VectorLayerDescriptor {
 
 export type BasemapImport = paths['/api/basemap']['put']['responses']['200']['content']['application/json'] & {
     vector_layers?: VectorLayerDescriptor[];
+    tilesize?: number;
 };
 
 export type BasemapSourceType = 'zxy' | 'imageserver' | 'mapserver' | 'featureserver' | 'tilejson' | 'upload' | 'hosted';
@@ -220,6 +222,7 @@ export function normalizeEditing(data: Basemap | BasemapImport | BasemapListItem
         snapping_layer: ('snapping_layer' in data ? data.snapping_layer : undefined) ?? '',
         styles: ('styles' in data && Array.isArray(data.styles) ? data.styles : null) ?? [],
         tilejson: String(('tilejson' in data ? data.tilejson : undefined) ?? ''),
+        encoding: ('encoding' in data ? (data.encoding as 'mapbox' | 'terrarium' | null) : null) ?? null,
     };
 }
 

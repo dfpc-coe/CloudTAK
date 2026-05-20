@@ -37,6 +37,7 @@ export const UserConfigKeys: (keyof Static<typeof FullConfig>)[] = [
     'map::bearing',
     'map::zoom',
     'map::basemap',
+    'map::terrain',
     'group::Yellow',
     'group::Cyan',
     'group::Green',
@@ -250,106 +251,6 @@ export default async function router(schema: Schema, config: Config) {
         try {
             res.json({
                 url: config.PMTILES_URL
-            });
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/config/group', {
-        deprecated: true,
-        name: 'List Groups',
-        group: 'Config',
-        description: 'Return Group Config',
-        res: Type.Object({
-            roles: Type.Array(Type.String()),
-            groups: Type.Record(Type.String(), Type.String()),
-        })
-    }, async (req, res) => {
-        try {
-            await Auth.as_user(config, req);
-
-            const keys = [
-                'group::Yellow',
-                'group::Cyan',
-                'group::Green',
-                'group::Red',
-                'group::Purple',
-                'group::Orange',
-                'group::Blue',
-                'group::Magenta',
-                'group::White',
-                'group::Maroon',
-                'group::Dark Blue',
-                'group::Teal',
-                'group::Dark Green',
-                'group::Brown',
-            ];
-
-            const final: Record<string, string> = {};
-            (await Promise.allSettled(keys.map((key) => {
-                return config.models.Setting.from(key);
-            }))).forEach((k) => {
-                if (k.status === 'rejected') return;
-                return final[k.value.key.replace('group::', '')] = String(k.value.value);
-            });
-
-            for (let group of keys) {
-                group = group.replace('group::', '')
-                if (!final[group]) final[group] = '';
-            }
-
-            res.json({
-                roles: [ "Team Member", "Team Lead", "HQ", "Sniper", "Medic", "Forward Observer", "RTO", "K9" ],
-                groups: final
-            });
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/config/map', {
-        name: 'Map Config',
-        group: 'Config',
-        description: 'Return Map Config',
-        res: Type.Object({
-            center: Type.String({ default: '-100,40' }),
-            zoom: Type.Number({ default: 4 }),
-            pitch: Type.Integer({ default: 0 }),
-            bearing: Type.Integer({ default: 0 }),
-            basemap: Type.Union([Type.Null(), Type.Integer()])
-        })
-    }, async (req, res) => {
-        try {
-            await Auth.as_user(config, req);
-
-            const keys = [
-                'map::center',
-                'map::pitch',
-                'map::bearing',
-                'map::zoom',
-                'map::basemap'
-            ];
-
-            const final: Record<string, any> = {};
-
-            (await Promise.allSettled(keys.map((key) => {
-                return config.models.Setting.from(key);
-            }))).forEach((k) => {
-                if (k.status === 'rejected') return;
-                return final[k.value.key.replace('map::', '')] = String(k.value.value);
-            });
-
-            for (let map of keys) {
-                map = map.replace('map::', '')
-            }
-
-            res.json({
-                center: final.center || '-100,40',
-                zoom: final.zoom || 4,
-                pitch: final.pitch || 0,
-                bearing: final.bearing || 0,
-                basemap: final.basemap ? Number(final.basemap) : null
             });
         } catch (err) {
             Err.respond(err, res);

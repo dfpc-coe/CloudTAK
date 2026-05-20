@@ -46,7 +46,7 @@ import { TablerModal } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../../stores/map.ts';
 import type { Feature } from '../../../types.ts';
 import ProfileConfig from '../../../base/profile.ts';
-import PropertyDistance from '../util/PropertyDistance.vue';
+import PropertyDistance from '../Property/PropertyDistance.vue';
 
 const props = defineProps<{
     cotId: string;

@@ -109,16 +109,6 @@
         "query": false,
         "res": true
     },
-    "GET /config/group": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /config/map": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /connection/:connectionid/asset": {
         "body": false,
         "query": false,
@@ -1019,52 +1009,52 @@
         "query": false,
         "res": true
     },
-    "GET /palette": {
+    "GET /template/mission/:mission/palette": {
         "body": false,
         "query": true,
         "res": true
     },
-    "GET /palette/:palette": {
+    "GET /template/mission/:mission/palette/:palette": {
         "body": false,
         "query": false,
         "res": true
     },
-    "POST /palette": {
+    "POST /template/mission/:mission/palette": {
         "body": true,
         "query": false,
         "res": true
     },
-    "PATCH /palette/:palette": {
+    "PATCH /template/mission/:mission/palette/:palette": {
         "body": true,
         "query": false,
         "res": true
     },
-    "DELETE /palette/:palette": {
+    "DELETE /template/mission/:mission/palette/:palette": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /palette/:palette/feature": {
+    "GET /template/mission/:mission/palette/:palette/feature": {
         "body": false,
         "query": true,
         "res": true
     },
-    "GET /palette/:palette/feature/:feature": {
+    "GET /template/mission/:mission/palette/:palette/feature/:feature": {
         "body": false,
         "query": false,
         "res": true
     },
-    "POST /palette/:palette/feature": {
+    "POST /template/mission/:mission/palette/:palette/feature": {
         "body": true,
         "query": false,
         "res": true
     },
-    "PATCH /palette/:palette/feature/:feature": {
+    "PATCH /template/mission/:mission/palette/:palette/feature/:feature": {
         "body": true,
         "query": false,
         "res": true
     },
-    "DELETE /palette/:palette/feature/:feature": {
+    "DELETE /template/mission/:mission/palette/:palette/feature/:feature": {
         "body": false,
         "query": false,
         "res": true

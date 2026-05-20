@@ -338,6 +338,7 @@ export default class KML implements Transform {
         for (const [name, icon] of icons.entries()) {
             try {
                 const contents = await (Sharp(icon)
+                    .resize({ height: 32, withoutEnlargement: true })
                     .png()
                     .toBuffer());
 

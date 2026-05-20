@@ -7,8 +7,8 @@
 
             <h1 class='card-title d-flex align-items-center'>
                 <TablerIconButton
-                    title='Back to List'
-                    @click='router.push(`/admin/palette`)'
+                    title='Back to Template'
+                    @click='router.push(`/admin/template/${route.params.template}`)'
                 >
                     <IconCircleArrowLeft
                         :size='32'
@@ -27,7 +27,7 @@
                 <TablerIconButton
                     v-if='disabled'
                     title='Add Palette Feature'
-                    @click='router.push(`/admin/palette/${route.params.palette}/feature/new`)'
+                    @click='router.push(`/admin/template/${route.params.template}/palette/${route.params.palette}/feature/new`)'
                 >
                     <IconPlus
                         :size='32'
@@ -90,7 +90,7 @@
                         v-for='feature of palette.features'
                         :key='feature.uuid'
                         class='cloudtak-hover px-2 py-2 cursor-pointer d-flex align-items-center rounded'
-                        @click='router.push(`/admin/palette/${route.params.palette}/feature/${feature.uuid}`)'
+                        @click='router.push(`/admin/template/${route.params.template}/palette/${route.params.palette}/feature/${feature.uuid}`)'
                     >
                         <IconPoint
                             v-if='feature.type === "Point"'
@@ -147,6 +147,7 @@ const palette = ref<Palette>({
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
     name: '',
+    template: String(route.params.template),
     features: []
 });
 
@@ -164,21 +165,24 @@ async function savePalette() {
 
     try {
         if (route.params.palette === "new") {
-            const res = await server.POST('/api/palette', {
-                body: palette.value
+            const res = await server.POST(`/api/template/mission/{:mission}/palette`, {
+                params: { path: { ':mission': String(route.params.template) } },
+                body: { name: palette.value.name }
             });
-            if (res.error) throw new Error(String(res.error.message || JSON.stringify(res.error)));
-            palette.value = res.data;
+
+            if (res.error) throw new Error(res.error.message);
+            palette.value = res.data as Palette;
 
             disabled.value = true;
-            router.push(`/admin/palette/${palette.value.uuid}`);
+            router.push(`/admin/template/${route.params.template}/palette/${palette.value.uuid}`);
         } else {
-            const res = await server.PATCH('/api/palette/{:palette}', {
-                params: { path: { ":palette": String(route.params.palette) } },
-                body: palette.value
+            const res = await server.PATCH(`/api/template/mission/{:mission}/palette/{:palette}`, {
+                params: { path: { ':mission': String(route.params.template), ':palette': String(route.params.palette) } },
+                body: { name: palette.value.name }
             });
-            if (res.error) throw new Error(String(res.error.message || JSON.stringify(res.error)));
-            palette.value = res.data;
+
+            if (res.error) throw new Error(res.error.message);
+            palette.value = res.data as Palette;
 
             disabled.value = true;
         }
@@ -193,12 +197,12 @@ async function deletePalette() {
     loading.value = true;
 
     try {
-        const res = await server.DELETE('/api/palette/{:palette}', {
-            params: { path: { ":palette": String(route.params.palette) } }
+        const res = await server.DELETE(`/api/template/mission/{:mission}/palette/{:palette}`, {
+            params: { path: { ':mission': String(route.params.template), ':palette': String(route.params.palette) } }
         });
-        if (res.error) throw new Error(String(res.error.message || JSON.stringify(res.error)));
 
-        router.push('/admin/palette');
+        if (res.error) throw new Error(res.error.message);
+        router.push(`/admin/template/${route.params.template}`);
     } catch (err) {
         loading.value = false;
         throw err;
@@ -208,11 +212,12 @@ async function deletePalette() {
 async function fetchPalette() {
     loading.value = true;
     try {
-        const res = await server.GET('/api/palette/{:palette}', {
-            params: { path: { ":palette": String(route.params.palette) } }
+        const res = await server.GET(`/api/template/mission/{:mission}/palette/{:palette}`, {
+            params: { path: { ':mission': String(route.params.template), ':palette': String(route.params.palette) } }
         });
-        if (res.error) throw new Error(String(res.error.message || JSON.stringify(res.error)));
-        palette.value = res.data;
+
+        if (res.error) throw new Error(res.error.message);
+        palette.value = res.data as Palette;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {

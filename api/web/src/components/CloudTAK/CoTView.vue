@@ -437,6 +437,19 @@
                 </div>
 
                 <div
+                    v-if='lineGeometry && terrainBasemapId'
+                    class='col-12 pt-2'
+                >
+                    <PropertyProfile
+                        :key='`${route.params.uid}-${terrainBasemapId}`'
+                        :geometry='lineGeometry'
+                        :terrain-basemap-id='terrainBasemapId'
+                        :distance-unit='units.display_distance'
+                        :elevation-unit='units.display_elevation'
+                    />
+                </div>
+
+                <div
                     v-if='cot && cot.geometry.type === "Polygon"'
                     class='col-12 pt-2'
                 >
@@ -659,24 +672,25 @@ import Share from './util/Share.vue';
 import LineLength from './util/LineLength.vue';
 import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
-import PropertyType from './util/PropertyType.vue';
-import PropertyBattery from './util/PropertyBattery.vue';
-import PropertyDistance from './util/PropertyDistance.vue';
-import PropertyBearing from './util/PropertyBearing.vue';
-import PropertyMilSym from './util/PropertyMilSym.vue';
-import PropertySensor from './util/PropertySensor.vue';
-import PropertyPhone from './util/PropertyPhone.vue';
-import PropertyCreator from './util/PropertyCreator.vue';
-import PropertyEmail from './util/PropertyEmail.vue';
-import PropertySpeed from './util/PropertySpeed.vue';
+import PropertyProfile from './Property/PropertyProfile.vue';
+import PropertyType from './Property/PropertyType.vue';
+import PropertyBattery from './Property/PropertyBattery.vue';
+import PropertyDistance from './Property/PropertyDistance.vue';
+import PropertyBearing from './Property/PropertyBearing.vue';
+import PropertyMilSym from './Property/PropertyMilSym.vue';
+import PropertySensor from './Property/PropertySensor.vue';
+import PropertyPhone from './Property/PropertyPhone.vue';
+import PropertyCreator from './Property/PropertyCreator.vue';
+import PropertyEmail from './Property/PropertyEmail.vue';
+import PropertySpeed from './Property/PropertySpeed.vue';
 import Breadcrumb from './util/Breadcrumb.vue';
-import PropertyElevation from './util/PropertyElevation.vue';
-import PropertyAttachments from './util/PropertyAttachments.vue';
-import PropertyLinks from './util/PropertyLinks.vue';
-import PropertyTimes from './util/PropertyTimes.vue';
-import PropertyMetadata from './util/PropertyMetadata.vue';
-import PropertyStyle from './util/PropertyStyle.vue';
-import PropertyGeofence from './util/PropertyGeofence.vue';
+import PropertyElevation from './Property/PropertyElevation.vue';
+import PropertyAttachments from './Property/PropertyAttachments.vue';
+import PropertyLinks from './Property/PropertyLinks.vue';
+import PropertyTimes from './Property/PropertyTimes.vue';
+import PropertyMetadata from './Property/PropertyMetadata.vue';
+import PropertyStyle from './Property/PropertyStyle.vue';
+import PropertyGeofence from './Property/PropertyGeofence.vue';
 import SlideDownHeader from './util/SlideDownHeader.vue';
 import {
     IconPencil,
@@ -707,11 +721,17 @@ import { server } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useFloatStore } from '../../stores/float.ts';
 import ProfileConfig from '../../base/profile.ts';
+import Config from '../../base/config.ts';
 import { setCircleRadius } from '../../base/cot/ellipse.ts';
 
 const mapStore = useMapStore();
 
 const floatStore = useFloatStore();
+
+const terrainBasemapId = ref<number | null>(null);
+Config.list(['map::terrain'], { defaults: { 'map::terrain': null } }).then((cfg) => {
+    terrainBasemapId.value = cfg['map::terrain'] ? Number(cfg['map::terrain']) : null;
+}).catch(() => { /* non-fatal */ });
 const route = useRoute();
 const router = useRouter();
 
@@ -824,6 +844,11 @@ const center = computed(() => {
 
     return arr;
 })
+
+const lineGeometry = computed(() => {
+    if (!cot.value || cot.value.geometry.type !== 'LineString') return null;
+    return cot.value.geometry;
+});
 
 const isLocked = computed(() => {
     if (!cot.value) return false;
