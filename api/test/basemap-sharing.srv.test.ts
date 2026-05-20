@@ -21,6 +21,7 @@ test('POST: api/basemap - Sharing Turned On Initially', async () => {
                 name: 'Test Basemap',
                 sharing_enabled: true,
                 url: 'https://test.com/test/{z}/{x}/{y}',
+                protocol: 'zxy',
             }
         }, true);
 
