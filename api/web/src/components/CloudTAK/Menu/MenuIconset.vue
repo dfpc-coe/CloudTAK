@@ -33,6 +33,11 @@
                 />
             </TablerIconButton>
 
+            <TablerRefreshButton
+                :loading='loading'
+                @click='syncIconset'
+            />
+
             <TablerDelete
                 v-if='iconset.username || isSystemAdmin'
                 displaytype='icon'
@@ -41,14 +46,23 @@
         </template>
         <template #default>
             <TablerLoading v-if='loading' />
+            <TablerAlert
+                v-else-if='error'
+                :err='error'
+            />
             <div
                 v-else
                 class='col-lg-12'
             >
+                <TablerAlert
+                    v-if='syncError'
+                    class='mb-3'
+                    :err='syncError'
+                />
                 <CombinedIcons
-                    v-if='!loading'
                     :iconset='iconset.uid'
                     :labels='false'
+                    :refresh-key='refreshKey'
                 />
             </div>
         </template>
@@ -57,7 +71,7 @@
     <IconsetEditModal
         v-if='editIconsetModal'
         :icon='editIconsetModal'
-        @close='refresh'
+        @close='syncIconset'
     />
 </template>
 
@@ -65,11 +79,15 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '../../../std.ts';
+import IconsetCache from '../../../base/iconset.ts';
 import CombinedIcons from '../util/Icons.vue';
+import { useMapStore } from '../../../stores/map.ts';
 import {
+    TablerAlert,
     TablerDelete,
     TablerLoading,
     TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
@@ -83,10 +101,14 @@ import type { Iconset } from '../../../types.ts';
 
 const route = useRoute();
 const router = useRouter();
+const mapStore = useMapStore();
 
 const loading = ref(true);
 const editIconsetModal = ref<Iconset | null>(null);
 const isSystemAdmin = ref(false);
+const error = ref<Error | undefined>(undefined);
+const syncError = ref<Error | undefined>(undefined);
+const refreshKey = ref(0);
 const iconset = ref<Iconset>({
     uid: '',
     created: '',
@@ -111,9 +133,16 @@ onMounted(async () => {
 
 async function refresh(): Promise<void> {
     loading.value = true;
+    error.value = undefined;
     editIconsetModal.value = null;
-    await fetchIconset();
-    loading.value = false;
+
+    try {
+        await fetchIconset();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        loading.value = false;
+    }
 }
 
 async function download(): Promise<void> {
@@ -123,16 +152,34 @@ async function download(): Promise<void> {
 }
 
 async function fetchIconset(): Promise<void> {
+    const cached = await IconsetCache.get(String(route.params.iconset));
+    if (!cached) throw new Error('Iconset not available offline. Refresh to sync this iconset.');
+
+    iconset.value = {
+        ...iconset.value,
+        ...cached
+    };
+}
+
+async function syncIconset(): Promise<void> {
     loading.value = true;
-    const url = stdurl(`/api/iconset/${route.params.iconset}`);
-    iconset.value = await std(url) as Iconset;
-    loading.value = false;
+    syncError.value = undefined;
+
+    try {
+        await mapStore.icons.addIconset(String(route.params.iconset), { force: true });
+        refreshKey.value += 1;
+    } catch (err) {
+        syncError.value = err instanceof Error ? err : new Error(String(err));
+    }
+
+    await refresh();
 }
 
 async function deleteIconset(): Promise<void> {
     loading.value = true;
     const url = stdurl(`/api/iconset/${route.params.iconset}`);
     await std(url, { method: 'DELETE' });
+    await mapStore.icons.removeIconset(String(route.params.iconset));
     router.push('/menu/iconsets');
 }
 </script>

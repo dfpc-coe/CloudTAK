@@ -33,6 +33,13 @@ export default class Icon {
     }
 
     /**
+     * Return all cached icons ordered by key.
+     */
+    static async all(): Promise<DBIcon[]> {
+        return await db.icon.orderBy('name').toArray();
+    }
+
+    /**
      * Return all icons belonging to a given iconset uid, ordered by path.
      */
     static async list(iconsetUid: string): Promise<DBIcon[]> {
@@ -79,13 +86,15 @@ export default class Icon {
      * Ensure a single iconset is present in Dexie. Returns true if Dexie was
      * actually updated so the caller can purge stale map images.
      */
-    static async addIconset(uid: string, opts: { token: string }): Promise<boolean> {
+    static async addIconset(uid: string, opts: { token: string; force?: boolean }): Promise<boolean> {
         const iconset = await std(`/api/iconset/${uid}`, {
             token: opts.token
         }) as Iconset;
 
         const cached = await db.iconset.get(uid);
         if (
+            !opts.force
+            &&
             cached
             && cached.version === iconset.version
             && cached.updated === iconset.updated

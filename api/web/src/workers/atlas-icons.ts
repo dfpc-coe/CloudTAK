@@ -23,8 +23,8 @@ export default class AtlasIcons {
         return await Icon.hydrate({ token: this.atlas.token, force: opts.force });
     }
 
-    async addIconset(uid: string): Promise<boolean> {
-        return await Icon.addIconset(uid, { token: this.atlas.token });
+    async addIconset(uid: string, opts: { force?: boolean } = {}): Promise<boolean> {
+        return await Icon.addIconset(uid, { token: this.atlas.token, force: opts.force });
     }
 
     async removeIconset(uid: string): Promise<boolean> {

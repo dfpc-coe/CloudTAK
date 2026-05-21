@@ -132,8 +132,8 @@ export default class IconManager {
      * reference a specific iconset so it is available even if the user-wide
      * hydrate hasn't completed yet.
      */
-    async addIconset(uid: string): Promise<void> {
-        const updated = await this.worker.icons.addIconset(uid);
+    async addIconset(uid: string, opts: { force?: boolean } = {}): Promise<void> {
+        const updated = await this.worker.icons.addIconset(uid, { force: !!opts.force });
         if (updated) await this.reloadIconsetImages(uid);
     }
 
