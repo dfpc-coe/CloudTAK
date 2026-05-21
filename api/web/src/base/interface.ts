@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Observable } from 'dexie';
+import { db } from '../database.ts';
 
 export interface BaseInterface_ListOptions {
     sync?: boolean;
@@ -25,6 +26,19 @@ export default class BaseInterface {
      */
     static liveCount(): Observable<number> {
         throw new Error('Method not implemented.');
+    }
+
+    /**
+     * Returns when the local cache was last populated for this manager.
+     */
+    static async hydrated(): Promise<Date | null> {
+        const cache = await db.cache.get(this.listCacheKey);
+
+        if (!cache) {
+            return null;
+        }
+
+        return new Date(cache.updated);
     }
 
     /**

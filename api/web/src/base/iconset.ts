@@ -28,7 +28,7 @@ export default class IconsetManager extends BaseInterface {
      * Return all locally cached iconsets ordered by name.
      */
     static async list(opts: Iconset_ListOptions = {}): Promise<DBIconset[]> {
-        const cache = await db.cache.get(this.listCacheKey);
+        const cache = await this.hydrated();
 
         if (!cache || opts.sync) {
             await this.sync(opts.token);
