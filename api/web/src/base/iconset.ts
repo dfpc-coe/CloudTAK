@@ -1,5 +1,5 @@
 import { liveQuery, type Observable } from 'dexie';
-import { db, type DBIconset } from './database.ts';
+import { db, type DBIconset } from '../database.ts';
 import type { BaseInterface } from './interface.ts';
 
 type IconsetInterface = BaseInterface<DBIconset> & {
