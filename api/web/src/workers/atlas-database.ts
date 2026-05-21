@@ -761,7 +761,7 @@ export default class AtlasDatabase {
                     throw new Error('Contact Marker must have group property');
                 }
 
-                const entry = await ContactManager.get(exists.id);
+                const entry = await ContactManager.from(exists.id);
 
                 if (!entry) {
                     const contact: Contact = {

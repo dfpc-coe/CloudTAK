@@ -50,8 +50,14 @@ export default class ContactManager extends BaseInterface {
         return await collection.toArray();
     }
 
-    static async get(uid: string): Promise<TAKContact | undefined> {
+    static async from(uid: string): Promise<TAKContact | undefined> {
         return await db.contact.get(uid);
+    }
+
+    static liveFrom(uid: string): Observable<TAKContact | undefined> {
+        return liveQuery(async () => {
+            return await db.contact.get(uid);
+        });
     }
 
     static async getByCallsign(callsign: string): Promise<TAKContact | undefined> {
