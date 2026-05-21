@@ -12,26 +12,26 @@ export default class IconsetManager extends BaseInterface {
 
     static async count(): Promise<number> {
         return await db.iconset.count();
-    },
+    }
 
     static liveCount(): Observable<number> {
         return liveQuery(async () => {
             return await db.iconset.count();
         });
-    },
+    }
 
     /**
      * Return all locally cached iconsets ordered by name.
      */
     static async list(): Promise<DBIconset[]> {
         return await db.iconset.orderBy('name').toArray();
-    },
+    }
 
     static liveList(): Observable<DBIconset[]> {
         return liveQuery(async () => {
             return await db.iconset.orderBy('name').toArray();
         });
-    },
+    }
 
     static async get(uid: string): Promise<DBIconset | undefined> {
         return await db.iconset.get(uid);
