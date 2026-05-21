@@ -66,11 +66,47 @@ export default class BaseInterface {
         throw new Error('Method not implemented.');
     }
 
-    static async get(id: string): Promise<unknown> {
+    /**
+     * Returns a single item from the database by its unique identifier
+     *
+     * @param id - The unique identifier of the item to retrieve
+     */
+    static async from(id: string): Promise<unknown> {
         throw new Error('Method not implemented.');
     }
 
-    static liveGet(id: string): Observable<unknown> {
+    /**
+     * Returns a single item from the database by its unique identifier and updates in real-time when the item changes
+     *
+     * @param id - The unique identifier of the item to retrieve
+     */
+    static liveFrom(id: string): Observable<unknown> {
+        throw new Error('Method not implemented.');
+    }
+
+    /**
+     * Generates a new item, attempt to save it via the API and save it to the database
+     */
+    static async generate(): Promise<unknown> {
+        throw new Error('Method not implemented.');
+    }
+
+    /**
+     * Updates an item in the database by its unique identifier and attempts to update it via the API
+     *
+     * @param id - The unique identifier of the item to update
+     * @param data - The data to update the item with
+     */
+    static async update(): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
+
+    /**
+     * Deletes an item from the database by its unique identifier and attempts to delete it via the API
+     *
+     * @param id - The unique identifier of the item to delete
+     */
+    static async delete(id: string): Promise<void> {
         throw new Error('Method not implemented.');
     }
 }

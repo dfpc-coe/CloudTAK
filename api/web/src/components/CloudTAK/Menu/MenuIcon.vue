@@ -306,7 +306,7 @@ async function fetch(): Promise<void> {
 }
 
 async function fetchIconset(): Promise<void> {
-    const cached = await IconsetCache.get(String(route.params.iconset));
+    const cached = await IconsetCache.from(String(route.params.iconset));
     if (!cached) throw new Error('Iconset not available offline. Refresh to sync this iconset.');
 
     iconset.value = {

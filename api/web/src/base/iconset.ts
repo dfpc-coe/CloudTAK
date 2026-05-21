@@ -43,8 +43,14 @@ export default class IconsetManager extends BaseInterface {
         });
     }
 
-    static async get(uid: string): Promise<DBIconset | undefined> {
+    static async from(uid: string): Promise<DBIconset | undefined> {
         return await db.iconset.get(uid);
+    }
+
+    static liveFrom(uid: string): Observable<DBIconset | undefined> {
+        return liveQuery(async () => {
+            return await db.iconset.get(uid);
+        });
     }
 
     static async sync(token?: string): Promise<void> {
