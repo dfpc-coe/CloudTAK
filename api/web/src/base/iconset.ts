@@ -49,6 +49,7 @@ export default class IconsetManager extends BaseInterface {
         opts?: BaseInterface_FromOptions
     ): Promise<DBIconset | undefined> {
         if (opts?.sync) {
+            throw new Error('Sync is not yet supported for individual iconsets');
         }
 
         return await db.iconset.get(uid);
