@@ -4,12 +4,17 @@ import type { Contact as TAKContact } from '../types.ts';
 import { std, stdurl } from '../std.ts';
 import BaseInterface from './interface.ts';
 import type {
-    BaseInterface_ListOptions
+    BaseInterface_ListOptions,
+    BaseInterface_FromOptions
 } from './interface.ts';
 
 export type Contact_ListOptions = BaseInterface_ListOptions & {
     token?: string;
     filter?: string;
+};
+
+export type Contact_FromOptions = BaseInterface_FromOptions & {
+    token?: string;
 };
 
 export default class ContactManager extends BaseInterface {
@@ -50,7 +55,14 @@ export default class ContactManager extends BaseInterface {
         return await collection.toArray();
     }
 
-    static async from(uid: string): Promise<TAKContact | undefined> {
+    static async from(
+        uid: string,
+        opts?: Contact_FromOptions
+    ): Promise<TAKContact | undefined> {
+        if (opts?.sync) {
+            await this.sync(opts?.token);
+        }
+
         return await db.contact.get(uid);
     }
 

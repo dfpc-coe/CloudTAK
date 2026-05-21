@@ -4,7 +4,8 @@ import type { IconsetList } from '../types.ts';
 import { std } from '../std.ts';
 import BaseInterface from './interface.ts';
 import type {
-    BaseInterface_ListOptions
+    BaseInterface_ListOptions,
+    BaseInterface_FromOptions
 } from './interface.ts';
 
 export type Iconset_ListOptions = BaseInterface_ListOptions & {
@@ -43,7 +44,13 @@ export default class IconsetManager extends BaseInterface {
         });
     }
 
-    static async from(uid: string): Promise<DBIconset | undefined> {
+    static async from(
+        uid: string,
+        opts?: BaseInterface_FromOptions
+    ): Promise<DBIconset | undefined> {
+        if (opts?.sync) {
+        }
+
         return await db.iconset.get(uid);
     }
 

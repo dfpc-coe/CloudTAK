@@ -6,6 +6,10 @@ export interface BaseInterface_ListOptions {
     sync?: boolean;
 }
 
+export interface BaseInterface_FromOptions {
+    sync?: boolean;
+}
+
 export default class BaseInterface {
     /**
      * A unique key used for caching the list of items in memory, the dexie cache database contains the key
@@ -70,8 +74,12 @@ export default class BaseInterface {
      * Returns a single item from the database by its unique identifier
      *
      * @param id - The unique identifier of the item to retrieve
+     * @param opts - Optional parameters for fetching the item, such as whether to trigger a sync before fetching
      */
-    static async from(id: string): Promise<unknown> {
+    static async from(
+        id: string,
+        opts?: BaseInterface_FromOptions
+    ): Promise<unknown> {
         throw new Error('Method not implemented.');
     }
 
