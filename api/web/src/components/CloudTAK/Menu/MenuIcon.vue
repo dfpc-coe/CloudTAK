@@ -161,7 +161,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import UploadLogo from '../../util/UploadLogo.vue';
 import ProfileConfig from '../../../base/profile.ts';
 import type { Iconset } from '../../../types.ts';
-import type { DBIcon } from '../../../base/database.ts';
+import type { DBIcon } from '../../../database.ts';
 
 interface IconDraft {
     id?: number;

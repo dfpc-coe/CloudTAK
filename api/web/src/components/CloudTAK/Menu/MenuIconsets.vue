@@ -204,7 +204,7 @@ import {
     IconPhoto,
     IconPlus
 } from '@tabler/icons-vue';
-import type { DBIconset } from '../../../base/database.ts';
+import type { DBIconset } from '../../../database.ts';
 import type { Iconset } from '../../../types.ts';
 
 interface ImportUploadResponse {

@@ -84,10 +84,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { DBSubscriptionLog } from '../../../../base/database.ts';
+import type { DBSubscriptionLog } from '../../../../database.ts';
 import Subscription from '../../../../base/subscription.ts';
 import CopyField from '../../util/CopyField.vue';
-import { db } from '../../../../base/database.ts';
+import { db } from '../../../../database.ts';
 import Keywords from '../../util/Keywords.vue';
 import {
     TablerLoading,

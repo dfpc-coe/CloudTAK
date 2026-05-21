@@ -4,8 +4,8 @@
 */
 
 import { std } from '../std.ts';
-import { db } from '../base/database.ts';
-import type { DBSubscriptionChanges } from '../base/database.ts';
+import { db } from '../database.ts';
+import type { DBSubscriptionChanges } from '../database.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';

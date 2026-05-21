@@ -1,5 +1,5 @@
-import { db, NotificationType } from './database.ts'
-import type { DBNotification } from './database.ts';
+import { db, NotificationType } from '../database.ts'
+import type { DBNotification } from '../database.ts';
 import { v4 as randomUUID } from 'uuid';
 
 export { NotificationType };

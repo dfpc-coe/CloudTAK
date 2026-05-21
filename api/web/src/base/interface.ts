@@ -1,9 +1,9 @@
-import type { Obervable } from 'dexie';
+import type { Observable } from 'dexie';
 
 export interface BaseInterface<T> {
     count(): Promise<number>;
-    liveCount(): Obervable<number>;
+    liveCount(): Observable<number>;
 
     list(): Promise<T[]>;
-    liveList(): Obervable<T[]>;
+    liveList(): Observable<T[]>;
 }

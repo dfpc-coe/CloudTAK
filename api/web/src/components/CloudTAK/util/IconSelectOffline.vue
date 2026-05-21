@@ -154,7 +154,7 @@
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import Icon from '../../../base/icon.ts';
 import Iconset from '../../../base/iconset.ts';
-import type { DBIcon, DBIconset } from '../../../base/database.ts';
+import type { DBIcon, DBIconset } from '../../../database.ts';
 import {
     IconInfoSquare,
     IconTrash,

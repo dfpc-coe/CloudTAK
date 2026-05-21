@@ -8,7 +8,7 @@ import type {
     MissionLog,
     Contact,
     Server
-} from '../types.ts';
+} from './types.ts';
 
 export interface DBIcon {
     /** Maplibre image id, e.g. "<iconsetUid>:<icon-path-without-extension>" */

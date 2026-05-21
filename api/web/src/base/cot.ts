@@ -1,6 +1,6 @@
 import { v4 as randomUUID } from 'uuid';
 import { std } from '../std.ts';
-import { db } from './database.ts';
+import { db } from '../database.ts';
 import { liveQuery } from 'dexie';
 import { bbox } from '@turf/bbox'
 import { length } from '@turf/length'

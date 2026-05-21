@@ -1,5 +1,5 @@
 import { std, stdurl } from '../std.ts';
-import { db, type DBIcon, type DBIconset } from './database.ts';
+import { db, type DBIcon, type DBIconset } from '../database.ts';
 import type { IconsetList, Iconset, IconList } from '../types.ts';
 
 const HYDRATE_CACHE_KEY = 'iconsets:hydrated';

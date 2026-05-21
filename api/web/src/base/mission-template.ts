@@ -1,5 +1,5 @@
-import { db } from './database.ts'
-import type { DBMissionTemplate } from './database.ts';
+import { db } from '../database.ts'
+import type { DBMissionTemplate } from '../database.ts';
 import { std, stdurl } from '../std.ts';
 import MissionTemplateLogs from './mission-template-logs.ts';
 import type {

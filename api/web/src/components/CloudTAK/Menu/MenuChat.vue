@@ -41,7 +41,7 @@ import { ref, onMounted, shallowRef, watch, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Chatroom from '../../../base/chatroom.ts';
 import { liveQuery, type Subscription } from 'dexie';
-import type { DBChatroomChat } from '../../../base/database.ts';
+import type { DBChatroomChat } from '../../../database.ts';
 import { IconListCheck } from '@tabler/icons-vue';
 import {
     TablerRefreshButton,
