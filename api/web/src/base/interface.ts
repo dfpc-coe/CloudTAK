@@ -32,16 +32,16 @@ export default class BaseInterface {
      *
      * If the sync option is set to true, the method will first trigger a sync to update the local database with the latest data from the server before returning the list of items.
      */
-    static async list<T>(
+    static async list(
         opts?: BaseInterface_ListOptions
-    ): Promise<T[]> {
+    ): Promise<unknown[]> {
         throw new Error('Method not implemented.');
     }
 
     /**
      * Returns a list of all items in the database and updates in real-time when the list changes
      */
-    static liveList<T>(): Observable<T[]> {
+    static liveList(): Observable<unknown[]> {
         throw new Error('Method not implemented.');
     }
 
@@ -52,11 +52,11 @@ export default class BaseInterface {
         throw new Error('Method not implemented.');
     }
 
-    static async get<T>(id: string): Promise<T> {
+    static async get(id: string): Promise<unknown> {
         throw new Error('Method not implemented.');
     }
 
-    static liveGet<T>(id: string): Observable<T> {
+    static liveGet(id: string): Observable<unknown> {
         throw new Error('Method not implemented.');
     }
 }
