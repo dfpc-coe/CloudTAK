@@ -32,7 +32,7 @@ export default class ContactManager extends BaseInterface {
     }
 
     static async list(opts: Contact_ListOptions = {}): Promise<TAKContact[]> {
-        const cache = await db.cache.get(this.listCacheKey);
+        const cache = await this.hydrated();
 
         if (!cache || opts.sync) {
             await this.sync(opts.token);
