@@ -9,7 +9,7 @@ import type * as Comlink from 'comlink';
 import type Atlas from '../../workers/atlas.ts';
 import type { IconHydrateResult } from '../../workers/atlas-icons.ts';
 import { stdurl } from '../../std.ts';
-import { db, type DBIconset, type DBSprite } from '../../base/database.ts';
+import { db, type DBIconset, type DBSprite } from '../../database.ts';
 
 /** Image id for the on-demand fallback when an iconset icon isn't available locally. */
 const FALLBACK_IMAGE_ID = '__cloudtak_fallback_point__';

@@ -1,38 +1,41 @@
-import { db } from './database.ts';
+import { db } from '../database.ts';
 import { liveQuery, type Observable } from 'dexie';
 import type { Contact } from '../types.ts';
 import { std, stdurl } from '../std.ts';
+import type { BaseInterface } from './interface.ts';
 
-export default class ContactManager {
-    static liveCount(): Observable<number> {
+type ContactInterface = BaseInterface<Contact> & {
+    get(uid: string): Promise<Contact | undefined>;
+    getByCallsign(callsign: string): Promise<Contact | undefined>;
+    put(contact: Contact): Promise<void>;
+    sync(token?: string): Promise<Contact[]>;
+};
+
+const ContactManager: ContactInterface = {
+    async count(): Promise<number> {
+        return await db.contact.count();
+    },
+
+    liveCount(): Observable<number> {
         return liveQuery(async () => {
             return await db.contact.count();
         });
-    }
+    },
 
-    static liveList(filter?: string): Observable<Contact[]> {
+    liveList(): Observable<Contact[]> {
         return liveQuery(async () => {
-            let collection = db.contact.toCollection();
-
-            if (filter) {
-                const f = filter.toLowerCase();
-                collection = collection.filter((c) => {
-                    return c.callsign.toLowerCase().includes(f);
-                });
-            }
-
-            return await collection.toArray();
+            return await db.contact.toArray();
         });
-    }
+    },
 
-    static async list(opts: {
+    async list(opts: {
         token?: string;
         filter?: string;
     } = {}): Promise<Contact[]> {
         const cache = await db.cache.get('contact');
 
         if (!cache) {
-            await ContactManager.sync(opts.token);
+            await this.sync(opts.token);
         }
 
         let collection = db.contact.toCollection();
@@ -45,21 +48,21 @@ export default class ContactManager {
         }
 
         return await collection.toArray();
-    }
+    },
 
-    static async get(uid: string): Promise<Contact | undefined> {
+    async get(uid: string): Promise<Contact | undefined> {
         return await db.contact.get(uid);
-    }
+    },
 
-    static async getByCallsign(callsign: string): Promise<Contact | undefined> {
+    async getByCallsign(callsign: string): Promise<Contact | undefined> {
         return await db.contact.where('callsign').equals(callsign).first();
-    }
+    },
 
-    static async put(contact: Contact): Promise<void> {
+    async put(contact: Contact): Promise<void> {
         await db.contact.put(contact);
-    }
+    },
 
-    static async sync(token?: string): Promise<Contact[]> {
+    async sync(token?: string): Promise<Contact[]> {
         const url = stdurl('/api/marti/api/contacts/all');
 
         const res = await std(url, { token }) as Contact[];
@@ -70,4 +73,6 @@ export default class ContactManager {
 
         return res;
     }
-}
+};
+
+export default ContactManager;

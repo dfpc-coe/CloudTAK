@@ -101,7 +101,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
-import { db, type DBBreadcrumb } from '../../../base/database.ts';
+import { db, type DBBreadcrumb } from '../../../database.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
 const mapStore = useMapStore();

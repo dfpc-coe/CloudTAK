@@ -1,4 +1,4 @@
-import { db } from './database.ts'
+import { db } from '../database.ts'
 import type { Feature } from '../types.ts';
 import jsonata from 'jsonata';
 import { v4 as randomUUID } from 'uuid';

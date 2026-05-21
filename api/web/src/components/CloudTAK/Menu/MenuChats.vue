@@ -106,7 +106,7 @@
 import { ref, onMounted, useTemplateRef, watch, onUnmounted } from 'vue'
 import type { ComponentExposed } from 'vue-component-type-helpers'
 import Chatroom from '../../../base/chatroom.ts';
-import type { DBChatroom } from '../../../base/database.ts';
+import type { DBChatroom } from '../../../database.ts';
 import GenericSelect from '../util/GenericSelect.vue';
 import StandardItem from '../util/StandardItem.vue';
 import {
