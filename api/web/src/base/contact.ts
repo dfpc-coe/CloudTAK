@@ -7,6 +7,11 @@ import type {
     BaseInterface_ListOptions
 } from './interface.ts';
 
+export type Contact_ListOptions = BaseInterface_ListOptions & {
+    token?: string;
+    filter?: string;
+};
+
 export default class ContactManager extends BaseInterface {
     static readonly listCacheKey = 'contact';
 
@@ -26,10 +31,7 @@ export default class ContactManager extends BaseInterface {
         });
     }
 
-    static async list<Opts extends BaseInterface_ListOptions & {
-        token?: string | undefined;
-        filter?: string | undefined;
-    }>(opts: Opts = {}): Promise<Contact[]> {
+    static async list<Contact>(opts: Contact_ListOptions = {}): Promise<Contact[]> {
         const cache = await db.cache.get(this.listCacheKey);
 
         if (!cache || opts.sync) {
