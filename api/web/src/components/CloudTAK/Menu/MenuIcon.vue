@@ -266,9 +266,6 @@ async function submit(): Promise<void> {
 
         const created = res.data;
         icon.value = normalizeRemoteIcon(created);
-        await mapStore.icons.addIconset(String(route.params.iconset), { force: true });
-        router.push(`/menu/iconset/${route.params.iconset}/${encodeURIComponent(stripExt(created.name))}`);
-        return;
     }
 
     await mapStore.icons.addIconset(String(route.params.iconset), { force: true });
