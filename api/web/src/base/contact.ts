@@ -1,6 +1,6 @@
 import { db } from '../database.ts';
 import { liveQuery, type Observable } from 'dexie';
-import type { Contact } from '../types.ts';
+import type { Contact as TAKContact } from '../types.ts';
 import { std, stdurl } from '../std.ts';
 import BaseInterface from './interface.ts';
 import type {
@@ -25,13 +25,13 @@ export default class ContactManager extends BaseInterface {
         });
     }
 
-    static liveList(): Observable<Contact[]> {
+    static liveList(): Observable<TAKContact[]> {
         return liveQuery(async () => {
             return await db.contact.toArray();
         });
     }
 
-    static async list<Contact>(opts: Contact_ListOptions = {}): Promise<Contact[]> {
+    static async list(opts: Contact_ListOptions = {}): Promise<TAKContact[]> {
         const cache = await db.cache.get(this.listCacheKey);
 
         if (!cache || opts.sync) {
@@ -50,22 +50,22 @@ export default class ContactManager extends BaseInterface {
         return await collection.toArray();
     }
 
-    static async get(uid: string): Promise<Contact | undefined> {
+    static async get(uid: string): Promise<TAKContact | undefined> {
         return await db.contact.get(uid);
     }
 
-    static async getByCallsign(callsign: string): Promise<Contact | undefined> {
+    static async getByCallsign(callsign: string): Promise<TAKContact | undefined> {
         return await db.contact.where('callsign').equals(callsign).first();
     }
 
-    static async put(contact: Contact): Promise<void> {
+    static async put(contact: TAKContact): Promise<void> {
         await db.contact.put(contact);
     }
 
     static async sync(token?: string): Promise<void> {
         const url = stdurl('/api/marti/api/contacts/all');
 
-        const res = await std(url, { token }) as Contact[];
+        const res = await std(url, { token }) as TAKContact[];
 
         await db.contact.clear();
         await db.contact.bulkPut(res);
