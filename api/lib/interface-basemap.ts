@@ -15,7 +15,7 @@ import { Feature } from '@tak-ps/node-cot';
 import { MultiGeoJSONFeatureCollection, MultiGeoJSONFeature } from './types.js';
 
 export const TileJSONActions = Type.Object({
-    feature: Type.Array(Type.Enum(Basemap_FeatureAction))
+    feature: Type.Array(Type.Enum(Basemap_FeatureAction)),
 });
 
 export const VectorLayer = Type.Object({
@@ -23,7 +23,7 @@ export const VectorLayer = Type.Object({
     fields: Type.Record(Type.String(), Type.String()),
     minzoom: Type.Optional(Type.Integer()),
     maxzoom: Type.Optional(Type.Integer()),
-    description: Type.Optional(Type.String())
+    description: Type.Optional(Type.String()),
 });
 
 export const TileJSONType = Type.Object({
@@ -40,12 +40,12 @@ export const TileJSONType = Type.Object({
     tiles: Type.Array(Type.String()),
     bounds: Type.Tuple([Type.Number(), Type.Number(), Type.Number(), Type.Number()]),
     encoding: Type.Optional(Type.String({
-        enum: ['mapbox', 'terrarium']
+        enum: ['mapbox', 'terrarium'],
     })),
     center: Type.Array(Type.Number()),
     type: Type.String(),
     format: Type.Optional(Type.String()),
-    vector_layers: Type.Optional(Type.Array(VectorLayer))
+    vector_layers: Type.Optional(Type.Array(VectorLayer)),
 });
 
 export interface TileJSONInterface {
@@ -120,7 +120,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
             version: 8,
             glyphs: '/fonts/{fontstack}/{range}.pbf',
             sources: sources as StyleSpecification['sources'],
-            layers: layers as StyleSpecification['layers']
+            layers: layers as StyleSpecification['layers'],
         });
 
         if (errors.length) throw new Err(400, null, JSON.stringify(errors));
@@ -137,7 +137,8 @@ export class BasemapProtocol implements BasemapProtocolInterface {
         let url: URL;
         try {
             url = new URL(str);
-        } catch (err) {
+        }
+        catch (err) {
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Invalid URL provided');
         }
 
@@ -158,7 +159,8 @@ export class BasemapProtocol implements BasemapProtocolInterface {
 
         if (!basemap.sharing_enabled) {
             throw new Err(400, null, `Basemap Sharing has been disabled for ${basemap.name}`);
-        } else if (!basemap.sharing_token) {
+        }
+        else if (!basemap.sharing_token) {
             throw new Err(500, null, `Basemap with sharing has no token for ${basemap.id}`);
         }
 
@@ -206,7 +208,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
             minzoom: config.minzoom ?? 0,
             maxzoom: config.maxzoom ?? 16,
             tiles: [String(config.url)],
-            vector_layers
+            vector_layers,
         };
     }
 
@@ -246,7 +248,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
      */
     actions(): Static<typeof TileJSONActions> {
         return {
-            feature: []
+            feature: [],
         };
     }
 
@@ -267,7 +269,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
     async tile(
         z: number, x: number, y: number,
         res: Response,
-        opts?: TileOpts
+        opts?: TileOpts,
     ): Promise<void> {
         const headers: Record<string, string | undefined> = { ...opts?.headers };
         for (const key of Object.keys(headers)) {
@@ -301,7 +303,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
     protected async _tile(
         z: number, x: number, y: number,
         res: Response,
-        opts: Required<TileOpts>
+        opts: Required<TileOpts>,
     ): Promise<void> {
         void z; void x; void y; void res; void opts;
         throw new Err(501, null, 'Protocol does not implement tile()');

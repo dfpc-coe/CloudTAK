@@ -2,9 +2,9 @@ import Modeler, { GenericList, GenericIterInput, GenericListInput } from '@opena
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Import, ImportResult } from '../schema.js';
 import { sql, eq, asc, desc, SQL, is } from 'drizzle-orm';
-import Err from '@openaddresses/batch-error'
-import { ImportResponse, ImportResult as ImportResultType } from '../types.js'
-import type { Static } from '@sinclair/typebox'
+import Err from '@openaddresses/batch-error';
+import { ImportResponse, ImportResult as ImportResultType } from '../types.js';
+import type { Static } from '@sinclair/typebox';
 
 export default class ImportModel extends Modeler<typeof Import> {
     constructor(
@@ -13,7 +13,7 @@ export default class ImportModel extends Modeler<typeof Import> {
         super(pool, Import);
     }
 
-    async *augmented_iter(query: GenericIterInput = {}): AsyncGenerator<Static<typeof ImportResponse>> {
+    async* augmented_iter(query: GenericIterInput = {}): AsyncGenerator<Static<typeof ImportResponse>> {
         const pagesize = query.pagesize || 100;
         let page = 0;
 
@@ -23,7 +23,7 @@ export default class ImportModel extends Modeler<typeof Import> {
                 page,
                 limit: pagesize,
                 order: query.order,
-                where: query.where
+                where: query.where,
             });
 
             for (const row of pgres.items) {
@@ -38,7 +38,7 @@ export default class ImportModel extends Modeler<typeof Import> {
         const SubTable = this.pool
             .select({
                 id: ImportResult.import,
-                results: sql`JSON_AGG(import_result.*)`.as('results')
+                results: sql`JSON_AGG(import_result.*)`.as('results'),
             })
             .from(ImportResult)
             .groupBy(ImportResult.import)
@@ -47,19 +47,19 @@ export default class ImportModel extends Modeler<typeof Import> {
         const pgres = await this.pool
             .select({
                 import: Import,
-                results: sql`COALESCE(${SubTable.results}, '[]'::JSON)`.as('results')
+                results: sql`COALESCE(${SubTable.results}, '[]'::JSON)`.as('results'),
             })
             .from(Import)
             .leftJoin(SubTable, eq(Import.id, SubTable.id))
-            .where(is(id, SQL)? id as SQL<unknown> : eq(this.requiredPrimaryKey(), id))
-            .limit(1)
+            .where(is(id, SQL) ? id as SQL<unknown> : eq(this.requiredPrimaryKey(), id))
+            .limit(1);
 
         if (pgres.length !== 1) throw new Err(404, null, `Item Not Found`);
 
         return {
             ...pgres[0].import,
-            results: pgres[0].results as Static<typeof ImportResultType>[]
-        }
+            results: pgres[0].results as Static<typeof ImportResultType>[],
+        };
     }
 
     async augmented_list(query: GenericListInput = {}): Promise<GenericList<Static<typeof ImportResponse>>> {
@@ -69,7 +69,7 @@ export default class ImportModel extends Modeler<typeof Import> {
         const SubTable = this.pool
             .select({
                 id: ImportResult.import,
-                results: sql`JSON_AGG(import_result.*)`.as('results')
+                results: sql`JSON_AGG(import_result.*)`.as('results'),
             })
             .from(ImportResult)
             .groupBy(ImportResult.import)
@@ -79,20 +79,20 @@ export default class ImportModel extends Modeler<typeof Import> {
             .select({
                 count: sql<string>`count(*) OVER()`.as('count'),
                 import: Import,
-                results: sql`COALESCE(${SubTable.results}, '[]'::JSON)`.as('results')
+                results: sql`COALESCE(${SubTable.results}, '[]'::JSON)`.as('results'),
             })
             .from(Import)
             .leftJoin(SubTable, eq(Import.id, SubTable.id))
             .where(query.where)
             .orderBy(orderBy)
             .limit(query.limit || 10)
-            .offset((query.page || 0) * (query.limit || 10))
+            .offset((query.page || 0) * (query.limit || 10));
 
         if (pgres.length === 0) {
             return {
                 total: 0,
-                items: []
-            }
+                items: [],
+            };
         }
 
         return {
@@ -100,9 +100,9 @@ export default class ImportModel extends Modeler<typeof Import> {
             items: pgres.map((res) => {
                 return {
                     ...res.import,
-                    results: res.results as Static<typeof ImportResultType>[]
-                }
-            })
-        }
+                    results: res.results as Static<typeof ImportResultType>[],
+                };
+            }),
+        };
     }
 }

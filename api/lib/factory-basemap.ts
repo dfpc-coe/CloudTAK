@@ -17,15 +17,17 @@ import MapServerBasemap from './basemap/mapserver.js';
 export function fromProtocol(protocol?: string, basemap?: InferSelectModel<typeof Basemap>): BasemapProtocol {
     if (protocol === Basemap_Protocol.ImageServer) {
         return new ImageServerBasemap(basemap);
-    } else if (protocol === Basemap_Protocol.FeatureServer) {
+    }
+    else if (protocol === Basemap_Protocol.FeatureServer) {
         return new FeatureServerBasemap(basemap);
-    } else if (protocol === Basemap_Protocol.MapServer) {
+    }
+    else if (protocol === Basemap_Protocol.MapServer) {
         return new MapServerBasemap(basemap);
-    } else if (protocol === Basemap_Protocol.Hosted) {
+    }
+    else if (protocol === Basemap_Protocol.Hosted) {
         return new HostedBasemap(basemap);
-    } else {
+    }
+    else {
         return new ZXYBasemap(basemap);
     }
 }
-
-

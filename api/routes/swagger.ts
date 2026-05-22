@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 
@@ -7,12 +7,13 @@ export default async function router(schema: Schema) {
         name: 'Get Swagger',
         group: 'Swagger',
         description: 'Return Swagger Doc in JSON',
-        res: Type.Any()
+        res: Type.Any(),
     }, async (req, res) => {
         try {
-            res.json(schema.docs.base)
-        } catch (err) {
-             Err.respond(err, res);
+            res.json(schema.docs.base);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

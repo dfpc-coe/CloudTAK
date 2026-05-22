@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -11,7 +11,7 @@ import {
     VideoConnectionListInput,
 } from '@tak-ps/node-tak/lib/api/video';
 import {
-    StandardResponse
+    StandardResponse,
 } from '../lib/types.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
@@ -21,7 +21,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiVideos',
         description: 'Helper API to get list video streams',
         query: VideoConnectionListInput,
-        res: VideoConnectionList
+        res: VideoConnectionList,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -31,8 +31,9 @@ export default async function router(schema: Schema, config: Config) {
             const list = await api.Video.list(req.query);
 
             res.json(list);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -41,9 +42,9 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiVideos',
         description: 'Helper API to get video stream',
         params: Type.Object({
-            uid: Type.String()
+            uid: Type.String(),
         }),
-        res: VideoConnection
+        res: VideoConnection,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -53,8 +54,9 @@ export default async function router(schema: Schema, config: Config) {
             const conn = await api.Video.get(req.params.uid);
 
             res.json(conn);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -63,7 +65,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiVideos',
         description: 'Helper API to create video streams',
         body: VideoConnectionCreateInput,
-        res: VideoConnection
+        res: VideoConnection,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -73,8 +75,9 @@ export default async function router(schema: Schema, config: Config) {
             const videoConn = await api.Video.create(req.body);
 
             res.json(videoConn);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -83,10 +86,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiVideos',
         description: 'Helper API to update video streams',
         params: Type.Object({
-            uid: Type.String()
+            uid: Type.String(),
         }),
         body: VideoConnectionUpdateInput,
-        res: VideoConnection
+        res: VideoConnection,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -95,12 +98,13 @@ export default async function router(schema: Schema, config: Config) {
 
             const videoConn = await api.Video.update({
                 uuid: req.params.uid,
-                ...req.body
+                ...req.body,
             });
 
             res.json(videoConn);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -109,9 +113,9 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiVideos',
         description: 'Helper API to delete video stream',
         params: Type.Object({
-            uid: Type.String()
+            uid: Type.String(),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -122,10 +126,11 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: 'Video Stream Deleted'
+                message: 'Video Stream Deleted',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

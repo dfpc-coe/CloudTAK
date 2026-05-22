@@ -13,72 +13,72 @@ test('GET api/config/display', async () => {
         const res = await flight.fetch('/api/config/display', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
         }, true);
 
         assert.deepEqual(res.body, {
-             stale: {
+            stale: {
                 value: '10 Minutes',
-                options: [ 'Immediate', '10 Minutes', '30 Minutes', '1 Hour', 'Never' ]
-             },
-             distance: {
-                 value: 'mile',
-                 options: [ 'meter', 'kilometer', 'mile' ]
-             },
-             elevation: {
-                 value: 'feet',
-                 options: [ 'meter', 'feet' ]
-             },
-             speed: {
-                 value: 'mi/h',
-                 options: [ 'm/s', 'km/h', 'mi/h' ]
-             },
-             projection: {
-                 value: 'globe',
-                 options: [ 'mercator', 'globe' ]
-             },
-             zoom: {
-                 value: 'conditional',
-                 options: [ 'always', 'conditional', 'never' ]
-             },
-             style: {
-                 value: 'System Default',
-                 options: [ 'System Default', 'Light', 'Dark' ]
-             },
-             coordinate: {
-                 value: 'dd',
-                 options: [ 'dd', 'dm', 'dms', 'mgrs', 'utm' ]
-             },
-             text: {
-                 value: 'Medium',
-                 options: [ 'Small', 'Medium', 'Large' ]
-             },
-             icon_rotation: {
-                 value: true,
-                 options: [ true, false ]
-             }
+                options: ['Immediate', '10 Minutes', '30 Minutes', '1 Hour', 'Never'],
+            },
+            distance: {
+                value: 'mile',
+                options: ['meter', 'kilometer', 'mile'],
+            },
+            elevation: {
+                value: 'feet',
+                options: ['meter', 'feet'],
+            },
+            speed: {
+                value: 'mi/h',
+                options: ['m/s', 'km/h', 'mi/h'],
+            },
+            projection: {
+                value: 'globe',
+                options: ['mercator', 'globe'],
+            },
+            zoom: {
+                value: 'conditional',
+                options: ['always', 'conditional', 'never'],
+            },
+            style: {
+                value: 'System Default',
+                options: ['System Default', 'Light', 'Dark'],
+            },
+            coordinate: {
+                value: 'dd',
+                options: ['dd', 'dm', 'dms', 'mgrs', 'utm'],
+            },
+            text: {
+                value: 'Medium',
+                options: ['Small', 'Medium', 'Large'],
+            },
+            icon_rotation: {
+                value: true,
+                options: [true, false],
+            },
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
 
 test('PUT api/config', async () => {
-
     try {
         const res = await flight.fetch('/api/config', {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 'display::stale': '30 Minutes',
                 'display::distance': 'kilometer',
                 'display::elevation': 'meter',
                 'display::style': 'Light',
-                'display::icon_rotation': false
-            }
+                'display::icon_rotation': false,
+            },
         }, false);
 
         assert.deepEqual(res.body, {
@@ -86,9 +86,10 @@ test('PUT api/config', async () => {
             'display::distance': 'kilometer',
             'display::elevation': 'meter',
             'display::style': 'Light',
-            'display::icon_rotation': false
+            'display::icon_rotation': false,
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -98,12 +99,13 @@ test('GET api/config/display - icon_rotation false conversion', async () => {
         const res = await flight.fetch('/api/config/display', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
         }, true);
 
         assert.equal(res.body.icon_rotation.value, false, 'string "false" converted to boolean false');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -113,17 +115,18 @@ test('PUT api/config - reset icon_rotation to true', async () => {
         const res = await flight.fetch('/api/config', {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
-                'display::icon_rotation': true
-            }
+                'display::icon_rotation': true,
+            },
         }, false);
 
         assert.deepEqual(res.body, {
-            'display::icon_rotation': true
+            'display::icon_rotation': true,
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -133,19 +136,20 @@ test('GET api/config/display - icon_rotation true conversion', async () => {
         const res = await flight.fetch('/api/config/display', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
         }, true);
 
         assert.equal(res.body.icon_rotation.value, true, 'string "true" converted to boolean true');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
 
 flight.user({
     username: 'defaults',
-    admin: false
+    admin: false,
 });
 
 test('GET api/profile', async () => {
@@ -153,7 +157,7 @@ test('GET api/profile', async () => {
         const res = await flight.fetch('/api/profile', {
             method: 'GET',
             auth: {
-                bearer: flight.token.defaults
+                bearer: flight.token.defaults,
             },
         }, true);
 
@@ -187,9 +191,10 @@ test('GET api/profile', async () => {
             display_text: 'Medium',
             display_icon_rotation: true,
             system_admin: false,
-            agency_admin: []
+            agency_admin: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

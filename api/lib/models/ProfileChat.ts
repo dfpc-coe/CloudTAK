@@ -8,8 +8,8 @@ export type ChatList = {
     items: Array<{
         chatroom: string;
         created: string;
-    }>
-}
+    }>;
+};
 
 export default class ProfileChatModel extends Modeler<typeof ProfileChat> {
     constructor(
@@ -21,14 +21,14 @@ export default class ProfileChatModel extends Modeler<typeof ProfileChat> {
     async chats(username: string): Promise<ChatList> {
         const pgres = await this.pool.select({
             chatroom: this.generic.chatroom,
-            created: sql<string>`MAX(${this.generic.created})`
+            created: sql<string>`MAX(${this.generic.created})`,
         }).from(this.generic)
             .where(eq(this.generic.username, username))
-            .groupBy(sql`username, chatroom`)
+            .groupBy(sql`username, chatroom`);
 
         return {
             total: pgres.length,
-            items: pgres as Array<{ chatroom: string, created: string }>
-        }
+            items: pgres as Array<{ chatroom: string; created: string }>,
+        };
     }
 }

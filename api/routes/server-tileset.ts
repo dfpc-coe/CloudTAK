@@ -14,14 +14,14 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ServerTilesets',
         description: 'Upload a hosted PMTiles tileset into the public asset prefix',
         body: {
-            'multipart/form-data': true
+            'multipart/form-data': true,
         },
         res: Type.Object({
             status: Type.Integer(),
             message: Type.String(),
             name: Type.String(),
-            path: Type.String()
-        })
+            path: Type.String(),
+        }),
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
@@ -36,11 +36,11 @@ export default async function router(schema: Schema, config: Config) {
 
             const bb = new Busboy({
                 headers: {
-                    'content-type': contentType
+                    'content-type': contentType,
                 },
                 limits: {
-                    files: 1
-                }
+                    files: 1,
+                },
             });
 
             let handled = false;
@@ -86,7 +86,8 @@ export default async function router(schema: Schema, config: Config) {
                     passThrough = new Stream.PassThrough();
                     file.pipe(passThrough);
                     uploadPromise = S3.put(`public/${uploadName}`, passThrough);
-                } catch (err) {
+                }
+                catch (err) {
                     uploadError = err instanceof Error ? err : new Error(String(err));
                     file.resume();
                 }
@@ -106,15 +107,17 @@ export default async function router(schema: Schema, config: Config) {
                         status: 200,
                         message: 'Hosted Tileset Uploaded',
                         name: uploadName,
-                        path: `public/${uploadName}`
+                        path: `public/${uploadName}`,
                     });
-                } catch (err) {
+                }
+                catch (err) {
                     respond(err);
                 }
             });
 
             req.pipe(bb);
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });

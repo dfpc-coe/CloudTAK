@@ -1,6 +1,6 @@
 import Config from './config.js';
 import Err from '@openaddresses/batch-error';
-import { Static } from "@sinclair/typebox";
+import { Static } from '@sinclair/typebox';
 import { Feature } from '@tak-ps/node-cot';
 import { SearchConfig, SearchManagerConfig, FetchReverse, FetchSuggest, FetchForward } from './search/types.js';
 
@@ -24,15 +24,15 @@ export class Search implements SearchInterface {
             id: '',
             name: '',
             reverse: {
-                supported: false
+                supported: false,
             },
             forward: {
-                supported: false
+                supported: false,
             },
             route: {
                 supported: false,
-                modes: []
-            }
+                modes: [],
+            },
         });
     }
 }
@@ -99,7 +99,8 @@ export class SearchManager extends Map<string, Search> {
 
                 manager.set(agol._id, agol);
             }
-        } catch (err) {
+        }
+        catch (err) {
             console.error('not ok - AGOL Search Provider failed to initialize', err);
         }
 
@@ -110,16 +111,16 @@ export class SearchManager extends Map<string, Search> {
         const settings: Static<typeof SearchManagerConfig> = {
             reverse: {
                 enabled: false,
-                providers: []
+                providers: [],
             },
             route: {
                 enabled: false,
-                providers: []
+                providers: [],
             },
             forward: {
                 enabled: false,
-                providers: []
-            }
+                providers: [],
+            },
         };
 
         for (const search of this.values()) {
@@ -129,7 +130,7 @@ export class SearchManager extends Map<string, Search> {
                 settings.reverse.enabled = true;
                 settings.reverse.providers.push({
                     id: config.id,
-                    name: config.name
+                    name: config.name,
                 });
             }
 
@@ -137,7 +138,7 @@ export class SearchManager extends Map<string, Search> {
                 settings.forward.enabled = true;
                 settings.forward.providers.push({
                     id: config.id,
-                    name: config.name
+                    name: config.name,
                 });
             }
 
@@ -146,7 +147,7 @@ export class SearchManager extends Map<string, Search> {
                 settings.route.providers.push({
                     id: config.id,
                     name: config.name,
-                    modes: config.route.modes
+                    modes: config.route.modes,
                 });
             }
         }
@@ -167,7 +168,7 @@ export class SearchManager extends Map<string, Search> {
     async reverse(
         provider: string,
         lon: number,
-        lat: number
+        lat: number,
     ): Promise<Static<typeof FetchReverse>> {
         const search = this.getProvider(provider);
 
@@ -179,7 +180,7 @@ export class SearchManager extends Map<string, Search> {
     async route(
         provider: string,
         stops: Array<[number, number]>,
-        travelMode?: string
+        travelMode?: string,
     ): Promise<Static<typeof Feature.FeatureCollection>> {
         const search = this.getProvider(provider);
 
@@ -192,7 +193,7 @@ export class SearchManager extends Map<string, Search> {
         provider: string,
         query: string,
         magicKey: string,
-        limit?: number
+        limit?: number,
     ): Promise<Array<Static<typeof FetchForward>>> {
         const search = this.getProvider(provider);
 
@@ -205,7 +206,7 @@ export class SearchManager extends Map<string, Search> {
         provider: string,
         query: string,
         limit?: number,
-        location?: [number, number]
+        location?: [number, number],
     ): Promise<Array<Static<typeof FetchSuggest>>> {
         const search = this.getProvider(provider);
 

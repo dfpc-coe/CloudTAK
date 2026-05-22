@@ -10,11 +10,11 @@ export const StackFrame = Type.Object({
     Parameters: Type.Record(Type.String(), Type.Object({
         Default: Type.String(),
         Description: Type.Optional(Type.String()),
-        Type: Type.String()
+        Type: Type.String(),
     })),
     Resources: Type.Record(Type.String(), Type.Object({
         Type: Type.String(),
-        Properties: Type.Optional(Type.Record(Type.String(), Type.Any()))
+        Properties: Type.Optional(Type.Record(Type.String(), Type.Any())),
     })),
 });
 
@@ -53,7 +53,7 @@ export default class CloudFormation {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
 
         const res = await cf.send(new AWSCloudFormation.DescribeStacksCommand({
-            StackName: config.StackName
+            StackName: config.StackName,
         }));
 
         if (!res.Stacks || !res.Stacks.length) throw new Error(`Stack with id ${config.StackName} does not exist`);
@@ -64,7 +64,7 @@ export default class CloudFormation {
     static async create(
         config: Config,
         layerid: number,
-        stack: Static<typeof StackFrame>
+        stack: Static<typeof StackFrame>,
     ): Promise<void> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
         const cwl = new AWSCWL.CloudWatchLogsClient({ region: process.env.AWS_REGION });
@@ -72,9 +72,10 @@ export default class CloudFormation {
         // LogGroups are managed in CloudFormation, if they are present already an error will throw
         try {
             await cwl.send(new AWSCWL.DeleteLogGroupCommand({
-                logGroupName: `/aws/lambda/${config.StackName}-layer-${layerid}`
+                logGroupName: `/aws/lambda/${config.StackName}-layer-${layerid}`,
             }));
-        } catch (err) {
+        }
+        catch (err) {
             console.error(err);
             // Resource not found
         }
@@ -83,19 +84,19 @@ export default class CloudFormation {
             StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack),
             Tags: (await this.self(config)).Tags,
-            Parameters: Object.keys(stack.Parameters).map(key => {
+            Parameters: Object.keys(stack.Parameters).map((key) => {
                 return {
                     ParameterKey: key,
-                    ParameterValue: stack.Parameters[key].Default
+                    ParameterValue: stack.Parameters[key].Default,
                 };
-            })
+            }),
         }));
     }
 
     static async update(
         config: Config,
         layerid: number,
-        stack: Static<typeof StackFrame>
+        stack: Static<typeof StackFrame>,
     ): Promise<void> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
 
@@ -103,12 +104,12 @@ export default class CloudFormation {
             StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack),
             Tags: (await this.self(config)).Tags,
-            Parameters: Object.keys(stack.Parameters).map(key => {
+            Parameters: Object.keys(stack.Parameters).map((key) => {
                 return {
                     ParameterKey: key,
-                    ParameterValue: stack.Parameters[key].Default
+                    ParameterValue: stack.Parameters[key].Default,
                 };
-            })
+            }),
         }));
     }
 
@@ -119,18 +120,20 @@ export default class CloudFormation {
 
         try {
             const res = await cf.send(new AWSCloudFormation.DescribeStacksCommand({
-                StackName: this.stdname(config, layerid)
+                StackName: this.stdname(config, layerid),
             }));
 
-            if (!res.Stacks || !res.Stacks.length) return { status: 'unknown' }
+            if (!res.Stacks || !res.Stacks.length) return { status: 'unknown' };
 
             return {
-                status: String(res.Stacks[0].StackStatus)
+                status: String(res.Stacks[0].StackStatus),
             };
-        } catch (err) {
+        }
+        catch (err) {
             if (err instanceof Error && err.message.match(/Stack with id .* does not exist/)) {
                 return { status: 'DOES_NOT_EXIST_COMPLETE' };
-            } else {
+            }
+            else {
                 throw err;
             }
         }
@@ -141,14 +144,16 @@ export default class CloudFormation {
 
         try {
             await cf.send(new AWSCloudFormation.DescribeStacksCommand({
-                StackName: this.stdname(config, layerid)
+                StackName: this.stdname(config, layerid),
             }));
 
             return true;
-        } catch (err) {
+        }
+        catch (err) {
             if (err instanceof Error && err.message.match(/Stack with id .* does not exist/)) {
                 return false;
-            } else {
+            }
+            else {
                 throw err;
             }
         }
@@ -158,7 +163,7 @@ export default class CloudFormation {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
 
         await cf.send(new AWSCloudFormation.CancelUpdateStackCommand({
-            StackName: this.stdname(config, layerid)
+            StackName: this.stdname(config, layerid),
         }));
     }
 
@@ -166,7 +171,7 @@ export default class CloudFormation {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
 
         await cf.send(new AWSCloudFormation.DeleteStackCommand({
-            StackName: this.stdname(config, layerid)
+            StackName: this.stdname(config, layerid),
         }));
     }
 }

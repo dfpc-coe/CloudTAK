@@ -14,12 +14,12 @@ export type Icon = {
     data: string;
     path: string;
     username: string;
-}
+};
 
 export type IconList = {
     total: number;
-    items: Array<Icon>
-}
+    items: Array<Icon>;
+};
 
 export default class IconModel extends Modeler<typeof pgschema.Icon> {
     constructor(
@@ -45,7 +45,7 @@ export default class IconModel extends Modeler<typeof pgschema.Icon> {
             type2525b: pgschema.Icon.type2525b,
             data: pgschema.Icon.data,
             path: pgschema.Icon.path,
-            username: pgschema.Iconset.username
+            username: pgschema.Iconset.username,
         }).from(this.generic)
             .leftJoin(pgschema.Iconset, eq(pgschema.Iconset.uid, pgschema.Icon.iconset))
             .where(query.where)
@@ -61,12 +61,13 @@ export default class IconModel extends Modeler<typeof pgschema.Icon> {
 
         if (pgres.length === 0) {
             return { total: 0, items: [] };
-        } else {
+        }
+        else {
             return {
                 total: parseInt(pgres[0].count),
                 items: pgres.map((t) => {
                     return t as Icon;
-                })
+                }),
             };
         }
     }

@@ -1,12 +1,12 @@
-import { Static, Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { Busboy } from '@fastify/busboy';
-import Auth, { AuthResourceAccess }  from '../lib/auth.js';
+import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
 import jwt from 'jsonwebtoken';
-import { includesWithGlob } from "array-includes-with-glob";
+import { includesWithGlob } from 'array-includes-with-glob';
 import assetList from '../lib/asset.js';
 import Config from '../lib/config.js';
 import DataMission from '../lib/data-mission.js';
@@ -22,31 +22,31 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Assets',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
-            dataid: Type.Integer({ minimum: 1 })
+            dataid: Type.Integer({ minimum: 1 }),
         }),
         res: Type.Object({
             total: Type.Integer(),
             tiles: Type.Object({
-                url: Type.String()
+                url: Type.String(),
             }),
-            assets: Type.Array(AssetResponse)
-        })
+            assets: Type.Array(AssetResponse),
+        }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
-            const data = await config.models.Data.from(req.params.dataid)
+            const data = await config.models.Data.from(req.params.dataid);
             if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             const list = await assetList(config, `data/${String(req.params.dataid)}/`);
 
             const assets: Array<Static<typeof AssetResponse>> = list.assets.map((a: any) => {
                 a.sync = false;
-                if (!data.mission_sync) return a
+                if (!data.mission_sync) return a;
                 for (const glob of data.assets) {
                     a.sync = includesWithGlob([a.name], glob);
                     if (a.sync) break;
@@ -55,7 +55,8 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json({ ...list, assets });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -66,21 +67,20 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Create a new asset',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
-            dataid: Type.Integer({ minimum: 1 })
+            dataid: Type.Integer({ minimum: 1 }),
         }),
         body: {
-            'multipart/form-data': true
+            'multipart/form-data': true,
         },
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
-
         let data: InferSelectModel<typeof Data>;
         try {
             const { connection } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
-                ]
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                ],
             }, req.params.connectionid);
             const contentType = req.headers['content-type'];
 
@@ -93,11 +93,11 @@ export default async function router(schema: Schema, config: Config) {
 
             const bb = new Busboy({
                 headers: {
-                    'content-type': contentType
+                    'content-type': contentType,
                 },
                 limits: {
-                    files: 1
-                }
+                    files: 1,
+                },
             });
 
             let name = '';
@@ -109,7 +109,8 @@ export default async function router(schema: Schema, config: Config) {
 
                     name = filename;
                     assets.push(S3.put(`data/${data.id}/${filename}`, passThrough));
-                } catch (err) {
+                }
+                catch (err) {
                     Err.respond(err, res);
                 }
             }).on('finish', async () => {
@@ -133,32 +134,35 @@ export default async function router(schema: Schema, config: Config) {
                     // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
                     req.connection = {
                         // @ts-expect-error Not in spec
-                        remoteAddress: req._remoteAddress || '127.0.0.1'
-                    }
+                        remoteAddress: req._remoteAddress || '127.0.0.1',
+                    };
 
                     try {
                         await DataMission.sync(config, data);
-                    } catch (err) {
-                        console.error(err)
+                    }
+                    catch (err) {
+                        console.error(err);
                     }
 
                     await api.Mission.attachContents(data.name, {
-                        hashes: [content.Hash]
+                        hashes: [content.Hash],
                     }, {
-                        token: data.mission_token || undefined
+                        token: data.mission_token || undefined,
                     });
 
                     res.json({
                         status: 200,
-                        message: 'Asset Uploaded'
+                        message: 'Asset Uploaded',
                     });
-                } catch (err) {
+                }
+                catch (err) {
                     Err.respond(err, res);
                 }
             });
 
             req.pipe(bb);
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -171,16 +175,16 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer({ minimum: 1 }),
             dataid: Type.Integer({ minimum: 1 }),
             asset: Type.String(),
-            ext: Type.String()
+            ext: Type.String(),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
-                ]
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                ],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -193,20 +197,21 @@ export default async function router(schema: Schema, config: Config) {
             try {
                 if (data.mission_sync) {
                     const mission = await api.Mission.get(data.name, {}, {
-                        token: data.mission_token || undefined
+                        token: data.mission_token || undefined,
                     });
 
                     for (const content of mission.contents) {
                         if (content.data.name === file) {
                             await api.Mission.detachContents(data.name, {
-                                hash: content.data.hash
+                                hash: content.data.hash,
                             }, {
-                                token: data.mission_token || undefined
+                                token: data.mission_token || undefined,
                             });
                         }
                     }
                 }
-            } catch (err) {
+            }
+            catch (err) {
                 console.error(err);
             }
 
@@ -221,9 +226,10 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: 'Asset Deleted'
+                message: 'Asset Deleted',
             });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -236,7 +242,7 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer({ minimum: 1 }),
             dataid: Type.Integer({ minimum: 1 }),
             asset: Type.String(),
-            ext: Type.String()
+            ext: Type.String(),
         }),
     }, async (req, res) => {
         try {
@@ -244,8 +250,8 @@ export default async function router(schema: Schema, config: Config) {
                 token: true,
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
-                ]
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                ],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -256,7 +262,8 @@ export default async function router(schema: Schema, config: Config) {
             const stream = await S3.get(`data/${req.params.dataid}/${req.params.asset}.${req.params.ext}`);
 
             stream.pipe(res);
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -276,8 +283,8 @@ export default async function router(schema: Schema, config: Config) {
                 token: true,
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
-                ]
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                ],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -289,12 +296,13 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(404, null, 'Asset does not exist');
             }
 
-            const token = jwt.sign({ access: 'user' }, config.SigningSecret)
+            const token = jwt.sign({ access: 'user' }, config.SigningSecret);
             const url = new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/${req.params.asset}`);
             url.searchParams.append('token', token);
 
             return res.redirect(String(url));
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });

@@ -10,7 +10,7 @@ export default class ServerManager {
     constructor(
         server: Server,
         wss: WebSocketServer,
-        config: Config
+        config: Config,
     ) {
         this.wss = wss;
         this.server = server;
@@ -27,11 +27,9 @@ export default class ServerManager {
                 this.wss.close(resolve);
             }),
             this.config.conns.close(),
-            this.config.geofence.close()
+            this.config.geofence.close(),
         ]);
-
 
         this.config.pg.end();
     }
 }
-

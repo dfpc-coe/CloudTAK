@@ -23,8 +23,8 @@ test('start upstream basemap import server', async () => {
                 minzoom: 1,
                 maxzoom: 12,
                 tiles: [
-                    'https://tiles.example.com/plain/{z}/{x}/{y}.png'
-                ]
+                    'https://tiles.example.com/plain/{z}/{x}/{y}.png',
+                ],
             }));
             return;
         }
@@ -40,13 +40,13 @@ test('start upstream basemap import server', async () => {
                     {
                         id: 'buildings',
                         fields: {
-                            name: 'String'
-                        }
-                    }
+                            name: 'String',
+                        },
+                    },
                 ],
                 tiles: [
-                    'https://tiles.example.com/json/{z}/{x}/{y}.jpg'
-                ]
+                    'https://tiles.example.com/json/{z}/{x}/{y}.jpg',
+                ],
             }));
             return;
         }
@@ -55,7 +55,7 @@ test('start upstream basemap import server', async () => {
         res.end(JSON.stringify({ error: 'Not Found' }));
     });
 
-    await new Promise<void>((resolve) => upstream.listen(0, '127.0.0.1', () => resolve()));
+    await new Promise<void>(resolve => upstream.listen(0, '127.0.0.1', () => resolve()));
 
     const address = upstream.address();
     if (!address || typeof address === 'string') throw new Error('Could not determine upstream address');
@@ -66,12 +66,12 @@ test('PUT: api/basemap - import basemap from text/plain URL', async () => {
     const res = await flight.fetch('/api/basemap', {
         method: 'PUT',
         auth: {
-            bearer: flight.token.admin
+            bearer: flight.token.admin,
         },
         headers: {
-            'Content-Type': 'text/plain'
+            'Content-Type': 'text/plain',
         },
-        body: `${upstreamOrigin}/plain-tilejson.json`
+        body: `${upstreamOrigin}/plain-tilejson.json`,
     }, true);
 
     assert.deepEqual(res.body, {
@@ -81,7 +81,7 @@ test('PUT: api/basemap - import basemap from text/plain URL', async () => {
         minzoom: 1,
         maxzoom: 12,
         url: 'https://tiles.example.com/plain/{$z}/{$x}/{$y}.png',
-        format: 'png'
+        format: 'png',
     });
 });
 
@@ -89,12 +89,12 @@ test('PUT: api/basemap - import basemap from application/json body', async () =>
     const res = await flight.fetch('/api/basemap', {
         method: 'PUT',
         auth: {
-            bearer: flight.token.admin
+            bearer: flight.token.admin,
         },
         body: {
             type: 'raster',
-            url: `${upstreamOrigin}/json-tilejson.json`
-        }
+            url: `${upstreamOrigin}/json-tilejson.json`,
+        },
     }, true);
 
     assert.deepEqual(res.body, {
@@ -107,12 +107,12 @@ test('PUT: api/basemap - import basemap from application/json body', async () =>
             {
                 id: 'buildings',
                 fields: {
-                    name: 'String'
-                }
-            }
+                    name: 'String',
+                },
+            },
         ],
         url: 'https://tiles.example.com/json/{$z}/{$x}/{$y}.jpg',
-        format: 'jpeg'
+        format: 'jpeg',
     });
 });
 
@@ -126,21 +126,21 @@ test('PUT: api/basemap - import basemap from multipart TAK XML', async () => {
             tileUpdate: { _text: 'None' },
             url: { _text: 'https://tiles.example.com/multipart/{z}/{x}/{y}.jpg' },
             backgroundColor: { _text: '#000000' },
-            serverParts: { _text: 'a,b,c' }
-        }
+            serverParts: { _text: 'a,b,c' },
+        },
     })).to_xml();
 
     const body = new FormData();
     body.append('file', new Blob([xml], {
-        type: 'text/xml'
+        type: 'text/xml',
     }), 'basemap.cot');
 
     const res = await flight.fetch('/api/basemap', {
         method: 'PUT',
         auth: {
-            bearer: flight.token.admin
+            bearer: flight.token.admin,
         },
-        body
+        body,
     }, true);
 
     assert.equal(res.body.type, 'raster');

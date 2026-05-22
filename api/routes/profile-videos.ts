@@ -1,9 +1,9 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { StandardResponse, ProfileVideoResponse } from '../lib/types.js'
+import { StandardResponse, ProfileVideoResponse } from '../lib/types.js';
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
 
@@ -17,12 +17,12 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             limit: Type.Integer({ default: 1000 }),
             page: Default.Page,
-            order: Default.Order
+            order: Default.Order,
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ProfileVideoResponse)
-        })
+            items: Type.Array(ProfileVideoResponse),
+        }),
 
     }, async (req, res) => {
         try {
@@ -34,12 +34,13 @@ export default async function router(schema: Schema, config: Config) {
                 order: req.query.order,
                 where: sql`
                     username = ${user.email}
-                `
+                `,
             });
 
             res.json(list);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -50,7 +51,7 @@ export default async function router(schema: Schema, config: Config) {
             Push a new Profile Video to the database
         `,
         body: Type.Object({
-            lease: Type.Integer()
+            lease: Type.Integer(),
         }),
         res: ProfileVideoResponse,
     }, async (req, res) => {
@@ -59,12 +60,13 @@ export default async function router(schema: Schema, config: Config) {
 
             const video = await config.models.ProfileVideo.generate({
                 ...req.body,
-                username: user.email
+                username: user.email,
             });
 
-            res.json(video)
-        } catch (err) {
-             Err.respond(err, res);
+            res.json(video);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -75,9 +77,9 @@ export default async function router(schema: Schema, config: Config) {
             Delete a Video
         `,
         params: Type.Object({
-            id: Type.String()
+            id: Type.String(),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -88,10 +90,11 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: 'Video Deleted'
+                message: 'Video Deleted',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -102,9 +105,9 @@ export default async function router(schema: Schema, config: Config) {
             Get a video
         `,
         params: Type.Object({
-            id: Type.String()
+            id: Type.String(),
         }),
-        res: ProfileVideoResponse
+        res: ProfileVideoResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -114,8 +117,9 @@ export default async function router(schema: Schema, config: Config) {
             `);
 
             res.json(video);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

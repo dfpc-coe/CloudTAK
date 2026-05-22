@@ -8,7 +8,7 @@ test('AGOL - constructor with tokenManager', async () => {
     const mockConfig = {
         authMethod: 'oauth2' as const,
         clientId: 'test-client-id',
-        clientSecret: 'test-client-secret'
+        clientSecret: 'test-client-secret',
     };
     const tokenManager = new ArcGISTokenManager(mockConfig);
 
@@ -17,11 +17,11 @@ test('AGOL - constructor with tokenManager', async () => {
         silent: true,
         noevents: true,
         nosinks: true,
-        nocache: true
+        nocache: true,
     });
 
     const geocode = new AGOL(config, tokenManager);
-    
+
     assert.ok(geocode.tokenManager, 'TokenManager set correctly');
     assert.ok(geocode.reverseApi, 'Reverse API URL set');
     assert.ok(geocode.suggestApi, 'Suggest API URL set');
@@ -36,11 +36,11 @@ test('AGOL - constructor without tokenManager', async () => {
         silent: true,
         noevents: true,
         nosinks: true,
-        nocache: true
+        nocache: true,
     });
 
     const geocode = new AGOL(config);
-    
+
     assert.equal(geocode.tokenManager, undefined, 'No tokenManager set');
     assert.ok(geocode.reverseApi, 'Reverse API URL set');
     assert.ok(geocode.suggestApi, 'Suggest API URL set');
@@ -55,11 +55,11 @@ test('AGOL - API URLs are correctly set', async () => {
         silent: true,
         noevents: true,
         nosinks: true,
-        nocache: true
+        nocache: true,
     });
 
     const geocodeInstance = new AGOL(config);
-    
+
     assert.equal(new URL(geocodeInstance.reverseApi).host, 'geocode.arcgis.com', 'Reverse API URL has correct host');
     assert.equal(new URL(geocodeInstance.suggestApi).host, 'geocode.arcgis.com', 'Suggest API URL has correct host');
     assert.equal(new URL(geocodeInstance.forwardApi).host, 'geocode.arcgis.com', 'Forward API URL has correct host');
@@ -73,29 +73,30 @@ test('AGOL - route method handles empty features', async () => {
         silent: true,
         noevents: true,
         nosinks: true,
-        nocache: true
+        nocache: true,
     });
 
     const mockConfig = {
         authMethod: 'oauth2' as const,
         clientId: 'test-client-id',
-        clientSecret: 'test-client-secret'
+        clientSecret: 'test-client-secret',
     };
 
     const tokenManager = new ArcGISTokenManager(mockConfig);
     const geocodeInstance = new AGOL(config, tokenManager);
-    
+
     try {
         // This should throw an error for no route found
         const processedRoute = {
             type: 'FeatureCollection' as const,
-            features: []
+            features: [],
         };
-        
+
         assert.equal(processedRoute.type, 'FeatureCollection', 'Correct type');
         assert.equal(processedRoute.features.length, 0, 'Empty features array');
         assert.ok(geocodeInstance.tokenManager, 'AGOL instance has tokenManager');
-    } catch {
+    }
+    catch {
         // Expected error for empty route
     }
 
@@ -108,32 +109,32 @@ test('AGOL - route method processes valid route data', async () => {
         silent: true,
         noevents: true,
         nosinks: true,
-        nocache: true
+        nocache: true,
     });
 
     const mockConfig = {
         authMethod: 'oauth2' as const,
         clientId: 'test-client-id',
-        clientSecret: 'test-client-secret'
+        clientSecret: 'test-client-secret',
     };
     const tokenManager = new ArcGISTokenManager(mockConfig);
     const geocodeInstance = new AGOL(config, tokenManager);
-    
+
     // Test route processing with mock valid data structure
     const mockValidRoute = {
         routes: {
             features: [{
                 attributes: {
                     Name: 'Test Route',
-                    Total_Length: 10.5
+                    Total_Length: 10.5,
                 },
                 geometry: {
-                    paths: [[[-105, 39.7], [-104.8, 39.9]]]
-                }
-            }]
-        }
+                    paths: [[[-105, 39.7], [-104.8, 39.9]]],
+                },
+            }],
+        },
     };
-    
+
     // Test that the route structure is valid
     assert.ok(mockValidRoute.routes.features.length > 0, 'Has route features');
     assert.ok(mockValidRoute.routes.features[0].geometry.paths, 'Has geometry paths');
@@ -149,21 +150,21 @@ test('AGOL - error handling for different error codes', async () => {
         silent: true,
         noevents: true,
         nosinks: true,
-        nocache: true
+        nocache: true,
     });
 
     const mockConfig = {
         authMethod: 'oauth2' as const,
         clientId: 'test-client-id',
-        clientSecret: 'test-client-secret'
+        clientSecret: 'test-client-secret',
     };
     const tokenManager = new ArcGISTokenManager(mockConfig);
     const geocodeInstance = new AGOL(config, tokenManager);
-    
+
     // Test error code handling logic
     const error498 = { code: 498, message: 'Invalid token' };
     const error400 = { code: 400, message: 'Bad request' };
-    
+
     // Test error code classification
     assert.ok(error498.code === 498 || error498.code === 499, 'Auth error codes');
     assert.equal(error400.code, 400, 'General error code');
@@ -178,21 +179,21 @@ test('AGOL - validates route input parameters', async () => {
         silent: true,
         noevents: true,
         nosinks: true,
-        nocache: true
+        nocache: true,
     });
 
     const mockConfig = {
         authMethod: 'oauth2' as const,
         clientId: 'test-client-id',
-        clientSecret: 'test-client-secret'
+        clientSecret: 'test-client-secret',
     };
     const tokenManager = new ArcGISTokenManager(mockConfig);
     const geocodeInstance = new AGOL(config, tokenManager);
-    
+
     // Test input validation
     const validStops = [[-105, 39.7], [-104.8, 39.9]];
     const travelMode = 'Driving Time';
-    
+
     assert.ok(Array.isArray(validStops), 'Stops is an array');
     assert.equal(validStops.length, 2, 'Has start and end points');
     assert.ok(validStops[0].length === 2, 'Start point has lat/lng');
@@ -209,18 +210,18 @@ test('AGOL - URL construction for different endpoints', async () => {
         silent: true,
         noevents: true,
         nosinks: true,
-        nocache: true
+        nocache: true,
     });
 
     const geocodeInstance = new AGOL(config);
-    
+
     // Test URL construction logic
     const baseUrl = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer';
-    
+
     assert.ok(geocodeInstance.reverseApi.startsWith(baseUrl), 'Reverse API has correct base');
     assert.ok(geocodeInstance.suggestApi.startsWith(baseUrl), 'Suggest API has correct base');
     assert.ok(geocodeInstance.forwardApi.startsWith(baseUrl), 'Forward API has correct base');
-    
+
     assert.ok(geocodeInstance.reverseApi.includes('reverseGeocode'), 'Reverse API has correct endpoint');
     assert.ok(geocodeInstance.suggestApi.includes('suggest'), 'Suggest API has correct endpoint');
     assert.ok(geocodeInstance.forwardApi.includes('findAddressCandidates'), 'Forward API has correct endpoint');

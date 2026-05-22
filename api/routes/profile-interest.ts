@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -6,7 +6,7 @@ import Auth from '../lib/auth.js';
 import type { BBox } from 'geojson';
 import { bboxPolygon } from '@turf/bbox-polygon';
 import { ProfileInterest } from '../lib/schema.js';
-import { ProfileInterestResponse, StandardResponse } from '../lib/types.js'
+import { ProfileInterestResponse, StandardResponse } from '../lib/types.js';
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
 
@@ -23,13 +23,13 @@ export default async function router(schema: Schema, config: Config) {
             order: Default.Order,
             sort: Type.String({
                 default: 'name',
-                enum: Object.keys(ProfileInterest)
+                enum: Object.keys(ProfileInterest),
             }),
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ProfileInterestResponse)
-        })
+            items: Type.Array(ProfileInterestResponse),
+        }),
 
     }, async (req, res) => {
         try {
@@ -42,12 +42,13 @@ export default async function router(schema: Schema, config: Config) {
                 sort: req.query.sort,
                 where: sql`
                     username = ${user.email}
-                `
+                `,
             });
 
             res.json(interests);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -61,7 +62,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
             bounds: Type.Array(Type.Number(), { minItems: 4, maxItems: 4 }),
         }),
-        res: ProfileInterestResponse
+        res: ProfileInterestResponse,
 
     }, async (req, res) => {
         try {
@@ -70,12 +71,13 @@ export default async function router(schema: Schema, config: Config) {
             const interest = await config.models.ProfileInterest.generate({
                 name: req.body.name,
                 bounds: bboxPolygon(req.body.bounds as BBox).geometry,
-                username: user.email
+                username: user.email,
             });
 
             res.json(interest);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -86,13 +88,13 @@ export default async function router(schema: Schema, config: Config) {
             Create a new Profile AOI
         `,
         params: Type.Object({
-            interestid: Type.Integer()
+            interestid: Type.Integer(),
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
         }),
-        res: ProfileInterestResponse
+        res: ProfileInterestResponse,
 
     }, async (req, res) => {
         try {
@@ -105,12 +107,13 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             interest = await config.models.ProfileInterest.commit(req.params.interestid, {
-                ...req.body
+                ...req.body,
             });
 
             res.json(interest);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -121,9 +124,9 @@ export default async function router(schema: Schema, config: Config) {
             Delete a Profile AOI
         `,
         params: Type.Object({
-            interestid: Type.Integer()
+            interestid: Type.Integer(),
         }),
-        res: StandardResponse
+        res: StandardResponse,
 
     }, async (req, res) => {
         try {
@@ -139,10 +142,11 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: 'Interest Area Deleted'
+                message: 'Interest Area Deleted',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

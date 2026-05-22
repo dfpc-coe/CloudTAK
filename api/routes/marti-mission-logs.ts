@@ -1,4 +1,4 @@
-import { Static, Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox';
 import { StandardResponse, GenericMartiResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -7,7 +7,7 @@ import { MissionLog } from '@tak-ps/node-tak/lib/api/mission-log';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import {
-    TAKItem
+    TAKItem,
 } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
@@ -22,18 +22,18 @@ export default async function router(schema: Schema, config: Config) {
             format: Type.String({
                 default: 'json',
                 enum: ['json', 'csv'],
-                description: 'The response format to return'
+                description: 'The response format to return',
             }),
             download: Type.Boolean({
                 default: false,
-                description: 'If set, the response will include a Content-Disposition Header'
-            })
+                description: 'If set, the response will include a Content-Disposition Header',
+            }),
         }),
         description: 'Helper API to list Mission Logs',
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(MissionLog)
-        })
+            items: Type.Array(MissionLog),
+        }),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -43,14 +43,14 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const mission = await api.Mission.get(
                 req.params.name,
                 {
-                    logs: true
+                    logs: true,
                 },
-                opts
+                opts,
             );
 
             if (req.query.format === 'csv') {
@@ -68,25 +68,27 @@ export default async function router(schema: Schema, config: Config) {
                         `"${log.dtg}"`,
                         `"${log.creatorUid}"`,
                         `"${log.content.replace(/"/g, '""')}"`,
-                        `"${(log.keywords || []).join(';').replace(/"/g, '""')}"`
+                        `"${(log.keywords || []).join(';').replace(/"/g, '""')}"`,
                     ];
 
                     res.write(row.join(',') + '\n');
                 }
 
                 res.end();
-            } else {
+            }
+            else {
                 if (req.query.download) {
                     res.setHeader('Content-Disposition', `attachment; filename="mission-${req.params.name}-logs.json"`);
                 }
 
                 res.json({
                     total: (mission.logs || []).length,
-                    items: mission.logs || []
+                    items: mission.logs || [],
                 });
             }
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -100,9 +102,9 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             dtg: Type.Optional(Type.String({ format: 'date-time' })),
             content: Type.String(),
-            keywords: Type.Optional(Type.Array(Type.String()))
+            keywords: Type.Optional(Type.Array(Type.String())),
         }),
-        res: GenericMartiResponse
+        res: GenericMartiResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -113,7 +115,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const log = await api.MissionLog.create(
                 req.params.name,
@@ -121,14 +123,15 @@ export default async function router(schema: Schema, config: Config) {
                     creatorUid: creatorUid,
                     dtg: req.body.dtg ?? new Date().toISOString(),
                     content: req.body.content,
-                    keywords: req.body.keywords
+                    keywords: req.body.keywords,
                 },
-                opts
+                opts,
             );
 
             res.json(log);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -137,17 +140,17 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissionLog',
         params: Type.Object({
             name: Type.String(),
-            logid: Type.String()
+            logid: Type.String(),
         }),
         description: 'Helper API to update a log on a mission',
         body: Type.Object({
             dtg: Type.String({
-                format: 'date-time'
+                format: 'date-time',
             }),
             content: Type.String(),
-            keywords: Type.Optional(Type.Array(Type.String()))
+            keywords: Type.Optional(Type.Array(Type.String())),
         }),
-        res: TAKItem(MissionLog)
+        res: TAKItem(MissionLog),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -158,7 +161,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const mission = await api.MissionLog.update(
                 req.params.name,
@@ -167,14 +170,15 @@ export default async function router(schema: Schema, config: Config) {
                     dtg: req.body.dtg,
                     creatorUid: creatorUid,
                     content: req.body.content,
-                    keywords: req.body.keywords
+                    keywords: req.body.keywords,
                 },
-                opts
+                opts,
             );
 
             res.json(mission);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -183,10 +187,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissionLog',
         params: Type.Object({
             name: Type.String(),
-            log: Type.String()
+            log: Type.String(),
         }),
         description: 'Helper API to delete a log',
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -196,19 +200,20 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             await api.MissionLog.delete(
                 req.params.log,
-                opts
+                opts,
             );
 
             res.json({
                 status: 200,
-                message: 'Log Entry Deleted'
+                message: 'Log Entry Deleted',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

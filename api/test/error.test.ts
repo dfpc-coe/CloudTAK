@@ -23,7 +23,7 @@ test('toErr returns existing Err instances', () => {
 test('toErr wraps status errors', () => {
     const err = Object.assign(new Error('Not Found'), {
         status: 404,
-        safe: 'Missing Item'
+        safe: 'Missing Item',
     });
     const wrapped = toErr(err);
 

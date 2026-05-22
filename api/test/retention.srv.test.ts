@@ -17,7 +17,7 @@ test('PUT api/connection/1/feature - stale feature', async () => {
         const res = await flight.fetch('/api/connection/1/feature', {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 id: 'stale-feature',
@@ -34,13 +34,14 @@ test('PUT api/connection/1/feature - stale feature', async () => {
                 },
                 geometry: {
                     type: 'Point',
-                    coordinates: [1, 1]
-                }
-            }
+                    coordinates: [1, 1],
+                },
+            },
         }, true);
 
         assert.equal(res.body.id, 'stale-feature');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -50,7 +51,7 @@ test('PUT api/connection/1/feature - fresh feature', async () => {
         const res = await flight.fetch('/api/connection/1/feature', {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 id: 'fresh-feature',
@@ -67,13 +68,14 @@ test('PUT api/connection/1/feature - fresh feature', async () => {
                 },
                 geometry: {
                     type: 'Point',
-                    coordinates: [2, 2]
-                }
-            }
+                    coordinates: [2, 2],
+                },
+            },
         }, true);
 
         assert.equal(res.body.id, 'fresh-feature');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -83,11 +85,11 @@ test('POST api/retention - connection feature action', async () => {
         const res = await flight.fetch('/api/retention', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
-                action: 'connection-feature'
-            }
+                action: 'connection-feature',
+            },
         }, true);
 
         assert.equal(res.body.name, 'connection-feature');
@@ -95,7 +97,8 @@ test('POST api/retention - connection feature action', async () => {
         assert.equal(res.body.deleted, 1);
         assert.equal(typeof res.body.duration, 'number');
         assert.ok(res.body.duration >= 0);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -105,8 +108,8 @@ test('GET api/connection/1/feature - only fresh remains', async () => {
         const res = await flight.fetch('/api/connection/1/feature', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.deepEqual(res.body, {
@@ -122,15 +125,16 @@ test('GET api/connection/1/feature - only fresh remains', async () => {
                     start: fresh,
                     stale: fresh,
                     center: [2, 2],
-                    callsign: 'Fresh Feature'
+                    callsign: 'Fresh Feature',
                 },
                 geometry: {
                     type: 'Point',
-                    coordinates: [2, 2, 0]
-                }
-            }]
+                    coordinates: [2, 2, 0],
+                },
+            }],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

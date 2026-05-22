@@ -9,7 +9,7 @@ import ProfileControl from './control/profile.js';
 export enum AuthProviderAccess {
     ADMIN = 'admin',
     AGENCY = 'agency',
-    USER = 'user'
+    USER = 'user',
 }
 
 export default class AuthProvider {
@@ -22,22 +22,24 @@ export default class AuthProvider {
     }
 
     async login(username: string, password: string): Promise<string> {
-        const auth = new APIAuthPassword(username, password)
+        const auth = new APIAuthPassword(username, password);
         const api = await TAKAPI.init(new URL(this.config.server.webtak), auth);
 
-        const contents = await api.OAuth.parse(auth.jwt)
+        const contents = await api.OAuth.parse(auth.jwt);
 
         let profile;
         try {
             profile = await this.config.models.Profile.from(username);
-        } catch (err) {
+        }
+        catch (err) {
             if (err instanceof Error && err.message.includes('Item Not Found')) {
                 profile = await this.profileControl.generate({
                     username: username,
-                    auth: await api.Credentials.generate()
+                    auth: await api.Credentials.generate(),
                 });
-            } else {
-                throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err))
+            }
+            else {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
             }
         }
 
@@ -48,27 +50,29 @@ export default class AuthProvider {
 
     async valid(
         profile: InferSelectModel<typeof Profile>,
-        password?: string
+        password?: string,
     ): Promise<InferSelectModel<typeof Profile>> {
         let validTo;
 
         try {
             const cert = new X509Certificate(profile.auth.cert);
 
-            validTo = cert.validTo
+            validTo = cert.validTo;
             const certExpiry = new Date(validTo);
             if (Number.isNaN(certExpiry.getTime()) || certExpiry.getTime() < Date.now() + (7 * 24 * 60 * 60 * 1000)) {
                 throw new Error('Expired Certificate has expired or is about to');
             }
-        } catch (err) {
+        }
+        catch (err) {
             console.error(`Error: CertificateExpiration: ${validTo}: ${err}`);
 
             if (password) {
                 const api = await TAKAPI.init(new URL(this.config.server.webtak), new APIAuthPassword(profile.username, password));
                 profile = await this.config.models.Profile.commit(profile.username, {
-                    auth: await api.Credentials.generate()
+                    auth: await api.Credentials.generate(),
                 });
-            } else {
+            }
+            else {
                 throw new Err(401, null, 'Certificate is expired');
             }
         }
@@ -80,22 +84,24 @@ export default class AuthProvider {
             // to ensure we get a 200 response and not a 500 - Update to check status when Josh
             // pushes a fix to throw a 401 instead of a 500 on bad certs
             await cert_api.Contacts.list();
-        } catch (err) {
+        }
+        catch (err) {
             if (err instanceof Error && err.message.includes('org.springframework.security.authentication.BadCredentialsException')) {
                 if (password) {
                     const api = await TAKAPI.init(new URL(this.config.server.webtak), new APIAuthPassword(profile.username, password));
                     profile = await this.config.models.Profile.commit(profile.username, {
-                        auth: await api.Credentials.generate()
+                        auth: await api.Credentials.generate(),
                     });
-                } else {
+                }
+                else {
                     throw new Err(401, err instanceof Error ? err : new Error(String(err)), 'Certificate is Revoked');
                 }
-            } else {
+            }
+            else {
                 throw err;
             }
         }
 
         return profile;
     }
-
 }

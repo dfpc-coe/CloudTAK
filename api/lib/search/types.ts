@@ -1,4 +1,4 @@
-import { Type } from "@sinclair/typebox";
+import { Type } from '@sinclair/typebox';
 import { EsriExtent } from '../esri/types.js';
 
 export const SearchConfig = Type.Object({
@@ -15,8 +15,8 @@ export const SearchConfig = Type.Object({
         modes: Type.Array(Type.Object({
             id: Type.String(),
             name: Type.String(),
-        }))
-    })
+        })),
+    }),
 });
 
 export const SearchManagerConfig = Type.Object({
@@ -25,7 +25,7 @@ export const SearchManagerConfig = Type.Object({
         providers: Type.Array(Type.Object({
             id: Type.String(),
             name: Type.String(),
-        }))
+        })),
     }),
     route: Type.Object({
         enabled: Type.Boolean(),
@@ -35,17 +35,17 @@ export const SearchManagerConfig = Type.Object({
             modes: Type.Array(Type.Object({
                 id: Type.String(),
                 name: Type.String(),
-            }))
-        }))
+            })),
+        })),
     }),
     forward: Type.Object({
         enabled: Type.Boolean(),
         providers: Type.Array(Type.Object({
             id: Type.String(),
-            name: Type.String()
-        }))
-    })
-})
+            name: Type.String(),
+        })),
+    }),
+});
 
 export const FetchReverse = Type.Object({
     LongLabel: Type.String(),
@@ -56,7 +56,7 @@ export const FetchReverse = Type.Object({
 export const FetchSuggest = Type.Object({
     text: Type.String(),
     magicKey: Type.String(),
-    isCollection: Type.Boolean()
+    isCollection: Type.Boolean(),
 });
 
 export const FetchForward = Type.Object({
@@ -70,5 +70,5 @@ export const FetchForward = Type.Object({
         LongLabel: Type.Optional(Type.String()),
         ShortLabel: Type.Optional(Type.String()),
     }),
-    extent: EsriExtent
+    extent: EsriExtent,
 });
