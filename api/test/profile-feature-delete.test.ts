@@ -192,7 +192,11 @@ test('GET: api/profile/feature', async () => {
             },
         }, true);
 
-        assert.deepEqual(res.body.items.map((i: { id: string }) => { return i.id; }).sort(), ['123-no-path', '123-path2']);
+        assert.deepEqual(
+            res.body.items
+                .map((i: { id: string }) => { return i.id; })
+                .sort(), ['123-no-path', '123-path2'],
+        );
 
         assert.equal(res.body.total, 2);
     }
