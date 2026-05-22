@@ -16,6 +16,10 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.3.0 - 2026-05-22
+
+- :rocket: Allow an API user to set contentHashes or entryUid - Closes: https://github.com/dfpc-coe/CloudTAK/pull/1441
+
 ### v13.2.0 - 2026-05-22
 
 - :rocket: Hide Copy button on Cursor Coordinates - Closes: #1450
