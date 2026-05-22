@@ -22,7 +22,7 @@ export default class DataMission {
 
         // All groups should be active for data-sync api to work properly
         const groups = await api.Group.list({ useCache: true });
-        if (groups.data.some((g) => { return !g.active; })) {
+        if (groups.data.some(g => !g.active)) {
             await api.Group.update(groups.data.map((group) => {
                 group.active = true;
                 return group;
@@ -47,10 +47,12 @@ export default class DataMission {
         }
         catch (err) {
             console.error(err);
-            if (!data.mission_sync) return;
+            if (!data.mission_sync) {
+                return;
+            }
 
             if (!data.mission_groups.length) {
-                data.mission_groups = groups.data.map((group) => { return group.name; });
+                data.mission_groups = groups.data.map(group => group.name);
             }
 
             const mission = await api.Mission.create({

@@ -64,10 +64,18 @@ export default class ZXYBasemap extends BasemapProtocol {
 
             await new Promise((resolve, reject) => {
                 stream
-                    .on('data', (buf) => { res.write(buf); })
+                    .on('data', (buf) => {
+                        res.write(buf);
+                    })
                     .on('error', (err) => { return reject(err); })
-                    .on('end', () => { res.end(); return resolve(undefined); })
-                    .on('close', () => { res.end(); return resolve(undefined); })
+                    .on('end', () => {
+                        res.end();
+                        return resolve(undefined);
+                    })
+                    .on('close', () => {
+                        res.end();
+                        return resolve(undefined);
+                    })
                     .end();
             });
         }

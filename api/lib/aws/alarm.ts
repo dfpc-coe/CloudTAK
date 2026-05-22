@@ -39,7 +39,7 @@ export default class Alarm {
 
                 const layer = parseInt(String(alarm.AlarmName).replace(`${this.stack}-layer-`, ''));
 
-                if (!map.has(layer) || map.get(layer) === 'health' && value === 'alarm') {
+                if (!map.has(layer) || (map.get(layer) === 'health' && value === 'alarm')) {
                     map.set(layer, value);
                 }
             }
@@ -77,7 +77,7 @@ export default class Alarm {
                 if (alarm.StateValue === 'ALARM') value = 'alarm';
                 if (alarm.StateValue === 'INSUFFICIENT_DATA') value = 'unknown';
 
-                if (!final || final === 'health' && value === 'alarm') {
+                if (!final || (final === 'health' && value === 'alarm')) {
                     final = value;
                 }
             }

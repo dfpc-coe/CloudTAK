@@ -41,7 +41,7 @@ export default class Filter {
                         return true;
                     }
                 }
-                catch (err) {
+                catch {
                     // Ignore queries that result in invalid output - this is explicitly allowed
                 }
             }

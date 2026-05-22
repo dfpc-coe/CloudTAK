@@ -515,7 +515,7 @@ export default class Style {
                         }
                     }
                 }
-                catch (err) {
+                catch {
                     // Ignore queries that result in invalid output - this is explicitly allowed
                 }
             }
