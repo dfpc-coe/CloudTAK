@@ -17,7 +17,7 @@ if (url.hostname === 'localhost') {
 
     const csp = {
         'default-src': [`'self'`],
-        'img-src': [`'self'`, 'data:'],
+        'img-src': [`'self'`, 'data:', 'blob:'],
         'media-src': [`'self'`, 'blob:'],
         'font-src': [`'self'`, 'data:'],
         'worker-src': [`'self'`, 'blob:'],
