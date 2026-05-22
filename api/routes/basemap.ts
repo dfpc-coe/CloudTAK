@@ -613,7 +613,7 @@ export default async function router(schema: Schema, config: Config) {
             else if (req.body.scope !== undefined && user.access === AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
                 username = null;
             }
-            else if (req.body.scope && user.access === AuthUserAccess.USER || req.body.scope === ResourceCreationScope.USER) {
+            else if ((req.body.scope && user.access === AuthUserAccess.USER) || req.body.scope === ResourceCreationScope.USER) {
                 username = user.email;
             }
 

@@ -236,7 +236,10 @@ export class BasemapProtocol implements BasemapProtocolInterface {
             let digit = 0;
             const mask = 1 << (i - 1);
             if ((x & mask) !== 0) digit++;
-            if ((y & mask) !== 0) { digit++; digit++; }
+            if ((y & mask) !== 0) {
+                digit++;
+                digit++;
+            }
             quadKey.push(digit);
         }
         return quadKey.join('');
@@ -305,7 +308,11 @@ export class BasemapProtocol implements BasemapProtocolInterface {
         res: Response,
         opts: Required<TileOpts>,
     ): Promise<void> {
-        void z; void x; void y; void res; void opts;
+        void z;
+        void x;
+        void y;
+        void res;
+        void opts;
         throw new Err(501, null, 'Protocol does not implement tile()');
     }
 }
