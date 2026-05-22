@@ -21,6 +21,8 @@ export default defineConfig(({ mode }) => {
                             req.url = '/admin.html';
                         } else if (req.url?.startsWith('/connection') && !path.extname(req.url)) {
                             req.url = '/connection.html';
+                        } else if (req.url?.startsWith('/setup') && !path.extname(req.url)) {
+                            req.url = '/setup.html';
                         }
                         next();
                     });
@@ -47,6 +49,7 @@ export default defineConfig(({ mode }) => {
                     video: path.resolve(__dirname, 'video.html'),
                     admin: path.resolve(__dirname, 'admin.html'),
                     connection: path.resolve(__dirname, 'connection.html'),
+                    setup: path.resolve(__dirname, 'setup.html'),
                 },
             },
         },
