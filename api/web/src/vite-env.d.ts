@@ -25,6 +25,12 @@ interface ImportMeta {
   readonly env: ImportMetaEnv
 }
 
+interface Window {
+    electronAPI?: {
+        saveUrl?: (url: string) => void
+    }
+}
+
 declare module 'dropzone/dist/dropzone.mjs' {
     export interface DropzoneOptions {
         autoProcessQueue?: boolean;
