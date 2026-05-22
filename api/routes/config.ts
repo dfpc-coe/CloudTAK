@@ -220,10 +220,6 @@ export default async function router(schema: Schema, config: Config) {
                 return final[k.value.key.replace('login::', '')] = String(k.value.value);
             });
 
-            for (let login of keys) {
-                login = login.replace('login::', '');
-            }
-
             res.json({
                 name: final.name || 'CloudTAK',
                 logo: final.logo,
