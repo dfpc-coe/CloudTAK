@@ -32,10 +32,10 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster
 
         mockPool.intercept({
             path: /api\/profile\/asset/,
-            method: 'POST'
+            method: 'POST',
         }).reply((req) => {
             const body = JSON.parse(req.body) as {
-                id: string
+                id: string;
             };
 
             id = body.id;
@@ -44,59 +44,59 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster
                 statusCode: 200,
                 data: JSON.stringify({
                     id: body.id,
-                    artifacts: []
-                })
+                    artifacts: [],
+                }),
             };
         });
 
         mockPool.intercept({
             path: /api\/profile\/asset\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-            method: 'PATCH'
+            method: 'PATCH',
         }).reply((req) => {
             const body = JSON.parse(req.body) as {
-                artifacts: string[]
+                artifacts: string[];
             };
 
-            assert.deepEqual(body.artifacts, [{ "ext": ".pmtiles" }]);
+            assert.deepEqual(body.artifacts, [{ ext: '.pmtiles' }]);
 
             return {
                 statusCode: 200,
                 data: JSON.stringify({
                     id,
-                    artifacts: body.artifacts
-                })
+                    artifacts: body.artifacts,
+                }),
             };
         });
 
         const ExternalOperations = [
-                (command) => {
-                    assert.ok(command instanceof GetObjectCommand);
-                    assert.deepEqual(command.input, {
-                        Bucket: 'test-bucket',
-                        Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139${ext}`
-                    });
+            (command) => {
+                assert.ok(command instanceof GetObjectCommand);
+                assert.deepEqual(command.input, {
+                    Bucket: 'test-bucket',
+                    Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139${ext}`,
+                });
 
-                    return Promise.resolve({
-                        Body: fs.createReadStream(new URL(`./fixtures/transform-raster/${fixturename}`, import.meta.url))
-                    })
-                },
-                (command) => {
-                    assert.ok(command instanceof PutObjectCommand);
+                return Promise.resolve({
+                    Body: fs.createReadStream(new URL(`./fixtures/transform-raster/${fixturename}`, import.meta.url)),
+                });
+            },
+            (command) => {
+                assert.ok(command instanceof PutObjectCommand);
 
-                    assert.equal(command.input.Bucket, 'test-bucket')
-                    assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                    assert.ok(command.input.Key.endsWith(ext))
+                assert.equal(command.input.Bucket, 'test-bucket');
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+                assert.ok(command.input.Key.endsWith(ext));
 
-                    return Promise.resolve({});
-                },
-                (command) => {
-                    assert.ok(command instanceof PutObjectCommand);
+                return Promise.resolve({});
+            },
+            (command) => {
+                assert.ok(command instanceof PutObjectCommand);
 
-                    assert.equal(command.input.Bucket, 'test-bucket')
-                    assert.equal(command.input.Key, `profile/admin@example.com/${id}.pmtiles`);
+                assert.equal(command.input.Bucket, 'test-bucket');
+                assert.equal(command.input.Key, `profile/admin@example.com/${id}.pmtiles`);
 
-                    return Promise.resolve({});
-                },
+                return Promise.resolve({});
+            },
         ].reverse();
 
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
@@ -119,7 +119,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster
                 source: 'Upload',
                 config: {},
                 source_id: null,
-            }
+            },
         });
 
         worker.on('error', (err) => {
@@ -129,6 +129,6 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-raster
         worker.on('success', () => {
         });
 
-        await worker.process()
+        await worker.process();
     });
 }

@@ -30,6 +30,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@stylistic/eslint-plugin": "^5.10.0",
         "@types/jsonwebtoken": "^9.0.5",
         "@types/node": "^25.0.0",
         "@types/sinon": "^21.0.0",

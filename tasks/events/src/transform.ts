@@ -3,7 +3,7 @@ import readline from 'node:readline';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'node:crypto';
 import type { Message, LocalMessage, Asset } from './types.ts';
-import s3client from './s3.ts'
+import s3client from './s3.ts';
 import { Upload } from '@aws-sdk/lib-storage';
 import path from 'node:path';
 import cp from 'node:child_process';
@@ -38,7 +38,7 @@ export default class DataTransform {
     constructor(
         msg: Message,
         local: LocalMessage,
-        asset: Asset
+        asset: Asset,
     ) {
         this.msg = msg;
         this.local = local;
@@ -74,20 +74,21 @@ export default class DataTransform {
                     version: 1,
                     name: `${this.msg.job.name} Icons`,
                     internal: true,
-                    scope: 'user'
+                    scope: 'user',
 
-                })
-            })
+                }),
+            });
 
             const iconNameMap = new Map<string, string>();
 
             if (!iconsetRes.ok) {
                 console.error(`err - Failed to create iconset: ${await iconsetRes.text()}`);
-            } else {
+            }
+            else {
                 await createImportResult(this.msg, {
                     name: `${this.msg.job.name} Icons`,
                     type: 'Iconset',
-                    type_id: iconset
+                    type_id: iconset,
                 });
 
                 for (const icon of conversion.icons) {
@@ -104,7 +105,8 @@ export default class DataTransform {
                             const rando = randomUUID();
                             iconNameMap.set(icon.name, rando);
                             icon.name = rando + '.png';
-                        } else {
+                        }
+                        else {
                             iconNameMap.set(icon.name, name);
                             icon.name = name;
                         }
@@ -118,9 +120,9 @@ export default class DataTransform {
                         },
                         body: JSON.stringify({
                             name: icon.name,
-                            data: icon.data
-                        })
-                    })
+                            data: icon.data,
+                        }),
+                    });
 
                     if (!iconRes.ok) {
                         console.error(`err - Failed to upload icon: ${await iconRes.text()}`);
@@ -131,7 +133,7 @@ export default class DataTransform {
                     method: 'POST',
                     headers: {
                         Authorization: `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
-                    }
+                    },
                 });
 
                 if (!regen.ok) {
@@ -144,12 +146,13 @@ export default class DataTransform {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
                     },
-                    body: JSON.stringify({ iconset })
+                    body: JSON.stringify({ iconset }),
                 });
 
                 if (!res.ok) {
                     throw new Error(`Failed to update asset: ${await res.text()}`);
-                } else {
+                }
+                else {
                     this.asset = await res.json() as Asset;
                 }
             }
@@ -163,7 +166,7 @@ export default class DataTransform {
 
                 const rl = readline.createInterface({
                     input: readStream,
-                    crlfDelay: Infinity
+                    crlfDelay: Infinity,
                 });
 
                 for await (const line of rl) {
@@ -195,8 +198,8 @@ export default class DataTransform {
                 params: {
                     Bucket: this.msg.bucket,
                     Key: `profile/${this.msg.job.username}/${this.asset.id}.geojsonld`,
-                    Body: fs.createReadStream(conversion.asset)
-                }
+                    Body: fs.createReadStream(conversion.asset),
+                },
             });
             await geouploader.done();
 
@@ -207,12 +210,13 @@ export default class DataTransform {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
                 },
-                body: JSON.stringify({ artifacts })
+                body: JSON.stringify({ artifacts }),
             });
 
             if (!res.ok) {
                 throw new Error(`Failed to update asset: ${await res.text()}`);
-            } else {
+            }
+            else {
                 this.asset = await res.json() as Asset;
             }
 
@@ -230,16 +234,17 @@ export default class DataTransform {
                     force: true,
                     limit: {
                         features: false,
-                        size: false
+                        size: false,
                     },
                     zoom: {
                         min: 0,
                         base: 6,
                         max: 14,
-                    }
-                }
+                    },
+                },
             );
-        } else {
+        }
+        else {
             console.log(`ok - converting ${conversion.asset}`);
             const pmout = cp.execFileSync('pmtiles', ['convert', conversion.asset, path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')], { maxBuffer: 100 * 1024 * 1024 });
             console.log(String(pmout));
@@ -252,8 +257,8 @@ export default class DataTransform {
             params: {
                 Bucket: this.msg.bucket,
                 Key: `profile/${this.msg.job.username}/${this.asset.id}.pmtiles`,
-                Body: fs.createReadStream(path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles'))
-            }
+                Body: fs.createReadStream(path.resolve(this.local.tmpdir, path.parse(conversion.asset).name + '.pmtiles')),
+            },
         });
 
         await pmuploader.done();
@@ -265,12 +270,13 @@ export default class DataTransform {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
             },
-            body: JSON.stringify({ artifacts })
+            body: JSON.stringify({ artifacts }),
         });
 
         if (!res.ok) {
             throw new Error(`Failed to update asset: ${await res.text()}`);
-        } else {
+        }
+        else {
             this.asset = await res.json() as Asset;
         }
     }

@@ -3,7 +3,7 @@ import type { Message, LocalMessage, Transform, ConvertResponse } from '../types
 export default class MBTiles implements Transform {
     static register() {
         return {
-            inputs: ['.mbtiles']
+            inputs: ['.mbtiles'],
         };
     }
 
@@ -12,7 +12,7 @@ export default class MBTiles implements Transform {
 
     constructor(
         msg: Message,
-        local: LocalMessage
+        local: LocalMessage,
     ) {
         this.msg = msg;
         this.local = local;
@@ -20,7 +20,7 @@ export default class MBTiles implements Transform {
 
     async convert(): Promise<ConvertResponse> {
         return {
-            asset: this.local.raw
+            asset: this.local.raw,
         };
     }
 }

@@ -43,6 +43,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@stylistic/eslint-plugin": "^5.10.0",
         "@types/cors": "^2.8.17",
         "@types/jsonwebtoken": "^9.0.2",
         "@types/node": "^25.0.0",
