@@ -14,15 +14,16 @@ test('GET: api/user/admin@example.com/session - empty before login', async () =>
         const res = await flight.fetch('/api/user/admin@example.com/session', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, false);
 
         assert.deepEqual(res.body, {
             total: 0,
-            items: []
+            items: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -32,12 +33,12 @@ test('POST: api/login - create session', async () => {
         const res = await flight.fetch('/api/login', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 username: 'admin@example.com',
-                password: 'password123'
-            }
+                password: 'password123',
+            },
         }, false);
 
         assert.ok(res.body.token);
@@ -47,7 +48,8 @@ test('POST: api/login - create session', async () => {
             access: 'admin',
             email: 'admin@example.com',
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -57,8 +59,8 @@ test('GET: api/user/admin@example.com/session - populated after login', async ()
         const res = await flight.fetch('/api/user/admin@example.com/session', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, false);
 
         assert.equal(res.body.total, 1);
@@ -72,7 +74,8 @@ test('GET: api/user/admin@example.com/session - populated after login', async ()
         assert.ok(session.device_type);
         assert.ok(session.browser);
         assert.ok(session.os);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

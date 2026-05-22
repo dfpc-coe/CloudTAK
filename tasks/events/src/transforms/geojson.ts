@@ -6,7 +6,7 @@ import type { Message, LocalMessage, Transform, ConvertResponse } from '../types
 export default class GeoJSON implements Transform {
     static register() {
         return {
-            inputs: ['.geojsonld', '.geojson', '.json']
+            inputs: ['.geojsonld', '.geojson', '.json'],
         };
     }
 
@@ -15,7 +15,7 @@ export default class GeoJSON implements Transform {
 
     constructor(
         msg: Message,
-        local: LocalMessage
+        local: LocalMessage,
     ) {
         this.msg = msg;
         this.local = local;
@@ -42,11 +42,13 @@ export default class GeoJSON implements Transform {
                     writeStream.on('finish', resolve);
                     writeStream.on('error', reject);
                 });
-            } else if (json.type === 'Feature') {
+            }
+            else if (json.type === 'Feature') {
                 isFeatureCollection = true;
                 await fs.promises.writeFile(outputFile, JSON.stringify(json) + '\n');
             }
-        } catch {
+        }
+        catch {
             // Fallback to line-delimited processing
         }
 
@@ -54,7 +56,7 @@ export default class GeoJSON implements Transform {
             const fileStream = fs.createReadStream(inputFile);
             const rl = readline.createInterface({
                 input: fileStream,
-                crlfDelay: Infinity
+                crlfDelay: Infinity,
             });
 
             const writeStream = fs.createWriteStream(outputFile);
@@ -65,12 +67,14 @@ export default class GeoJSON implements Transform {
                     const json = JSON.parse(line);
                     if (json.type === 'Feature') {
                         writeStream.write(JSON.stringify(json) + '\n');
-                    } else if (json.type === 'FeatureCollection' && Array.isArray(json.features)) {
+                    }
+                    else if (json.type === 'FeatureCollection' && Array.isArray(json.features)) {
                         for (const feature of json.features) {
                             writeStream.write(JSON.stringify(feature) + '\n');
                         }
                     }
-                } catch {
+                }
+                catch {
                     // Skip invalid lines
                 }
             }
@@ -83,7 +87,7 @@ export default class GeoJSON implements Transform {
         }
 
         return {
-            asset: outputFile
-        }
+            asset: outputFile,
+        };
     }
 }

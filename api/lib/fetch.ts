@@ -1,6 +1,6 @@
 import Err from '@openaddresses/batch-error';
-import { Static, TSchema, TUnknown } from "@sinclair/typebox";
-import { TypeCompiler } from "@sinclair/typebox/compiler";
+import { Static, TSchema, TUnknown } from '@sinclair/typebox';
+import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { fetch, Response } from 'undici';
 import type { RequestInfo, RequestInit } from 'undici';
 
@@ -26,8 +26,9 @@ export class TypedResponse extends Response {
 
         if (cached) {
             typeChecker = cached;
-        } else {
-            typeChecker = TypeCompiler.Compile(type)
+        }
+        else {
+            typeChecker = TypeCompiler.Compile(type);
             cache.set(type, typeChecker);
         }
 
@@ -42,9 +43,9 @@ export class TypedResponse extends Response {
     }
 }
 
-export default async function(
+export default async function (
     input: RequestInfo,
-    init?: RequestInit
+    init?: RequestInit,
 ): Promise<TypedResponse> {
     return new TypedResponse(await fetch(input, init));
 }

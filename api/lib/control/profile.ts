@@ -1,11 +1,11 @@
-import { Static, Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
+import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
 import Config from '../config.js';
 import { Profile } from '../schema.js';
 import {
     toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate,
-} from '../enums.js'
+} from '../enums.js';
 import { ProfileResponse } from '../types.js';
 
 export const ProfileConfigDefaults = {
@@ -32,70 +32,69 @@ export const ProfileConfigDefaults = {
     'tak::type': 'a-f-G-E-V-C',
     'tak::role': TAKRole.TEAM_MEMBER,
     'tak::loc_freq': 2000,
-    'tak::loc': null
-}
-
+    'tak::loc': null,
+};
 
 export const DefaultUnits = Type.Object({
-    'stale': Type.Object({
+    stale: Type.Object({
         value: Type.Enum(Profile_Stale, {
-            default: ProfileConfigDefaults['display::stale']
+            default: ProfileConfigDefaults['display::stale'],
         }),
-        options: Type.Array(Type.String())
+        options: Type.Array(Type.String()),
     }),
-    'distance': Type.Object({
+    distance: Type.Object({
         value: Type.Enum(Profile_Distance, {
-            default: ProfileConfigDefaults['display::distance']
+            default: ProfileConfigDefaults['display::distance'],
         }),
-        options: Type.Array(Type.String())
+        options: Type.Array(Type.String()),
     }),
-    'elevation': Type.Object({
+    elevation: Type.Object({
         value: Type.Enum(Profile_Elevation, {
-            default: ProfileConfigDefaults['display::elevation']
+            default: ProfileConfigDefaults['display::elevation'],
         }),
-        options: Type.Array(Type.String())
+        options: Type.Array(Type.String()),
     }),
-    'speed': Type.Object({
+    speed: Type.Object({
         value: Type.Enum(Profile_Speed, {
-            default: ProfileConfigDefaults['display::speed']
+            default: ProfileConfigDefaults['display::speed'],
         }),
-        options: Type.Array(Type.String())
+        options: Type.Array(Type.String()),
     }),
-    'projection': Type.Object({
+    projection: Type.Object({
         value: Type.Enum(Profile_Projection, {
-            default: ProfileConfigDefaults['display::projection']
+            default: ProfileConfigDefaults['display::projection'],
         }),
-        options: Type.Array(Type.String())
+        options: Type.Array(Type.String()),
     }),
-    'zoom': Type.Object({
+    zoom: Type.Object({
         value: Type.Enum(Profile_Zoom, {
-            default: ProfileConfigDefaults['display::zoom']
+            default: ProfileConfigDefaults['display::zoom'],
         }),
-        options: Type.Array(Type.String())
+        options: Type.Array(Type.String()),
     }),
-    'style': Type.Object({
+    style: Type.Object({
         value: Type.Enum(Profile_Style, {
-            default: ProfileConfigDefaults['display::style']
+            default: ProfileConfigDefaults['display::style'],
         }),
-        options: Type.Array(Type.String())
+        options: Type.Array(Type.String()),
     }),
-    'coordinate': Type.Object({
+    coordinate: Type.Object({
         value: Type.Enum(Profile_Coordinate, {
-            default: ProfileConfigDefaults['display::coordinate']
+            default: ProfileConfigDefaults['display::coordinate'],
         }),
-        options: Type.Array(Type.String())
+        options: Type.Array(Type.String()),
     }),
-    'text': Type.Object({
+    text: Type.Object({
         value: Type.Enum(Profile_Text, {
-            default: ProfileConfigDefaults['display::text']
+            default: ProfileConfigDefaults['display::text'],
         }),
-        options: Type.Array(Type.String())
+        options: Type.Array(Type.String()),
     }),
-    'icon_rotation': Type.Object({
+    icon_rotation: Type.Object({
         value: Type.Boolean({
-            default: ProfileConfigDefaults['display::icon_rotation']
+            default: ProfileConfigDefaults['display::icon_rotation'],
         }),
-        options: Type.Array(Type.Boolean())
+        options: Type.Array(Type.Boolean()),
     }),
 });
 
@@ -112,7 +111,7 @@ export default class ProfileControl {
 
         const full_config = {
             ...ProfileConfigDefaults,
-            ...configs
+            ...configs,
         };
 
         for (const key of Object.keys(full_config)) {
@@ -123,7 +122,7 @@ export default class ProfileControl {
         return {
             ...profile,
             active: this.config.wsClients.has(profile.username),
-            agency_admin: profile.agency_admin || []
+            agency_admin: profile.agency_admin || [],
         };
     }
 
@@ -159,7 +158,7 @@ export default class ProfileControl {
         for (const key of Object.keys(ProfileConfigDefaults) as (keyof typeof ProfileConfigDefaults)[]) {
             if (key in displayDefaults) continue;
             configs.push(this.config.models.ProfileConfig.commit(profile.username, {
-                [key]: ProfileConfigDefaults[key]
+                [key]: ProfileConfigDefaults[key],
             }));
         }
 
@@ -190,51 +189,47 @@ export default class ProfileControl {
             return final[k.value.key.replace('display::', '')] = String(k.value.value);
         });
 
-        for (let display of keys) {
-            display = display.replace('display::', '')
-        }
-
         return {
             stale: {
                 value: toEnum.fromString(Type.Enum(Profile_Stale), final.stale || Profile_Stale.TenMinutes),
-                options: Object.values(Profile_Stale)
+                options: Object.values(Profile_Stale),
             },
             distance: {
                 value: toEnum.fromString(Type.Enum(Profile_Distance), final.distance || Profile_Distance.MILE),
-                options: Object.values(Profile_Distance)
+                options: Object.values(Profile_Distance),
             },
             elevation: {
                 value: toEnum.fromString(Type.Enum(Profile_Elevation), final.elevation || Profile_Elevation.FEET),
-                options: Object.values(Profile_Elevation)
+                options: Object.values(Profile_Elevation),
             },
             speed: {
                 value: toEnum.fromString(Type.Enum(Profile_Speed), final.speed || Profile_Speed.MPH),
-                options: Object.values(Profile_Speed)
+                options: Object.values(Profile_Speed),
             },
             projection: {
                 value: toEnum.fromString(Type.Enum(Profile_Projection), final.projection || Profile_Projection.GLOBE),
-                options: Object.values(Profile_Projection)
+                options: Object.values(Profile_Projection),
             },
             zoom: {
                 value: toEnum.fromString(Type.Enum(Profile_Zoom), final.zoom || Profile_Zoom.CONDITIONAL),
-                options: Object.values(Profile_Zoom)
+                options: Object.values(Profile_Zoom),
             },
             style: {
                 value: toEnum.fromString(Type.Enum(Profile_Style), final.style || Profile_Style.SYSTEM_DEFAULT),
-                options: Object.values(Profile_Style)
+                options: Object.values(Profile_Style),
             },
             coordinate: {
                 value: toEnum.fromString(Type.Enum(Profile_Coordinate), final.coordinate || Profile_Coordinate.DD),
-                options: Object.values(Profile_Coordinate)
+                options: Object.values(Profile_Coordinate),
             },
             text: {
                 value: toEnum.fromString(Type.Enum(Profile_Text), final.text || Profile_Text.Medium),
-                options: Object.values(Profile_Text)
+                options: Object.values(Profile_Text),
             },
             icon_rotation: {
                 value: final.icon_rotation === 'false' ? false : true,
-                options: [true, false]
-            }
-        }
+                options: [true, false],
+            },
+        };
     }
 }

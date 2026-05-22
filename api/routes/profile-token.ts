@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -20,14 +20,14 @@ export default async function router(schema: Schema, config: Config) {
             order: Default.Order,
             sort: Type.String({
                 default: 'created',
-                enum: Object.keys(ProfileToken)
+                enum: Object.keys(ProfileToken),
             }),
-            filter: Default.Filter
+            filter: Default.Filter,
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ProfileTokenResponse)
-        })
+            items: Type.Array(ProfileTokenResponse),
+        }),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -40,12 +40,13 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     name ~* ${req.query.filter}
                     AND username = ${user.email}
-                `
+                `,
             });
 
             res.json(list);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -54,7 +55,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileToken',
         description: 'Create a new API token for programatic access',
         body: Type.Object({
-            name: Type.String()
+            name: Type.String(),
         }),
         res: CreateProfileTokenResponse,
     }, async (req, res) => {
@@ -64,12 +65,13 @@ export default async function router(schema: Schema, config: Config) {
             const token = await config.models.ProfileToken.generate({
                 ...req.body,
                 token: 'etl.' + jwt.sign({ id: user.email, access: 'profile' }, config.SigningSecret),
-                username: user.email
+                username: user.email,
             });
 
             res.json(token);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -81,9 +83,9 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Update properties of a Token',
         body: Type.Object({
-            name: Type.Optional(Type.String())
+            name: Type.Optional(Type.String()),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -93,12 +95,13 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.ProfileToken.commit(sql`id = ${token.id}::INT`, {
                 updated: sql`Now()`,
-                ...req.body
+                ...req.body,
             });
 
             res.json({ status: 200, message: 'Token Updated' });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -109,7 +112,7 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             id: Type.Integer(),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -119,8 +122,9 @@ export default async function router(schema: Schema, config: Config) {
             await config.models.ProfileToken.delete(sql`id = ${token.id}::INT`);
 
             res.json({ status: 200, message: 'Token Deleted' });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

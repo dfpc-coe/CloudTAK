@@ -1,5 +1,5 @@
-import S3 from "@aws-sdk/client-s3";
-import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
+import S3 from '@aws-sdk/client-s3';
+import { NodeHttpHandler } from '@aws-sdk/node-http-handler';
 
 export default function s3client(): S3.S3Client {
     // the region should default to the same one as the function
@@ -9,7 +9,7 @@ export default function s3client(): S3.S3Client {
             connectionTimeout: 500,
             socketTimeout: 500,
         }),
-    }
+    };
 
     if (process.env.AWS_S3_Endpoint) {
         s3config.endpoint = process.env.AWS_S3_Endpoint;
@@ -21,8 +21,8 @@ export default function s3client(): S3.S3Client {
 
         s3config.credentials = {
             accessKeyId: process.env.AWS_S3_AccessKeyId,
-            secretAccessKey: process.env.AWS_S3_SecretAccessKey
-        }
+            secretAccessKey: process.env.AWS_S3_SecretAccessKey,
+        };
     }
 
     return new S3.S3Client(s3config);

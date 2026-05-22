@@ -1,5 +1,5 @@
 import fetch from '../fetch.js';
-import { Type }  from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
 
 export interface ArcGISConfig {
     authMethod: 'oauth2' | 'legacy';
@@ -58,15 +58,15 @@ export default class ArcGISTokenManager {
             method: 'POST',
             body: formData,
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
         });
 
         const data = await response.typed(Type.Union([
             Type.Object({
                 error: Type.Object({
-                    message: Type.String()
-                })
+                    message: Type.String(),
+                }),
             }),
             Type.Object({
                 access_token: Type.String(),
@@ -74,8 +74,8 @@ export default class ArcGISTokenManager {
                 username: Type.Optional(Type.String()),
                 ssl: Type.Optional(Type.Boolean()),
                 refresh_token: Type.Optional(Type.String()),
-                refresh_token_expires_in: Type.Optional(Type.Number())
-            })
+                refresh_token_expires_in: Type.Optional(Type.Number()),
+            }),
         ]));
 
         if ('error' in data) {
@@ -84,7 +84,7 @@ export default class ArcGISTokenManager {
 
         this.currentToken = {
             token: data.access_token,
-            expires: Date.now() + (data.expires_in * 1000)
+            expires: Date.now() + (data.expires_in * 1000),
         };
 
         return this.currentToken.token;
@@ -103,12 +103,13 @@ export default class ArcGISTokenManager {
 
             const data = await response.typed(Type.Object({
                 error: Type.Optional(Type.Object({
-                    message: Type.String()
-                }))
+                    message: Type.String(),
+                })),
             }));
 
             return !data.error;
-        } catch {
+        }
+        catch {
             return false;
         }
     }

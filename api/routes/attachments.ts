@@ -1,6 +1,6 @@
 import path from 'path';
 import { Busboy } from '@fastify/busboy';
-import { Static, Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox';
 import AttachmentControl from '../lib/control/attachment.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -18,7 +18,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Attachments',
         description: 'Attachments',
         query: Type.Object({
-            hash: Type.Union([Type.String(), Type.Array(Type.String())])
+            hash: Type.Union([Type.String(), Type.Array(Type.String())]),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -27,9 +27,9 @@ export default async function router(schema: Schema, config: Config) {
                 ext: Type.String(),
                 name: Type.String(),
                 size: Type.Integer(),
-                created: Type.String()
-            }))
-        })
+                created: Type.String(),
+            })),
+        }),
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
@@ -45,15 +45,16 @@ export default async function router(schema: Schema, config: Config) {
                     ext: parsed.ext,
                     name: parsed.base,
                     size: attachment[0].Size || 0,
-                    created: (attachment[0].LastModified || new Date()).toISOString()
+                    created: (attachment[0].LastModified || new Date()).toISOString(),
                 });
             }
 
             res.json({
                 total: items.length,
-                items
+                items,
             });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -64,12 +65,12 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Upload an attachment that is assigned to a given CoT',
         query: Type.Object({
             mission: Type.Optional(Type.String({
-                description: 'GUID of a mission to also upload the attachment to'
-            }))
+                description: 'GUID of a mission to also upload the attachment to',
+            })),
         }),
         res: Type.Object({
-            hash: Type.String()
-        })
+            hash: Type.String(),
+        }),
     }, async (req, res) => {
         try {
             const contentType = req.headers['content-type'];
@@ -85,9 +86,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const bb = new Busboy({
                 headers: {
-                    'content-type': contentType
+                    'content-type': contentType,
                 },
-                limits: { files: 1 }
+                limits: { files: 1 },
             });
 
             const uploads: Promise<{
@@ -126,20 +127,22 @@ export default async function router(schema: Schema, config: Config) {
                         await api.Mission.attachContents(
                             req.query.mission,
                             { hashes: [content.Hash] },
-                            opts
+                            opts,
                         );
                     }
 
                     res.json({
-                        ...result
-                    })
-                } catch (err) {
+                        ...result,
+                    });
+                }
+                catch (err) {
                     Err.respond(err, res);
                 }
             });
 
             req.pipe(bb);
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -149,13 +152,13 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Attachments',
         description: 'Attachments',
         params: Type.Object({
-            hash: Type.String()
+            hash: Type.String(),
         }),
         query: Type.Object({
             token: Type.Optional(Type.String()),
             download: Type.Optional(Type.Boolean({
-                description: 'Set Content-Disposition to download the file'
-            }))
+                description: 'Set Content-Disposition to download the file',
+            })),
         }),
     }, async (req, res) => {
         try {
@@ -173,7 +176,8 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             stream.pipe(res);
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });

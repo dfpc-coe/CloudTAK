@@ -65,6 +65,7 @@
         </TablerDropdown>
 
         <CopyButton
+            v-if='coordSource === "gps"'
             v-tooltip='"Copy Coordinates"'
             :text='formattedCoord'
             class='position-absolute top-50 end-0 translate-middle-y me-2'

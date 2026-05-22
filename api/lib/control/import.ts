@@ -1,7 +1,7 @@
 import Config from '../config.js';
 import Err from '@openaddresses/batch-error';
 import path from 'node:path';
-import S3 from '../aws/s3.js'
+import S3 from '../aws/s3.js';
 import { Static } from '@sinclair/typebox';
 import type { ImportResponse } from '../types.js';
 import crypto from 'node:crypto';
@@ -12,14 +12,14 @@ import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 export enum ImportSourceEnum {
     UPLOAD = 'Upload',
     MISSION = 'Mission',
-    PACKAGE = 'Package'
+    PACKAGE = 'Package',
 }
 
 export enum ImportResultTypeEnum {
     FEATURE = 'Feature',
     ASSET = 'Asset',
     ICONSET = 'Iconset',
-    BASEMAP = 'Basemap'
+    BASEMAP = 'Basemap',
 }
 
 export default class ImportControl {
@@ -33,7 +33,7 @@ export default class ImportControl {
         await this.config.models.Import.commit(id, {
             status: Import_Status.FAIL,
             error: error instanceof Error ? error.message : String(error),
-            updated: sql`Now()`
+            updated: sql`Now()`,
         });
     }
 
@@ -51,7 +51,7 @@ export default class ImportControl {
             status: 'Empty',
             source: body.source || ImportSourceEnum.UPLOAD,
             source_id: body.source_id,
-            config: body.config
+            config: body.config,
         });
 
         // Both Package and Mission Imports fetch from the File API
@@ -70,13 +70,14 @@ export default class ImportControl {
             }
 
             try {
-                await S3.put(`import/${imp.id}${ext}`, file)
+                await S3.put(`import/${imp.id}${ext}`, file);
 
                 await this.config.models.Import.commit(imp.id, {
                     name: imp.name,
-                    status: 'Pending'
+                    status: 'Pending',
                 });
-            } catch (err) {
+            }
+            catch (err) {
                 file.resume();
                 await this.fail(imp.id, err);
                 throw err;
@@ -85,7 +86,7 @@ export default class ImportControl {
 
         return {
             ...imp,
-            results: []
+            results: [],
         };
     }
 
@@ -94,32 +95,33 @@ export default class ImportControl {
         body: {
             status?: Import_Status;
             error?: string;
-        }
+        },
     ): Promise<Static<typeof ImportResponse>> {
         const imported = await this.config.models.Import.augmented_from(id);
 
         if (body.status && [Import_Status.EMPTY, Import_Status.PENDING].includes(body.status)) {
             throw new Err(400, null, `Cannot set status to ${body.status}`);
-        } else if (body.status === Import_Status.RUNNING && imported.status === Import_Status.RUNNING) {
+        }
+        else if (body.status === Import_Status.RUNNING && imported.status === Import_Status.RUNNING) {
             throw new Err(400, null, `Cannot set status to running on an import that is already running`);
         }
 
         const new_import = await this.config.models.Import.commit(id, {
             ...body,
-            updated: sql`Now()`
+            updated: sql`Now()`,
         });
 
         const response = {
             ...new_import,
-            results: imported.results
+            results: imported.results,
         };
 
         if (body.status === Import_Status.FAIL || body.status === Import_Status.SUCCESS) {
             for (const client of this.config.wsClients.get(imported.username) || []) {
                 client.ws.send(JSON.stringify({
                     type: 'import',
-                    properties: response
-                }))
+                    properties: response,
+                }));
             }
         }
 
@@ -138,12 +140,12 @@ export default class ImportControl {
         const new_import = await this.config.models.Import.commit(id, {
             status: Import_Status.PENDING,
             error: null,
-            updated: sql`Now()`
+            updated: sql`Now()`,
         });
 
         return {
             ...new_import,
-            results: []
+            results: [],
         };
     }
 

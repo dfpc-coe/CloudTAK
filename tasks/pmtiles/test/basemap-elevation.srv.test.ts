@@ -58,7 +58,7 @@ test('POST /tiles/basemap/:basemapid/elevation returns sampled elevations', asyn
                 type: 'raster-dem',
                 minzoom: 0,
                 maxzoom: 2,
-                encoding: 'mapbox'
+                encoding: 'mapbox',
             });
         }
 
@@ -68,21 +68,21 @@ test('POST /tiles/basemap/:basemapid/elevation returns sampled elevations', asyn
                 format: 'png',
                 minzoom: 0,
                 maxzoom: 2,
-                tiles: ['https://example.test/terrain/{z}/{x}/{y}.png?token=' + token]
+                tiles: ['https://example.test/terrain/{z}/{x}/{y}.png?token=' + token],
             });
         }
 
         if (url === `https://example.test/terrain/2/1/1.png?token=${token}`) {
             return new Response(leftTile, {
                 status: 200,
-                headers: { 'Content-Type': 'image/png' }
+                headers: { 'Content-Type': 'image/png' },
             });
         }
 
         if (url === `https://example.test/terrain/2/2/1.png?token=${token}`) {
             return new Response(rightTile, {
                 status: 200,
-                headers: { 'Content-Type': 'image/png' }
+                headers: { 'Content-Type': 'image/png' },
             });
         }
 
@@ -94,19 +94,19 @@ test('POST /tiles/basemap/:basemapid/elevation returns sampled elevations', asyn
         const res = await originalFetch(`http://localhost:${addr.port}/tiles/basemap/42/elevation?token=${token}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 geometry: {
                     type: 'LineString',
                     coordinates: [
                         [-10, 1],
-                        [10, 1]
-                    ]
+                        [10, 1],
+                    ],
                 },
                 samples: 10,
                 zoom: 2,
-            })
+            }),
         });
 
         assert.equal(res.status, 200);
@@ -118,7 +118,8 @@ test('POST /tiles/basemap/:basemapid/elevation returns sampled elevations', asyn
         assert.equal(body.samples.at(-1).elevation, 200);
         assert.ok(requestedURLs.has(`http://localhost:5001/api/basemap/42?token=${token}`));
         assert.ok(requestedURLs.has(`http://localhost:5001/api/basemap/42/tiles?token=${token}`));
-    } finally {
+    }
+    finally {
         globalThis.fetch = originalFetch;
     }
 });

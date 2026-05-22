@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import { sql } from 'drizzle-orm';
 import { Param } from '@openaddresses/batch-generic';
 import Alarm from '../lib/aws/alarm.js';
@@ -8,7 +8,7 @@ import Auth, { AuthResourceAccess, AuthUser, AuthUserAccess } from '../lib/auth.
 import Config from '../lib/config.js';
 import DataMission from '../lib/data-mission.js';
 import { DataResponse, LayerResponse } from '../lib/types.js';
-import { Layer } from '../lib/schema.js'
+import { Layer } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -22,13 +22,13 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             alarms: Type.Boolean({
                 default: false,
-                description: 'Get Live Alarm state from CloudWatch'
+                description: 'Get Live Alarm state from CloudWatch',
             }),
             page: Default.Page,
             order: Default.Order,
             sort: Type.String({
                 default: 'created',
-                enum: Object.keys(Layer)
+                enum: Object.keys(Layer),
             }),
             filter: Default.Filter,
             task: Type.Optional(Type.String()),
@@ -44,8 +44,8 @@ export default async function router(schema: Schema, config: Config) {
                 alarm: Type.Integer(),
                 unknown: Type.Integer(),
             }),
-            items: Type.Array(LayerResponse)
-        })
+            items: Type.Array(LayerResponse),
+        }),
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
@@ -61,7 +61,7 @@ export default async function router(schema: Schema, config: Config) {
                     AND (${Param(req.query.template)}::BOOLEAN IS NULL OR ${Param(req.query.template)}::BOOLEAN = layers.template)
                     AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers_incoming.data)
                     AND (${Param(req.query.task)}::TEXT IS NULL OR Starts_With(layers.task, ${Param(req.query.task)}::TEXT))
-                `
+                `,
             });
 
             let alarms = new Map();
@@ -74,7 +74,8 @@ export default async function router(schema: Schema, config: Config) {
                     if (state === 'alarm') status.alarm++;
                     if (state === 'unknown') status.unknown++;
                 }
-            } catch (err) {
+            }
+            catch (err) {
                 // Surface this in the future - failing alarm lists shouldn't nuke access
                 console.error(err);
             }
@@ -87,11 +88,12 @@ export default async function router(schema: Schema, config: Config) {
                     return {
                         status: alarms.get(layer.id) || 'unknown',
                         ...layer,
-                    }
-                })
+                    };
+                }),
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -105,15 +107,15 @@ export default async function router(schema: Schema, config: Config) {
             connection ID for subsequent calls
         `,
         params: Type.Object({
-            dataid: Type.Integer({ minimum: 1 })
+            dataid: Type.Integer({ minimum: 1 }),
         }),
-        res: DataResponse
+        res: DataResponse,
     }, async (req, res) => {
         try {
             const auth = await Auth.as_resource(config, req, {
                 resources: [
-                    { access: AuthResourceAccess.DATA, id: req.params.dataid }
-                ]
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                ],
             });
 
             if (auth instanceof AuthUser) {
@@ -130,16 +132,18 @@ export default async function router(schema: Schema, config: Config) {
 
                 res.json({
                     mission_exists: true,
-                    ...data
+                    ...data,
                 });
-            } catch (err) {
+            }
+            catch (err) {
                 res.json({
                     mission_exists: false,
                     mission_error: err instanceof Error ? err.message : String(err),
-                    ...data
+                    ...data,
                 });
             }
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -155,19 +159,19 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             alarms: Type.Boolean({
                 default: false,
-                description: 'Get Live Alarm state from CloudWatch'
+                description: 'Get Live Alarm state from CloudWatch',
             }),
         }),
         params: Type.Object({
             layerid: Type.Integer({ minimum: 1 }),
         }),
-        res: LayerResponse
+        res: LayerResponse,
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
                 resources: [
-                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
-                ]
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid },
+                ],
             });
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
@@ -176,16 +180,18 @@ export default async function router(schema: Schema, config: Config) {
             if (config.StackName !== 'test' && req.query.alarms) {
                 try {
                     status = await alarm.get(layer.id);
-                } catch (err) {
+                }
+                catch (err) {
                     console.error(err);
                 }
             }
 
             res.json({
                 status,
-                ...layer
+                ...layer,
             });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });

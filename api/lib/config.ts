@@ -15,12 +15,12 @@ import process from 'node:process';
 import * as pgtypes from './schema.js';
 
 interface ConfigArgs {
-    silent: boolean,
-    postgres: string,
-    noevents: boolean,
-    nosinks: boolean,
-    nogeofence?: boolean,
-    nocache: boolean,
+    silent: boolean;
+    postgres: string;
+    noevents: boolean;
+    nosinks: boolean;
+    nogeofence?: boolean;
+    nocache: boolean;
 }
 
 export default class Config {
@@ -93,8 +93,8 @@ export default class Config {
 
         return {
             cert: this.server.auth.cert,
-            key: this.server.auth.key
-        }
+            key: this.server.auth.key,
+        };
     }
 
     static async env(args: ConfigArgs): Promise<Config> {
@@ -110,7 +110,8 @@ export default class Config {
             Bucket = process.env.ASSET_BUCKET;
             API_URL = process.env.API_URL || 'http://localhost:5001';
             PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
-        } else {
+        }
+        else {
             if (!process.env.StackName) throw new Error('StackName env must be set');
             if (!process.env.API_URL) throw new Error('API_URL env must be set');
             if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env must be set');
@@ -119,8 +120,9 @@ export default class Config {
 
             const apiUrl = new URL(process.env.API_URL);
             if (apiUrl.hostname === 'localhost') {
-                PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001'
-            } else {
+                PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
+            }
+            else {
                 const url = new URL(process.env.API_URL);
                 PMTILES_URL = process.env.PMTILES_URL || `https://tiles.${url.host}`;
             }
@@ -130,22 +132,23 @@ export default class Config {
         }
 
         const pg: Pool<typeof pgtypes> = await Pool.connect(args.postgres, pgtypes, {
-            ssl: process.env.StackName === 'test' ? undefined  : { rejectUnauthorized: false },
-            migrationsFolder: (new URL('../migrations', import.meta.url)).pathname
-        })
+            ssl: process.env.StackName === 'test' ? undefined : { rejectUnauthorized: false },
+            migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
+        });
 
         const models = new Models(pg);
 
         let server: InferSelectModel<typeof Server>;
         try {
             server = await models.Server.from(1);
-        } catch (err) {
+        }
+        catch (err) {
             console.log(`ok - no server config found: ${err instanceof Error ? err.message : String(err)}`);
 
             server = await models.Server.generate({
                 name: 'Default Server',
                 url: 'ssl://localhost:8089',
-                api: 'https://localhost:8443'
+                api: 'https://localhost:8443',
             });
         }
 
@@ -157,7 +160,7 @@ export default class Config {
             nocache: (args.nocache || false),
             StackName: process.env.StackName,
             wsClients: new Map(),
-            server, SigningSecret, API_URL, Bucket, pg, models, PMTILES_URL
+            server, SigningSecret, API_URL, Bucket, pg, models, PMTILES_URL,
         });
 
         if (!config.silent) {
@@ -178,10 +181,10 @@ export default class Config {
                 console.error(`ok - Updating ${key} with value from environment`);
                 await config.models.Setting.generate({
                     key,
-                    value: process.env[envkey]
-                },{
-                    upsert: GenerateUpsert.UPDATE
-                })
+                    value: process.env[envkey],
+                }, {
+                    upsert: GenerateUpsert.UPDATE,
+                });
             }
         }
 
@@ -194,7 +197,8 @@ export default class Config {
     async fetchArnPrefix(service = ''): Promise<string> {
         if (this.arnPrefix) {
             return this.arnPrefix;
-        } else {
+        }
+        else {
             const sts = new STS.STSClient({ region: process.env.AWS_REGION });
             const account = await sts.send(new STS.GetCallerIdentityCommand({}));
             const res = [];
@@ -204,7 +208,7 @@ export default class Config {
             res.push(...account.Arn.split(':').splice(0, 2));
             res.push(service);
             res.push(process.env.AWS_REGION);
-            res.push(...account.Arn.split(':').splice(4, 1))
+            res.push(...account.Arn.split(':').splice(4, 1));
             this.arnPrefix = res.join(':');
 
             return this.arnPrefix;
@@ -213,12 +217,12 @@ export default class Config {
 
     static async fetchSecret(
         StackName: string,
-        Secret: string
+        Secret: string,
     ): Promise<string> {
         const secrets = new SecretsManager.SecretsManagerClient({ region: process.env.AWS_REGION });
 
         const secret = await secrets.send(new SecretsManager.GetSecretValueCommand({
-            SecretId: `${StackName}/api/${Secret}`
+            SecretId: `${StackName}/api/${Secret}`,
         }));
 
         return secret.SecretString || '';

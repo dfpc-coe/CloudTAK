@@ -7,7 +7,7 @@ import type { Message, LocalMessage } from '../src/types.js';
 
 test('GeoJSON Transform', async (t) => {
     const tmpdir = await fs.promises.mkdtemp('/tmp/geojson-test-');
-    
+
     await t.test('Convert FeatureCollection to Line Delimited', async () => {
         const id = 'input';
         const ext = '.json';
@@ -16,8 +16,8 @@ test('GeoJSON Transform', async (t) => {
             type: 'FeatureCollection',
             features: [
                 { type: 'Feature', properties: { a: 1 }, geometry: null },
-                { type: 'Feature', properties: { b: 2 }, geometry: null }
-            ]
+                { type: 'Feature', properties: { b: 2 }, geometry: null },
+            ],
         };
         await fs.promises.writeFile(inputFile, JSON.stringify(featureCollection));
 
@@ -26,11 +26,11 @@ test('GeoJSON Transform', async (t) => {
             name: 'input.json',
             ext,
             id,
-            raw: inputFile
+            raw: inputFile,
         } as LocalMessage);
 
         const result = await transform.convert();
-        
+
         const content = await fs.promises.readFile(result.asset, 'utf8');
         const lines = content.trim().split('\n');
         assert.strictEqual(lines.length, 2);
@@ -50,11 +50,11 @@ test('GeoJSON Transform', async (t) => {
             name: 'single.json',
             ext,
             id,
-            raw: inputFile
+            raw: inputFile,
         } as LocalMessage);
 
         const result = await transform.convert();
-        
+
         const content = await fs.promises.readFile(result.asset, 'utf8');
         const lines = content.trim().split('\n');
         assert.strictEqual(lines.length, 1);
@@ -74,11 +74,11 @@ test('GeoJSON Transform', async (t) => {
             name: 'lines.geojsonld',
             ext,
             id,
-            raw: inputFile
+            raw: inputFile,
         } as LocalMessage);
 
         const result = await transform.convert();
-        
+
         const content = await fs.promises.readFile(result.asset, 'utf8');
         const lines = content.trim().split('\n');
         assert.strictEqual(lines.length, 2);

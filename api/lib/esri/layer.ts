@@ -22,107 +22,106 @@ export default class Layer {
     }
 }
 
-
 export const DefaultFields = [{
-    "name": "objectid",
-    "type": "esriFieldTypeOID",
-    "actualType": "int",
-    "alias": "fid",
-    "sqlType": "sqlTypeInteger",
-    "length": 4,
-    "nullable": false,
-    "editable": false,
-    "domain": null,
-    "defaultValue": null
-},{
-    "name": "cotuid",
-    "type": "esriFieldTypeString",
-    "actualType": "nvarchar",
-    "alias": "cotuid1",
-    "sqlType": "sqlTypeNVarchar",
-    "length": 100,
-    "nullable": false,
-    "editable": true,
-    "domain": null,
-    "defaultValue": null
-},{
-    "name": "remarks",
-    "type": "esriFieldTypeString",
-    "actualType": "nvarchar",
-    "alias": "remarks",
-    "sqlType": "sqlTypeNVarchar",
-    "length": 2000,
-    "nullable": false,
-    "editable": true,
-    "domain": null,
-    "defaultValue": null
-},{
-    "name": "callsign",
-    "type": "esriFieldTypeString",
-    "actualType": "nvarchar",
-    "alias": "callsign",
-    "sqlType": "sqlTypeNVarchar",
-    "length": 100,
-    "nullable": true,
-    "editable": true,
-    "domain": null,
-    "defaultValue": null
-},{
-    "name": "type",
-    "type": "esriFieldTypeString",
-    "actualType": "nvarchar",
-    "alias": "type",
-    "sqlType": "sqlTypeNVarchar",
-    "length": 100,
-    "nullable": true,
-    "editable": true,
-    "domain": null,
-    "defaultValue": null
-},{
-    "name": "how",
-    "type": "esriFieldTypeString",
-    "actualType": "nvarchar",
-    "alias": "how",
-    "sqlType": "sqlTypeNVarchar",
-    "length": 100,
-    "nullable": true,
-    "editable": true,
-    "domain": null,
-    "defaultValue": null
-},{
-    "name": "time",
-    "type": "esriFieldTypeDate",
-    "actualType": "datetime2",
-    "alias": "time",
-    "sqlType": "sqlTypeTimestamp2",
-    "length": 100,
-    "nullable": true,
-    "editable": true,
-    "domain": null,
-    "defaultValue": null
-},{
-    "name": "start",
-    "type": "esriFieldTypeDate",
-    "actualType": "datetime2",
-    "alias": "start",
-    "sqlType": "sqlTypeTimestamp2",
-    "length": 100,
-    "nullable": true,
-    "editable": true,
-    "domain": null,
-    "defaultValue": null
-},{
-    "name": "stale",
-    "type": "esriFieldTypeDate",
-    "actualType": "datetime2",
-    "alias": "stale",
-    "sqlType": "sqlTypeTimestamp2",
-    "length": 100,
-    "nullable": true,
-    "editable": true,
-    "domain": null,
-    "defaultValue": null
-}]
+    name: 'objectid',
+    type: 'esriFieldTypeOID',
+    actualType: 'int',
+    alias: 'fid',
+    sqlType: 'sqlTypeInteger',
+    length: 4,
+    nullable: false,
+    editable: false,
+    domain: null,
+    defaultValue: null,
+}, {
+    name: 'cotuid',
+    type: 'esriFieldTypeString',
+    actualType: 'nvarchar',
+    alias: 'cotuid1',
+    sqlType: 'sqlTypeNVarchar',
+    length: 100,
+    nullable: false,
+    editable: true,
+    domain: null,
+    defaultValue: null,
+}, {
+    name: 'remarks',
+    type: 'esriFieldTypeString',
+    actualType: 'nvarchar',
+    alias: 'remarks',
+    sqlType: 'sqlTypeNVarchar',
+    length: 2000,
+    nullable: false,
+    editable: true,
+    domain: null,
+    defaultValue: null,
+}, {
+    name: 'callsign',
+    type: 'esriFieldTypeString',
+    actualType: 'nvarchar',
+    alias: 'callsign',
+    sqlType: 'sqlTypeNVarchar',
+    length: 100,
+    nullable: true,
+    editable: true,
+    domain: null,
+    defaultValue: null,
+}, {
+    name: 'type',
+    type: 'esriFieldTypeString',
+    actualType: 'nvarchar',
+    alias: 'type',
+    sqlType: 'sqlTypeNVarchar',
+    length: 100,
+    nullable: true,
+    editable: true,
+    domain: null,
+    defaultValue: null,
+}, {
+    name: 'how',
+    type: 'esriFieldTypeString',
+    actualType: 'nvarchar',
+    alias: 'how',
+    sqlType: 'sqlTypeNVarchar',
+    length: 100,
+    nullable: true,
+    editable: true,
+    domain: null,
+    defaultValue: null,
+}, {
+    name: 'time',
+    type: 'esriFieldTypeDate',
+    actualType: 'datetime2',
+    alias: 'time',
+    sqlType: 'sqlTypeTimestamp2',
+    length: 100,
+    nullable: true,
+    editable: true,
+    domain: null,
+    defaultValue: null,
+}, {
+    name: 'start',
+    type: 'esriFieldTypeDate',
+    actualType: 'datetime2',
+    alias: 'start',
+    sqlType: 'sqlTypeTimestamp2',
+    length: 100,
+    nullable: true,
+    editable: true,
+    domain: null,
+    defaultValue: null,
+}, {
+    name: 'stale',
+    type: 'esriFieldTypeDate',
+    actualType: 'datetime2',
+    alias: 'stale',
+    sqlType: 'sqlTypeTimestamp2',
+    length: 100,
+    nullable: true,
+    editable: true,
+    domain: null,
+    defaultValue: null,
+}];
 
 export const DefaultLayerPolys: Static<typeof ESRILayer> = {
     id: 2,
@@ -131,7 +130,7 @@ export const DefaultLayerPolys: Static<typeof ESRILayer> = {
     type: 'Feature Layer',
     displayField: 'callsign',
     supportedQueryFormats: 'JSON',
-    capabilities: "Create,Delete,Query,Update,Editing,Extract,Sync",
+    capabilities: 'Create,Delete,Query,Update,Editing,Extract,Sync',
     geometryType: 'esriGeometryPolygon',
     allowGeometryUpdates: true,
     hasAttachments: false,
@@ -146,11 +145,11 @@ export const DefaultLayerPolys: Static<typeof ESRILayer> = {
         spatialReference: { wkid: 102100, latestWkid: 3857 },
     },
     uniqueIdField: {
-        name: "objectid",
-        isSystemMaintained: true
+        name: 'objectid',
+        isSystemMaintained: true,
     },
-    fields: DefaultFields
-}
+    fields: DefaultFields,
+};
 
 export const DefaultLayerLines: Static<typeof ESRILayer> = {
     id: 1,
@@ -159,7 +158,7 @@ export const DefaultLayerLines: Static<typeof ESRILayer> = {
     type: 'Feature Layer',
     displayField: 'callsign',
     supportedQueryFormats: 'JSON',
-    capabilities: "Create,Delete,Query,Update,Editing,Extract,Sync",
+    capabilities: 'Create,Delete,Query,Update,Editing,Extract,Sync',
     geometryType: 'esriGeometryPolyline',
     allowGeometryUpdates: true,
     hasAttachments: false,
@@ -174,11 +173,11 @@ export const DefaultLayerLines: Static<typeof ESRILayer> = {
         spatialReference: { wkid: 102100, latestWkid: 3857 },
     },
     uniqueIdField: {
-        name: "objectid",
-        isSystemMaintained: true
+        name: 'objectid',
+        isSystemMaintained: true,
     },
-    fields: DefaultFields
-}
+    fields: DefaultFields,
+};
 
 export const DefaultLayerPoints: Static<typeof ESRILayer> = {
     id: 0,
@@ -187,7 +186,7 @@ export const DefaultLayerPoints: Static<typeof ESRILayer> = {
     type: 'Feature Layer',
     displayField: 'callsign',
     supportedQueryFormats: 'JSON',
-    capabilities: "Create,Delete,Query,Update,Editing,Extract,Sync",
+    capabilities: 'Create,Delete,Query,Update,Editing,Extract,Sync',
     geometryType: 'esriGeometryPoint',
     allowGeometryUpdates: true,
     hasAttachments: false,
@@ -202,8 +201,8 @@ export const DefaultLayerPoints: Static<typeof ESRILayer> = {
         spatialReference: { wkid: 102100, latestWkid: 3857 },
     },
     uniqueIdField: {
-        name: "objectid",
-        isSystemMaintained: true
+        name: 'objectid',
+        isSystemMaintained: true,
     },
-    fields: DefaultFields
-}
+    fields: DefaultFields,
+};

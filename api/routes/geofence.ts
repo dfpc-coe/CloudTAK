@@ -6,14 +6,14 @@ import Config from '../lib/config.js';
 
 const GeofenceStatusResponse = Type.Object({
     state: Type.String({
-        enum: ['disabled', 'disconnected', 'connecting', 'connected', 'reconnecting', 'error', 'closing']
+        enum: ['disabled', 'disconnected', 'connecting', 'connected', 'reconnecting', 'error', 'closing'],
     }),
     enabled: Type.Boolean(),
     configured: Type.Boolean(),
     connected: Type.Boolean(),
     url: Type.String(),
     reconnectAttempts: Type.Integer(),
-    lastError: Type.Optional(Type.String())
+    lastError: Type.Optional(Type.String()),
 });
 
 export default async function router(schema: Schema, config: Config) {
@@ -21,13 +21,14 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Get Geofence',
         group: 'Geofence',
         description: 'Get Geofence server connection status',
-        res: GeofenceStatusResponse
+        res: GeofenceStatusResponse,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
 
             res.json(await config.geofence.status());
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });

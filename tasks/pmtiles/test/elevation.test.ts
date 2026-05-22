@@ -39,7 +39,7 @@ test('getElevationProfile samples elevations across covered tiles', async () => 
         coordinates: [
             [-10, 1],
             [10, 1],
-        ]
+        ],
     };
 
     globalThis.fetch = async (input) => {
@@ -50,8 +50,8 @@ test('getElevationProfile samples elevations across covered tiles', async () => 
             return new Response(new Uint8Array(leftTile), {
                 status: 200,
                 headers: {
-                    'Content-Type': 'image/png'
-                }
+                    'Content-Type': 'image/png',
+                },
             });
         }
 
@@ -59,8 +59,8 @@ test('getElevationProfile samples elevations across covered tiles', async () => 
             return new Response(new Uint8Array(rightTile), {
                 status: 200,
                 headers: {
-                    'Content-Type': 'image/png'
-                }
+                    'Content-Type': 'image/png',
+                },
             });
         }
 
@@ -84,14 +84,15 @@ test('getElevationProfile samples elevations across covered tiles', async () => 
         assert.ok(profile.samples.length >= 5);
         assert.equal(profile.samples[0]?.elevation, 100);
         assert.equal(profile.samples.at(-1)?.elevation, 200);
-        assert.ok(profile.samples.some((sample) => sample.elevation === 100));
-        assert.ok(profile.samples.some((sample) => sample.elevation === 200));
+        assert.ok(profile.samples.some(sample => sample.elevation === 100));
+        assert.ok(profile.samples.some(sample => sample.elevation === 200));
 
         assert.deepEqual(new Set(requests), new Set([
             'https://example.test/terrain/2/1/1.png',
             'https://example.test/terrain/2/2/1.png',
         ]));
-    } finally {
+    }
+    finally {
         globalThis.fetch = originalFetch;
     }
 });
@@ -105,7 +106,7 @@ test('getElevationProfile decodes WebP raster-dem tiles', async () => {
         coordinates: [
             [-10, 1],
             [10, 1],
-        ]
+        ],
     };
 
     globalThis.fetch = async (input) => {
@@ -115,8 +116,8 @@ test('getElevationProfile decodes WebP raster-dem tiles', async () => {
             return new Response(webpTile, {
                 status: 200,
                 headers: {
-                    'Content-Type': 'image/webp'
-                }
+                    'Content-Type': 'image/webp',
+                },
             });
         }
 
@@ -131,8 +132,9 @@ test('getElevationProfile decodes WebP raster-dem tiles', async () => {
             maxSampleDistance: 500,
         });
 
-        assert.ok(profile.samples.every((sample) => sample.elevation === 321));
-    } finally {
+        assert.ok(profile.samples.every(sample => sample.elevation === 321));
+    }
+    finally {
         globalThis.fetch = originalFetch;
     }
 });

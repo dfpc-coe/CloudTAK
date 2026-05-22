@@ -3,13 +3,13 @@ import { isZipFile } from './sniff.ts';
 import { rimraf } from 'rimraf';
 import { randomUUID } from 'node:crypto';
 import { Upload } from '@aws-sdk/lib-storage';
-import { EventEmitter } from 'node:events'
+import { EventEmitter } from 'node:events';
 import type { Message, LocalMessage, Asset, ProfileFeature, Basemap as BasemapResponse } from './types.ts';
 import jwt from 'jsonwebtoken';
 import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
-import s3client from "./s3.ts";
+import s3client from './s3.ts';
 import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
 import { CoTParser, DataPackage, Iconset, Basemap } from '@tak-ps/node-cot';
@@ -50,8 +50,8 @@ export default class Worker extends EventEmitter {
                 ext,
                 name: this.msg.job.name,
                 tmpdir,
-                raw: path.resolve(tmpdir, name)
-            }
+                raw: path.resolve(tmpdir, name),
+            };
 
             await pipeline(
                 // @ts-expect-error 'StreamingBlobPayloadOutputTypes | undefined' is not assignable to parameter of type 'ReadableStream'
@@ -59,19 +59,21 @@ export default class Worker extends EventEmitter {
                     Bucket: this.msg.bucket,
                     Key: `import/${local.id}${originalExt}`,
                 }))).Body,
-                fs.createWriteStream(local.raw)
+                fs.createWriteStream(local.raw),
             );
 
             if (await isZipFile(local.raw)) {
                 await this.processArchive(local);
-            } else {
-                await this.processFile(local)
+            }
+            else {
+                await this.processFile(local);
             }
 
             if (local) await rimraf(local.tmpdir);
 
             this.emit('success');
-        } catch (err) {
+        }
+        catch (err) {
             console.error(`import: ${this.msg.job.id} Error: `, err);
 
             if (local) await rimraf(local.tmpdir);
@@ -79,7 +81,6 @@ export default class Worker extends EventEmitter {
             this.emit('error', err);
         }
     }
-
 
     /**
      * Processes a zip file that may or may not be a DataPackage.
@@ -90,15 +91,15 @@ export default class Worker extends EventEmitter {
     async processArchive(local: LocalMessage): Promise<void> {
         const pkg = await DataPackage.parse(local.raw, {
             cleanup: false,
-            strict: false
+            strict: false,
         });
 
         // If a .kml is present at the root level, assume an actual KMZ and process as a single file upload
         if (local.ext.toLowerCase() === '.kmz' && pkg.contents.some((content) => {
             const p = path.parse(content._attributes.zipEntry);
-            return !p.dir && p.ext.toLowerCase() === '.kml'
+            return !p.dir && p.ext.toLowerCase() === '.kml';
         })) {
-            return await this.processFile(local)
+            return await this.processFile(local);
         }
 
         // We disable cleanup in the parser just in case we choose to
@@ -118,15 +119,15 @@ export default class Worker extends EventEmitter {
                     if (!contents || !contents.length) continue;
 
                     for (const content of contents) {
-                        const hash = await pkg.hash(content._attributes.zipEntry)
+                        const hash = await pkg.hash(content._attributes.zipEntry);
                         const name = path.parse(content._attributes.zipEntry).base;
 
                         console.log(`ok - uploading: s3://${this.msg.bucket}/attachment/${hash}/${name}`);
-                            await s3.send(new PutObjectCommand({
+                        await s3.send(new PutObjectCommand({
                             Bucket: this.msg.bucket,
                             Key: `attachment/${hash}/${name}`,
-                            Body: await pkg.getFile(content._attributes.zipEntry)
-                        }))
+                            Body: await pkg.getFile(content._attributes.zipEntry),
+                        }));
                     }
                 }
             }
@@ -137,23 +138,24 @@ export default class Worker extends EventEmitter {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     ...feat,
                     path: `/${pkg.settings.name.replace(/\//g, '')}/`,
-                })
+                }),
             });
 
             if (!res.ok) {
                 const json = (await res.json()) as { message: string };
                 console.error(json.message);
-            } else {
-                 const feature = await res.json() as ProfileFeature;
-                 await createImportResult(this.msg, {
+            }
+            else {
+                const feature = await res.json() as ProfileFeature;
+                await createImportResult(this.msg, {
                     name: feat.id as string,
                     type: 'Feature',
-                    type_id: String(feature.id)
+                    type_id: String(feature.id),
                 });
             }
         }
@@ -167,7 +169,8 @@ export default class Worker extends EventEmitter {
 
             if (base !== 'MANIFEST.xml' && extLower === '.xml') {
                 indexes.push(file);
-            } else {
+            }
+            else {
                 if (base === 'MANIFEST.xml') continue;
                 if (['.png', '.xml'].includes(extLower)) continue;
 
@@ -176,7 +179,7 @@ export default class Worker extends EventEmitter {
                     tmpdir: pkg.path,
                     ext: extLower,
                     name: base,
-                    raw: path.resolve(pkg.path, './raw/', file)
+                    raw: path.resolve(pkg.path, './raw/', file),
                 });
             }
         }
@@ -204,8 +207,9 @@ export default class Worker extends EventEmitter {
                 await Basemap.parse(xml);
 
                 return await this.processBasemap(xml);
-            } catch (err) {
-                console.error('Basemap Error: ' + err)
+            }
+            catch (err) {
+                console.error('Basemap Error: ' + err);
             }
         }
 
@@ -220,8 +224,8 @@ export default class Worker extends EventEmitter {
             params: {
                 Bucket: this.msg.bucket,
                 Key: `profile/${this.msg.job.username}/${id}${local.ext}`,
-                Body: fs.createReadStream(local.raw)
-            }
+                Body: fs.createReadStream(local.raw),
+            },
         });
 
         await geouploader.done();
@@ -239,7 +243,7 @@ export default class Worker extends EventEmitter {
                 name: path.parse(local.name).name + local.ext,
                 // TODO Use Data Package Prefix
                 path: '/',
-            })
+            }),
         });
 
         if (!res.ok) throw new Error(await res.text());
@@ -249,13 +253,13 @@ export default class Worker extends EventEmitter {
         await createImportResult(this.msg, {
             name: asset.name,
             type: 'Asset',
-            type_id: asset.id
+            type_id: asset.id,
         });
 
         const transformer = new DataTransform(
             this.msg,
             local,
-            asset
+            asset,
         );
 
         await transformer.run();
@@ -270,7 +274,7 @@ export default class Worker extends EventEmitter {
      */
     async processIndex(
         pkg: DataPackage,
-        file: string
+        file: string,
     ): Promise<void> {
         const xml = (await pkg.getFileBuffer(file)).toString();
 
@@ -280,7 +284,7 @@ export default class Worker extends EventEmitter {
 
     async processIconset(
         xml: string,
-        pkg: DataPackage
+        pkg: DataPackage,
     ): Promise<void> {
         try {
             const iconset = await Iconset.parse(xml);
@@ -288,7 +292,7 @@ export default class Worker extends EventEmitter {
             const check = await fetch(new URL(`/api/iconset/${iconset.uid}`, this.msg.api), {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                    Authorization: `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
                 },
             });
 
@@ -302,7 +306,7 @@ export default class Worker extends EventEmitter {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
                 },
-                body: JSON.stringify(iconset.to_json())
+                body: JSON.stringify(iconset.to_json()),
             });
 
             if (!iconset_req.ok) throw new Error(await iconset_req.text());
@@ -310,7 +314,7 @@ export default class Worker extends EventEmitter {
             await createImportResult(this.msg, {
                 name: iconset.name,
                 type: 'Iconset',
-                type_id: iconset.uid
+                type_id: iconset.uid,
             });
 
             // Someone decided that the icon name should be the name without the folder prefix
@@ -333,9 +337,11 @@ export default class Worker extends EventEmitter {
                     let prefix = 'data:';
                     if (ext === '.png') {
                         prefix += 'image/png;base64,';
-                    } else if (ext === '.svg') {
+                    }
+                    else if (ext === '.svg') {
                         prefix += 'image/svg+xml;base64,';
-                    } else {
+                    }
+                    else {
                         console.warn(`Iconset ${iconset.name} (${iconset.uid}) - Unsupported icon type for ${icon.name}: ${ext}`);
                         continue;
                     }
@@ -350,14 +356,15 @@ export default class Worker extends EventEmitter {
                             name: lookup.get(icon.name),
                             path: `${iconset.uid}/${lookup.get(icon.name)}`,
                             type2525b: icon.type2525b || null,
-                            data: `${prefix}${(await pkg.getFileBuffer(lookup.get(icon.name))).toString('base64')}`
-                        })
+                            data: `${prefix}${(await pkg.getFileBuffer(lookup.get(icon.name))).toString('base64')}`,
+                        }),
                     });
 
                     if (!icon_req.ok) console.error(await icon_req.text());
                 }
             }
-        } catch (err) {
+        }
+        catch (err) {
             console.log(`Import: ${this.msg.job.id} - Is not an Iconset:`, err instanceof Error ? err.message : String(err));
         }
     }
@@ -383,23 +390,24 @@ export default class Worker extends EventEmitter {
                     maxzoom: json.maxZoom,
                     protocol: 'zxy',
                     format,
-                })
+                }),
             });
 
             if (!basemap_req.ok) {
                 console.error(await basemap_req.text());
-            } else {
+            }
+            else {
                 const prod = await basemap_req.json() as BasemapResponse;
 
                 await createImportResult(this.msg, {
                     name: prod.name,
                     type: 'Basemap',
-                    type_id: String(prod.id)
+                    type_id: String(prod.id),
                 });
             }
-        } catch (err) {
+        }
+        catch (err) {
             console.log(`Import: ${this.msg.job.id} - Is not a Basemap:`, err instanceof Error ? err.message : String(err));
         }
     }
 }
-

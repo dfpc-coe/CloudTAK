@@ -14,7 +14,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ServerVideos',
         description: 'Helper API to get list video streams',
         query: VideoConnectionListInput,
-        res: VideoConnectionList
+        res: VideoConnectionList,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
@@ -25,8 +25,9 @@ export default async function router(schema: Schema, config: Config) {
             const list = await api.Video.list(req.query);
 
             res.json(list);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

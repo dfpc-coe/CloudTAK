@@ -1,9 +1,9 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { Subscription, ListSubscriptionInput } from '@tak-ps/node-tak/lib/api/subscriptions'
+import { Subscription, ListSubscriptionInput } from '@tak-ps/node-tak/lib/api/subscriptions';
 import {
     TAKList,
 } from '@tak-ps/node-tak/lib/api/types';
@@ -15,7 +15,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiSubscription',
         description: 'Helper API to list subscriptions that the client can see',
         query: ListSubscriptionInput,
-        res: TAKList(Subscription)
+        res: TAKList(Subscription),
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
@@ -30,12 +30,13 @@ export default async function router(schema: Schema, config: Config) {
             subs.data.forEach((sub) => {
                 sub.groups = (sub.groups || []).filter((group) => {
                     return channels.has(group.bitpos);
-                })
+                });
             });
 
             res.json(subs);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -44,9 +45,9 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiSubscription',
         description: 'Helper API to get a subscription',
         params: Type.Object({
-            clientuid: Type.String()
+            clientuid: Type.String(),
         }),
-        res: Subscription
+        res: Subscription,
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
@@ -59,7 +60,7 @@ export default async function router(schema: Schema, config: Config) {
                 sortBy: 'CALLSIGN',
                 direction: 'ASCENDING',
                 page: -1,
-                limit: -1
+                limit: -1,
             });
             const channels = await config.conns.activeChannels(user.email, api);
 
@@ -76,8 +77,9 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (!done) throw new Err(404, null, `Subscription for ${req.params.clientuid} not found`);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

@@ -15,8 +15,8 @@ test('GET: api/server - Configured - Admin', async () => {
         const res = await flight.fetch('/api/server', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.equal(res.body.status, 'configured');
@@ -27,7 +27,8 @@ test('GET: api/server - Configured - Admin', async () => {
         assert.ok(res.body.certificate.validTo);
         assert.ok(res.body.url);
         assert.ok(res.body.api);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -37,8 +38,8 @@ test('GET: api/server - Configured - Non-admin User', async () => {
         const res = await flight.fetch('/api/server', {
             method: 'GET',
             auth: {
-                bearer: flight.token.user
-            }
+                bearer: flight.token.user,
+            },
         }, true);
 
         assert.equal(res.body.status, 'configured');
@@ -46,7 +47,8 @@ test('GET: api/server - Configured - Non-admin User', async () => {
         assert.equal(res.body.certificate, undefined);
         assert.ok(res.body.url);
         assert.ok(res.body.api);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -58,7 +60,8 @@ test('GET: api/server - Configured - No Auth', async () => {
         }, false);
 
         assert.equal(res.status, 401);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -68,7 +71,7 @@ test('PATCH: api/server - Configured - Non-admin User', async () => {
         const res = await flight.fetch('/api/server', {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
                 name: 'Updated Server',
@@ -77,13 +80,14 @@ test('PATCH: api/server - Configured - Non-admin User', async () => {
                 webtak: 'http://localhost:8444',
                 auth: {
                     cert: String(fs.readFileSync(flight.tak.keys.cert)),
-                    key: String(fs.readFileSync(flight.tak.keys.key))
-                }
-            }
+                    key: String(fs.readFileSync(flight.tak.keys.key)),
+                },
+            },
         }, false);
 
         assert.equal(res.status, 401);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -93,7 +97,7 @@ test('PATCH: api/server - Configured - Admin', async () => {
         const res = await flight.fetch('/api/server', {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 name: 'Updated Server',
@@ -102,16 +106,17 @@ test('PATCH: api/server - Configured - Admin', async () => {
                 webtak: 'http://localhost:8444',
                 auth: {
                     cert: String(fs.readFileSync(flight.tak.keys.cert)),
-                    key: String(fs.readFileSync(flight.tak.keys.key))
-                }
-            }
+                    key: String(fs.readFileSync(flight.tak.keys.key)),
+                },
+            },
         }, true);
 
         assert.equal(res.body.status, 'configured');
         assert.equal(res.body.name, 'Updated Server');
         assert.equal(res.body.auth, true);
         assert.ok(res.body.certificate);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -123,9 +128,10 @@ test('Reset Server to Unconfigured', async () => {
             url: '',
             api: '',
             webtak: '',
-            auth: {}
+            auth: {},
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -135,8 +141,8 @@ test('GET: api/server - Unconfigured - Admin', async () => {
         const res = await flight.fetch('/api/server', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         delete res.body.version;
@@ -150,9 +156,10 @@ test('GET: api/server - Unconfigured - Admin', async () => {
             url: '',
             api: '',
             webtak: '',
-            auth: false
+            auth: false,
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -162,8 +169,8 @@ test('GET: api/server - Unconfigured - User', async () => {
         const res = await flight.fetch('/api/server', {
             method: 'GET',
             auth: {
-                bearer: flight.token.user
-            }
+                bearer: flight.token.user,
+            },
         }, true);
 
         delete res.body.version;
@@ -177,9 +184,10 @@ test('GET: api/server - Unconfigured - User', async () => {
             url: '',
             api: '',
             webtak: '',
-            auth: false
+            auth: false,
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -201,9 +209,10 @@ test('GET: api/server - Unconfigured - No Auth', async () => {
             url: '',
             api: '',
             webtak: '',
-            auth: false
+            auth: false,
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -219,14 +228,15 @@ test('PATCH: api/server - Unconfigured without username/password', async () => {
                 webtak: 'http://localhost:8444',
                 auth: {
                     cert: String(fs.readFileSync(flight.tak.keys.cert)),
-                    key: String(fs.readFileSync(flight.tak.keys.key))
-                }
-            }
+                    key: String(fs.readFileSync(flight.tak.keys.key)),
+                },
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Initial configuration must include valid TAK Username & Password to set System Administrator');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

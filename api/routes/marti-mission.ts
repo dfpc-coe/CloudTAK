@@ -1,9 +1,9 @@
-import { Static, Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox';
 import path from 'node:path';
 import qr from 'qr-image';
 import tokml from 'tokml';
 import Schema from '@openaddresses/batch-schema';
-import { Feature } from '@tak-ps/node-cot'
+import { Feature } from '@tak-ps/node-cot';
 import S3 from '../lib/aws/s3.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -19,13 +19,13 @@ import {
     MissionChange,
     MissionDeleteInput,
     MissionCreateInput,
-    MissionSubscriber
+    MissionSubscriber,
 } from '@tak-ps/node-tak/lib/api/mission';
 import { MissionInvite, MissionInviteType, MissionSubscriberRole } from '@tak-ps/node-tak/lib/api/mission-invite';
 import {
     TAKList,
 } from '@tak-ps/node-tak/lib/api/types';
-import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/missions/:name', {
@@ -39,17 +39,17 @@ export default async function router(schema: Schema, config: Config) {
             password: Type.Optional(Type.String()),
             changes: Type.Boolean({
                 default: false,
-                description: 'If true, include changes array in the resulting Mission'
+                description: 'If true, include changes array in the resulting Mission',
             }),
             logs: Type.Boolean({
                 default: false,
-                description: 'If true, include logs array in the resulting Mission'
+                description: 'If true, include logs array in the resulting Mission',
             }),
             secago: Type.Optional(Type.Integer()),
             start: Type.Optional(Type.String()),
-            end: Type.Optional(Type.String())
+            end: Type.Optional(Type.String()),
         }),
-        res: Mission
+        res: Mission,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -58,17 +58,18 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const mission = await api.Mission.get(
                 req.params.name,
                 req.query,
-                opts
+                opts,
             );
 
             res.json(mission);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -81,8 +82,8 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Helper API to get latest CoTs',
         res: Type.Object({
             type: Type.String(),
-            features: Type.Array(Feature.Feature)
-        })
+            features: Type.Array(Feature.Feature),
+        }),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -91,13 +92,14 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.guid)
+                : await config.conns.subscription(user.email, req.params.guid);
 
             const features = await api.Mission.latestFeats(req.params.guid, opts);
 
             res.json({ type: 'FeatureCollection', features });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -106,10 +108,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissions',
         params: Type.Object({
             guid: Type.String(),
-            uid: Type.String()
+            uid: Type.String(),
         }),
         description: 'Delete an upload by hash',
-        res: GenericMartiResponse
+        res: GenericMartiResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -120,19 +122,20 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.guid)
+                : await config.conns.subscription(user.email, req.params.guid);
 
             const missionContent = await api.Mission.detachContents(
                 req.params.guid,
                 {
-                    uid: req.params.uid
+                    uid: req.params.uid,
                 },
-                opts
+                opts,
             );
 
             res.json(missionContent);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -151,12 +154,12 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const mission = await api.Mission.get(
                 req.params.name,
                 {},
-                opts
+                opts,
             );
 
             res.type('svg');
@@ -164,12 +167,13 @@ export default async function router(schema: Schema, config: Config) {
             const svg = qr.image([
                 `${config.server.url.replace('ssl://', '')}:ssl`,
                 `${config.server.api.replace('https://', '')}-ssl-${mission.name}`,
-                mission.name
+                mission.name,
             ].join(','), { type: 'svg' });
 
             svg.pipe(res);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -181,7 +185,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to get mission changes',
         query: MissionChangesInput,
-        res: TAKList(MissionChange)
+        res: TAKList(MissionChange),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -190,17 +194,18 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const changes = await api.Mission.changes(
                 req.params.name,
                 req.query,
-                opts
+                opts,
             );
 
             res.json(changes);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -212,7 +217,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to delete a single mission',
         query: MissionDeleteInput,
-        res: GenericMartiResponse
+        res: GenericMartiResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -221,17 +226,18 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const mission = await api.Mission.delete(
                 req.params.name,
                 req.query,
-                opts
+                opts,
             );
 
             res.json(mission);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -240,7 +246,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissions',
         description: 'Helper API to create a mission',
         body: Type.Omit(MissionCreateInput, ['creatorUid']),
-        res: Mission
+        res: Mission,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -249,12 +255,13 @@ export default async function router(schema: Schema, config: Config) {
 
             const mission = await api.Mission.create({
                 ...req.body,
-                creatorUid: `ANDROID-CloudTAK-${user.email}`
+                creatorUid: `ANDROID-CloudTAK-${user.email}`,
             });
 
             res.json(mission);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -269,10 +276,10 @@ export default async function router(schema: Schema, config: Config) {
             description: Type.Optional(Type.String()),
             keywords: Type.Optional(Type.Array(Type.String())),
             groups: Type.Optional(Type.Array(Type.String(), {
-                description: 'Updated set of groups (channels) to assign to the Mission. Caller must be MISSION_OWNER or admin.'
+                description: 'Updated set of groups (channels) to assign to the Mission. Caller must be MISSION_OWNER or admin.',
             })),
         }),
-        res: Mission
+        res: Mission,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -281,7 +288,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const { groups, ...rest } = req.body;
 
@@ -289,14 +296,15 @@ export default async function router(schema: Schema, config: Config) {
                 req.params.name,
                 {
                     ...rest,
-                    ...(groups !== undefined ? { group: groups } : {})
+                    ...(groups !== undefined ? { group: groups } : {}),
                 },
-                opts
+                opts,
             );
 
             res.json(await api.Mission.get(mission.guid || req.params.name, {}, opts));
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -309,19 +317,19 @@ export default async function router(schema: Schema, config: Config) {
             Type.Object({
                 sort: Type.String({
                     default: 'createTime',
-                    description: 'Property to sort by'
+                    description: 'Property to sort by',
                 }),
                 order: Default.Order,
                 groups: Type.Optional(Type.String({
-                    description: 'Filter by one or more groups (comma separated)'
-                }))
-            })
+                    description: 'Filter by one or more groups (comma separated)',
+                })),
+            }),
         ]),
         res: Type.Object({
             items: Type.Array(Mission),
             invites: Type.Array(MissionInvite),
-            total: Type.Integer()
-        })
+            total: Type.Integer(),
+        }),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -332,7 +340,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const [missions, invites] = await Promise.all([
                 api.Mission.list(query),
-                api.MissionInvite.list('ANDROID-CloudTAK-' + user.email)
+                api.MissionInvite.list('ANDROID-CloudTAK-' + user.email),
             ]);
 
             if (groups) {
@@ -341,7 +349,7 @@ export default async function router(schema: Schema, config: Config) {
                     if (!mission.groups) return false;
                     const missionGroups = Array.isArray(mission.groups) ? mission.groups : [mission.groups];
 
-                    return missionGroups.some((g) => groupList.includes(g));
+                    return missionGroups.some(g => groupList.includes(g));
                 });
             }
 
@@ -359,10 +367,11 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 items: missions.data,
                 invites: invites.data,
-                total: missions.data.length
+                total: missions.data.length,
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -376,14 +385,14 @@ export default async function router(schema: Schema, config: Config) {
             format: Type.String({
                 default: 'zip',
                 enum: ['zip', 'geojson', 'kml'],
-                description: 'The archive format to return'
+                description: 'The archive format to return',
             }),
             download: Type.Boolean({
                 default: false,
-                description: 'If set, the response will include a Content-Disposition Header'
-            })
+                description: 'If set, the response will include a Content-Disposition Header',
+            }),
         }),
-        description: 'Get a Mission Archive Zip'
+        description: 'Get a Mission Archive Zip',
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -392,7 +401,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             if (req.query.download) {
                 res.setHeader('Content-Disposition', `attachment; filename="${req.params.name}.${req.query.format}"`);
@@ -401,20 +410,21 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.format === 'zip') {
                 const archive = await api.Mission.getArchive(
                     req.params.name,
-                    opts
+                    opts,
                 );
 
                 res.setHeader('Content-Type', 'application/zip');
 
                 archive.pipe(res);
-            } else if (['geojson', 'kml'].includes(req.query.format)) {
+            }
+            else if (['geojson', 'kml'].includes(req.query.format)) {
                 const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                     ? { token: String(req.headers['missionauthorization']) }
-                    : await config.conns.subscription(user.email, req.params.name)
+                    : await config.conns.subscription(user.email, req.params.name);
 
                 const fc = {
                     type: 'FeatureCollection',
-                    features: await api.Mission.latestFeats(req.params.name, opts)
+                    features: await api.Mission.latestFeats(req.params.name, opts),
                 };
 
                 if (req.query.format === 'geojson') {
@@ -424,7 +434,8 @@ export default async function router(schema: Schema, config: Config) {
                     res.set('Content-Length', String(Buffer.byteLength(output)));
                     res.write(output);
                     res.end();
-                } else if (req.query.format === 'kml') {
+                }
+                else if (req.query.format === 'kml') {
                     res.set('Content-Type', 'application/vnd.google-earth.kml+xml');
 
                     const output = Buffer.from(tokml(fc, {
@@ -432,18 +443,20 @@ export default async function router(schema: Schema, config: Config) {
                         documentDescription: 'Exported from CloudTAK',
                         simplestyle: true,
                         name: 'callsign',
-                        description: 'remarks'
+                        description: 'remarks',
                     }));
 
                     res.set('Content-Length', String(Buffer.byteLength(output)));
                     res.write(output);
                     res.end();
-                } else {
+                }
+                else {
                     throw new Err(400, null, `Unknown Export Format: ${req.query.format}`);
                 }
             }
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -454,7 +467,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'Return a role associated with your user',
-        res: MissionRole
+        res: MissionRole,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -463,16 +476,17 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const role = await api.Mission.role(
                 req.params.name,
-                opts
+                opts,
             );
 
             res.json(role);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -483,7 +497,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'List subscriptions associated with a mission',
-        res: GenericMartiResponse
+        res: GenericMartiResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -492,16 +506,17 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const subs = await api.Mission.subscriptions(
                 req.params.name,
-                opts
+                opts,
             );
 
             res.json(subs);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -512,7 +527,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'List subscriptions associated with a mission',
-        res: TAKList(MissionSubscriber)
+        res: TAKList(MissionSubscriber),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -521,16 +536,17 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const roles = await api.Mission.subscriptionRoles(
                 req.params.name,
-                opts
+                opts,
             );
 
             res.json(roles);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -558,16 +574,17 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const missions = await api.Mission.contacts(
                 req.params.name,
-                opts
+                opts,
             );
 
             res.json(missions);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -581,12 +598,12 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             assets: Type.Array(Type.Object({
                 type: Type.Literal('profile'),
-                id: Type.String()
+                id: Type.String(),
             }), {
-                default: []
+                default: [],
             }),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -617,23 +634,23 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
-
+                : await config.conns.subscription(user.email, req.params.name);
 
             await api.Mission.attachContents(
                 req.params.name,
                 {
-                    hashes: contents
+                    hashes: contents,
                 },
-                opts
+                opts,
             );
 
             res.json({
                 status: 200,
-                message: 'Files Attached'
+                message: 'Files Attached',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -645,9 +662,9 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Create an upload',
         query: Type.Object({
-            name: Type.String()
+            name: Type.String(),
         }),
-        res: GenericMartiResponse
+        res: GenericMartiResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -669,24 +686,25 @@ export default async function router(schema: Schema, config: Config) {
             // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
             req.connection = {
                 // @ts-expect-error not a known type
-                remoteAddress: req._remoteAddress
-            }
+                remoteAddress: req._remoteAddress,
+            };
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const missionContent = await api.Mission.attachContents(
                 req.params.name,
                 {
-                    hashes: [content.Hash]
+                    hashes: [content.Hash],
                 },
-                opts
+                opts,
             );
 
             res.json(missionContent);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -695,10 +713,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissions',
         params: Type.Object({
             name: Type.String(),
-            hash: Type.String()
+            hash: Type.String(),
         }),
         description: 'Delete an upload by hash',
-        res: GenericMartiResponse
+        res: GenericMartiResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -709,19 +727,20 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.name);
 
             const missionContent = await api.Mission.detachContents(
                 req.params.name,
                 {
-                    hash: req.params.hash
+                    hash: req.params.hash,
                 },
-                opts
+                opts,
             );
 
             res.json(missionContent);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -730,11 +749,11 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissions',
         description: 'List pending mission invites',
         params: Type.Object({
-            guid: Type.String()
+            guid: Type.String(),
         }),
         res: Type.Object({
-            data: Type.Array(MissionInvite)
-        })
+            data: Type.Array(MissionInvite),
+        }),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -743,13 +762,14 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.guid)
+                : await config.conns.subscription(user.email, req.params.guid);
 
             const invites = await api.MissionInvite.get(req.params.guid, opts);
 
             res.json(invites);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -758,14 +778,14 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissions',
         description: 'Create a pending mission invite',
         params: Type.Object({
-            guid: Type.String()
+            guid: Type.String(),
         }),
         body: Type.Object({
             type: Type.Enum(MissionInviteType),
             invitee: Type.String(),
-            role: Type.Enum(MissionSubscriberRole)
+            role: Type.Enum(MissionSubscriberRole),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -774,7 +794,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.guid)
+                : await config.conns.subscription(user.email, req.params.guid);
 
             await api.MissionInvite.invite(
                 req.params.guid,
@@ -782,17 +802,18 @@ export default async function router(schema: Schema, config: Config) {
                 req.body.invitee,
                 {
                     creatorUid: `ANDROID-CloudTAK-${user.email}`,
-                    role: req.body.role
+                    role: req.body.role,
                 },
-                opts
+                opts,
             );
 
             res.json({
                 status: 200,
-                message: 'Invite Created'
+                message: 'Invite Created',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -801,13 +822,13 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissions',
         description: 'Remove a pending mission invite',
         params: Type.Object({
-            guid: Type.String()
+            guid: Type.String(),
         }),
         query: Type.Object({
             type: Type.Enum(MissionInviteType),
-            invitee: Type.String()
+            invitee: Type.String(),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -816,24 +837,25 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.guid)
+                : await config.conns.subscription(user.email, req.params.guid);
 
             await api.MissionInvite.uninvite(
                 req.params.guid,
                 req.query.type,
                 req.query.invitee,
                 {
-                    creatorUid: `ANDROID-CloudTAK-${user.email}`
+                    creatorUid: `ANDROID-CloudTAK-${user.email}`,
                 },
-                opts
+                opts,
             );
 
             res.json({
                 status: 200,
-                message: 'Invite Deleted'
+                message: 'Invite Deleted',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -842,12 +864,12 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissions',
         description: 'Remove one or more active subscribers from a mission by UID',
         params: Type.Object({
-            guid: Type.String()
+            guid: Type.String(),
         }),
         query: Type.Object({
-            uid: Type.Union([Type.String(), Type.Array(Type.String())])
+            uid: Type.Union([Type.String(), Type.Array(Type.String())]),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -856,7 +878,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.guid)
+                : await config.conns.subscription(user.email, req.params.guid);
 
             const uids = Array.isArray(req.query.uid) ? req.query.uid : [req.query.uid];
 
@@ -866,10 +888,11 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: 'User(s) Removed'
+                message: 'User(s) Removed',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

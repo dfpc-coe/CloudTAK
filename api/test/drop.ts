@@ -1,8 +1,8 @@
-import postgres from 'postgres'
+import postgres from 'postgres';
 
 export default async function drop(connstr: string) {
     const client = postgres(connstr, {
-        onnotice: () => {}
+        onnotice: () => {},
     });
 
     const pgres = await client`

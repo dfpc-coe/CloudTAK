@@ -1,7 +1,7 @@
-import Err from '@openaddresses/batch-error'
+import Err from '@openaddresses/batch-error';
 import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
-import { Static } from '@sinclair/typebox'
-import { PaletteResponse } from '../types.js'
+import { Static } from '@sinclair/typebox';
+import { PaletteResponse } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Palette, PaletteFeature } from '../schema.js';
 import { SQL, is, sql, eq, asc, desc } from 'drizzle-orm';
@@ -17,7 +17,7 @@ export default class PaletteModel extends Modeler<typeof Palette> {
         const SubTable = this.pool
             .select({
                 uuid: PaletteFeature.palette,
-                features: sql`JSON_AGG(palette_feature.*)`.as('features')
+                features: sql`JSON_AGG(palette_feature.*)`.as('features'),
             })
             .from(PaletteFeature)
             .groupBy(PaletteFeature.palette)
@@ -26,18 +26,18 @@ export default class PaletteModel extends Modeler<typeof Palette> {
         const pgres = await this.pool
             .select({
                 palette: Palette,
-                features: sql`COALESCE(${SubTable.features}, '[]'::JSON)`.as('features')
+                features: sql`COALESCE(${SubTable.features}, '[]'::JSON)`.as('features'),
             })
             .from(Palette)
             .leftJoin(SubTable, eq(Palette.uuid, SubTable.uuid))
-            .where(is(id, SQL)? id as SQL<unknown> : eq(this.requiredPrimaryKey(), id))
-            .limit(1)
+            .where(is(id, SQL) ? id as SQL<unknown> : eq(this.requiredPrimaryKey(), id))
+            .limit(1);
 
         if (pgres.length !== 1) throw new Err(404, null, `Item Not Found`);
 
         return {
             ...pgres[0].palette,
-            features: pgres[0].features
+            features: pgres[0].features,
         } as Static<typeof PaletteResponse>;
     }
 
@@ -48,7 +48,7 @@ export default class PaletteModel extends Modeler<typeof Palette> {
         const SubTable = this.pool
             .select({
                 uuid: PaletteFeature.palette,
-                features: sql`JSON_AGG(palette_feature.*)`.as('features')
+                features: sql`JSON_AGG(palette_feature.*)`.as('features'),
             })
             .from(PaletteFeature)
             .groupBy(PaletteFeature.palette)
@@ -58,27 +58,28 @@ export default class PaletteModel extends Modeler<typeof Palette> {
             .select({
                 count: sql<string>`count(*) OVER()`.as('count'),
                 palette: Palette,
-                features: sql`COALESCE(${SubTable.features}, '[]'::JSON)`.as('features')
+                features: sql`COALESCE(${SubTable.features}, '[]'::JSON)`.as('features'),
             })
             .from(Palette)
             .leftJoin(SubTable, eq(Palette.uuid, SubTable.uuid))
             .where(query.where)
             .orderBy(orderBy)
             .limit(query.limit || 10)
-            .offset((query.page || 0) * (query.limit || 10))
+            .offset((query.page || 0) * (query.limit || 10));
 
         if (pgres.length === 0) {
             return { total: 0, items: [] };
-        } else {
+        }
+        else {
             return {
                 total: parseInt(pgres[0].count),
                 items: pgres.map((t) => {
                     return {
                         ...t.palette,
                         features: t.features,
-                        count: undefined
-                    } as Static<typeof PaletteResponse>
-                })
+                        count: undefined,
+                    } as Static<typeof PaletteResponse>;
+                }),
             };
         }
     }

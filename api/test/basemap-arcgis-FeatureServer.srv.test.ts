@@ -11,7 +11,7 @@ const SAMPLE_TILES = [
     { label: 'Inland Empire region', z: 7, x: 22, y: 51 },
     { label: 'San Bernardino area', z: 8, x: 44, y: 102 },
     { label: 'Redlands approach', z: 9, x: 89, y: 204 },
-    { label: 'Redlands close-up', z: 10, x: 178, y: 408 }
+    { label: 'Redlands close-up', z: 10, x: 178, y: 408 },
 ];
 
 function assertBoundsIn4326(bounds: Array<number>): void {
@@ -33,7 +33,7 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
         const res = await flight.fetch('/api/basemap', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 name: 'Emergency Facilities',
@@ -41,8 +41,8 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
                 sharing_enabled: false,
                 type: 'vector',
                 format: 'mvt',
-                protocol: 'featureserver'
-            }
+                protocol: 'featureserver',
+            },
         }, true);
 
         delete res.body.created;
@@ -54,7 +54,7 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
             actions: { feature: ['fetch', 'query'] },
             url: ARCGIS_FEATURE_URL,
             overlay: false,
-            iconset: null, 
+            iconset: null,
             title: 'callsign',
             username: 'admin@example.com',
             attribution: null,
@@ -72,9 +72,10 @@ test('POST: api/basemap - ArcGIS Feature Server Source', async () => {
             styles: [],
             type: 'vector',
             snapping_enabled: false,
-            snapping_layer: null
+            snapping_layer: null,
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -84,11 +85,11 @@ test('PATCH: api/basemap/1 - ArcGIS Feature Server TileJSON Source', async () =>
         const res = await flight.fetch('/api/basemap/1', {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
-                tilejson: ARCGIS_FEATURE_URL
-            }
+                tilejson: ARCGIS_FEATURE_URL,
+            },
         }, true);
 
         delete res.body.created;
@@ -97,7 +98,8 @@ test('PATCH: api/basemap/1 - ArcGIS Feature Server TileJSON Source', async () =>
         assert.equal(res.status, 200);
         assert.equal(res.body.id, 1);
         assert.equal(res.body.url, ARCGIS_FEATURE_URL);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -107,14 +109,14 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server direct source', async () 
         const res = await flight.fetch('/api/basemap/1/tiles', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.deepEqual({
             ...res.body,
             bounds: undefined,
-            center: undefined
+            center: undefined,
         }, {
             tilejson: '3.0.0',
             version: '1.0.0',
@@ -128,7 +130,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server direct source', async () 
             minzoom: 0,
             maxzoom: 16,
             actions: { feature: ['fetch', 'query'] },
-            tiles: [ 'http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}' ],
+            tiles: ['http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}'],
             vector_layers: [{
                 id: 'out',
                 fields: {
@@ -151,14 +153,15 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server direct source', async () 
                     lasteditor: 'string',
                     globalid: 'string',
                     imageurl: 'string',
-                    curcapacity: 'integer'
-                }
-            }]
+                    curcapacity: 'integer',
+                },
+            }],
         });
 
-        assert.notDeepEqual(res.body.bounds, [ -180, -90, 180, 90 ]);
+        assert.notDeepEqual(res.body.bounds, [-180, -90, 180, 90]);
         assertBoundsIn4326(res.body.bounds);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -168,14 +171,14 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server TileJSON', async () => {
         const res = await flight.fetch('/api/basemap/1/tiles', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.deepEqual({
             ...res.body,
             bounds: undefined,
-            center: undefined
+            center: undefined,
         }, {
             tilejson: '3.0.0',
             version: '1.0.0',
@@ -189,7 +192,7 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server TileJSON', async () => {
             minzoom: 0,
             maxzoom: 16,
             actions: { feature: ['fetch', 'query'] },
-            tiles: [ 'http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}' ],
+            tiles: ['http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}'],
             vector_layers: [{
                 id: 'out',
                 fields: {
@@ -212,14 +215,15 @@ test('GET: api/basemap/1/tiles - ArcGIS Feature Server TileJSON', async () => {
                     lasteditor: 'string',
                     globalid: 'string',
                     imageurl: 'string',
-                    curcapacity: 'integer'
-                }
-            }]
+                    curcapacity: 'integer',
+                },
+            }],
         });
 
-        assert.notDeepEqual(res.body.bounds, [ -180, -90, 180, 90 ]);
+        assert.notDeepEqual(res.body.bounds, [-180, -90, 180, 90]);
         assertBoundsIn4326(res.body.bounds);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -230,17 +234,18 @@ for (const { label, z, x, y } of SAMPLE_TILES) {
             const res = await flight.fetch(`/api/basemap/1/tiles/${z}/${x}/${y}`, {
                 method: 'GET',
                 auth: {
-                    bearer: flight.token.admin
-                }
+                    bearer: flight.token.admin,
+                },
             }, {
                 verify: false,
-                json: false
+                json: false,
             });
 
             assert.equal(res.status, 200);
             assert.equal(res.headers.get('content-type'), 'application/vnd.mapbox-vector-tile');
             assert.ok(res.body.length > 0, 'tile payload received');
-        } catch (err) {
+        }
+        catch (err) {
             assert.ifError(err);
         }
     });

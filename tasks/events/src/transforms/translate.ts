@@ -9,7 +9,7 @@ const EQUATOR_METERS_PER_DEGREE = 111320;
 export default class GDALTranslate implements Transform {
     static register() {
         return {
-            inputs: ['.pdf', '.tif', '.tiff']
+            inputs: ['.pdf', '.tif', '.tiff'],
         };
     }
 
@@ -18,7 +18,7 @@ export default class GDALTranslate implements Transform {
 
     constructor(
         msg: Message,
-        local: LocalMessage
+        local: LocalMessage,
     ) {
         this.msg = msg;
         this.local = local;
@@ -73,13 +73,14 @@ export default class GDALTranslate implements Transform {
                         cp.execFileSync('gdalwarp', [
                             '-tr', String(maxRes), String(maxRes),
                             '-r', 'cubic',
-                            input, warped
+                            input, warped,
                         ], { env });
                         translateInput = warped;
                     }
                 }
             }
-        } catch {
+        }
+        catch {
             // If metadata sniffing fails, continue without zoom clamping
         }
 
@@ -90,7 +91,7 @@ export default class GDALTranslate implements Transform {
         cp.execFileSync('gdaladdo', ['-r', 'cubic', output, '2', '4', '8', '16', '32', '64', '128', '256'], { env });
 
         return {
-            asset: output
-        }
+            asset: output,
+        };
     }
 }

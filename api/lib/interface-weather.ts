@@ -1,4 +1,4 @@
-import { Static, Type } from "@sinclair/typebox";
+import { Static, Type } from '@sinclair/typebox';
 import NOAA from './weather/noaa.js';
 import OpenMeteo from './weather/open-meteo.js';
 
@@ -12,7 +12,7 @@ export const FetchHourly = Type.Object({
         validTimes: Type.String(),
         elevation: Type.Object({
             unitCode: Type.String(),
-            value: Type.Number()
+            value: Type.Number(),
         }),
         periods: Type.Array(Type.Object({
             number: Type.Integer(),
@@ -25,27 +25,27 @@ export const FetchHourly = Type.Object({
             temperatureTrend: Type.Unknown(),
             probabilityOfPrecipitation: Type.Object({
                 unitCode: Type.String(),
-                value: Type.Number()
+                value: Type.Number(),
             }),
             dewpoint: Type.Object({
                 unitCode: Type.String(),
-                value: Type.Number()
+                value: Type.Number(),
             }),
             relativeHumidity: Type.Object({
                 unitCode: Type.String(),
-                value: Type.Number()
+                value: Type.Number(),
             }),
             windSpeed: Type.String(),
             windDirection: Type.String(),
             icon: Type.String(),
             shortForecast: Type.String(),
             detailedForecast: Type.String(),
-        }))
+        })),
     }),
     geometry: Type.Object({
         type: Type.String(),
-        coordinates: Type.Array(Type.Array(Type.Array(Type.Number())))
-    })
+        coordinates: Type.Array(Type.Array(Type.Array(Type.Number()))),
+    }),
 });
 
 export const FetchType = Type.Object({
@@ -65,31 +65,31 @@ export const FetchType = Type.Object({
             type: Type.String(),
             geometry: Type.Object({
                 type: Type.String(),
-                coordinates: Type.Array(Type.Number())
+                coordinates: Type.Array(Type.Number()),
             }),
             properties: Type.Object({
                 city: Type.String(),
                 state: Type.String(),
                 distance: Type.Object({
                     unitCode: Type.String(),
-                    value: Type.Number()
+                    value: Type.Number(),
                 }),
                 bearing: Type.Object({
                     unitCode: Type.String(),
-                    value: Type.Number()
-                })
-            })
+                    value: Type.Number(),
+                }),
+            }),
         }),
         forecastZone: Type.String(),
         county: Type.String(),
         fireWeatherZone: Type.String(),
         timeZone: Type.String(),
-        radarStation: Type.String()
+        radarStation: Type.String(),
     }),
     geometry: Type.Object({
         type: Type.String(),
-        coordinates: Type.Array(Type.Number())
-    })
+        coordinates: Type.Array(Type.Number()),
+    }),
 });
 
 export interface WeatherInterface {
@@ -110,7 +110,8 @@ export class WeatherManager {
             const noaa = this.services.get('noaa');
             if (!noaa) throw new Error('NOAA Service not found');
             return await noaa.get(lon, lat);
-        } catch {
+        }
+        catch {
             const om = this.services.get('open-meteo');
             if (!om) throw new Error('OpenMeteo Service not found');
             return await om.get(lon, lat);

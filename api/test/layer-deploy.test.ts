@@ -6,7 +6,7 @@ import {
     CreateStackCommand,
     DeleteStackCommand,
     DescribeStacksCommand,
-    UpdateStackCommand
+    UpdateStackCommand,
 } from '@aws-sdk/client-cloudformation';
 import {
     ECRClient,
@@ -27,7 +27,7 @@ process.env.AWS_REGION = 'us-gov-east-1';
 
 const config = {
     StackName: 'test',
-    SigningSecret: 'test-secret'
+    SigningSecret: 'test-secret',
 } as any;
 
 const stack = {
@@ -35,14 +35,14 @@ const stack = {
     Parameters: {
         Task: {
             Type: 'String',
-            Default: 'etl-test-v1.0.1'
+            Default: 'etl-test-v1.0.1',
         },
         UniqueID: {
             Type: 'String',
-            Default: 'layer-uuid'
-        }
+            Default: 'layer-uuid',
+        },
     },
-    Resources: {}
+    Resources: {},
 } as const;
 
 test('LayerDeploy.apply updates when current image digest exists', async () => {
@@ -61,20 +61,24 @@ test('LayerDeploy.apply updates when current image digest exists', async () => {
             if (command instanceof DescribeStacksCommand) {
                 if (command.input.StackName === 'test-layer-1') {
                     return Promise.resolve({
-                        Stacks: [{ StackStatus: 'UPDATE_COMPLETE' }]
-                    });
-                } else if (command.input.StackName === 'test') {
-                    return Promise.resolve({
-                        Stacks: [{ Tags: [] }]
+                        Stacks: [{ StackStatus: 'UPDATE_COMPLETE' }],
                     });
                 }
-            } else if (command instanceof UpdateStackCommand) {
+                else if (command.input.StackName === 'test') {
+                    return Promise.resolve({
+                        Stacks: [{ Tags: [] }],
+                    });
+                }
+            }
+            else if (command instanceof UpdateStackCommand) {
                 cfCommands.push('update');
                 return Promise.resolve({});
-            } else if (command instanceof DeleteStackCommand) {
+            }
+            else if (command instanceof DeleteStackCommand) {
                 cfCommands.push('delete');
                 return Promise.resolve({});
-            } else if (command instanceof CreateStackCommand) {
+            }
+            else if (command instanceof CreateStackCommand) {
                 cfCommands.push('create');
                 return Promise.resolve({});
             }
@@ -85,13 +89,13 @@ test('LayerDeploy.apply updates when current image digest exists', async () => {
         Sinon.stub(LambdaClient.prototype, 'send').callsFake((command) => {
             if (command instanceof GetFunctionCommand) {
                 assert.deepEqual(command.input, {
-                    FunctionName: 'test-layer-1'
+                    FunctionName: 'test-layer-1',
                 });
 
                 return Promise.resolve({
                     Code: {
-                        ResolvedImageUri: '123456789012.dkr.ecr.us-gov-east-1.amazonaws.com/example-ecr@sha256:abcdef'
-                    }
+                        ResolvedImageUri: '123456789012.dkr.ecr.us-gov-east-1.amazonaws.com/example-ecr@sha256:abcdef',
+                    },
                 });
             }
 
@@ -102,11 +106,11 @@ test('LayerDeploy.apply updates when current image digest exists', async () => {
             if (command instanceof BatchGetImageCommand) {
                 assert.deepEqual(command.input, {
                     repositoryName: process.env.ECR_TASKS_REPOSITORY_NAME,
-                    imageIds: [{ imageDigest: 'sha256:abcdef' }]
+                    imageIds: [{ imageDigest: 'sha256:abcdef' }],
                 });
 
                 return Promise.resolve({
-                    images: [{ imageId: { imageDigest: 'sha256:abcdef' } }]
+                    images: [{ imageId: { imageDigest: 'sha256:abcdef' } }],
                 });
             }
 
@@ -116,7 +120,8 @@ test('LayerDeploy.apply updates when current image digest exists', async () => {
         await LayerDeploy.apply(config, 1, stack as any);
 
         assert.deepEqual(cfCommands, ['update']);
-    } finally {
+    }
+    finally {
         Sinon.restore();
     }
 });
@@ -141,23 +146,27 @@ test('LayerDeploy.apply recreates stack when current image digest is missing', a
 
                     if (describeCount === 1) {
                         return Promise.resolve({
-                            Stacks: [{ StackStatus: 'UPDATE_COMPLETE' }]
+                            Stacks: [{ StackStatus: 'UPDATE_COMPLETE' }],
                         });
                     }
 
                     throw new Error('Stack with id test-layer-1 does not exist');
-                } else if (command.input.StackName === 'test') {
+                }
+                else if (command.input.StackName === 'test') {
                     return Promise.resolve({
-                        Stacks: [{ Tags: [] }]
+                        Stacks: [{ Tags: [] }],
                     });
                 }
-            } else if (command instanceof DeleteStackCommand) {
+            }
+            else if (command instanceof DeleteStackCommand) {
                 cfCommands.push('delete');
                 return Promise.resolve({});
-            } else if (command instanceof CreateStackCommand) {
+            }
+            else if (command instanceof CreateStackCommand) {
                 cfCommands.push('create');
                 return Promise.resolve({});
-            } else if (command instanceof UpdateStackCommand) {
+            }
+            else if (command instanceof UpdateStackCommand) {
                 cfCommands.push('update');
                 return Promise.resolve({});
             }
@@ -169,8 +178,8 @@ test('LayerDeploy.apply recreates stack when current image digest is missing', a
             if (command instanceof GetFunctionCommand) {
                 return Promise.resolve({
                     Code: {
-                        ResolvedImageUri: '123456789012.dkr.ecr.us-gov-east-1.amazonaws.com/example-ecr@sha256:missing'
-                    }
+                        ResolvedImageUri: '123456789012.dkr.ecr.us-gov-east-1.amazonaws.com/example-ecr@sha256:missing',
+                    },
                 });
             }
 
@@ -181,7 +190,7 @@ test('LayerDeploy.apply recreates stack when current image digest is missing', a
             if (command instanceof BatchGetImageCommand) {
                 assert.deepEqual(command.input, {
                     repositoryName: process.env.ECR_TASKS_REPOSITORY_NAME,
-                    imageIds: [{ imageDigest: 'sha256:missing' }]
+                    imageIds: [{ imageDigest: 'sha256:missing' }],
                 });
 
                 return Promise.resolve({ images: [] });
@@ -193,7 +202,8 @@ test('LayerDeploy.apply recreates stack when current image digest is missing', a
         await LayerDeploy.apply(config, 1, stack as any);
 
         assert.deepEqual(cfCommands, ['delete', 'create']);
-    } finally {
+    }
+    finally {
         Sinon.restore();
     }
 });

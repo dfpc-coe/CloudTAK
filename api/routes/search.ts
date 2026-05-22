@@ -1,5 +1,5 @@
-import { Type, Static } from '@sinclair/typebox'
-import SunCalc from 'suncalc'
+import { Type, Static } from '@sinclair/typebox';
+import SunCalc from 'suncalc';
 import geomagnetism from 'geomagnetism';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -32,19 +32,19 @@ export default async function router(schema: Schema, config: Config) {
         }),
         magnetic: Type.Object({
             declination: Type.Number(),
-            inclination: Type.Number()
+            inclination: Type.Number(),
         }),
         weather: Type.Union([Type.Null(), FetchHourly]),
         reverse: Type.Union([Type.Null(), FetchReverse]),
-        elevation: Type.Union([Type.Null(), Type.String()])
+        elevation: Type.Union([Type.Null(), Type.String()]),
     });
 
     const SuggestResponse = Type.Object({
-        items: Type.Array(FetchSuggest)
+        items: Type.Array(FetchSuggest),
     });
 
     const ForwardResponse = Type.Object({
-        items: Type.Array(FetchForward)
+        items: Type.Array(FetchForward),
     });
 
     const RouteResponse = Feature.FeatureCollection;
@@ -53,7 +53,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Search Config',
         group: 'Search',
         description: 'Get information about the configured search provider(s)',
-        res: SearchManagerConfig
+        res: SearchManagerConfig,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
@@ -61,8 +61,9 @@ export default async function router(schema: Schema, config: Config) {
             const searchConfig = await searchManager.config();
 
             return res.json(searchConfig);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -72,16 +73,16 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Get information about a given point',
         params: Type.Object({
             latitude: Type.Number(),
-            longitude: Type.Number()
+            longitude: Type.Number(),
         }),
         query: Type.Object({
             provider: Type.Optional(Type.String()),
             altitude: Type.Number({
-                default: 0
+                default: 0,
             }),
-            elevation: Type.Optional(Type.Number())
+            elevation: Type.Optional(Type.Number()),
         }),
-        res: ReverseResponse
+        res: ReverseResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -109,7 +110,7 @@ export default async function router(schema: Schema, config: Config) {
                 },
                 magnetic: {
                     declination: magnetic.decl,
-                    inclination: magnetic.incl
+                    inclination: magnetic.incl,
                 },
                 weather: null,
                 reverse: null,
@@ -120,8 +121,9 @@ export default async function router(schema: Schema, config: Config) {
                 (async () => {
                     try {
                         response.weather = await config.weather.get(req.params.longitude, req.params.latitude);
-                    } catch (err) {
-                        console.error('Weather Fetch Error', err)
+                    }
+                    catch (err) {
+                        console.error('Weather Fetch Error', err);
                     }
                 })(),
                 (async () => {
@@ -130,15 +132,16 @@ export default async function router(schema: Schema, config: Config) {
                             response.reverse = await searchManager.reverse(
                                 req.query.provider || searchManager.defaultProvider,
                                 req.params.longitude,
-                                req.params.latitude
+                                req.params.latitude,
                             );
-                        } catch (err) {
-                            console.error('ESRI Fetch Error', err)
+                        }
+                        catch (err) {
+                            console.error('ESRI Fetch Error', err);
                         }
                     }
                 })(),
 
-            ])
+            ]);
 
             // Handle elevation from query parameter (from MapLibre terrain)
             const finalResponse = {
@@ -148,14 +151,15 @@ export default async function router(schema: Schema, config: Config) {
                 reverse: response.reverse,
                 elevation: req.query.elevation !== undefined
                     ? (elevationUnit === 'feet' || elevationUnit === 'FEET'
-                        ? ((req.query.elevation / 1.5) * 3.28084).toFixed(2) + ' ft'
-                        : (req.query.elevation / 1.5).toFixed(2) + ' m')
-                    : null
+                            ? ((req.query.elevation / 1.5) * 3.28084).toFixed(2) + ' ft'
+                            : (req.query.elevation / 1.5).toFixed(2) + ' m')
+                    : null,
             };
 
             res.json(finalResponse);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -167,10 +171,10 @@ export default async function router(schema: Schema, config: Config) {
             provider: Type.Optional(Type.String()),
             callsign: Type.String({
                 description: 'Human readable name of the route',
-                default: 'New Route'
+                default: 'New Route',
             }),
             start: Type.String({
-                description: 'Lat,Lng of starting position'
+                description: 'Lat,Lng of starting position',
             }),
             /* TODO Implement via ESRI API
             stops: Type.Optional(Type.Array(Type.String({
@@ -178,47 +182,50 @@ export default async function router(schema: Schema, config: Config) {
             }))),
             */
             end: Type.String({
-                description: 'Lat,Lng of end position'
+                description: 'Lat,Lng of end position',
             }),
             travelMode: Type.Optional(Type.String({
                 description: 'Travel mode for routing',
-                default: 'Driving Time'
+                default: 'Driving Time',
             })),
         }),
-        res: RouteResponse
+        res: RouteResponse,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
 
             const stops = [
                 req.query.start.split(',').map(Number),
-                req.query.end.split(',').map(Number)
+                req.query.end.split(',').map(Number),
             ] as [number, number][];
 
             if (searchManager.defaultProvider) {
-                    const route = await searchManager.route(
-                        req.query.provider || searchManager.defaultProvider,
-                        stops,
-                        req.query.travelMode
-                    );
+                const route = await searchManager.route(
+                    req.query.provider || searchManager.defaultProvider,
+                    stops,
+                    req.query.travelMode,
+                );
 
-                    if (route.features.length === 1) {
-                        route.features[0].properties.callsign = req.query.callsign;
-                    } else {
-                        for (let i = 0; i < route.features.length; i++) {
-                            route.features[i].properties.callsign = `${req.query.callsign} #${i + 1}`;
-                        }
+                if (route.features.length === 1) {
+                    route.features[0].properties.callsign = req.query.callsign;
+                }
+                else {
+                    for (let i = 0; i < route.features.length; i++) {
+                        route.features[i].properties.callsign = `${req.query.callsign} #${i + 1}`;
                     }
+                }
 
-                    res.json(route);
-            } else {
+                res.json(route);
+            }
+            else {
                 res.json({
                     type: 'FeatureCollection',
-                    features: []
+                    features: [],
                 });
             }
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -234,7 +241,7 @@ export default async function router(schema: Schema, config: Config) {
             longitude: Type.Optional(Type.Number()),
             latitude: Type.Optional(Type.Number()),
         }),
-        res: ForwardResponse
+        res: ForwardResponse,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
@@ -249,17 +256,19 @@ export default async function router(schema: Schema, config: Config) {
                         req.query.provider || searchManager.defaultProvider,
                         req.query.query,
                         req.query.magicKey,
-                        req.query.limit
+                        req.query.limit,
                     );
-                } catch (err) {
+                }
+                catch (err) {
                     console.error('Forward Geocoding Error:', err);
                     response.items = [];
                 }
             }
 
             res.json(response);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -271,12 +280,12 @@ export default async function router(schema: Schema, config: Config) {
             provider: Type.Optional(Type.String()),
             query: Type.String(),
             limit: Type.Integer({
-                default: 10
+                default: 10,
             }),
             longitude: Type.Optional(Type.Number()),
             latitude: Type.Optional(Type.Number()),
         }),
-        res: SuggestResponse
+        res: SuggestResponse,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
@@ -295,9 +304,10 @@ export default async function router(schema: Schema, config: Config) {
                         req.query.provider || searchManager.defaultProvider,
                         req.query.query,
                         req.query.limit,
-                        location
+                        location,
                     );
-                } catch (err) {
+                }
+                catch (err) {
                     console.error('ESRI Suggest Error', err);
                 }
             }
@@ -307,8 +317,9 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(response);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }
