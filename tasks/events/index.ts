@@ -19,15 +19,15 @@ export default class WorkerPool extends EventEmitter {
 
     maxWorkers: number;
     workers: Set<{
-        worker: Worker,
-        job: Import
+        worker: Worker;
+        job: Import;
     }>;
 
     constructor(opts: {
-        api: string
-        secret: string,
-        bucket: string,
-        interval: number
+        api: string;
+        secret: string;
+        bucket: string;
+        interval: number;
 
         maxWorkers?: number;
     }) {
@@ -53,32 +53,34 @@ export default class WorkerPool extends EventEmitter {
                 const jobs = await this.poll(this.maxWorkers - this.workers.size);
 
                 for (let job of jobs) {
-                    job = await this.lock(job.id)
+                    job = await this.lock(job.id);
 
                     this.emit('job', job);
 
-                    const worker = new Worker(new URL('./src/comms.ts', import.meta.url))
+                    const worker = new Worker(new URL('./src/comms.ts', import.meta.url));
                     worker.on('error', (err) => {
                         console.error(`Worker Thread Error (Import ${job.id}):`, err);
                     });
-                    const locked = { job, worker }
+                    const locked = { job, worker };
 
                     worker.on('message', async (message) => {
                         try {
                             if (message.type === 'success') {
                                 await this.success(job.id);
                                 console.log(`Import: ${job.id} - completed successfully`);
-                            } else if (message.type === 'error') {
+                            }
+                            else if (message.type === 'error') {
                                 await this.error(job.id, message.error instanceof Error ? message.error.message : String(message.error));
-                            } else {
+                            }
+                            else {
                                 console.error(`Import: ${job.id} -`, message);
                             }
-
-                        } catch (err) {
+                        }
+                        catch (err) {
                             console.error(`Import ${job.id} - failed to handle Job Finalization`, err);
                         }
 
-                        worker.terminate()
+                        worker.terminate();
 
                         this.workers.delete(locked);
                     });
@@ -89,10 +91,11 @@ export default class WorkerPool extends EventEmitter {
                         job: job,
                         api: this.api,
                         bucket: this.bucket,
-                        secret: this.secret
+                        secret: this.secret,
                     });
                 }
-            } catch (err) {
+            }
+            catch (err) {
                 console.error('error - Failed to poll for new work:', err);
             }
         }, opts.interval);
@@ -106,8 +109,8 @@ export default class WorkerPool extends EventEmitter {
                 'Authorization': `Bearer etl.${jwt.sign({ access: 'import', id: importid, internal: true }, this.secret)}`,
             },
             body: JSON.stringify({
-                status: 'Success'
-            })
+                status: 'Success',
+            }),
         });
 
         if (!res.ok) throw new Error(await res.text());
@@ -123,8 +126,8 @@ export default class WorkerPool extends EventEmitter {
                 'Authorization': `Bearer etl.${jwt.sign({ access: 'import', id: importid, internal: true }, this.secret)}`,
             },
             body: JSON.stringify({
-                status: 'Running'
-            })
+                status: 'Running',
+            }),
         });
 
         if (!res.ok) throw new Error(await res.text());
@@ -134,7 +137,7 @@ export default class WorkerPool extends EventEmitter {
 
     async error(
         importid: number,
-        error: string
+        error: string,
     ): Promise<boolean> {
         const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
             method: 'PATCH',
@@ -144,8 +147,8 @@ export default class WorkerPool extends EventEmitter {
             },
             body: JSON.stringify({
                 status: 'Fail',
-                error: error
-            })
+                error: error,
+            }),
         });
 
         if (!res.ok) throw new Error(await res.text());
@@ -169,7 +172,7 @@ export default class WorkerPool extends EventEmitter {
         const res = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer etl.${jwt.sign({ access: 'import', internal: true }, this.secret)}`,
+                Authorization: `Bearer etl.${jwt.sign({ access: 'import', internal: true }, this.secret)}`,
             },
         });
 
@@ -190,9 +193,9 @@ export default class WorkerPool extends EventEmitter {
                     return new Promise<void>((resolve) => {
                         worker.on('exit', () => resolve());
                         worker.terminate();
-                    })
-                })
-            );
+                    });
+                }),
+        );
     }
 }
 
@@ -208,6 +211,6 @@ if (isMainModule) {
         api: process.env.API_URL || 'http://localhost:5001',
         secret: process.env.SigningSecret,
         bucket: process.env.ASSET_BUCKET,
-        interval: 1000
+        interval: 1000,
     });
 }

@@ -259,9 +259,9 @@ test('isPrivateIPv6 — IPv4-mapped ::ffff:0:0/96', async (t) => {
 
 test('isPrivateIPv6 — public addresses', async (t) => {
     const publicAddrs = [
-        '2606:4700:4700::1111',  // Cloudflare DNS
-        '2001:4860:4860::8888',  // Google DNS
-        '2001:db8::1',           // documentation prefix (not a reserved private range)
+        '2606:4700:4700::1111', // Cloudflare DNS
+        '2001:4860:4860::8888', // Google DNS
+        '2001:db8::1', // documentation prefix (not a reserved private range)
     ];
     for (const addr of publicAddrs) {
         await t.test(`${addr} is NOT private`, () => {
@@ -338,14 +338,14 @@ test('isPrivateIPv4 — invalid / non-IPv4 inputs', async (t) => {
         'localhost',
         '::1',
         'example.com',
-        '256.0.0.1',       // octet out of range
-        '-1.0.0.1',        // negative octet
-        '1.2.3',           // too few octets
-        '1.2.3.4.5',       // too many octets
-        '1.2.3.abc',       // non-numeric octet
-        '1.2.3.',          // trailing dot
-        '.1.2.3',          // leading dot
-        '1.2.3.4/24',      // CIDR notation
+        '256.0.0.1', // octet out of range
+        '-1.0.0.1', // negative octet
+        '1.2.3', // too few octets
+        '1.2.3.4.5', // too many octets
+        '1.2.3.abc', // non-numeric octet
+        '1.2.3.', // trailing dot
+        '.1.2.3', // leading dot
+        '1.2.3.4/24', // CIDR notation
         'NaN.0.0.1',
     ];
 

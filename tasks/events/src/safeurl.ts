@@ -2,17 +2,17 @@ import { lookup } from 'node:dns/promises';
 
 // Private / loopback CIDR ranges that must not be reachable via outbound fetches (SSRF protection).
 const PRIVATE_RANGES: Array<{ prefix: number[]; bits: number }> = [
-    { prefix: [127],              bits: 8  },  // loopback
-    { prefix: [10],               bits: 8  },  // RFC 1918
-    { prefix: [172, 16],          bits: 12 },  // RFC 1918
-    { prefix: [192, 168],         bits: 16 },  // RFC 1918
-    { prefix: [169, 254],         bits: 16 },  // link-local
-    { prefix: [100, 64],          bits: 10 },  // CGNAT
+    { prefix: [127], bits: 8 }, // loopback
+    { prefix: [10], bits: 8 }, // RFC 1918
+    { prefix: [172, 16], bits: 12 }, // RFC 1918
+    { prefix: [192, 168], bits: 16 }, // RFC 1918
+    { prefix: [169, 254], bits: 16 }, // link-local
+    { prefix: [100, 64], bits: 10 }, // CGNAT
 ];
 
 export function isPrivateIPv4(hostname: string): boolean {
     const parts = hostname.split('.').map(Number);
-    if (parts.length !== 4 || parts.some((p) => Number.isNaN(p) || p < 0 || p > 255)) return false;
+    if (parts.length !== 4 || parts.some(p => Number.isNaN(p) || p < 0 || p > 255)) return false;
     for (const range of PRIVATE_RANGES) {
         const bytesToCheck = Math.ceil(range.bits / 8);
         const match = range.prefix.every((b, i) => {
@@ -34,17 +34,17 @@ function expandIPv6(addr: string): string | null {
     if (addr.includes('::')) {
         const halves = addr.split('::');
         if (halves.length !== 2) return null;
-        const leftGroups  = halves[0] ? halves[0].split(':') : [];
+        const leftGroups = halves[0] ? halves[0].split(':') : [];
         const rightGroups = halves[1] ? halves[1].split(':') : [];
         const missing = 8 - leftGroups.length - rightGroups.length;
         if (missing < 0) return null;
         const groups = [...leftGroups, ...Array(missing).fill('0'), ...rightGroups];
         if (groups.length !== 8) return null;
-        return groups.map((g) => g.padStart(4, '0')).join('');
+        return groups.map(g => g.padStart(4, '0')).join('');
     }
     const groups = addr.split(':');
     if (groups.length !== 8) return null;
-    return groups.map((g) => g.padStart(4, '0')).join('');
+    return groups.map(g => g.padStart(4, '0')).join('');
 }
 
 /**
@@ -92,7 +92,8 @@ export async function isSafeUrl(href: string): Promise<{ safe: boolean; url?: UR
     let url: URL;
     try {
         url = new URL(href);
-    } catch {
+    }
+    catch {
         return { safe: false, reason: `invalid URL: ${href}` };
     }
 
@@ -128,7 +129,8 @@ export async function isSafeUrl(href: string): Promise<{ safe: boolean; url?: UR
                 return { safe: false, url, reason: `hostname resolves to blocked private IPv6: ${address}` };
             }
         }
-    } catch {
+    }
+    catch {
         // DNS lookup failed (e.g. NXDOMAIN, no network) — allow and let the fetch fail
     }
 

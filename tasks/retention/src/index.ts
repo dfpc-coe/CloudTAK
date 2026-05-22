@@ -39,11 +39,11 @@ const tasks: RetentionTask[] = [{
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
+                'Authorization': `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
             },
             body: JSON.stringify({
-                action: 'connection-feature'
-            })
+                action: 'connection-feature',
+            }),
         });
 
         if (!res.ok) {
@@ -51,7 +51,7 @@ const tasks: RetentionTask[] = [{
         }
 
         return await res.json() as RetentionTaskResult;
-    }
+    },
 }, {
     name: 'chat',
     enabled: (config: RetentionTaskConfig): boolean => {
@@ -69,11 +69,11 @@ const tasks: RetentionTask[] = [{
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
+                'Authorization': `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
             },
             body: JSON.stringify({
-                action: 'chat'
-            })
+                action: 'chat',
+            }),
         });
 
         if (!res.ok) {
@@ -81,7 +81,7 @@ const tasks: RetentionTask[] = [{
         }
 
         return await res.json() as RetentionTaskResult;
-    }
+    },
 }, {
     name: 'import',
     enabled: (config: RetentionTaskConfig): boolean => {
@@ -99,11 +99,11 @@ const tasks: RetentionTask[] = [{
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
+                'Authorization': `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
             },
             body: JSON.stringify({
-                action: 'import'
-            })
+                action: 'import',
+            }),
         });
 
         if (!res.ok) {
@@ -111,7 +111,7 @@ const tasks: RetentionTask[] = [{
         }
 
         return await res.json() as RetentionTaskResult;
-    }
+    },
 }];
 
 async function runOnce(): Promise<void> {
@@ -129,7 +129,7 @@ async function runOnce(): Promise<void> {
     const res = await fetch(url, {
         headers: {
             Authorization: `Bearer ${jwt.sign({ access: 'admin', email: 'system' }, signingSecret, { expiresIn: '5m' })}`,
-        }
+        },
     });
 
     if (!res.ok) throw new Error(`Failed to fetch config: HTTP ${res.status}`);
@@ -148,7 +148,8 @@ async function runOnce(): Promise<void> {
         try {
             const result = await task.run();
             console.log(`ok - task:${task.name}: ${result.deleted} deleted in ${Date.now() - start}ms`);
-        } catch (err) {
+        }
+        catch (err) {
             console.error(`error - task:${task.name} failed:`, err);
         }
     }
@@ -160,11 +161,13 @@ if (process.argv.includes('--run-once')) {
     try {
         await runOnce();
         process.exit(0);
-    } catch (err) {
+    }
+    catch (err) {
         console.error('error - retention run failed:', err);
         process.exit(1);
     }
-} else {
+}
+else {
     const schedule = process.env.RETENTION_SCHEDULE || '0 3 * * *';
 
     if (!cron.validate(schedule)) throw new Error(`Invalid RETENTION_SCHEDULE: ${schedule}`);
@@ -172,13 +175,20 @@ if (process.argv.includes('--run-once')) {
     const task = cron.schedule(schedule, async () => {
         try {
             await runOnce();
-        } catch (err) {
+        }
+        catch (err) {
             console.error('error - retention cron run failed:', err);
         }
     }, { timezone: process.env.TZ || 'UTC' });
 
-    process.on('SIGTERM', () => { task.stop(); process.exit(0); });
-    process.on('SIGINT', () => { task.stop(); process.exit(0); });
+    process.on('SIGTERM', () => {
+        task.stop();
+        process.exit(0);
+    });
+    process.on('SIGINT', () => {
+        task.stop();
+        process.exit(0);
+    });
 
     console.log(`ok - retention scheduler started: ${schedule}`);
 }

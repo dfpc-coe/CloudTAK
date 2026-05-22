@@ -9,7 +9,7 @@ import {
     PutObjectCommand,
     CreateMultipartUploadCommand,
     UploadPartCommand,
-    CompleteMultipartUploadCommand
+    CompleteMultipartUploadCommand,
 } from '@aws-sdk/client-s3';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
@@ -33,34 +33,34 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
 
     mockPool.intercept({
         path: '/api/iconset',
-        method: 'POST'
+        method: 'POST',
     }).reply(() => {
         assert.ok(true, 'Creating Iconset');
         return {
             statusCode: 200,
-            data: JSON.stringify({})
+            data: JSON.stringify({}),
         };
     }).persist();
 
     mockPool.intercept({
         path: /\/api\/iconset\/.*\/icon/,
-        method: 'POST'
+        method: 'POST',
     }).reply(() => {
         assert.ok(true, 'Uploading Icon');
         return {
             statusCode: 200,
-            data: JSON.stringify({})
+            data: JSON.stringify({}),
         };
     }).persist();
 
     mockPool.intercept({
         path: /\/api\/iconset\/.*\/regen/,
-        method: 'POST'
+        method: 'POST',
     }).reply(() => {
         assert.ok(true, 'Regenerating Iconset');
         return {
             statusCode: 200,
-            data: JSON.stringify({})
+            data: JSON.stringify({}),
         };
     }).persist();
 
@@ -69,11 +69,11 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
     for (let i = 0; i < 2; i++) {
         mockPool.intercept({
             path: /profile\/asset/,
-            method: 'POST'
+            method: 'POST',
         }).reply((req) => {
             const body = JSON.parse(req.body) as {
-                id: string,
-                name: string
+                id: string;
+                name: string;
             };
 
             assert.ok(expectedNames.has(body.name), `Name ${body.name} should be in expected list`);
@@ -85,18 +85,18 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
                 statusCode: 200,
                 data: JSON.stringify({
                     id: body.id,
-                    artifacts: []
-                })
+                    artifacts: [],
+                }),
             };
         });
 
         mockPool.intercept({
             path: /profile\/asset\//,
             method: 'PATCH',
-            body: (str) => !!JSON.parse(str).iconset
+            body: str => !!JSON.parse(str).iconset,
         }).reply((req) => {
             const body = JSON.parse(req.body) as {
-                iconset: string
+                iconset: string;
             };
 
             assert.ok(body.iconset);
@@ -105,21 +105,21 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
                 statusCode: 200,
                 data: JSON.stringify({
                     id: id,
-                    artifacts: []
-                })
+                    artifacts: [],
+                }),
             };
         });
 
         mockPool.intercept({
             path: /profile\/asset\//,
-            method: 'PATCH'
+            method: 'PATCH',
         }).reply((req) => {
             const body = JSON.parse(req.body) as {
-                artifacts: Array<{ ext: string }>
+                artifacts: Array<{ ext: string }>;
             };
 
             assert.deepEqual(body, {
-                artifacts: [ { ext: '.geojsonld' } ]
+                artifacts: [{ ext: '.geojsonld' }],
             });
 
             return {
@@ -127,22 +127,22 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
                 data: JSON.stringify({
                     id: id,
                     artifacts: [{
-                        ext: '.geojsonld'
-                    }]
-                })
+                        ext: '.geojsonld',
+                    }],
+                }),
             };
         });
 
         mockPool.intercept({
             path: /profile\/asset\//,
-            method: 'PATCH'
+            method: 'PATCH',
         }).reply((req) => {
             const body = JSON.parse(req.body) as {
-                artifacts: Array<{ ext: string }>
+                artifacts: Array<{ ext: string }>;
             };
 
             assert.deepEqual(body, {
-                artifacts: [ { ext: '.geojsonld' }, { ext: '.pmtiles' } ]
+                artifacts: [{ ext: '.geojsonld' }, { ext: '.pmtiles' }],
             });
 
             return {
@@ -150,126 +150,126 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
                 data: JSON.stringify({
                     id: id,
                     artifacts: [{
-                        ext: '.geojsonld'
+                        ext: '.geojsonld',
                     }, {
-                        ext: '.pmtiles'
-                    }]
-                })
+                        ext: '.pmtiles',
+                    }],
+                }),
             };
         });
     }
 
     const ExternalOperations = [
-            (command) => {
-                assert.ok(command instanceof GetObjectCommand);
-                assert.deepEqual(command.input, {
-                    Bucket: 'test-bucket',
-                    Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.zip`
-                });
+        (command) => {
+            assert.ok(command instanceof GetObjectCommand);
+            assert.deepEqual(command.input, {
+                Bucket: 'test-bucket',
+                Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.zip`,
+            });
 
-                return Promise.resolve({
-                    Body: fs.createReadStream(new URL(`./fixtures/package/DP-KMZDouble.zip`, import.meta.url))
-                })
-            },
-            // File 1
-            (command) => {
-                if (command instanceof CreateMultipartUploadCommand) {
-                    assert.equal(command.input.Bucket, 'test-bucket');
-                    assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                    assert.ok(command.input.Key.endsWith('.kmz'))
-                    return Promise.resolve({ UploadId: '123' });
-                }
-                assert.ok(command instanceof PutObjectCommand);
+            return Promise.resolve({
+                Body: fs.createReadStream(new URL(`./fixtures/package/DP-KMZDouble.zip`, import.meta.url)),
+            });
+        },
+        // File 1
+        (command) => {
+            if (command instanceof CreateMultipartUploadCommand) {
                 assert.equal(command.input.Bucket, 'test-bucket');
-                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                assert.ok(command.input.Key.endsWith('.kmz'))
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+                assert.ok(command.input.Key.endsWith('.kmz'));
+                return Promise.resolve({ UploadId: '123' });
+            }
+            assert.ok(command instanceof PutObjectCommand);
+            assert.equal(command.input.Bucket, 'test-bucket');
+            assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+            assert.ok(command.input.Key.endsWith('.kmz'));
 
-                return Promise.resolve({ ETag: '"123"' })
-            },
-            (command) => {
-                if (command instanceof CreateMultipartUploadCommand) {
-                    assert.equal(command.input.Bucket, 'test-bucket');
-                    assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                    assert.ok(command.input.Key.endsWith('.geojsonld'))
-                    return Promise.resolve({ UploadId: '123' });
-                }
-                assert.ok(command instanceof PutObjectCommand);
+            return Promise.resolve({ ETag: '"123"' });
+        },
+        (command) => {
+            if (command instanceof CreateMultipartUploadCommand) {
                 assert.equal(command.input.Bucket, 'test-bucket');
-                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                assert.ok(command.input.Key.endsWith('.geojsonld'))
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+                assert.ok(command.input.Key.endsWith('.geojsonld'));
+                return Promise.resolve({ UploadId: '123' });
+            }
+            assert.ok(command instanceof PutObjectCommand);
+            assert.equal(command.input.Bucket, 'test-bucket');
+            assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+            assert.ok(command.input.Key.endsWith('.geojsonld'));
 
-                return Promise.resolve({ ETag: '"123"' })
-            },
-            (command) => {
-                if (command instanceof CreateMultipartUploadCommand) {
-                    assert.equal(command.input.Bucket, 'test-bucket');
-                    assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                    assert.ok(command.input.Key.endsWith('.pmtiles'))
-                    return Promise.resolve({ UploadId: '123' });
-                }
-                assert.ok(command instanceof PutObjectCommand);
+            return Promise.resolve({ ETag: '"123"' });
+        },
+        (command) => {
+            if (command instanceof CreateMultipartUploadCommand) {
                 assert.equal(command.input.Bucket, 'test-bucket');
-                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                assert.ok(command.input.Key.endsWith('.pmtiles'))
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+                assert.ok(command.input.Key.endsWith('.pmtiles'));
+                return Promise.resolve({ UploadId: '123' });
+            }
+            assert.ok(command instanceof PutObjectCommand);
+            assert.equal(command.input.Bucket, 'test-bucket');
+            assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+            assert.ok(command.input.Key.endsWith('.pmtiles'));
 
-                return Promise.resolve({ ETag: '"123"' })
-            },
-            // File 2
-            (command) => {
-                if (command instanceof CreateMultipartUploadCommand) {
-                    assert.equal(command.input.Bucket, 'test-bucket');
-                    assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                    assert.ok(command.input.Key.endsWith('.kmz'))
-                    return Promise.resolve({ UploadId: '123' });
-                }
-                assert.ok(command instanceof PutObjectCommand);
+            return Promise.resolve({ ETag: '"123"' });
+        },
+        // File 2
+        (command) => {
+            if (command instanceof CreateMultipartUploadCommand) {
                 assert.equal(command.input.Bucket, 'test-bucket');
-                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                assert.ok(command.input.Key.endsWith('.kmz'))
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+                assert.ok(command.input.Key.endsWith('.kmz'));
+                return Promise.resolve({ UploadId: '123' });
+            }
+            assert.ok(command instanceof PutObjectCommand);
+            assert.equal(command.input.Bucket, 'test-bucket');
+            assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+            assert.ok(command.input.Key.endsWith('.kmz'));
 
-                return Promise.resolve({ ETag: '"123"' })
-            },
-            (command) => {
-                if (command instanceof CreateMultipartUploadCommand) {
-                    assert.equal(command.input.Bucket, 'test-bucket');
-                    assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                    assert.ok(command.input.Key.endsWith('.geojsonld'))
-                    return Promise.resolve({ UploadId: '123' });
-                }
-                assert.ok(command instanceof PutObjectCommand);
+            return Promise.resolve({ ETag: '"123"' });
+        },
+        (command) => {
+            if (command instanceof CreateMultipartUploadCommand) {
                 assert.equal(command.input.Bucket, 'test-bucket');
-                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                assert.ok(command.input.Key.endsWith('.geojsonld'))
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+                assert.ok(command.input.Key.endsWith('.geojsonld'));
+                return Promise.resolve({ UploadId: '123' });
+            }
+            assert.ok(command instanceof PutObjectCommand);
+            assert.equal(command.input.Bucket, 'test-bucket');
+            assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+            assert.ok(command.input.Key.endsWith('.geojsonld'));
 
-                return Promise.resolve({ ETag: '"123"' })
-            },
-            (command) => {
-                if (command instanceof CreateMultipartUploadCommand) {
-                    assert.equal(command.input.Bucket, 'test-bucket');
-                    assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                    assert.ok(command.input.Key.endsWith('.pmtiles'))
-                    return Promise.resolve({ UploadId: '123' });
-                }
-                assert.ok(command instanceof PutObjectCommand);
+            return Promise.resolve({ ETag: '"123"' });
+        },
+        (command) => {
+            if (command instanceof CreateMultipartUploadCommand) {
                 assert.equal(command.input.Bucket, 'test-bucket');
-                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
-                assert.ok(command.input.Key.endsWith('.pmtiles'))
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+                assert.ok(command.input.Key.endsWith('.pmtiles'));
+                return Promise.resolve({ UploadId: '123' });
+            }
+            assert.ok(command instanceof PutObjectCommand);
+            assert.equal(command.input.Bucket, 'test-bucket');
+            assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`));
+            assert.ok(command.input.Key.endsWith('.pmtiles'));
 
-                return Promise.resolve({ ETag: '"123"' })
-            },
+            return Promise.resolve({ ETag: '"123"' });
+        },
     ].reverse();
 
     Sinon.stub(S3Client.prototype, 'send').callsFake(async (command) => {
         if (command instanceof UploadPartCommand) {
-             return { ETag: '"123"' };
+            return { ETag: '"123"' };
         }
         if (command instanceof CompleteMultipartUploadCommand) {
-             return { Location: '...' };
+            return { Location: '...' };
         }
 
         const validator = ExternalOperations.pop();
         if (!validator) throw new Error(`Unexpected command: ${command.constructor.name}`);
-        
+
         return validator(command);
     });
 
@@ -289,7 +289,7 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
             source: 'Upload',
             config: {},
             source_id: null,
-        }
+        },
     });
 
     worker.on('error', (err) => {
@@ -299,5 +299,5 @@ test(`Worker DataPackage Import: Packaged File`, async (t) => {
     worker.on('success', () => {
     });
 
-    await worker.process()
+    await worker.process();
 });
