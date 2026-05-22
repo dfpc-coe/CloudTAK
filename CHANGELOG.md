@@ -16,6 +16,10 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.1.1 - 2026-05-21
+
+- :bug: CSP rules prevented `blob:` loaded images
+
 ### v13.1.0 - 2026-05-21
 
 - :tada: Update CoTView to use a new Offline native Icon Selection component
