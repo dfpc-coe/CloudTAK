@@ -189,10 +189,6 @@ export default class ProfileControl {
             return final[k.value.key.replace('display::', '')] = String(k.value.value);
         });
 
-        for (let display of keys) {
-            display = display.replace('display::', '');
-        }
-
         return {
             stale: {
                 value: toEnum.fromString(Type.Enum(Profile_Stale), final.stale || Profile_Stale.TenMinutes),
