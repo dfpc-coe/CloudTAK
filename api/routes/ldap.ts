@@ -129,8 +129,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
 
-            const password = Array.from(crypto.randomFillSync(new Uint8Array(16)))
-                .map(n => String.fromCharCode((n % 94) + 33))
+            const password = Array.from({ length: 16 }, () => String.fromCharCode(crypto.randomInt(33, 127)))
                 .join('');
 
             const user = await cotak.fetchMachineUser(profile.id, req.params.email);
