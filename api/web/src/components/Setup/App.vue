@@ -257,12 +257,15 @@ async function saveUrl(): Promise<void> {
 }
 
 onMounted(async () => {
-    if (Capacitor.isNativePlatform()) {
-        const { value } = await Preferences.get({ key: 'serverUrl' })
-        if (value) {
-            window.location.href = value
-            return
-        }
+    if (!Capacitor.isNativePlatform()) {
+        window.location.href = '/'
+        return
+    }
+
+    const { value } = await Preferences.get({ key: 'serverUrl' })
+    if (value) {
+        window.location.href = value
+        return
     }
 
     await loadProviders()
