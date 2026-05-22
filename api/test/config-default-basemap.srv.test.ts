@@ -12,11 +12,12 @@ test('Config: Default Basemap Flow - Get Default Config', async () => {
     try {
         const res = await flight.fetch('/api/config?keys=map::basemap', {
             method: 'GET',
-            auth: { bearer: flight.token.admin }
+            auth: { bearer: flight.token.admin },
         }, true);
 
-       assert.equal(res.body['map::basemap'], undefined);
-    } catch (err) {
+        assert.equal(res.body['map::basemap'], undefined);
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -30,11 +31,12 @@ test('Config: Default Basemap Flow - Create Basemap', async () => {
                 name: 'Default Basemap Test',
                 url: 'https://test.com/default/{z}/{x}/{y}',
                 protocol: 'zxy',
-            }
+            },
         }, true);
 
         assert.ok(res.body.id, 'Basemap Created');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
         return;
     }
@@ -46,12 +48,13 @@ test('Config: Default Basemap Flow - Create Default Basemap Config', async () =>
             method: 'PUT',
             auth: { bearer: flight.token.admin },
             body: {
-                'map::basemap': 1
-            }
+                'map::basemap': 1,
+            },
         }, true);
 
         assert.equal(res.body['map::basemap'], 1);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -60,7 +63,7 @@ test('Config: Default Basemap Flow - Fail Deleting Default Basemap', async () =>
     try {
         const res = await flight.fetch('/api/basemap/1', {
             method: 'DELETE',
-            auth: { bearer: flight.token.admin }
+            auth: { bearer: flight.token.admin },
         }, false);
 
         assert.equal(res.status, 400);
@@ -68,9 +71,10 @@ test('Config: Default Basemap Flow - Fail Deleting Default Basemap', async () =>
         assert.deepEqual(res.body, {
             status: 400,
             message: 'Cannot delete default basemap',
-            messages: []
+            messages: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -81,10 +85,11 @@ test('Config: Default Basemap Flow - Unset Default Basemap', async () => {
             method: 'PUT',
             auth: { bearer: flight.token.admin },
             body: {
-                'map::basemap': null
-            }
+                'map::basemap': null,
+            },
         }, true);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -93,14 +98,15 @@ test('Config: Default Basemap Flow - Sucessful Basemap Delete', async () => {
     try {
         const res = await flight.fetch('/api/basemap/1', {
             method: 'DELETE',
-            auth: { bearer: flight.token.admin }
+            auth: { bearer: flight.token.admin },
         }, true);
 
         assert.deepEqual(res.body, {
             status: 200,
-            message: 'Basemap Deleted'
+            message: 'Basemap Deleted',
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

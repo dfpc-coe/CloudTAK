@@ -1,9 +1,9 @@
 import { createSelectSchema } from 'drizzle-typebox';
-import { Type, Static } from '@sinclair/typebox'
+import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text } from './enums.js';
-import { VideoLease_SourceType} from './enums.js';
+import { VideoLease_SourceType } from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
 import { Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, BasemapTerrain_Encoding } from '../lib/enums.js';
@@ -29,37 +29,37 @@ export const LayerUpdateManagementItemResponse = Type.Object({
 
 export const LayerUpdateManagementListResponse = Type.Object({
     total: Type.Integer(),
-    items: Type.Array(LayerUpdateManagementItemResponse)
+    items: Type.Array(LayerUpdateManagementItemResponse),
 });
 
 export const GeoJSONFeatureGeometryPoint = Type.Object({
     type: Type.Literal('Point'),
-    coordinates: Type.Tuple([Type.Number(), Type.Number()])
+    coordinates: Type.Tuple([Type.Number(), Type.Number()]),
 });
 
 export const GeoJSONFeatureGeometryMultiPoint = Type.Object({
     type: Type.Literal('MultiPoint'),
-    coordinates: Type.Array(Type.Tuple([Type.Number(), Type.Number()]))
+    coordinates: Type.Array(Type.Tuple([Type.Number(), Type.Number()])),
 });
 
 export const GeoJSONFeatureGeometryLineString = Type.Object({
     type: Type.Literal('LineString'),
-    coordinates: Type.Array(Type.Tuple([Type.Number(), Type.Number()]))
+    coordinates: Type.Array(Type.Tuple([Type.Number(), Type.Number()])),
 });
 
 export const GeoJSONFeatureGeometryMultiLineString = Type.Object({
     type: Type.Literal('MultiLineString'),
-    coordinates: Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()])))
+    coordinates: Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()]))),
 });
 
 export const GeoJSONFeatureGeometryPolygon = Type.Object({
     type: Type.Literal('Polygon'),
-    coordinates: Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()])))
+    coordinates: Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()]))),
 });
 
 export const GeoJSONFeatureGeometryMultiPolygon = Type.Object({
     type: Type.Literal('MultiPolygon'),
-    coordinates: Type.Array(Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()]))))
+    coordinates: Type.Array(Type.Array(Type.Array(Type.Tuple([Type.Number(), Type.Number()])))),
 });
 
 export const MultiGeoJSONFeature = Type.Object({
@@ -72,25 +72,25 @@ export const MultiGeoJSONFeature = Type.Object({
         GeoJSONFeatureGeometryLineString,
         GeoJSONFeatureGeometryMultiLineString,
         GeoJSONFeatureGeometryPolygon,
-        GeoJSONFeatureGeometryMultiPolygon
-    ])
+        GeoJSONFeatureGeometryMultiPolygon,
+    ]),
 });
 
 export const MultiGeoJSONFeatureCollection = Type.Object({
     type: Type.Literal('FeatureCollection'),
-    features: Type.Array(MultiGeoJSONFeature)
+    features: Type.Array(MultiGeoJSONFeature),
 });
 
 export const GeoJSONFeature = Type.Object({
     id: Type.Optional(Type.Union([Type.Number(), Type.String()])),
     type: Type.Literal('Feature'),
     properties: Type.Record(Type.String(), Type.Unknown()),
-    geometry: Feature.Geometry
-})
+    geometry: Feature.Geometry,
+});
 
 export const GeoJSONFeatureCollection = Type.Object({
     type: Type.Literal('FeatureCollection'),
-    features: Type.Array(GeoJSONFeature)
+    features: Type.Array(GeoJSONFeature),
 });
 
 const OptionalVectorLayer = Type.Object({
@@ -98,7 +98,7 @@ const OptionalVectorLayer = Type.Object({
     fields: Type.Record(Type.String(), Type.String()),
     minzoom: Type.Optional(Type.Integer()),
     maxzoom: Type.Optional(Type.Integer()),
-    description: Type.Optional(Type.String())
+    description: Type.Optional(Type.String()),
 });
 
 export const OptionalTileJSON = Type.Object({
@@ -115,23 +115,23 @@ export const OptionalTileJSON = Type.Object({
     encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),
     style: Type.Optional(Type.Enum(Basemap_Scheme)),
     format: Type.Optional(Type.Enum(Basemap_Format)),
-    vector_layers: Type.Optional(Type.Array(OptionalVectorLayer))
+    vector_layers: Type.Optional(Type.Array(OptionalVectorLayer)),
 });
 
 export const LayerError = Type.Object({
     error: Type.String(),
-    feature: Feature.InputFeature
+    feature: Feature.InputFeature,
 });
 
 export const StandardLayerResponse = Type.Object({
     status: Type.Integer(),
     message: Type.String(),
-    errors: Type.Array(LayerError)
+    errors: Type.Array(LayerError),
 });
 
 export const StandardResponse = Type.Object({
     status: Type.Integer(),
-    message: Type.String()
+    message: Type.String(),
 });
 
 export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature, {
@@ -146,7 +146,7 @@ export const MissionTemplateResponse = Type.Object({
     description: Type.String(),
     created: Type.String(),
     updated: Type.String(),
-})
+});
 
 export const MissionTemplateLogResponse = Type.Object({
     id: Type.String(),
@@ -158,34 +158,34 @@ export const MissionTemplateLogResponse = Type.Object({
     updated: Type.String(),
     template: Type.String(),
     schema: Type.Unknown(),
-})
+});
 
 const Palette = createSelectSchema(schemas.Palette, {
     uuid: Type.String(),
     created: Type.String(),
     updated: Type.String(),
-})
+});
 
 export const PaletteResponse = Type.Composite([
     Palette,
     Type.Object({
-        features: Type.Array(PaletteFeatureResponse)
-    })
+        features: Type.Array(PaletteFeatureResponse),
+    }),
 ]);
 
 export const PaletteFeatureStyle = Type.Object({
     'marker-color': Type.Optional(Type.String()),
     'marker-opacity': Type.Optional(Type.String()),
 
-    icon: Type.Optional(Type.String()),
+    'icon': Type.Optional(Type.String()),
 
-    stroke: Type.Optional(Type.String()),
+    'stroke': Type.Optional(Type.String()),
     'stroke-style': Type.Optional(Type.String()),
     'stroke-opacity': Type.Optional(Type.String()),
     'stroke-width': Type.Optional(Type.String()),
-    fill: Type.Optional(Type.String()),
+    'fill': Type.Optional(Type.String()),
     'fill-opacity': Type.Optional(Type.String()),
-})
+});
 
 export const IconsetResponse = Type.Object({
     uid: Type.String(),
@@ -200,7 +200,7 @@ export const IconsetResponse = Type.Object({
     default_hostile: Type.Union([Type.Null(), Type.String()]),
     default_neutral: Type.Union([Type.Null(), Type.String()]),
     default_unknown: Type.Union([Type.Null(), Type.String()]),
-    skip_resize: Type.Boolean()
+    skip_resize: Type.Boolean(),
 });
 
 export const ServerResponse = Type.Object({
@@ -213,13 +213,13 @@ export const ServerResponse = Type.Object({
     url: Type.String(),
     api: Type.String(),
     webtak: Type.String(),
-    auth: Type.Boolean({ "description": "Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded" }),
+    auth: Type.Boolean({ description: 'Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded' }),
     certificate: Type.Optional(Type.Object({
         subject: Type.String(),
         validFrom: Type.String(),
-        validTo: Type.String()
+        validTo: Type.String(),
     })),
-})
+});
 
 export const ProfileListResponse = Type.Object({
     username: Type.String(),
@@ -228,7 +228,7 @@ export const ProfileListResponse = Type.Object({
     phone: Type.String(),
     last_login: Type.String(),
     active: Type.Boolean({
-        description: 'Does the user have an active CloudTAK Session'
+        description: 'Does the user have an active CloudTAK Session',
     }),
     system_admin: Type.Boolean(),
     agency_admin: Type.Array(Type.Integer()),
@@ -241,7 +241,7 @@ export const ProfileResponse = Type.Object({
     phone: Type.String(),
     last_login: Type.String(),
     active: Type.Boolean({
-        description: 'Does the user have an active CloudTAK Session'
+        description: 'Does the user have an active CloudTAK Session',
     }),
     system_admin: Type.Boolean(),
     agency_admin: Type.Array(Type.Integer()),
@@ -252,18 +252,18 @@ export const ProfileResponse = Type.Object({
     tak_type: Type.String(),
     tak_loc: Type.Union([Type.Object({
         type: Type.Literal('Point'),
-        coordinates: Type.Array(Type.Number())
+        coordinates: Type.Array(Type.Number()),
     }), Type.Null()]),
     tak_loc_freq: Type.Integer(),
 
     menu_order: Type.Array(Type.Object({
         key: Type.String({
-            description: 'Menu Key'
+            description: 'Menu Key',
         }),
         visibility: Type.Enum(Profile_Menu_Visibility, {
             description: 'Menu Visibility',
-            default: Profile_Menu_Visibility.FULL
-        })
+            default: Profile_Menu_Visibility.FULL,
+        }),
     })),
 
     display_projection: Type.Enum(Profile_Projection),
@@ -275,7 +275,7 @@ export const ProfileResponse = Type.Object({
     display_text: Type.Enum(Profile_Text),
     display_distance: Type.Enum(Profile_Distance),
     display_elevation: Type.Enum(Profile_Elevation),
-    display_speed: Type.Enum(Profile_Speed)
+    display_speed: Type.Enum(Profile_Speed),
 });
 
 export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
@@ -284,7 +284,7 @@ export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     expiration: Type.Union([Type.Null(), Type.String()]),
     channel: Type.Union([Type.Null(), Type.String()]),
     proxy: Type.Union([Type.Null(), Type.String()]),
-    source_type: Type.Enum(VideoLease_SourceType)
+    source_type: Type.Enum(VideoLease_SourceType),
 });
 
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
@@ -294,19 +294,19 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
     iconset: Type.Union([Type.Null(), Type.String()]),
     opacity: Type.Number(),
     visible: Type.Boolean(),
-    styles: Type.Array(Type.Unknown())
+    styles: Type.Array(Type.Unknown()),
 });
 
 export const ProfileInterestResponse = createSelectSchema(schemas.ProfileInterest, {
     id: Type.Integer(),
-    bounds: Feature.Geometry
+    bounds: Feature.Geometry,
 });
 
 export const ProfileVideoResponse = createSelectSchema(schemas.ProfileVideo, {
-    lease: Type.Integer()
+    lease: Type.Integer(),
 });
 
-export const FeatureResponse = Type.Composite([ Feature.Feature, Type.Object({
+export const FeatureResponse = Type.Composite([Feature.Feature, Type.Object({
     path: Type.String({ default: '/' }),
 })]);
 
@@ -321,8 +321,8 @@ const BaseImport = createSelectSchema(schemas.Import, {
 export const ImportResponse = Type.Composite([
     BaseImport,
     Type.Object({
-        results: Type.Array(ImportResult)
-    })
+        results: Type.Array(ImportResult),
+    }),
 ]);
 
 export const ErrorResponse = createSelectSchema(schemas.Errors, {
@@ -346,21 +346,21 @@ export const DataListResponse = createSelectSchema(schemas.Data, {
     connection: Type.Integer(),
     assets: Type.Array(Type.String()),
     mission_groups: Type.Array(Type.String()),
-    mission_sync: Type.Boolean({description: "Is the mission syncing with TAK Server"}),
-    mission_diff: Type.Boolean({description: "Allow a single layer to diff sync with TAK"}),
+    mission_sync: Type.Boolean({ description: 'Is the mission syncing with TAK Server' }),
+    mission_diff: Type.Boolean({ description: 'Allow a single layer to diff sync with TAK' }),
 });
 
 export const JobLogResponse = Type.Object({
     message: Type.String(),
     timestamp: Type.Integer(),
-})
+});
 
 export const JobResponse = Type.Object({
     id: Type.String(),
     asset: Type.String(),
     status: Type.String(),
     created: Type.Integer(),
-    updated: Type.Optional(Type.Integer())
+    updated: Type.Optional(Type.Integer()),
 });
 
 export const ProfileFileResponse = Type.Object({
@@ -376,31 +376,31 @@ export const ProfileFileResponse = Type.Object({
     artifacts: Type.Array(Type.Object({
         ext: Type.String(),
         size: Type.Integer(),
-    }))
+    })),
 });
 
 export const AssetResponse = Type.Object({
-    name: Type.String({ "description": "The filename of the asset" }),
+    name: Type.String({ description: 'The filename of the asset' }),
     visualized: Type.Optional(Type.String()),
     vectorized: Type.Optional(Type.String()),
     updated: Type.Integer(),
-    sync: Type.Boolean({ description: "Does this file meet the glob rules to sync with the server" }),
-    etag: Type.String({ "description": "AWS S3 generated ETag of the asset" }),
-    size: Type.Integer({ "description": "Size in bytes of the asset" })
-})
+    sync: Type.Boolean({ description: 'Does this file meet the glob rules to sync with the server' }),
+    etag: Type.String({ description: 'AWS S3 generated ETag of the asset' }),
+    size: Type.Integer({ description: 'Size in bytes of the asset' }),
+});
 
 export const GenericMartiResponse = Type.Object({
     version: Type.String(),
     type: Type.String(),
-    data:  Type.Any(),
+    data: Type.Any(),
     messages: Type.Optional(Type.Array(Type.String())),
-    nodeId: Type.Optional(Type.String())
+    nodeId: Type.Optional(Type.String()),
 });
 
 /** Includes Token itself */
 export const CreateConnectionTokenResponse = createSelectSchema(schemas.ConnectionToken, {
     id: Type.Integer(),
-    connection: Type.Integer()
+    connection: Type.Integer(),
 });
 
 export const ConnectionTokenResponse = Type.Object({
@@ -431,7 +431,7 @@ export const ConnectionResponse = Type.Object({
     certificate: Type.Object({
         subject: Type.String(),
         validFrom: Type.String(),
-        validTo: Type.String()
+        validTo: Type.String(),
     }),
     created: Type.String(),
     updated: Type.String(),
@@ -474,7 +474,7 @@ export const BasemapResponse = Type.Object({
     iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
     title: Type.Optional(Type.String()),
     snapping_enabled: Type.Optional(Type.Boolean()),
-    snapping_layer: Type.Optional(Type.Union([Type.Null(), Type.String()]))
+    snapping_layer: Type.Optional(Type.Union([Type.Null(), Type.String()])),
 });
 
 export const FullConfig = Type.Object({

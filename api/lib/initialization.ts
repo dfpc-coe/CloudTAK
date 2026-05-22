@@ -3,8 +3,8 @@ import path from 'node:path';
 import {
     Basemap as BasemapParser,
     Iconset as IconsetParser,
-    DataPackage
-} from '@tak-ps/node-cot'
+    DataPackage,
+} from '@tak-ps/node-cot';
 import fs from 'node:fs/promises';
 
 /**
@@ -22,7 +22,7 @@ export default class Bulldozer {
 
         await Promise.allSettled([
             bulldozer.populateIconsets(),
-            bulldozer.populateBasemaps()
+            bulldozer.populateBasemaps(),
         ]);
     }
 
@@ -36,7 +36,7 @@ export default class Bulldozer {
                     console.error(`ok - loading iconset ${file}`);
 
                     const dp = await DataPackage.parse(new URL(`../data/iconsets/${file}`, import.meta.url), {
-                        strict: false
+                        strict: false,
                     });
 
                     const files = await dp.files();
@@ -48,7 +48,7 @@ export default class Bulldozer {
                     }
 
                     const iconset = await IconsetParser.parse(await dp.getFileBuffer('iconset.xml'));
-                    await this.config.models.Iconset.generate(iconset.to_json())
+                    await this.config.models.Iconset.generate(iconset.to_json());
 
                     for (const icon of iconset.icons()) {
                         const file = lookup.get(icon.name) || icon.name;
@@ -58,7 +58,7 @@ export default class Bulldozer {
                             continue;
                         }
 
-                        const iconBuff = await dp.getFileBuffer(file)
+                        const iconBuff = await dp.getFileBuffer(file);
 
                         if (!iconBuff) {
                             console.log(`not ok - could not open ${icon.name} in ${iconset.name}, skipping`);
@@ -75,19 +75,20 @@ export default class Bulldozer {
                             format,
                             type2525b: icon.type2525b,
                             data: `data:image/png;base64,${iconBuff.toString('base64')}`,
-                            path: `${iconset.uid}/${file}`
-                        })
+                            path: `${iconset.uid}/${file}`,
+                        });
                     }
                 }
-            } catch (err) {
+            }
+            catch (err) {
                 if (err instanceof Error && (err as NodeJS.ErrnoException).code === 'ENOENT') {
                     console.log('ok - could not automatically load iconsets');
-                } else {
+                }
+                else {
                     console.error(err);
                 }
             }
         }
-
     }
 
     async populateBasemaps(): Promise<void> {
@@ -104,13 +105,15 @@ export default class Bulldozer {
                         name: b.name || 'Unknown',
                         url: b.url,
                         minzoom: b.minZoom || 0,
-                        maxzoom: b.maxZoom || 16
-                    })
+                        maxzoom: b.maxZoom || 16,
+                    });
                 }
-            } catch (err) {
+            }
+            catch (err) {
                 if (err instanceof Error && (err as NodeJS.ErrnoException).code === 'ENOENT') {
                     console.log('ok - could not automatically load basemaps');
-                } else {
+                }
+                else {
                     console.error(err);
                 }
             }

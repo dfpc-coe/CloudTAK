@@ -14,8 +14,8 @@ function feature(id: string): Feature {
         properties: {},
         geometry: {
             type: 'Point',
-            coordinates: [-104.9903, 39.7392]
-        }
+            coordinates: [-104.9903, 39.7392],
+        },
     };
 }
 
@@ -28,8 +28,8 @@ test('ConnectionPool.loadGeofences - disabled', async () => {
             enabled: async () => false,
             load: async () => {
                 loadCalled = true;
-            }
-        }
+            },
+        },
     } as unknown as Config);
 
     await pool.loadGeofences({
@@ -38,7 +38,7 @@ test('ConnectionPool.loadGeofences - disabled', async () => {
         geofences: async () => {
             geofencesCalled = true;
             return [feature('disabled')];
-        }
+        },
     } as ConnectionConfig);
 
     await pool.close();
@@ -61,8 +61,8 @@ test('ConnectionPool.loadGeofences - disabled by nogeofence', async () => {
             },
             load: async () => {
                 loadCalled = true;
-            }
-        }
+            },
+        },
     } as unknown as Config);
 
     await pool.loadGeofences({
@@ -71,7 +71,7 @@ test('ConnectionPool.loadGeofences - disabled by nogeofence', async () => {
         geofences: async () => {
             geofencesCalled = true;
             return [feature('disabled')];
-        }
+        },
     } as ConnectionConfig);
 
     await pool.close();
@@ -93,8 +93,8 @@ test('ConnectionPool.loadGeofences - enabled', async () => {
             load: async (connConfig: ConnectionConfig, features: Array<Feature>) => {
                 loadedConnection = connConfig;
                 loadedFeatures = features;
-            }
-        }
+            },
+        },
     } as unknown as Config);
 
     await pool.loadGeofences({
@@ -103,7 +103,7 @@ test('ConnectionPool.loadGeofences - enabled', async () => {
         geofences: async () => {
             geofencesCalled = true;
             return expectedFeatures;
-        }
+        },
     } as ConnectionConfig);
 
     await pool.close();
@@ -119,7 +119,7 @@ test('ConnectionGeofence.load - synchronizes connection geofences to Tile38', as
     const deleted: Array<{ key: string; id: string }> = [];
     const connConfig = {
         id: 1,
-        name: 'Test Connection'
+        name: 'Test Connection',
     } as ConnectionConfig;
     const geofence = new ConnectionGeofence({
         models: {
@@ -128,11 +128,11 @@ test('ConnectionGeofence.load - synchronizes connection geofences to Tile38', as
                     return {
                         ...defaults,
                         'geofence::enabled': true,
-                        'geofence::url': 'redis://tile38.example.com:9851'
+                        'geofence::url': 'redis://tile38.example.com:9851',
                     };
-                }
-            }
-        }
+                },
+            },
+        },
     } as unknown as Config);
 
     geofence.state = 'connected';
@@ -148,11 +148,11 @@ test('ConnectionGeofence.load - synchronizes connection geofences to Tile38', as
                                 elapsed: '0s',
                                 ids: ['feature-a', 'feature-old'],
                                 count: 2,
-                                cursor: 0
+                                cursor: 0,
                             };
-                        }
+                        },
                     };
-                }
+                },
             };
         },
         del: async (key: string, id: string) => {
@@ -166,11 +166,11 @@ test('ConnectionGeofence.load - synchronizes connection geofences to Tile38', as
                         exec: async () => {
                             written.push({ key, id, feature: geojson });
                             return { ok: true };
-                        }
+                        },
                     };
-                }
+                },
             };
-        }
+        },
     } as unknown as Tile38;
 
     const features = [feature('feature-a'), feature('feature-b')];
@@ -178,10 +178,10 @@ test('ConnectionGeofence.load - synchronizes connection geofences to Tile38', as
 
     assert.deepEqual(scanned, ['cloudtak:geofence:1']);
     assert.deepEqual(deleted, [
-        { key: 'cloudtak:geofence:1', id: 'feature-old' }
+        { key: 'cloudtak:geofence:1', id: 'feature-old' },
     ]);
     assert.deepEqual(written, [
         { key: 'cloudtak:geofence:1', id: 'feature-a', feature: features[0] },
-        { key: 'cloudtak:geofence:1', id: 'feature-b', feature: features[1] }
+        { key: 'cloudtak:geofence:1', id: 'feature-b', feature: features[1] },
     ]);
 });

@@ -23,9 +23,9 @@ const task: RetentionTask = {
             status: 'success',
             deleted: deleted.length,
             duration: Date.now() - start,
-            message: deleted.length ? undefined : 'No expired chat messages found'
+            message: deleted.length ? undefined : 'No expired chat messages found',
         };
-    }
+    },
 };
 
 export default task;

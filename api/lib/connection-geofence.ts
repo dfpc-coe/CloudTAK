@@ -30,14 +30,14 @@ export type GeofenceStatus = {
 const DEFAULT_GEOFENCE_SETTINGS: GeofenceSettings = {
     'geofence::enabled': false,
     'geofence::url': '',
-    'geofence::password': ''
+    'geofence::password': '',
 };
 
 /**
  * Maintain a persistent connection to the configured Tile38 geofence server.
  * @class
  */
-export default class ConnectionGeofence  {
+export default class ConnectionGeofence {
     config: Config;
     tile38?: Tile38;
     state: GeofenceConnectionState;
@@ -96,7 +96,7 @@ export default class ConnectionGeofence  {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} - skipping geofence without feature id`);
             return false;
         });
-        const activeIds = new Set(activeFeatures.map((feature) => String(feature.id)));
+        const activeIds = new Set(activeFeatures.map(feature => String(feature.id)));
         const existing = await this.tile38.scan(key).noFields().asIds();
         let removed = 0;
 
@@ -128,7 +128,7 @@ export default class ConnectionGeofence  {
             connected: this.state === 'connected',
             url: settings.url,
             reconnectAttempts: this.reconnectAttempts,
-            lastError: this.lastError?.message
+            lastError: this.lastError?.message,
         };
     }
 
@@ -145,7 +145,7 @@ export default class ConnectionGeofence  {
 
     private async loadSettings(): Promise<GeofenceSettings> {
         this.settings = await this.config.models.Setting.typedMany({
-            ...DEFAULT_GEOFENCE_SETTINGS
+            ...DEFAULT_GEOFENCE_SETTINGS,
         });
 
         return this.settings;
@@ -158,7 +158,7 @@ export default class ConnectionGeofence  {
         return {
             ...settings,
             url,
-            configured: settings['geofence::enabled'] && !!url
+            configured: settings['geofence::enabled'] && !!url,
         };
     }
 
@@ -197,7 +197,7 @@ export default class ConnectionGeofence  {
             port: parsedUrl.port ? Number(parsedUrl.port) : 9851,
             username: parsedUrl.username ? decodeURIComponent(parsedUrl.username) : undefined,
             password: password || undefined,
-            tls: secureProtocol ? {} : undefined
+            tls: secureProtocol ? {} : undefined,
         });
         const version = ++this.connectionVersion;
 
@@ -223,7 +223,8 @@ export default class ConnectionGeofence  {
             this.markConnected();
 
             console.log(`ok - geofence connected: ${settings.url}`);
-        } catch (err) {
+        }
+        catch (err) {
             if (!this.isCurrentClient(client, version)) {
                 return;
             }
@@ -344,7 +345,8 @@ export default class ConnectionGeofence  {
     private async safeQuit(client: Tile38): Promise<void> {
         try {
             await client.quit(true);
-        } catch (err) {
+        }
+        catch (err) {
             const error = toError(err);
             if (error.message !== 'Connection is closed.') {
                 console.error(`not ok - geofence close failed: ${error.message}`);

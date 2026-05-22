@@ -30,37 +30,38 @@ export default class ArcGISConfigService {
 
     async updateConfig(newConfig: ArcGISConfig): Promise<void> {
         this.config = newConfig;
-        
+
         // Save to database
         if (newConfig.authMethod === 'oauth2') {
             await this.appConfig.models.Setting.generate({
                 key: 'agol::auth_method',
-                value: 'oauth2'
+                value: 'oauth2',
             }, { upsert: GenerateUpsert.UPDATE });
-            
+
             if (newConfig.clientId) {
                 await this.appConfig.models.Setting.generate({
                     key: 'agol::client_id',
-                    value: newConfig.clientId
+                    value: newConfig.clientId,
                 }, { upsert: GenerateUpsert.UPDATE });
             }
-            
+
             if (newConfig.clientSecret) {
                 await this.appConfig.models.Setting.generate({
                     key: 'agol::client_secret',
-                    value: newConfig.clientSecret
+                    value: newConfig.clientSecret,
                 }, { upsert: GenerateUpsert.UPDATE });
             }
-        } else {
+        }
+        else {
             await this.appConfig.models.Setting.generate({
                 key: 'agol::auth_method',
-                value: 'legacy'
+                value: 'legacy',
             }, { upsert: GenerateUpsert.UPDATE });
-            
+
             if (newConfig.legacyToken) {
                 await this.appConfig.models.Setting.generate({
                     key: 'agol::token',
-                    value: newConfig.legacyToken
+                    value: newConfig.legacyToken,
                 }, { upsert: GenerateUpsert.UPDATE });
             }
         }
@@ -79,20 +80,22 @@ export default class ArcGISConfigService {
                 return {
                     authMethod: 'oauth2',
                     clientId: settings['agol::client_id'] || undefined,
-                    clientSecret: settings['agol::client_secret'] || undefined
-                };
-            } else {
-                return {
-                    authMethod: 'legacy',
-                    legacyToken: settings['agol::token'] || undefined
+                    clientSecret: settings['agol::client_secret'] || undefined,
                 };
             }
-        } catch {
+            else {
+                return {
+                    authMethod: 'legacy',
+                    legacyToken: settings['agol::token'] || undefined,
+                };
+            }
+        }
+        catch {
             // Default configuration
             return {
                 authMethod: 'oauth2',
                 clientId: undefined,
-                clientSecret: undefined
+                clientSecret: undefined,
             };
         }
     }
@@ -101,7 +104,8 @@ export default class ArcGISConfigService {
         const config = await this.getConfig();
         if (config.authMethod === 'oauth2') {
             return !!(config.clientId && config.clientSecret);
-        } else {
+        }
+        else {
             return !!config.legacyToken;
         }
     }

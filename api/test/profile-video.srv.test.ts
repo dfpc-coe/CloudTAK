@@ -13,15 +13,16 @@ test('GET: api/profile/video', async () => {
         const res = await flight.fetch('/api/profile/video', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.deepEqual(res.body, {
             total: 0,
-            items: []
+            items: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

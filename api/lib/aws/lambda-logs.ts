@@ -13,7 +13,7 @@ export default class LogGroup {
         const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_REGION });
 
         await cwl.send(new CloudWatchLogs.DeleteLogGroupCommand({
-            logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`
+            logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`,
         }));
     }
 
@@ -21,7 +21,7 @@ export default class LogGroup {
         logs: Array<{
             message: string;
             timestamp: number;
-        }>
+        }>;
     }> {
         const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_REGION });
 
@@ -31,18 +31,20 @@ export default class LogGroup {
                 limit: 1,
                 descending: true,
                 logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`,
-                orderBy: 'LastEventTime'
+                orderBy: 'LastEventTime',
             }));
-        } catch (err) {
+        }
+        catch (err) {
             if (String(err).includes('ResourceNotFoundException')) {
-                return { logs: [] }
-            } else {
+                return { logs: [] };
+            }
+            else {
                 throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list lambda logs');
             }
         }
 
         if (!streams.logStreams || !streams.logStreams.length) {
-            return { logs: [] }
+            return { logs: [] };
         }
 
         return {
@@ -53,9 +55,9 @@ export default class LogGroup {
             }))).events || []).map((log) => {
                 return {
                     message: String(log.message),
-                    timestamp: log.timestamp || 0
-                }
-            })
-        }
+                    timestamp: log.timestamp || 0,
+                };
+            }),
+        };
     }
 }

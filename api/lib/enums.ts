@@ -1,12 +1,12 @@
 import Err from '@openaddresses/batch-error';
-import { Static, TSchema, TUnknown } from "@sinclair/typebox";
-import { TypeCompiler } from "@sinclair/typebox/compiler";
+import { Static, TSchema, TUnknown } from '@sinclair/typebox';
+import { TypeCompiler } from '@sinclair/typebox/compiler';
 
 export class toEnum {
     static fromString<T extends TSchema>(type: T, str: string): Static<T>;
 
     static fromString<T extends TSchema = TUnknown>(type: T, str: string): Static<T> {
-        const typeChecker = TypeCompiler.Compile(type)
+        const typeChecker = TypeCompiler.Compile(type);
         const result = typeChecker.Check(str);
 
         if (result) return str;
@@ -29,7 +29,7 @@ export enum Import_Status {
 export enum AllBoolean {
     TRUE = 'true',
     FALSE = 'false',
-    ALL = 'all'
+    ALL = 'all',
 }
 
 export function AllBooleanCast(allBoolean: AllBoolean): boolean | null {
@@ -40,7 +40,7 @@ export function AllBooleanCast(allBoolean: AllBoolean): boolean | null {
 
 export enum ExportFeatureFormat {
     GEOJSON = 'geojson',
-    KML = 'kml'
+    KML = 'kml',
 }
 
 export enum Basemap_Protocol {
@@ -56,7 +56,7 @@ export enum Basemap_FeatureAction {
     FETCH = 'fetch',
     CREATE = 'create',
     UPDATE = 'update',
-    DELETE = 'delete'
+    DELETE = 'delete',
 }
 
 export enum BasemapTerrain_Encoding {
@@ -64,11 +64,10 @@ export enum BasemapTerrain_Encoding {
     TERRARIUM = 'terrarium',
 }
 
-
 export enum BasicGeometryType {
     POINT = 'Point',
     LINESTRING = 'LineString',
-    POLYGON = 'Polygon'
+    POLYGON = 'Polygon',
 }
 
 export enum VideoLease_SourceType {
@@ -80,7 +79,7 @@ export enum VideoLease_SourceType {
     ROTOR = 'rotor',
     FIXEDWING = 'fixedwing',
     UAS_ROTOR = 'uas-rotor',
-    UAS_FIXEDWING = 'uas-fixedwing'
+    UAS_FIXEDWING = 'uas-fixedwing',
 }
 
 export enum Profile_Zoom {
@@ -111,18 +110,18 @@ export enum Profile_Coordinate {
     DM = 'dm',
     DMS = 'dms',
     MGRS = 'mgrs',
-    UTM = 'utm'
+    UTM = 'utm',
 }
 
 export enum Basemap_Format {
     PNG = 'png',
     WEBP = 'webp',
     JPEG = 'jpeg',
-    MVT = 'mvt'
+    MVT = 'mvt',
 }
 
 export enum Basemap_Scheme {
-    XYZ = 'xyz'
+    XYZ = 'xyz',
 }
 
 export enum Basemap_Type {
@@ -134,13 +133,13 @@ export enum Basemap_Type {
 export enum Layer_Priority {
     HIGH = 'high',
     LOW = 'low',
-    OFF = 'off'
+    OFF = 'off',
 }
 
 export enum Profile_Text {
     Small = 'Small',
     Medium = 'Medium',
-    Large = 'Large'
+    Large = 'Large',
 }
 
 export enum Profile_Stale {
@@ -148,23 +147,22 @@ export enum Profile_Stale {
     TenMinutes = '10 Minutes',
     ThirtyMinutes = '30 Minutes',
     OneHour = '1 Hour',
-    Never = 'Never'
+    Never = 'Never',
 }
 
 export enum Profile_Speed {
     MS = 'm/s',
     KMH = 'km/h',
-    MPH = 'mi/h'
+    MPH = 'mi/h',
 }
 
 export enum Profile_Distance {
     METER = 'meter',
     KILOMETER = 'kilometer',
-    MILE = 'mile'
+    MILE = 'mile',
 }
 
 export enum Profile_Elevation {
     METER = 'meter',
-    FEET = 'feet'
+    FEET = 'feet',
 }
-

@@ -4,15 +4,15 @@ import { jsonBuildObject } from './utils.js';
 import { StyleContainer } from '../style.js';
 import { FilterContainer } from '../filter.js';
 import { Layer_Priority } from '../enums.js';
-import { Static, Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Connection, Layer, LayerIncoming, LayerOutgoing } from '../schema.js';
 import { sql, eq, asc, desc, is, SQL } from 'drizzle-orm';
 
 export const Layer_Config = Type.Object({
     timezone: Type.Optional(Type.Object({
-        timezone: Type.String()
-    }))
+        timezone: Type.String(),
+    })),
 });
 
 export const AugmentedLayerOutgoing = Type.Object({
@@ -22,7 +22,7 @@ export const AugmentedLayerOutgoing = Type.Object({
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.Any()),
     filters: FilterContainer,
-})
+});
 
 export const AugmentedLayerIncoming = Type.Object({
     layer: Type.Integer(),
@@ -35,8 +35,8 @@ export const AugmentedLayerIncoming = Type.Object({
     styles: StyleContainer,
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.Any()),
-    data: Type.Union([Type.Null(), Type.Integer()])
-})
+    data: Type.Union([Type.Null(), Type.Integer()]),
+});
 
 export const AugmentedLayer = Type.Object({
     id: Type.Integer(),
@@ -64,11 +64,11 @@ export const AugmentedLayer = Type.Object({
     parent: Type.Optional(Type.Object({
         id: Type.Integer(),
         name: Type.String(),
-        enabled: Type.Boolean()
+        enabled: Type.Boolean(),
     })),
 
     incoming: Type.Optional(AugmentedLayerIncoming),
-    outgoing: Type.Optional(AugmentedLayerOutgoing)
+    outgoing: Type.Optional(AugmentedLayerOutgoing),
 });
 
 export default class LayerModel extends Modeler<typeof Layer> {
@@ -81,16 +81,17 @@ export default class LayerModel extends Modeler<typeof Layer> {
     async tasks(): Promise<string[]> {
         const pgres = await this.pool
             .select({
-                task: Layer.task
+                task: Layer.task,
             })
-            .from(Layer)
+            .from(Layer);
 
         if (pgres.length === 0) {
-            return []
-        } else {
+            return [];
+        }
+        else {
             const taskSet: Set<string> = new Set();
             for (const t of pgres) {
-                taskSet.add(t.task.replace(/-v\d+\.\d+\.\d+/, ''))
+                taskSet.add(t.task.replace(/-v\d+\.\d+\.\d+/, ''));
             }
 
             return Array.from(taskSet);
@@ -99,27 +100,28 @@ export default class LayerModel extends Modeler<typeof Layer> {
 
     parse(l: Static<typeof AugmentedLayer>): Static<typeof AugmentedLayer> {
         if (l.incoming && l.incoming.layer) {
-            if (typeof l.incoming.config === 'string') l.incoming.config = JSON.parse(l.incoming.config)
-            if (typeof l.incoming.styles === 'string') l.incoming.styles = JSON.parse(l.incoming.styles)
-            if (typeof l.incoming.ephemeral === 'string') l.incoming.ephemeral = JSON.parse(l.incoming.ephemeral)
-            if (typeof l.incoming.environment === 'string') l.incoming.environment = JSON.parse(l.incoming.environment)
-
-        } else {
+            if (typeof l.incoming.config === 'string') l.incoming.config = JSON.parse(l.incoming.config);
+            if (typeof l.incoming.styles === 'string') l.incoming.styles = JSON.parse(l.incoming.styles);
+            if (typeof l.incoming.ephemeral === 'string') l.incoming.ephemeral = JSON.parse(l.incoming.ephemeral);
+            if (typeof l.incoming.environment === 'string') l.incoming.environment = JSON.parse(l.incoming.environment);
+        }
+        else {
             delete l.incoming;
         }
 
         if (l.outgoing && l.outgoing.layer) {
-            if (typeof l.outgoing.ephemeral === 'string') l.outgoing.ephemeral = JSON.parse(l.outgoing.ephemeral)
-            if (typeof l.outgoing.environment === 'string') l.outgoing.environment = JSON.parse(l.outgoing.environment)
-            if (typeof l.outgoing.filters === 'string') l.outgoing.filters = JSON.parse(l.outgoing.filters)
-        } else {
+            if (typeof l.outgoing.ephemeral === 'string') l.outgoing.ephemeral = JSON.parse(l.outgoing.ephemeral);
+            if (typeof l.outgoing.environment === 'string') l.outgoing.environment = JSON.parse(l.outgoing.environment);
+            if (typeof l.outgoing.filters === 'string') l.outgoing.filters = JSON.parse(l.outgoing.filters);
+        }
+        else {
             delete l.outgoing;
         }
 
-        return l
+        return l;
     }
 
-    async *augmented_iter(query: GenericIterInput = {}): AsyncGenerator<Static<typeof AugmentedLayer>> {
+    async* augmented_iter(query: GenericIterInput = {}): AsyncGenerator<Static<typeof AugmentedLayer>> {
         const pagesize = query.pagesize || 100;
         let page = 0;
 
@@ -129,11 +131,11 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 page,
                 limit: pagesize,
                 order: query.order,
-                where: query.where
+                where: query.where,
             });
 
             for (const row of pgres.items) {
-                yield row as Static<typeof AugmentedLayer>
+                yield row as Static<typeof AugmentedLayer>;
             }
 
             page++;
@@ -167,7 +169,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 parent: jsonBuildObject({
                     id: Connection.id,
                     name: Connection.name,
-                    enabled: Connection.enabled
+                    enabled: Connection.enabled,
                 }),
 
                 incoming: jsonBuildObject({
@@ -191,14 +193,14 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     environment: LayerOutgoing.environment,
                     ephemeral: LayerOutgoing.ephemeral,
                     filters: LayerOutgoing.filters,
-                })
+                }),
             })
             .from(Layer)
             .leftJoin(Connection, eq(Layer.connection, Connection.id))
             .leftJoin(LayerIncoming, eq(LayerIncoming.layer, Layer.id))
             .leftJoin(LayerOutgoing, eq(LayerOutgoing.layer, Layer.id))
-            .where(is(id, SQL)? id as SQL<unknown> : eq(this.requiredPrimaryKey(), id))
-            .limit(1)
+            .where(is(id, SQL) ? id as SQL<unknown> : eq(this.requiredPrimaryKey(), id))
+            .limit(1);
 
         if (pgres.length !== 1) throw new Err(404, null, `Item Not Found`);
 
@@ -213,7 +215,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
             .from(Layer)
             .leftJoin(LayerIncoming, eq(LayerIncoming.layer, Layer.id))
             .leftJoin(LayerOutgoing, eq(LayerOutgoing.layer, Layer.id))
-            .where(query.where)
+            .where(query.where);
 
         return pgres.length ? Number(pgres[0].count) : 0;
     }
@@ -249,7 +251,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 parent: jsonBuildObject({
                     id: Connection.id,
                     name: Connection.name,
-                    enabled: Connection.enabled
+                    enabled: Connection.enabled,
                 }),
 
                 incoming: jsonBuildObject({
@@ -273,7 +275,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     environment: LayerOutgoing.environment,
                     ephemeral: LayerOutgoing.ephemeral,
                     filters: LayerOutgoing.filters,
-                })
+                }),
             })
             .from(Layer)
             .leftJoin(Connection, eq(Layer.connection, Connection.id))
@@ -282,16 +284,17 @@ export default class LayerModel extends Modeler<typeof Layer> {
             .where(query.where)
             .orderBy(orderBy)
             .limit(query.limit || 10)
-            .offset((query.page || 0) * (query.limit || 10))
+            .offset((query.page || 0) * (query.limit || 10));
 
         if (pgres.length === 0) {
             return { total: 0, items: [] };
-        } else {
+        }
+        else {
             return {
                 total: parseInt(pgres[0].count),
                 items: pgres.map((t) => {
                     return this.parse(t as Static<typeof AugmentedLayer>);
-                })
+                }),
             };
         }
     }

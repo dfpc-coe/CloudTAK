@@ -1,4 +1,4 @@
-import { Type, Static } from '@sinclair/typebox'
+import { Type, Static } from '@sinclair/typebox';
 import jwt from 'jsonwebtoken';
 import moment from 'moment';
 import Schema from '@openaddresses/batch-schema';
@@ -9,7 +9,7 @@ import { sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import { VideoLease_SourceType, AllBoolean, AllBooleanCast } from '../lib/enums.js';
-import { VideoLease } from '../lib/schema.js'
+import { VideoLease } from '../lib/schema.js';
 import { eq } from 'drizzle-orm';
 import ECSVideoControl, { Action, Protocols, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
@@ -30,16 +30,16 @@ export default async function router(schema: Schema, config: Config) {
             path: Type.String(),
             protocol: Type.String(),
             id: Type.Union([Type.Null(), Type.String()]),
-            query: Type.String()
+            query: Type.String(),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             if (req.body.user === 'management') {
                 try {
                     const output = jwt.verify(req.body.password, config.SigningSecret) as {
-                        internal: boolean,
-                        access: string
+                        internal: boolean;
+                        access: string;
                     };
 
                     // Ensure an arbitrary valid token can't access this particular resource
@@ -48,47 +48,61 @@ export default async function router(schema: Schema, config: Config) {
                     }
 
                     res.json({ status: 200, message: 'Authorized' });
-                } catch (err) {
-                    console.error(err);
-                    throw new Err(401, new Error(String(err)), 'Invalid Token')
                 }
-            } else if ([Action.PUBLISH, Action.READ, Action.PLAYBACK].includes(req.body.action)) {
-                const lease = await config.models.VideoLease.from(eq(VideoLease.path, req.body.path))
+                catch (err) {
+                    console.error(err);
+                    throw new Err(401, new Error(String(err)), 'Invalid Token');
+                }
+            }
+            else if ([Action.PUBLISH, Action.READ, Action.PLAYBACK].includes(req.body.action)) {
+                const lease = await config.models.VideoLease.from(eq(VideoLease.path, req.body.path));
 
                 if (req.body.action === Action.PUBLISH && lease.stream_user && lease.stream_pass) {
                     if (req.body.user !== lease.stream_user || req.body.password !== lease.stream_pass) {
                         throw new Err(401, null, 'Unauthorized');
-                    } else {
+                    }
+                    else {
                         res.json({ status: 200, message: 'Authorized' });
                     }
-                } else if (req.body.action === Action.PUBLISH && !lease.stream_user && !lease.stream_pass) {
+                }
+                else if (req.body.action === Action.PUBLISH && !lease.stream_user && !lease.stream_pass) {
                     res.json({ status: 200, message: 'Authorized' });
-                } else if (req.body.action === Action.READ && lease.read_user && lease.read_pass) {
+                }
+                else if (req.body.action === Action.READ && lease.read_user && lease.read_pass) {
                     if (req.body.user !== lease.read_user || req.body.password !== lease.read_pass) {
                         throw new Err(401, null, 'Unauthorized');
-                    } else {
+                    }
+                    else {
                         res.json({ status: 200, message: 'Authorized' });
                     }
-                } else if (req.body.action === Action.READ && !lease.read_user && !lease.read_pass) {
+                }
+                else if (req.body.action === Action.READ && !lease.read_user && !lease.read_pass) {
                     res.json({ status: 200, message: 'Authorized' });
-                } else if (req.body.action === Action.PLAYBACK && !lease.recording) {
+                }
+                else if (req.body.action === Action.PLAYBACK && !lease.recording) {
                     throw new Err(401, null, 'Unauthorized - Recording Disabled');
-                } else if (req.body.action === Action.PLAYBACK && lease.read_user && lease.read_pass) {
+                }
+                else if (req.body.action === Action.PLAYBACK && lease.read_user && lease.read_pass) {
                     if (req.body.user !== lease.read_user || req.body.password !== lease.read_pass) {
                         throw new Err(401, null, 'Unauthorized');
-                    } else {
+                    }
+                    else {
                         res.json({ status: 200, message: 'Authorized' });
                     }
-                } else if (req.body.action === Action.PLAYBACK && !lease.read_user && !lease.read_pass) {
+                }
+                else if (req.body.action === Action.PLAYBACK && !lease.read_user && !lease.read_pass) {
                     res.json({ status: 200, message: 'Authorized' });
-                } else {
+                }
+                else {
                     res.json({ status: 401, message: 'Unauthorized' });
                 }
-            } else {
+            }
+            else {
                 throw new Err(401, null, 'Unauthorized');
             }
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -102,7 +116,7 @@ export default async function router(schema: Schema, config: Config) {
             to get metadata to agument the video stream itself
         `,
         query: Type.Object({
-            url: Type.String()
+            url: Type.String(),
         }),
         res: Type.Object({
             leasable: Type.Boolean({ description: 'If a lease request is made, is it likely to succeed' }),
@@ -115,9 +129,9 @@ export default async function router(schema: Schema, config: Config) {
                 source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
                 source_type: Type.Enum(VideoLease_SourceType),
                 source_model: Type.String(),
-                protocols: Protocols
-            }))
-        })
+                protocols: Protocols,
+            })),
+        }),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -130,21 +144,24 @@ export default async function router(schema: Schema, config: Config) {
             if (!url) {
                 res.json({
                     leasable: false,
-                    message: 'CloudTAK does not have a media server configured'
-                })
-            } else if (url.hostname !== requested.hostname) {
+                    message: 'CloudTAK does not have a media server configured',
+                });
+            }
+            else if (url.hostname !== requested.hostname) {
                 res.json({
                     leasable: true,
-                    message: 'CloudTAK has a media server provisioned and can attempt to serve the stream'
-                })
-            } else if (!uuid || !uuid[0]) {
+                    message: 'CloudTAK has a media server provisioned and can attempt to serve the stream',
+                });
+            }
+            else if (!uuid || !uuid[0]) {
                 res.json({
                     leasable: true,
-                    message: 'CloudTAK could not parse a UUID from the provided stream'
-                })
-            } else {
+                    message: 'CloudTAK could not parse a UUID from the provided stream',
+                });
+            }
+            else {
                 const lease = await videoControl.from(uuid[0], {
-                    admin: user.access === AuthUserAccess.ADMIN
+                    admin: user.access === AuthUserAccess.ADMIN,
                 });
 
                 const path = await videoControl.path(lease.path);
@@ -156,20 +173,21 @@ export default async function router(schema: Schema, config: Config) {
                     watchers: path.readers.length,
                     source_id: lease.source_id,
                     source_type: lease.source_type,
-                    source_model: lease.source_model || ''
+                    source_model: lease.source_model || '',
                 };
 
-                const protocols = await videoControl.protocols(lease, ProtocolPopulation.READ)
+                const protocols = await videoControl.protocols(lease, ProtocolPopulation.READ);
 
                 if (!lease.read_user && !lease.read_pass) {
                     res.json({
                         leasable: false,
                         metadata: {
                             ...base,
-                            protocols
-                        }
+                            protocols,
+                        },
                     });
-                } else if (lease.read_user && lease.read_pass) {
+                }
+                else if (lease.read_user && lease.read_pass) {
                     if (
                         !req.query.url.includes(lease.read_user)
                         || !req.query.url.includes(lease.read_pass)
@@ -181,14 +199,16 @@ export default async function router(schema: Schema, config: Config) {
                         leasable: false,
                         metadata: {
                             ...base,
-                            protocols
-                        }
+                            protocols,
+                        },
                     });
-                } else {
+                }
+                else {
                     throw new Err(400, null, 'Clould not determine lease state');
                 }
             }
-        } catch (err) {
+        }
+        catch (err) {
             if (err instanceof TypeError && err.message.includes('Invalid URL')) {
                 Err.respond(new Err(400, null, 'Invalid URL'), res);
             }
@@ -211,28 +231,28 @@ export default async function router(schema: Schema, config: Config) {
             order: Default.Order,
             sort: Type.String({
                 default: 'created',
-                enum: Object.keys(VideoLease)
+                enum: Object.keys(VideoLease),
             }),
             expired: Type.Enum(AllBoolean, {
-                default: AllBoolean.FALSE
+                default: AllBoolean.FALSE,
             }),
             ephemeral: Type.Enum(AllBoolean, {
-                default: AllBoolean.FALSE
+                default: AllBoolean.FALSE,
             }),
-            filter: Default.Filter
+            filter: Default.Filter,
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(VideoLeaseResponse)
-        })
+            items: Type.Array(VideoLeaseResponse),
+        }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
-                resources: [ { access: AuthResourceAccess.LEASE, id: undefined } ]
-            })
+                resources: [{ access: AuthResourceAccess.LEASE, id: undefined }],
+            });
 
             const ephemeral = AllBooleanCast(req.query.ephemeral);
-            const expired = AllBooleanCast(req.query.expired)
+            const expired = AllBooleanCast(req.query.expired);
 
             if (req.query.impersonate && (auth instanceof AuthResource || (auth instanceof AuthUser && (auth as AuthUser).is_admin()))) {
                 const impersonate: string | null = req.query.impersonate === true ? null : req.query.impersonate;
@@ -251,16 +271,17 @@ export default async function router(schema: Schema, config: Config) {
                             OR (${expired}::BOOLEAN IS False AND (expiration > Now() OR expiration IS NULL))
                         )
                         AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
-                    `
+                    `,
                 }));
-            } else {
+            }
+            else {
                 const user = await Auth.as_user(config, req);
 
                 const profile = await config.models.Profile.from(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
                 const groups = (await api.Group.list({ useCache: true }))
-                    .data.map((group) => group.name);
+                    .data.map(group => group.name);
 
                 res.json(await config.models.VideoLease.list({
                     limit: req.query.limit,
@@ -276,11 +297,12 @@ export default async function router(schema: Schema, config: Config) {
                             OR (${expired}::BOOLEAN IS True AND expiration < Now())
                             OR (${expired}::BOOLEAN IS False AND expiration > Now())
                         )
-                    `
+                    `,
                 }));
             }
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -289,34 +311,37 @@ export default async function router(schema: Schema, config: Config) {
         group: 'VideoLease',
         description: 'Get a single Video Lease',
         params: Type.Object({
-            lease: Type.Union([Type.Integer(), Type.String()])
+            lease: Type.Union([Type.Integer(), Type.String()]),
         }),
         res: VideoLeaseResponse,
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
-                resources: [ { access: AuthResourceAccess.LEASE, id: undefined } ]
-            })
+                resources: [{ access: AuthResourceAccess.LEASE, id: undefined }],
+            });
 
             let lease: Static<typeof VideoLeaseResponse>;
             if (auth instanceof AuthResource) {
                 lease = await videoControl.from(req.params.lease, {
-                    admin: true
+                    admin: true,
                 });
-            } else if (auth instanceof AuthUser) {
+            }
+            else if (auth instanceof AuthUser) {
                 const user = auth as AuthUser;
 
                 lease = await videoControl.from(req.params.lease, {
                     username: user.email,
-                    admin: user.access === AuthUserAccess.ADMIN
+                    admin: user.access === AuthUserAccess.ADMIN,
                 });
-            } else {
+            }
+            else {
                 throw new Err(401, null, 'Unauthorized');
             }
 
             res.json(lease);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -325,47 +350,51 @@ export default async function router(schema: Schema, config: Config) {
         group: 'VideoLease',
         description: 'Get a single Video Lease Metadata',
         params: Type.Object({
-            lease: Type.Union([Type.Integer(), Type.String()])
+            lease: Type.Union([Type.Integer(), Type.String()]),
         }),
         res: Type.Object({
             path: Type.Optional(PathListItem),
-            protocols: Protocols
-        })
+            protocols: Protocols,
+        }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
-                resources: [ { access: AuthResourceAccess.LEASE, id: undefined } ]
-            })
+                resources: [{ access: AuthResourceAccess.LEASE, id: undefined }],
+            });
 
             let lease: Static<typeof VideoLeaseResponse>;
             if (auth instanceof AuthResource) {
                 lease = await videoControl.from(req.params.lease, {
-                    admin: true
+                    admin: true,
                 });
-            } else if (auth instanceof AuthUser) {
+            }
+            else if (auth instanceof AuthUser) {
                 const user = auth as AuthUser;
 
                 lease = await videoControl.from(req.params.lease, {
                     username: user.email,
-                    admin: user.access === AuthUserAccess.ADMIN
+                    admin: user.access === AuthUserAccess.ADMIN,
                 });
-            } else {
+            }
+            else {
                 throw new Err(401, null, 'Unauthorized');
             }
 
-            const protocols = await videoControl.protocols(lease)
+            const protocols = await videoControl.protocols(lease);
 
             try {
                 res.json({
                     protocols,
                     path: await videoControl.path(lease.path),
                 });
-            } catch (err) {
+            }
+            catch (err) {
                 console.error(err);
                 res.json({ protocols });
             }
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -375,42 +404,42 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Create a new video Lease',
         body: Type.Object({
             name: Type.String({
-                description: 'Human readable name'
+                description: 'Human readable name',
             }),
             ephemeral: Type.Boolean({
                 description: 'CloudTAK View lease - hidden in streaming list',
-                default: false
+                default: false,
             }),
             duration: Type.Integer({
                 minimum: 0,
                 default: 60 * 60,
-                description: 'Duration in Seconds'
+                description: 'Duration in Seconds',
             }),
             permanent: Type.Boolean({
                 default: false,
-                description: 'System Admins can create non-expiring leases'
+                description: 'System Admins can create non-expiring leases',
             }),
             recording: Type.Boolean({
                 default: false,
-                description: 'Record streams to disk'
+                description: 'Record streams to disk',
             }),
             publish: Type.Boolean({
                 default: false,
-                description: 'Publish stream URL to TAK Server Video Manager'
+                description: 'Publish stream URL to TAK Server Video Manager',
             }),
             share: Type.Boolean({
                 default: false,
-                description: 'Allow other users to manage lease if they are also members of the channel'
+                description: 'Allow other users to manage lease if they are also members of the channel',
             }),
             secure: Type.Boolean({
                 default: false,
-                description: 'Increase stream security by enforcing a seperate read and write username/password'
+                description: 'Increase stream security by enforcing a seperate read and write username/password',
             }),
             source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.Null(), Type.String()])),
-            proxy: Type.Optional(Type.String())
+            proxy: Type.Optional(Type.String()),
         }),
         res: VideoLeaseResponse,
     }, async (req, res) => {
@@ -418,9 +447,10 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
 
             if (user.access !== AuthUserAccess.ADMIN && req.body.duration > 60 * 60 * 24) {
-                throw new Err(400, null, 'Only Administrators can request a lease > 24 hours')
-            } else if (user.access !== AuthUserAccess.ADMIN && req.body.permanent) {
-                throw new Err(400, null, 'Only Administrators can request permanent leases')
+                throw new Err(400, null, 'Only Administrators can request a lease > 24 hours');
+            }
+            else if (user.access !== AuthUserAccess.ADMIN && req.body.permanent) {
+                throw new Err(400, null, 'Only Administrators can request permanent leases');
             }
 
             const lease = await videoControl.generate({
@@ -437,12 +467,13 @@ export default async function router(schema: Schema, config: Config) {
                 path: randomUUID(),
                 secure: req.body.secure,
                 username: user.email,
-                proxy: req.body.proxy
-            })
+                proxy: req.body.proxy,
+            });
 
             res.json(lease);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -451,14 +482,14 @@ export default async function router(schema: Schema, config: Config) {
         group: 'VideoLease',
         description: 'Update a video Lease',
         params: Type.Object({
-            lease: Type.Integer()
+            lease: Type.Integer(),
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
             duration: Type.Integer({
                 minimum: 0,
                 default: 60 * 60,
-                description: 'Duration in Seconds'
+                description: 'Duration in Seconds',
             }),
             source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
@@ -466,28 +497,29 @@ export default async function router(schema: Schema, config: Config) {
             channel: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             secure: Type.Optional(Type.Boolean()),
             recording: Type.Optional(Type.Boolean({
-                description: 'Record streams to disk'
+                description: 'Record streams to disk',
             })),
             publish: Type.Optional(Type.Boolean({
-                description: 'Publish stream URL to TAK Server Video Manager'
+                description: 'Publish stream URL to TAK Server Video Manager',
             })),
             share: Type.Optional(Type.Boolean({
-                description: 'Allow other users to manage lease if they are also members of the channel'
+                description: 'Allow other users to manage lease if they are also members of the channel',
             })),
             permanent: Type.Optional(Type.Boolean({
-                description: 'System Admins can create non-expiring leases'
+                description: 'System Admins can create non-expiring leases',
             })),
-            proxy: Type.Optional(Type.String())
+            proxy: Type.Optional(Type.String()),
         }),
-        res: VideoLeaseResponse
+        res: VideoLeaseResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
             if (user.access !== AuthUserAccess.ADMIN && req.body.duration && req.body.duration > 60 * 60 * 24) {
-                throw new Err(400, null, 'Only Administrators can request a lease > 24 hours')
-            } else if (user.access !== AuthUserAccess.ADMIN && req.body.permanent) {
-                throw new Err(400, null, 'Only Administrators can request permanent leases')
+                throw new Err(400, null, 'Only Administrators can request a lease > 24 hours');
+            }
+            else if (user.access !== AuthUserAccess.ADMIN && req.body.permanent) {
+                throw new Err(400, null, 'Only Administrators can request permanent leases');
             }
 
             const lease = await videoControl.commit(req.params.lease, {
@@ -504,12 +536,13 @@ export default async function router(schema: Schema, config: Config) {
                 proxy: req.body.proxy,
             }, {
                 username: user.email,
-                admin: user.access === AuthUserAccess.ADMIN
+                admin: user.access === AuthUserAccess.ADMIN,
             });
 
             res.json(lease);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -518,24 +551,25 @@ export default async function router(schema: Schema, config: Config) {
         group: 'VideoLease',
         description: 'Delete a video Lease',
         params: Type.Object({
-            lease: Type.Integer()
+            lease: Type.Integer(),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
             await videoControl.delete(req.params.lease, {
                 username: user.email,
-                admin: user.access === AuthUserAccess.ADMIN
+                admin: user.access === AuthUserAccess.ADMIN,
             });
 
             res.json({
                 status: 200,
-                message: 'Video Lease Deleted'
+                message: 'Video Lease Deleted',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

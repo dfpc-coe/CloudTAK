@@ -1,16 +1,16 @@
-import { Type, Static } from '@sinclair/typebox'
+import { Type, Static } from '@sinclair/typebox';
 import jsonata from 'jsonata';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
 import Err from '@openaddresses/batch-error';
 
 export const FilterContainerQuery = Type.Object({
     name: Type.Optional(Type.String()),
-    query: Type.String()
+    query: Type.String(),
 });
 
 export const FilterContainer = Type.Object({
-    queries: Type.Optional(Type.Array(FilterContainerQuery))
-})
+    queries: Type.Optional(Type.Array(FilterContainerQuery)),
+});
 
 /**
  * Filter COT markers by a given set of filters
@@ -26,7 +26,7 @@ export default class Filter {
      */
     static async test(
         filters: Static<typeof FilterContainer>,
-        cot: CoT
+        cot: CoT,
     ): Promise<boolean> {
         if (!filters.queries) return false;
 
@@ -40,18 +40,19 @@ export default class Filter {
                     if (await expression.evaluate(feature) === true) {
                         return true;
                     }
-
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                } catch (err) {
+                }
+                catch (err) {
                     // Ignore queries that result in invalid output - this is explicitly allowed
                 }
             }
 
             return false;
-        } catch (err) {
+        }
+        catch (err) {
             if (err instanceof Error) {
                 throw new Err(400, err, err.message);
-            } else {
+            }
+            else {
                 throw new Err(400, new Error(String(err)), String(err));
             }
         }
@@ -66,12 +67,15 @@ export default class Filter {
             }
 
             return true;
-        } catch (err) {
+        }
+        catch (err) {
             if (err instanceof Err) {
                 throw err;
-            } else if (err instanceof Error) {
+            }
+            else if (err instanceof Error) {
                 throw new Err(400, err, err.message);
-            } else {
+            }
+            else {
                 throw new Err(400, new Error(String(err)), String(err));
             }
         }

@@ -16,11 +16,11 @@ test('POST: api/import', async () => {
         const res = await flight.fetch('/api/import', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
-                name: 'test.zip'
-            }
+                name: 'test.zip',
+            },
         }, true);
 
         assert.ok(res.body.id, 'has id');
@@ -42,9 +42,10 @@ test('POST: api/import', async () => {
             username: 'admin@example.com',
             source: 'Upload',
             source_id: null,
-            config: {}
+            config: {},
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -68,11 +69,11 @@ test(`PATCH: api/import/<id> - Success`, async () => {
                     await flight.fetch(`/api/import/${id}`, {
                         method: 'PATCH',
                         auth: {
-                            bearer: flight.token.admin
+                            bearer: flight.token.admin,
                         },
                         body: {
-                            status: 'Success'
-                        }
+                            status: 'Success',
+                        },
                     }, true);
                     return;
                 }
@@ -95,16 +96,17 @@ test(`PATCH: api/import/<id> - Success`, async () => {
                         username: 'admin@example.com',
                         source: 'Upload',
                         source_id: null,
-                        config: {}
-                    }
+                        config: {},
+                    },
                 });
 
                 conn.close();
                 resolve();
-            } catch (err) {
+            }
+            catch (err) {
                 reject(err);
             }
-        })
+        });
     });
 });
 

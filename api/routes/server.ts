@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { Static, Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox';
 import { X509Certificate } from 'crypto';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -19,7 +19,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Get Server',
         group: 'Server',
         description: 'Get Server',
-        res: ServerResponse
+        res: ServerResponse,
     }, async (req, res) => {
         try {
             if (!config.server.auth.key || !config.server.auth.cert) {
@@ -33,22 +33,23 @@ export default async function router(schema: Schema, config: Config) {
                     url: '',
                     api: '',
                     webtak: '',
-                    auth: false
+                    auth: false,
                 });
-            } else {
+            }
+            else {
                 const user = await Auth.as_user(config, req);
 
-                let auth = false
+                let auth = false;
                 if (config.server.auth.cert && config.server.auth.key) {
                     auth = true;
                 }
 
                 if (user.access === AuthUserAccess.ADMIN) {
                     const response: Static<typeof ServerResponse> = {
-                            status: 'configured',
-                            version: pkg.version,
-                            ...config.server,
-                            auth
+                        status: 'configured',
+                        version: pkg.version,
+                        ...config.server,
+                        auth,
                     };
 
                     if (config.server.auth.cert && config.server.auth.key) {
@@ -56,8 +57,9 @@ export default async function router(schema: Schema, config: Config) {
                         response.certificate = { validFrom, validTo, subject };
                     }
 
-                    res.json(response)
-                } else {
+                    res.json(response);
+                }
+                else {
                     res.json({
                         id: config.server.id,
                         status: 'configured',
@@ -68,12 +70,13 @@ export default async function router(schema: Schema, config: Config) {
                         url: config.server.url,
                         api: config.server.api,
                         webtak: config.server.webtak,
-                        auth
-                    })
+                        auth,
+                    });
                 }
             }
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -94,9 +97,9 @@ export default async function router(schema: Schema, config: Config) {
             auth: Type.Optional(Type.Object({
                 cert: Type.String(),
                 key: Type.String(),
-            }))
+            })),
         }),
-        res: ServerResponse
+        res: ServerResponse,
     }, async (req, res) => {
         try {
             if (config.server.auth.key && config.server.auth.cert) {
@@ -108,7 +111,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.auth) {
                 const api = await TAKAPI.init(
                     new URL(String(req.body.api)),
-                    new APIAuthCertificate(req.body.auth.cert, req.body.auth.key)
+                    new APIAuthCertificate(req.body.auth.cert, req.body.auth.key),
                 );
 
                 const config = await api.Files.config();
@@ -119,7 +122,7 @@ export default async function router(schema: Schema, config: Config) {
 
             // An unconfigured server will set the first successful username/pass as a CloudTAK System Admin
             if (!config.server.auth.key && !config.server.auth.cert && req.body.username && req.body.password) {
-                const auth = new APIAuthPassword(req.body.username, req.body.password)
+                const auth = new APIAuthPassword(req.body.username, req.body.password);
                 const api = await TAKAPI.init(new URL(req.body.webtak), auth);
 
                 const certs = await api.Credentials.generate();
@@ -127,9 +130,10 @@ export default async function router(schema: Schema, config: Config) {
                 await profileControl.generate({
                     auth: certs,
                     username: req.body.username,
-                    system_admin: true
+                    system_admin: true,
                 });
-            } else if (!config.server.auth.key && !config.server.auth.cert && (!req.body.username || !req.body.password)) {
+            }
+            else if (!config.server.auth.key && !config.server.auth.cert && (!req.body.username || !req.body.password)) {
                 throw new Err(400, null, 'Initial configuration must include valid TAK Username & Password to set System Administrator');
             }
 
@@ -140,14 +144,14 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.conns.refresh();
 
-            let auth = false
+            let auth = false;
             if (config.server.auth.cert && config.server.auth.key) auth = true;
 
             const response: Static<typeof ServerResponse> = {
                 status: 'configured',
                 version: pkg.version,
                 ...config.server,
-                auth
+                auth,
             };
 
             if (config.server.auth.cert && config.server.auth.key) {
@@ -156,8 +160,9 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(response);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }
