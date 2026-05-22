@@ -1,12 +1,12 @@
-import { Type, Static } from '@sinclair/typebox'
+import { Type, Static } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { ProfileResponse } from '../lib/types.js'
+import { ProfileResponse } from '../lib/types.js';
 import Config from '../lib/config.js';
-import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
+import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types';
 import { sql } from 'drizzle-orm';
-import { Profile_Menu_Visibility, Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate } from  '../lib/enums.js';
+import { Profile_Menu_Visibility, Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate } from '../lib/enums.js';
 import ProfileControl from '../lib/control/profile.js';
 
 const ProfilePatchBody = Type.Object({
@@ -27,12 +27,12 @@ const ProfilePatchBody = Type.Object({
 
     menu_order: Type.Optional(Type.Array(Type.Object({
         key: Type.String({
-            description: 'Menu Key'
+            description: 'Menu Key',
         }),
         visibility: Type.Enum(Profile_Menu_Visibility, {
             description: 'Menu Visibility',
-            default: Profile_Menu_Visibility.FULL
-        })
+            default: Profile_Menu_Visibility.FULL,
+        }),
     }))),
 
     tak_callsign: Type.Optional(Type.String()),
@@ -43,8 +43,8 @@ const ProfilePatchBody = Type.Object({
     tak_loc_freq: Type.Optional(Type.Integer()),
     tak_loc: Type.Optional(Type.Union([Type.Null(), Type.Object({
         type: Type.String(),
-        coordinates: Type.Array(Type.Number())
-    })]))
+        coordinates: Type.Array(Type.Number()),
+    })])),
 });
 
 type ProfilePatchBodyType = Static<typeof ProfilePatchBody>;
@@ -57,15 +57,16 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Get Profile',
         group: 'Profile',
         description: 'Get User\'s Profile',
-        res: ProfileResponse
+        res: ProfileResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
             const profile = await profileControl.from(user.email);
 
             res.json(profile);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -74,7 +75,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Profile',
         description: 'Update User\'s Profile',
         body: ProfilePatchBody,
-        res: ProfileResponse
+        res: ProfileResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -88,14 +89,15 @@ export default async function router(schema: Schema, config: Config) {
             await config.models.ProfileConfig.commit(user.email, profile_config);
 
             await config.models.Profile.commit(user.email, {
-                updated: sql`Now()`
+                updated: sql`Now()`,
             });
 
             const profile = await profileControl.from(user.email);
 
             res.json(profile);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

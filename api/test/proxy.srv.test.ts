@@ -29,13 +29,13 @@ test('start upstream proxy test server', async () => {
 
         if (req.url === '/echo' && req.method === 'POST') {
             const chunks: Buffer[] = [];
-            req.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+            req.on('data', chunk => chunks.push(Buffer.from(chunk)));
             req.on('end', () => {
                 res.writeHead(200, { 'content-type': 'application/json' });
                 res.end(JSON.stringify({
                     authorization: req.headers.authorization,
                     cookie: req.headers.cookie || null,
-                    body: Buffer.concat(chunks).toString('utf-8')
+                    body: Buffer.concat(chunks).toString('utf-8'),
                 }));
             });
             return;
@@ -45,7 +45,7 @@ test('start upstream proxy test server', async () => {
         res.end(JSON.stringify({ error: 'Not Found' }));
     });
 
-    await new Promise<void>((resolve) => upstream.listen(0, '127.0.0.1', () => resolve()));
+    await new Promise<void>(resolve => upstream.listen(0, '127.0.0.1', () => resolve()));
 
     const address = upstream.address();
     if (!address || typeof address === 'string') throw new Error('Could not determine upstream address');
@@ -57,20 +57,21 @@ test('PUT api/config proxy whitelist', async () => {
         const res = await flight.fetch('/api/config', {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 'proxy::enabled': true,
-                'proxy::whitelist': [upstreamOrigin]
-            }
+                'proxy::whitelist': [upstreamOrigin],
+            },
         }, false);
 
         assert.equal(res.status, 200);
         assert.deepEqual(res.body, {
             'proxy::enabled': true,
-            'proxy::whitelist': [upstreamOrigin]
+            'proxy::whitelist': [upstreamOrigin],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -80,12 +81,12 @@ test('POST api/proxy rejects when disabled', async () => {
         const disable = await flight.fetch('/api/config', {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 'proxy::enabled': false,
-                'proxy::whitelist': [upstreamOrigin]
-            }
+                'proxy::whitelist': [upstreamOrigin],
+            },
         }, false);
 
         assert.equal(disable.status, 200);
@@ -93,12 +94,12 @@ test('POST api/proxy rejects when disabled', async () => {
         const res = await flight.fetch('/api/proxy', {
             method: 'POST',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
                 url: `${upstreamOrigin}/json`,
-                method: 'GET'
-            }
+                method: 'GET',
+            },
         }, false);
 
         assert.equal(res.status, 403);
@@ -107,16 +108,17 @@ test('POST api/proxy rejects when disabled', async () => {
         const enable = await flight.fetch('/api/config', {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 'proxy::enabled': true,
-                'proxy::whitelist': [upstreamOrigin]
-            }
+                'proxy::whitelist': [upstreamOrigin],
+            },
         }, false);
 
         assert.equal(enable.status, 200);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -126,12 +128,12 @@ test('POST api/proxy GET allowed origin', async () => {
         const res = await flight.fetch('/api/proxy', {
             method: 'POST',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
                 url: `${upstreamOrigin}/json`,
-                method: 'GET'
-            }
+                method: 'GET',
+            },
         }, false);
 
         assert.equal(res.status, 200);
@@ -139,9 +141,10 @@ test('POST api/proxy GET allowed origin', async () => {
         assert.equal(res.body.headers['content-type'], 'application/json');
         assert.deepEqual(res.body.body, {
             ok: true,
-            via: 'proxy'
+            via: 'proxy',
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -151,19 +154,19 @@ test('POST api/proxy forwards explicit headers only', async () => {
         const res = await flight.fetch('/api/proxy', {
             method: 'POST',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
                 url: `${upstreamOrigin}/echo`,
                 method: 'POST',
                 headers: {
-                    authorization: 'Bearer upstream-token',
-                    'content-type': 'application/json'
+                    'authorization': 'Bearer upstream-token',
+                    'content-type': 'application/json',
                 },
                 body: {
-                    ok: true
-                }
-            }
+                    ok: true,
+                },
+            },
         }, false);
 
         assert.equal(res.status, 200);
@@ -171,9 +174,10 @@ test('POST api/proxy forwards explicit headers only', async () => {
         assert.deepEqual(res.body.body, {
             authorization: 'Bearer upstream-token',
             cookie: null,
-            body: '{"ok":true}'
+            body: '{"ok":true}',
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -183,17 +187,18 @@ test('POST api/proxy rejects disallowed origin', async () => {
         const res = await flight.fetch('/api/proxy', {
             method: 'POST',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
                 url: 'https://example.com/test',
-                method: 'GET'
-            }
+                method: 'GET',
+            },
         }, false);
 
         assert.equal(res.status, 403);
         assert.equal(res.body.message, 'Proxy origin https://example.com is not allowed');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -203,20 +208,21 @@ test('POST api/proxy rejects forbidden request headers', async () => {
         const res = await flight.fetch('/api/proxy', {
             method: 'POST',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
                 url: `${upstreamOrigin}/json`,
                 method: 'GET',
                 headers: {
-                    cookie: 'nope'
-                }
-            }
+                    cookie: 'nope',
+                },
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Header cookie is not allowed');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -226,20 +232,21 @@ test('POST api/proxy rejects spoofed forwarded headers', async () => {
         const res = await flight.fetch('/api/proxy', {
             method: 'POST',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
                 url: `${upstreamOrigin}/json`,
                 method: 'GET',
                 headers: {
-                    'x-forwarded-for': '1.2.3.4'
-                }
-            }
+                    'x-forwarded-for': '1.2.3.4',
+                },
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Header x-forwarded-for is not allowed');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -249,12 +256,12 @@ test('POST api/proxy rejects invalid whitelist entries', async () => {
         const update = await flight.fetch('/api/config', {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 'proxy::enabled': true,
-                'proxy::whitelist': [`${upstreamOrigin}/json`]
-            }
+                'proxy::whitelist': [`${upstreamOrigin}/json`],
+            },
         }, false);
 
         assert.equal(update.status, 200);
@@ -262,12 +269,12 @@ test('POST api/proxy rejects invalid whitelist entries', async () => {
         const res = await flight.fetch('/api/proxy', {
             method: 'POST',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
                 url: `${upstreamOrigin}/json`,
-                method: 'GET'
-            }
+                method: 'GET',
+            },
         }, false);
 
         assert.equal(res.status, 400);
@@ -276,16 +283,17 @@ test('POST api/proxy rejects invalid whitelist entries', async () => {
         const reset = await flight.fetch('/api/config', {
             method: 'PUT',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 'proxy::enabled': true,
-                'proxy::whitelist': [upstreamOrigin]
-            }
+                'proxy::whitelist': [upstreamOrigin],
+            },
         }, false);
 
         assert.equal(reset.status, 200);
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -295,23 +303,24 @@ test('POST api/proxy rejects oversized response bodies', async () => {
         const res = await flight.fetch('/api/proxy', {
             method: 'POST',
             auth: {
-                bearer: flight.token.user
+                bearer: flight.token.user,
             },
             body: {
                 url: `${upstreamOrigin}/large`,
-                method: 'GET'
-            }
+                method: 'GET',
+            },
         }, false);
 
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Proxy response body exceeds the 1MB limit');
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
 
 test('stop upstream proxy test server', async () => {
-    await new Promise<void>((resolve, reject) => upstream.close((err) => err ? reject(err) : resolve()));
+    await new Promise<void>((resolve, reject) => upstream.close(err => err ? reject(err) : resolve()));
 });
 
 flight.landing();

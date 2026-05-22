@@ -10,19 +10,19 @@ export const ConnectionAuth = Type.Object({
     cert: Type.String({
         minLength: 1,
         maxLength: 4096,
-        description: 'PEM formatted client certificate'
+        description: 'PEM formatted client certificate',
     }),
     key: Type.String({
         minLength: 1,
         maxLength: 4096,
-        description: 'PEM formatted private key'
-    })
+        description: 'PEM formatted private key',
+    }),
 });
 
 export type MissionSub = {
     name: string;
     token: string | null;
-}
+};
 
 export default interface ConnectionConfig {
     id: string | number;
@@ -69,7 +69,7 @@ export class MachineConnConfig implements ConnectionConfig {
                 name = ${name}
                 AND connection = ${this.id}::INT
                 AND mission_sync IS True
-            `
+            `,
         });
 
         if (missions.items.length === 0) {
@@ -78,7 +78,7 @@ export class MachineConnConfig implements ConnectionConfig {
 
         return {
             name: missions.items[0].name,
-            token: missions.items[0].mission_token
+            token: missions.items[0].mission_token,
         };
     }
 
@@ -87,43 +87,43 @@ export class MachineConnConfig implements ConnectionConfig {
             where: sql`
                 connection = ${this.id}::INT
                 AND mission_sync IS True
-            `
+            `,
         });
 
         return missions.items.map((m) => {
-            return { name: m.name, token: m.mission_token }
+            return { name: m.name, token: m.mission_token };
         });
     }
 
     async geofences(): Promise<Array<Feature>> {
-         const features = await this.config.models.ConnectionFeature.list({
+        const features = await this.config.models.ConnectionFeature.list({
             where: sql`
                 connection = ${this.id}::INT
                 AND enabled_geofence IS True
-            `
+            `,
         });
 
         return (features || []).items.map((feature) => {
             return {
                 ...feature,
-                type: 'Feature'
-            } as Feature
+                type: 'Feature',
+            } as Feature;
         });
     }
 
     async geofence(id: string): Promise<Feature | null> {
-         const feature = await this.config.models.ConnectionFeature.from({
+        const feature = await this.config.models.ConnectionFeature.from({
             where: sql`
                 connection = ${this.id}::INT
                 AND enabled_geofence IS True
                 AND id = ${id}
-            `
+            `,
         });
 
         return {
             ...feature,
-            type: 'Feature'
-        } as Feature
+            type: 'Feature',
+        } as Feature;
     }
 }
 
@@ -137,7 +137,7 @@ export class ProfileConnConfig implements ConnectionConfig {
     constructor(
         config: Config,
         email: string,
-        auth: Static<typeof ConnectionAuth>
+        auth: Static<typeof ConnectionAuth>,
     ) {
         this.config = config;
         this.id = email;
@@ -156,7 +156,7 @@ export class ProfileConnConfig implements ConnectionConfig {
                 name = ${name}
                 AND mode = 'mission'
                 AND username = ${this.id}
-            `
+            `,
         });
 
         if (missions.items.length === 0) {
@@ -165,7 +165,7 @@ export class ProfileConnConfig implements ConnectionConfig {
 
         return {
             name: missions.items[0].name,
-            token: missions.items[0].token
+            token: missions.items[0].token,
         };
     }
 
@@ -174,43 +174,42 @@ export class ProfileConnConfig implements ConnectionConfig {
             where: sql`
                 mode = 'mission'
                 AND username = ${this.id}
-            `
+            `,
         });
 
         return missions.items.map((m) => {
-            return { name: m.name, token: m.token }
-        })
+            return { name: m.name, token: m.token };
+        });
     }
 
     async geofences(): Promise<Array<Feature>> {
-         const features = await this.config.models.ProfileFeature.list({
+        const features = await this.config.models.ProfileFeature.list({
             where: sql`
                 username = ${this.id}
                 AND enabled_geofence IS True
-            `
+            `,
         });
 
         return (features || []).items.map((feature) => {
             return {
                 ...feature,
-                type: 'Feature'
-            } as Feature
+                type: 'Feature',
+            } as Feature;
         });
     }
 
     async geofence(id: string): Promise<Feature | null> {
-         const feature = await this.config.models.ProfileFeature.from({
+        const feature = await this.config.models.ProfileFeature.from({
             where: sql`
                 username = ${this.id}
                 AND enabled_geofence IS True
                 AND id = ${id}
-            `
+            `,
         });
 
         return {
             ...feature,
-            type: 'Feature'
-        } as Feature
+            type: 'Feature',
+        } as Feature;
     }
 }
-

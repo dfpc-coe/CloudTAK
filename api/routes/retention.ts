@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import Auth from '../lib/auth.js';
@@ -9,11 +9,11 @@ const RetentionTaskResult = Type.Object({
     name: Type.String(),
     status: Type.Union([
         Type.Literal('success'),
-        Type.Literal('error')
+        Type.Literal('error'),
     ]),
     deleted: Type.Integer(),
     duration: Type.Integer(),
-    message: Type.Optional(Type.String())
+    message: Type.Optional(Type.String()),
 });
 
 export default async function router(schema: Schema, config: Config) {
@@ -24,17 +24,18 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Retention',
         description: 'Run a retention action',
         body: Type.Object({
-            action: Type.String()
+            action: Type.String(),
         }),
-        res: RetentionTaskResult
+        res: RetentionTaskResult,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
 
             res.json(await retention.run({
-                name: req.body.action
+                name: req.body.action,
             }));
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });

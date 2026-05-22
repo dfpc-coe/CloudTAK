@@ -16,7 +16,7 @@ test('Ensure Poll Triggers Job', async () => {
 
     mockPool.intercept({
         path: '/api/import?limit=1&status=Pending',
-        method: 'GET'
+        method: 'GET',
     }).reply(() => {
         return {
             statusCode: 200,
@@ -34,8 +34,8 @@ test('Ensure Poll Triggers Job', async () => {
                     source: 'Upload',
                     source_id: null,
                     config: {},
-                }]
-            } as ImportList)
+                }],
+            } as ImportList),
         };
     });
 
@@ -43,8 +43,8 @@ test('Ensure Poll Triggers Job', async () => {
         path: '/api/import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139',
         method: 'PATCH',
         body: JSON.stringify({
-            status: 'Running'
-        })
+            status: 'Running',
+        }),
     }).reply(() => {
         return {
             statusCode: 200,
@@ -60,7 +60,7 @@ test('Ensure Poll Triggers Job', async () => {
                 source: 'Upload',
                 source_id: null,
                 config: {},
-            } as Import)
+            } as Import),
         };
     });
 
@@ -69,7 +69,7 @@ test('Ensure Poll Triggers Job', async () => {
         secret: 'coe-wildland-fire',
         bucket: 'test-bucket',
         interval: 1000,
-        maxWorkers: 1
+        maxWorkers: 1,
     });
 
     return new Promise((resolve) => {
@@ -94,5 +94,5 @@ test('Ensure Poll Triggers Job', async () => {
 
             return resolve();
         });
-})
+    });
 });

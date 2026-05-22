@@ -1,7 +1,7 @@
 process.env.StackName = 'test';
 
 import CP from 'node:child_process';
-import MockTAKServer from './tak-server.js'
+import MockTAKServer from './tak-server.js';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import api from '../index.js';
@@ -63,7 +63,7 @@ export default class Flight {
      * @param {boolean} [opts.dropdb=true] Should the database be dropped
      * @param {boolean} [opts.takserver=false] Should the MockTAKServer be started
      */
-    init(opts: { dropdb?: boolean, takserver?: boolean } = {}) {
+    init(opts: { dropdb?: boolean; takserver?: boolean } = {}) {
         const dropdb = opts.dropdb !== undefined ? opts.dropdb : true;
         const takserver = opts.takserver !== undefined ? opts.takserver : false;
 
@@ -79,7 +79,8 @@ export default class Flight {
 
                     await pool.end();
                 }
-            } catch (err) {
+            }
+            catch (err) {
                 assert.ifError(err);
             }
 
@@ -89,7 +90,8 @@ export default class Flight {
                 try {
                     const regexp = pathToRegexp(route.split(' ').join(' /api'));
                     this.routes[route] = new RegExp(regexp.regexp);
-                } catch (err) {
+                }
+                catch (err) {
                     assert.fail(`Could not parse ${route} as RegExp: ` + err);
                 }
             }
@@ -118,12 +120,13 @@ export default class Flight {
         test(`Fixture: ${name}`, async () => {
             const req = JSON.parse(String(fs.readFileSync(new URL('./fixtures/' + name, import.meta.url))));
             if (auth) req.auth = {
-                bearer: this.token[auth]
+                bearer: this.token[auth],
             };
 
             try {
                 await this.fetch(req.url, req, true);
-            } catch (err) {
+            }
+            catch (err) {
                 assert.ifError(err);
             }
         });
@@ -141,21 +144,23 @@ export default class Flight {
     async fetch(
         url: string | URL,
         req: any,
-        t: boolean | { verify?: boolean; json?: boolean; binary?: boolean }
+        t: boolean | { verify?: boolean; json?: boolean; binary?: boolean },
     ): Promise<any> {
         if (t === undefined) throw new Error('flight.fetch requires two arguments - pass (<url>, <req>, false) to disable schema testing');
 
         const defs = {
             verify: false,
             json: true,
-            binary: false
+            binary: false,
         };
 
         if (t === true) {
             defs.verify = true;
-        } else if (t === false) {
+        }
+        else if (t === false) {
             defs.verify = false;
-        } else {
+        }
+        else {
             Object.assign(defs, t);
         }
 
@@ -169,7 +174,8 @@ export default class Flight {
 
         if (req.auth && req.auth.bearer) {
             req.headers['Authorization'] = `Bearer ${req.auth.bearer}`;
-        } else if (req.auth && req.auth.username && req.auth.password) {
+        }
+        else if (req.auth && req.auth.username && req.auth.password) {
             req.headers['Authorization'] = 'Basic ' + btoa(req.auth.username + ':' + req.auth.password);
         }
         delete req.auth;
@@ -199,9 +205,11 @@ export default class Flight {
         if (!matches.length) {
             assert.fail(`Cannot find schema match for: ${spath}`);
             return;
-        } else if (matches.length === 1) {
+        }
+        else if (matches.length === 1) {
             match = matches[0];
-        } else {
+        }
+        else {
             // TODO multiple selection - default to first one defined in routes to mirror express behabior
             match = matches[0];
         }
@@ -211,7 +219,7 @@ export default class Flight {
         schemaurl.searchParams.append('url', match.split(' ')[1]);
 
         const rawschema = await (await fetch(schemaurl)).json() as {
-            res: object
+            res: object;
         };
 
         if (!rawschema.res) throw new Error('Cannot validate resultant schema - no result schema defined');
@@ -228,7 +236,8 @@ export default class Flight {
             for (const error of schema.errors) {
                 assert.fail(`${error.schemaPath}: ${error.message}`);
             }
-        } else {
+        }
+        else {
             // Just print the body instead of spewing
             // 100 schema validation errors for an error response
             assert.fail(JSON.stringify(res.body));
@@ -249,7 +258,7 @@ export default class Flight {
                 silent: true,
                 noevents: true,
                 nosinks: true,
-                nocache: true
+                nocache: true,
             });
 
             Object.assign(this.config, custom);
@@ -259,9 +268,9 @@ export default class Flight {
                 url: 'ssl://localhost:8089',
                 auth: {
                     cert: String(fs.readFileSync(this.tak.keys.cert)),
-                    key: String(fs.readFileSync(this.tak.keys.key))
+                    key: String(fs.readFileSync(this.tak.keys.key)),
                 },
-                api: 'https://localhost:8443'
+                api: 'https://localhost:8443',
             });
 
             this.srv = await api(this.config);
@@ -280,9 +289,9 @@ export default class Flight {
         test('Create User', async () => {
             const username = opts.username || (opts.admin ? 'admin' : 'user');
 
-           if (!this.config) throw new Error('TakeOff not completed');
+            if (!this.config) throw new Error('TakeOff not completed');
 
-           const profileControl = new ProfileControl(this.config);
+            const profileControl = new ProfileControl(this.config);
 
             CP.execSync(`
                 openssl req \
@@ -306,19 +315,20 @@ export default class Flight {
                     2> /dev/null
             `);
 
-           await profileControl.generate({
+            await profileControl.generate({
                 username: username + '@example.com',
                 system_admin: opts.admin,
                 auth: {
                     key: String(fs.readFileSync(`/tmp/cloudtak-test-${username}.key`)),
-                    cert: String(fs.readFileSync(`/tmp/cloudtak-test-${username}.cert`))
-                }
+                    cert: String(fs.readFileSync(`/tmp/cloudtak-test-${username}.cert`)),
+                },
             });
 
             if (opts.admin) {
-                this.token[username] = jwt.sign({ access: 'admin', email: username + '@example.com' }, 'coe-wildland-fire')
-            } else {
-                this.token[username] = jwt.sign({ access: 'user', email: username + '@example.com' }, 'coe-wildland-fire')
+                this.token[username] = jwt.sign({ access: 'admin', email: username + '@example.com' }, 'coe-wildland-fire');
+            }
+            else {
+                this.token[username] = jwt.sign({ access: 'user', email: username + '@example.com' }, 'coe-wildland-fire');
             }
         });
     }
@@ -328,12 +338,12 @@ export default class Flight {
             await this.fetch('/api/server', {
                 method: 'PATCH',
                 auth: {
-                    bearer: this.token.admin
+                    bearer: this.token.admin,
                 },
                 body: {
                     name: 'Test Server',
-                    url:    'ssl://localhost:8089',
-                    api:    'https://localhost:8443',
+                    url: 'ssl://localhost:8089',
+                    api: 'https://localhost:8443',
                     webtak: 'http://localhost:8444',
 
                     username,
@@ -341,14 +351,14 @@ export default class Flight {
 
                     auth: {
                         cert: String(fs.readFileSync(this.tak.keys.cert)),
-                        key: String(fs.readFileSync(this.tak.keys.key))
-                    }
-                }
+                        key: String(fs.readFileSync(this.tak.keys.key)),
+                    },
+                },
             }, true);
 
             // Refresh config to pick up new server details
             this.config!.server = await this.config!.models.Server.from(this.config!.server.id);
-        })
+        });
     }
 
     connection() {
@@ -378,16 +388,16 @@ export default class Flight {
             const conn = await this.fetch('/api/connection', {
                 method: 'POST',
                 auth: {
-                    bearer: this.token.admin
+                    bearer: this.token.admin,
                 },
                 body: {
                     name: 'Test Connection',
                     description: 'Connection created by Flight Test Runner',
                     auth: {
                         key: String(fs.readFileSync('/tmp/cloudtak-test-alice.key')),
-                        cert: String(fs.readFileSync('/tmp/cloudtak-test-alice.cert'))
-                    }
-                }
+                        cert: String(fs.readFileSync('/tmp/cloudtak-test-alice.cert')),
+                    },
+                },
             }, true);
 
             delete conn.body.certificate.validFrom;
@@ -398,7 +408,7 @@ export default class Flight {
             assert.deepEqual(conn.body, {
                 status: 'dead',
                 certificate: {
-                    subject: 'CN=Alice'
+                    subject: 'CN=Alice',
                 },
                 id: 1,
                 agency: null,
@@ -406,13 +416,13 @@ export default class Flight {
                 readonly: false,
                 name: 'Test Connection',
                 description: 'Connection created by Flight Test Runner',
-                enabled: true
+                enabled: true,
             });
 
             await new Promise((resolve) => {
                 setTimeout(resolve, 1000);
-            })
-       })
+            });
+        });
     }
 
     /**
@@ -423,7 +433,7 @@ export default class Flight {
             if (this._tak) {
                 assert.equal(
                     this._tak.unhandledMartiRequests.length, 0,
-                    `Unhandled Marti requests detected: ${this._tak.unhandledMartiRequests.join(', ')}`
+                    `Unhandled Marti requests detected: ${this._tak.unhandledMartiRequests.join(', ')}`,
                 );
             }
 
@@ -432,4 +442,3 @@ export default class Flight {
         });
     }
 }
-

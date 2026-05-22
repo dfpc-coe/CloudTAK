@@ -1,8 +1,8 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import moment from 'moment';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthResourceAccess }  from '../lib/auth.js';
+import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { sql } from 'drizzle-orm';
 import { VideoLease } from '../lib/schema.js';
@@ -28,21 +28,21 @@ export default async function router(schema: Schema, config: Config) {
             order: Default.Order,
             sort: Type.String({
                 default: 'created',
-                enum: Object.keys(VideoLease)
+                enum: Object.keys(VideoLease),
             }),
-            filter: Default.Filter
+            filter: Default.Filter,
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(VideoLeaseResponse)
-        })
+            items: Type.Array(VideoLeaseResponse),
+        }),
     }, async (req, res) => {
         try {
             const { connection, layer } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: undefined }
-                ]
+                    { access: AuthResourceAccess.LAYER, id: undefined },
+                ],
             }, req.params.connectionid);
 
             if (layer && layer.connection !== connection.id) {
@@ -57,10 +57,11 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     name ~* ${req.query.filter}
                     AND connection = ${req.params.connectionid}
-                `
+                `,
             }));
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -71,14 +72,14 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const { profile, connection, layer } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: undefined }
-                ]
+                    { access: AuthResourceAccess.LAYER, id: undefined },
+                ],
             }, req.params.connectionid);
 
             if (layer && layer.connection !== connection.id) {
@@ -88,20 +89,21 @@ export default async function router(schema: Schema, config: Config) {
             for await (const lease of config.models.VideoLease.iter({
                 where: sql`
                     connection = ${req.params.connectionid}
-                `
+                `,
             })) {
                 await videoControl.delete(lease.id, {
                     connection: req.params.connectionid,
-                    admin: profile ? profile.system_admin : false
+                    admin: profile ? profile.system_admin : false,
                 });
             }
 
             res.json({
                 status: 200,
-                message: 'Video Leases Deleted'
+                message: 'Video Leases Deleted',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -111,19 +113,19 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Get a single Video Lease',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
-            lease: Type.Integer()
+            lease: Type.Integer(),
         }),
         res: Type.Object({
             lease: VideoLeaseResponse,
-            protocols: Protocols
-        })
+            protocols: Protocols,
+        }),
     }, async (req, res) => {
         try {
             const { profile, connection, layer } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: undefined }
-                ]
+                    { access: AuthResourceAccess.LAYER, id: undefined },
+                ],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -134,15 +136,16 @@ export default async function router(schema: Schema, config: Config) {
 
             const lease = await videoControl.from(req.params.lease, {
                 connection: req.params.connectionid,
-                admin: profile ? profile.system_admin : false
+                admin: profile ? profile.system_admin : false,
             });
 
             res.json({
                 lease,
-                protocols: await videoControl.protocols(lease)
+                protocols: await videoControl.protocols(lease),
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -155,50 +158,50 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.String({
-                description: 'Human readable name'
+                description: 'Human readable name',
             }),
             duration: Type.Integer({
                 minimum: 0,
                 default: 60 * 60,
-                description: 'Duration in Seconds'
+                description: 'Duration in Seconds',
             }),
             permanent: Type.Boolean({
                 default: false,
-                description: 'System Admins can create non-expiring leases'
+                description: 'System Admins can create non-expiring leases',
             }),
             recording: Type.Boolean({
                 default: false,
-                description: 'Record streams to disk'
+                description: 'Record streams to disk',
             }),
             publish: Type.Boolean({
                 default: false,
-                description: 'Publish stream URL to TAK Server Video Manager'
+                description: 'Publish stream URL to TAK Server Video Manager',
             }),
             share: Type.Boolean({
                 default: false,
-                description: 'Allow other users to manage lease if they are also members of the channel'
+                description: 'Allow other users to manage lease if they are also members of the channel',
             }),
             secure: Type.Boolean({
                 default: false,
-                description: 'Increase stream security by enforcing a seperate read and write username/password'
+                description: 'Increase stream security by enforcing a seperate read and write username/password',
             }),
             source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.Null(), Type.String()])),
-            proxy: Type.Optional(Type.String())
+            proxy: Type.Optional(Type.String()),
         }),
         res: Type.Object({
             lease: VideoLeaseResponse,
-            protocols: Protocols
-        })
+            protocols: Protocols,
+        }),
     }, async (req, res) => {
         try {
             const { connection, layer, profile } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: undefined }
-                ]
+                    { access: AuthResourceAccess.LAYER, id: undefined },
+                ],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -208,7 +211,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if ((!profile || !profile.system_admin) && req.body.duration > 60 * 60 * 24) {
-                throw new Err(400, null, 'Only Administrators can request a lease > 24 hours')
+                throw new Err(400, null, 'Only Administrators can request a lease > 24 hours');
             }
 
             const lease = await videoControl.generate({
@@ -226,15 +229,16 @@ export default async function router(schema: Schema, config: Config) {
                 secure: req.body.secure,
                 connection: req.params.connectionid,
                 layer: layer ? layer.id : undefined,
-                proxy: req.body.proxy
-            })
+                proxy: req.body.proxy,
+            });
 
             res.json({
                 lease,
-                protocols: await videoControl.protocols(lease)
+                protocols: await videoControl.protocols(lease),
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -244,13 +248,13 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Update a video Lease',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
-            lease: Type.Integer()
+            lease: Type.Integer(),
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
             duration: Type.Optional(Type.Integer({
                 minimum: 0,
-                description: 'Duration in Seconds'
+                description: 'Duration in Seconds',
             })),
             source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
@@ -258,34 +262,34 @@ export default async function router(schema: Schema, config: Config) {
             channel: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             secure: Type.Optional(Type.Boolean()),
             share: Type.Optional(Type.Boolean({
-                description: 'Allow other users to manage lease if they are also members of the channel'
+                description: 'Allow other users to manage lease if they are also members of the channel',
             })),
             secure_rotate: Type.Boolean({
                 default: false,
-                description: 'Rotate Read-User Credentials if using seperate read/write user - infers secure: true'
+                description: 'Rotate Read-User Credentials if using seperate read/write user - infers secure: true',
             }),
             permanent: Type.Optional(Type.Boolean({
-                description: 'System Admins can create non-expiring leases'
+                description: 'System Admins can create non-expiring leases',
             })),
             recording: Type.Optional(Type.Boolean({
-                description: 'Record streams to disk'
+                description: 'Record streams to disk',
             })),
             publish: Type.Optional(Type.Boolean({
-                description: 'Publish stream URL to TAK Server Video Manager'
+                description: 'Publish stream URL to TAK Server Video Manager',
             })),
             proxy: Type.Optional(Type.String()),
         }),
         res: Type.Object({
             lease: VideoLeaseResponse,
-            protocols: Protocols
-        })
+            protocols: Protocols,
+        }),
     }, async (req, res) => {
         try {
             const { connection, layer, profile } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: undefined }
-                ]
+                    { access: AuthResourceAccess.LAYER, id: undefined },
+                ],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -295,9 +299,10 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if ((!profile || !profile.system_admin) && req.body.duration && req.body.duration > 60 * 60 * 24) {
-                throw new Err(400, null, 'Only Administrators can request a lease > 24 hours')
-            } else if ((!profile || !profile.system_admin) && req.body.permanent) {
-                throw new Err(400, null, 'Only Administrators can request permanent leases')
+                throw new Err(400, null, 'Only Administrators can request a lease > 24 hours');
+            }
+            else if ((!profile || !profile.system_admin) && req.body.permanent) {
+                throw new Err(400, null, 'Only Administrators can request permanent leases');
             }
 
             if (req.body.secure === false && req.body.secure_rotate) {
@@ -309,8 +314,9 @@ export default async function router(schema: Schema, config: Config) {
             let expiration: null | string | undefined = undefined;
             if (req.body.permanent) {
                 expiration = null;
-            } else if (req.body.duration) {
-                expiration = moment().add(req.body.duration, 'seconds').toISOString()
+            }
+            else if (req.body.duration) {
+                expiration = moment().add(req.body.duration, 'seconds').toISOString();
             }
 
             const lease = await videoControl.commit(req.params.lease, {
@@ -325,18 +331,19 @@ export default async function router(schema: Schema, config: Config) {
                 source_id: req.body.source_id,
                 source_type: req.body.source_type,
                 source_model: req.body.source_model,
-                proxy: req.body.proxy
+                proxy: req.body.proxy,
             }, {
                 connection: req.params.connectionid,
-                admin: profile ? profile.system_admin : false
+                admin: profile ? profile.system_admin : false,
             });
 
             res.json({
                 lease,
-                protocols: await videoControl.protocols(lease)
+                protocols: await videoControl.protocols(lease),
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -346,16 +353,16 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Delete a video Lease',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
-            lease: Type.Integer()
+            lease: Type.Integer(),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const { connection, layer, profile } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: undefined }
-                ]
+                    { access: AuthResourceAccess.LAYER, id: undefined },
+                ],
             }, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -366,15 +373,16 @@ export default async function router(schema: Schema, config: Config) {
 
             await videoControl.delete(req.params.lease, {
                 connection: req.params.connectionid,
-                admin: profile ? profile.system_admin : false
+                admin: profile ? profile.system_admin : false,
             });
 
             res.json({
                 status: 200,
-                message: 'Video Lease Deleted'
+                message: 'Video Lease Deleted',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

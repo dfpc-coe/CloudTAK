@@ -15,7 +15,7 @@ const NETWORK_LINK_FETCH_TIMEOUT_MS = 10_000;
 export default class KML implements Transform {
     static register() {
         return {
-            inputs: ['.kml', '.kmz']
+            inputs: ['.kml', '.kmz'],
         };
     }
 
@@ -24,7 +24,7 @@ export default class KML implements Transform {
 
     constructor(
         msg: Message,
-        local: LocalMessage
+        local: LocalMessage,
     ) {
         this.msg = msg;
         this.local = local;
@@ -36,7 +36,7 @@ export default class KML implements Transform {
         depth: number,
         baseUrl: string | null = null,
         localDir: string | null = null,
-        visited: Set<string> = new Set()
+        visited: Set<string> = new Set(),
     ): Promise<ReturnType<typeof kml>['features']> {
         const dom = new DOMParser().parseFromString(kmlContent, 'text/xml');
         const allFeatures = kml(dom).features;
@@ -85,20 +85,23 @@ export default class KML implements Transform {
                         try {
                             const localContent = await fs.readFile(resolved, 'utf8');
                             const linkedFeatures = await this.fetchFeatures(
-                                localContent, icons, depth + 1, null, path.dirname(resolved), visited
+                                localContent, icons, depth + 1, null, path.dirname(resolved), visited,
                             );
                             features.push(...linkedFeatures);
-                        } catch (err) {
+                        }
+                        catch (err) {
                             console.warn(`NetworkLink local file ${href} not readable (${err})`);
                         }
 
                         continue;
-                    } else if (baseUrl) {
+                    }
+                    else if (baseUrl) {
                         // HTTP relative resolution — resolved URL must stay on the same origin
                         let resolved: URL;
                         try {
                             resolved = new URL(href, baseUrl);
-                        } catch {
+                        }
+                        catch {
                             console.warn(`NetworkLink href ${href} could not be resolved relative to ${baseUrl}, skipping`);
                             continue;
                         }
@@ -111,7 +114,8 @@ export default class KML implements Transform {
 
                         href = resolved.toString();
                         // fall through to SSRF check and fetch below
-                    } else {
+                    }
+                    else {
                         console.warn(`NetworkLink ${href} is relative but no base URL or local directory is available, skipping`);
                         continue;
                     }
@@ -137,7 +141,7 @@ export default class KML implements Transform {
 
                 try {
                     const res = await fetch(normalized, {
-                        signal: AbortSignal.timeout(NETWORK_LINK_FETCH_TIMEOUT_MS)
+                        signal: AbortSignal.timeout(NETWORK_LINK_FETCH_TIMEOUT_MS),
                     });
 
                     if (!res.ok) throw new Error(`HTTP ${res.status} ${await res.text()}`);
@@ -175,29 +179,31 @@ export default class KML implements Transform {
                             }
 
                             let kmlFileName = 'doc.kml';
-                            
+
                             if (!entries['doc.kml']) {
                                 // Look for alternative KML files if doc.kml doesn't exist
                                 const kmlFiles = Object.keys(entries).filter(name => name.toLowerCase().endsWith('.kml'));
-                                
+
                                 if (kmlFiles.length === 0) {
                                     console.warn(`NetworkLink ${normalized} KMZ has no KML files, skipping`);
                                     continue;
-                                } else if (kmlFiles.length > 1) {
+                                }
+                                else if (kmlFiles.length > 1) {
                                     console.warn(`NetworkLink ${normalized} KMZ has multiple KML files but no doc.kml, skipping`);
                                     continue;
-                                } else {
+                                }
+                                else {
                                     kmlFileName = kmlFiles[0];
                                     console.log(`NetworkLink ${normalized} KMZ using ${kmlFileName} instead of doc.kml`);
                                 }
                             }
-                            
+
                             const kmlFileResolved = path.resolve(extractDir, kmlFileName);
                             if (kmlFileResolved !== extractDirResolved && !kmlFileResolved.startsWith(extractDirResolved + path.sep)) {
                                 console.warn(`NetworkLink ${normalized} KMZ path traversal attempt detected (${kmlFileName}), skipping`);
                                 continue;
                             }
-                            
+
                             // Extract everything so icon assets bundled in the linked KMZ are
                             // available on disk for the glob-based icon resolver.
                             await zip.extract(null, extractDir);
@@ -206,16 +212,19 @@ export default class KML implements Transform {
                             // relative paths (icon refs, nested NetworkLinks) resolve correctly.
                             const kmlDir = path.dirname(kmlFileResolved);
                             linkedFeatures = await this.fetchFeatures(kmlContent, icons, depth + 1, normalized, kmlDir, visited);
-                        } finally {
+                        }
+                        finally {
                             await zip.close();
                             await fs.unlink(tmpKmzPath).catch(() => { /* ignore */ });
                         }
-                    } else {
+                    }
+                    else {
                         linkedFeatures = await this.fetchFeatures(buf.toString('utf8'), icons, depth + 1, normalized, null, visited);
                     }
 
                     features.push(...linkedFeatures);
-                } catch (err) {
+                }
+                catch (err) {
                     console.warn(`NetworkLink ${normalized} not retrievable (${err})`);
                 }
 
@@ -234,10 +243,12 @@ export default class KML implements Transform {
                         const iconbuffer = Buffer.from(await res.arrayBuffer());
 
                         icons.set(feat.properties.icon as string, iconbuffer);
-                    } catch (err) {
+                    }
+                    catch (err) {
                         console.warn(`icon ${feat.properties.icon} not retrievable (${err})`);
                     }
-                } else {
+                }
+                else {
                     const iconName = feat.properties.icon as string;
                     if (iconName.includes('..') || path.isAbsolute(iconName)) {
                         console.warn(`icon ${iconName} rejected — invalid path`);
@@ -294,12 +305,14 @@ export default class KML implements Transform {
                 if (!preentries['doc.kml']) {
                     // Look for alternative KML files if doc.kml doesn't exist
                     const kmlFiles = Object.keys(preentries).filter(name => name.toLowerCase().endsWith('.kml'));
-                    
+
                     if (kmlFiles.length === 0) {
                         throw new Error('No KML files found in KMZ');
-                    } else if (kmlFiles.length > 1) {
+                    }
+                    else if (kmlFiles.length > 1) {
                         throw new Error('Multiple KML files found in KMZ but no doc.kml - ambiguous which file to use');
-                    } else {
+                    }
+                    else {
                         kmlFileName = kmlFiles[0];
                         console.log(`Using ${kmlFileName} instead of doc.kml in KMZ`);
                     }
@@ -313,10 +326,12 @@ export default class KML implements Transform {
                 await zip.extract(null, this.local.tmpdir);
 
                 asset = kmlFileResolved;
-            } finally {
+            }
+            finally {
                 await zip.close();
             }
-        } else {
+        }
+        else {
             asset = path.resolve(this.local.raw);
         }
 
@@ -344,9 +359,10 @@ export default class KML implements Transform {
 
                 iconMap.add({
                     name: name.replace(/.[a-z]+$/, '.png'),
-                    data: `data:image/png;base64,${contents.toString('base64')}`
+                    data: `data:image/png;base64,${contents.toString('base64')}`,
                 });
-            } catch (err) {
+            }
+            catch (err) {
                 console.error(`failing to process ${name}`, err);
             }
         }
@@ -354,12 +370,13 @@ export default class KML implements Transform {
         if (iconMap.size) {
             return {
                 asset: output,
-                icons: iconMap
-            }
-        } else {
+                icons: iconMap,
+            };
+        }
+        else {
             return {
-                asset: output
-            }
+                asset: output,
+            };
         }
     }
 }

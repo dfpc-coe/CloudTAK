@@ -3,7 +3,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import Provider from '../lib/provider.js';
 import { UAParser } from 'ua-parser-js';
 
@@ -13,15 +13,15 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Login',
         body: Type.Object({
             username: Type.String({
-                description: 'Case-Sensitive username, if an email, the client MUST lowercase'
+                description: 'Case-Sensitive username, if an email, the client MUST lowercase',
             }),
-            password: Type.String()
+            password: Type.String(),
         }),
         res: Type.Object({
             token: Type.String(),
             access: Type.Enum(AuthUserAccess),
-            email: Type.String()
-        })
+            email: Type.String(),
+        }),
     }, async (req, res) => {
         try {
             const oidc = await config.models.Setting.typedMany({
@@ -46,31 +46,35 @@ export default async function router(schema: Schema, config: Config) {
 
                         await config.models.Profile.commit(email, {
                             ...response,
-                            last_login: new Date().toISOString()
+                            last_login: new Date().toISOString(),
                         });
-                    } catch (err) {
+                    }
+                    catch (err) {
                         console.error(err);
 
                         await config.models.Profile.commit(email, {
-                            last_login: new Date().toISOString()
+                            last_login: new Date().toISOString(),
                         });
                     }
-                } else {
+                }
+                else {
                     await config.models.Profile.commit(email, {
-                        last_login: new Date().toISOString()
+                        last_login: new Date().toISOString(),
                     });
                 }
 
                 profile = await config.models.Profile.from(email);
-            } else {
+            }
+            else {
                 throw new Err(400, null, 'Server has not been configured');
             }
 
-            let access = AuthUserAccess.USER
+            let access = AuthUserAccess.USER;
             if (profile.system_admin) {
-                access = AuthUserAccess.ADMIN
-            } else if (profile.agency_admin && profile.agency_admin.length) {
-                access = AuthUserAccess.AGENCY
+                access = AuthUserAccess.ADMIN;
+            }
+            else if (profile.agency_admin && profile.agency_admin.length) {
+                access = AuthUserAccess.AGENCY;
             }
 
             const userAgent = req.headers['user-agent'] || '';
@@ -89,10 +93,11 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 access,
                 email: profile.username,
-                token: jwt.sign({ access, email: profile.username, s: session.id }, config.SigningSecret, { expiresIn: '16h' })
-            })
-        } catch (err) {
-             Err.respond(err, res);
+                token: jwt.sign({ access, email: profile.username, s: session.id }, config.SigningSecret, { expiresIn: '16h' }),
+            });
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -101,8 +106,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Login',
         res: Type.Object({
             email: Type.String(),
-            access: Type.Enum(AuthUserAccess)
-        })
+            access: Type.Enum(AuthUserAccess),
+        }),
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -117,10 +122,11 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 email: user.email,
-                access: user.access
+                access: user.access,
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

@@ -10,7 +10,7 @@ flight.user();
 
 flight.connection();
 
-const time = new Date('2025-03-04T22:54:15.447Z').toISOString()
+const time = new Date('2025-03-04T22:54:15.447Z').toISOString();
 let token: string;
 
 test('GET: api/connection/1/token', async () => {
@@ -18,15 +18,16 @@ test('GET: api/connection/1/token', async () => {
         const res = await flight.fetch('/api/connection/1/token', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
-            }
+                bearer: flight.token.admin,
+            },
         }, true);
 
         assert.deepEqual(res.body, {
             total: 0,
-            items: []
+            items: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -36,25 +37,24 @@ test('POST: api/connection/1/token', async () => {
         const res = await flight.fetch('/api/connection/1/token', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
                 name: 'Test Token',
-            }
+            },
         }, true);
 
-
         assert.ok(res.body.created, 'has created');
-        res.body.created = time
+        res.body.created = time;
 
         assert.ok(res.body.created, 'has updated');
-        res.body.updated = time
+        res.body.updated = time;
 
         assert.ok(res.body.token, 'has token');
         assert.ok(res.body.token.startsWith('etl.ey'), 'valid token');
 
         token = res.body.token;
-        res.body.token = 'etl.123'
+        res.body.token = 'etl.123';
 
         assert.deepEqual(res.body, {
             id: 1,
@@ -62,9 +62,10 @@ test('POST: api/connection/1/token', async () => {
             name: 'Test Token',
             token: 'etl.123',
             created: time,
-            updated: time
+            updated: time,
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -74,28 +75,28 @@ test('GET: api/connection/1 - Use Token', async () => {
         const res = await flight.fetch('/api/connection/1', {
             method: 'GET',
             auth: {
-                bearer: token
+                bearer: token,
             },
         }, true);
 
         assert.ok(res.body.created, 'has created');
-        res.body.created = time
+        res.body.created = time;
 
         assert.ok(res.body.created, 'has updated');
-        res.body.updated = time
+        res.body.updated = time;
 
         assert.ok(res.body.certificate.validFrom, 'has certificate.validFrom');
-        res.body.certificate.validFrom = time
+        res.body.certificate.validFrom = time;
 
         assert.ok(res.body.certificate.validTo, 'has certificate.validTo');
-        res.body.certificate.validTo = time
+        res.body.certificate.validTo = time;
 
         assert.deepEqual(res.body, {
             status: 'dead',
             certificate: {
                 validFrom: time,
                 validTo: time,
-                subject: 'CN=Alice'
+                subject: 'CN=Alice',
             },
             id: 1,
             readonly: false,
@@ -105,9 +106,10 @@ test('GET: api/connection/1 - Use Token', async () => {
             username: 'admin@example.com',
             name: 'Test Connection',
             description: 'Connection created by Flight Test Runner',
-            enabled: true
+            enabled: true,
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -117,18 +119,19 @@ test('PATCH: api/connection/1/token/1', async () => {
         const res = await flight.fetch('/api/connection/1/token/1', {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
             body: {
-                name: 'New Token Name'
-            }
+                name: 'New Token Name',
+            },
         }, true);
 
         assert.deepEqual(res.body, {
             status: 200,
             message: 'Connection Token Updated',
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -138,15 +141,16 @@ test('DELETE: api/connection/1/token/1', async () => {
         const res = await flight.fetch('/api/connection/1/token/1', {
             method: 'DELETE',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.admin,
             },
         }, true);
 
         assert.deepEqual(res.body, {
             status: 200,
-            message: 'Connection Token Deleted'
+            message: 'Connection Token Deleted',
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });
@@ -156,16 +160,17 @@ test('GET: api/connection/1 - Use Token, Access Revoked', async () => {
         const res = await flight.fetch('/api/connection/1', {
             method: 'GET',
             auth: {
-                bearer: token
+                bearer: token,
             },
         }, false);
 
         assert.deepEqual(res.body, {
             status: 403,
             message: 'Token does not exist',
-            messages: []
+            messages: [],
         });
-    } catch (err) {
+    }
+    catch (err) {
         assert.ifError(err);
     }
 });

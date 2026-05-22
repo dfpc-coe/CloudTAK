@@ -18,9 +18,10 @@ export default class ProfileConfigModel {
 
         const config: Record<string, any> = {};
         for (const setting of settings) {
-             try {
+            try {
                 config[setting.key] = JSON.parse(setting.value);
-            } catch {
+            }
+            catch {
                 config[setting.key] = setting.value;
             }
         }
@@ -31,21 +32,21 @@ export default class ProfileConfigModel {
         const timestamp = new Date().toISOString();
 
         for (const key of Object.keys(config)) {
-             let value = config[key];
-             if (value === undefined) continue;
-             if (typeof value !== 'string') value = JSON.stringify(value);
+            let value = config[key];
+            if (value === undefined) continue;
+            if (typeof value !== 'string') value = JSON.stringify(value);
 
-             await this.pool.insert(ProfileSetting)
+            await this.pool.insert(ProfileSetting)
                 .values({
                     username,
                     key,
                     value,
-                    updated: timestamp
+                    updated: timestamp,
                 })
                 .onConflictDoUpdate({
                     target: [ProfileSetting.username, ProfileSetting.key],
-                    set: { value, updated: timestamp }
-                })
+                    set: { value, updated: timestamp },
+                });
         }
 
         return this.from(username);

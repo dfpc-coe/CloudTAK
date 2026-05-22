@@ -21,9 +21,9 @@ const task: RetentionTask = {
             status: 'success',
             deleted: deleted.length,
             duration: Date.now() - start,
-            message: deleted.length ? undefined : 'No stale connection features found'
+            message: deleted.length ? undefined : 'No stale connection features found',
         };
-    }
+    },
 };
 
 export default task;

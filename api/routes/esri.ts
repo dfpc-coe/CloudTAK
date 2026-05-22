@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -26,19 +26,20 @@ export default async function router(schema: Schema, config: Config) {
             auth: Type.Optional(Type.Object({
                 token: Type.String(),
                 referer: Type.String(),
-                expires: Type.Integer()
-            }))
-        })
+                expires: Type.Integer(),
+            })),
+        }),
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                anyResources: true
+                anyResources: true,
             });
 
-            let url
+            let url;
             try {
                 url = new URL(req.body.url);
-            } catch (err) {
+            }
+            catch (err) {
                 throw new Err(400, null, err instanceof Error ? err.message : String(err));
             }
 
@@ -49,16 +50,18 @@ export default async function router(schema: Schema, config: Config) {
                     password: req.body.password,
                     referer: config.API_URL,
                 });
-            } else {
+            }
+            else {
                 base = await EsriBase.from(url);
             }
 
             res.json({
                 type: base.type,
                 base: String(base.base),
-                auth: base.token
+                auth: base.token,
             });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -73,13 +76,13 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             portal: Type.String(),
             token: Type.Optional(Type.String()),
-            expires: Type.Optional(Type.Integer())
+            expires: Type.Optional(Type.Integer()),
         }),
-        res: Type.Any()
+        res: Type.Any(),
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                anyResources: true
+                anyResources: true,
             });
 
             const base = new EsriBase(req.query.portal);
@@ -87,13 +90,14 @@ export default async function router(schema: Schema, config: Config) {
                 base.token = {
                     token: req.query.token,
                     expires: req.query.expires,
-                    referer: config.API_URL
-                }
+                    referer: config.API_URL,
+                };
             }
 
             const portal = new EsriProxyPortal(base);
             res.json(await portal.getPortal());
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -109,13 +113,13 @@ export default async function router(schema: Schema, config: Config) {
             portal: Type.String(),
             token: Type.Optional(Type.String()),
             expires: Type.Optional(Type.Integer()),
-            title: Type.Optional(Type.String())
+            title: Type.Optional(Type.String()),
         }),
-        res: Type.Any()
+        res: Type.Any(),
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                anyResources: true
+                anyResources: true,
             });
 
             const base = new EsriBase(req.query.portal);
@@ -123,18 +127,19 @@ export default async function router(schema: Schema, config: Config) {
                 base.token = {
                     token: req.query.token,
                     expires: req.query.expires,
-                    referer: config.API_URL
-                }
+                    referer: config.API_URL,
+                };
             }
 
             const portal = new EsriProxyPortal(base);
 
             const content = await portal.getContent({
-                title: req.query.title
+                title: req.query.title,
             });
 
             res.json(content);
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -146,29 +151,30 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             portal: Type.String(),
             token: Type.String(),
-            expires: Type.Integer()
+            expires: Type.Integer(),
         }),
         body: Type.Object({
-            name: Type.String()
+            name: Type.String(),
         }),
-        res: Type.Any()
+        res: Type.Any(),
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                anyResources: true
+                anyResources: true,
             });
 
             const base = new EsriBase(req.query.portal);
             base.token = {
                 token: req.query.token,
                 expires: req.query.expires,
-                referer: config.API_URL
-            }
+                referer: config.API_URL,
+            };
 
             const portal = new EsriProxyPortal(base);
 
             res.json(await portal.createService(req.body.name));
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -183,31 +189,32 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             portal: Type.String(),
             token: Type.String(),
-            expires: Type.Integer()
+            expires: Type.Integer(),
         }),
         res: Type.Object({
-            servers: Type.Array(Type.Any())
-        })
+            servers: Type.Array(Type.Any()),
+        }),
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                anyResources: true
+                anyResources: true,
             });
 
             const base = new EsriBase(req.query.portal);
             base.token = {
                 token: req.query.token,
                 expires: req.query.expires,
-                referer: config.API_URL
-            }
+                referer: config.API_URL,
+            };
 
             const portal = new EsriProxyPortal(base);
             const servers = await portal.getServers();
 
             res.json({
-                servers: servers.servers
+                servers: servers.servers,
             });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -219,13 +226,13 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             server: Type.String(),
             token: Type.Optional(Type.String()),
-            expires: Type.Optional(Type.Integer())
+            expires: Type.Optional(Type.Integer()),
         }),
-        res: Type.Any()
+        res: Type.Any(),
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                anyResources: true
+                anyResources: true,
             });
 
             const base = new EsriBase(req.query.server);
@@ -233,8 +240,8 @@ export default async function router(schema: Schema, config: Config) {
                 base.token = {
                     token: req.query.token,
                     expires: req.query.expires,
-                    referer: config.API_URL
-                }
+                    referer: config.API_URL,
+                };
             }
 
             const server = new EsriProxyServer(base);
@@ -244,7 +251,8 @@ export default async function router(schema: Schema, config: Config) {
             if (!list.services) list.services = [];
 
             res.json(list);
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -257,26 +265,27 @@ export default async function router(schema: Schema, config: Config) {
             server: Type.String(),
             portal: Type.String(),
             token: Type.String(),
-            expires: Type.Integer()
+            expires: Type.Integer(),
         }),
-        res: Type.Any()
+        res: Type.Any(),
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                anyResources: true
+                anyResources: true,
             });
 
             const base = new EsriBase(req.query.server);
             base.token = {
                 token: req.query.token,
                 expires: req.query.expires,
-                referer: config.API_URL
-            }
+                referer: config.API_URL,
+            };
 
             const server = new EsriProxyServer(base);
 
             res.json(await server.createLayer());
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -289,13 +298,13 @@ export default async function router(schema: Schema, config: Config) {
             server: Type.String(),
             portal: Type.String(),
             token: Type.String(),
-            expires: Type.Integer()
+            expires: Type.Integer(),
         }),
-        res: Type.Any()
+        res: Type.Any(),
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                anyResources: true
+                anyResources: true,
             });
 
             const url = new URL(req.query.server.replace(/\/\d+$/, ''));
@@ -308,13 +317,14 @@ export default async function router(schema: Schema, config: Config) {
             base.token = {
                 token: req.query.token,
                 expires: req.query.expires,
-                referer: config.API_URL
-            }
+                referer: config.API_URL,
+            };
 
             const server = new EsriProxyServer(base);
 
             res.json(await server.deleteLayer(layer_id));
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -329,11 +339,11 @@ export default async function router(schema: Schema, config: Config) {
             token: Type.Optional(Type.String()),
             expires: Type.Optional(Type.Integer()),
         }),
-        res: Type.Any()
+        res: Type.Any(),
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                anyResources: true
+                anyResources: true,
             });
 
             const base = new EsriBase(req.query.layer);
@@ -342,16 +352,17 @@ export default async function router(schema: Schema, config: Config) {
                 base.token = {
                     token: req.query.token,
                     expires: req.query.expires,
-                    referer: config.API_URL
-                }
+                    referer: config.API_URL,
+                };
             }
 
             const layer = new EsriProxyLayer(base);
 
             const count = await layer.sample(req.query.query);
 
-            res.json(count)
-        } catch (err) {
+            res.json(count);
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });

@@ -35,10 +35,10 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
 
         mockPool.intercept({
             path: /profile\/asset/,
-            method: 'POST'
+            method: 'POST',
         }).reply((req) => {
             const body = JSON.parse(req.body) as {
-                id: string
+                id: string;
             };
 
             id = body.id;
@@ -47,123 +47,123 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
                 statusCode: 200,
                 data: JSON.stringify({
                     id: body.id,
-                    artifacts: []
-                })
+                    artifacts: [],
+                }),
             };
         });
 
         mockPool.intercept({
             path: /api\/profile\/asset\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
             method: 'PATCH',
-            body: (str) => !!JSON.parse(str).iconset
+            body: str => !!JSON.parse(str).iconset,
         }).reply(() => {
             return {
                 statusCode: 200,
                 data: JSON.stringify({
                     id,
-                    artifacts: []
-                })
+                    artifacts: [],
+                }),
             };
         });
 
         mockPool.intercept({
             path: /api\/profile\/asset\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-            method: 'PATCH'
+            method: 'PATCH',
         }).reply((req) => {
             const body = JSON.parse(req.body) as {
-                artifacts: string[]
+                artifacts: string[];
             };
 
-            assert.deepEqual(body.artifacts, [{ "ext": ".geojsonld" }], 'Has Correct Extension');
+            assert.deepEqual(body.artifacts, [{ ext: '.geojsonld' }], 'Has Correct Extension');
 
             return {
                 statusCode: 200,
                 data: JSON.stringify({
                     id,
-                    artifacts: body.artifacts
-                })
+                    artifacts: body.artifacts,
+                }),
             };
         });
 
         mockPool.intercept({
             path: /api\/profile\/asset\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-            method: 'PATCH'
+            method: 'PATCH',
         }).reply((req) => {
             const body = JSON.parse(req.body) as {
-                artifacts: string[]
+                artifacts: string[];
             };
 
-            assert.deepEqual(body.artifacts, [{ "ext": ".geojsonld" }, { "ext": ".pmtiles" }]);
+            assert.deepEqual(body.artifacts, [{ ext: '.geojsonld' }, { ext: '.pmtiles' }]);
 
             return {
                 statusCode: 200,
                 data: JSON.stringify({
                     id,
-                    artifacts: body.artifacts
-                })
+                    artifacts: body.artifacts,
+                }),
             };
         });
 
         mockPool.intercept({
             path: '/api/iconset',
-            method: 'POST'
+            method: 'POST',
         }).reply(() => {
             assert.ok(true, 'Creating Iconset');
             return {
                 statusCode: 200,
-                data: JSON.stringify({})
+                data: JSON.stringify({}),
             };
         }).persist();
 
         mockPool.intercept({
             path: /\/api\/iconset\/.*\/regen/,
-            method: 'POST'
+            method: 'POST',
         }).reply(() => {
             assert.ok(true, 'Regenerating Iconset');
             return {
                 statusCode: 200,
-                data: JSON.stringify({})
+                data: JSON.stringify({}),
             };
         }).persist();
 
         const ExternalOperations = [
-                (command) => {
-                    assert.ok(command instanceof GetObjectCommand, 'S3.GetObjectCommand Call');
-                    assert.deepEqual(command.input, {
-                        Bucket: 'test-bucket',
-                        Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139${ext}`
-                    }, 'S3.GetObjectCommand Call Parameters');
+            (command) => {
+                assert.ok(command instanceof GetObjectCommand, 'S3.GetObjectCommand Call');
+                assert.deepEqual(command.input, {
+                    Bucket: 'test-bucket',
+                    Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139${ext}`,
+                }, 'S3.GetObjectCommand Call Parameters');
 
-                    return Promise.resolve({
-                        Body: fs.createReadStream(new URL(`./fixtures/transform-vector/${fixturename}`, import.meta.url))
-                    })
-                },
-                (command) => {
-                    assert.ok(command instanceof PutObjectCommand, 'S3.PutObjectCommand Call');
+                return Promise.resolve({
+                    Body: fs.createReadStream(new URL(`./fixtures/transform-vector/${fixturename}`, import.meta.url)),
+                });
+            },
+            (command) => {
+                assert.ok(command instanceof PutObjectCommand, 'S3.PutObjectCommand Call');
 
-                    assert.equal(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
-                    assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`, 'S3.PutObjectCommand Key Prefix'));
+                assert.equal(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
+                assert.ok(command.input.Key.startsWith(`profile/admin@example.com/`, 'S3.PutObjectCommand Key Prefix'));
 
-                    assert.ok(command.input.Key.endsWith(ext), 'S3.PutObjectCommand Key Suffix');
+                assert.ok(command.input.Key.endsWith(ext), 'S3.PutObjectCommand Key Suffix');
 
-                    return Promise.resolve({});
-                },
-                (command) => {
-                    assert.ok(command instanceof PutObjectCommand, 'S3.PutObjectCommand Call');
+                return Promise.resolve({});
+            },
+            (command) => {
+                assert.ok(command instanceof PutObjectCommand, 'S3.PutObjectCommand Call');
 
-                    assert.equal(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
-                    assert.equal(command.input.Key, `profile/admin@example.com/${id}.geojsonld`, 'S3.PutObjectCommand Key');
+                assert.equal(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
+                assert.equal(command.input.Key, `profile/admin@example.com/${id}.geojsonld`, 'S3.PutObjectCommand Key');
 
-                    return Promise.resolve({});
-                },
-                (command) => {
-                    assert.ok(command instanceof PutObjectCommand, 'S3.PutObjectCommand Call');
+                return Promise.resolve({});
+            },
+            (command) => {
+                assert.ok(command instanceof PutObjectCommand, 'S3.PutObjectCommand Call');
 
-                    assert.equal(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
-                    assert.equal(command.input.Key, `profile/admin@example.com/${id}.pmtiles`, 'S3.PutObjectCommand Key');
+                assert.equal(command.input.Bucket, 'test-bucket', 'S3.PutObjectCommand Bucket');
+                assert.equal(command.input.Key, `profile/admin@example.com/${id}.pmtiles`, 'S3.PutObjectCommand Key');
 
-                    return Promise.resolve({});
-                },
+                return Promise.resolve({});
+            },
         ].reverse();
 
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
@@ -186,7 +186,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
                 source: 'Upload',
                 config: {},
                 source_id: null,
-            }
+            },
         });
 
         worker.on('error', (err) => {
@@ -196,6 +196,6 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
         worker.on('success', () => {
         });
 
-        await worker.process()
+        await worker.process();
     });
 }

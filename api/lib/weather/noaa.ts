@@ -1,5 +1,5 @@
 import fetch from '../fetch.js';
-import { Static } from "@sinclair/typebox";
+import { Static } from '@sinclair/typebox';
 import { WeatherInterface, FetchHourly, FetchType } from '../interface-weather.js';
 
 export default class NOAA implements WeatherInterface {
@@ -7,8 +7,8 @@ export default class NOAA implements WeatherInterface {
     user: string;
 
     constructor() {
-        this.api = 'https://api.weather.gov'
-        this.user = `(cotak.gov, nicholas.ingalls@state.co.us)`
+        this.api = 'https://api.weather.gov';
+        this.user = `(cotak.gov, nicholas.ingalls@state.co.us)`;
     }
 
     async get(lon: number, lat: number): Promise<Static<typeof FetchHourly>> {
@@ -21,8 +21,8 @@ export default class NOAA implements WeatherInterface {
         const res = await fetch(new URL(`/points/${encodeURIComponent(lat)},${encodeURIComponent(lon)}`, this.api), {
             method: 'GET',
             headers: {
-                'User-Agent': this.user
-            }
+                'User-Agent': this.user,
+            },
         });
 
         if (!res.ok) {
@@ -38,8 +38,8 @@ export default class NOAA implements WeatherInterface {
         const res = await fetch(new URL(url), {
             method: 'GET',
             headers: {
-                'User-Agent': this.user
-            }
+                'User-Agent': this.user,
+            },
         });
 
         const body = await res.typed(FetchHourly);

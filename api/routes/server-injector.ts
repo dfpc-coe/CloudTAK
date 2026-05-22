@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -14,8 +14,8 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Get Injector List',
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(Injector)
-        })
+            items: Type.Array(Injector),
+        }),
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
@@ -23,14 +23,15 @@ export default async function router(schema: Schema, config: Config) {
             const auth = config.serverCert();
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const list = await api.Injectors.list()
+            const list = await api.Injectors.list();
 
             res.json({
                 total: list.data.length,
-                items: list.data
-            })
-        } catch (err) {
-             Err.respond(err, res);
+                items: list.data,
+            });
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -41,8 +42,8 @@ export default async function router(schema: Schema, config: Config) {
         body: Injector,
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(Injector)
-        })
+            items: Type.Array(Injector),
+        }),
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
@@ -54,10 +55,11 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 total: list.data.length,
-                items: list.data
-            })
-        } catch (err) {
-             Err.respond(err, res);
+                items: list.data,
+            });
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -66,7 +68,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ServerInjector',
         description: 'Delete COT Injector',
         query: Injector,
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
@@ -78,10 +80,11 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: 'Injector Deleted'
-            })
-        } catch (err) {
-             Err.respond(err, res);
+                message: 'Injector Deleted',
+            });
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

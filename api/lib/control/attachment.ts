@@ -15,26 +15,27 @@ export default class AttachmentControl {
     }
 
     async upload(name: string, body: Readable): Promise<{
-        hash: string
+        hash: string;
     }> {
         const tmp = os.tmpdir() + '/' + randomUUID();
 
         try {
-            fs.mkdirSync(tmp)
+            fs.mkdirSync(tmp);
             await pipeline(
                 body,
-                fs.createWriteStream(tmp + '/' + name)
+                fs.createWriteStream(tmp + '/' + name),
             );
 
             const hash = await DataPackage.hash(tmp + '/' + name);
 
             await S3.put(
                 `attachment/${hash}/${name}`,
-                fs.createReadStream(tmp + '/' + name)
+                fs.createReadStream(tmp + '/' + name),
             );
 
             return { hash };
-        } catch (err) {
+        }
+        catch (err) {
             fs.unlinkSync(tmp + '/' + name);
             throw err;
         }

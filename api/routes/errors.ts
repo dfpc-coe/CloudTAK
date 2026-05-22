@@ -1,11 +1,11 @@
 import { sql } from 'drizzle-orm';
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import { Param } from '@openaddresses/batch-generic';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import * as Default from '../lib/limits.js';
-import { ErrorResponse, StandardResponse } from '../lib/types.js'
+import { ErrorResponse, StandardResponse } from '../lib/types.js';
 import Config from '../lib/config.js';
 import { Errors } from '../lib/schema.js';
 
@@ -20,15 +20,15 @@ export default async function router(schema: Schema, config: Config) {
             order: Default.Order,
             sort: Type.String({
                 default: 'created',
-                enum: Object.keys(Errors)
+                enum: Object.keys(Errors),
             }),
             username: Type.Optional(Type.String()),
-            filter: Default.Filter
+            filter: Default.Filter,
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ErrorResponse)
-        })
+            items: Type.Array(ErrorResponse),
+        }),
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
@@ -41,12 +41,13 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     message ~* ${req.query.filter}
                     AND (${Param(req.query.username)}::TEXT IS NULL OR ${Param(req.query.username)}::TEXT = username)
-                `
+                `,
             });
 
             res.json(list);
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -56,24 +57,25 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Create a new error',
         body: Type.Object({
             message: Type.String(),
-            trace: Type.Optional(Type.String())
+            trace: Type.Optional(Type.String()),
         }),
-        res: StandardResponse
+        res: StandardResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
             await config.models.Errors.generate({
                 username: user.email,
-                ...req.body
+                ...req.body,
             });
 
             res.json({
                 status: 200,
-                message: 'Error Logged'
+                message: 'Error Logged',
             });
-        } catch (err) {
-             Err.respond(err, res);
+        }
+        catch (err) {
+            Err.respond(err, res);
         }
     });
 }

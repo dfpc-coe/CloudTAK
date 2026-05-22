@@ -3,7 +3,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 import { UAParser } from 'ua-parser-js';
 import { X509Certificate } from 'crypto';
 import {
@@ -28,7 +28,8 @@ function rpFromConfig(config: Config, req?: { headers: { origin?: string } }): {
             if (reqOrigin.hostname === 'localhost') {
                 origins.push(req.headers.origin);
             }
-        } catch { /* ignore invalid origin */ }
+        }
+        catch { /* ignore invalid origin */ }
     }
 
     return {
@@ -91,8 +92,8 @@ export default async function router(schema: Schema, config: Config) {
                 credential_id: Type.String(),
                 created: Type.String(),
                 last_used: Type.Union([Type.String(), Type.Null()]),
-            }))
-        })
+            })),
+        }),
     }, async (req, res) => {
         try {
             await assertPasskeysEnabled();
@@ -101,15 +102,16 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 total: passkeys.length,
-                items: passkeys.map((p) => ({
+                items: passkeys.map(p => ({
                     id: p.id,
                     name: p.name,
                     credential_id: p.credential_id,
                     created: p.created,
                     last_used: p.last_used,
-                }))
+                })),
             });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -147,7 +149,7 @@ export default async function router(schema: Schema, config: Config) {
             })),
             attestation: Type.Optional(Type.String()),
             extensions: Type.Optional(Type.Unknown()),
-        })
+        }),
     }, async (req, res) => {
         try {
             await assertPasskeysEnabled();
@@ -161,7 +163,7 @@ export default async function router(schema: Schema, config: Config) {
                 rpID,
                 userName: user.email,
                 attestationType: 'none',
-                excludeCredentials: existingPasskeys.map((p) => ({
+                excludeCredentials: existingPasskeys.map(p => ({
                     id: p.credential_id,
                     transports: (p.transports || []) as AuthenticatorTransportFuture[],
                 })),
@@ -174,7 +176,8 @@ export default async function router(schema: Schema, config: Config) {
             await config.models.ProfilePasskey.setChallenge(`reg:${user.email}`, options.challenge);
 
             res.json({ ...options });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -192,7 +195,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
             credential_id: Type.String(),
             created: Type.String(),
-        })
+        }),
     }, async (req, res) => {
         try {
             await assertPasskeysEnabled();
@@ -210,7 +213,8 @@ export default async function router(schema: Schema, config: Config) {
                     expectedRPID: rpID,
                     requireUserVerification: false,
                 });
-            } catch (e) {
+            }
+            catch (e) {
                 throw new Err(400, e instanceof Error ? e : null, 'Invalid registration credential');
             }
 
@@ -236,7 +240,8 @@ export default async function router(schema: Schema, config: Config) {
                 credential_id: passkey.credential_id,
                 created: passkey.created,
             });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -257,7 +262,7 @@ export default async function router(schema: Schema, config: Config) {
             }))),
             userVerification: Type.Optional(Type.String()),
             extensions: Type.Optional(Type.Unknown()),
-        })
+        }),
     }, async (req, res) => {
         try {
             await assertPasskeysEnabled();
@@ -271,7 +276,8 @@ export default async function router(schema: Schema, config: Config) {
             await config.models.ProfilePasskey.setChallenge(`auth:${options.challenge}`, options.challenge);
 
             res.json({ ...options });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -288,7 +294,7 @@ export default async function router(schema: Schema, config: Config) {
             access: Type.Enum(AuthUserAccess),
             email: Type.String(),
             certRenewalRequired: Type.Optional(Type.Boolean()),
-        })
+        }),
     }, async (req, res) => {
         try {
             await assertPasskeysEnabled();
@@ -302,20 +308,22 @@ export default async function router(schema: Schema, config: Config) {
             let passkey;
             try {
                 passkey = await config.models.ProfilePasskey.byCredentialId(credentialId);
-            } catch {
+            }
+            catch {
                 throw new Err(401, null, 'Unknown credential');
             }
 
             const challengeKey = `auth:${req.body.credential.response?.clientDataJSON
-                    ? (() => {
+                ? (() => {
                         try {
                             const clientData = JSON.parse(
-                                Buffer.from(req.body.credential.response.clientDataJSON, 'base64url').toString()
+                                Buffer.from(req.body.credential.response.clientDataJSON, 'base64url').toString(),
                             );
                             return clientData.challenge || '';
-                        } catch { return ''; }
+                        }
+                        catch { return ''; }
                     })()
-                    : ''}`;
+                : ''}`;
 
             const expectedChallenge = await config.models.ProfilePasskey.consumeChallenge(challengeKey);
 
@@ -334,7 +342,8 @@ export default async function router(schema: Schema, config: Config) {
                         transports: (passkey.transports || []) as AuthenticatorTransportFuture[],
                     },
                 });
-            } catch (e) {
+            }
+            catch (e) {
                 throw new Err(401, e instanceof Error ? e : null, 'Authentication verification failed');
             }
 
@@ -352,7 +361,8 @@ export default async function router(schema: Schema, config: Config) {
             let access = AuthUserAccess.USER;
             if (profile.system_admin) {
                 access = AuthUserAccess.ADMIN;
-            } else if (profile.agency_admin && profile.agency_admin.length) {
+            }
+            else if (profile.agency_admin && profile.agency_admin.length) {
                 access = AuthUserAccess.AGENCY;
             }
 
@@ -370,7 +380,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             await config.models.Profile.commit(profile.username, {
-                last_login: new Date().toISOString()
+                last_login: new Date().toISOString(),
             });
 
             let certRenewalRequired = false;
@@ -380,7 +390,8 @@ export default async function router(schema: Schema, config: Config) {
                 if (Number.isNaN(certExpiry.getTime()) || certExpiry.getTime() < Date.now() + (7 * 24 * 60 * 60 * 1000)) {
                     certRenewalRequired = true;
                 }
-            } catch {
+            }
+            catch {
                 certRenewalRequired = true;
             }
 
@@ -390,11 +401,12 @@ export default async function router(schema: Schema, config: Config) {
                 token: jwt.sign(
                     { access, email: profile.username, s: session.id },
                     config.SigningSecret,
-                    { expiresIn: '16h' }
+                    { expiresIn: '16h' },
                 ),
                 ...(certRenewalRequired ? { certRenewalRequired: true } : {}),
             });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });
@@ -409,7 +421,7 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Object({
             status: Type.Integer(),
             message: Type.String(),
-        })
+        }),
     }, async (req, res) => {
         try {
             await assertPasskeysEnabled();
@@ -423,7 +435,8 @@ export default async function router(schema: Schema, config: Config) {
             await config.models.ProfilePasskey.delete(req.params.id);
 
             res.json({ status: 200, message: 'Passkey deleted' });
-        } catch (err) {
+        }
+        catch (err) {
             Err.respond(err, res);
         }
     });

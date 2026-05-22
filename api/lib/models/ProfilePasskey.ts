@@ -31,7 +31,7 @@ export default class ProfilePasskeyModel extends Modeler<typeof ProfilePasskey> 
         await this.pool.update(this.generic)
             .set({
                 counter,
-                last_used: new Date().toISOString()
+                last_used: new Date().toISOString(),
             })
             .where(eq(this.generic.id, id));
     }

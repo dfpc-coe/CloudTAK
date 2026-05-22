@@ -9,7 +9,7 @@ import {
     PutObjectCommand,
     CreateMultipartUploadCommand,
     UploadPartCommand,
-    CompleteMultipartUploadCommand
+    CompleteMultipartUploadCommand,
 } from '@aws-sdk/client-s3';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
@@ -32,7 +32,7 @@ test(`Worker Data Transform Vector: JSON File within ZIP`, async (t) => {
 
     mockPool.intercept({
         path: /profile\/asset/,
-        method: 'POST'
+        method: 'POST',
     }).reply((req) => {
         const body = JSON.parse(req.body) as {
             id: string;
@@ -49,14 +49,14 @@ test(`Worker Data Transform Vector: JSON File within ZIP`, async (t) => {
             statusCode: 200,
             data: JSON.stringify({
                 id: body.id,
-                artifacts: []
-            })
+                artifacts: [],
+            }),
         };
     });
 
     mockPool.intercept({
         path: /api\/profile\/asset\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-        method: 'PATCH'
+        method: 'PATCH',
     }).reply((req) => {
         const body = JSON.parse(req.body) as {
             artifacts: Array<{ ext: string }>;
@@ -68,14 +68,14 @@ test(`Worker Data Transform Vector: JSON File within ZIP`, async (t) => {
             statusCode: 200,
             data: JSON.stringify({
                 id,
-                artifacts: body.artifacts
-            })
+                artifacts: body.artifacts,
+            }),
         };
     });
 
     mockPool.intercept({
         path: /api\/profile\/asset\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-        method: 'PATCH'
+        method: 'PATCH',
     }).reply((req) => {
         const body = JSON.parse(req.body) as {
             artifacts: Array<{ ext: string }>;
@@ -87,8 +87,8 @@ test(`Worker Data Transform Vector: JSON File within ZIP`, async (t) => {
             statusCode: 200,
             data: JSON.stringify({
                 id,
-                artifacts: body.artifacts
-            })
+                artifacts: body.artifacts,
+            }),
         };
     });
 
@@ -97,11 +97,11 @@ test(`Worker Data Transform Vector: JSON File within ZIP`, async (t) => {
             assert.ok(command instanceof GetObjectCommand, 'S3.GetObjectCommand Call');
             assert.deepEqual(command.input, {
                 Bucket: 'test-bucket',
-                Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.zip`
+                Key: `import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.zip`,
             }, 'S3.GetObjectCommand Call Parameters');
 
             return Promise.resolve({
-                Body: fs.createReadStream(new URL(`./fixtures/transform-vector/NewZealandRegions.zip`, import.meta.url))
+                Body: fs.createReadStream(new URL(`./fixtures/transform-vector/NewZealandRegions.zip`, import.meta.url)),
             });
         },
         (command) => {
@@ -181,7 +181,7 @@ test(`Worker Data Transform Vector: JSON File within ZIP`, async (t) => {
             source: 'Upload',
             config: {},
             source_id: null,
-        }
+        },
     });
 
     worker.on('error', (err) => {
