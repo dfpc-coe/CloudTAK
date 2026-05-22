@@ -1,5 +1,5 @@
-import { db } from './database.ts'
-import type { DBProfileConfig } from './database.ts';
+import { db } from '../database.ts'
+import type { DBProfileConfig } from '../database.ts';
 import { std } from '../std.ts';
 import type { Profile } from '../types.ts';
 import { liveQuery, type Subscription } from 'dexie';

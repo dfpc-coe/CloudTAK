@@ -212,7 +212,7 @@ import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl, server } from '../../../../std.ts';
 import Subscription from '../../../../base/subscription.ts';
-import type { DBSubscriptionContent } from '../../../../base/database.ts';
+import type { DBSubscriptionContent } from '../../../../database.ts';
 import type { Attachment } from '../../../../types.ts';
 import { useFloatStore } from '../../../../stores/float.ts';
 import {

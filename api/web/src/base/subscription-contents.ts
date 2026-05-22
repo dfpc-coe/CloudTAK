@@ -1,6 +1,6 @@
-import { db } from './database.ts';
+import { db } from '../database.ts';
 import { std } from '../std.ts';
-import type { DBSubscriptionContent } from './database.ts';
+import type { DBSubscriptionContent } from '../database.ts';
 import type { Mission } from '../types.ts';
 
 /**

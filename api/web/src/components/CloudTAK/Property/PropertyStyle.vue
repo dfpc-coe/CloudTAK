@@ -138,7 +138,7 @@ import {
     TablerRange,
     TablerEnum,
 } from '@tak-ps/vue-tabler';
-import IconSelect from '../../util/IconSelect.vue';
+import IconSelect from '../util/IconSelectOffline.vue';
 import type COT from '../../../base/cot';
 
 const props = defineProps<{

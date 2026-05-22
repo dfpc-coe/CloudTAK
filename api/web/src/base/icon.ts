@@ -1,6 +1,7 @@
 import { std, stdurl } from '../std.ts';
-import { db, type DBIcon, type DBIconset } from './database.ts';
-import type { IconsetList, Iconset, IconList } from '../types.ts';
+import { db, type DBIcon, type DBIconset } from '../database.ts';
+import type { Iconset, IconList } from '../types.ts';
+import IconsetCache from './iconset.ts';
 
 const HYDRATE_CACHE_KEY = 'iconsets:hydrated';
 /** Skip a fresh hydrate if the local cache was last refreshed within this many ms. */
@@ -30,6 +31,20 @@ export default class Icon {
 
     static async get(icon: string): Promise<DBIcon | undefined> {
         return await db.icon.get(icon);
+    }
+
+    /**
+     * Return all cached icons ordered by key.
+     */
+    static async all(): Promise<DBIcon[]> {
+        return await db.icon.orderBy('name').toArray();
+    }
+
+    /**
+     * Return all icons belonging to a given iconset uid, ordered by path.
+     */
+    static async list(iconsetUid: string): Promise<DBIcon[]> {
+        return await db.icon.where('iconset').equals(iconsetUid).sortBy('path');
     }
 
     /**
@@ -72,13 +87,15 @@ export default class Icon {
      * Ensure a single iconset is present in Dexie. Returns true if Dexie was
      * actually updated so the caller can purge stale map images.
      */
-    static async addIconset(uid: string, opts: { token: string }): Promise<boolean> {
+    static async addIconset(uid: string, opts: { token: string; force?: boolean }): Promise<boolean> {
         const iconset = await std(`/api/iconset/${uid}`, {
             token: opts.token
         }) as Iconset;
 
         const cached = await db.iconset.get(uid);
         if (
+            !opts.force
+            &&
             cached
             && cached.version === iconset.version
             && cached.updated === iconset.updated
@@ -122,16 +139,14 @@ function runDiffOnce(token: string): Promise<IconHydrateResult> {
 }
 
 async function runDiff(token: string): Promise<IconHydrateResult> {
-    const remote = await std('/api/iconset?limit=0', {
-        token
-    }) as IconsetList;
+    const local = await db.iconset.toArray();
+    const remote = await IconsetCache.list({ token, sync: true }) as Iconset[];
 
     const remoteByUid = new Map<string, Iconset>();
-    for (const iconset of remote.items) {
+    for (const iconset of remote) {
         remoteByUid.set(iconset.uid, iconset);
     }
 
-    const local = await db.iconset.toArray();
     const localByUid = new Map<string, DBIconset>();
     for (const iconset of local) {
         localByUid.set(iconset.uid, iconset);

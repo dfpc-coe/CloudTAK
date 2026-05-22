@@ -1,4 +1,4 @@
-import { db } from './database.ts'
+import { db } from '../database.ts'
 import { std, stdurl } from '../std.ts';
 import SubscriptionLog from './subscription-log.ts';
 import SubscriptionChanges from './subscription-changes.ts';

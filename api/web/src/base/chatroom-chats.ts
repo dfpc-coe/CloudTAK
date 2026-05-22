@@ -1,10 +1,10 @@
-import { db } from './database.ts';
+import { db } from '../database.ts';
 import { std, stdurl } from '../std.ts';
 import type {
     ProfileChatList,
     APIProfileChat
 } from '../types.ts'
-import type { DBChatroomChat } from './database.ts';
+import type { DBChatroomChat } from '../database.ts';
 import type Atlas from '../workers/atlas.ts';
 import type { Remote } from 'comlink';
 import ContactManager from './contact.ts';
