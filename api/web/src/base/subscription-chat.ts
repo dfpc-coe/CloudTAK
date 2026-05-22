@@ -1,5 +1,5 @@
-import { db } from './database.ts';
-import type { DBSubscriptionChat } from './database.ts';
+import { db } from '../database.ts';
+import type { DBSubscriptionChat } from '../database.ts';
 import { liveQuery, type Observable } from 'dexie';
 import type Atlas from '../workers/atlas.ts';
 import type { Remote } from 'comlink';

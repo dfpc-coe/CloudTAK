@@ -18,8 +18,8 @@ import { usePermissionStore } from './modules/permissions.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
-import type { DatabaseType } from '../base/database.ts';
-import { db } from '../base/database.ts';
+import type { DatabaseType } from '../database.ts';
+import { db } from '../database.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay.ts';
@@ -999,7 +999,7 @@ export const useMapStore = defineStore('cloudtak', {
                         start: new Date().toISOString(),
                         stale: new Date(Date.now() + 2 * (60 * 60 * 1000)).toISOString(),
                         center: [ e.lngLat.lng, e.lngLat.lat ],
-                        'marker-color': '#00ff00',
+                        'marker-color': this.defaultPointType === 'u-d-p' ? '#00ff00' : undefined,
                         'marker-opacity': 1
                     },
                     geometry: {

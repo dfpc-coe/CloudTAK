@@ -64,7 +64,7 @@ const effectiveContact = computed((): Contact => {
 });
 
 onMounted(async () => {
-    contact.value = await ContactManager.get(props.creator.uid);
+    contact.value = await ContactManager.from(props.creator.uid);
 });
 </script>
 

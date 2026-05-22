@@ -1,8 +1,8 @@
-import { db } from './database.ts';
+import { db } from '../database.ts';
 import { liveQuery, type Observable } from 'dexie';
 import { std, stdurl } from '../std.ts';
 import type { Server, Server_Update } from '../types.ts';
-import type { DBServer } from './database.ts';
+import type { DBServer } from '../database.ts';
 
 export default class ServerManager {
     static live(): Observable<Server | undefined> {

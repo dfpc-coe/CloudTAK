@@ -2,7 +2,7 @@ import type COT from '../base/cot.ts';
 import type { Point, LineString } from 'geojson';
 import type { InputFeature } from '../types.ts';
 import type AtlasDatabase from './atlas-database.ts';
-import { db } from '../base/database.ts';
+import { db } from '../database.ts';
 
 export default class AtlasBreadcrumb {
     db: AtlasDatabase;

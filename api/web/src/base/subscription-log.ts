@@ -1,5 +1,5 @@
-import { db } from './database.ts';
-import type { DBSubscriptionLog } from './database.ts';
+import { db } from '../database.ts';
+import type { DBSubscriptionLog } from '../database.ts';
 import { std, stdurl } from '../std.ts';
 import type {
     MissionLog,

@@ -1,5 +1,5 @@
-import { db } from './database.ts'
-import type { DBChatroom } from './database.ts';
+import { db } from '../database.ts'
+import type { DBChatroom } from '../database.ts';
 import { std, stdurl } from '../std.ts';
 import ChatroomChats from './chatroom-chats.ts';
 import { liveQuery, type Observable } from 'dexie';
