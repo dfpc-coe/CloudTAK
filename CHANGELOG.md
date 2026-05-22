@@ -16,6 +16,11 @@ None at this time, but any breaking changes will be prefaced with a deprecation 
 
 ### Pending Release
 
+### v13.2.0 - 2026-05-22
+
+- :rocket: Hide Copy button on Cursor Coordinates - Closes: #1450
+- :rocket: Add Style Lints for all backend components
+
 ### v13.1.1 - 2026-05-21
 
 - :bug: CSP rules prevented `blob:` loaded images
