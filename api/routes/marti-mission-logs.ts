@@ -102,6 +102,8 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             dtg: Type.Optional(Type.String({ format: 'date-time' })),
             content: Type.String(),
+            contentHashes: Type.Optional(Type.Array(Type.String())),
+            entryUid: Type.Optional(Type.String()),
             keywords: Type.Optional(Type.Array(Type.String())),
         }),
         res: GenericMartiResponse,
@@ -147,6 +149,8 @@ export default async function router(schema: Schema, config: Config) {
             dtg: Type.String({
                 format: 'date-time',
             }),
+            contentHashes: Type.Optional(Type.Array(Type.String())),
+            entryUid: Type.Optional(Type.String()),
             content: Type.String(),
             keywords: Type.Optional(Type.Array(Type.String())),
         }),
