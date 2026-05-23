@@ -471,6 +471,8 @@ onMounted(async () => {
         if (!value?.trim()) {
             window.location.href = '/setup.html';
             return;
+        } else {
+            console.log('Server URL', value);
         }
     }
 
